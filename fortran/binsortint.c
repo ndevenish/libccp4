@@ -2,6 +2,10 @@
 	binsortint.c
 	Z260193
 
+     This code is distributed under the terms and conditions of the
+     CCP4 licence agreement as `Part i)' software.  See the conditions
+     in the CCP4 manual for a copyright statement.
+
 IMPORTANT
 
 This version is compatible with binsort version Z130891 and later.
@@ -74,7 +78,7 @@ KEYBUF consist of NKEYS entries, each of the form:
 #endif
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__)
   int srtbeg_ (nkeys, keybuf, lrecl, memsize)
 #endif
 
@@ -216,7 +220,7 @@ SRTRLS:	Release one record into Sort
 #endif
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__)
   int srtrls_ (record)
 #endif
 
@@ -253,7 +257,7 @@ SRTMRG:	Merge - finish release phase
 #endif
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) 
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) 
   int srtmrg_ ()
 #endif
 
@@ -292,7 +296,7 @@ SRTRET:	Return 1 record from sort
 #endif
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi)  || \
-    defined (ESV) || defined(__OSF1__)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__)
   int srtret_ (record)
 #endif
 
