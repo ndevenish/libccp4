@@ -544,7 +544,7 @@ C
      *          'PM','SM','EU','GD','TB','DY','HO','ER','TM','YB',
      *          'LU','HF','TA',' W','RE','OS','IR','PT','AU','HG',
      *          'TL','PB','BI','PO','AT','RN','FR','RA','AC','TH',
-     *          'PA',' U','NP','PU','AM','CM','BK','CF','ES','FM'/
+     *          'PA',' U','NP','PU','AM','CM','BK','CF','ES','FM',
      *          ' D'/
       DATA IHATM/'0H','1H','2H','3H','4H','5H','6H','7H','8H','9H'/
       DATA ITYPE/'CRYS','SCAL','TER ','ATOM','HETA'/
