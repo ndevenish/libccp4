@@ -1702,9 +1702,9 @@ C---data items
 
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,
      +  istatus,IFAIL(12)
-      character*(cfllen) val,esdval,atom_site_catnam,itmnam,
+      character*(cfllen) atom_site_catnam,itmnam,
      +  ATOM_SITE_ITMNAM(3)
-      REAL rval,esd
+      REAL x_esu(3),biso_esu,u_aniso_esu(6),occup_esu
       LOGICAL LEND
       
 C--- Has an ATOM_SITE context been set for this data block?
@@ -1727,16 +1727,16 @@ C--- Has an ATOM_SITE context been set for this data block?
      +   RESID,CHAINID,RESNO,symbol,IRES,IFAIL,LEND)
       IF (LEND) GOTO 100
       IATOM_STATUS(blk_id) = keep_context
-      CALL ccp4ccif_getcoord(blk_id,x,IFAIL(9),LEND)
+      CALL ccp4ccif_getcoord(blk_id,x,x_esu,IFAIL(9),LEND)
       IF (LEND) GOTO 100
       IATOM_STATUS(blk_id) = keep_context
-      CALL ccp4ccif_getbiso(blk_id,biso,IFAIL(10),LEND)
+      CALL ccp4ccif_getbiso(blk_id,biso,biso_esu,IFAIL(10),LEND)
       IF (LEND) GOTO 100
       IATOM_STATUS(blk_id) = keep_context
-      CALL ccp4ccif_getanisou(blk_id,u_aniso,IFAIL(11),LEND)
+      CALL ccp4ccif_getanisou(blk_id,u_aniso,u_aniso_esu,IFAIL(11),LEND)
       IF (LEND) GOTO 100
       IATOM_STATUS(blk_id) = keep_context
-      CALL ccp4ccif_getocc(blk_id,occup,IFAIL(12),LEND)
+      CALL ccp4ccif_getocc(blk_id,occup,occup_esu,IFAIL(12),LEND)
 
  100  CONTINUE
 
@@ -1871,7 +1871,7 @@ C---data items
      +  istatus,npack,nread
       character*(cfllen) val,esdval,atom_site_catnam,itmnam,
      +  ATOM_SITE_ITMNAM(3)
-      REAL rval,esd
+      REAL rval,esd,xone_esu(3)
       LOGICAL LEND
       
 C--- Has an ATOM_SITE context been set for this data block?
@@ -1893,7 +1893,7 @@ C--- Has an ATOM_SITE context been set for this data block?
       NREAD = 0
       DO I=1,NPACK
 
-        CALL ccp4ccif_getcoord(blk_id,XONE,IFAIL,LEND)
+        CALL ccp4ccif_getcoord(blk_id,XONE,xone_esu,IFAIL,LEND)
         IF (LEND) GOTO 100
         IF (IFAIL.LT.0) GOTO 100
         NREAD = NREAD + 1
@@ -1919,7 +1919,7 @@ C-----------------------------------------------------------------------
 C     Routines below here low-level get/put routines
 C     which call CCIF routines.
 
-      subroutine ccp4ccif_getcoord(blk_id,x,IFAIL,LEND)
+      subroutine ccp4ccif_getcoord(blk_id,x,x_esu,IFAIL,LEND)
 CC  change this to GetAtomCoord
  
 CDOC  Given a block_id, get the next set of x, y, z coords.
@@ -1929,6 +1929,8 @@ CDOC
 CDOC  BLK_ID          (I)     INTEGER         block ID of data
 CDOC
 CDOC  X(3)            (O)     REAL            X,Y,Z coordinates
+CDOC
+CDOC  X_ESU(3)        (O)     REAL            associated esu's
 CDOC
 CDOC  IFAIL           (O)     INTEGER         =  0 value specified in CIF returned
 CDOC                                          =  1 dictionary default returned
@@ -1945,7 +1947,7 @@ CDOC  LEND            (O)     LOGICAL         .TRUE. if end of loop
      +  istatus
       character*(cfllen) val,esdval,atom_site_catnam,itmnam,
      +  ATOM_SITE_ITMNAM(3)
-      REAL X(3),rval,esd
+      REAL X(3),X_ESU(3),rval,esd
       LOGICAL LEND
       
       LEND = .FALSE.
@@ -1990,10 +1992,19 @@ C----Did we reach end of loop?
         IFAIL = IFAILSTAT(ISTAT/2)
         IF (IFAIL.GE.0) THEN
           X(I) = RVAL
+C----Take esd if found - not interested in default value
+          IF (ISTATE/2.EQ.1 .OR. ISTATE.EQ.parenthesis_esd) THEN
+            X_ESU(I) = esd
+          ELSE
+            X_ESU(I) = -999.0
+          ENDIF
         ELSE
           X(1) = -999.0
           X(2) = -999.0
           X(3) = -999.0
+          X_ESU(1) = -999.0
+          X_ESU(2) = -999.0
+          X_ESU(3) = -999.0
           GOTO 100
         ENDIF
 
@@ -2261,7 +2272,7 @@ C----Did we reach end of loop?
       return
       end
 
-      subroutine ccp4ccif_getbiso(blk_id,biso,IFAIL,LEND)
+      subroutine ccp4ccif_getbiso(blk_id,biso,biso_esu,IFAIL,LEND)
       
 CDOC  Given a block_id, get the next isotropic B factor.
 CDOC
@@ -2270,6 +2281,8 @@ CDOC
 CDOC  BLK_ID          (I)     INTEGER         block ID of data
 CDOC
 CDOC  BISO            (O)     REAL            isotropic B factor
+CDOC
+CDOC  BISO_ESU        (O)     REAL            associated esu
 CDOC
 CDOC  IFAIL           (O)     INTEGER         =  0 value specified in CIF returned
 CDOC                                          =  1 dictionary default returned
@@ -2285,7 +2298,7 @@ CDOC  LEND            (O)     LOGICAL         .TRUE. if end of loop
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,IFAIL,
      +  istatus
       character*(cfllen) val,esdval,atom_site_catnam,itmnam
-      REAL BISO,rval,esd
+      REAL BISO,BISO_ESU,rval,esd
       LOGICAL LEND
       
       LEND = .FALSE.
@@ -2321,8 +2334,15 @@ C----Did we reach end of loop?
         IFAIL = IFAILSTAT(ISTAT/2)
         IF (IFAIL.GE.0) THEN
           BISO = RVAL
+C----Take esd if found - not interested in default value
+          IF (ISTATE/2.EQ.1 .OR. ISTATE.EQ.parenthesis_esd) THEN
+            BISO_ESU = esd
+          ELSE
+            BISO_ESU = -999.0
+          ENDIF
         ELSE
           BISO = -999.0
+          BISO_ESU = -999.0
         ENDIF
       ENDIF
 
@@ -2331,7 +2351,8 @@ C----Did we reach end of loop?
       return
       end
 
-      subroutine ccp4ccif_getanisou(blk_id,u_aniso,IFAIL,LEND)
+      subroutine ccp4ccif_getanisou(blk_id,u_aniso,u_aniso_esu,
+     +                                                  IFAIL,LEND)
       
 CDOC  Given a block_id, get the set of ADPs for the next
 CDOC  atom_site packet. First check the ATOM_SITE_ANISOTROP
@@ -2343,6 +2364,8 @@ CDOC
 CDOC  BLK_ID          (I)     INTEGER         block ID of data
 CDOC
 CDOC  U_ANISO(6)      (O)     REAL            anisotropic U factor
+CDOC
+CDOC  U_ANISO_ESU(6)  (O)     REAL            associated esu
 CDOC
 CDOC  IFAIL           (O)     INTEGER         =  0 value specified in CIF returned
 CDOC                                          =  1 dictionary default returned
@@ -2359,7 +2382,7 @@ CDOC  LEND            (O)     LOGICAL         .TRUE. if end of loop
      +  istatus,IKEY,lenval,istatold
       character*(cfllen) val,esdval,atom_site_catnam,itmnam,
      +  ATOM_SITE_ITMNAM(6),cval
-      REAL U_aniso(6),rval,esd,eightpipi,FKEY
+      REAL U_aniso(6),U_aniso_esu(6),rval,esd,eightpipi,FKEY
       LOGICAL LEND
       
       LEND = .FALSE.
@@ -2419,6 +2442,12 @@ C----If no value found, try anisotrop.B
 
           IFAIL = IFAILSTAT(ISTAT/2)
           U_aniso(I) = RVAL
+C----Take esd if found - not interested in default value
+          IF (ISTATE.EQ.loop_value .OR. ISTATE.EQ.parenthesis_esd) THEN
+            U_aniso_ESU(I) = esd
+          ELSE
+            U_aniso_ESU(I) = -999.0
+          ENDIF
 
         ENDDO
 
@@ -2449,6 +2478,12 @@ C----If no value found, try aniso_U
 
           IFAIL = IFAILSTAT(ISTAT/2)
           U_aniso(I) = RVAL/eightpipi
+C----Take esd if found - not interested in default value
+          IF (ISTATE.EQ.loop_value .OR. ISTATE.EQ.parenthesis_esd) THEN
+            U_aniso_ESU(I) = esd/eightpipi
+          ELSE
+            U_aniso_ESU(I) = -999.0
+          ENDIF
 
         ENDDO
 
@@ -2490,6 +2525,12 @@ C----If no value found, try aniso_B
 
         IFAIL = IFAILSTAT(ISTAT/2)
         U_aniso(I) = RVAL
+C----Take esd if found - not interested in default value
+        IF (ISTATE.EQ.loop_value .OR. ISTATE.EQ.parenthesis_esd) THEN
+          U_aniso_ESU(I) = esd
+        ELSE
+          U_aniso_ESU(I) = -999.0
+        ENDIF
 
       ENDDO
 
@@ -2526,8 +2567,15 @@ C----Did we reach end of loop?
         IFAIL = IFAILSTAT(ISTAT/2)
         IF (IFAIL.GE.0) THEN
           U_aniso(I) = RVAL/eightpipi
+C----Take esd if found - not interested in default value
+          IF (ISTATE/2.EQ.1 .OR. ISTATE.EQ.parenthesis_esd) THEN
+            U_aniso_ESU(I) = esd/eightpipi
+          ELSE
+            U_aniso_ESU(I) = -999.0
+          ENDIF
         ELSE
           U_aniso(I) = -999.0
+          U_aniso_esu(I) = -999.0
         ENDIF
 
       ENDDO
@@ -2539,7 +2587,7 @@ C----Did we reach end of loop?
       return
       end
 
-      subroutine ccp4ccif_getocc(blk_id,occup,IFAIL,LEND)
+      subroutine ccp4ccif_getocc(blk_id,occup,occup_esu,IFAIL,LEND)
       
 CDOC  Given a block_id, get the next occupancy.
 CDOC
@@ -2548,6 +2596,8 @@ CDOC
 CDOC  BLK_ID          (I)     INTEGER         block ID of data
 CDOC
 CDOC  OCCUP           (O)     REAL            occupancy
+CDOC
+CDOC  OCCUP_ESU       (O)     REAL            associated esu
 CDOC
 CDOC  IFAIL           (O)     INTEGER         =  0 value specified in CIF returned
 CDOC                                          =  1 dictionary default returned
@@ -2563,7 +2613,7 @@ CDOC  LEND            (O)     LOGICAL         .TRUE. if end of loop
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,IFAIL,
      +  istatus
       character*(cfllen) val,esdval,atom_site_catnam,itmnam
-      REAL OCCUP,rval,esd
+      REAL OCCUP,occup_esu,rval,esd
       LOGICAL LEND
       
       LEND = .FALSE.
@@ -2599,8 +2649,15 @@ C----Did we reach end of loop?
         IFAIL = IFAILSTAT(ISTAT/2)
         IF (IFAIL.GE.0) THEN
           OCCUP = RVAL
+C----Take esd if found - not interested in default value
+          IF (ISTATE/2.EQ.1 .OR. ISTATE.EQ.parenthesis_esd) THEN
+            OCCUP_ESU = esd
+          ELSE
+            OCCUP_ESU = -999.0
+          ENDIF
         ELSE
           OCCUP = -999.0
+          OCCUP_ESU = -999.0
         ENDIF
       ENDIF
 
