@@ -1,19 +1,14 @@
 C
 C  cross.f        dot.f          ea06c.f      ea08c.f     ea09c.f
 C  fa01as.f       fa01bs.f       fa01cs.f     fa01ds.f    fm02ad.f
-C  icross.f       idot.f         ma21ad.f    match.f
-C  matmul.f       matvec.f       mc04b.f      mc10ad.f    minv.f
+C  icross.f       idot.f         iminv3       match.f     matmul.f
+C  matvec.f       mc04b.f        minvn.f      minv3.f     ranmar.f
 C  scalev.f       transp.f       unit.f       vdif.f      vset.f
 C  vsum.f         zipin.f        zipout.f
 C
-C External routines used :         (in MODLIB)
-C  TRANSP(A,B)     transpose 3 x 3 matrix  A = (B)T
-C  MATMUL(A,B,C)   multiply 3 x 3 matrices A = BC
-C  MINV(A,B,D)     invert 3 x 3 matrix     A = (B)**-1; D = determinant
-C  MOVE(A,B,N)     move N bytes from B to A
 C
 C     The routines ea06c, ea08c, ea09c, fa01as, fa01bs, fa01cs, fa01ds,
-C     fm02ad, ma21ad, mc04b, mc10ad (and possibly others) are from the
+C     fm02ad, mc04b, (and possibly others) are from the
 C     Harwell Subroutine library.  The conditions on their external use,
 C     reproduced from the Harwell manual are:
 C     * due acknowledgement is made of the use of subroutines in any
@@ -461,6 +456,7 @@ C
 C_BEGIN_FM02AD
 C
       DOUBLE PRECISION FUNCTION FM02AD(N,A,IA,B,IB)
+C     =============================================
 C
 C     Compute the inner product of two double precision real
 C     vectors accumulating the result double precision, when the
@@ -758,9 +754,232 @@ C     ..
       END
 C
 C
-C_BEGIN_MINV
+C_BEGIN_MINVN
 C
-      SUBROUTINE MINV(A,B,D)
+      SUBROUTINE MINVN(A,N,D,L,M)
+C     ===========================
+C
+C
+C---- Purpose
+C     =======
+C
+C           invert a matrix
+C
+C---- Usage
+C     ======
+C
+C           CALL MINVN(A,N,D,L,M)
+C
+C---- Description of parameters
+C     =========================
+C
+C    A - input matrix, destroyed in computation and replaced by
+C        resultant inverse.
+C
+C    N - order of matrix A
+C
+C    D - resultant determinant
+C
+C    L - work vector of length n
+C
+C    M - work vector of length n
+C
+C---- Remarks
+C     =======
+C
+C     Matrix a must be a general matrix
+C
+C---- Subroutines and function subprograms required
+C     =============================================
+C
+C           NONE
+C
+C---- Method
+C     ======
+C
+C     The standard gauss-jordan method is used. the determinant
+C     is also calculated. a determinant of zero indicates that
+C     the matrix is singular.
+C
+C
+C---- Note
+C     =====
+C
+C     If a double precision version of this routine is desired, the
+C     c in column 1 should be removed from the double precision
+C     statement which follows.
+C
+C     double precision a,d,biga,hold
+C
+C        the c must also be removed from double precision statements
+C        appearing in other routines used in conjunction with this
+C        routine.
+C
+C        The double precision version of this subroutine must also
+C        contain double precision fortran functions.  abs in statement
+C        10 must be changed to dabs.
+C
+ccc     REAL*8 D
+C
+C_END_MINVN
+C
+C---- Search for largest element
+C
+C     .. Scalar Arguments ..
+      REAL D
+      INTEGER N
+C     ..
+C     .. Array Arguments ..
+      REAL A(N*N)
+      INTEGER L(N),M(N)
+C     ..
+C     .. Local Scalars ..
+      REAL BIGA,HOLD
+      INTEGER I,IJ,IK,IZ,J,JI,JK,JP,JQ,JR,K,KI,KJ,KK,NK
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC ABS
+C     ..
+C
+C
+      D = 1.0
+      NK = -N
+      DO 90 K = 1,N
+        NK = NK + N
+        L(K) = K
+        M(K) = K
+        KK = NK + K
+        BIGA = A(KK)
+        DO 20 J = K,N
+          IZ = (J-1)*N
+          DO 10 I = K,N
+            IJ = IZ + I
+            IF ((ABS(BIGA)-ABS(A(IJ))).LT.0.0) THEN
+              BIGA = A(IJ)
+              L(K) = I
+              M(K) = J
+            END IF
+   10     CONTINUE
+   20   CONTINUE
+C
+C---- Interchange rows
+C
+        J = L(K)
+        IF ((J-K).GT.0) THEN
+          KI = K - N
+          DO 30 I = 1,N
+            KI = KI + N
+            HOLD = -A(KI)
+            JI = KI - K + J
+            A(KI) = A(JI)
+            A(JI) = HOLD
+   30     CONTINUE
+        END IF
+C
+C---- Interchange columns
+C
+        I = M(K)
+        IF ((I-K).GT.0) THEN
+          JP = (I-1)*N
+          DO 40 J = 1,N
+            JK = NK + J
+            JI = JP + J
+            HOLD = -A(JK)
+            A(JK) = A(JI)
+            A(JI) = HOLD
+   40     CONTINUE
+        END IF
+C
+C---- Divide column by minus pivot (value of pivot element is
+C     contained in biga)
+C
+        IF (BIGA.NE.0.0) THEN
+          DO 50 I = 1,N
+            IF ((I-K).NE.0) THEN
+              IK = NK + I
+              A(IK) = A(IK)/ (-BIGA)
+            END IF
+   50     CONTINUE
+C
+C---- Reduce matrix
+C
+          DO 70 I = 1,N
+            IK = NK + I
+            HOLD = A(IK)
+            IJ = I - N
+            DO 60 J = 1,N
+              IJ = IJ + N
+              IF ((I-K).NE.0) THEN
+                IF ((J-K).NE.0) THEN
+                  KJ = IJ - I + K
+                  A(IJ) = A(KJ)*HOLD + A(IJ)
+                END IF
+              END IF
+   60       CONTINUE
+   70     CONTINUE
+C
+C---- Divide row by pivot
+C
+          KJ = K - N
+          DO 80 J = 1,N
+            KJ = KJ + N
+            IF ((J-K).NE.0) A(KJ) = A(KJ)/BIGA
+   80     CONTINUE
+C
+C---- Product of pivots
+C
+          D = D*BIGA
+C
+C---- Replace pivot by reciprocal
+C
+          A(KK) = 1.0/BIGA
+        ELSE
+          GO TO 130
+        END IF
+   90 CONTINUE
+C
+C---- Final row and column interchange
+C
+      K = N
+  100 CONTINUE
+      K = (K-1)
+      IF (K.GT.0) THEN
+        I = L(K)
+        IF ((I-K).GT.0) THEN
+          JQ = (K-1)*N
+          JR = (I-1)*N
+          DO 110 J = 1,N
+            JK = JQ + J
+            HOLD = A(JK)
+            JI = JR + J
+            A(JK) = -A(JI)
+            A(JI) = HOLD
+  110     CONTINUE
+        END IF
+        J = M(K)
+        IF ((J-K).GT.0) THEN
+          KI = K - N
+          DO 120 I = 1,N
+            KI = KI + N
+            HOLD = A(KI)
+            JI = KI - K + J
+            A(KI) = -A(JI)
+            A(JI) = HOLD
+  120     CONTINUE
+        END IF
+        GO TO 100
+      ELSE
+        RETURN
+      END IF
+  130 D = 0.0
+C
+C
+      END
+C
+C
+C_BEGIN_MINV3
+C
+      SUBROUTINE MINV3(A,B,D)
 C     ======================
 C
 C     Invert a general 3x3 matrix and return determinant in D
@@ -773,7 +992,7 @@ C     ..
 C     .. Array Arguments ..
       REAL            A(3,3),B(3,3)
 C
-C_END_MINV
+C_END_MINV3
 C     ..
 C     .. Local Scalars ..
       INTEGER         I,J
@@ -812,6 +1031,138 @@ C
           D = 0.0
       END IF
 
+      END
+C
+C
+C_BEGIN_RANMAR
+C
+      SUBROUTINE RANMAR(RVEC,LEN)
+C     ===========================
+C
+C     Universal random number generator proposed by Marsaglia and Zaman
+C     in report FSU-SCRI-87-50
+C     slightly modified by F. James, 1988 to generate a vector
+C     of pseudorandom numbers RVEC of length LEN
+C     and making the COMMON block include everything needed to
+C     specify completely the state of the generator.
+C     Transcribed from CERN report DD/88/22.
+C     Rather inelegant messing about added by D. Love, Jan. 1989 to
+C     make sure initialisation always occurs.
+C     *** James says that this is the preferred generator.
+C     Gives bit-identical results on all machines with at least
+C     24-bit mantissas in the flotaing point representation (i.e.
+C     all common 32-bit computers. Fairly fast, satisfies very
+C     stringent tests, has very long period and makes it very
+C     simple to generate independly disjoint sequences.
+C     See also RANECU.
+C     The state of the generator may be saved/restored using the
+C     whole contents of /RASET1/.
+C     Call RANMAR to get a vector, RMARIN to initialise. 
+C     
+C  Argument list
+C  -------------
+C
+C     VREC (O)                 (REAL)   Random Vector
+C
+C     LEN  (I)              (INTEGER)   Length of random vector
+C
+C
+C  For ENTRY point RMARIN
+C  ----------------------
+C
+C     Initialisation for RANMAR.  The input values should
+C     be in the ranges: 0<=ij<=31328, 0<=kl<=30081
+C     This shows the correspondence between the simplified input seeds
+C     IJ, KL and the original Marsaglia-Zaman seeds i,j,k,l
+C     To get standard values in Marsaglia-Zaman paper,
+C     (I=12, J=34, K=56, L=78) put IJ=1802, KL=9373
+C
+C     IJ   (I)              (INTEGER)   Seed for random number generator
+C
+C     KL   (I)              (INTEGER)   Seed for randon number generator
+C
+C_END_RANMAR
+C     
+C     ..
+C     .. Agruments ..
+      REAL RVEC(*)
+      INTEGER LEN,IJ,KL
+C     ..
+C     .. Common Variables ..
+      REAL C,CD,CM,U
+      INTEGER I97,J97
+C     ..
+C     .. Local Scalars ..
+      REAL S,T,UNI
+      INTEGER I,II,IVEC,J,JJ,K,L,M
+      LOGICAL INITED
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC MOD
+C     ..
+C     .. Common Blocks ..
+      COMMON /RASET1/ U(97),C,CD,CM,I97,J97
+C     ..
+C     .. Save Statement ..
+      SAVE INITED, /RASET1/
+C     ..
+C     .. Data Statement ..
+      DATA INITED /.FALSE./
+C
+ 1    IF (INITED) THEN
+        DO 100 IVEC=1,LEN
+          UNI=U(I97)-U(J97)
+          IF (UNI.LT.0.) UNI=UNI+1.
+          U(I97)=UNI
+          I97=I97-1
+          IF (I97.EQ.0) I97=97
+          J97=J97-1
+          IF (J97.EQ.0) J97=97
+          C=C-CD
+          IF (C.LT.0.) C=C+CM
+          UNI=UNI-C
+          IF (UNI.LT.0.) UNI=UNI+1.
+          RVEC(IVEC)=UNI
+ 100    CONTINUE
+        RETURN
+      ENDIF
+      I=MOD(1802/177,177)+2
+      J=MOD(1802,177)+2
+      K=MOD(9373/169,178)+1
+      L=MOD(9373,169)
+C     
+C
+      ENTRY RMARIN(IJ,KL)
+      IF (INITED) THEN
+        I=MOD(IJ/177,177)+2
+        J=MOD(IJ,177)+2
+        K=MOD(KL/169,178)+1
+        L=MOD(KL,169)
+      ENDIF
+      DO 2 II=1,97
+        S=0.
+        T=.5
+        DO 3 JJ=1,24
+          M=MOD(MOD(I*J,179)*K,179)
+          I=J
+          J=K
+          K=M
+          L=MOD(53*L+1,169)
+          IF (MOD(L*M,64).GE.32) S=S+T
+          T=0.5*T
+ 3      CONTINUE
+        U(II)=S
+ 2    CONTINUE
+      C=362436./16777216.
+      CD=7654321./16777216.
+      CM=16777213./16777216.
+      I97=97
+      J97=33
+      IF (.NOT. INITED) THEN
+        INITED=.TRUE.
+        GOTO 1
+      ENDIF
+      INITED=.TRUE.
       END
 C
 C
@@ -993,92 +1344,4 @@ C
 C_END_ZIPOUT
 C     ..
       WRITE (ID) BUF
-      END
-      SUBROUTINE RANMAR(RVEC,LEN)
-C     Universal random number generator proposed by Marsaglia and Zaman
-C     in report FSU-SCRI-87-50
-C     slightly modified by F. James, 1988 to generate a vector
-C     of pseudorandom numbers RVEC of length LEN
-C     and making the COMMON block include everything needed to
-C     specify completely the state of the generator.
-C     Transcribed from CERN report DD/88/22.
-C     Rather inelegant messing about added by D. Love, Jan. 1989 to
-C     make sure initialisation always occurs.
-C     *** James says that this is the preferred generator.
-C     Gives bit-identical results on all machines with at least
-C     24-bit mantissas in the flotaing point representation (i.e.
-C     all common 32-bit computers. Fairly fast, satisfies very
-C     stringent tests, has very long period and makes it very
-C     simple to generate independly disjoint sequences.
-C     See also RANECU.
-C     The state of the generator may be saved/restored using the
-C     whole contents of /RASET1/.
-C     Call RANMAR to get a vector, RMARIN to initialise. 
-C     
-      REAL RVEC(*)
-      LOGICAL INITED
-      COMMON /RASET1/ U(97),C,CD,CM,I97,J97
-      SAVE INITED, /RASET1/
-      DATA INITED /.FALSE./
-C     
- 1    IF (INITED) THEN
-        DO 100 IVEC=1,LEN
-          UNI=U(I97)-U(J97)
-          IF (UNI.LT.0.) UNI=UNI+1.
-          U(I97)=UNI
-          I97=I97-1
-          IF (I97.EQ.0) I97=97
-          J97=J97-1
-          IF (J97.EQ.0) J97=97
-          C=C-CD
-          IF (C.LT.0.) C=C+CM
-          UNI=UNI-C
-          IF (UNI.LT.0.) UNI=UNI+1.
-          RVEC(IVEC)=UNI
- 100    CONTINUE
-        RETURN
-      ENDIF
-      I=MOD(1802/177,177)+2
-      J=MOD(1802,177)+2
-      K=MOD(9373/169,178)+1
-      L=MOD(9373,169)
-C     
-      ENTRY RMARIN(IJ,KL)
-C     Initialisation for RANMAR.  The input values should
-C     be in the ranges: 0<=ij<=31328, 0<=kl<=30081
-C     This shows the correspondence between the simplified input seeds
-C     IJ, KL and the original Marsaglia-Zaman seeds i,j,k,l
-C     To get standard values in Marsaglia-Zaman paper,
-C     (I=12, J=34, K=56, L=78) put IJ=1802, KL=9373
-C     
-      IF (INITED) THEN
-        I=MOD(IJ/177,177)+2
-        J=MOD(IJ,177)+2
-        K=MOD(KL/169,178)+1
-        L=MOD(KL,169)
-      ENDIF
-      DO 2 II=1,97
-        S=0.
-        T=.5
-        DO 3 JJ=1,24
-          M=MOD(MOD(I*J,179)*K,179)
-          I=J
-          J=K
-          K=M
-          L=MOD(53*L+1,169)
-          IF (MOD(L*M,64).GE.32) S=S+T
-          T=0.5*T
- 3      CONTINUE
-        U(II)=S
- 2    CONTINUE
-      C=362436./16777216.
-      CD=7654321./16777216.
-      CM=16777213./16777216.
-      I97=97
-      J97=33
-      IF (.NOT. INITED) THEN
-        INITED=.TRUE.
-        GOTO 1
-      ENDIF
-      INITED=.TRUE.
       END
