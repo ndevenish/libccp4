@@ -2532,6 +2532,8 @@ MTZBAT *sort_batches(MTZBAT *batch, int numbat)
    if (cur_batch1->num < max_num_bat) {
      isort=1;
      break;
+   } else {
+     max_num_bat = cur_batch1->num;
    }
  }
  if (!isort) return batch;
