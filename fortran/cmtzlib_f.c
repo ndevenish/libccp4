@@ -1714,7 +1714,12 @@ FORTRAN_SUBR ( LWOPEN, lwopen,
    ccperror(1,"LWOPEN: failed to open output file");
 }
 
-/* Fortran wrapper for ccp4_lwtitl */
+/** Set title for output file.
+ * @param mindx MTZ file index.
+ * @param ftitle Title to be added to output MTZ file.
+ * @param flag =0 replace old title with new one, or
+ *             =1 append new one to old, with one space
+ */
 FORTRAN_SUBR ( LWTITL, lwtitl,
 	       (const int *mindx, const fpstr ftitle, const int *flag, int ftitle_len),
 	       (const int *mindx, const fpstr ftitle, const int *flag),
@@ -2727,7 +2732,12 @@ FORTRAN_SUBR ( LWBSETIDX, lwbsetidx,
   free(temp_dname); 
 }
 
-/* Set whole array to MNF  */
+/** Set whole array to MNF. The value of the MNF is taken from
+ * the MTZ struct on unit mindx.
+ * @param mindx MTZ file index
+ * @param adata Array of reflection data to be initialised.
+ * @param ncol Number of columns in the array to be initialised.
+ */
 FORTRAN_SUBR ( EQUAL_MAGIC, equal_magic,
 	       (const int *mindx, float adata[], const int *ncol),
 	       (const int *mindx, float adata[], const int *ncol),
