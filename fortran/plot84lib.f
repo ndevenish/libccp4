@@ -1972,16 +1972,12 @@ C
       SAVE
 C
 C     .. Equivalences ..
-ccx      logical*1 nocode(4)
-ccx      integer ncdand,no4
       EQUIVALENCE (NOCODE(1),NO4)
 C     ..
 C     .. Data statements ..
       DATA NOCODE/4*.FALSE./
-C
-C---- ncdand = iand(ncode1,ncode2)
-C
-      NCDAND = NCODE1 .AND. NCODE2
+      NCDAND = IAND(NCODE1,NCODE2)
+CCC      NCDAND = NCODE1 .AND. NCODE2
       REJECT = (NCDAND.NE.NO4)
       ACCEPT = ((NCODE1.EQ.NO4) .AND. (NCODE2.EQ.NO4))
 C
@@ -4375,13 +4371,15 @@ C
 C---- get y displacement on grid
 C     iw contains 2 vector end points; 1 per 4 bits.
 C
-        IDY = IW .AND. MK1
+CCC        IDY = IW .AND. MK1
+        IDY = IAND(IW,MK1)
         IDY = IDY + ISN
         IW = IW/16
 C
 C---- get x displacement on grid
 C
-        IDX = IW .AND. MK1
+CCC        IDX = IW .AND. MK1
+        IDX = IAND(IW,MK1)
         IDX = IDX + ISN
         IW = IW/16
 C
@@ -5762,10 +5760,14 @@ C     IY = 32*HIGHY + LOWY
 C
       KEY = XHAIR(1)
       CHKEY = KEY
-      IX=ICHAR(XHAIR(2)).AND.31
-      IX=32*IX+(ICHAR(XHAIR(3)).AND.31)
-      IY=ICHAR(XHAIR(4)).AND.31
-      IY=32*IY+(ICHAR(XHAIR(5)).AND.31)
+CCC      IX=ICHAR(XHAIR(2)).AND.31
+      IX=IAND(ICHAR(XHAIR(2)),31)
+CCC      IX=32*IX+(ICHAR(XHAIR(3)).AND.31)
+      IX=32*IX+(IAND(ICHAR(XHAIR(3)),31))
+CCC      IY=ICHAR(XHAIR(4)).AND.31
+      IY=IAND(ICHAR(XHAIR(4)),31)
+CCC      IY=32*IY+(ICHAR(XHAIR(5)).AND.31)
+      IY=32*IY+(IAND(ICHAR(XHAIR(5)),31))
       MODE = MALPHA
       RETURN
 C
@@ -6426,7 +6428,8 @@ C
       IPY = IY - ISHFT(IBRIKY,6)
       JBRIK = ISHFT(IBRIKY,5) + IBRIKX
       JBYTE = ISHFT(IPY,3) + IPX + ISHFT(JBRIK,9)
-      NPLOTS(JBYTE) = (NPLOTS(JBYTE) .OR. MBIT6(IBITX))
+CCC      NPLOTS(JBYTE) = (NPLOTS(JBYTE) .OR. MBIT6(IBITX))
+      NPLOTS(JBYTE) = IOR(NPLOTS(JBYTE), MBIT6(IBITX))
       IF (.NOT.POINT) THEN
 C
 C---- Draw rest of line
@@ -6466,7 +6469,8 @@ C
                 END IF
                 ND = ND - NXY2
               END IF
-              NPLOTS(JBYTE) = (NPLOTS(JBYTE) .OR. MBIT6(IBITX))
+CCC              NPLOTS(JBYTE) = (NPLOTS(JBYTE) .OR. MBIT6(IBITX))
+              NPLOTS(JBYTE) = IOR(NPLOTS(JBYTE), MBIT6(IBITX))
               GO TO 10
             END IF
           ELSE
@@ -6503,7 +6507,8 @@ C
                 END IF
                 ND = ND - NXY2
               END IF
-              NPLOTS(JBYTE) = (NPLOTS(JBYTE) .OR. MBIT6(IBITX))
+CCC              NPLOTS(JBYTE) = (NPLOTS(JBYTE) .OR. MBIT6(IBITX))
+              NPLOTS(JBYTE) = IOR(NPLOTS(JBYTE), MBIT6(IBITX))
               GO TO 20
             END IF
 C
@@ -6543,7 +6548,8 @@ C
               END IF
               ND = ND - NXY2
             END IF
-            NPLOTS(JBYTE) = (NPLOTS(JBYTE) .OR. MBIT6(IBITX))
+CCC            NPLOTS(JBYTE) = (NPLOTS(JBYTE) .OR. MBIT6(IBITX))
+            NPLOTS(JBYTE) = IOR(NPLOTS(JBYTE), MBIT6(IBITX))
             GO TO 30
           END IF
         ELSE
@@ -6579,7 +6585,8 @@ C
               END IF
               ND = ND - NXY2
             END IF
-            NPLOTS(JBYTE) = (NPLOTS(JBYTE) .OR. MBIT6(IBITX))
+CCC            NPLOTS(JBYTE) = (NPLOTS(JBYTE) .OR. MBIT6(IBITX))
+            NPLOTS(JBYTE) = IOR(NPLOTS(JBYTE), MBIT6(IBITX))
             GO TO 40
           END IF
 C
@@ -7421,7 +7428,8 @@ C
           NBYTE = SCREEN(I,NROW)
           K = K + 5
           DO 20 J = 0,4
-            BITS(K-J) = NBYTE .AND. BYTE1
+CCC            BITS(K-J) = NBYTE .AND. BYTE1
+            BITS(K-J) = IAND(NBYTE, BYTE1)
             NBYTE = NBYTE/2
    20     CONTINUE
    30   CONTINUE
@@ -7433,7 +7441,8 @@ C
           NBYTE = 64
           DO 40 J = 0,5
             K = K + 1
-            IF (BITS(K).EQ.1) NBYTE = NBYTE .OR. XBIT(J)
+CCC            IF (BITS(K).EQ.1) NBYTE = NBYTE .OR. XBIT(J)
+            IF (BITS(K).EQ.1) NBYTE = IOR(NBYTE, XBIT(J))
    40     CONTINUE
           SIXBIT(I) = NBYTE
    50   CONTINUE
@@ -9399,7 +9408,8 @@ C
 C---- Start on bits
 C
         DO 10 JB5 = 0,4
-          IF (BITS(KBIT).EQ.1) NBYTE = NBYTE .OR. XBIT(JB5)
+CCC          IF (BITS(KBIT).EQ.1) NBYTE = NBYTE .OR. XBIT(JB5)
+          IF (BITS(KBIT).EQ.1) NBYTE = IOR(NBYTE, XBIT(JB5))
           KBIT = KBIT + 1
    10   CONTINUE
         LINE(ICOL) = NBYTE
@@ -12794,10 +12804,14 @@ C     IY = 32*HIGHY + LOWY
 C
 C---- Encode the coordinates
 C
-      MSX=((IX.AND.992)/32).OR.32
-      LSX=(IX.AND.31).OR.64
-      MSY=((IY.AND.992)/32).OR.32
-      LSY=(IY.AND.31).OR.96
+CCC      MSX=((IX.AND.992)/32).OR.32
+      MSX=IOR((IAND(IX,992)/32),32)
+CCC      LSX=(IX.AND.31).OR.64
+      LSX=IOR(IAND(IX,31),64)
+CCC      MSY=((IY.AND.992)/32).OR.32
+      MSY=IOR((IAND(IY,992)/32),32)
+CCC      LSY=(IY.AND.31).OR.96
+      LSY=IOR(IAND(IY,31),96)
 C
 C---- Code.ne.0 means control character goes into buffer
 C
