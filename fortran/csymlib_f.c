@@ -455,10 +455,12 @@ FORTRAN_SUBR ( PGDEFN, pgdefn,
     for (k = 0; k < 3; ++k) {
       for (l = 0; l < 3; ++l)
 	op1[i].rot[k][l] = rsmt[i][l][k];
-      op1[i].trn[k] = rsmt[i][3][k];
+      /* Discard any translational component - it's not required
+	 anyway when looking up the point group */
+      op1[i].trn[k] = 0.0;
     }
   }
-  /* first, identify spacegroup from supplied symops */
+  /* first, identify a spacegroup from supplied symops */
   spacegroup = ccp4_spgrp_reverse_lookup(*nsym,op1);
   free(op1);
 
