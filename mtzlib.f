@@ -6604,14 +6604,13 @@ C                **************
             CALL CCPUPC(CWORK2)
 C                **************
 C
-            DO 10 JDO = 1,NLPRGI
-              IF (CWORK.EQ.LSPRGI(JDO)) THEN
-                GO TO 30
-              ELSE IF (CWORK2.EQ.LSPRGI(JDO)) THEN
-                GO TO 20
-              END IF
-C
+            IF (CWORK.EQ.LSPRGI(JDO)) GO TO 30
    10       CONTINUE
+C
+            DO 11 JDO = 1,NLPRGI
+              JLENG = LENSTR(LSPRGI(JDO))
+              IF (CWORK2.EQ.LSPRGI(JDO)) GO TO 20
+   11       CONTINUE
 C
             STROUT = ' **** Error input assignment does not match'//
      +               ' program labels'
