@@ -351,13 +351,13 @@ C     =====================
 C
       EXTERNAL LUNSTO, USTIME
       INTEGER LUNSTO
-      REAL TARRAY(2)
+      REAL TARRAY(2), JUNK
       INTEGER ELAPS, START
       LOGICAL INITED
       SAVE START, INITED
       DATA INITED /.FALSE./
 C     
-      CALL ETIME(TARRAY)
+      JUNK = ETIME(TARRAY)
       CALL USTIME(ELAPS)
       ELAPS = ELAPS - START
 C     don't print anything if it hasn't been initialised (by CCPFYP)
