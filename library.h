@@ -422,6 +422,16 @@
 #  define NATIVEIT DFNTI_IBO
 #  define NATIVEFT DFNTF_LEIEEE
 #endif
+/* Here is a first attempt at machines using the powerPC chip.              */
+/* Specifically, this has been tried on PowerMacs running LinuxPPC, which   */
+/* appears to be big-endian. But in principle the powerPC chip can support  */
+/* both big-endian and little-endian OS's under software control. The       */
+/* symbol "powerpc" appears in gcc-2.8.1/config/rs6000/linux.h and appears  */
+/* to distinguish LinuxPPC from other OS's for this chip.                   */
+#if defined (powerpc)
+#  define NATIVEIT DFNTI_MBO
+#  define NATIVEFT DFNTF_BEIEEE
+#endif
 /* \idx{Alpha} \idx{VMS} is a pain: compiler switches can force             */
 /* \idx{VAX} or \ac{ieee} number formats.  Thus if we know it's an Alpha,   */
 /* we have to check for VMS and then what sort of VMS numbers.  [OSF and    */
