@@ -201,6 +201,9 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
               symop_to_mat4(sg_symop[j],sg_symop[j]+strlen(sg_symop[j]),rot2[0]);
               ccp4_4matmul(rot1,(const float (*)[4])cent_ops,(const float (*)[4])rot2);
               op2[i*sg_nsymp+j] = mat4_to_rotandtrn((const float (*)[4])rot1);
+	      /* combination of primitive and centering operators can 
+                 produce translations greater than one. */
+              ccp4spg_norm_trans(&op2[i*sg_nsymp+j]);
 	     }
             }
 	    /* op1 are requested operators and op2 are from SYMINFO file */
@@ -712,6 +715,17 @@ char *ccp4spg_to_shortname(char *shortname, const char *longname) {
   }
   *ch2 = '\0';
   return ch2;
+}
+
+ccp4_symop *ccp4spg_norm_trans(ccp4_symop *op) {
+
+  int i;
+
+  for ( i = 0; i < 3; i++ ) {
+    while (op->trn[i] < 0.0) op->trn[i] += 1.0;
+    while (op->trn[i] >= 1.0) op->trn[i] -= 1.0;
+  }
+
 }
 
 int ccp4_spgrp_equal( int nsym1, const ccp4_symop *op1, int nsym2, const ccp4_symop *op2 )

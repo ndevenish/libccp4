@@ -196,8 +196,19 @@ int ccp4spg_name_equal(const char *spgname1, const char *spgname2);
 */
 char *ccp4spg_to_shortname(char *shortname, const char *longname);
 
+/** Function to normalise translations of a symmetry operator,
+ * i.e. to ensure 0.0 <= op.trn[i] < 1.0.
+ * @param op pointer to symmetry operator.
+ * @return Pointer to normalised symmetry operator.
+*/
+ccp4_symop *ccp4spg_norm_trans(ccp4_symop *op);
+
 /** Compare two symmetry operator lists.
  * Kevin's code. The lists are coded as ints, which are then sorted and compared.
+ * Note that no changes are made to the input operators, so that operators
+ * differing by an integral number of unit cell translations are considered
+ * unequal. If this is not what you want, normalise the operators with 
+ * ccp4spg_to_shortname first.
  * @param nsym1 number of symmetry operators in first list
  * @param op1 first list of symmetry operators
  * @param nsym2 number of symmetry operators in second list
