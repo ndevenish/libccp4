@@ -22,6 +22,7 @@
 /** defines for sizes in MTZ structure */
 #define SIZE1 20                    /**< size of pre-reflection block */
 #define MTZRECORDLENGTH 80          /**< length of records */
+#define MAXSPGNAMELENGTH 20         /**< max length of a spacegroup name */
 
 #define NBATCHWORDS 185       /**< total size of batch header buffer */
 #define NBATCHINTEGERS 29     /**< size of integer section of batch header buffer */
@@ -124,7 +125,7 @@ typedef struct bathead { int num;              /**< batch number */
 
 /** MTZ symmetry struct. */
 typedef struct { int spcgrp;           /**< spacegroup number */
-		 char spcgrpname[11];  /**< spacegroup name */
+		 char spcgrpname[MAXSPGNAMELENGTH+1];  /**< spacegroup name */
 		 int nsym;             /**< number of symmetry operations */
 		 float sym[192][4][4]; /**< symmetry operations */
 		 int nsymp;            /**< number of primitive symmetry ops. */
