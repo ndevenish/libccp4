@@ -269,15 +269,27 @@ char *ccp4spg_symbol_Hall(CCP4SPG* sp);
  */
 ccp4_symop ccp4_symop_invert( const ccp4_symop op1 );
 
-/** Compare two spacegroup names. Blanks are removed when
- * making the comparison. Strings are converted to upper
- * case before making the comparison. If one string has " 1 " and 
- * the other doesn't, then strip out " 1" to do "short" comparison.
+/** Compare two spacegroup names. Strings are converted to upper
+ * case before making the comparison, but otherwise match must be
+ * exact.
  * @param spgname1 First spacegroup name.
  * @param spgname2 Second spacegroup name.
  * @return 1 if they are equal else 0.
 */
 int ccp4spg_name_equal(const char *spgname1, const char *spgname2);
+
+/** Try to match a spacegroup name to one from SYMINFO. Blanks are 
+ * removed when making the comparison. Strings are converted to upper
+ * case before making the comparison. If spgname_lib has " 1 " and 
+ * spgname_match doesn't, then strip out " 1" to do "short" comparison.
+ * @param spgname1 First spacegroup name, assumed to be a standard one
+ *  obtained at some point from SYMINFO
+ * @param spgname2 Second spacegroup name that you are trying to match
+ *  to a standard SYMINFO one. E.g. it might have been provided by the
+ *  user.
+ * @return 1 if they are equal else 0.
+*/
+int ccp4spg_name_equal_to_lib(const char *spgname_lib, const char *spgname_match);
 
 /** Function to create "short" name of spacegroup. Blanks
  * are removed, as are " 1" elements (except for the special case

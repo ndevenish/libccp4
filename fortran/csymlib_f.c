@@ -580,7 +580,7 @@ FORTRAN_SUBR ( PATSGP, patsgp,
 
   temp_spgnam = ccp4_FtoCString(FTN_STR(spgnam), FTN_LEN(spgnam));
   temp_pgname = ccp4_FtoCString(FTN_STR(pgname), FTN_LEN(pgname));
-  if ( !spacegroup || !ccp4spg_name_equal(spacegroup->symbol_xHM,temp_spgnam) ||
+  if ( !spacegroup || !ccp4spg_name_equal_to_lib(spacegroup->symbol_xHM,temp_spgnam) ||
               !ccp4spg_pgname_equal(spacegroup->point_group,temp_pgname) ) {
 
     /* load temporary spacegroup */

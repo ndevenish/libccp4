@@ -215,12 +215,12 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
           if (sg_ccp4_num == ccp4numspg)
             break;
         } else if (spgname) {
-          if (ccp4spg_name_equal(sg_symbol_xHM,spgname))
+          if (ccp4spg_name_equal_to_lib(sg_symbol_xHM,spgname))
             break;
         } else if (ccp4spgname) {
-          if (ccp4spg_name_equal(sg_symbol_old,ccp4spgname))
+          if (ccp4spg_name_equal_to_lib(sg_symbol_old,ccp4spgname))
             break;
-          if (ccp4spg_name_equal(sg_symbol_xHM,ccp4spgname))
+          if (ccp4spg_name_equal_to_lib(sg_symbol_xHM,ccp4spgname))
             break;
         } else if (symops_provided) {
           nsym2 = sg_nsymp*sg_num_cent;
@@ -684,38 +684,45 @@ ccp4_symop ccp4_symop_invert( const ccp4_symop op1 )
 
 int ccp4spg_name_equal(const char *spgname1, const char *spgname2) {
 
+  char *ch1, *ch2, *spgname1_upper, *spgname2_upper;
+
+  /* create copies of input strings, and convert to upper case */
+  spgname1_upper = strdup(spgname1);
+  strtoupper(spgname1_upper,spgname1);
+  spgname2_upper = strdup(spgname2);
+  strtoupper(spgname2_upper,spgname2);
+
+  ch1 = spgname1_upper;
+  ch2 = spgname2_upper;
+  while (*ch1 == *ch2) {
+    if (*ch1 == '\0' && *ch2 == '\0') {
+      free(spgname1_upper);
+      free(spgname2_upper);
+      return 1;
+    }
+    ++ch1;
+    ++ch2;
+  }
+  free(spgname1_upper);
+  free(spgname2_upper);
+  return 0;
+}
+
+int ccp4spg_name_equal_to_lib(const char *spgname_lib, const char *spgname_match) {
+
   char *ch1, *ch2, *spgname1_upper, *spgname2_upper, *tmpstr;
   int have_one_1=0, have_one_2=0;
 
   /* create copies of input strings, convert to upper case, and
      deal with colons */
-  spgname1_upper = strdup(spgname1);
-  strtoupper(spgname1_upper,spgname1);
+  spgname1_upper = strdup(spgname_lib);
+  strtoupper(spgname1_upper,spgname_lib);
   ccp4spg_name_de_colon(spgname1_upper);
-  spgname2_upper = strdup(spgname2);
-  strtoupper(spgname2_upper,spgname2);
+  spgname2_upper = strdup(spgname_match);
+  strtoupper(spgname2_upper,spgname_match);
   ccp4spg_name_de_colon(spgname2_upper);
 
-  /* try to identify if "short names" are being used. */
-  if (strstr(spgname1_upper," 1 ")) have_one_1 = 1;
-  if (strstr(spgname2_upper," 1 ")) have_one_2 = 1;
-  /* if one string has " 1 " and the other doesn't, then strip
-     out " 1" to do "short" comparison */
-  if (have_one_1 ^ have_one_2) {
-    if (have_one_1) {
-      tmpstr = strdup(spgname1_upper);
-      ccp4spg_to_shortname(tmpstr,spgname1_upper);
-      strcpy(spgname1_upper,tmpstr);
-      free(tmpstr);
-    }
-    if (have_one_2) {
-      tmpstr = strdup(spgname2_upper);
-      ccp4spg_to_shortname(tmpstr,spgname2_upper);
-      strcpy(spgname2_upper,tmpstr);
-      free(tmpstr);
-    }
-  }
-
+  /* see if strings are equal, except for spaces */
   ch1 = spgname1_upper;
   ch2 = spgname2_upper;
   while (*ch1 == *ch2) {
@@ -727,6 +734,36 @@ int ccp4spg_name_equal(const char *spgname1, const char *spgname2) {
     while (*(++ch1) == ' ') ;
     while (*(++ch2) == ' ') ;
   }
+
+  /* if that didn't work, and spgname_match is a short name, try removing
+     " 1 " from spgname_lib, and matching again. This would match P21 to
+     'P 1 21 1' for instance. */
+
+  /* try to identify if "short names" are being used. */
+  if (strstr(spgname1_upper," 1 ")) have_one_1 = 1;
+  if (strstr(spgname2_upper," 1 ")) have_one_2 = 1; 
+  /* if spgname_lib has " 1 " and spgname_match doesn't, then strip
+     out " 1" to do "short" comparison */
+  if (have_one_1 && ! have_one_2) {
+     tmpstr = strdup(spgname1_upper);
+     ccp4spg_to_shortname(tmpstr,spgname1_upper);
+     strcpy(spgname1_upper,tmpstr);
+     free(tmpstr);
+  }
+
+  /* see if strings are equal, except for spaces */
+  ch1 = spgname1_upper;
+  ch2 = spgname2_upper;
+  while (*ch1 == *ch2) {
+    if (*ch1 == '\0' && *ch2 == '\0') {
+      free(spgname1_upper);
+      free(spgname2_upper);
+      return 1;
+    }
+    while (*(++ch1) == ' ') ;
+    while (*(++ch2) == ' ') ;
+  }
+
   free(spgname1_upper);
   free(spgname2_upper);
   return 0;
