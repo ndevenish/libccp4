@@ -468,7 +468,7 @@ C     documented in one style but seems to work with the canonical
 C     Unix one too; however, the order of the arguments of the
 C     documented version (used here) *isn't* the same as for VMS...
 C
-      CALL IDATE (IARRAY)
+      CALL IDATE (IARRAY(1), IARRAY(2), IARRAY(3))
       IDAY = IARRAY(1)
       IMONTH = IARRAY(2)
       IYEAR = IARRAY(3)
