@@ -133,7 +133,7 @@ C
 C   IDEC   (O)  INTEGER(*)     Array of size at least NTOK.
 C                              Number of 'digits':
 C                              for string, number of characters (=4 if.gt.4)
-C                              for integer, number of digits-1
+C                              for integer, number of digits
 C                              for real number,
 C                              (number of digits before point+1)*100
 C                               +number of digits after point
@@ -411,7 +411,7 @@ C     Items in FVALUE and CVALUE are left unchanged for null fields
 C
 C   IDEC(I)   (O) INTEGER(*)     Number of 'digits'
 C                                for string, number of characters (=4 if.gt.4)
-C                                for integer, number of digits-1
+C                                for integer, number of digits
 C                                for real number,
 C                                (number of digits before point+1)*100
 C                                +number of digits after point
@@ -434,7 +434,7 @@ C     ..
 C     .. Local Scalars ..
       REAL F10,SIGN,SIGN0,VALUE,VALUE0
       INTEGER I,IDOT,J,L,LENG,LINLEN,NCHK,NDELM,NDIGS,NDONE,
-     +        NITEM,NPLACE,NSPDLM,OPER,NDDELM,NDSDLM
+     +        NITEM,NPLACE,NSPDLM,OPER,NDDELM,NDSDLM,INTLEN
       LOGICAL NULL,NUMBER,OPRATR,QUOTE,TOKEN,TQUOTE,COMMNT
       CHARACTER BLANK*1,LETQT*1,OLDQUT*1,DBLQT*1,TAB*1
       CHARACTER LINERR*800,ICOMM1*1,ICOMM2*1
@@ -501,6 +501,7 @@ C
       VALUE = 0.0
       OPRATR = .TRUE.
       IDOT = 0
+      INTLEN = 0
       SIGN = 1.0
       OPER = 0
       OLDQUT = BLANK
@@ -609,7 +610,11 @@ C                   unary -
 C                   exponent
                     FVALUE(N) = SIGN0*VALUE0*10.0**FVALUE(N)
                   END IF
-                  IDEC(N) = 100*IDOT + NPLACE
+                  IF (IDOT.EQ.1) THEN
+                    IDEC(N) = 100*INTLEN + NPLACE
+                  ELSE
+                    IDEC(N) = INTLEN
+                  END IF
                 ELSE
 C
 C---- Token is alphameric
@@ -625,6 +630,7 @@ C
                 VALUE = 0.0
                 OPRATR = .TRUE.
                 IDOT = 0
+                INTLEN = 0
                 SIGN = 1.0
                 OPER = 0
                 TQUOTE = .FALSE.
@@ -667,7 +673,10 @@ C
 C
                   IF (J.LE.10) THEN
 C                   Have a digit 0-9
-                    IF (IDOT.EQ.0) VALUE = VALUE*10 + (J-1)
+                    IF (IDOT.EQ.0) THEN
+                      INTLEN = INTLEN+1
+                      VALUE = VALUE*10 + (J-1)
+                    END IF
                     IF (IDOT.EQ.1) THEN
 C                     Before decimal point
                       VALUE = (J-1)*F10 + VALUE
@@ -1287,6 +1296,8 @@ C              ****************************
 C              ****************************
 C
         END IF
+      ELSE
+        CALL LERROR (1, 0, 'Real number expected at end of line')
       END IF
 C
       END
