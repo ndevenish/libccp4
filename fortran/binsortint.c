@@ -78,6 +78,14 @@ KEYBUF consist of NKEYS entries, each of the form:
 	                                comparison (if 0 no mask applied)
 =======================================================*/
 
+/* F2C isn't disjoint with the rest, so be careful (also for other
+   routines). */
+#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
+  int srtbeg_ (nkeys, keybuf, lrecl, memsize)
+
+#else
+
 #if defined (__hpux) || defined (_AIX)
   int srtbeg (nkeys, keybuf, lrecl, memsize)
 #endif
@@ -86,13 +94,10 @@ KEYBUF consist of NKEYS entries, each of the form:
   int SRTBEG (nkeys, keybuf, lrecl, memsize)
 #endif
 
-#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
+#if defined (alliant) || defined (sun) || defined (solbourne)
   int srtbeg_ (nkeys, keybuf, lrecl, memsize)
 #endif
 
-#if defined (alliant) || defined (sun) || defined (solbourne)
-  int srtbeg_ (nkeys, keybuf, lrecl, memsize)
 #endif
 
 int     	*keybuf;	/* keys description */
@@ -216,6 +221,13 @@ SRTRLS:	Release one record into Sort
                                         errno otherwise
 =======================================================*/
 
+
+#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
+  int srtrls_ (record)
+
+#else
+
 #if defined (__hpux) || defined (_AIX)
   int srtrls (record)
 #endif
@@ -224,13 +236,10 @@ SRTRLS:	Release one record into Sort
   int SRTRLS (record)
 #endif
 
-#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
+#if defined (alliant) || defined (sun) || defined (solbourne)
   int srtrls_ (record)
 #endif
 
-#if defined (alliant) || defined (sun) || defined (solbourne)
-  int srtrls_ (record)
 #endif
 
 char		*record;
@@ -249,6 +258,13 @@ SRTMRG:	Merge - finish release phase
                                         errno otherwise
 =======================================================*/
 
+
+#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
+  int srtmrg_ ()
+
+#else
+
 #if defined (__hpux) || defined (_AIX)
   int srtmrg ()
 #endif
@@ -257,13 +273,10 @@ SRTMRG:	Merge - finish release phase
   int SRTMRG ()
 #endif
 
-#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
+#if defined (alliant) || defined (sun) || defined (solbourne)
   int srtmrg_ ()
 #endif
 
-#if defined (alliant) || defined (sun) || defined (solbourne)
-  int srtmrg_ ()
 #endif
 
 {
@@ -284,6 +297,13 @@ SRTRET:	Return 1 record from sort
 					errno otherwise
 =======================================================*/
 
+
+#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
+  int srtret_ (record)
+
+#else
+
 #if defined (__hpux) || defined (_AIX)
   int srtret (record)
 #endif
@@ -292,13 +312,10 @@ SRTRET:	Return 1 record from sort
   int SRTRET (record)
 #endif
 
-#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
+#if defined (alliant) || defined (sun) || defined (solbourne)
   int srtret_ (record)
 #endif
 
-#if defined (alliant) || defined (sun) || defined (solbourne)
-  int srtret_ (record)
 #endif
 
 char		*record;
