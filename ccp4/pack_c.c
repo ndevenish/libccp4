@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 
@@ -101,6 +102,7 @@
 #define abs(x) (((x) < 0) ? (-(x)) : (x))
 /* Returns the absolute value of x. */
 
+static
 const LONG setbits[33] = {0x00000000L, 0x00000001L, 0x00000003L, 0x00000007L,
 			  0x0000000FL, 0x0000001FL, 0x0000003FL, 0x0000007FL,
 			  0x000000FFL, 0x000001FFL, 0x000003FFL, 0x000007FFL,
