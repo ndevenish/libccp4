@@ -291,7 +291,7 @@ C
         WRITE (LUNOUT,FMT=6004)
         WRITE (LUNOUT,FMT=6006) IUNIT
         WRITE (LUNOUT,FMT=6008)
-        call ccperr(1, '**MAP FILE HANDLING ERROR**')
+        CALL CCPERR(1, '**MAP FILE HANDLING ERROR**')
       ELSE
 C
 C---- Zero header and clear titles to space
@@ -301,7 +301,7 @@ C
    10   CONTINUE
         AMIN =  99999999.0
         AMAX = -99999999.0
-	AMEAN = 0.0
+        AMEAN = 0.0
         ARMS  = 0.0
         DO 30 I = 1,20
           DO 20 J = 1,10
@@ -508,7 +508,7 @@ C
 C---- Error condition
 C
         WRITE (LUNOUT,FMT=6000) MODE
-        call ccperr(1, '**MAP FILE HANDLING ERROR**')
+        CALL CCPERR(1, '**MAP FILE HANDLING ERROR**')
       ELSE
 C
         DO 10 J = IV1,IV2
@@ -655,8 +655,8 @@ C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
-      CHARACTER*4	  MAP
-      parameter (MAP      =  'MAP ')
+      CHARACTER*4 MAP
+      PARAMETER (MAP      =  'MAP ')
 C     ..
 C     .. Scalar Arguments ..
       REAL RHMAX,RHMEAN,RHMIN,RHRMS
@@ -783,8 +783,8 @@ C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
-      CHARACTER*4	  MAP
-      parameter (MAP      =  'MAP ')
+      CHARACTER*4 MAP
+      PARAMETER (MAP      =  'MAP ')
 C     ..
 C     .. Scalar Arguments ..
       REAL RHMAX,RHMEAN,RHMIN,RHRMS
@@ -917,7 +917,7 @@ C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
       CHARACTER*4	  MAP
-      parameter (MAP      =  'MAP ')
+      PARAMETER (MAP      =  'MAP ')
 C     ..
 C     .. Scalar Arguments ..
       REAL RHMAX,RHMEAN,RHMIN,RHRMS
@@ -1314,16 +1314,16 @@ C
       TITLE = ' '
 
 C     Check file exists
-      if ( .not. ccpexs ( mapnam ) ) then
-        if ( ifail .eq. 0 ) then
-          write(lunout,fmt=6100)mapnam( :lenstr(mapnam))
-          write(lunout,fmt=6014)
-          call ccperr(1, '**MAP FILE HANDLING ERROR**')
-        else
-          ifail = -1
-          return
-        endif
-      endif
+      IF ( .NOT. CCPEXS ( MAPNAM ) ) THEN
+        IF ( IFAIL .EQ. 0 ) THEN
+          WRITE(LUNOUT,FMT=6100)MAPNAM( :LENSTR(MAPNAM))
+          WRITE(LUNOUT,FMT=6014)
+          CALL CCPERR(1, '**MAP FILE HANDLING ERROR**')
+        ELSE
+          IFAIL = -1
+          RETURN
+        ENDIF
+      ENDIF
 
 C
 C---- Check valid IUNIT
@@ -1360,81 +1360,81 @@ Cdw---- Read header, modes 2 & 6 in real and integer blocks
 Cdw---- Mode 0 for characters
 Cdw---- Unfortunately need to call QMODE each time we change
 C
-	NITHDR = 10
+        NITHDR = 10
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),IHDR1,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 6
+        NITHDR = 6
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),RHDR1,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 3
+        NITHDR = 3
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),IHDR2,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 3
+        NITHDR = 3
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),RHDR2,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 3
+        NITHDR = 3
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),IHDR3,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 12
+        NITHDR = 12
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),RHDR3,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 17
+        NITHDR = 17
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),IHDR4,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 1
+        NITHDR = 1
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),RHDR4,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 1
+        NITHDR = 1
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),IHDR5,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
 Cdw----	Read labels as bytes
 C
-	NITHDR = 800
+        NITHDR = 800
         CALL QMODE(LSTRM(IUNIT),0,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),IHDR6,NITHDR,IER)
 C
@@ -1522,7 +1522,7 @@ C
 
       WRITE (LUNOUT,FMT=6014)
       IF ( IFAIL .EQ. 0 ) THEN
-        call ccperr(1, '**MAP FILE HANDLING ERROR**')
+        CALL CCPERR(1, '**MAP FILE HANDLING ERROR**')
       ELSE
         IFAIL = -1
         RETURN
@@ -2018,7 +2018,7 @@ C
         RETURN
       END IF
    60 WRITE (LUNOUT,FMT=6008)
-      call ccperr(1, '**SYMMETRY FILE ERROR** in maplib.for')
+      CALL CCPERR(1, '**SYMMETRY FILE ERROR** in maplib.for')
 C
 C---- Format statements
 C
@@ -2112,7 +2112,7 @@ C
 C
 Cdw---- Set Mode = 0 (bytes)
 C
-	  CALL QMODE(LSTRM(IUNIT),0,NCHINT)
+        CALL QMODE(LSTRM(IUNIT),0,NCHINT)
 C
 C---- Total number of symmetry characters
 C
@@ -2121,7 +2121,7 @@ C
 Cdw---- Number of items / line (BYTES)
 C
 Cdw        NILINE = (NCHITM(IUNIT)+NBLIN-1)/NCHITM(IUNIT)
-	NILINE = NBLIN
+        NILINE = NBLIN
 C
 C---- Number of 'lines' of symmetry data, taken in groups of NBLIN
 C     characters
@@ -2179,7 +2179,7 @@ C
 C---- Error condition
 C
    30   WRITE (LUNOUT,FMT=6006)
-        call ccperr(1,'**MAP FILE HANDLING ERROR**')
+        CALL CCPERR(1,'**MAP FILE HANDLING ERROR**')
       END IF
 C
 C---- Format statements
@@ -2294,7 +2294,7 @@ C
 C
 C
    20   WRITE (LUNOUT,FMT=6000)
-        call ccperr(1,' stop in maplib 191')
+        CALL CCPERR(1,' stop in maplib 191')
       END IF
 C
 C---- Item count
@@ -2602,7 +2602,7 @@ C
 C---- Error
 C
    20 WRITE (LUNOUT,FMT=6000)
-      call ccperr(1,'**MAP FILE HANDLING ERROR**')
+      CALL CCPERR(1,'**MAP FILE HANDLING ERROR**')
 C
 C---- Format statements
 C
