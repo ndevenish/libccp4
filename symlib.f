@@ -1830,8 +1830,8 @@ C     =================================
 C
 C---- Read and interpret symmetry operations
 C                                    
-C On entry, ICOL contains line of 80 characters , I1 is the first
-C column to look at (say after keyword 'SYM')
+C     On entry I1 is the first character of ICOL to look at (say after
+C     keyword 'SYMM')
 C
 C NS is the number of the first symmetry operation to be read, & returns
 C    with the number of the last one read.
@@ -1843,10 +1843,9 @@ C          ROT(I,4,NS)    contains the fractional translations
 C
 C_END_SYMFR2
 C
-C
 C     .. Scalar Arguments ..
       INTEGER I1,NS,I11
-      CHARACTER ICOL*80
+      CHARACTER ICOL*(*)
 C     ..
 C     .. Array Arguments ..
       REAL ROT(4,4,*)
@@ -1854,28 +1853,19 @@ C     ..
 C     .. Local Scalars ..
       REAL A,REAL,RECIP,S,T
       INTEGER I,ICOMST,IERR,IFOUND,IMAX,IP,ISL,J,K,NOP,NP,NS1,NSYM
-      CHARACTER IBLANK*1,ICH*1,ICOMMA*1,IH*1,IK*1,IL*1,IMINUS*1,IPLUS*1,
-     +          IPOINT*1,IS*1,ISLASH*1,ISTAR*1,IX*1,IY*1,IZ*1,JH*1,JK*1,
-     +          JL*1,JS*1,JX*1,JY*1,JZ*1
+      CHARACTER ICH*1
 C     ..
 C     .. Local Arrays ..
       INTEGER NUM(10)
       CHARACTER INUM(10)*1
 C     ..
 C     .. Data statements ..
-      DATA IS,IX,IY,IZ,IH,IK,IL,IPLUS,IMINUS,ISLASH,IPOINT,ICOMMA,ISTAR,
-     +     IBLANK/'S','X','Y','Z','H','K','L','+','-','/','.',',','*',
-     +     ' '/
-      DATA JS,JX,JY,JZ,JH,JK,JL/'s','x','y','z','h','k','l'/
       DATA NUM/1,2,3,4,5,6,7,8,9,0/
       DATA INUM/'1','2','3','4','5','6','7','8','9','0'/
 C     ..
 C
-C
-C
-      IMAX = 80
+      IMAX = LEN (ICOL)
       IERR = 0
-C
       NS1 = NS
 C
 C---- Search for first blank to skip flag sym symtr symmetry
@@ -1890,14 +1880,12 @@ C
             GO TO 20
           ELSE
             I11 = I11 + 1
-            IF (I11.LE.80) GO TO 10
+            IF (I11.LE.IMAX) GO TO 10
           END IF
-C
-                    CALL CCPERR(1,
-     +' error - no space between codeword sym.. and first operator')
+          CALL CCPERR(1,
+     +         'No space between keyword SYM... and first operator')
         END IF
       END IF
-C
 C
    20 I = I11 - 1
       NS = NS - 1
@@ -1907,13 +1895,11 @@ C
       RECIP = 0.0
       NOP = 1
 C
-C
       DO 50 J = 1,4
         DO 40 K = 1,4
           ROT(J,K,NS) = 0.0
    40   CONTINUE
    50 CONTINUE
-C
 C
       ROT(4,4,NS) = 1.0
    60 CONTINUE
@@ -1932,52 +1918,51 @@ C
    70 CONTINUE
       I = I + 1
 C
-C
       IF (I.LE.IMAX) THEN
         ICH = ICOL(I:I)
-        IF (ICH.EQ.IBLANK) THEN
+        IF (ICH.EQ.' ') THEN
           GO TO 70
-        ELSE IF (ICH.NE.ICOMMA .AND. ICH.NE.ISTAR) THEN
+        ELSE IF (ICH.NE.',' .AND. ICH.NE.'*') THEN
           IFOUND = 1
-          IF (ICH.EQ.IX .OR. ICH.EQ.JX .OR. ICH.EQ.IH .OR.
-     +        ICH.EQ.JH) THEN
-            IF (ICH.EQ.IX .OR. ICH.EQ.JX) REAL = REAL + 1.0
-            IF (ICH.EQ.IH .OR. ICH.EQ.JH) RECIP = RECIP + 1.0
+          IF (ICH.EQ.'X' .OR. ICH.EQ.'x' .OR. ICH.EQ.'H' .OR.
+     +        ICH.EQ.'h') THEN
+            IF (ICH.EQ.'X' .OR. ICH.EQ.'x') REAL = REAL + 1.0
+            IF (ICH.EQ.'H' .OR. ICH.EQ.'h') RECIP = RECIP + 1.0
             J = 1
             IF (T.EQ.0.0) T = S
             GO TO 70
-          ELSE IF (ICH.EQ.IY .OR. ICH.EQ.JY .OR. ICH.EQ.IK .OR.
-     +             ICH.EQ.JK) THEN
-            IF (ICH.EQ.IY .OR. ICH.EQ.JY) REAL = REAL + 1.0
-            IF (ICH.EQ.IK .OR. ICH.EQ.JK) RECIP = RECIP + 1.0
+          ELSE IF (ICH.EQ.'Y' .OR. ICH.EQ.'y' .OR. ICH.EQ.'K' .OR.
+     +             ICH.EQ.'k') THEN
+            IF (ICH.EQ.'Y' .OR. ICH.EQ.'y') REAL = REAL + 1.0
+            IF (ICH.EQ.'K' .OR. ICH.EQ.'k') RECIP = RECIP + 1.0
             J = 2
             IF (T.EQ.0.0) T = S
             GO TO 70
-          ELSE IF (ICH.EQ.IZ .OR. ICH.EQ.JZ .OR. ICH.EQ.IL .OR.
-     +             ICH.EQ.JL) THEN
-            IF (ICH.EQ.IZ .OR. ICH.EQ.JZ) REAL = REAL + 1.0
-            IF (ICH.EQ.IL .OR. ICH.EQ.JL) RECIP = RECIP + 1.0
+          ELSE IF (ICH.EQ.'Z' .OR. ICH.EQ.'z' .OR. ICH.EQ.'L' .OR.
+     +             ICH.EQ.'l') THEN
+            IF (ICH.EQ.'Z' .OR. ICH.EQ.'z') REAL = REAL + 1.0
+            IF (ICH.EQ.'L' .OR. ICH.EQ.'l') RECIP = RECIP + 1.0
             J = 3
             IF (T.EQ.0.0) T = S
             GO TO 70
-          ELSE IF (ICH.EQ.IPLUS) THEN
+          ELSE IF (ICH.EQ.'+') THEN
             S = 1.0
             IF (T.EQ.0.0 .AND. J.EQ.4) THEN
               GO TO 70
             ELSE
               GO TO 100
             END IF
-          ELSE IF (ICH.EQ.IMINUS) THEN
+          ELSE IF (ICH.EQ.'-') THEN
             S = -1.0
             IF (T.EQ.0.0 .AND. J.EQ.4) THEN
               GO TO 70
             ELSE
               GO TO 100
             END IF
-          ELSE IF (ICH.EQ.ISLASH) THEN
+          ELSE IF (ICH.EQ.'/') THEN
             ISL = 1
             GO TO 70
-          ELSE IF (ICH.EQ.IPOINT) THEN
+          ELSE IF (ICH.EQ.'.') THEN
             IP = 1
             GO TO 70
           ELSE
@@ -2015,12 +2000,10 @@ C
 C
       IF (ICOMST.EQ.0) GO TO 70
 C
-C
       IF (IFOUND.EQ.0 .AND. I.LE.IMAX) THEN
         WRITE (6,FMT=6000)
         WRITE (6,FMT=6006) ICOL
       END IF
-C
 C
       IF (I.LE.IMAX) THEN
         NOP = NOP + 1
@@ -2051,9 +2034,7 @@ C
       IF (IERR.NE.1) RETURN          
   140 WRITE (6,FMT='(A,I4,2F6.1,4(/,4F10.3))') ' NSYM REAL RECIP ROT',
      +  NSYM,REAL,RECIP, ((ROT(I,J,NS),J=1,4),I=1,4)
-C
-                CALL CCPERR(1,
-     +   '**SYMMETRY OPERATOR ERROR**')
+      CALL CCPERR(1, '**SYMMETRY OPERATOR ERROR**')
 C
 C---- Format statements
 C
