@@ -2185,7 +2185,7 @@ C     .. Local Scalars ..
 C     ..
 C     .. Local Arrays ..
       REAL RSMT(4,4,96)
-      CHARACTER HKLCR(3)*1,SYMCHS(*)*(*)
+      CHARACTER HKLCR(3)*1,SYMCHS(96)*80
 C     ..
 C     .. External Subroutines ..
       EXTERNAL INVSYM, SYMTR3, LUNSTO
