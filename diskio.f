@@ -5,6 +5,7 @@ C     in the CCP4 manual for a copyright statement.
 C
 C     $Id$
 C     
+C_BEGIN_CCPLIB
 C A set of Fortran subroutines to perform random access I/O on various
 C data items (including bytes). Uses the C functions fopen, fclose,
 C fread, fwrite, fseek, ftell, etc - by calling routines in library.c
@@ -57,6 +58,12 @@ C                       = 6, INTEGER
 C
 C  NMCITM = No. of machine items (eg bytes) per element
 C  ARRAY  = Starting location for data storage in core
+C     NOTE: This should normally be an array of full-word fortran items
+C     (REAL or INTEGER) or double-word (COMPLEX) in the case that you
+C     want to transfer complex numbers (mode 4).  If necessary, unpack
+C     bytes using the routines provided in the library (or new ones).
+C     In particular, DON'T try to use BYTE or INTEGER*2 arrays, as these
+C     will likely cause alignment errors on RISC architectures.
 C  NITEMS = Number of elements to transfer
 C  IER    = Error flag (0 = no error) else number of words transferred
 C  IREC   = Desired record number (starts at 1)
@@ -65,8 +72,14 @@ C  LRECL  = Record length in elements
 C
 C  No. of channels and buffer length in words set in #DEFINE statements
 C
+C
+C     Author: David Agard (Phil Evans and John Campbell)
+C     Modified: For Unix/F77 using words (and bytes if available) (John Campbell)
+C     Modified: For ccp ascii header system implemented (Jan Zelinka)
+C_END_CCPLIB
 C
 C======================================================================
+C_BEGIN_QQOPEN
 C
 C QQOPEN - Open a file unit
 C
@@ -83,8 +96,8 @@ C                       the following error conditions occurred:
 C                       -1 No more streams left
 C                       -2 Could not open the file
 C
+C_END_QQOPEN
 C======================================================================
-C
       SUBROUTINE QQOPEN(IUNIT,LOGNAM,ISTAT)
 C     =====================================
 C
@@ -174,102 +187,117 @@ C
  6000 FORMAT (A,I2)
  6001 FORMAT (A,5X,A)
       END
-CCCC
-CCCC
-CCCC======================================================================
-CCCC
-CCCC QCLOSE - Close file unit
-CCCC
-CCCC Usage:  CALL QCLOSE (IUNIT)
-CCCC         INTEGER      IUNIT
-CCCC
-CCCC Input:  IUNIT        unit number assigned to file
-CCCC
-CCCC Output: None.
-CCCC See library.c
-CCCC======================================================================
-CCCC
-CCCC QMODE - Set mode for file access
-CCCC
-CCCC Usage:  CALL QMODE (IUNIT, MODE, NMCITM)
-CCCC         INTEGER     IUNIT, MODE, NMCITM
-CCCC
-CCCC Input:  IUNIT       unit number to assign to file
-CCCC         MODE        mode to switch into: 0 (BYTES), 1 (SMALL INTEGER),
-CCCC                                          2 (WORDS), 3 (SHORT COMPLEX),
-CCCC                                          4 (COMPLEX) 6 (INTEGER)
-CCCC
-CCCC Output: NMCITM      number of bytes per item on this machine.
-CCCC See library.c
-CCCC======================================================================
-CCCC
-CCCC QREAD - Read from IUNIT into BUFFER, NITEMS items
-CCCC
-CCCC Usage:  CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
-CCCC         INTEGER     IUNIT, NITEMS, RESULT
-CCCC         REAL        BUFFER
-CCCC
-CCCC Input:  IUNIT       unit number assigned to file
-CCCC         NITEMS      number of items (item size set by QMODE)
-CCCC
-CCCC Output: RESULT      0 (no error), -1 (EOF) or number of items read
-CCCC         BUFFER      holds the items read
-CCCC See library.c
-CCCC======================================================================
-CCCC
-CCCC QWRITE - Write to IUNIT from BUFFER, NITEMS items
-CCCC
-CCCC Usage:  CALL QWRITE (IUNIT,BUFFER,NITEMS)
-CCCC         INTEGER      IUNIT, NITEMS
-CCCC         REAL         BUFFER
-CCCC
-CCCC Input:  IUNIT        unit number assigned to file
-CCCC         NITEMS       number of items (item size set by QMODE)
-CCCC         BUFFER       holds the items to write
-CCCC
-CCCC Output: None.
-CCCC See library.c
-CCCC======================================================================
-CCCC
-CCCC QSEEK - Position a file pointer in a IUNIT
-CCCC
-CCCC Usage:  CALL QSEEK (IUNIT, IRECL, IEL, LRECL)
-CCCC         INTEGER     IUNIT, IRECL, IEL, LRECL
-CCCC
-CCCC Input:  IUNIT       unit number to assign to file
-CCCC         IRECL       record number to seek
-CCCC         IEL         element number to seek
-CCCC         LRECL       length of a record
-CCCC
-CCCC Output: None
-CCCC See library.c
-CCCC======================================================================
-CCCC
-CCCC QBACK - skip back 1 record of length LRECL
-CCCC
-CCCC Usage:  CALL QBACK (IUNIT,LRECL)
-CCCC         INTEGER     IUNIT, LRECL
-CCCC
-CCCC Input:  IUNIT       unit number assigned to file
-CCCC         LRECL       length of a record in items
-CCCC
-CCCC Output: None
-CCCC See library.c
-CCCC======================================================================
-CCCC
-CCCC QSKIP - skip forward 1 record of length LRECL
-CCCC
-CCCC Usage:  CALL QSKIP (IUNIT,LRECL)
-CCCC         INTEGER     IUNIT, LRECL
-CCCC
-CCCC Input:  IUNIT       unit number assigned to file
-CCCC         LRECL       length of a record in items
-CCCC
-CCCC Output: None
-CCCC See library.c
 C
 C
 C======================================================================
+C_BEGIN_QCLOSE
+C
+C QCLOSE - Close file unit
+C
+C Usage:  CALL QCLOSE (IUNIT)
+C         INTEGER      IUNIT
+C
+C Input:  IUNIT        unit number assigned to file
+C
+C Output: None.
+C_END_QCLOSE
+C See library.c
+C======================================================================
+C_BEGIN_QMODE
+C
+C QMODE - Set mode for file access
+C
+C Usage:  CALL QMODE (IUNIT, MODE, NMCITM)
+C         INTEGER     IUNIT, MODE, NMCITM
+C
+C Input:  IUNIT       unit number to assign to file
+C         MODE        mode to switch into: 0 (BYTES), 1 (SMALL INTEGER),
+C                                          2 (WORDS), 3 (SHORT COMPLEX),
+C                                          4 (COMPLEX) 6 (INTEGER)
+C
+C Output: NMCITM      number of bytes per item on this machine.
+C_END_QMODE
+C See library.c
+C======================================================================
+C_BEGIN_QREAD
+C
+C QREAD - Read from IUNIT into BUFFER, NITEMS items
+C
+C Usage:  CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
+C         INTEGER     IUNIT, NITEMS, RESULT
+C         REAL        BUFFER
+C
+C Input:  IUNIT       unit number assigned to file
+C         NITEMS      number of items (item size set by QMODE)
+C
+C Output: RESULT      0 (no error), -1 (EOF) or number of items read
+C         BUFFER      holds the items read
+C_END_QREAD
+C See library.c
+C======================================================================
+C_BEGIN_QWRITE
+C
+C QWRITE - Write to IUNIT from BUFFER, NITEMS items
+C
+C Usage:  CALL QWRITE (IUNIT,BUFFER,NITEMS)
+C         INTEGER      IUNIT, NITEMS
+C         REAL         BUFFER
+C
+C Input:  IUNIT        unit number assigned to file
+C         NITEMS       number of items (item size set by QMODE)
+C         BUFFER       holds the items to write
+C
+C Output: None.
+C_END_QWRITE
+C See library.c
+C======================================================================
+C_BEGIN_QSEEK
+C
+C QSEEK - Position a file pointer in a IUNIT
+C
+C Usage:  CALL QSEEK (IUNIT, IRECL, IEL, LRECL)
+C         INTEGER     IUNIT, IRECL, IEL, LRECL
+C
+C Input:  IUNIT       unit number to assign to file
+C         IRECL       record number to seek
+C         IEL         element number to seek
+C         LRECL       length of a record
+C
+C Output: None
+C_END_QSEEK
+C See library.c
+C======================================================================
+C_BEGIN_QBACK
+C
+C QBACK - skip back 1 record of length LRECL
+C
+C Usage:  CALL QBACK (IUNIT,LRECL)
+C         INTEGER     IUNIT, LRECL
+C
+C Input:  IUNIT       unit number assigned to file
+C         LRECL       length of a record in items
+C
+C Output: None
+C_END_QBACK
+C See library.c
+C======================================================================
+C_BEGIN_QSKIP
+C
+C QSKIP - skip forward 1 record of length LRECL
+C
+C Usage:  CALL QSKIP (IUNIT,LRECL)
+C         INTEGER     IUNIT, LRECL
+C
+C Input:  IUNIT       unit number assigned to file
+C         LRECL       length of a record in items
+C
+C Output: None
+C_END_QSKIP
+C See library.c
+C
+C
+C======================================================================
+C_BEGIN_QQINQ
 C
 C QQINQ - check file name and size. Check IUNIT first, if no success
 C         then try LOGNAM, if this fails use LOGNAM as filename.
@@ -284,6 +312,7 @@ C
 C Output: FILNAM        the full file name or "" if no file
 C         LENGTH        file size or -1 if no file
 C
+C_END_QQINQ
 C======================================================================
 C
       SUBROUTINE QQINQ(IUNIT,LFN,FILNAM,LENGTH)
@@ -312,21 +341,24 @@ C     ..
       FILNAM = FNAME
 C
       END
-CCCC
-CCCC
-CCCC======================================================================
-CCCC
-CCCC QLOCATE - return current position in file (measured in items)
-CCCC
-CCCC Usage:  CALL QLOCATE (IUNIT,LOCATE)
-CCCC         INTEGER       IUNIT,LOCATE
-CCCC
-CCCC Input:  IUNIT         stream to check
-CCCC
-CCCC Output: LOCATE        Current position in file or -1 for no file
-CCCC See library.c
+C
 C
 C======================================================================
+C_BEGIN_QLOCATE
+C
+C QLOCATE - return current position in file (measured in items)
+C
+C Usage:  CALL QLOCATE (IUNIT,LOCATE)
+C         INTEGER       IUNIT,LOCATE
+C
+C Input:  IUNIT         stream to check
+C
+C Output: LOCATE        Current position in file or -1 for no file
+C_END_QLOCATE
+C See library.c
+C
+C======================================================================
+C_BEGIN_QOPEN
 C
 C QOPEN - Open a file unit
 C
@@ -340,6 +372,7 @@ C         ATBUTE        File status = 'UNKNOWN', 'SCRATCH', 'OLD',
 C                                     'NEW', or 'READONLY'
 C
 C Output: None.
+C_END_QOPEN
 C
 C======================================================================
 C
@@ -372,6 +405,7 @@ C
       CALL QQOPEN(IUNIT,LOGNAM,ISTAT)
       END
 C======================================================================
+C_BEGIN_QRARCH
 C
 C QRARCH - set up number conversion
 C
@@ -390,9 +424,11 @@ C     architecture with which the file was written and arranges to
 C     translate a foreign format to native with QREAD, dependent on the
 C     current diskio mode.
 C
+C_END_QRARCH
 C======================================================================
 C
 C======================================================================
+C_BEGIN_QWARCH
 C
 C QWARCH - set up number conversion
 C
@@ -409,5 +445,6 @@ C     Writes the `machine stamp' giving information about the
 C     architecture with which the file was written and which is used by
 C     QRARCH
 C
+C_END_QWARCH
 C======================================================================
-C
+
