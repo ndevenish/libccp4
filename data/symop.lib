@@ -10,12 +10,12 @@
  X,Y,Z
  -X,Y+1/2,-Z
 5 4 2 C2 PG2 MONOCLINIC 'C 1 2 1' 
- X,Y,Z 
+  X,Y, Z 
  -X,Y,-Z 
  1/2+X,1/2+Y,Z 
  1/2-X,1/2+Y,-Z
 6 2 2 Pm PGm MONOCLINIC 'P 1 m 1' 
- X,Y,Z 
+ X, Y,Z 
  X,-Y,Z
 7 2 2 Pc PGm MONOCLINIC 'P 1 c 1' 
  X,Y,Z
@@ -98,10 +98,10 @@
  1/2-X,1/2+Y,1/2-Z
  1/2+X,1/2-Y,-Z
 21 8 4 C222 PG222 ORTHORHOMBIC 'C 2 2 2' 
- X,Y,Z
+  X, Y,Z
  -X,-Y,Z
- -X,Y,-Z
- X,-Y,-Z
+ -X, Y,-Z
+  X,-Y,-Z
  1/2+X,1/2+Y,Z
  1/2-X,1/2-Y,Z
  1/2-X,1/2+Y,-Z
@@ -152,10 +152,10 @@
  X,-Y,1/2+Z
  -X,Y,Z
 27 4 4 Pcc2 PGmm2 ORTHORHOMBIC 'P c c 2'
- X,Y,Z
+  X, Y,Z
  -X,-Y,Z
- X,-Y,1/2+Z
- -X,Y,1/2+Z
+  X,-Y,1/2+Z
+ -X, Y,1/2+Z
 28 4 4 Pma2 PGmm2 ORTHORHOMBIC 'P m a 2'
  X,Y,Z
  -X,-Y,Z
@@ -4656,12 +4656,15 @@
 1003 2 2 P2 PG2 MONOCLINIC 'P 1 1 2'  !(dyad along z)
  X,Y,Z
  -X,-Y,Z
-1004 1 1 P1121 PG2 MONOCLINIC 'P 1 1 21'  !(unique axis c)
- X,Y,Z * -X,-Y,1/2+Z
-3004 2 1 I21 PG2 MONOCLINIC  'I 1 21 1'
- X,Y,Z * -X,1/2+Y,-Z
- X+1/2,Y+1/2,Z+1/2 * -X+1/2,Y,1/2-Z
- 1005 4 2 'B 1 1 2'     MONOCLINIC B2  'B 2'
+1004 2 2 P1121 PG2 MONOCLINIC 'P 1 1 21'  !(unique axis c)
+ X,Y,Z 
+ -X,-Y,1/2+Z
+3004 4 2 I21 PG2 MONOCLINIC  'I 1 21 1'
+ X,Y,Z 
+ -X,1/2+Y,-Z
+ X+1/2,Y+1/2,Z+1/2 
+ -X+1/2,Y,1/2-Z
+1005 4 2 'B 1 1 2'     MONOCLINIC B2  'B 2'
  X,Y,Z 
  -X,-Y,Z 
  1/2+X,+Y,1/2+Z 
@@ -4671,36 +4674,38 @@
  X,-Y,-Z
  X,1/2+Y,1/2+Z
  X,1/2-Y,1/2-Z
-3005 2 1 C21 PG2 MONOCLINIC 'C 1 21 1' ! (Origin on screw at 1/4X)
- X, Y, Z * -X,1/2+Y,-Z
- 1/2+X,1/2+Y,Z *  1/2-X, Y,-Z
- 1006 2 2 'P 1 1 m'       1 MONOCLINIC
+3005 4 2 C21 PG2 MONOCLINIC 'C 1 21 1' ! (Origin on screw at 1/4X)
+ X, Y, Z 
+ -X,1/2+Y,-Z
+ 1/2+X,1/2+Y,Z 
+  1/2-X, Y,-Z
+1006 2 2 'P 1 1 m'       1 MONOCLINIC
  X,Y,Z 
  X,Y,-Z
- 7 2 2 'P 1 1 b'       1 MONOCLINIC
+1007 2 2 'P 1 1 b'       1 MONOCLINIC
  X,Y,Z
  X,1/2+Y,-Z
- 1008 4 2 'B 1 1 m'       1 MONOCLINIC
+1008 4 2 'B 1 1 m'       1 MONOCLINIC
  X,Y,Z
  X,-Y,Z
  1/2+X,1/2+Y,Z
  1/2+X,1/2-Y,Z
- 1009 4 2 'B 1 1 b'       1 MONOCLINIC
+1009 4 2 'B 1 1 b'       1 MONOCLINIC
  X,Y,Z
  X,1/2+Y,-Z
  1/2+X,Y,1/2+Z
  1/2+X,1/2+Y,1/2-Z
- 1010 4 4 'P 1 1 2/m'    1 MONOCLINIC
+1010 4 4 'P 1 1 2/m'    1 MONOCLINIC
  X,Y,Z
  X,Y,-Z
  -X,-Y,Z
  -X,-Y,-Z
- 1011 4 4 'P 1 1 21/m'   1 MONOCLINIC
+1011 4 4 'P 1 1 21/m'   1 MONOCLINIC
  X,Y,Z
  -X,-Y,1/2+Z
  -X,-Y,-Z
  X,Y,1/2-Z
- 1012 8 4 'B 1 1 2/m'    1 MONOCLINIC
+1012 8 4 'B 1 1 2/m'    1 MONOCLINIC
  X,Y,Z
  X,Y,-Z
  -X,-Y,Z
@@ -4709,17 +4714,17 @@
  1/2+X,Y,1/2-Z
  1/2-X,-Y,1/2+Z
  1/2-X,-Y,1/2-Z
- 1013 4 4 'P 1 1 2/b'    1 MONOCLINIC
+1013 4 4 'P 1 1 2/b'    1 MONOCLINIC
  X,Y,Z
  -X,1/2-Y,Z
  -X,-Y,-Z
  X,1/2+Y,-Z
- 1014 4 4 'P 1 1 21/b'   1 MONOCLINIC
+1014 4 4 'P 1 1 21/b'   1 MONOCLINIC
  X,Y,Z
  -X,-Y,-Z
  -X,1/2-Y,1/2+Z
  X,1/2+Y,1/2-Z
- 1015 8 4 'B 1 1 2/b'    1 MONOCLINIC
+1015 8 4 'B 1 1 2/b'    1 MONOCLINIC
  X,Y,Z
  -X,1/2-Y,Z
  -X,-Y,-Z
@@ -4728,31 +4733,75 @@
  1/2-X,1/2-Y,1/2+Z
  1/2-X,-Y,1/2-Z
  1/2+X,1/2+Y,1/2-Z
-1017 1 1 P2122 PG222 ORTHORHOMBIC 'P 21 2 2' !(unique axis a)
- X,Y,Z * -X,Y,-Z * 1/2+X,-Y,-Z * 1/2-X,-Y,Z
-2017 1 1 P2212 PG222 ORTHORHOMBIC 'P 2 21 2' !(unique axis b)
- X,Y,Z *  X,1/2-Y,-Z * -X,1/2+Y,-Z * -X,-Y,Z
-1018 1 1 P21212a PG222 ORTHORHOMBIC 'P 21 21 2 (a)' ! origin on 21 21, shift (1/4,1/4,0)
- X,Y,Z * 1/2-X,1/2-Y,Z * X+1/2,-Y,-Z * -X,Y+1/2,-Z
-2018 1 1 P21221 PG222 ORTHORHOMBIC 'P 21 2 21'  !(unique axis b)
- X,Y,Z * -X,Y,-Z * 1/2+X,-Y,1/2-Z * 1/2-X,-Y,1/2+Z
-3018 1 1 P22121 PG222 ORTHORHOMBIC 'P 2 21 21'  !(unique axis a)
- X,Y,Z *  X,-Y,-Z * -X,1/2+Y,1/2-Z * -X,1/2-Y,1/2+Z
-1020 2 1 C2221a PG222 ORTHORHOMBIC 'C 2 2 21a)' ! P212121 with C centring, shift(1/4,0,0)
- X,Y,Z * 1/2-X,-Y,1/2+Z * 1/2+X,1/2-Y,-Z * -X,1/2+Y,1/2-Z
- 1/2+X,1/2+Y,Z * -X,1/2-Y,1/2+Z * X,-Y,-Z * 1/2-X,Y,1/2-Z
-1021 2 1 C222a PG222 ORTHORHOMBIC 'C 2 2 2a'  ! C21212a origin on 21 21
- X,Y,Z * 1/2-X,1/2-Y,Z * X+1/2,-Y,-Z * -X,Y+1/2,-Z
- 1/2+X,1/2+Y,Z * -X,-Y,Z * X,1/2-Y,-Z * 1/2-X,Y,-Z
-1022 4 1 F222a PG222 ORTHORHOMBIC 'F 2 2 2a' ! same as 1018 with face centring ! shift (1/4,0,0)
- X,Y,Z         * 1/2-X,1/2-Y,Z * X+1/2,-Y,-Z * -X,Y+1/2,-Z
- X,Y+1/2,Z+1/2 * 1/2-X,-Y,Z+1/2 * X+1/2,-Y+1/2,-Z+1/2 * -X,Y,-Z+1/2
- X+1/2,Y,Z+1/2 * -X,1/2-Y,Z+1/2 * X,-Y,-Z+1/2 * -X+1/2,Y+1/2,-Z+1/2
- X+1/2,Y+1/2,Z * -X,-Y,Z * X,-Y+1/2,-Z * -X+1/2,Y,-Z
-1023 3 1 I222a PG222 ORTHORHOMBIC 'I 2 2 2a'  ! same as 1018 with origin shift (1/4,1/4,1/4)
- X,Y,Z * 1/2-X,1/2-Y,Z * X+1/2,-Y,-Z * -X,Y+1/2,-Z
- 1/2+X,1/2+Y,1/2+Z *  -X,-Y,1/2+Z
- 1/2-X,Y,1/2-Z *  X,1/2-Y,1/2-Z
+1017 4 4 P2122 PG222 ORTHORHOMBIC 'P 21 2 2' !(unique axis a)
+ X,Y,Z 
+ -X,Y,-Z 
+ 1/2+X,-Y,-Z 
+ 1/2-X,-Y,Z
+2017 4 4 P2212 PG222 ORTHORHOMBIC 'P 2 21 2' !(unique axis b)
+  X,Y,Z 
+  X,1/2-Y,-Z 
+ -X,1/2+Y,-Z 
+ -X,-Y,Z
+1018 4 4 P21212a PG222 ORTHORHOMBIC 'P 21 21 2 (a)' ! origin on 21 21, shift (1/4,1/4,0)
+ X,Y,Z 
+ 1/2-X,1/2-Y,Z 
+ X+1/2,-Y,-Z 
+ -X,Y+1/2,-Z
+2018 4 4 P21221 PG222 ORTHORHOMBIC 'P 21 2 21'  !(unique axis b)
+ X,Y,Z 
+ -X,Y,-Z 
+ 1/2+X,-Y,1/2-Z 
+ 1/2-X,-Y,1/2+Z
+3018 4 4 P22121 PG222 ORTHORHOMBIC 'P 2 21 21'  !(unique axis a)
+ X,Y,Z 
+  X,-Y,-Z 
+ -X,1/2+Y,1/2-Z 
+ -X,1/2-Y,1/2+Z
+1020 8 4 C2221a PG222 ORTHORHOMBIC 'C 2 2 21a)' ! P212121 with C centring, shift(1/4,0,0)
+ X,Y,Z 
+ 1/2-X,-Y,1/2+Z 
+ 1/2+X,1/2-Y,-Z 
+ -X,1/2+Y,1/2-Z
+ 1/2+X,1/2+Y,Z 
+ -X,1/2-Y,1/2+Z 
+ X,-Y,-Z 
+ 1/2-X,Y,1/2-Z
+1021 8 4 C222a PG222 ORTHORHOMBIC 'C 2 2 2a'  ! C21212a origin on 21 21
+ X,Y,Z 
+ 1/2-X,1/2-Y,Z 
+ X+1/2,-Y,-Z 
+ -X,Y+1/2,-Z
+ 1/2+ X,1/2+Y,Z 
+ -X,-Y,Z 
+ X,1/2-Y,-Z 
+ 1/2-X,Y,-Z
+1022 16 4 F222a PG222 ORTHORHOMBIC 'F 2 2 2a' ! same as 1018 with face centring  shift (1/4,0,0)
+ X,Y,Z         
+ 1/2-X,1/2-Y,Z 
+ X+1/2,-Y,-Z 
+ -X,Y+1/2,-Z
+ X,Y+1/2,Z+1/2 
+ 1/2-X,-Y,Z+1/2 
+ X+1/2,-Y+1/2,-Z+1/2 
+ -X,Y,-Z+1/2
+ X+1/2,Y,Z+1/2 
+ -X,1/2-Y,Z+1/2 
+ X,-Y,-Z+1/2 
+ -X+1/2,Y+1/2,-Z+1/2
+ X+1/2,Y+1/2,Z 
+ -X,-Y,Z 
+ X,-Y+1/2,-Z 
+ -X+1/2,Y,-Z
+1023 8 4 I222a PG222 ORTHORHOMBIC 'I 2 2 2a'  ! as 1018 with origin shift (1/4,1/4,1/4)
+ X,Y,Z 
+ 1/2-X,1/2-Y,Z 
+ X+1/2,-Y,-Z 
+ -X,Y+1/2,-Z
+ 1/2+X,1/2+Y,1/2+Z 
+  -X,-Y,1/2+Z
+ 1/2-X,Y,1/2-Z 
+  X,1/2-Y,1/2-Z
 1059 8 8 Pmmn2 PGmmm ORTHORHOMBIC 'P 21/m 21/m 2/n'
  X,Y,Z
  1/2-X,1/2-Y,Z
@@ -4762,11 +4811,15 @@
  X+1/2,Y+1/2,-Z
  X,1/2-Y,Z
  1/2-X,Y,Z
-1094 4 4 P42212a PG422 TETRAGONAL 'P 42 21 2a' ! (as P21212a) origin on 21 21 ie Shift 1/4,1/4,1/4
- X,Y,Z                 *      1/2-X,1/2-Y,Z
- -Y,X+1/2,1/2+Z        *      Y+1/2,-X,1/2+Z
- -X,Y+1/2,-Z           *      X+1/2,-Y,-Z
- Y,X,1/2-Z             *  1/2-Y,1/2-X,1/2-Z
+1094 8 8 P42212a PG422 TETRAGONAL 'P 42 21 2a' ! (as P21212a) origin on 21 21 ie Shift 1/4,1/4,1/4
+ X,Y,Z                 
+ 1/2-X,1/2-Y,Z
+ -Y,X+1/2,1/2+Z        
+ Y+1/2,-X,1/2+Z
+ -X,Y+1/2,-Z           
+ X+1/2,-Y,-Z
+ Y,X,1/2-Z             
+ 1/2-Y,1/2-X,1/2-Z
 1197 24 12 I23a PG23 CUBIC 'I 2 3a' ! Expansion of 1023 which is an expansion of 1018
  X,Y,Z
  1/2-X,1/2-Y,Z
