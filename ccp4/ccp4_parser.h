@@ -265,9 +265,9 @@ ccp4_symop symop_to_rotandtrn(const char *symchs_begin, const char *symchs_end);
  * @param symchs_end pointer to end of string (i.e. last character
  *   is *(symchs_end-1) )
  * @param rot 4 x 4 matrix operator
- * @return number of operators converted 
+ * @return  NULL on error, final position pointer on success
  */
-int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot);
+const char * symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot);
 int symop_to_mat4_err(const char *symop);
 ccp4_symop mat4_to_rotandtrn(const float rsm[4][4]);
 /* This is Charles' version of symtr */
