@@ -93,14 +93,13 @@ KEYBUF consist of NKEYS entries, each of the form:
 
 #if defined (sgi) || \
     defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
-    defined(G77) || defined(linux) || defined (sun) || \
+    defined(G77) || defined(linux) || defined(__linux__) || defined (sun) || \
     defined(__APPLE__)
   int srtbeg_ (int *nkeys, int *keybuf, int *lrecl, int *memsize)
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
-    ( defined __linux__ && defined __PPC__ )
+#if defined (__hpux) || defined (_AIX) || defined (___AIX) 
   int srtbeg (int *nkeys, int *keybuf, int *lrecl, int *memsize)
 #endif
 
@@ -111,14 +110,13 @@ KEYBUF consist of NKEYS entries, each of the form:
 
 #if defined (sgi) || \
     defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
-    defined(G77) || defined(linux) || defined (sun) || \
+    defined(G77) || defined(linux) || defined(__linux__) || defined (sun) || \
     defined(__APPLE__)
   int srtbeg_ (nkeys, keybuf, lrecl, memsize)
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
-    ( defined __linux__ && defined __PPC__ )
+#if defined (__hpux) || defined (_AIX) || defined (___AIX)
   int srtbeg (nkeys, keybuf, lrecl, memsize)
 #endif
 
@@ -265,14 +263,13 @@ SRTRLS:	Release one record into Sort
 
 #if defined (sgi) || \
     defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
-    defined(G77) || defined(linux) || defined (sun) || \
+    defined(G77) || defined(linux) || defined(__linux__) || defined (sun) || \
     defined(__APPLE__)
   int srtrls_ (char *record)
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
-    ( defined __linux__ && defined __PPC__ )
+#if defined (__hpux) || defined (_AIX) || defined (___AIX)
   int srtrls (char *record)
 #endif
 
@@ -283,14 +280,13 @@ SRTRLS:	Release one record into Sort
 
 #if defined (sgi) || \
     defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
-    defined(G77) || defined(linux) || defined (sun) || \
+    defined(G77) || defined(linux) || defined(__linux__) || defined (sun) || \
     defined(__APPLE__)
   int srtrls_ (record)
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
-    ( defined __linux__ && defined __PPC__ )
+#if defined (__hpux) || defined (_AIX) || defined (___AIX)
   int srtrls (record)
 #endif
 
@@ -316,14 +312,13 @@ SRTMRG:	Merge - finish release phase
 
 #if defined (sgi) || \
     defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
-    defined(G77) || defined(linux) || defined (sun) || \
+    defined(G77) || defined(linux) || defined(__linux__) || defined (sun) || \
     defined(__APPLE__)
   int srtmrg_ ()
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
-    ( defined __linux__ && defined __PPC__ )
+#if defined (__hpux) || defined (_AIX) || defined (___AIX)
   int srtmrg ()
 #endif
 
@@ -349,14 +344,13 @@ SRTRET:	Return 1 record from sort
 #if defined (PROTOTYPE)
 #if defined (sgi) || \
     defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
-    defined(G77) || defined(linux) || defined (sun) || \
+    defined(G77) || defined(linux) || defined(__linux__) || defined (sun) || \
     defined(__APPLE__)
   int srtret_ (char *record)
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
-    ( defined __linux__ && defined __PPC__ )
+#if defined (__hpux) || defined (_AIX) || defined (___AIX)
   int srtret (char *record)
 #endif
 
@@ -367,14 +361,13 @@ SRTRET:	Return 1 record from sort
 
 #if defined (sgi) || \
     defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
-    defined(G77) || defined(linux) || defined (sun) || \
+    defined(G77) || defined(linux) || defined(__linux__) || defined (sun) || \
     defined(__APPLE__)
   int srtret_ (record)
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
-   ( defined __linux__ && defined __PPC__ )
+#if defined (__hpux) || defined (_AIX) || defined (___AIX)
   int srtret (record)
 #endif
 

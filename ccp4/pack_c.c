@@ -74,7 +74,7 @@
 
 /* Some fortran compilers require c-functions to end with an underscore. */
 
-#if defined(_AIX) || defined (___AIX) || defined(__hpux) || ( defined __linux__ && defined __PPC__ )
+#if defined(_AIX) || defined (___AIX) || defined(__hpux)
 /* no underscore by default */
 #else
 #  if defined (VMS) || defined (vms) || defined (__vms) || defined (__VMS)

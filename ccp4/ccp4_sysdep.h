@@ -108,16 +108,16 @@
 #  define KNOWN_MACHINE
 #endif
 
-#if defined (linux) || defined (__CYGWIN__)
+#if defined (linux) || defined __linux__ || defined (__CYGWIN__)
 #  undef CALL_LIKE_SUN
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_SUN 1
 #endif
 
-#if defined __linux__ && defined ___PPC__ 
+#if defined __linux__ && defined __PPC
 #  undef CALL_LIKE_SUN
 #  define KNOWN_MACHINE
-#  define CALL_LIKE_HPUX 1
+#  define CALL_LIKE_SUN 1
 #endif
 
 #if defined (__FreeBSD__)
@@ -139,8 +139,8 @@
 #endif
 
 #if defined (_CALL_SYSV) && ! defined (__APPLE__)
-#  undef CALL_LIKE_HPUX
-#  define CALL_LIKE_HPUX 1
+#  undef CALL_LIKE_SUN
+#  define CALL_LIKE_SUN 1
 #  define KNOWN_MACHINE
 #endif
 
@@ -193,7 +193,7 @@
 #include <ctype.h>
 
 #if defined(_AIX) || defined (__hpux) || defined(F2C) ||\
-    defined(G77) || defined(_WIN32) || ( defined __linux__ && defined __PPC__ )/* would do no harm on others, though */
+    defined(G77) || defined(_WIN32) /* would do no harm on others, though */
 #  include <time.h>
 #endif
 
@@ -280,7 +280,7 @@
 #  define NATIVEFT DFNTF_LEIEEE
 #endif
 
-#if defined (powerpc) || defined (__ppc__)
+#if defined (powerpc) || defined (__ppc__) || defined __PPC
 #  define NATIVEIT DFNTI_MBO
 #  define NATIVEFT DFNTF_BEIEEE
 #endif
@@ -298,7 +298,7 @@
 #  define NATIVEIT DFNTI_IBO
 #endif
 
-#if defined(MIPSEB) || defined(__hpux) || defined(_AIX) || defined(m68k) || defined(mc68000) || defined(sparc) || defined (__sparc__) || ( defined __linux__ && defined __PPC__ )
+#if defined(MIPSEB) || defined(__hpux) || defined(_AIX) || defined(m68k) || defined(mc68000) || defined(sparc) || defined (__sparc__)
 #  define NATIVEIT DFNTI_MBO
 #  define NATIVEFT DFNTF_BEIEEE
 #endif
