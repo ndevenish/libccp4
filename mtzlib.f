@@ -194,7 +194,9 @@ C   LWCELL      Update the Cell dimensions in the MTZ header
 C
 C   LWCLAB      Write Column labels and types to an output MTZ file
 C
-C   LWHIST      Append line to the history information in the MTZ header
+C   LWHIST      Append to the history information in the MTZ header
+C
+C   LWHSTL      Append standard line to the history information
 C
 C   LWSORT      Update the Sort order in the MTZ header
 C
@@ -630,7 +632,7 @@ C
         ELSE
 C
 C              ********************************
-          CALL CCPERR(1,' mtzlib error - 8888')
+          CALL CCPERR(1,'Error in label assignments')
 C              ********************************
 C
         END IF
@@ -1945,11 +1947,10 @@ C               could test versions here in the future
 C
             IF (KEY.EQ.'VERS') THEN
               IF (IPRINT.EQ.3) THEN
-                WRITE (STROUT,FMT='(A,A)') 'MTZ file, Version Stamp ',
-     +            LINE(IBEG(2) :IEND(2))
 C
 C                    ***********************
-                CALL PUTLIN(STROUT,'CURWIN')
+                CALL PUTLIN('MTZ file, Version Stamp '//
+     +               LINE(IBEG(2):IEND(2)),'CURWIN')
                 CALL BLANK('CURWIN',1)
 C                    ***********************
 C
@@ -2174,14 +2175,8 @@ C
 C
 C                  *************************
               CALL LERROR(1,1,LINE2)
-C                  *************************
-C
-              STROUT = LINE
-C
-C                  ***********************
-              CALL PUTLIN(STROUT,'ERRWIN')
-              STROUT = ' '
-              CALL PUTLIN(STROUT,'ERRWIN')
+              CALL PUTLIN(LINE,'ERRWIN')
+              CALL PUTLIN(' ','ERRWIN')
 C                  ***********************
 C
               GO TO 70
@@ -2459,7 +2454,7 @@ C     .. External Functions ..
       REAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR, LSTLSQ, CCPERR, QREADR
+      EXTERNAL LERROR, LSTLSQ, CCPERR, QREADR, CCPBML
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -2678,7 +2673,7 @@ C     .. External Functions ..
       REAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QREADR, LSTLSQ, CCPERR
+      EXTERNAL LERROR,QREADR, LSTLSQ, CCPERR, CCPBML
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -3546,7 +3541,7 @@ C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ILEN,IOUT,ISTAT,JDO10,JDO30,JDO40,JDO50,JDO60,JDO70,
      +        JDO80,LSTART
-      CHARACTER LINE*400,STROUT*400,CWORK*30
+      CHARACTER LINE*400,CWORK*30
 C     ..
 C     .. Local Arrays ..
       CHARACTER CTYPES(NTYP)*1,CLABTM(MCOLS)*30, CTYPTM(MCOLS)*1
@@ -3751,23 +3746,19 @@ C
 C---- Print out program labels and column labels
 C
 C              ****************
-          STROUT = '* Output Program Labels :'
-          CALL PUTLIN(STROUT,'CURWIN')
+          CALL PUTLIN('* Output Program Labels :','CURWIN')
           CALL BLANK('CURWIN',1)
           IF (NLPRGO.GT.0) THEN
             CALL LABPRT(LSPRGO,NLPRGO)
           ELSE
-            STROUT = 'There were NO output program labels'
-            CALL PUTLIN(STROUT,'CURWIN')
+            CALL PUTLIN('There were NO output program labels','CURWIN')
           END IF
           CALL BLANK('CURWIN',1)
-          STROUT = '* Output File Labels :'
-          CALL PUTLIN(STROUT,'CURWIN')
+          CALL PUTLIN('* Output File Labels :','CURWIN')
           CALL BLANK('CURWIN',1)
           CALL LABPRT(CLABEL(1,MINDX),NCOLW(MINDX))
           CALL BLANK('CURWIN',1)
-          STROUT = '* Output File Column Types :'
-          CALL PUTLIN(STROUT,'CURWIN')
+          CALL PUTLIN('* Output File Column Types :','CURWIN')
           CALL BLANK('CURWIN',1)
           CALL LABPRT(CTYPE(1,MINDX),NCOLW(MINDX))
           CALL BLANK('CURWIN',1)
@@ -4311,7 +4302,7 @@ C     ..
 C     .. Local Scalars ..
       INTEGER ENDLOP,I,IFAIL,ISTAT,JDO10,JDO100,JDO20,JDO30,JDO40,
      +        JDO50,JDO60,JDO65,JDO80,NITEM
-      CHARACTER LINE*400,STROUT*400
+      CHARACTER LINE*400, STROUT*80
 C     ..
 C     .. Local Arrays ..
       INTEGER WINDEX(MBATCH)
@@ -4768,6 +4759,47 @@ C
       END
 C
 C
+C     ====================================
+      SUBROUTINE LWHSTL (MINDX,EXTRA)
+C     ====================================
+C
+C     Write a single line of hstory information to an MTZ file with
+C     index MINDX indicating that it was output from the program whose
+C     name was previously set with CCPVRS (/CCPRCS) at the
+C     current date and time.  EXTRA is more information to append to the
+C     record (or blank) .  An example of the information produced might be:
+C     From FREERFLAG, 21/ 6/94 18:38:48 with fraction 0.050
+C          ^^^^^^^^^                    ^^^^^^^^^^^^^^^^^^^
+C          CCPVRS arg                           EXTRA
+C     This is just a simplified interface to LWHIST.  The history line
+C     will be truncated to 80 characters. 
+C
+C     Arguments:
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
+C     PROG      (I)     CHARACTER*(*)   indicates the program responsible
+C     EXTRA     (I)     CHARACTER*(*)   extra information
+C
+      CHARACTER*(*) EXTRA
+      INTEGER MINDX
+      CHARACTER HIST(1)*80, TIME*8, DATE*8, BUFFER*200, PROG*20
+      INTEGER LENSTR
+      EXTERNAL LWHIST, CCPDAT, UTIME, LENSTR, CCPPNM
+C
+      CALL CCPPNM (PROG)
+      CALL CCPDAT (DATE)
+      CALL UTIME (TIME)
+C     Use a largeish buffer and truncate it later if necessary
+      WRITE (BUFFER, 10, ERR=20) PROG(:LENSTR(PROG)), DATE, TIME,
+     +     EXTRA(:LENSTR(EXTRA))
+      HIST (1) = BUFFER
+ 10   FORMAT ('From ',A,', ',A,' ',A,' ',A)
+      CALL LWHIST (MINDX, HIST, 1)
+      RETURN
+ 20   CALL CCPERR ('LWHSTL: history string too long for buffer')
+      END
+C
+C
 C
 C     ===============================
       SUBROUTINE LWOPEN(MINDX,FILNAM)
@@ -5020,15 +5052,13 @@ C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10,IH,IK,IL
       REAL RESOL
       CHARACTER LINE*400
-      REAL WMAX (MCOLS), WMIN (MCOLS)
 C     ..
 C     .. External Functions ..
-      LOGICAL  QISNAN
       REAL     LSTLSQ
       EXTERNAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QWRITR
+      EXTERNAL LERROR,QWRITR, CCPWRG
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -5272,7 +5302,7 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,IPRINT,ISTAT,JDO10,JDO20,JDO30,JDO40
-      CHARACTER LINE*400,STROUT*400
+      CHARACTER LINE*400
 C     ..
 C     .. Local Arrays ..
       CHARACTER LTYPES(LTYP)*1,SYMCHS(MAXSYM)*80
@@ -5319,23 +5349,17 @@ C
 C----    If there is already symmetry info there, print warning
 C
           IF ((NSYM(MINDX).GT.0).AND.(NSYM(MINDX).NE.NSYMX)) THEN
-            WRITE (STROUT,FMT='(A)')
-     +   '***Warning : You are changing your symmetry operations from :'
 C
 C                ***********************
-            CALL PUTLIN(STROUT,'CURWIN')
+            CALL PUTLIN('***Warning : You are changing your ' //
+     +           'symmetry operations from :','CURWIN')
 C                ***********************
 C
             IPRINT = 1
 C
 C                ***************************************************
             CALL SYMTR3(NSYM(MINDX),RSYM(1,1,1,MINDX),SYMCHS,IPRINT)
-C                ***************************************************
-C
-            WRITE (STROUT,FMT='(A)') '***To :'
-C
-C                ****************************************
-            CALL PUTLIN(STROUT,'CURWIN')
+            CALL PUTLIN('***To :','CURWIN')
             CALL SYMTR3(NSYMX,RSYMX(1,1,1),SYMCHS,IPRINT)
 C                ****************************************
 C
@@ -6187,7 +6211,7 @@ C     .. Common blocks ..
       COMMON /MTZLBC/LSUSRI(MFILEX,MCOLS),LSUSRO(MFILEX,MCOLS)
 C     ..
 C     .. Save statement ..
-      SAVE
+      SAVE /MTZLAB/, /MTZLBC/
 C     ..
 C
       JTOK = NTOK
@@ -6199,17 +6223,17 @@ C      item == program label
 C      name == user label
 C
       IF (NLPRGI.LE.0) THEN
-        STROUT = ' Error this program has no PROGRAM LABELS'
 C
 C            ***********************
-        CALL PUTLIN(STROUT,'ERRWIN')
+        CALL PUTLIN(' Error this program has no PROGRAM LABELS',
+     +       'ERRWIN')
 C            ***********************
 C
       ELSE IF (JTOK.LE.1) THEN
-        STROUT = ' **** Warning no argument given for LABIN '
 C
 C            ***********************
-        CALL PUTLIN(STROUT,'ERRWIN')
+        CALL PUTLIN(' **** Warning no argument given for LABIN ',
+     +       'ERRWIN')
 C            ***********************
 C
       ELSE
@@ -6244,11 +6268,10 @@ C           else, try to match file label on rhs as an option
             DO 11 JDO = 1,NLPRGI
               IF (CWORK2.EQ.LSPRGI(JDO)) GO TO 20
    11       CONTINUE
-            STROUT = ' **** Error input assignment does not match'//
-     +               ' program labels'
 C
 C                ***********************
-            CALL PUTLIN(STROUT,'ERRWIN')
+            CALL PUTLIN(' **** Error input assignment does not match'//
+     +           ' program labels','ERRWIN')
 C                ***********************
 C
             WRITE (STROUT,FMT=
@@ -6268,14 +6291,12 @@ C
           END IF
    40   CONTINUE
         RETURN
-   50   STROUT = ' **** Error !!!! for LABIN ****'
+   50   CONTINUE
 C
 C            ***********************
-        CALL PUTLIN(STROUT,'ERRWIN')
-        STROUT = ' **** NOT ENOUGH ARGUMENT PAIRS of type '
-        CALL PUTLIN(STROUT,'ERRWIN')
-        STROUT = 'Prog_label = User_label'
-        CALL PUTLIN(STROUT,'ERRWIN')
+        CALL PUTLIN(' **** Error !!!! for LABIN ****','ERRWIN')
+        CALL PUTLIN(' **** NOT ENOUGH ARGUMENT PAIRS of type ','ERRWIN')
+        CALL PUTLIN('Prog_label = User_label','ERRWIN')
 C            ***********************
 C
       END IF
@@ -6349,7 +6370,7 @@ C     .. Common blocks ..
       COMMON /MTZLBC/LSUSRI(MFILEX,MCOLS),LSUSRO(MFILEX,MCOLS)
 C     ..
 C     .. Save statement ..
-      SAVE
+      SAVE /MTZLAB/, /MTZLBC/
 C     ..
 C
       JTOK = NTOK
@@ -6359,25 +6380,18 @@ C---- Keyword
 C             LabelFC=userFC   LabelPHCAL=userPHCAL ...
 C
       IF (NLPRGO.LE.0) THEN
-        STROUT = ' Error this program has no OUPUT LABELS'
 C
 C            ***********************
-        CALL PUTLIN(STROUT,'ERRWIN')
+        CALL PUTLIN(' Error this program has no OUPUT LABELS','ERRWIN')
 C            ***********************
 C
       ELSE IF (JTOK.LE.1) THEN
-        STROUT = ' **** Warning no argument given for OUTPUT_HKL_LABELS'
 C
 C            ***********************
-        CALL PUTLIN(STROUT,'ERRWIN')
-C            ***********************
-C
-        WRITE (STROUT,FMT=
-     + '('' For This Program Default labels will be used if possible'')'
-     +    )
-C
-C            ***********************
-        CALL PUTLIN(STROUT,'ERRWIN')
+        CALL PUTLIN(' **** Warning no argument given for LABOUT',
+     +       'ERRWIN')
+        CALL PUTLIN('For This Program Default labels will be used' //
+     +       ' if possible','ERRWIN')
 C            ***********************
 C
       ELSE
@@ -6411,11 +6425,9 @@ C
               END IF
    10       CONTINUE
 C
-            STROUT = ' **** Error output assignment does not match'//
-     +               ' program labels'
-C
 C                ***********************
-            CALL PUTLIN(STROUT,'ERRWIN')
+            CALL PUTLIN(' **** Error output assignment does not match'//
+     +               ' program labels','ERRWIN')
             WRITE (STROUT,FMT=
      +        '(''  Neither '',A,'' nor '',A,'' recognised'')') CWORK(1:
      +        LENSTR(CWORK)),CWORK2(1:LENSTR(CWORK2))
@@ -6432,12 +6444,11 @@ C
    40   CONTINUE
         RETURN
 C
-   50   STROUT = ' **** Error !!!! for LABOUT ****'
+   50   CONTINUE
 C
-        CALL PUTLIN(STROUT,'ERRWIN')
-        STROUT = ' NOT ENOUGH ARGUMENT PAIRS of type '//
-     +           ' Prog_label = User_label'
-        CALL PUTLIN(STROUT,'ERRWIN')
+        CALL PUTLIN(' **** Error !!!! for LABOUT ****','ERRWIN')
+        CALL PUTLIN(' Not enough argument pairs of type '//
+     +           ' Prog_label = User_label','ERRWIN')
 C            ***********************
 C
       END IF
@@ -6524,17 +6535,17 @@ C      item == program label
 C      name == user label
 C
       IF (NLPRGI.LE.0) THEN
-        STROUT = ' Error this program has no PROGRAM LABELS'
 C
 C            ***********************
-        CALL PUTLIN(STROUT,'ERRWIN')
+        CALL PUTLIN(' Error this program has no PROGRAM LABELS',
+     +       'ERRWIN')
 C            ***********************
 C
       ELSE IF (JTOK.LE.1) THEN
-        STROUT = ' **** Warning no argument given for LABIN '
 C
 C            ***********************
-        CALL PUTLIN(STROUT,'ERRWIN')
+        CALL PUTLIN('**** Warning: no argument given for LABIN ',
+     +       'ERRWIN')
 C            ***********************
 C
       ELSE
@@ -6575,11 +6586,9 @@ C
 C
    10       CONTINUE
 C
-            STROUT = ' **** Error input assignment does not match'//
-     +               ' program labels'
-C
 C                ***********************
-            CALL PUTLIN(STROUT,'ERRWIN')
+            CALL PUTLIN('**** Error input assignment does not match'//
+     +               ' program labels','ERRWIN')
 C                ***********************
 C
             WRITE (STROUT,FMT=
@@ -6601,14 +6610,13 @@ C
           END IF
    40   CONTINUE
         RETURN
-   50   STROUT = ' **** Error !!!! for LABIN ****'
+   50   CONTINUE
 C
 C            ***********************
-        CALL PUTLIN(STROUT,'ERRWIN')
-        STROUT = ' **** NOT ENOUGH ARGUMENT PAIRS of type '
-        CALL PUTLIN(STROUT,'ERRWIN')
-        STROUT = 'Prog_label = User_label'
-        CALL PUTLIN(STROUT,'ERRWIN')
+        CALL PUTLIN(' **** Error !!!! for LABIN ****','ERRWIN')
+        CALL PUTLIN(' **** Not enough argument pairs of type ',
+     +       'ERRWIN')
+        CALL PUTLIN('Prog_label = User_label','ERRWIN')
 C            ***********************
 C
       END IF
@@ -6789,9 +6797,6 @@ C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC LEN
 C     ..
-C     .. Save statement ..
-      SAVE
-C     ..
 C
 C---- Set up the length of the output line, also set STROUT to blanks
 C
@@ -6871,7 +6876,7 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ILEN,ISTAT,JDO10
-      CHARACTER LINE*400,STROUT*400
+      CHARACTER LINE*400
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -6912,11 +6917,9 @@ C---- Then check if there are any history lines present
 C
         IF (NHISTL(MINDX).EQ.0) THEN
 C
-          WRITE (STROUT,FMT='(A)')
-     +      '* There is no History information in this MTZ file'
-C
 C              ****************
-          CALL PUTLIN(STROUT,'CURWIN')
+          CALL PUTLIN('* There is no History information ' //
+     +         'in this MTZ file','CURWIN')
           CALL BLANK('CURWIN',1)
 C              *****************
 C
@@ -6924,19 +6927,16 @@ C
 C
 C---- Read and print the history lines
 C
-          WRITE (STROUT,FMT='(A)') '* HISTORY for current MTZ file : '
-C
 C              ****************
-          CALL PUTLIN(STROUT,'CURWIN')
+          CALL PUTLIN('* HISTORY for current MTZ file : ','CURWIN')
           CALL BLANK('CURWIN',1)
 C              *****************
 C
           DO 10 JDO10 = 1,NHISTL(MINDX)
             ILEN = LENSTR(HSCR(JDO10,MINDX))
-            STROUT = HSCR(JDO10,MINDX) (1:ILEN)
 C
 C                ****************
-            CALL PUTLIN(STROUT,'CURWIN')
+            CALL PUTLIN(HSCR(JDO10,MINDX) (1:ILEN),'CURWIN')
 C                ****************
 C
    10     CONTINUE
@@ -7048,13 +7048,10 @@ C
 C
 C---- Print title, no. of cols, no of refls
 C
-          STROUT = '* Title:'
-C
 C              ***********************
-          CALL PUTLIN(STROUT,'CURWIN')
+          CALL PUTLIN('* Title:','CURWIN')
           CALL BLANK('CURWIN',1)
-          WRITE (STROUT,FMT='(A)') TITLE(MINDX) (1:LENSTR(TITLE(MINDX)))
-          CALL PUTLIN(STROUT,'CURWIN')
+          CALL PUTLIN(TITLE(MINDX) (1:LENSTR(TITLE(MINDX))),'CURWIN')
           CALL BLANK('CURWIN',1)
           WRITE (STROUT,FMT='(A,I4)') '* Number of Columns =',
      +      NCOLS(MINDX)
@@ -7090,24 +7087,20 @@ C
 C---- Output label info - different if long output
 C
           IF ((IPRINT.EQ.1) .OR. (IPRINT.EQ.2) .OR. (IPRINT.EQ.4)) THEN
-            STROUT = '* Column Labels :'
 C
 C                ************************************
-            CALL PUTLIN(STROUT,'CURWIN')
+            CALL PUTLIN('* Column Labels :','CURWIN')
             CALL BLANK('CURWIN',1)
             CALL LABPRT(CLABEL(1,MINDX),NCOLS(MINDX))
             CALL BLANK('CURWIN',1)
-            STROUT = '* Column Types :'
-            CALL PUTLIN(STROUT,'CURWIN')
+            CALL PUTLIN( '* Column Types :','CURWIN')
             CALL BLANK('CURWIN',1)
             CALL LABPRT(CTYPE(1,MINDX),NCOLS(MINDX))
 C                ************************************
 C
           ELSE IF (IPRINT.EQ.3) THEN
-            STROUT = '* Column Labels, Types, and Ranges :'
-C
-C                ***********************
-            CALL PUTLIN(STROUT,'CURWIN')
+            CALL PUTLIN('* Column Labels, Types, and Ranges :',
+     +           'CURWIN')
             CALL BLANK('CURWIN',1)
 C                ***********************
 C
@@ -7142,10 +7135,8 @@ C              *****************
 C
 C---- Cell dimensions for all
 C
-          STROUT = '* Cell Dimensions :'
-C
 C              ***********************
-          CALL PUTLIN(STROUT,'CURWIN')
+          CALL PUTLIN('* Cell Dimensions :','CURWIN')
           CALL BLANK('CURWIN',1)
           WRITE (STROUT,FMT='(6F8.2)') (CELL(JJ,MINDX),JJ=1,6)
           CALL PUTLIN(STROUT,'CURWIN')
@@ -7160,7 +7151,6 @@ C
      +        .AND.((SRANGE(1,MINDX).GT.0.0)
      +        .OR.(SRANGE(2,MINDX).GT.0.0) ) ) THEN
 C
-            STROUT = '*  Resolution Range :'
             RESMIN = 1000.0
             IF(SRANGE(1,MINDX).GT.0.000001)
      +        RESMIN = 1./SQRT(SRANGE(1,MINDX))
@@ -7169,7 +7159,7 @@ C
      +        RESMAX = 1./SQRT(SRANGE(2,MINDX))
 C
 C                *************************
-            CALL PUTLIN(STROUT,'CURWIN')
+            CALL PUTLIN('*  Resolution Range :','CURWIN')
             CALL BLANK('CURWIN',1)
             WRITE(STROUT,FMT='(2F10.5,6X,A,F9.3,A,F9.3,A)')
      $        (SRANGE(JJ,MINDX),JJ=1,2),'(',RESMIN,' - ',RESMAX,' A )'
@@ -7188,10 +7178,9 @@ C
    20     CONTINUE
 C
           IF (SORTED) THEN
-            STROUT = '* Sort Order :'
 C
 C                ***********************
-            CALL PUTLIN(STROUT,'CURWIN')
+            CALL PUTLIN('* Sort Order :','CURWIN')
             CALL BLANK('CURWIN',1)
             WRITE (STROUT,FMT='(5I6)') (ISORT(JJ,MINDX),JJ=1,5)
             CALL PUTLIN(STROUT,'CURWIN')
@@ -7199,11 +7188,10 @@ C                ***********************
 C                ***********************
 C
           ELSE
-            WRITE (STROUT,FMT='(A)')
-     +        '* There is no sort order recorded in the MTZ header'
 C
 C                ***********************
-            CALL PUTLIN(STROUT,'CURWIN')
+            CALL PUTLIN('* There is no sort order recorded ' //
+     +           'in the MTZ header','CURWIN')
             CALL BLANK('CURWIN',1)
 C                ***********************
 C
@@ -7242,29 +7230,22 @@ C
               END IF
 C
               IF (LTYPE(MINDX).NE.'?') THEN
-                WRITE (STROUT,FMT='(A,A)') '* Lattice Type = ',
-     +            LTYPE(MINDX)
-C
-C                    ***********************
-                CALL PUTLIN(STROUT,'CURWIN')
+                CALL PUTLIN('* Lattice Type = ' // LTYPE(MINDX),
+     +               'CURWIN')
 C                    ***********************
 C
               END IF
 C
               IF (PGNAM(MINDX).NE.'?') THEN
-                WRITE (STROUT,FMT='(A,A)') '* Point Group Name = ',
-     +            PGNAM(MINDX)
-C
-C                    ***********************
-                CALL PUTLIN(STROUT,'CURWIN')
+                CALL PUTLIN('* Point Group Name = ' //
+     +            PGNAM(MINDX),'CURWIN')
 C                    ***********************
 C
               END IF
 C
 C                  ***********************
               CALL BLANK('CURWIN',1)
-              STROUT = '* Symmetry Operations :'
-              CALL PUTLIN(STROUT,'CURWIN')
+              CALL PUTLIN('* Symmetry Operations :','CURWIN')
               CALL BLANK('CURWIN',1)
 C                  ***********************
 C
@@ -7613,15 +7594,13 @@ C
 C     
 C---- Print batch number and title for all
 C     
-      WRITE (STROUT,FMT='(A)') ' Batch number: '
-C
       IF (IPRINT.GT.30) THEN
         WRITE (IPRINT,FMT='(A)') ' Batch number: '
 C
       ELSE
 C     
 C            ***********************
-        CALL PUTLIN(STROUT,'CURWIN')
+        CALL PUTLIN(' Batch number: ','CURWIN')
 C            ***********************
 C
       END IF
@@ -7629,7 +7608,7 @@ C
       WRITE (STROUT,FMT='(1X,I6,4X,A)') IBATCH,BTITLE
 C
       IF (IPRINT.GT.30) THEN
-        WRITE (IPRINT,FMT='(1X,I6,4X,A)') IBATCH,BTITLE
+        WRITE (IPRINT,FMT='(A)') STROUT
 C
       ELSE
 C     
@@ -7854,10 +7833,9 @@ C                   ======
 C     
 C     
       DO 40 I = 1,J
-        STROUT = LINES(I)
 C     
 C            ***********************
-        CALL PUTLIN(STROUT,'CURWIN')
+        CALL PUTLIN(LINES(I),'CURWIN')
 C            ***********************
 C     
  40   CONTINUE
@@ -7915,7 +7893,7 @@ C     .. Local Scalars ..
       REAL A,S,T
       INTEGER I,ICOMST,IERR,IFOUND,IMAX,IP,ISL,J,JDO40,JDO50,JDO80,NOP,
      +        NP
-      CHARACTER ICH*1, STROUT*400
+      CHARACTER ICH*1
 C     ..
 C     .. Local Arrays ..
       INTEGER NUM(10)
@@ -7927,9 +7905,6 @@ C     .. External Functions ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL BLANK,PUTLIN
-C     ..
-C     .. Save statement ..
-      SAVE
 C     ..
 C     .. Data statements ..
       DATA NUM/1,2,3,4,5,6,7,8,9,0/
@@ -7955,11 +7930,9 @@ C
             IF (I1.LE.80) GO TO 10
           END IF
 C
-          WRITE (STROUT,FMT='(A)')
-     +     ' Error - no space between codeword sym.. and first operator'
-C
 C              ***********************
-          CALL PUTLIN(STROUT,'ERRWIN')
+          CALL PUTLIN(' Error - no space between codeword SYM and ' //
+     +         'first operator','ERRWIN')
 C              ***********************
 C
           EFLAG = EFLAG + 1
@@ -8047,13 +8020,10 @@ C
 C
 C                *********************************
             CALL BLANK('ERRWIN',1)
-            STROUT = ' **Symmetry Operator ERROR**'
-            CALL PUTLIN(STROUT,'ERRWIN')
-            WRITE (STROUT,FMT='(3A)')
-     $           ' **Invalid Character...',ICH,' **'
-            CALL PUTLIN(STROUT,'ERRWIN')
-            WRITE (STROUT,FMT='(A)') ICOL(1:LENSTR(ICOL))
-            CALL PUTLIN(STROUT,'ERRWIN')
+            CALL PUTLIN(' **Symmetry Operator ERROR**','ERRWIN')
+            CALL PUTLIN(' **Invalid Character...' // ICH // ' **',
+     +           'ERRWIN')
+            CALL PUTLIN(ICOL(1:LENSTR(ICOL)),'ERRWIN')
 C                **********************************
 C
             EFLAG = EFLAG + 1
@@ -8093,12 +8063,9 @@ C
 C
 C            *********************************
         CALL BLANK('ERRWIN',1)
-        STROUT = ' **Symmetry Operator ERROR**'
-        CALL PUTLIN(STROUT,'ERRWIN')
-        STROUT = ' **Blank Operator Field**'
-        CALL PUTLIN(STROUT,'ERRWIN')
-        WRITE (STROUT,FMT='(A)') ICOL(1:LENSTR(ICOL))
-        CALL PUTLIN(STROUT,'ERRWIN')
+        CALL PUTLIN(' **Symmetry Operator ERROR**','ERRWIN')
+        CALL PUTLIN(' **Blank Operator Field**','ERRWIN')
+        CALL PUTLIN(ICOL(1:LENSTR(ICOL)),'ERRWIN')
 C            ***********************************
 C
       END IF
@@ -8118,12 +8085,9 @@ C
 C
 C          ***********************************
   110 CALL BLANK('ERRWIN',1)
-      STROUT = ' **Symmetry Operator ERROR**'
-      CALL PUTLIN(STROUT,'ERRWIN')
-      STROUT = ' **NO Operator**'
-      CALL PUTLIN(STROUT,'ERRWIN')
-      WRITE (STROUT,FMT='(A)') ICOL(1:LENSTR(ICOL))
-      CALL PUTLIN(STROUT,'ERRWIN')
+      CALL PUTLIN('**Symmetry Operator ERROR**','ERRWIN')
+      CALL PUTLIN('**No Operator**','ERRWIN')
+      CALL PUTLIN(ICOL(1:LENSTR(ICOL)),'ERRWIN')
 C          ***********************************
 C
       GO TO 140
@@ -8136,12 +8100,10 @@ C
 C
 C              ********************************
           CALL BLANK('ERRWIN',1)
-          STROUT = ' **Symmetry Operator ERROR**'
-          CALL PUTLIN(STROUT,'ERRWIN')
-          STROUT = ' **Last General Position is INCOMPLETE**'
-          CALL PUTLIN(STROUT,'ERRWIN')
-          WRITE (STROUT,FMT='(A)') ICOL(1:LENSTR(ICOL))
-          CALL PUTLIN(STROUT,'ERRWIN')
+          CALL PUTLIN('**Symmetry Operator ERROR**','ERRWIN')
+          CALL PUTLIN('**Last General Position is INCOMPLETE**',
+     +         'ERRWIN')
+          CALL PUTLIN(ICOL(1:LENSTR(ICOL)),'ERRWIN')
 C              *********************************
 C
         END IF
@@ -8149,8 +8111,7 @@ C
       NS = NS - 1
  130  IF (IERR.NE.1) RETURN
 C
-  140 STROUT = ' **SYMMETRY OPERATOR ERROR**'
-      CALL PUTLIN(STROUT,'ERRWIN')
+  140 CALL PUTLIN('**SYMMETRY OPERATOR ERROR**','ERRWIN')
 C
       EFLAG = EFLAG + 1
 C
