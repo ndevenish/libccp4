@@ -122,7 +122,7 @@ static int nbatw[MFILES] = {0};
 static double coefhkl[MFILES][6] = {0};
 
 /* MVS defaults to int and doesn't like it */
-#ifdef _MVS
+#ifdef _MSC_VER
  void __stdcall CCP4H_INIT_LIB(int *ihtml, int *isumm);
 #endif
 

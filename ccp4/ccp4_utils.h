@@ -122,7 +122,7 @@ char *ccp4_utils_time(char *);
 
 float ccp4_utils_etime (float *);
 
-#if defined (_MVS)
+#if defined (_MSC_VER)
 double ccp4_erfc( double x );
 #endif
 

@@ -8,7 +8,7 @@
      CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
 */
 
-#ifdef _MVS
+#ifdef _MSC_VER
 
 #include "w32mvs.h"
 

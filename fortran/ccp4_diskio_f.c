@@ -151,7 +151,7 @@ FORTRAN_SUBR ( QOPEN, qopen,
   case 'N':
   case 'n':
     istat = 3; 
-#ifndef _MVS
+#ifndef _MSC_VER
     if (strcasecmp(getenv("CCP4_OPEN"),"UNKNOWN"))
 #else
     if (_stricmp(getenv("CCP4_OPEN"),"UNKNOWN"))
@@ -206,7 +206,7 @@ FORTRAN_SUBR ( QQOPEN, qqopen,
   jstat = *istat;
 
   if (jstat == 4) 
-#ifndef _MVS
+#ifndef _MSC_VER
     if (strcasecmp(getenv("CCP4_OPEN"),"UNKNOWN"))
 #else
     if (_stricmp(getenv("CCP4_OPEN"),"UNKNOWN"))

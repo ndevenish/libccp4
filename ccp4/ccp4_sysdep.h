@@ -99,7 +99,7 @@
 #  define CALL_LIKE_VMS 1
 #endif
 
-#if defined(_MVS) || defined (WIN32)
+#if defined(_MSC_VER) || defined (WIN32)
 #  define CALL_LIKE_MVS 1
 #  define KNOWN_MACHINE
 #endif
@@ -155,10 +155,10 @@
 #else
 #  include <sys/types.h>
 #  include <sys/stat.h>
-#  if !defined (_WIN32) && !defined (_MVS)
+#  if !defined (_WIN32) && !defined (_MSC_VER)
 #    include <sys/times.h>
 #  endif
-#  ifdef _MVS
+#  ifdef _MSC_VER
 #    define NOUNISTD
 #  endif
 #endif
@@ -170,7 +170,7 @@
 #  include <unistd.h>
 #else
 #  ifndef VMS 
-#    ifndef _MVS
+#    ifndef _MSC_VER
 #      include <sys/file.h>     /* ESV, old Concentrix */ /* non-POSIX */
 #    endif
 #  endif
@@ -205,15 +205,15 @@
 
 /* rint() function does not seen to exist for mingw32
    defined in library_utils.c */
-#  if (defined _WIN32) || (defined _MVS)
+#  if (defined _WIN32) || (defined _MSC_VER)
   double rint(double x);
 #endif
 
-#ifdef _MVS
+#ifdef _MSC_VER
 #define  M_PI            3.14159265358979323846
 #endif
 
-#ifdef _MVS
+#ifdef _MSC_VER
 #  define PATH_SEPARATOR '\\'
 #  define EXT_SEPARATOR '.'
 #else

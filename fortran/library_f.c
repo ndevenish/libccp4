@@ -198,7 +198,7 @@ FORTRAN_SUBR ( USTENV, ustenv,
 }
 #endif
 
-#if ! defined (_MVS)
+#if ! defined (_MSC_VER)
 FORTRAN_SUBR ( USTIME, ustime,
          (int *isec),
          (int *isec),
@@ -281,7 +281,7 @@ FORTRAN_SUBR ( CUNLINK, cunlink,
 /*                                                                          */
 /* <miscellaneous routines>=                                                */
 #ifndef VMS                     /* we'll use the Fortran version in VMS*/
-#ifndef _MVS
+#ifndef _MSC_VER
 FORTRAN_SUBR ( CCPAL1, ccpal1,
      (void (* routne) (), int *n, int type[], int length[]),
      (void (* routne) (), int *n, int type[], int length[]),

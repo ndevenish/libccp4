@@ -71,7 +71,7 @@ void ccp4f_mem_tidy(void) {
 }
 
 /* MVS was defaulting to assigning GETARG to be returning an int and it aint*/
-#ifdef _MVS
+#ifdef _MSC_VER
  int __stdcall IARGC();
  void __stdcall GETARG(int *i,char *arg,int arg_len);
  void __stdcall CCP4H_INIT_LIB(int *ihtml, int *isumm);
@@ -250,7 +250,7 @@ FORTRAN_FUN ( int, LENSTR, lenstr,
  * @param iday Day (1-31).
  * @param iyear Year (4 digit).
  */
-#if ! defined (_MVS) 
+#if ! defined (_MSC_VER) 
 FORTRAN_SUBR ( UIDATE, uidate,
                (int *imonth, int *iday, int *iyear),
                (int *imonth, int *iday, int *iyear),
@@ -302,7 +302,7 @@ FORTRAN_SUBR ( CCPTIM, ccptim,
   }
 
 }
-#if ! defined (_MVS)
+#if ! defined (_MSC_VER)
 FORTRAN_SUBR ( UTIME, utime,
                (fpstr ctime, int ctime_len),
                (fpstr ctime),
