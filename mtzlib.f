@@ -446,6 +446,8 @@ C     .. Parameters ..
       PARAMETER (NHISLM=30)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
+
+      INCLUDE 'mtzlib.fh'
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,NLPRGI
@@ -462,11 +464,10 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
+     +        WLUN,WOMBAT,NDATMSS
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80,
-     +          ENTRY_ID*64,DIFFRN_ID*64
+     +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
       INTEGER IEND,IERR,IFAIL,II,IST,ISTAT,JDO10,JDO20,JDO30,
@@ -500,9 +501,6 @@ C     .. Common blocks ..
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
-      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
-     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
-     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE
@@ -1326,6 +1324,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
+
+      INCLUDE 'mtzlib.fh'
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,NCOL
@@ -1335,9 +1335,7 @@ C     .. Array Arguments ..
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
-      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP,
-     +          NSETW,SET_ID,CSET_ID,IDEFSET
-      CHARACTER ENTRY_ID*64,DIFFRN_ID*64
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
       LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
@@ -1354,9 +1352,6 @@ C     .. Common blocks ..
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
      +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
-      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
-     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
-     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C
 C---- First check that the MINDX is valid
 C
@@ -1863,6 +1858,8 @@ C     .. Parameters ..
       PARAMETER (NPARSE=200)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
+
+      INCLUDE 'mtzlib.fh'
 C     ..
 C     .. Scalar Arguments ..
       INTEGER IFAIL,MINDX,IPRINT
@@ -1872,17 +1869,16 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
+     +        WLUN,WOMBAT,NDATMSS
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80,ENTRY_ID*64,
-     +          DIFFRN_ID*64
+     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
       INTEGER BATFLG,EFLAG,ENDLOP,IER,ISTAT,ITEND,IUNIN,JDO10,JDO55,
      +        JDO100,JDO110,JDO120,JDO130,JDO140,JDO150,JDO190,JDO20,
      +        JDO200,JDO30,JDO40,JDO50,JDO60,JDO80,JDO90,NBATRF,NCOLR,
-     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT,NSETP,NSETD
+     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT,NSETP,NSETD,NSETDC
       LOGICAL LEND
       CHARACTER KEY*4,MKEY*4,LINE*80,LINE2*400,STROUT*400
 C     ..
@@ -1919,9 +1915,6 @@ C     .. Common blocks ..
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
-      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
-     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
-     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
@@ -2060,6 +2053,9 @@ C
           SET_ID(JDO55,MINDX) = 0
           ENTRY_ID(JDO55,MINDX) = ' '
           DIFFRN_ID(JDO55,MINDX) = ' '
+          DO I = 1,6
+            DCELL(1,JDO55,MINDX) = 0.0
+          ENDDO
    55   CONTINUE
 
         DO 60 JDO60 = 1,MCOLS
@@ -2076,6 +2072,7 @@ C
         NCOLR = 0
         NSETP = 0
         NSETD = 0
+        NSETDC = 0
         NSYMIN = 0
         SYFLAG = 1
         BATFLG = 1
@@ -2378,6 +2375,14 @@ C     might be problems if PROJ or DATA records get out of order.
               NSETD = NSETD + 1
               CALL GTPINT(2,SET_ID(NSETD,MINDX),NTOK,ITYP,FVALUE)
               DIFFRN_ID(NSETD,MINDX) = LINE(IBEG(3) :IEND(3))
+              GO TO 70
+
+            ELSEIF (KEY.EQ.'DCEL') THEN
+              NSETDC = NSETDC + 1
+              CALL GTPINT(2,SET_ID(NSETDC,MINDX),NTOK,ITYP,FVALUE)
+              DO I = 1,6
+                CALL GTPREA(I+2,DCELL(I,NSETDC,MINDX),NTOK,ITYP,FVALUE)
+              ENDDO
               GO TO 70
 C
 C---- BATCH - serial numbers of the batches in the file 
@@ -3909,6 +3914,8 @@ C     .. Parameters ..
       PARAMETER (NHISLM=30)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
+
+      INCLUDE 'mtzlib.fh'
 C     ..
 C     .. Scalar Arguments ..
       INTEGER IAPPND,MINDX,NLPRGO
@@ -3924,11 +3931,10 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
+     +        WLUN,WOMBAT,NDATMSS
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80,
-     +          ENTRY_ID*64,DIFFRN_ID*64
+     +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ILEN,IOUT,ISTAT,JDO10,JDO30,JDO40,JDO50,JDO60,JDO70,
@@ -3965,9 +3971,6 @@ C     .. Common blocks ..
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
-      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
-     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
-     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE
@@ -4222,6 +4225,8 @@ C     .. Parameters ..
       PARAMETER (NHISLM=30)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
+
+      INCLUDE 'mtzlib.fh'
 C     ..
 C     .. Scalar Arguments ..
       INTEGER IAPPND,MINDX,NLPRGO
@@ -4233,9 +4238,8 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
+     +        WLUN,WOMBAT,NDATMSS
       LOGICAL SORTB,DATMSS,VAL_SET
-      CHARACTER ENTRY_ID*64,DIFFRN_ID*64
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO40,JDO50,IREFSET
@@ -4261,9 +4265,6 @@ C     .. Common blocks ..
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
-      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
-     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
-     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 
 C     ..
 C     .. Save statement ..
@@ -4475,6 +4476,8 @@ C     ..
       INTEGER MBLENG, MBLINT, MBLREA
       PARAMETER (MBLENG=185, MBLINT=29, MBLREA=156)
 
+      INCLUDE 'mtzlib.fh'
+
 C     .. Scalar Arguments ..
       INTEGER MINDX, BATNO
       CHARACTER*(*) PNAME,DNAME
@@ -4521,12 +4524,6 @@ C
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
-
-      INTEGER NSETW,SET_ID,CSET_ID,IDEFSET
-      CHARACTER ENTRY_ID*64,DIFFRN_ID*64
-      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
-     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
-     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C
 C.. Local variables
       INTEGER BSETID
@@ -4648,6 +4645,8 @@ C     ..
       INTEGER MBLENG, MBLINT, MBLREA
       PARAMETER (MBLENG=185, MBLINT=29, MBLREA=156)
 
+      INCLUDE 'mtzlib.fh'
+
 C     .. Scalar Arguments ..
       INTEGER MINDX, BATNO, BSETID
 C     ..
@@ -4694,12 +4693,6 @@ C
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
       SAVE /MTZHDR/, /MTZWRK/
-
-      INTEGER NSETW,SET_ID,CSET_ID,IDEFSET
-      CHARACTER ENTRY_ID*64,DIFFRN_ID*64
-      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
-     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
-     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C
 C.. Local variables
       CHARACTER LINE*400
@@ -4976,21 +4969,61 @@ C     .. Parameters ..
       INTEGER MSETS
       PARAMETER (MSETS=MCOLS)
 C     ..
+C     .. Arguments ..
+      INTEGER NDATASETS,MINDX,ISETS(*)
+      CHARACTER*(*) PNAME(*),DNAME(*)
+C     ..
+C     .. Local  ..
+      REAL DATCELL(6,MSETS)
+
+      CALL LRIDC(MINDX,PNAME,DNAME,ISETS,DATCELL,NDATASETS)
+C
+      END
+C
+C
+C
+C     ====================================================
+      SUBROUTINE LRIDC(MINDX,PNAME,DNAME,ISETS,DATCELL,NDATASETS)
+C     ====================================================
+C
+C---- Subroutine to return information for all datasets from the MTZ file
+C     header.
+C
+C---- Arguments :
+C
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
+C
+C     PNAME     (O)     CHARACTER       array of dimension at least NDATASETS
+C                               	containing the project name on exit
+C
+C     DNAME     (O)     CHARACTER       array of dimension at least NDATASETS
+C                               	containing the dataset name on exit
+C
+C     ISETS     (O)     INTEGER         array of dimension at least NDATASETS
+C                               	containing the dataset id on exit
+C
+C     DATCELL   (O)     REAL            array of dimension at least NDATASETS
+C                               	containing the dataset cell dimensions
+C
+C     NDATASETS (O)     INTEGER         number of datasets in MTZ header
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS
+      PARAMETER (MFILES=4,MCOLS=200)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
+
+      INCLUDE 'mtzlib.fh'
+C     ..
 C     .. Scalar Arguments ..
       INTEGER NDATASETS,MINDX,ISETS(*)
+      REAL DATCELL(6,*)
       CHARACTER*(*) PNAME(*),DNAME(*)
 C     ..
 C     .. Local Scalars ..
       INTEGER ISET,ISTAT,IFAIL
       CHARACTER LINE*400
-C     ..
-C     .. Arrays in Common ..
-      INTEGER NSETW,SET_ID,CSET_ID,IDEFSET
-      CHARACTER ENTRY_ID*64,DIFFRN_ID*64
-
-      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
-     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
-     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C
 C---- First check that the MINDX is valid
 C
@@ -5013,6 +5046,9 @@ C     New dataset to be added to header
         PNAME(ISET) = ENTRY_ID(ISET,MINDX)
         DNAME(ISET) = DIFFRN_ID(ISET,MINDX)
         ISETS(ISET) = SET_ID(ISET,MINDX)
+        DO I = 1,6
+          DATCELL(I,ISET) = DCELL(I,ISET,MINDX)
+        ENDDO
  10   CONTINUE
 
       END
@@ -5046,21 +5082,59 @@ C     .. Parameters ..
       INTEGER MSETS
       PARAMETER (MSETS=MCOLS)
 C     ..
+C     .. Arguments ..
+      INTEGER MINDX
+      CHARACTER PROJECT_NAME*(*),DATASET_NAME*(*)
+C     ..
+C     .. Local  ..
+      REAL DATCELL(6)
+
+      DO I=1,6
+        DATCELL(I) = 0.0
+      ENDDO
+      CALL LWIDC(MINDX,PROJECT_NAME,DATASET_NAME,DATCELL)
+
+      END
+C
+C
+C     ====================================================
+      SUBROUTINE LWIDC(MINDX,PROJECT_NAME,DATASET_NAME,DATCELL)
+C     ====================================================
+C
+C---- Subroutine to add dataset information to the output MTZ file header.
+C     Datasets identified by the PROJECT_NAME/DATASET_NAME pair are 
+C     appended to the MTZ header one at a time.
+C     Checks to see if the PROJECT_NAME/DATASET_NAME pair is already
+C     included; if so, the dataset is not appended.
+C     Redundant datasets are removed in LWCLOS.
+C
+C---- Arguments :
+C
+C     MINDX         (I)	    INTEGER        indicates which MTZ file - 1 index
+C                                          points to both input and output files
+C
+C     PROJECT_NAME  (I)     CHARACTER      project name of dataset to be added
+C                                          (strings longer than 64 will be truncated)
+C
+C     DATASET_NAME  (I)     CHARACTER      dataset name of dataset to be added
+C                                          (strings longer than 64 will be truncated)
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS
+      PARAMETER (MFILES=4,MCOLS=200)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
+
+      INCLUDE 'mtzlib.fh'
+C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
+      REAL DATCELL(6)
       CHARACTER PROJECT_NAME*(*),DATASET_NAME*(*)
 C     ..
 C     .. Local Scalars ..
       INTEGER ISET,ISTAT,IFAIL,JDO50,MAXSETID
       CHARACTER LINE*400
-C     ..
-C     .. Arrays in Common ..
-      INTEGER NSETW,SET_ID,CSET_ID,IDEFSET
-      CHARACTER ENTRY_ID*64,DIFFRN_ID*64
-
-      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
-     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
-     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C
 C---- First check that the MINDX is valid
 C
@@ -5100,6 +5174,11 @@ C     New dataset to be added to header
       SET_ID(ISET,MINDX) = MAXSETID + 1
       ENTRY_ID(ISET,MINDX) = PROJECT_NAME(1:LENSTR(PROJECT_NAME))
       DIFFRN_ID(ISET,MINDX) = DATASET_NAME(1:LENSTR(DATASET_NAME))
+      IF (DATCELL(1).GT.0.0) THEN
+        DO I=1,6
+          DCELL(I,ISET,MINDX) = DATCELL(I)
+        ENDDO
+      ENDIF
 
       END
 C
@@ -5146,6 +5225,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
+
+      INCLUDE 'mtzlib.fh'
 C     ..
 C     .. Scalar Arguments ..
       INTEGER IAPPND,MINDX,NLPRGO
@@ -5158,10 +5239,10 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
+     +        WLUN,WOMBAT,NDATMSS
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,TITLE*70,ENTRY_ID*64,DIFFRN_ID*64
+     +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,IOUT,ISTAT,JDO10,JDO20,JDO30,JDO40,JDO50,JDO60,
@@ -5194,9 +5275,6 @@ C     .. Common blocks ..
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
-      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
-     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
-     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
@@ -5515,6 +5593,8 @@ C     .. Parameters ..
       PARAMETER (NHISLM=30)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
+
+      INCLUDE 'mtzlib.fh'
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,IPRINT
@@ -5523,11 +5603,10 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
+     +        WLUN,WOMBAT,NDATMSS
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80,ENTRY_ID*64,
-     +          DIFFRN_ID*64
+     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
       INTEGER ENDLOP,I,IFAIL,ISTAT,JDO10,JDO100,JDO20,JDO30,JDO40,
@@ -5568,9 +5647,6 @@ C     .. Common blocks ..
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
-      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
-     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
-     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
@@ -5755,6 +5831,9 @@ C---- No batches, i.e. merged file, so check columns
                 SET_ID(ISET,MINDX) = SET_ID(JDO22,MINDX)
                 ENTRY_ID(ISET,MINDX) = ENTRY_ID(JDO22,MINDX)
                 DIFFRN_ID(ISET,MINDX) = DIFFRN_ID(JDO22,MINDX)
+                DO I=1,6
+                  DCELL(I,ISET,MINDX) = DCELL(I,JDO22,MINDX)
+                ENDDO
                 GOTO 22
               ENDIF
  23         CONTINUE
@@ -5783,6 +5862,9 @@ C     should not have been set yet).
                 SET_ID(ISET,MINDX) = SET_ID(JDO22,MINDX)
                 ENTRY_ID(ISET,MINDX) = ENTRY_ID(JDO22,MINDX)
                 DIFFRN_ID(ISET,MINDX) = DIFFRN_ID(JDO22,MINDX)
+                DO I=1,6
+                  DCELL(I,ISET,MINDX) = DCELL(I,JDO22,MINDX)
+                ENDDO
                 GOTO 24
               ENDIF
  25         CONTINUE
@@ -5808,6 +5890,16 @@ C            ******************************
             WRITE (LINE,FMT='(A7,1X,I7,1X,A)') 
      +        'DATASET',SET_ID(JDO25,MINDX),
      +        DIFFRN_ID(JDO25,MINDX)
+            CALL QWRITC(WLUN(MINDX),LINE(1:80))
+C---- If datasets but no DCELL, default it to CELL
+            IF (DCELL(1,JDO25,MINDX).LE.0.0) THEN
+              DO I = 1,6 
+                DCELL(I,JDO25,MINDX) = CELL(I,MINDX)
+              ENDDO
+            ENDIF
+            WRITE (LINE,FMT='(A7,1X,I7,1X,6F10.4)') 
+     +          'DCELL',SET_ID(JDO25,MINDX),
+     +          (DCELL(I,JDO25,MINDX),I=1,6)
             CALL QWRITC(WLUN(MINDX),LINE(1:80))
  26       CONTINUE
 
@@ -6183,6 +6275,8 @@ C     .. Parameters ..
       PARAMETER (NHISLM=30)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
+
+      INCLUDE 'mtzlib.fh'
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
@@ -6192,11 +6286,10 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
+     +        WLUN,WOMBAT,NDATMSS
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80,ENTRY_ID*64,
-     +          DIFFRN_ID*64
+     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,IUNIN,JDO10,JDO20,JDO30,JDO40,JDO50,JDO55,
@@ -6227,9 +6320,6 @@ C     .. Common blocks ..
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
-      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
-     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
-     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
@@ -6302,6 +6392,9 @@ C
             SET_ID(JDO55,MINDX) = 0
             ENTRY_ID(JDO55,MINDX) = ' '
             DIFFRN_ID(JDO55,MINDX) = ' '
+            DO I = 1,6
+              DCELL(1,JDO55,MINDX) = 0.0
+            ENDDO
    55     CONTINUE
 
           DO 60 JDO55 = 1,MBATCH
@@ -8415,16 +8508,17 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
+
+      INCLUDE 'mtzlib.fh'
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,IPRINT
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
-      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP,
-     +          NSETW,SET_ID,CSET_ID,IDEFSET
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,CLABEL*30,
-     +          TITLE*70,ENTRY_ID*64,DIFFRN_ID*64
+     +          TITLE*70
 
 C     ..
 C     .. Local Scalars ..
@@ -8457,9 +8551,6 @@ C     .. Common blocks ..
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
      +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
-      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
-     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
-     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/
@@ -8500,7 +8591,8 @@ C              ***********************
      +        NSETW(MINDX)
             CALL PUTLIN(STROUT,'CURWIN')
             CALL BLANK('CURWIN',1)
-            CALL PUTLIN('* Dataset ID, project name, dataset name:',
+            CALL PUTLIN(
+     +    '* Dataset ID, project name, dataset name, cell dimensions:',
      +        'CURWIN')
             CALL BLANK('CURWIN',1)
             DO 30 JDO30 = 1,NSETW(MINDX)
@@ -8511,6 +8603,11 @@ C              ***********************
               WRITE (STROUT,FMT='(9X,A)') 
      +          DIFFRN_ID(JDO30,MINDX)
               CALL PUTLIN(STROUT,'CURWIN')
+              IF (DCELL(1,JDO30,MINDX).GT.0.0) THEN
+                WRITE (STROUT,FMT='(9X,6F10.4)') 
+     +             (DCELL(I,JDO30,MINDX),I=1,6)
+                CALL PUTLIN(STROUT,'CURWIN')
+              ENDIF
 C
    30       CONTINUE
             CALL BLANK('CURWIN',1)
