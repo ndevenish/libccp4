@@ -602,17 +602,22 @@ C     ==========================================
 C
 C_BEGIN_XYZADVANCE
 C
-C	This subrouitne reads recognised data lines into a buffer. Optionally, 
-C if the card is unrecognised (eg REMARK) then the line can be echoed to an 
-C output file.
+C When IUNIT represents an input coordinate file, this subroutine reads 
+C recognised data lines into a buffer BROOK, from which XYZATOM and 
+C XYZCOORD can extract useful information. Optionally, if the card is 
+C unrecognised (eg REMARK) then the line can be echoed to an output file.
+C
+C When IUNIT represents an output coordinate file, this subroutine writes 
+C out the contents of the buffer WBROOK or WBROOK1. This buffer is filled
+C from an input file, or by calls to XYZATOM and XYZCOORD.
 C
 C Parameters:
 C
-C       IUNIT  (I) Channel number of the input coordinate file
+C      IUNIT  (I) Channel number of the coordinate file
 C
 C      These arguments are not relevant for output files.
 C        IOUT (I) Logical unit number to which non-atom/hetatm/anisou records 
-C                 are to be be written (may be blank if reading only)
+C                 are to be written (may be blank if reading only)
 C        ITER (I) FLAG =1, return if 'ter' card found (via return 1)
 C                      =0, do not return when 'ter' card found
 C      RETURN 1   Return on TER card if ITER=1
@@ -681,14 +686,7 @@ C
    30   CONTINUE
         IF (IOUT.GT.0) CALL WREMARK(IOUT,BROOKA)
         GOTO 20
-   40   IF (BROOKA(1:4) .EQ. 'CRYS') THEN
-          IF (IOUT .GT. 0) THEN
-            CALL WREMARK(IOUT,BROOKA)
-            IFHDOUT = .TRUE.
-          ENDIF
-          GOTO 20
-        ELSE IF (BROOKA(1:4) .EQ. 'SCAL') THEN
-          IF (IOUT .GT. 0) CALL WREMARK(IOUT,BROOKA)
+   40   IF (BROOKA(1:4).EQ.'CRYS' .OR. BROOKA(1:4).EQ.'SCAL') THEN
           GOTO 20
         ELSE IF (BROOKA(1:3) .EQ. 'END') THEN
           ITYP = 0
@@ -856,6 +854,7 @@ C
         SEGID = ' '
         CALL PDBREAD(ISER,PDBATN,PDBRESN,PDBCHN,IRESN,PDBRESNO,
      +               X,Y,Z,OCC,B,IZ,PDBSEGID,PDBID)
+        ALTCOD = BROOK(17)
         ATNAM = PDBATN
         RESNAM = PDBRESN
         CHNNAM = PDBCHN
