@@ -978,7 +978,7 @@ FORTRAN_SUBR ( EPSLN, epsln,
         for (l = 0; l < 3; ++l) {
 	  op1[i].rot[k][l] = rsm[i][l][k];
 	}
-        op1[i].trn[k] = rsm[i][k][3];
+        op1[i].trn[k] = rsm[i][3][k];
       }
     }
     spacegroup = ccp4_spgrp_reverse_lookup(*nsm,op1);
