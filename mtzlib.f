@@ -505,11 +505,11 @@ C
 C
             JLENG = LENSTR(CWORK)
             ISTAT = 1
-            WRITE (LINE,FMT='(10A)') 'From LRASSN : User input label ',
-     +        CWORK(1:JLENG),' does not ','match any file label '
 C
 C                ************************
-            CALL LERROR(ISTAT,IFAIL,LINE)
+            CALL LERROR(ISTAT, IFAIL,
+     +           'From LRASSN : User input label '//
+     +           CWORK(1:JLENG) // ' does not match any file label')
 C                ************************
 C
             IERR = 10
