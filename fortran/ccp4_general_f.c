@@ -237,10 +237,14 @@ FORTRAN_SUBR ( CCP4_PROG_VERSION, ccp4_prog_version,
                (const fpstr version, int *iflag),
                (const fpstr version, int version_len, int *iflag))
 { 
+  char *tmp_vers;
+
   if (*iflag) {
     ccp4_CtoFString(FTN_STR(version), FTN_LEN(version), ccp4_prog_vers(NULL)); 
   } else {
-    ccp4_prog_vers(FTN_STR(version));
+    tmp_vers = ccp4_FtoCString(FTN_STR(version), FTN_LEN(version));   
+    ccp4_prog_vers(tmp_vers);
+    free((char *) tmp_vers);
   }
 }
 
