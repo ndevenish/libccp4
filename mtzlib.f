@@ -4429,8 +4429,8 @@ C            ******************************
 C
 C---- File Title
 C
-        WRITE (LINE,FMT='(A5,1X,A)') 'TITLE',
-     +    TITLE(MINDX) (1:LENSTR(TITLE(MINDX)))
+        WRITE (LINE,FMT='(A5,1X,2A)') 'TITLE',
+     +    TITLE(MINDX) (1:LENSTR(TITLE(MINDX))),'.'
 C
 C            ******************************
         CALL LWHDRL(WLUN(MINDX),LINE(1:80))
