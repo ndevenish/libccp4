@@ -417,12 +417,13 @@ void *ccp4_utils_calloc(size_t nelem , size_t elsize)
 
 
 /** Return the user's login name.
+ * (MVisualStudio version in w32mvs.c)
  * Note that getlogin only works for processes attached to
  * a terminal, and hence won't work from the GUI. 
  * @return pointer to character string containing login name.
  */
+#if ! defined (_MVS)
 char *ccp4_utils_username(void)
-#if ! defined (_MVS) && ! defined (_WIN32)
 #if defined (__APPLE__) && __GNUC__ > 2
 {
   struct passwd *passwd_struct=NULL;
@@ -435,11 +436,6 @@ char *ccp4_utils_username(void)
   return(cuserid(userid)); 
 }
 #endif
-#else
-{
-  printf("No login id under ming32\n");
-  return NULL;
-}
 #endif
 
 /** Extracts the basename from a full file name.
@@ -616,8 +612,8 @@ char *ccp4_utils_time(char *time)
  * @param tarray Array containing User and System times.
  * @return Sum of User and System times.
  */
-float ccp4_utils_etime (float tarray[2])
 #if ! defined (_MVS) 
+float ccp4_utils_etime (float tarray[2])
 {
   static long clk_tck = 0;
 
@@ -627,11 +623,6 @@ float ccp4_utils_etime (float tarray[2])
   tarray[0] = (float) buffer.tms_utime / (float)clk_tck;
   tarray[1] = (float) buffer.tms_stime / (float)clk_tck;
   return (tarray[0]+tarray[1]);
-}
-#else
-{
-  printf("etime not implemented under this compiler.\n");
-  return (0.0f);
 }
 #endif
 
@@ -654,7 +645,7 @@ void _carbon_init(int argc, char **argv) {}
 void _objcInit(void) {}
 #endif
 
-#  if (defined _WIN32) || (defined _MVS)
+#  if (defined _MVS)
 double rint(double x) { 
   if (x >= 0.) {
    return (double)(int)(x+.5);
