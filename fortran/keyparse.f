@@ -153,12 +153,13 @@ C       matched key
       entry parsenints (key, n, ivals)
 C     KEY + upto N integers -- N reset to number found, returned in IVALS
       if (memokey.eq.key) then
+       success(1)=.true.
         if (ntok.ge.2 .and. ntok.le. n+1) then
           do i = 1, min (n, ntok-1)
             if (ityp (i+1).ne.2) return
             ivals (i) = nint (fvalue (i+1))
             n = i
-            success(i) = .true.
+            success(i+1) = .true.
           end do
         else
           argerr = .true.
@@ -170,12 +171,13 @@ C     KEY + upto N integers -- N reset to number found, returned in IVALS
       entry parsenreals (key, n, rvals)
 C     KEY + upto N reals -- N reset to number found, returned in RVALS
       if (memokey.eq.key) then
+       success(1)=.true.
         if (ntok.ge.2 .and. ntok.le. n+1) then
           do i = 1, min (n, ntok-1)
             if (ityp (i+1).ne.2) return
             rvals (i) = fvalue (i+1)
             n = i
-            success(i) = .true.
+            success(i+1) = .true.
           end do
         else
           argerr = .true.
@@ -354,7 +356,9 @@ C     if (cont).
        endif
        do i=2,ntok
         if (.not.success(i)) then
-         call lerror (1, 0, 'Invalid sub-keyword')
+         write (line,950)i
+ 950     format ('Invalid sub-keyword in position ',i2)
+         call lerror (1, 0, line)
          someerr = .true.
         endif
        enddo
