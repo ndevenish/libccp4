@@ -265,9 +265,9 @@ C
 C     ..
 C     .. Local Scalars ..
       REAL ERROR,VOLCHK
-      INTEGER I,IORTH,IFILTYP,J,LL
+      INTEGER I,IORTH,IFILTYP,J,LL,ILEN,KLEN
       CHARACTER BROOKA*80,ERRLIN*600,FILNAM*255,IE*2,IRTYPE*4
-      CHARACTER LFILTYP*3,LRWSTAT*5
+      CHARACTER LFILTYP*3,LRWSTAT*5, SPGCHK*30
       CHARACTER*40 ORTH(6)
 C     ..
 C     .. Local Arrays ..
@@ -453,6 +453,24 @@ C
             IFCRYS=.TRUE.
             BRKSPGRP = ' '
             READ(BROOKA,FMT='(6X,3F9.3,3F7.2,1x,a11)')CELL,BRKSPGRP
+C
+C Make sure that BRKSPGRP, the Space group name is left-justified
+C
+            SPGCHK =BROOKA(55:80)
+            ILEN = LENSTR(SPGCHK)
+             IF (ILEN.LE.1) THEN
+               CALL CCPERR(2,' No Space group given on PDB CRYST1 line')
+             ELSE
+               KLEN = ILEN
+C
+               DO J = 1,ILEN-1
+                 IF (SPGCHK(1:1) .EQ. ' ') THEN
+                   SPGCHK = SPGCHK(2:KLEN)
+                   KLEN  = KLEN - 1
+                 END IF
+               END DO
+               BRKSPGRP = SPGCHK
+             END IF 
 C  Read symmetry operators..
              IF(BRKSPGRP.NE.' ')
      +     call MSYMLB3(1,LSPGRP,BRKSPGRP,NAMSPG_CIFS,
