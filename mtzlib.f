@@ -454,7 +454,7 @@ C     .. Arrays in Common ..
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80,
-     +          ENTRY_ID*20,DIFFRN_ID*20
+     +          ENTRY_ID*64,DIFFRN_ID*64
 C     ..
 C     .. Local Scalars ..
       INTEGER IEND,IERR,IFAIL,II,IST,ISTAT,JDO10,JDO20,JDO30,
@@ -1325,7 +1325,7 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP,
      +          NSETW,SET_ID,CSET_ID,IDEFSET
-      CHARACTER ENTRY_ID*20,DIFFRN_ID*20
+      CHARACTER ENTRY_ID*64,DIFFRN_ID*64
       LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
@@ -1863,14 +1863,14 @@ C     .. Arrays in Common ..
      +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80,ENTRY_ID*20,
-     +          DIFFRN_ID*20
+     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80,ENTRY_ID*64,
+     +          DIFFRN_ID*64
 C     ..
 C     .. Local Scalars ..
       INTEGER BATFLG,EFLAG,ENDLOP,IER,ISTAT,ITEND,IUNIN,JDO10,JDO55,
      +        JDO100,JDO110,JDO120,JDO130,JDO140,JDO150,JDO190,JDO20,
      +        JDO200,JDO30,JDO40,JDO50,JDO60,JDO80,JDO90,NBATRF,NCOLR,
-     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT,NSETR
+     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT,NSETP,NSETD
       LOGICAL LEND
       CHARACTER KEY*4,MKEY*4,LINE*80,LINE2*400,STROUT*400
 C     ..
@@ -2062,7 +2062,8 @@ C
 C
         NBATRF = 0
         NCOLR = 0
-        NSETR = 0
+        NSETP = 0
+        NSETD = 0
         NSYMIN = 0
         SYFLAG = 1
         BATFLG = 1
@@ -2353,11 +2354,18 @@ C---- Information on datasets used in harvesting
               CALL GTPINT(2,NSETW(MINDX),NTOK,ITYP,FVALUE)
               GO TO 70
 
-            ELSEIF (KEY.EQ.'DIFF') THEN
-              NSETR = NSETR + 1
-              CALL GTPINT(2,SET_ID(NSETR,MINDX),NTOK,ITYP,FVALUE)
-              ENTRY_ID(NSETR,MINDX) = LINE(IBEG(3) :IEND(3))
-              DIFFRN_ID(NSETR,MINDX) = LINE(IBEG(4) :IEND(4))
+C---- This works with MTZ files written by current LWCLOS, but
+C     might be problems if PROJ or DATA records get out of order.
+            ELSEIF (KEY.EQ.'PROJ') THEN
+              NSETP = NSETP + 1
+              CALL GTPINT(2,SET_ID(NSETP,MINDX),NTOK,ITYP,FVALUE)
+              ENTRY_ID(NSETP,MINDX) = LINE(IBEG(3) :IEND(3))
+              GO TO 70
+
+            ELSEIF (KEY.EQ.'DATA') THEN
+              NSETD = NSETD + 1
+              CALL GTPINT(2,SET_ID(NSETD,MINDX),NTOK,ITYP,FVALUE)
+              DIFFRN_ID(NSETD,MINDX) = LINE(IBEG(3) :IEND(3))
               GO TO 70
 C
 C---- BATCH - serial numbers of the batches in the file 
@@ -2446,14 +2454,24 @@ C
 C
 C---- Check no. of datasets input equals NSETW from NDIFFRN line
 C
-            IF (NSETR.NE.NSETW(MINDX)) THEN
+            IF (NSETP.NE.NSETW(MINDX)) THEN
               WRITE (LINE2,FMT='(A,I4,A,A,I4,A)')
      +          'From LROPEN : Header indicates',NSETW(MINDX),
-     +          ' datasets, but ',' there were',NSETR,
-     +          ' dataset records in header'
+     +          ' datasets, but ',' there were',NSETP,
+     +          ' PROJECT records in header'
 C
 C                  *************************
-              CALL LERROR(1,1,LINE2)
+              CALL LERROR(2,-1,LINE2)
+C                  *************************
+C
+            ELSEIF (NSETD.NE.NSETW(MINDX)) THEN
+              WRITE (LINE2,FMT='(A,I4,A,A,I4,A)')
+     +          'From LROPEN : Header indicates',NSETW(MINDX),
+     +          ' datasets, but ',' there were',NSETD,
+     +          ' DATASET records in header'
+C
+C                  *************************
+              CALL LERROR(2,-1,LINE2)
 C                  *************************
 C
             END IF
@@ -3898,7 +3916,7 @@ C     .. Arrays in Common ..
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80,
-     +          ENTRY_ID*20,DIFFRN_ID*20
+     +          ENTRY_ID*64,DIFFRN_ID*64
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ILEN,IOUT,ISTAT,JDO10,JDO30,JDO40,JDO50,JDO60,JDO70,
@@ -4169,10 +4187,10 @@ C                               	points to both input and output files
 C
 C     NLPRGO    (I)	INTEGER         number of output program labels
 C
-C     PNAME     (I)	CHARACTER*20    array of dimension at least NLPRGO
+C     PNAME     (I)	CHARACTER       array of dimension at least NLPRGO
 C                               	containing the output project name
 C
-C     DNAME     (I)	CHARACTER*20    array of dimension at least NLPRGO
+C     DNAME     (I)	CHARACTER       array of dimension at least NLPRGO
 C                               	containing the output dataset name
 C
 C     IAPPND    (I)	INTEGER         =0 replace all existing column info
@@ -4197,7 +4215,7 @@ C     .. Scalar Arguments ..
       INTEGER IAPPND,MINDX,NLPRGO
 C     ..
 C     .. Array Arguments ..
-      character*20 PNAME(*),DNAME(*)
+      character*(*) PNAME(*),DNAME(*)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
@@ -4205,11 +4223,11 @@ C     .. Arrays in Common ..
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
       LOGICAL SORTB,DATMSS,VAL_SET
-      CHARACTER ENTRY_ID*20,DIFFRN_ID*20
+      CHARACTER ENTRY_ID*64,DIFFRN_ID*64
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO40,JDO50,IREFSET
-      CHARACTER LINE*400,PNAMEL*20,DNAMEL*20
+      CHARACTER LINE*400,PNAMEL*64,DNAMEL*64
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -4431,9 +4449,9 @@ C                               	points to both input and output files
 C
 C     BATNO     (I)	INTEGER         batch number 
 C
-C     PNAME     (I)	CHARACTER*20    project name of dataset
+C     PNAME     (I)	CHARACTER       project name of dataset
 C
-C     DNAME     (I)	CHARACTER*20    dataset name of dataset
+C     DNAME     (I)	CHARACTER       dataset name of dataset
 C
 C     ..
       INTEGER MFILES,MCOLS,MBATCH
@@ -4447,7 +4465,7 @@ C     ..
 
 C     .. Scalar Arguments ..
       INTEGER MINDX, BATNO
-      CHARACTER*20 PNAME,DNAME
+      CHARACTER*(*) PNAME,DNAME
 C     ..
 C     .. Common blocks ..
       INTEGER NWORDS,NINTGR,NREALS,IORTYP,LBCELL,MISFLG,
@@ -4493,7 +4511,7 @@ C
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
 
       INTEGER NSETW,SET_ID,CSET_ID,IDEFSET
-      CHARACTER ENTRY_ID*20,DIFFRN_ID*20
+      CHARACTER ENTRY_ID*64,DIFFRN_ID*64
       COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
      +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
      +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
@@ -4666,7 +4684,7 @@ C
       SAVE /MTZHDR/, /MTZWRK/
 
       INTEGER NSETW,SET_ID,CSET_ID,IDEFSET
-      CHARACTER ENTRY_ID*20,DIFFRN_ID*20
+      CHARACTER ENTRY_ID*64,DIFFRN_ID*64
       COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
      +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
      +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
@@ -4929,10 +4947,10 @@ C
 C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
 C                               	points to both input and output files
 C
-C     PNAME     (O)     CHARACTER*20    array of dimension at least NDATASETS
+C     PNAME     (O)     CHARACTER       array of dimension at least NDATASETS
 C                               	containing the protein name on exit
 C
-C     DNAME     (O)     CHARACTER*20    array of dimension at least NDATASETS
+C     DNAME     (O)     CHARACTER       array of dimension at least NDATASETS
 C                               	containing the dataset name on exit
 C
 C     ISETS     (O)     INTEGER         array of dimension at least NDATASETS
@@ -4948,7 +4966,7 @@ C     .. Parameters ..
 C     ..
 C     .. Scalar Arguments ..
       INTEGER NDATASETS,MINDX,ISETS(*)
-      CHARACTER*20 PNAME(*),DNAME(*)
+      CHARACTER*(*) PNAME(*),DNAME(*)
 C     ..
 C     .. Local Scalars ..
       INTEGER ISET,ISTAT,IFAIL
@@ -4956,7 +4974,7 @@ C     .. Local Scalars ..
 C     ..
 C     .. Arrays in Common ..
       INTEGER NSETW,SET_ID,CSET_ID,IDEFSET
-      CHARACTER ENTRY_ID*20,DIFFRN_ID*20
+      CHARACTER ENTRY_ID*64,DIFFRN_ID*64
 
       COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
      +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
@@ -5004,9 +5022,11 @@ C
 C     MINDX         (I)	    INTEGER        indicates which MTZ file - 1 index
 C                                          points to both input and output files
 C
-C     PROTEIN_NAME  (I)     CHARACTER*20   protein name of dataset to be added
+C     PROTEIN_NAME  (I)     CHARACTER      protein name of dataset to be added
+C                                          (strings longer than 64 will be truncated)
 C
-C     DATASET_NAME  (I)     CHARACTER*20   dataset name of dataset to be added
+C     DATASET_NAME  (I)     CHARACTER      dataset name of dataset to be added
+C                                          (strings longer than 64 will be truncated)
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS
@@ -5016,7 +5036,7 @@ C     .. Parameters ..
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
-      CHARACTER*20 PROTEIN_NAME,DATASET_NAME
+      CHARACTER PROTEIN_NAME*(*),DATASET_NAME*(*)
 C     ..
 C     .. Local Scalars ..
       INTEGER ISET,ISTAT,IFAIL,JDO50,MAXSETID
@@ -5024,7 +5044,7 @@ C     .. Local Scalars ..
 C     ..
 C     .. Arrays in Common ..
       INTEGER NSETW,SET_ID,CSET_ID,IDEFSET
-      CHARACTER ENTRY_ID*20,DIFFRN_ID*20
+      CHARACTER ENTRY_ID*64,DIFFRN_ID*64
 
       COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
      +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
@@ -5055,6 +5075,12 @@ C     Check whether this protein/dataset already exists.
         IF (SET_ID(JDO50,MINDX).GT.MAXSETID)
      +    MAXSETID = SET_ID(JDO50,MINDX)
  50   CONTINUE
+
+C     Check if PROTEIN_NAME / DATASET_NAME are too long.
+      IF (LENSTR(PROTEIN_NAME).GT.64)
+     +  PROTEIN_NAME = PROTEIN_NAME(1:64)
+      IF (LENSTR(DATASET_NAME).GT.64)
+     +  DATASET_NAME = DATASET_NAME(1:64)
 
 C     New dataset to be added to header
       NSETW(MINDX) = NSETW(MINDX) + 1
@@ -5123,7 +5149,7 @@ C     .. Arrays in Common ..
      +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,TITLE*70,ENTRY_ID*20,DIFFRN_ID*20
+     +          CLABEL*30,TITLE*70,ENTRY_ID*64,DIFFRN_ID*64
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,IOUT,ISTAT,JDO10,JDO20,JDO30,JDO40,JDO50,JDO60,
@@ -5488,8 +5514,8 @@ C     .. Arrays in Common ..
      +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80,ENTRY_ID*20,
-     +          DIFFRN_ID*20
+     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80,ENTRY_ID*64,
+     +          DIFFRN_ID*64
 C     ..
 C     .. Local Scalars ..
       INTEGER ENDLOP,I,IFAIL,ISTAT,JDO10,JDO100,JDO20,JDO30,JDO40,
@@ -5695,7 +5721,7 @@ C
           CRANGE(2,JDO20,MINDX) = WRANGE(2,JDO20,MINDX)
    20   CONTINUE
 
-C---- Write out NDIF and DIFFSET header lines containing
+C---- Write out NDIF, PROJECT and DATASET header lines containing
 C     primary list of datasets included in file.
 
         IF (NSETW(MINDX).GT.0) THEN
@@ -5763,13 +5789,14 @@ C            ******************************
 C            ******************************
 
           DO 26 JDO25 = 1,NSETW(MINDX)
-            WRITE (LINE,FMT='(A7,1X,I8,1X,A,1X,A)') 
-     +        'DIFFSET',SET_ID(JDO25,MINDX),
-     +        ENTRY_ID(JDO25,MINDX),DIFFRN_ID(JDO25,MINDX)
-C
-C              ******************************
+            WRITE (LINE,FMT='(A7,1X,I7,1X,A)') 
+     +        'PROJECT',SET_ID(JDO25,MINDX),
+     +        ENTRY_ID(JDO25,MINDX)
             CALL QWRITC(WLUN(MINDX),LINE(1:80))
-C              ******************************
+            WRITE (LINE,FMT='(A7,1X,I7,1X,A)') 
+     +        'DATASET',SET_ID(JDO25,MINDX),
+     +        DIFFRN_ID(JDO25,MINDX)
+            CALL QWRITC(WLUN(MINDX),LINE(1:80))
  26       CONTINUE
 
 C---- End of dataset info
@@ -6151,8 +6178,8 @@ C     .. Arrays in Common ..
      +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80,ENTRY_ID*20,
-     +          DIFFRN_ID*20
+     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80,ENTRY_ID*64,
+     +          DIFFRN_ID*64
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,IUNIN,JDO10,JDO20,JDO30,JDO40,JDO50,JDO55,
@@ -8380,7 +8407,7 @@ C     .. Arrays in Common ..
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP,
      +          NSETW,SET_ID,CSET_ID,IDEFSET
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,CLABEL*30,
-     +          TITLE*70,ENTRY_ID*20,DIFFRN_ID*20
+     +          TITLE*70,ENTRY_ID*64,DIFFRN_ID*64
 
 C     ..
 C     .. Local Scalars ..
@@ -8460,12 +8487,13 @@ C              ***********************
      +        'CURWIN')
             CALL BLANK('CURWIN',1)
             DO 30 JDO30 = 1,NSETW(MINDX)
-              WRITE (STROUT,FMT='(I8,1X,A,1X,A)') 
-     +          SET_ID(JDO30,MINDX),
-     +          ENTRY_ID(JDO30,MINDX),DIFFRN_ID(JDO30,MINDX)
-C                  ***********************
+
+              WRITE (STROUT,FMT='(I8,1X,A)') 
+     +          SET_ID(JDO30,MINDX),ENTRY_ID(JDO30,MINDX)
               CALL PUTLIN(STROUT,'CURWIN')
-C                  ***********************
+              WRITE (STROUT,FMT='(9X,A)') 
+     +          DIFFRN_ID(JDO30,MINDX)
+              CALL PUTLIN(STROUT,'CURWIN')
 C
    30       CONTINUE
             CALL BLANK('CURWIN',1)
