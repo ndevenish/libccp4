@@ -5368,6 +5368,7 @@ C
         WRITE (6,FMT=6006)
  6006   FORMAT ('Harvest: Error in format of SYMOP file: ')
         Harvest = .false.
+        Close (IST)
         RETURN
       END IF
 C
