@@ -97,6 +97,40 @@
 
 #include "library.h"
 
+/* This creates a null-terminated C string from an input
+   string obtained from a Fortran call. Memory assigned
+   by malloc, so can be freed. */
+
+char *ccp4_FtoCString(fpstr str1, int str1_len)
+{
+  char *str2;
+
+  size_t length = ccp4_flength(FTN_STR(str1),FTN_LEN(str1));
+  if(!length)
+    return NULL;
+  str2 = (char *) ccp4malloc((length+1)*sizeof(char));
+  strncpy(str2, FTN_STR(str1), length); 
+  str2[length] = '\0';
+
+  return str2;
+}
+
+/* Transfer C string to Fortran string for passing back to Fortran call.
+   Characters after null-terminator may be junk, so pad with spaces. */
+
+void ccp4_CtoFString(fpstr str1, int str1_len, const char *cstring)
+{
+  int i;
+
+  if (str1_len > strlen(cstring)) {
+    strcpy(FTN_STR(str1),cstring);
+    for (i = strlen(cstring); i < FTN_LEN(str1); ++i) 
+      str1[i] = ' ';
+  } else {
+    strncpy(FTN_STR(str1),cstring,str1_len);
+  }
+}
+
 #if ! defined (VMS)
 /* \section{Miscellaneous routines}                                         */
 /* \subsection{{\tt subroutine ustenv(\meta{string}, \meta{result})}}       */
@@ -129,6 +163,17 @@ FORTRAN_SUBR ( USTENV, ustenv,
   free(temp_name);
 }
 #endif
+
+/* \subsection{{\tt outbuf()}}                                              */
+/*                                                                          */
+/* This sets stdout to line buffering                                       */
+/*                                                                          */
+/* <miscellaneous routines>=                                                */
+/* <outbuf code>=                                                           */
+FORTRAN_SUBR ( OUTBUF, outbuf, (), (), ())
+{
+  ccp4_outbuf();
+}
 
 /* \subsection{{\tt subroutine cunlink (\meta{filename})}}                  */
 /* This unlinks \meta{filename} from the directory.  It's intended for      */
@@ -700,16 +745,15 @@ FORTRAN_SUBR ( CMKDIR, cmkdir,
     (const fpstr path, const fpstr cmode, int *result, int path_len, int cmode_len),
     (const fpstr path, const fpstr cmode, int *result),
     (const fpstr path, int path_len, const fpstr cmode, int cmode_len, int *result))
-{ size_t Length;
-  char *name;
+{ 
+  char *temp_path, *temp_cmode;
 
-  Length = (size_t) FTN_LEN(path);
-  name = (char *) malloc(Length+1);
-  (void) strncpy (name, path, Length);
-  name[Length] = '\0'; 
+  temp_path = ccp4_FtoCString(FTN_STR(path), FTN_LEN(path));
+  temp_cmode = ccp4_FtoCString(FTN_STR(cmode), FTN_LEN(cmode));
 
-  *result = ccp4_mkdir (name, cmode);
-  free(name);
+  *result = ccp4_mkdir (temp_path, temp_cmode);
+  free(temp_path);
+  free(temp_cmode);
 }
 
 /* Wrap-around for mkdir function. Returns 0 if successful, 1 if directory     */
@@ -718,16 +762,15 @@ FORTRAN_SUBR ( CCHMOD, cchmod,
     (const fpstr path, const fpstr cmode, int *result, int path_len, int cmode_len),
     (const fpstr path, const fpstr cmode, int *result),
     (const fpstr path, int path_len, const fpstr cmode, int cmode_len, int *result))
-{ size_t Length;
-  char *name;
+{ 
+  char *temp_path, *temp_cmode;
 
-  Length = (size_t) FTN_LEN(path);
-  name = (char *) malloc(Length+1);
-  (void) strncpy (name, path, Length);
-  name[Length] = '\0'; 
+  temp_path = ccp4_FtoCString(FTN_STR(path), FTN_LEN(path));
+  temp_cmode = ccp4_FtoCString(FTN_STR(cmode), FTN_LEN(cmode));
 
-  *result = ccp4_chmod (name, cmode);
-  free(name);
+  *result = ccp4_chmod (temp_path, temp_cmode);
+  free(temp_path);
+  free(temp_cmode);
 }
 
 #ifdef _AIX
