@@ -261,7 +261,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
     symop_to_mat4(sg_cenop[i],sg_cenop[i]+strlen(sg_cenop[i]),cent_ops);
     for (j = 0; j < sg_nsymp; ++j) {
      strncpy(filerec,sg_symop[j],80);   /* symop_to_mat4 overwrites later sg_symop */
-     symop_to_mat4(filerec,filerec+79,rot2);
+     symop_to_mat4(filerec,filerec+strlen(filerec),rot2);
      ccp4_4matmul(rot1,cent_ops,rot2);
      invert4matrix(rot1,rot2);
      for (k = 0; k < 3; ++k) {
