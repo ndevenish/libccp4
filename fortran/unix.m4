@@ -483,6 +483,10 @@ C            CHARACTER*(*) ERRSTR
 C
 C Usage:     CALL UGERR(STATUS, ERRSTR)
 C
+ifelse(_ifc,8,
+[      USE IFPORT
+      USE IFCORE])
+C
 C     .. Scalar Arguments ..
       INTEGER STATUS
       CHARACTER ERRSTR* (*)
@@ -491,8 +495,9 @@ C     .. Local Scalars ..
       LOGICAL IPRINT
 C     ..
 C     .. External Subroutines ..
-      INTEGER IERRNO
-      EXTERNAL IERRNO
+ifelse(_ifc,8,,
+[      INTEGER IERRNO
+      EXTERNAL IERRNO,GERROR])
 C     ..
       IPRINT = .FALSE.
       IF (STATUS.LT.0) THEN
@@ -776,6 +781,8 @@ c     ============================
 c     ============================
 ccFrom GERARD@XRAY.BMC.UU.SE Thu Sep 24 00:25:25 1998
 c
+ifelse(_ifc,8,
+[      USE IFPORT])
       implicit none
 c
       character ciftime*(*)
@@ -786,6 +793,12 @@ ifelse(_efc,1,
      +        localyear,nhours,nminutes,diff
       integer(kind=8) :: stime
       real(kind=8)    :: rtc
+],
+_ifc,8,
+[      integer gmt_hour,gmt_minutes,localdaymonth,
+     +        localhours,localminutes,localmonth,localseconds,
+     +        localyear,nhours,nminutes,diff
+      integer(kind=8)  :: stime
 ],
 [      integer gmt_hour,gmt_minutes,localdaymonth,
      +        localhours,localminutes,localmonth,localseconds,
@@ -821,6 +834,9 @@ ifelse(_ifc,1,
 [      stime = time(timstr)
 ],
 _efc,1,
+[      stime = int(rtc(), kind=8)
+],
+_ifc,8, 
 [      stime = int(rtc(), kind=8)
 ],
 [
