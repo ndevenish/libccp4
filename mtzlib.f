@@ -4719,8 +4719,8 @@ C
 C---- No. of columns, no. of refls, also copy to header, for print
 C
         IF (NBATW(MINDX).GT.0) NBATCH(MINDX) = NBATW(MINDX)
-        WRITE (LINE,FMT='(A4,1X,3I8)') 'NCOL',NCOLW(MINDX),NREFW(MINDX),
-     +    NBATCH(MINDX)
+        WRITE (LINE,FMT='(A4,1X,I8,1X,I12,1X,I8)') 
+     +    'NCOL',NCOLW(MINDX),NREFW(MINDX),NBATCH(MINDX)
 C
 C            ******************************
         CALL QWRITC(WLUN(MINDX),LINE(1:80))
