@@ -1551,10 +1551,14 @@ FORTRAN_SUBR ( LWHSTL, lwhstl,
  }
 
 /* append hstrng to hline - hline is not necessarily null-terminated */
+/* MtzAddHistory assumes that hline is either null-terminated, or 
+ * full - otherwise, garbage may be added 
+ */
  temp_hstrng = ccp4_FtoCString(FTN_STR(hstrng), FTN_LEN(hstrng));
  Length = strlen(temp_hstrng);
  if (Length > MTZRECORDLENGTH-len) Length = MTZRECORDLENGTH-len;
  strncpy(hline+len,temp_hstrng,Length);
+ hline[len + Length] = '\0';
 
  MtzAddHistory(mtzdata[*mindx-1], hline, 1);
 
