@@ -933,6 +933,22 @@ int ccp4_spgrp_equal( int nsym1, const ccp4_symop *op1, int nsym2, const ccp4_sy
   return ( i == n );
 }
 
+int ccp4_spgrp_equal_order( int nsym1, const ccp4_symop *op1, int nsym2, const ccp4_symop *op2 )
+{
+  int i;
+
+  /* first check that we have equal number of symops */
+  if ( nsym1 != nsym2 ) return 0;
+
+  /* compare the symcodes */
+  for ( i = 0; i < nsym1; i++ ) {
+    if ( ccp4_symop_code( op1[i] ) != ccp4_symop_code( op2[i] ) ) break;
+  }
+
+  /* return true if they are equal */
+  return ( i == nsym1 );
+}
+
 int ccp4_symop_code(ccp4_symop op)
 {
   int i, j, code=0;

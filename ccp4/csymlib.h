@@ -379,7 +379,7 @@ int ccp4spg_pgname_equal(const char *pgname1, const char *pgname2);
 */
 ccp4_symop *ccp4spg_norm_trans(ccp4_symop *op);
 
-/** Compare two symmetry operator lists.
+/** Sort and compare two symmetry operator lists.
  * Kevin's code. The lists are coded as ints, which are then sorted and compared.
  * Note that no changes are made to the input operators, so that operators
  * differing by an integral number of unit cell translations are considered
@@ -392,6 +392,18 @@ ccp4_symop *ccp4spg_norm_trans(ccp4_symop *op);
  * @return 1 if they are equal else 0.
 */
 int ccp4_spgrp_equal( int nsym1, const ccp4_symop *op1, int nsym2, const ccp4_symop *op2);
+
+/** Compare two symmetry operator lists.
+ * Kevin's code. The lists are coded as ints, which are compared.
+ * Unlike ccp4_spgrp_equal, the lists are not sorted, so the same operators
+ * in a different order will be considered unequal.
+ * @param nsym1 number of symmetry operators in first list
+ * @param op1 first list of symmetry operators
+ * @param nsym2 number of symmetry operators in second list
+ * @param op2 second list of symmetry operators
+ * @return 1 if they are equal else 0.
+*/
+int ccp4_spgrp_equal_order( int nsym1, const ccp4_symop *op1, int nsym2, const ccp4_symop *op2);
 
 /** Make an integer coding of a symmetry operator.
  * The coding takes 30 bits: 18 for the rotation and 12 for the translation.
