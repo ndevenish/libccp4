@@ -1,3 +1,7 @@
+/* % Copyright Daresbury Laboratory 1992--1995                              */
+/* % This is a CCP4 `part (i)' file for the purposes of copyright.          */
+/* % See the CCP4 distribution conditions for explanation.                  */
+
 /* % This was apart of library.c but has been split off so it can be used   */
 /* % with other c programs in the suite.                                    */
 /*                                                                          */
@@ -49,13 +53,11 @@
 /* [[CHARACTER]]-type argument since sometimes the length of each such      */
 /* argument is given after it in the parameter list and sometimes they      */
 /* are all collected at the end of the list.                                */
-/*                                                                          */
+
+#ifndef CCP4_LIBRARY_C
+#define CCP4_LIBRARY_C
+
 /* \subsection{Platform identification}                                     */
-/*                                                                          */
-/* Apart from the possibility of using the \idx{Netlib} {\tt                */
-/*   f2c}\index{f2c@{\tt f2c}} compiler we currently assume that each       */
-/* system uses the vendor-supplied \ft{} compiler\index{FORTRAN             */
-/*   compiler@\ft{} compiler}.\index{platforms}                             */
 /*                                                                          */
 /*                                                                          */
 /* This is for \idx{IBM} Unix systems---\idx{RS/6000} models, at least.     */
@@ -176,6 +178,7 @@
 #endif
 #if defined (VMS)
 #  define KNOWN_MACHINE
+#  define CALL_LIKE_VMS 1
 #endif
 
 /* First attemt at porting to nt wsing the visual fortran and MVC++         */
@@ -214,7 +217,7 @@
 /*                                                                          */
 /* <guarded code>=                                                          */
 #if ! defined (KNOWN_MACHINE)
-  #error System type is not known -- see the Installation Guide
+#  error System type is not known -- see the Installation Guide
 #else
 /* At this stage we've identified the platform and are in business.  Here   */
 /* are the components we have to put together.                              */
@@ -503,12 +506,12 @@
 #    ifdef _CONVEX_FLOAT_
 #      define NATIVEFT DFNTF_CONVEXNATIVE
 #    else
-       #error "Can't determine Convex floating point type. Use native compiler"
+#      error "Can't determine Convex floating point type. Use native compiler"
 #    endif
 #  endif
 #endif
 #ifndef NATIVEFT
-  #error "Can't determine machine number format"
+#  error "Can't determine machine number format"
 #endif
 /* Here are the codes for data types which we can read from files and       */
 /* translate.                                                               */
@@ -536,4 +539,409 @@ typedef unsigned int uint32;
 typedef float float32;
 typedef unsigned char uint8;
 /* typedef signed char sint8; */ /* not K&R ? */
+union float_uint_uchar {
+    float32 f;
+    uint32 i;
+    uint8 c[4];
+/*    sint8 s[4]; */
+  };
+#endif
+
+/*  =================  Machine-dependent definitions  =================== */
+
+typedef   char     *        pstr;
+
+#ifdef CALL_LIKE_STARDENT
+  /* SStrParam is used in Ardent-like machines' fortran calls */
+  /* for passing a string parameter */
+  DefineStructure(SStrPar)
+  struct SStrPar  {
+    pstr S;
+    int  len;
+    int  id;
+  };
+#endif
+
+
+/*
+     Macro  FORTRAN_SUBR(NAME,name,p_send,p_sstruct,p_sflw)
+   makes function header statements that allow for linking with
+   programs written in FORTRAN.
+  
+     Parameters:
+  
+     NAME      name of the FORTRAN subroutine in capital letters
+     name      name of the FORTRAN subroutine in small letters
+     p_send    parameter list (in brackets) with string lengths
+               attached to the end of it (see below)
+     p_sstruct parameter list (in brackets) with strings passed
+               as complex parameters, or structures
+     p_sflw    parameter list (in brackets) with string lengths
+               following immediately the string parameters
+               (see below)
+  
+     All non-string parameters must be passed as pointers, in
+   the same order as they enter the FORTRAN call. Rules for
+   the string parameters are as follows.
+  
+     1. All strings should be specified as of 'fpstr' type.
+        The 'fpstr' type is defined below and depends on the
+        platform:
+  
+          a) whenever length of string is passed as a separate
+             parameter ( CALL_LIKE_SUN, CALL_LIKE_HPUX,
+             CALL_LIKE_MVS )  'fpstr' is identical to 'pstr'.
+             You may choose arbitrary name for the string,
+             but you MUST use the same name, appended with
+             suffix '_len', for its length (see example below).
+  
+          b) whenever string and its length are passed as
+             complex parameter, 'fpstr' is identical to the
+             pointer on the corresponding structure:
+               CALL_LIKE_STARDENT :
+                   'fpstr' is identical to 'PSStrPar'
+               CALL_LIKE_VMS      :
+                   'fpstr' is identical to 'dsc$descriptor_s *'
+  
+        With 'fpstr' type, two important macro definition come:
+  
+          i)  FTN_STR(s)  - returns pointer to fortran-passed
+                            string s. This pointer is always
+                            of 'pstr' type
+          ii) FTN_LEN(s)  - returns integer length of fortran-
+                            passed string s. For this macro to
+                            work properly with SUN- and MVS-like
+                            machines, always use suffix '_len' 
+                            for the string length parameters as
+                            described in a) above.
+  
+     2. Three parameter lists, each enclosed in brackets, should
+        be given. These lists retain the general order of
+        parameters in the corresponding fortran call. Non-string
+        parameters are passed as pointers. String parameters
+        and their lengths are passed differently in different
+        lists:
+  
+         p_send    strings enter their place in the list as in
+                   the corresponding FORTRAN call, having 'fpstr'
+                   parameter type. Their lengths are appended as
+                   'int' to the end of the list. They should
+                   retain the order in which the strings appear
+                   in the list.
+  
+         p_sstruct strings enter their place in the list as in
+                   the corresponding FORTRAN call, having 'fpstr'
+                   parameter type.
+  
+         p_sflw    strings enter their place in the list as in
+                   the corresponding FORTRAN call, having 'fpstr'
+                   type and being immediately followed by their
+                   lengths as 'int' parameters.
+  
+  
+  
+   Example:
+  
+     FORTRAN statement
+  
+       subroutine  SomeSub ( k,s1,a,s2,m )
+       integer       k,m
+       real          a
+       character*(*) s1,s2
+  
+     is translated to
+  
+       FORTRAN_SUBR ( SOMESUB, somesub,
+         ( int * k, fpstr s1, float * a, fpstr s2, int * m,
+           int s1_len, int s2_len ),
+         ( int * k, fpstr s1, float * a, fpstr s2, int * m ),
+         ( int * k, fpstr s1, int s1_len, float * a,
+           fpstr s2, int s2_len, int * m ) )
+  
+  
+     The macro should replace ordinary function header
+   statements to assure compatibility with FORTRAN links.
+   In header files, do not forget to add semicolumn:
+  
+     FORTRAN_SUBR ( .... );
+  
+   while in source files use simply
+  
+     FORTRAN_SUBR ( .... )  {
+      <source body, operators>
+     }
+  
+  
+  
+     Macro  FORTRAN_CALL(NAME,name,p_send,p_sstruct,p_sflw)
+   calls function defined with macro FORTRAN_SUBR(...), from
+   a C/C++ application. Its parameters and their meaning are
+   exactly identical to those of FORTRAN_SUBR(...).
+   FORTRAN_CALL(...) should be followed by semicolon.                    */
+
+
+#if  defined(CALL_LIKE_SUN)
+
+  typedef pstr fpstr;
+
+#  define FTN_STR(s)  s
+#  define FTN_LEN(s)  s##_len
+
+#  define char_struct(s)           \
+    pstr  s;                       \
+    int   s##_len;
+#  define fill_char_struct(s,str)  \
+    s  = str;                      \
+    s##_len = strlen(str);
+
+#  define FORTRAN_SUBR(NAME,name,p_sun,p_stardent,p_mvs) \
+    void name##_ p_sun
+#  define FORTRAN_CALL(NAME,name,p_sun,p_stardent,p_mvs) \
+    name##_ p_sun
+
+#elif defined(CALL_LIKE_HPUX)
+
+  typedef pstr fpstr;
+
+#  define FTN_STR(s)  s
+#  define FTN_LEN(s)  s##_len
+
+#  define char_struct(s)  \
+    pstr  s;              \
+    int   s##_len;
+#  define fill_char_struct(s,str)  \
+    s  = str;                      \
+    s##_len = strlen(str);
+
+#  define FORTRAN_SUBR(NAME,name,p_sun,p_stardent,p_mvs) \
+    void name p_sun
+#  define FORTRAN_CALL(NAME,name,p_sun,p_stardent,p_mvs) \
+    name p_sun
+
+#elif defined(CALL_LIKE_STARDENT)
+
+  typedef PStrPar fpstr;
+
+#  define FTN_STR(s)  s->S
+#  define FTN_LEN(s)  s->len
+
+#  define char_struct(s)           \
+    SStrPar s;
+#  define fill_char_struct(s,str)  \
+    s.S   = str;                   \
+    s.len = strlen(FName);         \
+    s.id  = 0;
+
+#  define FORTRAN_SUBR(NAME,name,p_send,p_sstruct,p_sflw) \
+    void NAME p_stardent
+#  define FORTRAN_CALL(NAME,name,p_send,p_sstruct,p_sflw) \
+    NAME p_stardent
+
+#elif defined(CALL_LIKE_VMS)
+
+  typedef dsc$descriptor_s * fpstr;
+
+#  define FTN_STR(s)  s->dsc$a_pointer;
+#  define FTN_LEN(s)  s->dsc$w_length;
+
+#  define character(s)                \
+    dsc$descriptor_s s;
+#  define fill_char_struct(s,str)     \
+    s.dsc$a_pointer = str;            \
+    s.dsc$w_length  = strlen(str);    \
+    s.dsc$b_dtype   = DSC$K_DTYPE_T;  \
+    s.dsc$b_class   = DSC$K_CLASS_S;
+
+#  define FORTRAN_SUBR(NAME,name,p_sun,p_stardent,p_mvs) \
+    void NAME p_stardent
+#  define FORTRAN_CALL(NAME,name,p_sun,p_stardent,p_mvs) \
+    NAME p_stardent
+
+#elif defined(CALL_LIKE_MVS)
+
+  typedef pstr fpstr;
+
+#  define FTN_STR(s)  s
+#  define FTN_LEN(s)  s##_len
+
+#  define char_struct(s)  \
+    pstr  s;              \
+    int   s##_len;
+#  define fill_char_struct(s,str)  \
+    s  = str;                      \
+    s##_len = strlen(str);
+
+#  define FORTRAN_SUBR(NAME,name,p_sun,p_stardent,p_mvs) \
+    void __stdcall NAME p_mvs
+#  define FORTRAN_CALL(NAME,name,p_sun,p_stardent,p_mvs) \
+    NAME p_mvs
+
+#else
+
+#  error  Unknown machine!!!
+
+  typedef pstr fpstr;
+
+#  define FTN_STR(s)  s
+#  define FTN_LEN(s)  s##_len
+
+#  define char_struct(s)  \
+    pstr  s;              \
+    int   s##_len;
+#  define fill_char_struct(s,str)  \
+    s  = str;                      \
+    s##_len = strlen(str);
+
+#  define FORTRAN_SUBR(NAME,name,p_sun,p_stardent,p_mvs) \
+    void name##_ p_sun
+#  define FORTRAN_CALL(NAME,name,p_sun,p_stardent,p_mvs) \
+    name##_ p_sun
+
+#endif
+
+/*
+
+CCP4 library.c macro definitions
+
+*/
+
+#ifndef FALSE
+#define FALSE 0
+#define TRUE 1
+#endif
+
+typedef char BOOLEAN;
+
+typedef struct { double r;             /* real component and */
+                 double i;             /* imaginary component of */
+               } COMPLEX;              /* a complex number */
+
+typedef struct { double r;             /* radial and */
+                 double phi;           /* angular component of */
+               } POLAR;                /* a complex number */
+
+#define SQR(x) ((x)*(x))
+#define DEGREE(x) ((((x < 0)?(x)+2*M_PI:(x))*360)/(2*M_PI))
+#define RADIAN(x) ((((x<0)?(x)+360:(x))*2*M_PI)/360)
+#define MAX(x, y) (((x)>(y))?(x):(y))
+#define MIN(x, y) (((x)<(y))?(x):(y))
+#define ABS(x) (((x)<0)?-(x):(x))
+#define SIGN(x) (((x)<0)?-1:1)
+
+/****************************************************************************
+ * Function prototypes                                                      *
+ ****************************************************************************/
+
+static void fatal (char *message);
+
+static void cqprint (char *message);
+
+static void file_fatal (char *message, char *file);
+
+static void vaxF2ieeeF (union float_uint_uchar *buffer, int size);
+
+static void ieeeF2vaxF (union float_uint_uchar *buffer, int size);
+
+static void convexF2ieeeF (union float_uint_uchar *buffer, int size);
+
+static void ieeeF2convexF (union float_uint_uchar *buffer, int size);
+
+void ccp4_ustenv (char *str, int *result);
+
+void ccp4_cunlink (char *filename);
+
+void ccp4_ccpal1 (void (* routne) (), int *n, int type[], int length[]);
+
+void ccp4_copen (int *iunit, const char *filename, int istat);
+
+void ccp4_qrarch (int iunit, int ipos, int *ireslt);
+
+void ccp4_qwarch (int iunit, int ipos);
+
+void ccp4_qclose (int iunit);
+
+void ccp4_qmode (int iunit, int mode, int *size);
+
+void ccp4_qread (int iunit, uint8 *buffer, int nitems, int *result);
+
+void ccp4_qreadc (int iunit, char *buffer, size_t nchars, int *result);
+
+void ccp4_qwrite (int iunit, uint8 *buffer, int nitems);
+
+void ccp4_qwritc (int iunit, char *buffer, size_t nchars);
+
+void ccp4_qseek (int iunit, int irec, int iel, int lrecl);
+
+void ccp4_qback (int iunit, int lrecl);
+
+void ccp4_qskip (int iunit, int lrecl);
+
+void ccp4_cqinq (int istrm, char *filnam, int *length);
+
+void ccp4_qlocate (int iunit, int *locate);
+
+#ifdef _AIX
+void idate (int iarray);
+#endif
+
+#if defined (__hpux) || defined (_AIX)
+void gerror (char *str, int Lstr);
+
+int ierrno ();
+
+void itime (int array);
+
+float etime (float tarray);
+#endif
+
+#if defined(F2C) || defined(G77)
+int exit_ (int *status);
+
+int time_ ();
+
+int getpid_ ();
+
+int isatty_ (int *lunit);
+
+int idate_ (int *iarray);
+
+int gerror_ (char *str, int Lstr);
+
+int ierrno_ ();
+
+int itime_ (int *array);
+
+doublereal etime_ (float *tarray);
+
+int ibset_ (int *a, int *b);
+
+int ibclr_ (int *a, int *b);
+
+int btest_ (int *a, int *b);
+#endif
+
+void ccp4_qnan (union float_uint_uchar *realnum);
+
+int ccp4_cisnan (union float_uint_uchar *realnum);
+
+void ccp4_ccpbml (int ncols, union float_uint_uchar cols[]);
+
+void ccp4_ccpwrg (int ncols, union float_uint_uchar cols[], float wminmax[]);
+
+void ccp4_hgetlimits (int *IValueNotDet, float *ValueNotDet);
+
+void ccp4_cmkdir (const char *path, const char *cmode, int *result);
+
+void ccp4_cchmod (const char *path, const char *cmode, int *result);
+
+void *ccp4malloc(size_t size);
+
+void *ccp4realloc(void *ptr, size_t size);
+
+void *ccp4calloc(size_t nelem , size_t elsize);
+
+/****************************************************************************
+*  End of prototypes                                                        *
+*****************************************************************************/
+
 #endif

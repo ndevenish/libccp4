@@ -159,492 +159,53 @@ static int file_mode[MAXFILES];               /* diskio mode of each stream */
 /* <global variables>=                                                      */
 static uint16 nativeIT = NATIVEIT; /* machine integer type */ 
 static uint16 nativeFT = NATIVEFT; /* machine float type */
-/* <global variables>=                                                      */
-union float_uint_uchar {
-    float32 f;
-    uint32 i;
-    uint8 c[4];
-/*    sint8 s[4]; */
-  };
 static int
     Iconvert[MAXFILES],         /* integer convserion needed on read*/
     Fconvert[MAXFILES];         /* real convserion needed on read*/
-/****************************************************************************
- * Prototype subroutines                                                    *
- ****************************************************************************/
-#if defined (PROTOTYPE)
-  static size_t flength (char *s, int len);
-
-  static void fatal (char *message);
-
-  static void cqprint (char *message);
-
-  static void file_fatal (char *message, char *file);
-
-  static void vaxF2ieeeF (union float_uint_uchar *buffer, int size);
-
-  static void ieeeF2vaxF (union float_uint_uchar *buffer, int size);
-
-  static void convexF2ieeeF (union float_uint_uchar *buffer, int size);
-
-  static void ieeeF2convexF (union float_uint_uchar *buffer, int size);
-
-#if CALL_LIKE_HPUX
-  void ustenv (char *str, int *result, int Lstr);
-#endif
-#if CALL_LIKE_STARDENT
-  void USTENV (struct Str_Desc *str, int *result);
-#endif
-#if CALL_LIKE_SUN
-  void ustenv_ (char *str, int *result, int Lstr);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall USTENV (char *str, int *result, int Lstr);
-#endif
-
-#if CALL_LIKE_HPUX
-  void cunlink (char *filename, int Lfilename);
-#endif
-#if CALL_LIKE_STARDENT
-  void CUNLINK (struct Str_Desc *filename);
-#endif
-#if defined (VMS)
-  void CUNLINK (struct dsc$descriptor_s *filename);
-#endif
-#if CALL_LIKE_SUN
-  void cunlink_ (char *filename, int Lfilename);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall CUNLINK (char *filename, int Lfilename);
-#endif
-
-#if CALL_LIKE_HPUX
-  void copen (int *iunit, char *filename, int *istat, int Lfilename);
-#endif
-#if CALL_LIKE_STARDENT
-  void COPEN (int *iunit, struct Str_Desc *filename, int *istat);
-#endif
-#if defined (VMS)
-  void COPEN (int *iunit, struct dsc$descriptor_s *filename, int *istat);
-#endif
-#if CALL_LIKE_SUN
-  void copen_ (int *iunit, char *filename, int *istat, int Lfilename);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall COPEN (int *iunit, char *filename, int Lfilename, int *istat);
-#endif
-
-#if CALL_LIKE_HPUX
-  void qrarch (int *iunit, int *ipos, int *ireslt);
-#endif
-#if CALL_LIKE_STARDENT
-  void QRARCH (int *iunit, int *ipos, int *ireslt);
-#endif
-#if defined (VMS)
-  void QRARCH (int *iunit, int *ipos, int *ireslt);
-#endif
-#if CALL_LIKE_SUN
-  void qrarch_ (int *iunit, int *ipos, int *ireslt);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QRARCH (int *iunit, int *ipos, int *ireslt);
-#endif
-
-#if CALL_LIKE_HPUX
-  void qwarch (int *iunit, int *ipos);
-#endif
-#if CALL_LIKE_STARDENT
-  void QWARCH (int *iunit, int *ipos);
-#endif
-#if defined (VMS)
-  void QWARCH (int *iunit, int *ipos);
-#endif
-#if CALL_LIKE_SUN
-  void qwarch_ (int *iunit, int *ipos);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QWARCH (int *iunit, int *ipos);
-#endif
-
-#if CALL_LIKE_HPUX
-  void qclose (int *iunit);
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QCLOSE (int *iunit);
-#endif
-#if CALL_LIKE_SUN
-  void qclose_ (int *iunit);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QCLOSE (int *iunit);
-#endif
-
-#if CALL_LIKE_HPUX
-  void qmode (int *iunit, int *mode, int *size);
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QMODE (int *iunit, int *mode, int *size);
-#endif
-#if CALL_LIKE_SUN
-  void qmode_ (int *iunit, int *mode, int *size);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QMODE (int *iunit, int *mode, int *size);
-#endif
-
-#if CALL_LIKE_HPUX
-  void qread (int *iunit, uint8 * buffer, int *nitems, int *result);
-#endif
-#if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
-  void QREAD (int *iunit, uint8 * buffer, int *nitems, int *result);
-#endif
-#if CALL_LIKE_SUN
-  void qread_ (int *iunit, uint8 * buffer, int *nitems, int *result);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QREAD (int *iunit, uint8 * buffer, int *nitems, int *result);
-#endif
-
-#if CALL_LIKE_HPUX
-  void qreadc (int *iunit, char * buffer, int *result, int Lbuffer);
-#endif
-#ifdef VMS
-  void QREADC (int *iunit, struct dsc$descriptor_s *buffer, int *result);
-#endif
-#if CALL_LIKE_STARDENT
-  void QREADC (int *iunit, struct Str_Desc *buffer, int *result);
-#endif
-#if CALL_LIKE_SUN
-  void qreadc_ (int *iunit, char * buffer, int *result, int Lbuffer);
-#endif
-#if CALL_LIKE_MVS 
-  void __stdcall QREADC (int *iunit, char * buffer, int *result, int Lbuffer);
-#endif
-
-#if CALL_LIKE_HPUX
-  void qwrite (int *iunit, uint8 * buffer, int *nitems);
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QWRITE (int *iunit, uint8 * buffer, int *nitems);
-#endif
-#if CALL_LIKE_SUN
-  void qwrite_ (int *iunit, uint8 * buffer, int *nitems);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QWRITE (int *iunit, uint8 * buffer, int *nitems);
-#endif
-
-#if CALL_LIKE_HPUX
-  void qwritc (int *iunit, char * buffer, int Lbuffer);
-#endif
-#if defined (VMS)
-  void QWRITC (int *iunit, struct dsc$descriptor_s *buffer);
-#endif
-#if defined CALL_LIKE_STARDENT
-  void QWRITC (int *iunit, struct Str_Desc *buffer);
-#endif
-#if CALL_LIKE_SUN
-  void qwritc_ (int *iunit, char * buffer, int Lbuffer);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QWRITC (int *iunit, char * buffer, int Lbuffer);
-#endif
-
-#if CALL_LIKE_HPUX
-  void qseek (int *iunit, int *irec, int *iel, int *lrecl);
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QSEEK (int *iunit, int *irec, int *iel, int *lrecl);
-#endif
-#if CALL_LIKE_SUN
-  void qseek_ (int *iunit, int *irec, int *iel, int *lrecl);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QSEEK (int *iunit, int *irec, int *iel, int *lrecl);
-#endif
-
-#if CALL_LIKE_HPUX
-  void qback (int *iunit, int *lrecl);
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QBACK (int *iunit, int *lrecl);
-#endif
-#if CALL_LIKE_SUN
-  void qback_ (int *iunit, int *lrecl);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QBACK (int *iunit, int *lrecl);
-#endif
-
-#if CALL_LIKE_HPUX
-  void qskip (int *iunit, int *lrecl);
-#endif
-#if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
-  void QSKIP (int *iunit, int *lrecl);
-#endif
-#if CALL_LIKE_SUN
-  void qskip_ (int *iunit, int *lrecl);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QSKIP (int *iunit, int *lrecl);
-#endif
-
-#if CALL_LIKE_HPUX
-  void cqinq (int *istrm, char *filnam, int *length, int len_filnam);
-#endif
-#if CALL_LIKE_STARDENT
-  void CQINQ (int *istrm, struct Str_Desc *filnam, int *length);
-#endif
-#if defined (VMS)
-  void CQINQ (int *istrm, struct dsc$descriptor_s *filnam, int *length);
-#endif
-#if CALL_LIKE_SUN
-  void cqinq_ (int *istrm, char *filnam, int *length, int len_filnam);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall CQINQ (int *istrm, char *filnam, int len_filnam, int *length);
-#endif
-
-#if CALL_LIKE_HPUX
-  void qlocate (int *iunit, int *locate);
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QLOCATE (int *iunit, int *locate);
-#endif
-#if CALL_LIKE_SUN
-  void qlocate_ (int *iunit, int *locate);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QLOCATE (int *iunit, int *locate);
-#endif
-
-#ifdef _AIX
-  void idate (int iarray);
-#endif
-
-#if defined (__hpux) || defined (_AIX)
-  void gerror (char *str, int Lstr);
-
-  int ierrno ();
-
-  void itime (int array);
-
-  float etime (float tarray);
-#endif
-
-#if defined(F2C) || defined(G77)
-  int exit_ (int *status);
-
-  int time_ ();
-
-  int getpid_ ();
-
-  int isatty_ (int *lunit);
-
-  int idate_ (int *iarray);
-
-  int gerror_ (char *str, int Lstr);
-
-  int ierrno_ ();
-
-  int itime_ (int *array);
-
-  doublereal etime_ (float *tarray);
-
-  int ibset_ (int *a, int *b);
-
-  int ibclr_ (int *a, int *b);
-
-  int btest_ (int *a, int *b);
-#endif
-
-#if CALL_LIKE_HPUX
-  void qnan (union float_uint_uchar *realnum);
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QNAN (union float_uint_uchar *realnum);
-#endif
-#if CALL_LIKE_SUN
-  void qnan_ (union float_uint_uchar *realnum);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QNAN (union float_uint_uchar *realnum);
-#endif
-
-#if CALL_LIKE_HPUX
-  int cisnan (union float_uint_uchar *realnum);
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  int CISNAN (union float_uint_uchar *realnum);
-#endif
-#if CALL_LIKE_SUN
-  int cisnan_ (union float_uint_uchar *realnum);
-#endif
-#if CALL_LIKE_MVS
-  int __stdcall CISNAN (union float_uint_uchar *realnum);
-#endif
-
-#if CALL_LIKE_HPUX
-  void hgetlimits (int *IValueNotDet, float *ValueNotDet);
-  void cmkdir (const char *path, const char *cmode, int *result, int Lpath, int Lmode);
-  void cchmod (const char *path, const char *cmode, int *result, int Lpath, int Lmode);
-#endif
-#if defined (VMS) 
-  void HGETLIMITS (int *IValueNotDet, float *ValueNotDet);
-  void CMKDIR (struct dsc$descriptor_s *path, struct dsc$descriptor_s *cmode, 
-          int *result);
-  void CCHMOD (struct dsc$descriptor_s *path, struct dsc$descriptor_s *cmode, 
-          int *result);
-#endif
-#if CALL_LIKE_STARDENT
-  void HGETLIMITS (int *IValueNotDet, float *ValueNotDet);
-  void CMKDIR (struct Str_Desc *path, struct Str_Desc *cmode, int *result);
-  void CCHMOD (struct Str_Desc *path, struct Str_Desc *cmode, int *result);
-#endif
-#if CALL_LIKE_SUN
-  void hgetlimits_ (int *IValueNotDet, float *ValueNotDet);
-  void cmkdir_ (const char *path, const char *cmode, int *result, int Lpath, int Lmode);
-  void cchmod_ (const char *path, const char *cmode, int *result, int Lpath, int Lmode);
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall HGETLIMITS (int *IValueNotDet, float *ValueNotDet);
-  void __stdcall CMKDIR (const char *path, int Lpath, const char *cmode, int Lmode, 
-           int *result);
-  void __stdcall CCHMOD (const char *path, int Lpath, const char *cmode, int Lmode,
-           int *result);
-#endif
-/****************************************************************************
-*  End of prototypes                                                        *
-*****************************************************************************/
-#endif
 
 /****************************************************************************/
 /* %def file_last_op file_mode                                              */
 /*                                                                          */
 /* \section{Internal routines}                                              */
 /*                                                                          */
-/* This gets the length of a \ft{} string ([[character*]]\meta{len}         */
-/* variable) \meta{s} with trailing blanks removed.  \fixme{Avoid lossage   */
-/*   on null/blank string}                                                  */
-/*                                                                          */
-/* <internal routines>=                                                     */
-#if defined (PROTOTYPE)
-static size_t flength (char *s, int len)
-#else
-static size_t flength(s, len)
-char *s;
-int len;
-#endif
-{
-  while (s[--len] == ' ');
-  return (++len);
-}
 /* This interface to [[ccperr]] avoids mixing C and \ft{} i/o, as was       */
 /* originally done.\index{error reporting}                                  */
 /*                                                                          */
 /* <internal routines>=                                                     */
-#if defined (PROTOTYPE)
 static void fatal (char *message)
-#else
-static void fatal(message)
-char *message;
-#endif
 {
   int mone = -1;
-#if CALL_LIKE_HPUX
-  extern void ccperr();
-
-  ccperr (&mone, message, (int) strlen(message));
-#endif
-#if CALL_LIKE_STARDENT
-  extern void CCPERR();
-  struct Str_Desc str;
-
-  str.Str_length = (int) strlen(message);
-  str.Str_pointer = message;
-  CCPERR (&mone, &str);
-#endif
-#if defined (VMS)
-  int zero=0;
-  extern void CCPERR();
-  extern void QPRINT();
-  struct dsc$descriptor_s str;
-
-  str.dsc$a_pointer = strerror(errno, vaxc$errno);
-  str.dsc$w_length = (int) strlen(str.dsc$a_pointer);
-  str.dsc$b_dtype = DSC$K_DTYPE_T;
-  str.dsc$b_class = DSC$K_CLASS_S;
-  QPRINT (&zero, &str);
-  str.dsc$a_pointer = message;
-  str.dsc$w_length = (int) strlen(message);
-  str.dsc$b_dtype = DSC$K_DTYPE_T;
-  str.dsc$b_class = DSC$K_CLASS_S;
-  CCPERR (&mone, &str);
-#endif
-#if CALL_LIKE_SUN
-  extern void ccperr_();
-
-  ccperr_ (&mone, message, (int) strlen(message));
-#endif
-#if CALL_LIKE_MVS
-  extern void __stdcall _CCPERR();
-  CCPERR (&mone, message, (int) strlen(message));
+/* NOFORTRANLIB is not generally defined but could be for C apps */
+#if defined (NOFORTRANLIB) 
+  printf(" Last system error message: %s\n",strerror(errno));
+  printf(" PROGRAM:%s\n",message);
+  exit(1);
+#else
+FORTRAN_CALL ( CCPERR, ccperr,
+         (&mone, message, (int) strlen(message)),
+         (&mone, message),
+	 (&mone, message, (int) strlen(message)));
 #endif
  }
 /* This prints a non-fatal [[message]] using the Fortran i/o.               */
 /*                                                                          */
 /* <internal routines>=                                                     */
-#if defined (PROTOTYPE)
 static void cqprint (char *message)
-#else
-static void cqprint (message)
-char *message;
-#endif
 {
   int zero = 0;
-#if CALL_LIKE_HPUX
-  extern void qprint();
-
-  qprint (&zero, message, (int) strlen(message));
-#endif
-#if CALL_LIKE_STARDENT
-  extern void QPRINT();
-  struct Str_Desc str;
-
-  str.Str_length = (int) strlen(message);
-  str.Str_pointer = message;
-  QPRINT (&zero, &str);
-#endif
-#if defined (VMS)
-  extern void QPRINT();
-  struct dsc$descriptor_s str;
-
-  str.dsc$a_pointer = message;
-  str.dsc$w_length = (int) strlen(message);
-  str.dsc$b_dtype = DSC$K_DTYPE_T;
-  str.dsc$b_class = DSC$K_CLASS_S;
-  QPRINT (&zero, &str);
-#endif
-#if CALL_LIKE_SUN
-  extern void qprint_();
-
-  qprint_ (&zero, message, (int) strlen(message));
-#endif
-#if CALL_LIKE_MVS
-  extern void __stdcall _QPRINT();
-  QPRINT (&zero, message, (int) strlen(message));
+#if defined (NOFORTRANLIB)
+  printf ("%s\n",message);
+#else
+FORTRAN_CALL ( QPRINT, qprint,
+         (&zero, message, (int) strlen(message)),
+         (&zero, message),
+	 (&zero, message, (int) strlen(message)));
 #endif
  }
 /* This reports a fatal error with a given file.                            */
 /*                                                                          */
 /* <internal routines>=                                                     */
-#if defined (PROTOTYPE)
 static void file_fatal (char *message, char *file)
-#else
-static void file_fatal (message, file)
-char *message;
-char *file;
-#endif
 {
   char *buff;
   size_t l;
@@ -666,13 +227,7 @@ char *file;
 /* the routine names.                                                       */
 /*                                                                          */
 /* <internal routines>=                                                     */
-#if defined (PROTOTYPE)
 static void vaxF2ieeeF(union float_uint_uchar buffer[], int size)
-#else
-static void vaxF2ieeeF(buffer, size)
-union float_uint_uchar buffer[];
-int size;
-#endif
 {
   union float_uint_uchar out;
   unsigned char exp;
@@ -712,13 +267,7 @@ int size;
   }
 }
 /* <internal routines>=                                                     */
-#if defined (PROTOTYPE)
 static void ieeeF2vaxF(union float_uint_uchar buffer[], int size)
-#else
-static void ieeeF2vaxF(buffer, size)
-union float_uint_uchar buffer[];
-int size;
-#endif
 {
   union float_uint_uchar out;
   unsigned char exp;
@@ -768,13 +317,7 @@ int size;
 /* conversion routines, but we need [[convexF2ieeeF]] anyhow.               */
 /*                                                                          */
 /* <internal routines>=                                                     */
-#if defined (PROTOTYPE)
 static void convexF2ieeeF(union float_uint_uchar buffer[], int size)
-#else
-static void convexF2ieeeF(buffer, size)
-union float_uint_uchar buffer[];
-int size;
-#endif
 {
   union float_uint_uchar out;
   unsigned char exp;
@@ -814,13 +357,7 @@ int size;
   }
 }
 /* <internal routines>=                                                     */
-#if defined (PROTOTYPE)
 static void ieeeF2convexF(union float_uint_uchar buffer[], int size)
-#else
-static void ieeeF2convexF(buffer, size)
-union float_uint_uchar buffer[];
-int size;
-#endif
 {
   union float_uint_uchar out;
   unsigned char exp;
@@ -880,36 +417,11 @@ int size;
 /* <miscellaneous routines>=                                                */
 #if ! defined (VMS)
 /* <ustenv code>=                                                           */
-#if CALL_LIKE_HPUX
-  void ustenv (str, result, Lstr)
-  char *str;
-  int *result;
-  int Lstr;
-#endif
-#if CALL_LIKE_STARDENT
-  void USTENV (struct Str_Desc *str, int *result)
-#endif
-#if CALL_LIKE_SUN
-  void ustenv_ (char *str, int *result, int Lstr)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall USTENV (char *str, int Lstr, int *result)
-#endif
+void ccp4_ustenv (char *str, int *result)
 {
   int putenv ();
-  size_t Length;
-  char name[MAXFLEN], value[MAXFLEN], *temp;
+  char value[MAXFLEN], *temp;
 
-#if CALL_LIKE_STARDENT
-  Length = flength (str->Str_pointer, str->Str_length);
-  if (Length > MAXFLEN) Length = MAXFLEN - 1;
-  (void) strncpy (name, str->Str_pointer, Length);
-#else
-  Length = flength (str, Lstr);
-  if (Length > MAXFLEN) Length = MAXFLEN - 1;
-  (void) strncpy (name, str, Length);
-#endif
-  name[Length] = '\0'; 
 #if defined (sgi) || defined (sun) || defined (__hpux) || \
     defined(_AIX) || defined(ultrix) || defined (__OSF1__) || \
     defined (__osf__) || defined (__FreeBSD__) || defined (linux) || \
@@ -918,18 +430,18 @@ int size;
       /* ESV seems to have it in the SysVile universe */
   temp = (char *) malloc (MAXFLEN);
   if (temp == NULL) fatal("USTENV: Memory allocation failed");
-  (void) strcpy (temp, name);
+  (void) strcpy (temp, str);
   *result = putenv (temp);
   /* note the necessary lack of free() */
 #else
   /* setenv is not POSIX */
-  temp = (char *) strchr (name, '='); /* BSD might have to use `index' */
+  temp = (char *) strchr (str, '='); /* BSD might have to use `index' */
   if (temp != NULL) {
     *temp = '\0';
     temp++;
     (void) strcpy (value, temp);
   };
-  *result = setenv (name, value, 1);
+  *result = setenv (str, value, 1);
 #endif
 }
 #endif
@@ -941,43 +453,10 @@ int size;
 /* unlink isn't fatal (it's been observed, apparently spuriously).          */
 /*                                                                          */
 /* <miscellaneous routines>=                                                */
-#if CALL_LIKE_HPUX
-  void cunlink (filename, Lfilename)
-  char *filename;
-  int Lfilename;
-#endif
-#if CALL_LIKE_STARDENT
-  void CUNLINK (struct Str_Desc *filename)
-#endif
-#if defined (VMS)
-  void CUNLINK (struct dsc$descriptor_s *filename)
-#endif
-#if CALL_LIKE_SUN
-  void cunlink_ (char *filename, int Lfilename)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall CUNLINK(char *filename, int Lfilename)
-#endif
+void ccp4_cunlink (char *filename)
 {
-  size_t Length;
-  char tempfile[MAXFLEN];
-
-#ifdef VMS
-  return;                       /* can't do it */
-#else
-#  if CALL_LIKE_STARDENT
-    Length = flength (filename->Str_pointer, filename->Str_length);
-    if (Length > MAXFLEN) Length = MAXFLEN - 1;
-    (void) strncpy (tempfile, filename->Str_pointer, Length);
-#  else
-    Length = flength (filename, Lfilename);
-    if (Length > MAXFLEN) Length = MAXFLEN - 1;
-    (void) strncpy (tempfile, filename, Length);
-#  endif
-  tempfile[Length] = '\0';
-  if (unlink (tempfile) != 0)
+  if (unlink (filename) != 0)
     cqprint("CUNLINK: Can't unlink");
-#endif /* VMS */
 }
 /* \section{Dynamic memory allocation}                                      */
 /* It's nice to be able to determine array sizes at run time to avoid       */
@@ -1014,20 +493,7 @@ int size;
 /* <miscellaneous routines>=                                                */
 #ifndef VMS                     /* we'll use the Fortran version in VMS*/
 #ifndef _MVS
-#if CALL_LIKE_HPUX
-  void ccpal1 (routne, n, type, length)
-  void (* routne) ();
-  int *n, type[], length[];
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void CCPAL1 (void (* routne) (), int *n, int type[], int length[])
-#endif
-#if CALL_LIKE_SUN
-  void ccpal1_ (void (* routne) (), int *n, int type[], int length[])
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall CCPAL1 (void (* routne) (), int *n, int type[], int length[])
-#endif
+void ccp4_ccpal1 (void (* routne) (), int *n, int type[], int length[])
 {
   int i, size, *leng[13];
   void *pointer[13];
@@ -1131,28 +597,10 @@ int size;
 /* is always called---see diskio documentation.                             */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void copen (iunit, filename, istat, Lfilename)
-  int *iunit, *istat, Lfilename;
-  char *filename;
-#endif
-#if CALL_LIKE_STARDENT
-  void COPEN (int *iunit, struct Str_Desc *filename, int *istat)
-#endif
-#if defined (VMS)
-  void COPEN (int *iunit, struct dsc$descriptor_s *filename, int *istat)
-#endif
-#if CALL_LIKE_SUN
-  void copen_ (int *iunit, char *filename, int *istat, int Lfilename)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall COPEN (int *iunit, char *filename, int Lfilename, int *istat)
-#endif
+void ccp4_copen (int *iunit, const char *filename, int istat)
 {
-  size_t Length;
-  int i, jstat;
+  int i;
 
-  jstat = *istat;
   if (! initialised) {
     /* note that array element 0 is unused -- using it produced
        complaints from mtzlib about a zero stream */
@@ -1173,26 +621,13 @@ int size;
     return;
   } else {
     *iunit = i;}                 /* will return the stream number */
-#if CALL_LIKE_STARDENT
-  Length = flength (filename->Str_pointer, filename->Str_length);
-  if (Length > MAXFLEN) Length = MAXFLEN - 1;
-  (void) strncpy (file_name[i], filename->Str_pointer, Length);
-#else
-#  if defined (VMS)
-  Length = flength (filename->dsc$a_pointer, filename->dsc$w_length);
-  if (Length > MAXFLEN) Length = MAXFLEN - 1;
-  (void) strncpy (file_name[i], filename->dsc$a_pointer, Length);
-#  else
-  Length = flength (filename, Lfilename);
-  if (Length > MAXFLEN) Length = MAXFLEN - 1;
-  (void) strncpy (file_name[i], filename, Length);
-#  endif
-#endif
-  file_name[i][Length] = '\0';
+
+  (void) strcpy (file_name[i], filename);
   file_last_op[i] = IRRELEVANT_OP;
   file_bytes_per_item[i] = item_sizes[DEFMODE]; /* default item size */
   file_mode[i] = DEFMODE;
-  file_is_scratch[i] = (jstat == 2);
+  file_is_scratch[i] = (istat == 2);
+
 /* There are complications involved with the \idx{VMS} code:                */
 /* \begin{itemize}                                                          */
 /* \item We want to be able to read files written by the old assembler      */
@@ -1217,11 +652,11 @@ int size;
 /* <diskio routines>=                                                       */
 #ifdef VMS
   if (file_is_scratch[i])
-    file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1],
+    file_stream[i] = fopen (file_name[i], file_attribute[istat - 1],
                             "mbc=16", /* bigger blocksize */
                             "fop=tmd"); /* temporary, delete on close */
   else
-    file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1],
+    file_stream[i] = fopen (file_name[i], file_attribute[istat - 1],
                             "mbc=16", /* bigger blocksize */
                             "ctx=stm", "mrs=0", "rat=cr", "rfm=stmlf");
   if (file_stream[i] == NULL)
@@ -1232,10 +667,10 @@ int size;
     if ((file_stream[i] = tmpfile()) == NULL) 
       file_fatal ("(Q)QOPEN: can't open ", file_name[i]);}
   else {
-    file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1]);
+    file_stream[i] = fopen (file_name[i], file_attribute[istat - 1]);
   }
 # else
-  file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1]);
+  file_stream[i] = fopen (file_name[i], file_attribute[istat - 1]);
   if (file_stream[i] == NULL)
     file_fatal ("(Q)QOPEN: can't open ", file_name[i]);
   if (file_is_scratch[i] && unlink (file_name[i])!=0)
@@ -1294,22 +729,7 @@ int size;
 /* N.B.: leaves the stream positioned just after the machine stamp.         */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void qrarch (iunit, ipos, ireslt)
-  int *iunit, *ipos, *ireslt;
-#endif
-#if CALL_LIKE_STARDENT
-  void QRARCH (int *iunit, int *ipos, int *ireslt)
-#endif
-#if defined (VMS)
-  void QRARCH (int *iunit, int *ipos, int *ireslt)
-#endif
-#if CALL_LIKE_SUN
-  void qrarch_ (int *iunit, int *ipos, int *ireslt)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QRARCH (int *iunit, int *ipos, int *ireslt)
-#endif
+void ccp4_qrarch (int iunit, int ipos, int *ireslt)
 {
   uint16 fileFT, fileIT;        /* float and integer machine types of file */
   unsigned char mtstring[4];    /* machine stamp */
@@ -1333,27 +753,27 @@ int size;
   } else {
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
-/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[*iunit]]!   */
+/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!   */
 /*                                                                          */
 /* <OpenVMS seek fudge>=                                                    */
 #if defined (__alpha) && defined (vms)
-(void) fflush (file_stream[*iunit]);
+(void) fflush (file_stream[iunit]);
 #endif
-    if ((fseek (file_stream[*iunit], (long int) ((*ipos)*item_sizes[2]),
+    if ((fseek (file_stream[iunit], (long int) ((ipos)*item_sizes[2]),
                 SEEK_SET) != 0))
-      file_fatal ("QRARCH: seek failed on ", file_name[*iunit]);
-    file_last_op[*iunit] = READ_OP;
+      file_fatal ("QRARCH: seek failed on ", file_name[iunit]);
+    file_last_op[iunit] = READ_OP;
     if (fread (mtstring, (size_t) sizeof(char), (size_t) 4,
-               file_stream[*iunit]) != 4)
-      file_fatal ("QRARCH: can't read machine stamp in ", file_name[*iunit]);
+               file_stream[iunit]) != 4)
+      file_fatal ("QRARCH: can't read machine stamp in ", file_name[iunit]);
   }
   fileIT = (mtstring[1]>>4) & 0x0f;
   fileFT = (mtstring[0]>>4) & 0x0f;
   /* Record the need for conversion and what the file type is: */
   if (fileFT != 0 && fileFT != nativeFT)
-    Fconvert[*iunit] = fileFT;  /* else assume native */
+    Fconvert[iunit] = fileFT;  /* else assume native */
   if (fileIT != 0 && fileIT != nativeIT)
-    Iconvert[*iunit] = fileIT;  /* else assume native */
+    Iconvert[iunit] = fileIT;  /* else assume native */
   *ireslt = fileFT + (16*fileIT);
 }
 /* \subsection{{\tt subroutine qwarch(\meta{iunit}, \meta{ipos})}}          */
@@ -1370,70 +790,43 @@ int size;
 /* N.B.: leaves the stream positioned just after the machine stamp.         */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void qwarch (iunit, ipos)
-  int *iunit, *ipos;
-#endif
-#if CALL_LIKE_STARDENT
-  void QWARCH (int *iunit, int *ipos)
-#endif
-#if defined (VMS)
-  void QWARCH (int *iunit, int *ipos)
-#endif
-#if CALL_LIKE_SUN
-  void qwarch_ (int *iunit, int *ipos)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QWARCH (int *iunit, int *ipos)
-#endif
+void ccp4_qwarch (int iunit, int ipos)
 {
   unsigned char mtstring[4];    /* machine stamp */
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
-/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[*iunit]]!   */
+/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!   */
 /*                                                                          */
 /* <OpenVMS seek fudge>=                                                    */
 #if defined (__alpha) && defined (vms)
-(void) fflush (file_stream[*iunit]);
+(void) fflush (file_stream[iunit]);
 #endif
-  if (fseek (file_stream[*iunit], (long int) ((*ipos)*item_sizes[2]),
+  if (fseek (file_stream[iunit], (long int) ((ipos)*item_sizes[2]),
              SEEK_SET) != 0)
-    file_fatal ("QWARCH: seek failed on ", file_name[*iunit]);
+    file_fatal ("QWARCH: seek failed on ", file_name[iunit]);
   /* nibbles packed by masking and ORing: */
   mtstring[0] = nativeFT | (nativeFT << 4);
   mtstring[1] = 1 | (nativeIT << 4);
   mtstring[2] = mtstring[3] = 0;
-  file_last_op[*iunit] = WRITE_OP;
+  file_last_op[iunit] = WRITE_OP;
   if (fwrite (mtstring, (size_t) sizeof(char), (size_t) 4,
-             file_stream[*iunit]) != 4)
-    file_fatal ("QWARCH: can't write machine stamp to ", file_name[*iunit]);
+             file_stream[iunit]) != 4)
+    file_fatal ("QWARCH: can't write machine stamp to ", file_name[iunit]);
 }
 /* \subsection{{\tt subroutine qclose (\meta{iunit})}}                      */
 /* Closes the file open on \idx{diskio} stream \meta{iunit}.                */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void qclose (iunit)
-  int *iunit;
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QCLOSE (int *iunit)
-#endif
-#if CALL_LIKE_SUN
-  void qclose_ (int *iunit)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QCLOSE (int *iunit)
-#endif
+void ccp4_qclose (int iunit)
 {
   if (! initialised) 
     fatal ("QCLOSE: qopen/qqopen not yet called");
-  if (file_stream[*iunit] != NULL) {
-    if (fclose (file_stream[*iunit]) == EOF) 
-      file_fatal ("QCLOSE: failed on ", file_name[*iunit]);
-    file_stream[*iunit] = NULL;
+  if (file_stream[iunit] != NULL) {
+    if (fclose (file_stream[iunit]) == EOF) 
+      file_fatal ("QCLOSE: failed on ", file_name[iunit]);
+    file_stream[iunit] = NULL;
   }
-  file_name[*iunit][0] = '\0';
+  file_name[iunit][0] = '\0';
 }
 /* \subsection{{\tt subroutine qmode (\meta{iunit}, \meta{mode},            */
 /*     \meta{size})}}                                                       */
@@ -1442,29 +835,17 @@ int size;
 /* returned as \meta{size}.                                                 */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void qmode (iunit, mode, size)
-  int *iunit, *mode, *size;
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QMODE (int *iunit, int *mode, int *size)
-#endif
-#if CALL_LIKE_SUN
-  void qmode_ (int *iunit, int *mode, int *size)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QMODE (int *iunit, int *mode, int *size)
-#endif
+void ccp4_qmode (int iunit, int mode, int *size)
 {
   if (! initialised) 
     fatal ("QMODE: qopen/qqopen not yet called");
 
-  if (*mode >= 0 && *mode <= 6 && *mode != 5)
-    file_bytes_per_item[*iunit] = item_sizes[*mode];
+  if (mode >= 0 && mode <= 6 && mode != 5)
+    file_bytes_per_item[iunit] = item_sizes[mode];
   else
     fatal ("QMODE: bad mode");
-  *size = file_bytes_per_item[*iunit];       /* return number of bytes/item */
-  file_mode[*iunit] = *mode;
+  *size = file_bytes_per_item[iunit];       /* return number of bytes/item */
+  file_mode[iunit] = mode;
 }
 /* \subsection{{\tt subroutine qread(\meta{iunit}, \meta{buffer},           */
 /*     \meta{nitems}, \meta{result})}}                                      */
@@ -1477,58 +858,45 @@ int size;
 /* the stream is connected to an MTZ or map file.                           */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void qread (iunit, buffer, nitems, result)
-  int *iunit, *nitems, *result;
-  uint8 * buffer;
-#endif
-#if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
-  void QREAD (int *iunit, uint8 * buffer, int *nitems, int *result)
-#endif
-#if CALL_LIKE_SUN
-  void qread_ (int *iunit, uint8 * buffer, int *nitems, int *result)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QREAD (int *iunit, uint8 * buffer, int *nitems, int *result)
-#endif
+void ccp4_qread (int iunit, uint8 *buffer, int nitems, int *result)
 {
   int i, n;
 
   if (! initialised) 
     fatal ("QREAD: qopen/qqopen not yet called");
-  if (file_last_op[*iunit] == WRITE_OP) {
+  if (file_last_op[iunit] == WRITE_OP) {
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
-/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[*iunit]]!   */
+/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!   */
 /*                                                                          */
 /* <OpenVMS seek fudge>=                                                    */
 #if defined (__alpha) && defined (vms)
-(void) fflush (file_stream[*iunit]);
+(void) fflush (file_stream[iunit]);
 #endif
-    if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0) {
+    if (fseek (file_stream[iunit], 0L, SEEK_CUR) != 0) {
       /**result = -1;*/
-      file_fatal ("QREAD: seek error on file ", file_name[*iunit]);
+      file_fatal ("QREAD: seek error on file ", file_name[iunit]);
       return; } }
-  file_last_op[*iunit] = READ_OP;
+  file_last_op[iunit] = READ_OP;
   errno = 0;
-  i = (int) fread (buffer, (size_t) file_bytes_per_item[*iunit], 
-                (size_t) *nitems, file_stream[*iunit]);
-  if (i != *nitems) {
-    if (feof (file_stream[*iunit])) *result = -1;
+  i = (int) fread (buffer, (size_t) file_bytes_per_item[iunit], 
+                (size_t) nitems, file_stream[iunit]);
+  if (i != nitems) {
+    if (feof (file_stream[iunit])) *result = -1;
     else {
       /**result = i;*/
-      file_fatal ("QREAD: i/o error on ", file_name[*iunit]);
+      file_fatal ("QREAD: i/o error on ", file_name[iunit]);
     }
     return;
   }
   *result = 0;
-  n = *nitems;
+  n = nitems;
   /* <convert numbers if necessary>=                                          */
-    switch (file_mode[*iunit]) {
+    switch (file_mode[iunit]) {
     case BYTE:
       break;
     case INT16:
-      if (Iconvert[*iunit])
+      if (Iconvert[iunit])
         /* \subsubsection{Converting integers}                                      */
         /* The only possibility at present is byte-swapping (since we only deal     */
         /* with \idx{twos complement} integers).  The test in the following         */
@@ -1536,8 +904,8 @@ int size;
         /*                                                                          */
         /* <convert [[n]] short integers in [[buffer]]>=                            */
         {
-        if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
-            (Iconvert[*iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO)) {
+        if ((Iconvert[iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
+            (Iconvert[iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO)) {
           char j;
           for (i=0; i < n*2; i+=2) {
             j = buffer[i];
@@ -1548,11 +916,11 @@ int size;
         }
       break;
     case INT32:
-      if (Iconvert[*iunit])
+      if (Iconvert[iunit])
         /* <convert [[n]] long integers in [[buffer]]>=                             */
         {
-        if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
-            (Iconvert[*iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO))
+        if ((Iconvert[iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
+            (Iconvert[iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO))
           /* <byte-swap [[n]] full words in [[buffer]]>=                              */
           {
             char j;
@@ -1569,14 +937,14 @@ int size;
         }
       break;
     case FLOAT32:
-      if (Fconvert[*iunit])
+      if (Fconvert[iunit])
         /* \subsubsection{Converting reals}                                         */
         /* There are more possibilities than for integers\dots{}  Remember we use   */
         /* two stages and a canonical form.                                         */
         /*                                                                          */
         /* <convert [[n]] reals in [[buffer]]>=                                     */
         {
-        switch (Fconvert[*iunit]) {     /* get to BE IEEE */
+        switch (Fconvert[iunit]) {     /* get to BE IEEE */
            case DFNTF_VAX :
              vaxF2ieeeF((union float_uint_uchar *) buffer, n);
              break;   
@@ -1635,7 +1003,7 @@ int size;
         }
       break;
     case COMP32:
-      if (Fconvert[*iunit]) {
+      if (Fconvert[iunit]) {
         n = 2*n;                  /* pairs of ints */
         /* \subsubsection{Converting integers}                                      */
         /* The only possibility at present is byte-swapping (since we only deal     */
@@ -1644,8 +1012,8 @@ int size;
         /*                                                                          */
         /* <convert [[n]] short integers in [[buffer]]>=                            */
         {
-        if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
-            (Iconvert[*iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO)) {
+        if ((Iconvert[iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
+            (Iconvert[iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO)) {
           char j;
           for (i=0; i < n*2; i+=2) {
             j = buffer[i];
@@ -1657,7 +1025,7 @@ int size;
       }
       break;
     case COMP64:
-      if (Fconvert[*iunit]) {
+      if (Fconvert[iunit]) {
         n = 2*n;                  /* pairs of reals */
         /* \subsubsection{Converting reals}                                         */
         /* There are more possibilities than for integers\dots{}  Remember we use   */
@@ -1665,7 +1033,7 @@ int size;
         /*                                                                          */
         /* <convert [[n]] reals in [[buffer]]>=                                     */
         {
-        switch (Fconvert[*iunit]) {     /* get to BE IEEE */
+        switch (Fconvert[iunit]) {     /* get to BE IEEE */
            case DFNTF_VAX :
              vaxF2ieeeF((union float_uint_uchar *) buffer, n);
              break;   
@@ -1738,58 +1106,30 @@ int size;
 /* of bytes read.                                                           */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void qreadc (iunit, buffer, result, Lbuffer)
-  int *iunit, *result, Lbuffer;
-  char * buffer;
-#endif
-#ifdef VMS
-  void QREADC (int *iunit, struct dsc$descriptor_s *buffer, int *result)
-#endif
-#if CALL_LIKE_STARDENT
-  void QREADC (int *iunit, struct Str_Desc *buffer, int *result)
-#endif
-#if CALL_LIKE_SUN
-  void qreadc_ (int *iunit, char * buffer, int *result, int Lbuffer)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QREADC (int *iunit, char * buffer, int Lbuffer, int *result)
-#endif
+void ccp4_qreadc (int iunit, char *buffer, size_t nchars, int *result)
 {
-  int i, n;
+  size_t i;
 
   if (! initialised) 
     fatal ("QREAD: qopen/qqopen not yet called");
-  if (file_last_op[*iunit] == WRITE_OP) {
+  if (file_last_op[iunit] == WRITE_OP) {
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
-/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[*iunit]]!   */
+/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!   */
 /*                                                                          */
 /* <OpenVMS seek fudge>=                                                    */
 #if defined (__alpha) && defined (vms)
-(void) fflush (file_stream[*iunit]);
+(void) fflush (file_stream[iunit]);
 #endif
-    if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0) {
+    if (fseek (file_stream[iunit], 0L, SEEK_CUR) != 0) {
       *result = -1;
       return; } }
-  file_last_op[*iunit] = READ_OP;
-#if defined (VMS)
-  n = buffer->dsc$w_length;
-  i = (int) fread (buffer->dsc$a_pointer, (size_t) item_sizes[BYTE], 
-                (size_t) n, file_stream[*iunit]);
-#else
-#  if CALL_LIKE_STARDENT
-  n = buffer->Str_length;
-  i = fread (buffer->Str_pointer, (size_t) item_sizes[BYTE], 
-                (size_t) n, file_stream[*iunit]);
-#  else                         /* normal */
-  n = Lbuffer;
-  i = (int) fread (buffer, (size_t) item_sizes[BYTE], 
-                (size_t) n, file_stream[*iunit]);
-#  endif
-#endif
-  if (i != n) {
-    if (feof (file_stream[*iunit])) *result = -1;
+  file_last_op[iunit] = READ_OP;
+
+  i = fread (buffer, (size_t) item_sizes[BYTE], 
+                nchars, file_stream[iunit]);
+  if (i != nchars) {
+    if (feof (file_stream[iunit])) *result = -1;
     else *result = i;
     return;
   }
@@ -1801,47 +1141,34 @@ int size;
 /* stream \meta{iunit} using the current mode.                              */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void qwrite (iunit, buffer, nitems)
-  int *iunit, *nitems;
-  uint8 * buffer;
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QWRITE (int *iunit, uint8 * buffer, int *nitems)
-#endif
-#if CALL_LIKE_SUN
-  void qwrite_ (int *iunit, uint8 * buffer, int *nitems)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QWRITE (int *iunit, uint8 * buffer, int *nitems)
-#endif
+void ccp4_qwrite (int iunit, uint8 *buffer, int nitems)
 {
   int i;
 
   if (! initialised) 
     fatal ("QWRITE: qopen/qqopen not yet called");
-  if (file_last_op[*iunit] == READ_OP) {
+  if (file_last_op[iunit] == READ_OP) {
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
-/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[*iunit]]!   */
+/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!   */
 /*                                                                          */
 /* <OpenVMS seek fudge>=                                                    */
 #if defined (__alpha) && defined (vms)
-(void) fflush (file_stream[*iunit]);
+(void) fflush (file_stream[iunit]);
 #endif
-    if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0)
-      file_fatal ("QWRITE: seek failed on ", file_name[*iunit]); }
-  file_last_op[*iunit] = WRITE_OP;
-  i = (int) fwrite (buffer, (size_t) file_bytes_per_item[*iunit],
-                    (size_t) *nitems, file_stream[*iunit]);
+    if (fseek (file_stream[iunit], 0L, SEEK_CUR) != 0)
+      file_fatal ("QWRITE: seek failed on ", file_name[iunit]); }
+  file_last_op[iunit] = WRITE_OP;
+  i = (int) fwrite (buffer, (size_t) file_bytes_per_item[iunit],
+                    (size_t) nitems, file_stream[iunit]);
 /* We don't (necessarily?)\ get a useful system error message from          */
 /* [[fatal]] if the write fails (e.g.\ in \idx{Irix}), hance the hint       */
 /* about disc space.                                                        */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-  if (i != *nitems)
+  if (i != nitems)
     file_fatal ("QWRITE: i/o error (may be out of disc space): ",
-           file_name[*iunit]);
+           file_name[iunit]);
 }
 /* \subsection{{\tt subroutine qwritc (\meta{iunit}, \meta{buffer})}}       */
 /*                                                                          */
@@ -1849,57 +1176,29 @@ int size;
 /* stream \meta{iunit} in byte mode.                                        */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void qwritc (iunit, buffer, Lbuffer)
-  int *iunit, Lbuffer;
-  char * buffer;
-#endif
-#if defined (VMS)
-  void QWRITC (int *iunit, struct dsc$descriptor_s *buffer)
-#endif
-#if defined CALL_LIKE_STARDENT
-  void QWRITC (int *iunit, struct Str_Desc *buffer)
-#endif
-#if CALL_LIKE_SUN
-  void qwritc_ (int *iunit, char * buffer, int Lbuffer)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QWRITC (int *iunit, char * buffer, int Lbuffer)
-#endif
+void ccp4_qwritc (int iunit, char *buffer, size_t nchars)
 {
-  int i, n;
+  size_t i;
 
   if (! initialised) 
     fatal ("QWRITC: qopen/qqopen not yet called");
-  if (file_last_op[*iunit] == READ_OP) {
+  if (file_last_op[iunit] == READ_OP) {
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
-/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[*iunit]]!   */
+/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!   */
 /*                                                                          */
 /* <OpenVMS seek fudge>=                                                    */
 #if defined (__alpha) && defined (vms)
-(void) fflush (file_stream[*iunit]);
+(void) fflush (file_stream[iunit]);
 #endif
-    if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0)
-      file_fatal ("QWRITC: seek failed on", file_name[*iunit]); }
-  file_last_op[*iunit] = WRITE_OP;
-#if defined (VMS)
-  n = buffer->dsc$w_length;
-  i = (int) fwrite (buffer->dsc$a_pointer, (size_t) item_sizes[BYTE],
-                    (size_t) n, file_stream[*iunit]);
-#else
-#  if CALL_LIKE_STARDENT
-  n = buffer->Str_length;
-  i = (int) fwrite (buffer->Str_pointer, (size_t) item_sizes[BYTE],
-                    (size_t) n, file_stream[*iunit]);
-#  else                         /* normal */
-  n = Lbuffer;
-  i = (int) fwrite (buffer, (size_t) item_sizes[BYTE],
-                    (size_t) n, file_stream[*iunit]);
-#  endif
-#endif
-  if (i != n) file_fatal ("QWRITC: i/o error (may be out of disc space): ",
-                           file_name[*iunit]);
+    if (fseek (file_stream[iunit], 0L, SEEK_CUR) != 0)
+      file_fatal ("QWRITC: seek failed on", file_name[iunit]); }
+  file_last_op[iunit] = WRITE_OP;
+
+  i = fwrite (buffer, (size_t) item_sizes[BYTE],
+                    nchars, file_stream[iunit]);
+  if (i != nchars) file_fatal ("QWRITC: i/o error (may be out of disc space): ",
+                           file_name[iunit]);
 }
 /* \subsection{{\tt subroutine qseek (\meta{iunit}, \meta{irec},            */
 /*     \meta{iel}, \meta{lrecl})}}                                          */
@@ -1907,108 +1206,72 @@ int size;
 /* \meta{iunit} whose record length is \meta{lrecl}.                        */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void qseek (iunit, irec, iel, lrecl)
-  int *iunit, *irec, *iel, *lrecl;
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QSEEK (int *iunit, int *irec, int *iel, int *lrecl)
-#endif
-#if CALL_LIKE_SUN
-  void qseek_ (int *iunit, int *irec, int *iel, int *lrecl)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QSEEK (int *iunit, int *irec, int *iel, int *lrecl)
-#endif
+void ccp4_qseek (int iunit, int irec, int iel, int lrecl)
 {
   long int position;
 
   if (! initialised) 
     fatal ("QSEEK: qopen/qqopen not yet called");
-  position = (long) ((*lrecl)*(*irec - 1) + (*iel - 1));
-  position *= (long) file_bytes_per_item[*iunit];
-  file_last_op[*iunit] = IRRELEVANT_OP;
+  position = (long) ((lrecl)*(irec - 1) + (iel - 1));
+  position *= (long) file_bytes_per_item[iunit];
+  file_last_op[iunit] = IRRELEVANT_OP;
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
-/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[*iunit]]!   */
+/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!   */
 /*                                                                          */
 /* <OpenVMS seek fudge>=                                                    */
 #if defined (__alpha) && defined (vms)
-(void) fflush (file_stream[*iunit]);
+(void) fflush (file_stream[iunit]);
 #endif
-  if (fseek (file_stream[*iunit],position,SEEK_SET) != 0)
-    file_fatal ("QSEEK failed -- maybe corrupt file: ",file_name[*iunit]);
+  if (fseek (file_stream[iunit],position,SEEK_SET) != 0)
+    file_fatal ("QSEEK failed -- maybe corrupt file: ",file_name[iunit]);
 }
 /* \subsection{{\tt subroutine qback (\meta{iunit}, \meta{lrecl})}}         */
 /* Backspaces one record, of length \meta{lrecl} on diskio stream \meta{iunit}. */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void qback (iunit, lrecl)
-  int *iunit, *lrecl;
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QBACK (int *iunit, int *lrecl)
-#endif
-#if CALL_LIKE_SUN
-  void qback_ (int *iunit, int *lrecl)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QBACK (int *iunit, int *lrecl)
-#endif
+void ccp4_qback (int iunit, int lrecl)
 {
   long int position;
 
   if (! initialised) 
     fatal ("QBACK: qopen/qqopen not yet called");
-  position = ftell (file_stream[*iunit]) - (*lrecl)*file_bytes_per_item[*iunit];
-  file_last_op[*iunit] = IRRELEVANT_OP;
+  position = ftell (file_stream[iunit]) - (lrecl)*file_bytes_per_item[iunit];
+  file_last_op[iunit] = IRRELEVANT_OP;
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
-/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[*iunit]]!   */
+/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!   */
 /*                                                                          */
 /* <OpenVMS seek fudge>=                                                    */
 #if defined (__alpha) && defined (vms)
-(void) fflush (file_stream[*iunit]);
+(void) fflush (file_stream[iunit]);
 #endif
-  if (fseek (file_stream[*iunit], position, SEEK_SET) != 0)
-    file_fatal ("QBACK failed on ", file_name[*iunit]);
+  if (fseek (file_stream[iunit], position, SEEK_SET) != 0)
+    file_fatal ("QBACK failed on ", file_name[iunit]);
 }
 /* \subsection{{\tt subroutine qskip (\meta{iunit}, \meta{lrecl})}}         */
 /* Skip forward 1 record of length \meta{lrecl} on diskio stream \meta{iunit}. */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void qskip (iunit, lrecl)
-  int *iunit, *lrecl;
-#endif
-#if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
-  void QSKIP (int *iunit, int *lrecl)
-#endif
-#if CALL_LIKE_SUN
-  void qskip_ (int *iunit, int *lrecl)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QSKIP (int *iunit, int *lrecl)
-#endif
+void ccp4_qskip (int iunit, int lrecl)
 {
   long int position;
 
   if (! initialised) 
     fatal ("QSKIP: qopen/qqopen not yet called");
-  position = ftell (file_stream[*iunit]) +
-    (*lrecl)*file_bytes_per_item[*iunit];
-  file_last_op[*iunit] = IRRELEVANT_OP;
+  position = ftell (file_stream[iunit]) +
+    (lrecl)*file_bytes_per_item[iunit];
+  file_last_op[iunit] = IRRELEVANT_OP;
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
-/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[*iunit]]!   */
+/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!   */
 /*                                                                          */
 /* <OpenVMS seek fudge>=                                                    */
 #if defined (__alpha) && defined (vms)
-(void) fflush (file_stream[*iunit]);
+(void) fflush (file_stream[iunit]);
 #endif
-  if (fseek (file_stream[*iunit],position,SEEK_SET) != 0)
-    file_fatal ("QSKIP failed on ", file_name[*iunit]);
+  if (fseek (file_stream[iunit],position,SEEK_SET) != 0)
+    file_fatal ("QSKIP failed on ", file_name[iunit]);
 }
 /* \subsection{{\tt subroutine cqinq (\meta{istrm}, \meta{filnam},          */
 /*     \meta{length})}}                                                     */
@@ -2016,102 +1279,56 @@ int size;
 /* open on diskio stream \meta{istrm}.                                      */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void cqinq (istrm, filnam, length, len_filnam)
-  int *istrm, *length, len_filnam;
-  char *filnam;
-#endif
-#if CALL_LIKE_STARDENT
-  void CQINQ (int *istrm, struct Str_Desc *filnam, int *length)
-#endif
-#if defined (VMS)
-  void CQINQ (int *istrm, struct dsc$descriptor_s *filnam, int *length)
-#endif
-#if CALL_LIKE_SUN
-  void cqinq_ (int *istrm, char *filnam, int *length, int len_filnam)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall CQINQ (int *istrm, char *filnam, int len_filnam, int *length)
-#endif
+void ccp4_cqinq (int istrm, char *filnam, int *length)
 {
-  char real_name[MAXFLEN];
-  int *iunit, i;
+  int iunit, i;
   long position;
-  size_t Length;
 
   if (! initialised) 
     fatal ("QQINQ: qopen/qqopen not yet called");
   *length = -1;                                    /* default return value */
   iunit = istrm;
-  if (file_stream[*iunit] == NULL) { 
+  if (file_stream[iunit] == NULL) { 
     /* no unit open -- try file name */
-#if CALL_LIKE_STARDENT
-    Length = flength (filnam->Str_pointer, filnam->Str_length);
-    if (Length > (size_t) MAXFLEN) Length = (size_t) MAXFLEN - 1;
-    (void) strncpy (real_name, filnam->Str_pointer, Length);
-#else
-#  if defined (VMS)
-     Length = flength (filnam->dsc$a_pointer, filnam->dsc$w_length);
-     if (Length > (size_t) MAXFLEN) Length = (size_t) MAXFLEN - 1;
-     (void) strncpy (real_name, filnam->dsc$a_pointer, Length);
-#  else
-     Length = flength (filnam, len_filnam);
-     if (Length > (size_t) MAXFLEN) Length = (size_t) MAXFLEN - 1;
-     (void) strncpy (real_name, filnam, Length);
-#  endif
-#endif
-    real_name[Length] = '\0';
     for (i = 1; i < MAXFILES; i++)
-      if (! strcmp (real_name, file_name[i])) break;
-    *iunit = i % MAXFILES;
+      if (! strcmp (filnam, file_name[i])) break;
+    iunit = i % MAXFILES;
   }
-  if (file_stream[*iunit] != NULL) {
-    file_last_op[*iunit] = IRRELEVANT_OP;
-    (void) fflush (file_stream[*iunit]); /* flush the output stream */
+  if (file_stream[iunit] != NULL) {
+    file_last_op[iunit] = IRRELEVANT_OP;
+    (void) fflush (file_stream[iunit]); /* flush the output stream */
 #if 0
     /* checking the return value reportedly causes problems in ultrix
        under unknown circumstances... */
-    if (fflush (file_stream[*iunit]) != 0)
-      file_fatal ("QQINQ: flush failed on ", file_name[*iunit]);
+    if (fflush (file_stream[iunit]) != 0)
+      file_fatal ("QQINQ: flush failed on ", file_name[iunit]);
 #endif
-    position = ftell (file_stream[*iunit]);   /* remember current position */
+    position = ftell (file_stream[iunit]);   /* remember current position */
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
-/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[*iunit]]!   */
+/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!   */
 /*                                                                          */
 /* <OpenVMS seek fudge>=                                                    */
 #if defined (__alpha) && defined (vms)
-(void) fflush (file_stream[*iunit]);
+(void) fflush (file_stream[iunit]);
 #endif
-    (void) fseek (file_stream[*iunit],0L,SEEK_END); /* seek EOF */
-    *length = (int) ftell (file_stream[*iunit]); /* get file size */
-    if (fseek (file_stream[*iunit],position,SEEK_SET) != 0) /* seek position */
-      file_fatal ("QQINQ: seek failed on ", file_name[*iunit]);
+    (void) fseek (file_stream[iunit],0L,SEEK_END); /* seek EOF */
+    *length = (int) ftell (file_stream[iunit]); /* get file size */
+    if (fseek (file_stream[iunit],position,SEEK_SET) != 0) /* seek position */
+      file_fatal ("QQINQ: seek failed on ", file_name[iunit]);
   }
 }
 /* \subsection{{\tt subroutine qlocate (\meta{iunit}, \meta{locate})}}      */
 /* Returns the current position \meta{locate} in the diskio stream \meta{iunit}. */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-#if CALL_LIKE_HPUX
-  void qlocate (iunit, locate)
-  int *iunit, *locate;
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QLOCATE (int *iunit, int *locate)
-#endif
-#if CALL_LIKE_SUN
-  void qlocate_ (int *iunit, int *locate)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QLOCATE (int *iunit, int *locate)
-#endif
+void ccp4_qlocate (int iunit, int *locate)
 {
   if (! initialised) 
     fatal ("QLOCATE: qopen/qqopen not yet called");
   *locate = -1;
-  if (file_stream[*iunit] != NULL)
-    *locate = (int) ftell (file_stream[*iunit]) / file_bytes_per_item[*iunit];
+  if (file_stream[iunit] != NULL)
+    *locate = (int) ftell (file_stream[iunit]) / file_bytes_per_item[iunit];
 }
 #ifdef _AIX
 /* \section{Missing system support}                                         */
@@ -2387,19 +1604,7 @@ int __stdcall ISATTY (int *lunit)
 /* returned which is cast to [[float]] with a SIGFPE, sigh.                 */
 /*                                                                          */
 /* <magic numbers>=                                                         */
-#if CALL_LIKE_HPUX
-  void qnan (realnum)
-  union float_uint_uchar *realnum;
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void QNAN (union float_uint_uchar *realnum)
-#endif
-#if CALL_LIKE_SUN
-  void qnan_ (union float_uint_uchar *realnum)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall QNAN (union float_uint_uchar *realnum)
-#endif
+void ccp4_qnan (union float_uint_uchar *realnum)
 /* We have a choice of \idx{NaN} values in                                  */
 /* \ac{ieee}\index{IEEE@\ac{ieee}} arithmetic.                              */
 /* [[0xfffa5a5a]] is the one used by the \idx{MIPS} compilers as an         */
@@ -2419,7 +1624,7 @@ int __stdcall ISATTY (int *lunit)
 #  define NAN 0x00008000
 #endif
 #ifndef NAN
-  #error "NAN isn't defined (needs NATIVEFT)"
+#  error "NAN isn't defined (needs NATIVEFT)"
 #endif
 {
   realnum->i = NAN;
@@ -2434,19 +1639,7 @@ int __stdcall ISATTY (int *lunit)
 /* trivial interface [[QISNAN]].                                            */
 /*                                                                          */
 /* <magic numbers>=                                                         */
-#if CALL_LIKE_HPUX
-  int cisnan (realnum)
-  union float_uint_uchar *realnum;
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  int CISNAN (union float_uint_uchar *realnum)
-#endif
-#if CALL_LIKE_SUN
-  int cisnan_ (union float_uint_uchar *realnum)
-#endif
-#if CALL_LIKE_MVS
-  int __stdcall CISNAN (union float_uint_uchar *realnum)
-#endif
+int ccp4_cisnan (union float_uint_uchar *realnum)
 {
     /* In the \ac{ieee} case we actually return true both for \idx{NaN}s        */
     /* and for \idx{Infinity}; in either case the exponent is all ones---the    */
@@ -2484,23 +1677,10 @@ int __stdcall ISATTY (int *lunit)
 /*                                                                          */
 /* <magic numbers>=                                                         */
 #define MDFBIG -1.0E10          /* BIOMOL absence flag value */
-#if CALL_LIKE_HPUX
-  void ccpbml (ncols, cols)
-  int *ncols;
-  union float_uint_uchar cols[];
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void CCPBML (int *ncols, union float_uint_uchar cols[])
-#endif
-#if CALL_LIKE_SUN
-  void ccpbml_ (int *ncols, union float_uint_uchar cols[])
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall CCPBML (int *ncols, union float_uint_uchar cols[])
-#endif
+void ccp4_ccpbml (int ncols, union float_uint_uchar cols[])
 {
   int i;
-  for (i=0; i<*ncols; i++)
+  for (i=0; i<ncols; i++)
     if (cols[i].i != NAN)
       if (cols[i].f <= MDFBIG) cols[i].f = 0.0;
 }
@@ -2512,24 +1692,10 @@ int __stdcall ISATTY (int *lunit)
 /* dimension range of 2, indicating minimum and maximum values respectively. */
 /*                                                                          */
 /* <magic numbers>=                                                         */
-#if CALL_LIKE_HPUX
-  void ccpwrg (ncols, cols, wminmax)
-  int *ncols;
-  union float_uint_uchar cols[];
-  float wminmax[];
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void CCPWRG (int *ncols, union float_uint_uchar cols[], float wminmax[])
-#endif
-#if CALL_LIKE_SUN
-  void ccpwrg_ (int *ncols, union float_uint_uchar cols[], float wminmax[])
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall CCPWRG (int *ncols, union float_uint_uchar cols[], float wminmax[])
-#endif
+void ccp4_ccpwrg (int ncols, union float_uint_uchar cols[], float wminmax[])
 {
   int i;
-  for (i=0; i<*ncols; i++)
+  for (i=0; i<ncols; i++)
     if (cols[i].i != NAN)
        if (cols[i].f > MDFBIG) {
          if (cols[i].f < wminmax[2*i]) wminmax[2*i] = cols[i].f;
@@ -2538,20 +1704,7 @@ int __stdcall ISATTY (int *lunit)
 /* \subsection{Routines for Data Harvesting: {\tt subroutine hgetlimits}}    */
 /* Returns largest int and largest float as defined in <limits.h> and       */
 /* <float.h>                                                                 */
-#if CALL_LIKE_HPUX
-  void hgetlimits (IValueNotDet, ValueNotDet)
-  int *IValueNotDet;
-  float *ValueNotDet;
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void HGETLIMITS (int *IValueNotDet, float *ValueNotDet)
-#endif
-#if CALL_LIKE_SUN
-  void hgetlimits_ (int *IValueNotDet, float *ValueNotDet)
-#endif
-#if CALL_LIKE_MVS
-  void __stdcall HGETLIMITS (int *IValueNotDet, float *ValueNotDet)
-#endif
+void ccp4_hgetlimits (int *IValueNotDet, float *ValueNotDet)
 {
   *IValueNotDet = INT_MAX;
   *ValueNotDet  = FLT_MAX;
@@ -2560,41 +1713,15 @@ int __stdcall ISATTY (int *lunit)
 /* Wrap-around for mkdir function. Returns 0 if successful, 1 if directory already exists,  */
 /* and -1 if other error.                                                                   */
 #ifndef _MVS
-#if CALL_LIKE_HPUX
-  void cmkdir (path, cmode, result, Lpath, Lmode)
-  int *result, Lpath, Lmode;
-  const char *path, *cmode;
-#endif
-#if defined (VMS)
-  void CMKDIR (struct dsc$descriptor_s *path, struct dsc$descriptor_s *cmode, 
-      int *result)
-#endif
-#if CALL_LIKE_STARDENT
-  void CMKDIR (struct Str_Desc *path, struct Str_Desc *cmode, int *result)
-#endif
-#if CALL_LIKE_SUN
-  void cmkdir_ (const char *path, const char *cmode, int *result, int Lpath, int Lmode)
-#endif
-/*#if CALL_LIKE_MVS
-  void __stdcall CMKDIR (const char *path, int Lpath, const char *cmode, int Lmode,
-        int *result)
-#endif*/
-{ size_t Length;
-  char name[MAXFLEN];
-  mode_t mode;
-
-  /* truncate path to MAXFLEN - 1 characters, MAXFLEN defined in library.h */
-  Length = (size_t) Lpath;
-  if (Length > MAXFLEN) Length = MAXFLEN - 1; 
-  (void) strncpy (name, path, Length);
-  name[Length] = '\0'; 
+void ccp4_cmkdir (const char *path, const char *cmode, int *result)
+{  mode_t mode;
 
 /* Possible modes (see stat.h)
   Currently pass 3-character string and interpret as octal.
   Try also S_IRWXU, S_IRWXG, etc. */
   sscanf(cmode,"%o",&mode);
    
-  *result = mkdir(name,mode); 
+  *result = mkdir(path,mode); 
 
   if (*result == -1) {
 /* Distinguish directory-exists error from others, since usually not a problem. */
@@ -2605,41 +1732,15 @@ int __stdcall ISATTY (int *lunit)
     
 }
 
-#if CALL_LIKE_HPUX
-  void cchmod (path, cmode, result, Lpath, Lmode)
-  int *result, Lpath, Lmode;
-  const char *path, *cmode;
-#endif
-#if defined (VMS)
-  void CCHMOD (struct dsc$descriptor_s *path, struct dsc$descriptor_s *cmode, 
-     int *result)
-#endif
-#if CALL_LIKE_STARDENT
-  void CCHMOD (struct Str_Desc *path, struct Str_Desc *cmode, int *result)
-#endif
-#if CALL_LIKE_SUN
-  void cchmod_ (const char *path, const char *cmode, int *result, int Lpath, int Lmode)
-#endif
-/*#if CALL_LIKE_MVS
-  void __stdcall CCHMOD (const char *path, int Lpath,const char *cmode, int Lmode,
-        int *result)
-#endif*/
-{ size_t Length;
-  char name[MAXFLEN];
-  mode_t mode;
-
-  /* truncate path to MAXFLEN - 1 characters, MAXFLEN defined in library.h */
-  Length = (size_t) Lpath;
-  if (Length > MAXFLEN) Length = MAXFLEN - 1;
-  (void) strncpy (name, path, Length);
-  name[Length] = '\0'; 
+void ccp4_cchmod (const char *path, const char *cmode, int *result)
+{ mode_t mode;
 
 /* Possible modes (see stat.h)
   Currently pass 3-character string and interpret as octal.
   Try also S_IRWXU, S_IRWXG, etc. */
   sscanf(cmode,"%o",&mode);
 
-  *result = chmod(name,mode); 
+  *result = chmod(path,mode); 
 }
 #else
 #  if CALL_LIKE_MVS
@@ -2664,12 +1765,7 @@ int __stdcall ISATTY (int *lunit)
    This is a wrapper for the malloc function, which adds some
    error trapping */
 
-#if defined (PROTOTYPE)
-  void *ccp4malloc(size_t size)
-#else
-  void *ccp4malloc(size)
-  size_t size;
-#endif
+void *ccp4malloc(size_t size)
 /* Wrapper for malloc function; should trap for errors */
 
 { void *val; 
@@ -2686,14 +1782,7 @@ int __stdcall ISATTY (int *lunit)
    This is a wrapper for the realloc function, which adds some
    error trapping */
 
-#if defined (PROTOTYPE)
-  void *ccp4realloc(void *ptr, size_t size)
-#else
-  void *ccp4realloc(ptr, size)
-  void *ptr;
-  size_t size;
-#endif
-
+void *ccp4realloc(void *ptr, size_t size)
 { void *val; 
 
   val = realloc (ptr, size);
@@ -2708,14 +1797,7 @@ int __stdcall ISATTY (int *lunit)
    This is a wrapper for the calloc function, which adds some
    error trapping */
 
-#if defined (PROTOTYPE)
-  void *ccp4calloc(size_t nelem , size_t elsize)
-#else
-  void *ccp4calloc(nelem, elsize)
-  size_t nelem;
-  size_t elsize;
-#endif
-
+void *ccp4calloc(size_t nelem , size_t elsize)
 { void *val; 
 
   val = calloc (nelem, elsize);
