@@ -2907,13 +2907,26 @@ C
       SAVE PFLAG
       DATA PFLAG /-1/
 C
+C     external functions
+C
+      LOGICAL VAXVMS
+      EXTERNAL VAXVMS
+C
       IF (PFLAG.EQ.-1) THEN
         PFLAG = IFLAG
         RETURN
       END IF
+C
+C     way to retrieve current value of PFLAG
+C
+      IF (IFLAG.EQ.-999) THEN
+        IFLAG = PFLAG
+        RETURN
+      END IF
+C
       IF (IFLAG.LE.PFLAG) THEN
         LL = LENSTR (MSG)
-        IF (LL.GE.132) THEN
+        IF (VAXVMS() .AND. (LL.GE.132)) THEN
 C         break lines longer than 132 characters for VMS
           LX = 1
           LS = 131
