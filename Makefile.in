@@ -71,6 +71,13 @@ LD_PATH = . /lib /usr/lib /usr/local/lib
 # respectively); this might need to be set by configure:
 AR          = ar r
 
+# On some systems (Concentrix, for instance), for files with trailing
+# comments, fsplit generates a file containing only comments and the
+# compiler barfs on it.  Here's an abbreviation for deleting any such
+# files generated, assuming two possible forms of the name generated:
+# caveat naming routines!  Always use this after fsplit for safety...
+RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
+
 # modules to go in libccp4.a:
 LIBTARGETS = ccplib fftlib maplib parser rwatom rwbrook modlib \
            symlib lcflib mtzlib diskio unix plot84lib \
@@ -105,7 +112,7 @@ $L(ccplib.o) : $(srcdir)/ccplib.for
 	-rm -rf ccplib.dir; mkdir ccplib.dir
 	echo '      SUBROUTINE CCPLIB' > ccplib.dir/ccplib.$F
 	echo '      END' >> ccplib.dir/ccplib.$F
-	cd ccplib.dir && fsplit $(srcdir)/ccplib.for && \
+	cd ccplib.dir && fsplit $(srcdir)/ccplib.for && $(RMEMPTY) && \
 	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f ccplib.dir/*.o
 ccplib : $L(ccplib.o)
@@ -115,7 +122,7 @@ $L(fftlib.o) : $(srcdir)/fftlib.for
 	-rm -rf fftlib.dir; mkdir fftlib.dir
 	echo '      SUBROUTINE FFTLIB' > fftlib.dir/fftlib.$F
 	echo '      END' >> fftlib.dir/fftlib.$F
-	cd fftlib.dir && fsplit $(srcdir)/fftlib.for && \
+	cd fftlib.dir && fsplit $(srcdir)/fftlib.for && $(RMEMPTY) && \
 	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f fftlib.dir/*.o
 fftlib : $L(fftlib.o)
@@ -125,7 +132,7 @@ $L(maplib.o) : $(srcdir)/maplib.for
 	-rm -rf maplib.dir; mkdir maplib.dir
 	echo '      SUBROUTINE MAPLIB' > maplib.dir/maplib.$F
 	echo '      END' >> maplib.dir/maplib.$F
-	cd maplib.dir && fsplit $(srcdir)/maplib.for && \
+	cd maplib.dir && fsplit $(srcdir)/maplib.for && $(RMEMPTY) && \
 	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f maplib.dir/*.o
 maplib : $L(maplib.o)
@@ -133,7 +140,7 @@ maplib : $L(maplib.o)
 
 $L(parser.o) : $(srcdir)/parser.for
 	-rm -rf parser.dir; mkdir parser.dir
-	cd parser.dir && fsplit $(srcdir)/parser.for;
+	cd parser.dir && fsplit $(srcdir)/parser.for && $(RMEMPTY);
 # `-' for convex, sigh
 	-if test ! -f parser.dir/parser.$F; then \
 	  echo '      SUBROUTINE PRSER' > parser.dir/parser.$F; \
@@ -148,7 +155,7 @@ $L(rwbrook.o) : $(srcdir)/rwbrook.for
 	-rm -rf rwbrook.dir; mkdir rwbrook.dir
 	echo '      SUBROUTINE RWBROOK' > rwbrook.dir/rwbrook.$F
 	echo '      END' >> rwbrook.dir/rwbrook.$F
-	cd rwbrook.dir && fsplit $(srcdir)/rwbrook.for && \
+	cd rwbrook.dir && fsplit $(srcdir)/rwbrook.for && $(RMEMPTY) && \
 	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f rwbrook.dir/*.o
 rwbrook : $L(rwbrook.o)
@@ -158,7 +165,7 @@ $L(rwatom.o) : $(srcdir)/rwatom.for
 	-rm -rf rwatom.dir; mkdir rwatom.dir
 	echo '      SUBROUTINE RWATOM' > rwatom.dir/rwatom.$F
 	echo '      END' >> rwatom.dir/rwatom.$F
-	cd rwatom.dir && fsplit $(srcdir)/rwatom.for && \
+	cd rwatom.dir && fsplit $(srcdir)/rwatom.for && $(RMEMPTY) && \
 	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f rwatom.dir/*.o
 rwatom : $L(rwatom.o)
@@ -168,7 +175,7 @@ $L(modlib.o) : $(srcdir)/modlib.for
 	-rm -rf modlib.dir; mkdir modlib.dir
 	echo '      SUBROUTINE MODLIB' > modlib.dir/modlib.$F
 	echo '      END' >> modlib.dir/modlib.$F
-	cd modlib.dir && fsplit $(srcdir)/modlib.for && \
+	cd modlib.dir && fsplit $(srcdir)/modlib.for && $(RMEMPTY) && \
 	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f modlib.dir/*.o
 modlib : $L(modlib.o)
@@ -178,7 +185,7 @@ $L(symlib.o) : $(srcdir)/symlib.for
 	-rm -rf symlib.dir; mkdir symlib.dir
 	echo '      SUBROUTINE SYMLIB' > symlib.dir/symlib.$F
 	echo '      END' >> symlib.dir/symlib.$F
-	cd symlib.dir && fsplit $(srcdir)/symlib.for && \
+	cd symlib.dir && fsplit $(srcdir)/symlib.for && $(RMEMPTY) && \
 	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f symlib.dir/*.o
 symlib : $L(symlib.o)
@@ -188,7 +195,7 @@ $L(lcflib.o) : $(srcdir)/lcflib.for
 	-rm -rf lcflib.dir; mkdir lcflib.dir
 	echo '      SUBROUTINE LCFLIB' > lcflib.dir/lcflib.$F
 	echo '      END' >> lcflib.dir/lcflib.$F
-	cd lcflib.dir && fsplit $(srcdir)/lcflib.for && \
+	cd lcflib.dir && fsplit $(srcdir)/lcflib.for && $(RMEMPTY) && \
 	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f lcflib.dir/*.o
 lcflib : $L(lcflib.o)
@@ -198,7 +205,7 @@ $L(mtzlib.o) : $(srcdir)/mtzlib.for
 	-rm -rf mtzlib.dir; mkdir mtzlib.dir
 	echo '      SUBROUTINE MTZLIB' > mtzlib.dir/mtzlib.$F
 	echo '      END' >> mtzlib.dir/mtzlib.$F
-	cd mtzlib.dir && fsplit $(srcdir)/mtzlib.for && \
+	cd mtzlib.dir && fsplit $(srcdir)/mtzlib.for && $(RMEMPTY) && \
 	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f mtzlib.dir/*.o
 mtzlib : $L(mtzlib.o)
@@ -208,7 +215,7 @@ $L(diskio.o) : $(srcdir)/diskio.for
 	-rm -rf diskio.dir; mkdir diskio.dir
 	echo '      SUBROUTINE DISKIO' > diskio.dir/diskio.$F
 	echo '      END' >> diskio.dir/diskio.$F
-	cd diskio.dir && fsplit $(srcdir)/diskio.for && \
+	cd diskio.dir && fsplit $(srcdir)/diskio.for && $(RMEMPTY) && \
 	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f diskio.dir/*.o
 diskio : $L(diskio.o)
@@ -217,7 +224,7 @@ $L(plot84lib.o) : $(srcdir)/plot84lib.for
 	-rm -rf plot84lib.dir; mkdir plot84lib.dir
 	echo '      SUBROUTINE PLOT84LIB' > plot84lib.dir/plot84lib.$F
 	echo '      END' >> plot84lib.dir/plot84lib.$F
-	cd plot84lib.dir && fsplit $(srcdir)/plot84lib.for && \
+	cd plot84lib.dir && fsplit $(srcdir)/plot84lib.for && $(RMEMPTY) && \
 	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f plot84lib.dir/*.o
 plot84lib : $L(plot84lib.o)
@@ -227,7 +234,7 @@ $L(plotsubs.o) : $(srcdir)/plotsubs.for
 	-rm -rf plotsubs.dir; mkdir plotsubs.dir
 	echo '      SUBROUTINE PLOTSUBS' > plotsubs.dir/plotsubs.$F
 	echo '      END' >> plotsubs.dir/plotsubs.$F
-	cd plotsubs.dir && fsplit $(srcdir)/plotsubs.for && \
+	cd plotsubs.dir && fsplit $(srcdir)/plotsubs.for && $(RMEMPTY) && \
 	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f plotsubs.dir/*.o
 plotsubs : $L(plotsubs.o)
@@ -238,7 +245,7 @@ $L(graflib.o) : $(srcdir)/graflib.for
 	echo '      SUBROUTINE GRAFLIB' > graflib.dir/graflib.$F
 	echo '      END' >> graflib.dir/graflib.$F
 # split this into two because the list of sources is too long in HP-SUX 
-	cd graflib.dir && fsplit $(srcdir)/graflib.for && \
+	cd graflib.dir && fsplit $(srcdir)/graflib.for && $(RMEMPTY) && \
         $(FC) -c $(FFLAGS) $(WD)[gA-Pa-p]*.$F && $(AR) ../$L *.o && \
           $(FC) -c $(FFLAGS) $(WD)[Q-Zq-z]*.$F && $(AR) ../$L *.o
 	rm -f graflib.dir/*.o
@@ -285,7 +292,7 @@ $L(unix.o) : unix.$F gdummy.$F
 	-rm -rf unix.dir; mkdir unix.dir
 	echo '      SUBROUTINE UNIX' > unix.dir/unix.$F
 	echo '      END' >> unix.dir/unix.$F
-	cd unix.dir && fsplit ../unix.$F && \
+	cd unix.dir && fsplit ../unix.$F && $(RMEMPTY) && \
 	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f unix.dir/*.o
 unix : $L(unix.o)
