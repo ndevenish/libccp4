@@ -155,7 +155,8 @@ ccp4_symop ccp4_symop_invert( const ccp4_symop op1 );
 int ccp4spg_name_equal(const char *spgname1, const char *spgname2);
 
 /** Function to create "short" name of spacegroup. Blanks
- * are removed, as are " 1" elements.
+ * are removed, as are " 1" elements (except for the special case
+ * of "P 1").
  * @param shortname String long enough to hold short name.
  * @param longname Long version of spacegroup name.
  * @return Pointer to shortname.
@@ -202,11 +203,35 @@ int ccp4spg_is_in_pm_asu(const CCP4SPG* sp, const int h, const int k, const int 
  */
 int ccp4spg_is_in_asu(const CCP4SPG* sp, const int h, const int k, const int l);
 
-/** 
+/** Place reflection (hin,kin,lin) in the asymmetric unit of spacegroup "sp".
+ * Resultant indices are placed in (hout,kout,lout).
+ * @param sp pointer to spacegroup
+ * @param hin input reflection index
+ * @param kin input reflection index
+ * @param lin input reflection index
+ * @param hout output reflection index
+ * @param kout output reflection index
+ * @param lout output reflection index
+ * @return "isym" if successful, 0 otherwise. "isym" = 2*isymop - 1 for 
+ * reflections placed in the positive asu, i.e. I+ of a Friedel pair, and
+ * "isym" = 2*isymop for reflections placed in the negative asu, i.e. I- of 
+ * a Friedel pair. Here "isymop" is the number of the symmetry operator used.
  */
 int ccp4spg_put_in_asu(const CCP4SPG* sp, const int hin, const int kin, const int lin,
 		       int *hout, int *kout, int *lout );
 
+/** Transform reflection (hin,kin,lin) according to spacegroup "sp" and
+ * operation "isym". Resultant indices are placed in (hout,kout,lout).
+ * @param sp pointer to spacegroup
+ * @param isym required operation, see ccp4spg_put_in_asu
+ * @param hin input reflection index
+ * @param kin input reflection index
+ * @param lin input reflection index
+ * @param hout output reflection index
+ * @param kout output reflection index
+ * @param lout output reflection index
+ * @return void
+ */
 void ccp4spg_generate_indices(const CCP4SPG* sp, const int isym,
                   const int hin, const int kin, const int lin,
 			      int *hout, int *kout, int *lout );
