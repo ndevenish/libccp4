@@ -3659,7 +3659,7 @@ C     .. External Subroutines ..
       EXTERNAL GSDWTO,GSMVTO
 C     ..
 C     .. Intrinsic Functions ..
-      INTRINSIC ICHAR,REAL
+      INTRINSIC REAL
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
@@ -6986,7 +6986,7 @@ C     .. Local Scalars ..
      +        NOUT,NSCAFL,NSEC,NSET,NSTART,NSYMB,NTERM
       CHARACTER*1 HCHAR 
       LOGICAL PRINT
-      CHARACTER CHAR1*1,GO*4,KEYWF*4,WORD*4,BLANK80*80,
+      CHARACTER CHAR1*1,KEYWF*4,WORD*4,BLANK80*80,
      +   FILNAM*80,LISFIL*80,GSFIL*80,TEXT*80,TITLE*80,KEYWRD*1005
 C     ..
 C     .. Local Arrays ..
@@ -7042,7 +7042,6 @@ C     .. Equivalences ..
 C     ..
 C     .. Data statements ..
       DATA KEYWF/'    '/
-      DATA GO/'GO  '/
       DATA (KEY5(JJJ),JJJ=1,20)/'INIT','TITL','PRNT','ENVR','XENV',
      +     'DVIC','BSIZ','DVPT','WNDB','WSCL','DTRN','EDVC','EBSZ',
      +     'EDVP','EWND','EWSC','EDTR','RFNT','LVCK','PICT'/
@@ -9596,7 +9595,7 @@ C     .. Scalars in Common ..
       INTEGER LUNIN,LUNOUT
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,NZERO
+      INTEGER I
 CSYS$SETIMR,SYS$WAITFR
 C     ..
 C     .. Local Arrays ..
@@ -9608,9 +9607,6 @@ C
 C     .. Save Statement ..
 C
       SAVE
-C
-C     .. Data statements ..
-      DATA NZERO/0/
 C     ..
 C
 C---- Form quadword time interval.
@@ -9618,12 +9614,10 @@ C
       NTIME(1) = -10000*MILSEC
       NTIME(2) = -1
       I=1
-Csys$setimr(%val(nzero),ntime,,)
       IF (I.EQ.0) THEN
         call ccperr(1, 'GSSUSP: SETIMR FAILED')
       ELSE
         I=1
-Csys$waitfr(%val(nzero))
         IF (I.EQ.0) call ccperr(1, 'GSSUSP: WAITFR FAILED')
       ENDIF
 C
@@ -9935,10 +9929,8 @@ C
 C     .. Parameters ..
       INTEGER NWIDX,NWIDY,NBRIKX,NBRIKY
       PARAMETER (NWIDX=8,NWIDY=64,NBRIKX=32,NBRIKY=128)
-      INTEGER NSIZEB,NBRKXY
-      PARAMETER (NSIZEB=NWIDX*NWIDY,NBRKXY=NBRIKX*NBRIKY)
-      INTEGER NSIZER
-      PARAMETER (NSIZER=NSIZEB*NBRIKX)
+      INTEGER NSIZEB
+      PARAMETER (NSIZEB=NWIDX*NWIDY)
       INTEGER NBYTX,NBYTX1
       PARAMETER (NBYTX=NWIDX*NBRIKX,NBYTX1=NBYTX-1)
       INTEGER NWIDX1,NWIDY1
@@ -10487,10 +10479,8 @@ C
 C     .. Parameters ..
       INTEGER NWIDX,NWIDY,NBRIKX,NBRIKY
       PARAMETER (NWIDX=8,NWIDY=64,NBRIKX=32,NBRIKY=128)
-      INTEGER NSIZEB,NBRKXY
-      PARAMETER (NSIZEB=NWIDX*NWIDY,NBRKXY=NBRIKX*NBRIKY)
-      INTEGER NSIZER
-      PARAMETER (NSIZER=NSIZEB*NBRIKX)
+      INTEGER NSIZEB
+      PARAMETER (NSIZEB=NWIDX*NWIDY)
       INTEGER NBYTX,NBYTX1
       PARAMETER (NBYTX=NWIDX*NBRIKX,NBYTX1=NBYTX-1)
       INTEGER NWIDX1,NWIDY1
@@ -12127,7 +12117,6 @@ C
  6004 FORMAT (2X,'!!!VIEW -- Picture ',I5,' ENDS FILE ')
  6006 FORMAT (2X,'!!!VIEW -- Plot too big: ',/2X,'Chosen scale =',F10.4,
      +       ' max poss scales are X,Y ',2F10.4)
- 6012 FORMAT (I5)
  6014 FORMAT (2X,'Series number of last picture was ',I5)
  6020 FORMAT (/1X,'--Picture number ',I5,' --   on IUNIT=',I5,/1X,I5,
      +       ' records ',2F10.4,' dots/mm: x,y ',/2X,'input pixel inde',
@@ -12276,9 +12265,6 @@ C     .. External Functions ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL QCLOSE,QOPEN,QWRITI,QMODE
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC MOD
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
@@ -12825,8 +12811,6 @@ C
 C     .. Parameters ..
       INTEGER NWIDX,NWIDY,NBRIKX,NBRIKY
       PARAMETER (NWIDX=8,NWIDY=64,NBRIKX=32,NBRIKY=128)
-      INTEGER NSIZEB
-      PARAMETER (NSIZEB=NWIDX*NWIDY)
       INTEGER NBYTX,NBYTX1
       PARAMETER (NBYTX=NWIDX*NBRIKX,NBYTX1=NBYTX-1)
       INTEGER NWIDX1,NWIDY1
@@ -13191,7 +13175,7 @@ C     .. Scalars in Common ..
       REAL DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,DWLIMX,DWLIMY
       INTEGER LUNIN,LUNOUT
       INTEGER*4 ICOLOR,IUNITR,IXMAX,IXMIN,IYMAX,IYMIN,LINWT,MCNTFL,
-     +          MDEVIC,MDIREC,MIXCOL,MOUT,MPIC,MSCAFL,NPICS,NREC
+     +          MDEVIC,MDIREC,MIXCOLOR,MOUT,MPIC,MSCAFL,NPICS,NREC
 C     ..
 C     .. Arrays in Common ..
       REAL SPARE1,SPARE2
@@ -13200,10 +13184,6 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER IEND,IERAS,ILNW,IPAP,IPEN
-C     ..
-C     .. Local Arrays ..
-C     .. External Subroutines ..
-      EXTERNAL QREADI
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
@@ -13594,9 +13574,6 @@ C     .. Local Scalars ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL GSCETX,GSSTRH
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC CHAR
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
