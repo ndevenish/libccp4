@@ -137,7 +137,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
       printf(" %f %f %f \n",op1[i].rot[0][0],op1[i].rot[0][1],op1[i].rot[0][2]);
       printf(" %f %f %f \n",op1[i].rot[1][0],op1[i].rot[1][1],op1[i].rot[1][2]);
       printf(" %f %f %f \n",op1[i].rot[2][0],op1[i].rot[2][1],op1[i].rot[2][2]);
-      printf(" %f %f %f \n",op1[i].trn[0],op1[i].trn[1],op1[i].trn[2]);
+      printf(" %f %f %f \n\n",op1[i].trn[0],op1[i].trn[1],op1[i].trn[2]);
     }
   }
 
