@@ -277,7 +277,7 @@ binsort : $(srcdir)/binsort.c $(srcdir)/binsort.h
 	$(LNS) binsort ../../src/binsort
 
 # the unix-specific bits need preprocessing for different unix variants
-unix.$F : $(srcdir)/unix.m4
+unix.$F : $(srcdir)/unix.m4 gdummy.$F
 	$(M4) $(srcdir)/unix.m4 >unix.$F
 gdummy.$F : $(srcdir)/gdummy.for
 	-rm -rf gdummy.$F; $(LNS) $(srcdir)/gdummy.for gdummy.$F
