@@ -113,7 +113,7 @@ static int initialised =  0;    /* flag to initialise data and file streams */
 /* systems.\index{portability!possible problem}                             */
 /*                                                                          */
 /* <global variables>=                                                      */
-#if defined(__DECC) && defined(VMS)
+#if defined(__DECC) && defined(VMS) || defined (_WIN32)
 static char *file_attribute[] = { /* DISKIO file modes */
   "wb+",   /* 'UNKNOWN'   open as 'OLD'/'NEW' check existence */
   "wb+",   /* 'SCRATCH'   open as 'OLD' and delete on closing */
@@ -198,6 +198,9 @@ static int
 #if CALL_LIKE_SUN
   void ustenv_ (char *str, int *result, int Lstr);
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall USTENV (char *str, int *result, int Lstr);
+#endif
 
 #if CALL_LIKE_HPUX
   void cunlink (char *filename, int Lfilename);
@@ -211,6 +214,10 @@ static int
 #if CALL_LIKE_SUN
   void cunlink_ (char *filename, int Lfilename);
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall CUNLINK (char *filename, int Lfilename);
+#endif
+
 
 #if CALL_LIKE_HPUX
   void copen (int *iunit, char *filename, int *istat, int Lfilename);
@@ -223,6 +230,9 @@ static int
 #endif
 #if CALL_LIKE_SUN
   void copen_ (int *iunit, char *filename, int *istat, int Lfilename);
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall COPEN (int *iunit, char *filename, int Lfilename, int *istat);
 #endif
 
 #if CALL_LIKE_HPUX
@@ -237,6 +247,9 @@ static int
 #if CALL_LIKE_SUN
   void qrarch_ (int *iunit, int *ipos, int *ireslt);
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall QRARCH (int *iunit, int *ipos, int *ireslt);
+#endif
 
 #if CALL_LIKE_HPUX
   void qwarch (int *iunit, int *ipos);
@@ -250,6 +263,9 @@ static int
 #if CALL_LIKE_SUN
   void qwarch_ (int *iunit, int *ipos);
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall QWARCH (int *iunit, int *ipos);
+#endif
 
 #if CALL_LIKE_HPUX
   void qclose (int *iunit);
@@ -259,6 +275,9 @@ static int
 #endif
 #if CALL_LIKE_SUN
   void qclose_ (int *iunit);
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall QCLOSE (int *iunit);
 #endif
 
 #if CALL_LIKE_HPUX
@@ -270,6 +289,9 @@ static int
 #if CALL_LIKE_SUN
   void qmode_ (int *iunit, int *mode, int *size);
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall QMODE (int *iunit, int *mode, int *size);
+#endif
 
 #if CALL_LIKE_HPUX
   void qread (int *iunit, uint8 * buffer, int *nitems, int *result);
@@ -279,6 +301,9 @@ static int
 #endif
 #if CALL_LIKE_SUN
   void qread_ (int *iunit, uint8 * buffer, int *nitems, int *result);
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall QREAD (int *iunit, uint8 * buffer, int *nitems, int *result);
 #endif
 
 #if CALL_LIKE_HPUX
@@ -293,6 +318,9 @@ static int
 #if CALL_LIKE_SUN
   void qreadc_ (int *iunit, char * buffer, int *result, int Lbuffer);
 #endif
+#if CALL_LIKE_MVS 
+  void __stdcall QREADC (int *iunit, char * buffer, int *result, int Lbuffer);
+#endif
 
 #if CALL_LIKE_HPUX
   void qwrite (int *iunit, uint8 * buffer, int *nitems);
@@ -302,6 +330,9 @@ static int
 #endif
 #if CALL_LIKE_SUN
   void qwrite_ (int *iunit, uint8 * buffer, int *nitems);
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall QWRITE (int *iunit, uint8 * buffer, int *nitems);
 #endif
 
 #if CALL_LIKE_HPUX
@@ -316,6 +347,9 @@ static int
 #if CALL_LIKE_SUN
   void qwritc_ (int *iunit, char * buffer, int Lbuffer);
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall QWRITC (int *iunit, char * buffer, int Lbuffer);
+#endif
 
 #if CALL_LIKE_HPUX
   void qseek (int *iunit, int *irec, int *iel, int *lrecl);
@@ -325,6 +359,9 @@ static int
 #endif
 #if CALL_LIKE_SUN
   void qseek_ (int *iunit, int *irec, int *iel, int *lrecl);
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall QSEEK (int *iunit, int *irec, int *iel, int *lrecl);
 #endif
 
 #if CALL_LIKE_HPUX
@@ -336,6 +373,9 @@ static int
 #if CALL_LIKE_SUN
   void qback_ (int *iunit, int *lrecl);
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall QBACK (int *iunit, int *lrecl);
+#endif
 
 #if CALL_LIKE_HPUX
   void qskip (int *iunit, int *lrecl);
@@ -345,6 +385,9 @@ static int
 #endif
 #if CALL_LIKE_SUN
   void qskip_ (int *iunit, int *lrecl);
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall QSKIP (int *iunit, int *lrecl);
 #endif
 
 #if CALL_LIKE_HPUX
@@ -359,6 +402,9 @@ static int
 #if CALL_LIKE_SUN
   void cqinq_ (int *istrm, char *filnam, int *length, int len_filnam);
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall CQINQ (int *istrm, char *filnam, int len_filnam, int *length);
+#endif
 
 #if CALL_LIKE_HPUX
   void qlocate (int *iunit, int *locate);
@@ -368,6 +414,9 @@ static int
 #endif
 #if CALL_LIKE_SUN
   void qlocate_ (int *iunit, int *locate);
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall QLOCATE (int *iunit, int *locate);
 #endif
 
 #ifdef _AIX
@@ -419,6 +468,9 @@ static int
 #if CALL_LIKE_SUN
   void qnan_ (union float_uint_uchar *realnum);
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall QNAN (union float_uint_uchar *realnum);
+#endif
 
 #if CALL_LIKE_HPUX
   int cisnan (union float_uint_uchar *realnum);
@@ -429,6 +481,9 @@ static int
 #if CALL_LIKE_SUN
   int cisnan_ (union float_uint_uchar *realnum);
 #endif
+#if CALL_LIKE_MVS
+  int __stdcall CISNAN (union float_uint_uchar *realnum);
+#endif
 
 #if CALL_LIKE_HPUX
   void hgetlimits (int *IValueNotDet, double *ValueNotDet);
@@ -438,6 +493,9 @@ static int
 #endif
 #if CALL_LIKE_SUN
   void hgetlimits_ (int *IValueNotDet, double *ValueNotDet);
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall HGETLIMITS (int *IValueNotDet, double *ValueNotDet);
 #endif
 /****************************************************************************
 *  End of prototypes                                                        *
@@ -512,6 +570,10 @@ char *message;
 
   ccperr_ (&mone, message, (int) strlen(message));
 #endif
+#if CALL_LIKE_MVS
+  extern void __stdcall _CCPERR();
+  CCPERR (&mone, message, (int) strlen(message));
+#endif
  }
 /* This prints a non-fatal [[message]] using the Fortran i/o.               */
 /*                                                                          */
@@ -551,6 +613,10 @@ char *message;
   extern void qprint_();
 
   qprint_ (&zero, message, (int) strlen(message));
+#endif
+#if CALL_LIKE_MVS
+  extern void __stdcall _QPRINT();
+  QPRINT (&zero, message, (int) strlen(message));
 #endif
  }
 /* This reports a fatal error with a given file.                            */
@@ -810,6 +876,9 @@ int size;
 #if CALL_LIKE_SUN
   void ustenv_ (char *str, int *result, int Lstr)
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall USTENV (char *str, int Lstr, int *result)
+#endif
 {
   int putenv ();
   size_t Length;
@@ -828,7 +897,7 @@ int size;
 #if defined (sgi) || defined (sun) || defined (__hpux) || \
     defined(_AIX) || defined(ultrix) || defined (__OSF1__) || \
     defined (__osf__) || defined (__FreeBSD__) || defined (linux) || \
-    defined (titan)
+    defined (titan) || defined (_WIN32)
       /* putenv is the POSIX.1, draft 3 proposed mechanism */
       /* ESV seems to have it in the SysVile universe */
   temp = (char *) malloc (MAXFLEN);
@@ -869,6 +938,9 @@ int size;
 #endif
 #if CALL_LIKE_SUN
   void cunlink_ (char *filename, int Lfilename)
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall CUNLINK(char *filename, int Lfilename)
 #endif
 {
   size_t Length;
@@ -935,6 +1007,9 @@ int size;
 #endif
 #if CALL_LIKE_SUN
   void ccpal1_ (void (* routne) (), int *n, int type[], int length[])
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall CCPAL1 (void (* routne) (), int *n, int type[], int length[])
 #endif
 {
   int i, size, *leng[13];
@@ -1052,6 +1127,9 @@ int size;
 #if CALL_LIKE_SUN
   void copen_ (int *iunit, char *filename, int *istat, int Lfilename)
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall COPEN (int *iunit, char *filename, int Lfilename, int *istat)
+#endif
 {
   size_t Length;
   int i, jstat;
@@ -1131,11 +1209,20 @@ int size;
   if (file_stream[i] == NULL)
     file_fatal ("(Q)QOPEN: can't open ", file_name[i]);
 #else
+# ifdef _MVS
+  if (file_is_scratch[i]) {
+    if ((file_stream[i] = tmpfile()) == NULL) 
+      file_fatal ("(Q)QOPEN: can't open ", file_name[i]);}
+  else {
+    file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1]);
+  }
+# else
   file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1]);
   if (file_stream[i] == NULL)
     file_fatal ("(Q)QOPEN: can't open ", file_name[i]);
   if (file_is_scratch[i] && unlink (file_name[i])!=0)
     file_fatal ("(Q)QOPEN: error unlinking ", file_name[i]);
+# endif
 #endif
   if (file_stream[i] == NULL) {
     *iunit = -2;                /* return open failure flag */
@@ -1201,6 +1288,9 @@ int size;
 #endif
 #if CALL_LIKE_SUN
   void qrarch_ (int *iunit, int *ipos, int *ireslt)
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall QRARCH (int *iunit, int *ipos, int *ireslt)
 #endif
 {
   uint16 fileFT, fileIT;        /* float and integer machine types of file */
@@ -1275,6 +1365,9 @@ int size;
 #if CALL_LIKE_SUN
   void qwarch_ (int *iunit, int *ipos)
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall QWARCH (int *iunit, int *ipos)
+#endif
 {
   unsigned char mtstring[4];    /* machine stamp */
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
@@ -1311,6 +1404,9 @@ int size;
 #if CALL_LIKE_SUN
   void qclose_ (int *iunit)
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall QCLOSE (int *iunit)
+#endif
 {
   if (! initialised) 
     fatal ("QCLOSE: qopen/qqopen not yet called");
@@ -1337,6 +1433,9 @@ int size;
 #endif
 #if CALL_LIKE_SUN
   void qmode_ (int *iunit, int *mode, int *size)
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall QMODE (int *iunit, int *mode, int *size)
 #endif
 {
   if (! initialised) 
@@ -1370,6 +1469,9 @@ int size;
 #endif
 #if CALL_LIKE_SUN
   void qread_ (int *iunit, uint8 * buffer, int *nitems, int *result)
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall QREAD (int *iunit, uint8 * buffer, int *nitems, int *result)
 #endif
 {
   int i, n;
@@ -1632,6 +1734,9 @@ int size;
 #if CALL_LIKE_SUN
   void qreadc_ (int *iunit, char * buffer, int *result, int Lbuffer)
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall QREADC (int *iunit, char * buffer, int *result, int Lbuffer)
+#endif
 {
   int i, n;
 
@@ -1689,6 +1794,9 @@ int size;
 #if CALL_LIKE_SUN
   void qwrite_ (int *iunit, uint8 * buffer, int *nitems)
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall QWRITE (int *iunit, uint8 * buffer, int *nitems)
+#endif
 {
   int i;
 
@@ -1736,6 +1844,9 @@ int size;
 #endif
 #if CALL_LIKE_SUN
   void qwritc_ (int *iunit, char * buffer, int Lbuffer)
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall QWRITC (int *iunit, char * buffer, int Lbuffer)
 #endif
 {
   int i, n;
@@ -1788,6 +1899,9 @@ int size;
 #if CALL_LIKE_SUN
   void qseek_ (int *iunit, int *irec, int *iel, int *lrecl)
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall QSEEK (int *iunit, int *irec, int *iel, int *lrecl)
+#endif
 {
   long int position;
 
@@ -1821,6 +1935,9 @@ int size;
 #if CALL_LIKE_SUN
   void qback_ (int *iunit, int *lrecl)
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall QBACK (int *iunit, int *lrecl)
+#endif
 {
   long int position;
 
@@ -1852,6 +1969,9 @@ int size;
 #endif
 #if CALL_LIKE_SUN
   void qskip_ (int *iunit, int *lrecl)
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall QSKIP (int *iunit, int *lrecl)
 #endif
 {
   long int position;
@@ -1891,6 +2011,9 @@ int size;
 #endif
 #if CALL_LIKE_SUN
   void cqinq_ (int *istrm, char *filnam, int *length, int len_filnam)
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall CQINQ (int *istrm, char *filnam, int len_filnam, int *length)
 #endif
 {
   char real_name[MAXFLEN];
@@ -1961,6 +2084,9 @@ int size;
 #endif
 #if CALL_LIKE_SUN
   void qlocate_ (int *iunit, int *locate)
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall QLOCATE (int *iunit, int *locate)
 #endif
 {
   if (! initialised) 
@@ -2093,7 +2219,6 @@ extern unit f__units[];
 #define FALSE_ (0)
 #define err(f,m,s) {if(f) errno= m; else f__fatal(m,s); return(m);}
 /* end of fio.h extract */
-
 int isatty_ (lunit)
      int *lunit;
 {
@@ -2183,6 +2308,15 @@ int /* logical */ btest_ (a, b)
   return ((((unsigned long) *a)>>(*b)))&1 ? TRUE_ : FALSE_;
 }
 #endif              /* F2C support  */
+/* isatty doesnt seem to be in Mircrosoft Visual Studdio so this is a fudge */
+#if CALL_LIKE_MVS
+int __stdcall ISATTY (int *lunit)
+{
+  lunit = 0 ;
+  return lunit;
+}
+#endif
+
 /* \section{`Magic' numbers}                                                */
 /*                                                                          */
 /* When, for instance, an $F$ is unobserved in a derivative, we might       */
@@ -2244,6 +2378,9 @@ int /* logical */ btest_ (a, b)
 #if CALL_LIKE_SUN
   void qnan_ (union float_uint_uchar *realnum)
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall QNAN (union float_uint_uchar *realnum)
+#endif
 /* We have a choice of \idx{NaN} values in                                  */
 /* \ac{ieee}\index{IEEE@\ac{ieee}} arithmetic.                              */
 /* [[0xfffa5a5a]] is the one used by the \idx{MIPS} compilers as an         */
@@ -2287,6 +2424,9 @@ int /* logical */ btest_ (a, b)
 #endif
 #if CALL_LIKE_SUN
   int cisnan_ (union float_uint_uchar *realnum)
+#endif
+#if CALL_LIKE_MVS
+  int __stdcall CISNAN (union float_uint_uchar *realnum)
 #endif
 {
     /* In the \ac{ieee} case we actually return true both for \idx{NaN}s        */
@@ -2336,6 +2476,9 @@ int /* logical */ btest_ (a, b)
 #if CALL_LIKE_SUN
   void ccpbml_ (int *ncols, union float_uint_uchar cols[])
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall CCPBML (int *ncols, union float_uint_uchar cols[])
+#endif
 {
   int i;
   for (i=0; i<*ncols; i++)
@@ -2362,6 +2505,9 @@ int /* logical */ btest_ (a, b)
 #if CALL_LIKE_SUN
   void ccpwrg_ (int *ncols, union float_uint_uchar cols[], float wminmax[])
 #endif
+#if CALL_LIKE_MVS
+  void __stdcall CCPWRG (int *ncols, union float_uint_uchar cols[], float wminmax[])
+#endif
 {
   int i;
   for (i=0; i<*ncols; i++)
@@ -2383,6 +2529,9 @@ int /* logical */ btest_ (a, b)
 #endif
 #if CALL_LIKE_SUN
   void hgetlimits_ (int *IValueNotDet, double *ValueNotDet)
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall HGETLIMITS (int *IValueNotDet, double *ValueNotDet)
 #endif
 {
   *IValueNotDet = INT_MAX;
