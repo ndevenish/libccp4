@@ -518,16 +518,18 @@ C
           ENDIF
    70   CONTINUE
 C
-C---- No input assignment given for compulsary program label
+C---- No input assignment given for hard/soft compulsory program labels
 C
-        DO 75 JDO50 = 1,NLPRGI 
+        DO 75 JDO50 = 1,NLPRGI
           CWORK = LSUSRI(MINDX,JDO50)
           IF ((NLUSRI(MINDX).EQ.0) .OR. (CWORK.EQ.' ')) THEN
 C
+C---- Check to see if the program label is compulsory, or has been assigned
+C      before hand.
             CWORK = LSPRGI(JDO50)
             DO 50 JDO60 = 1,NCOLS(MINDX)
               IF (CWORK.EQ.CLABEL(JDO60,MINDX)) THEN
-               IF(LOOKUP(JDO60).NE.-1)GOTO 75
+               IF(ABS(LOOKUP(JDO50)).NE.1)GOTO 75
                 DO 55 JDO55 = 1,NCOLS(MINDX)
                   IF (RPOINT(JDO55,MINDX).EQ.JDO60) GOTO 75
    55           CONTINUE
@@ -535,7 +537,9 @@ C
               END IF
    50       CONTINUE
 C
-            IF (LOOKUP(JDO50).NE.0) THEN
+C---- Terminate if lookup=-1 (hard), if lookup=1 (soft) set to zero
+C
+            IF (LOOKUP(JDO50).EQ.-1) THEN
               JLENG = LENSTR(CWORK)
               ISTAT = 1
               WRITE (LINE,FMT='(10A)') 'From LRASSN : Program Label ',
@@ -547,6 +551,7 @@ C                  ************************
 C
               IERR = 10
             END IF
+            IF (LOOKUP(JDO50).EQ.1) LOOKUP(JDO50) = 0
             GO TO 75
    60       RPOINT(JDO50,MINDX) = JDO60
           END IF
@@ -6559,12 +6564,6 @@ C            ***********************
 C            ***********************
 C
       ELSE
-C
-C---- Set Kpoint array to 0s
-C
-        DO 5 JDO5 = 1,NLPRGI
-          KPOINT(JDO5) = 0
-    5   CONTINUE
 C
 C---- Find input label assignments
 C
