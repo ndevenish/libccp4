@@ -1972,18 +1972,15 @@ C     .. Arrays in Common ..
      +        NCHITM,NCS,NR1S,NRS,NS1S,NSS,NXYZ
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IER,ISYMC,KMODE,N,NBLIN,NCHINT,NILINE,NLIN
+      INTEGER I,IER,ISYMC,KMODE,N,NBLIN,NILINE,NLIN
       CHARACTER LINE*80
-C     ..
-C     .. Local Arrays ..
-      REAL JLINE(20)
 C     ..
 C     .. External Functions ..
       INTEGER NBYTXX
       EXTERNAL NBYTXX
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QSEEK,SYMFR2, QMODE, QREADR, CCPERR
+      EXTERNAL QSEEK,SYMFR2, QMODE, CCPERR, QREADC
 C     ..
 C     .. Common blocks ..
       COMMON /MIHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
@@ -2002,15 +1999,11 @@ C
 C
 C---- Exit if no symmetry
 C
-      IF (JSYMBT(IUNIT).GT.0) THEN
+      IF (JSYMBT(IUNIT).LE.0) RETURN
 C
 C---- Position to start of symmetry block
 C
         CALL QSEEK(LSTRM(IUNIT),2,1,ITMHDR(IUNIT))
-C
-Cdw---- Set Mode = 0 (bytes)
-C
-        CALL QMODE(LSTRM(IUNIT),0,NCHINT)
 C
 C---- Total number of symmetry characters
 C
@@ -2036,14 +2029,9 @@ C
 C
 C---- Read line from file
 C
-          CALL QREADR(LSTRM(IUNIT),JLINE,NILINE,IER)
-          IF (IER.NE.0) THEN
-            GO TO 30
-          ELSE
-C
-C---- Convert to characters
-C
-            WRITE (LINE,FMT=6004) JLINE
+          CALL QREADC(LSTRM(IUNIT),LINE(1:NILINE),IER)
+          IF (IER.NE.0) CALL CCPERR(1,
+     +   '**MSYMOP: ERROR READING SYMMETRY OPERATIONS FROM MAP FILE**')
 C
 C---- Convert to matrices
 C
@@ -2054,13 +2042,7 @@ C
 C---- Print
 C
               WRITE (LUNOUT,FMT=6000) LINE
-C
-C              DO 10 J = N,NSYM
-C                WRITE (LUNOUT,FMT=6002) J, ((ROT(L,M,J),M=1,4),L=1,3)
-C   10         CONTINUE
-C
             END IF
-          END IF
    20   CONTINUE
 C
 Cdw---- Reset Mode, changing modes 10 & 11(12) to 0 & 2
@@ -2071,20 +2053,9 @@ C
      +      KMODE = 2
         CALL QMODE(LSTRM(IUNIT),KMODE,NCHITM(IUNIT))
 C
-        RETURN
-C
-C---- Error condition
-C
- 30     CALL CCPERR(1,
-     +   '**MSYMOP: ERROR READING SYMMETRY OPERATIONS FROM MAP FILE**')
-      END IF
-C
 C---- Format statements
 C
  6000 FORMAT (/' Symmetry operations : ',A)
-C 6002 FORMAT (/21X,'Symmetry matrix',I5,5X,3F10.5,5X,F10.5,
-C     +       /2 (46X,3F10.5,5X,F10.5,/))
- 6004 FORMAT (20A4)
       END
 C
 C
@@ -2118,17 +2089,15 @@ C     .. Arrays in Common ..
      +        JUNKO2,LSTRM,NCHITI,MODEI
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IER,KMODE,NBLIN,NIN,NLIN,NOUT,JUNK
-C     ..
-C     .. Local Arrays ..
-      INTEGER LINE(20)
+      INTEGER I,IER,KMODE,NBLIN,NLIN
+      CHARACTER LINE*80
 C     ..
 C     .. External Functions ..
       INTEGER NBYTXX
       EXTERNAL NBYTXX
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QSEEK,QWRITI, QMODE, CCPERR, QREADI
+      EXTERNAL QSEEK, QMODE, CCPERR, QREADC, QWRITC
 C     ..
 C     .. Common blocks ..
       COMMON /MIHDR/JUNKI(22),ISGI,NBTI,JUNKI2(232),JUNKI3(12,3),
@@ -2154,40 +2123,26 @@ C
 C---- Copy NBLIN characters at a time
 C
         NLIN = (NBTI+NBLIN-1)/NBLIN
-C
-C---- Number of items / line for each file
-C
-        NIN = NBLIN/NCHITI(IN)
-        NOUT = NBLIN/NCHITO
-C
-Cdw---- Set Mode = 6 (Integer*4) for input file
-C
-        CALL QMODE(LSTRM(IN),6,JUNK)
         DO 10 I = 1,NLIN
-          CALL QREADI(LSTRM(IN),LINE,NIN,IER)
-          IF (IER.NE.0) THEN
-            GO TO 20
-          ELSE
-            CALL QWRITI(LSTRM(IOUT),LINE,NOUT)
-          END IF
+          CALL QREADC(LSTRM(IN),LINE(1:NBLIN),IER)
+          IF (IER.NE.0) CALL CCPERR(1,
+     +   '**MSYCPY: ERROR READING SYMMETRY OPERATIONS FROM MAP FILE**')
+            CALL QWRITC(LSTRM(IOUT),LINE(1:NBLIN))
    10   CONTINUE
 C
 Cdw---- Rest Mode for input file
 C----   changing modes 10 & 11(12) to 0 & 2
-C
-        KMODE = MODEI(IN)
-        IF (MODEI(IN).EQ.10) KMODE = 0
-        IF (MODEI(IN).EQ.11 .OR. MODEI(IN).EQ.12) KMODE = 2
-        CALL QMODE(LSTRM(IN),KMODE,NCHITI(IN))
-C
-        GO TO 30
-C
- 20     CALL CCPERR(1, '!!!! Read error on symmetry !!!!')
+C     This probably isn't necessary now, since we didn't firkle with it
+C     above.  (Old code did.)
+CCC        KMODE = MODEI(IN)
+CCC        IF (MODEI(IN).EQ.10) KMODE = 0
+CCC        IF (MODEI(IN).EQ.11 .OR. MODEI(IN).EQ.12) KMODE = 2
+CCC        CALL QMODE(LSTRM(IN),KMODE,NCHITI(IN))
       END IF
 C
 C---- Item count
 C
-   30 NBTO = NBTI
+      NBTO = NBTI
 C
 C---- Position of first section
 C
@@ -2564,17 +2519,13 @@ C     .. Arrays in Common ..
       INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IPRINT,NBLIN,NCLIN,NLIN
+      INTEGER I,IPRINT,NLIN
 C     ..
 C     .. Local Arrays ..
       CHARACTER*80   SYMOPS(MAXSYM)
 C     ..
-C     .. External Functions ..
-      INTEGER NBYTXX
-      EXTERNAL NBYTXX
-C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPOPN,QSEEK,QWRITC, CCPERR
+      EXTERNAL QSEEK,QWRITC, CCPERR, SYMTR3
 C     ..
 C     .. Common blocks ..
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
