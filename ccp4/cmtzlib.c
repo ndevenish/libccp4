@@ -172,6 +172,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
       for (ixtal = 0; ixtal < nxtal; ++ixtal) {
         if (strcmp(projin[ixtal],project) == 0) {
           jxtal = ixtal;
+          jxtalin[iiset] = jxtal;
         }
       }
       /* New project implies new crystal */
