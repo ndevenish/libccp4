@@ -102,7 +102,9 @@ C     ..
 C     .. Data statements ..
 C     NB mustn't have SCRATCH in here, because result is system
 C     -dependent
-      DATA STAT/'UNKNOWN','UNKNOWN','OLD','NEW','OLD','UNKNOWN'/
+
+c     but as this is a system dependant file its ok!
+      DATA STAT/'UNKNOWN','SCRATCH','OLD','NEW','OLD','UNKNOWN'/
 C     ..
 C     
       ISTAT = KSTAT
@@ -226,7 +228,8 @@ C     become inaccessible only when closed, but don't appear in the
 C     directory and the name can be re-used.
 C     NB this may break with REWIND if that is implemented as close +
 C     reopen, sigh.  See also  above
-	IF (ISTAT.EQ.SCRATCH) CALL CUNLINK(NAMFIL)
+c  *** this now removed for windows. we will try actually opeing scratch files instead
+c	IF (ISTAT.EQ.SCRTCH) CALL CUNLINK(NAMFIL)
 C
 C     Error check
  5    CONTINUE
@@ -1084,4 +1087,24 @@ c
       return
       end
 
+      SUBROUTINE CCPZBI (ARR1,NUM)
+C     ============================
+C
+C  This routine zeros NUM bytes of the array ARR1
+C
+C Arguments:
+C
+C    ARR1 (O)   BYTE ARRAY(*): array to be zeroed
+C     NUM (I)   INTEGER: Number of bytes
+C_END_CCPZBI
+C
+C  Arguments ......
+      INTEGER NUM
+      BYTE ARR1(*)
+C
+      INTEGER J
+C
+      DO 10 J=1,NUM
+   10 ARR1(J)=0
+      END
 
