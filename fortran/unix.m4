@@ -100,6 +100,7 @@ C     options
 C GETELAPSED - Print timing info for CCPERR
 C UGTARG - Get command-line argument
 C GETREF - Abstracted from abscale since it has BYTE declaration.
+C CCPSPW - Spawns a new process to run shell command
 C
 C
       SUBROUTINE CCPOPN(IIUN,LOGNAM,KSTAT,ITYPE,LREC,IFAIL)
@@ -936,3 +937,19 @@ C
 C
 C
       END
+C_BEGIN_CCPSPW
+      SUBROUTINE CCPSPW(STRING)
+C     =========================
+C
+C     Spawns a new process to run shell command
+C
+C Arguments:
+C ==========
+C
+C  STRING (I)   CHARACTER*(*): string containing command
+C_END_CCPSPW
+C
+       CHARACTER STRING*(*)
+       EXTERNAL SYSTEM
+       CALL SYSTEM(STRING)
+       END

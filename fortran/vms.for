@@ -31,6 +31,7 @@ C TTSEND - Write string to terminal with various carriage control options
 C GETELAPSED - Print timing info for CCPERR
 C UGTARG - Get command-line argument 
 C GETREF - Abstracted from abscale since it has BYTE declaration.
+C CCPSPW - Spawns a new process to run DCL command
 C
 C
 C     ================================                         
@@ -1341,6 +1342,22 @@ C
       RETURN 
    40 KERFLG = -1
       RETURN
-C
-C
       END
+C
+C
+C
+C_BEGIN_CCPSPW
+      SUBROUTINE CCPSPW(STRING)
+C     =========================
+C
+C     Spawns a new process using shell command
+C
+C Arguments:
+C ==========
+C
+C  STRING (I)   CHARACTER*(*): string containing command
+C_END_CCPSPW
+C
+       CHARACTER STRING*(*)
+       CALL LIB$SPAWN(STRING)
+       END

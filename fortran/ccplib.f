@@ -38,7 +38,7 @@ C                modes
 C      CCPMVB    Move bytes from one non-character array to another if
 C                byte handling is available
 C      CCPMVI    Move words from one integer array to another
-C      CCPMVR    Move words from one rael array to another
+C      CCPMVR    Move words from one real array to another
 C      CCPONL    See if program is being run interactively
 C      CCPPSF    Parse file name into components
 C      CCPRCS    Like CCPVRS but use RCS-format date string
@@ -47,7 +47,6 @@ C      CCPPAG    Set paging parameters if available
 C      CCPSI2    Set integer value from 0 to 65535 into the N'th
 C                unsigned integer*2 element of an array.
 C      CCPSTB    Set integer value from 0 to 255 into N'th byte of array.
-C      CCPSPW    Spawns sub-process
 C      CCPSUM    Sum the elements of an array
 C      CCPTIM    Get CPU and Elapsed times
 C      CCPTOI    Convert n'th byte or I*2 in a non-character array to an
@@ -1947,25 +1946,6 @@ C
       JA=IVAL
       IA(N)=JBYT(IND)
       END
-C
-C
-C
-C_BEGIN_CCPSPW
-      SUBROUTINE CCPSPW(STRING)
-C     =========================
-C
-C     Spawns a new process using shell command
-C
-C Arguments:
-C ==========
-C
-C  STRING (I)   CHARACTER*(*): string containing command
-C_END_CCPSPW
-C
-       CHARACTER STRING*(*)
-       EXTERNAL SYSTEM
-       CALL SYSTEM(STRING)
-       END
 C
 C
 C
