@@ -34,6 +34,7 @@
 # The following variables are expected to be set by configure:
 # top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
 # INSTALL_PROGRAM INSTALL_DATA SHARE_LIB SHARE_INST
+# SHARED_LIB_FFLAGS SHARED_LIB_CFLAGS for option shared build
 
 SHELL       = /bin/sh
 srcdir	    = $(top_srcdir)/lib/src
@@ -239,37 +240,37 @@ $(CSYMPLPACKAGE): $(CSYMOBJS) $(CORELIBOBJS) $(CSYMPLOBJS)
 # C library
 
 $(MMDBOBJS): 
-	$(CXX) $(CXXFLAGS) -I$(mmdbsrcdir) -c $(mmdbsrcdir)/`basename $@ .o`.cpp
+	$(CXX) $(CXXFLAGS) $(SHARED_LIB_CFLAGS) -I$(mmdbsrcdir) -c $(mmdbsrcdir)/`basename $@ .o`.cpp
 
 $(CORELIBOBJS) $(CGENERALOBJS) $(CMTZOBJS) $(CMAPOBJS) $(CUCOBJS) \
             $(CSYMOBJS) $(UMTZOBJS) $(MMTZOBJS): 
-	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/`basename $@ .o`.c
+	$(CC) $(CFLAGS) $(SHARED_LIB_CFLAGS) -I$(srcdir) -c $(srcdir)/`basename $@ .o`.c
 
 $(FINTERFACEOBJS):
-	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/`basename $@ .o`.c
+	$(CC) $(CFLAGS) $(SHARED_LIB_CFLAGS) -I$(srcdir) -c $(srcdir)/`basename $@ .o`.c
 
 $(CMTZPYOBJS) $(CMAPPYOBJS) $(CSYMPYOBJS): 
-	$(CC) $(CFLAGS) -I$(srcdir) -I$(PYTHON_INCLUDE) -c $(srcdir)/`basename $@ .o`.c
+	$(CC) $(CFLAGS) $(SHARED_LIB_CFLAGS) -I$(srcdir) -I$(PYTHON_INCLUDE) -c $(srcdir)/`basename $@ .o`.c
 
 $(MMDBPYOBJS): 
-	$(CXX) $(CXXFLAGS) -I$(mmdbsrcdir) -I$(PYTHON_INCLUDE) \
+	$(CXX) $(CXXFLAGS) $(SHARED_LIB_CFLAGS) -I$(mmdbsrcdir) -I$(PYTHON_INCLUDE) \
             -c $(mmdbsrcdir)/`basename $@ .o`.cpp
 
 $(MMDBTCLOBJS): 
-	$(CXX) $(CXXFLAGS) -I$(mmdbsrcdir) -I$(TCL_INCLUDE) \
+	$(CXX) $(CXXFLAGS) $(SHARED_LIB_CFLAGS) -I$(mmdbsrcdir) -I$(TCL_INCLUDE) \
             -c $(mmdbsrcdir)/`basename $@ .o`.cpp
 
 $(CMTZTCLOBJS) $(CMAPTCLOBJS) $(CSYMTCLOBJS): 
-	$(CC) $(CFLAGS) -I$(srcdir) -I$(TCL_INCLUDE) -c $(srcdir)/`basename $@ .o`.c
+	$(CC) $(CFLAGS) $(SHARED_LIB_CFLAGS) -I$(srcdir) -I$(TCL_INCLUDE) -c $(srcdir)/`basename $@ .o`.c
 
 $(CMTZPLOBJS) $(CMAPPLOBJS) $(CSYMPLOBJS): 
-	$(CC) $(CFLAGS) -I$(srcdir) -I$(PERL_INCLUDE) -c $(srcdir)/`basename $@ .o`.c
+	$(CC) $(CFLAGS) $(SHARED_LIB_CFLAGS) -I$(srcdir) -I$(PERL_INCLUDE) -c $(srcdir)/`basename $@ .o`.c
 
 # Fortran code
 
 #test to see if fsplit is in fsplit_dir already otherwise make it if you can
 fsplit : $(srcdir)/fsplit.c
-	test ! -x $(fsplit_dir)/fsplit && $(CC) $(CFLAGS) -o $(fsplit_dir)/fsplit fsplit.c || true 
+	test ! -x $(fsplit_dir)/fsplit && $(CC) $(CFLAGS) $(SHARED_LIB_CFLAGS) -o $(fsplit_dir)/fsplit fsplit.c || true 
 
 $(LF)(parser.o) : $(srcdir)/parser.f
 	-rm -rf parser.dir; mkdir parser.dir
@@ -281,7 +282,7 @@ $(LF)(parser.o) : $(srcdir)/parser.f
 	fi
 	cd parser.dir && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f parser.dir/*.o
 parser : parser.o
@@ -293,7 +294,7 @@ $(LF)(ccplib.o) : $(srcdir)/ccplib.f
 	echo '      END' >> ccplib.dir/ccplib.$F
 	cd ccplib.dir && $(fsplit_dir)/fsplit $(srcdir)/ccplib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f ccplib.dir/*.o
 ccplib : ccplib.o
@@ -305,7 +306,7 @@ $(LF)(lgglib.o) : $(srcdir)/lgglib.f
 	echo '      END' >> lgglib.dir/lgglib.$F
 	cd lgglib.dir && $(fsplit_dir)/fsplit $(srcdir)/lgglib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f lgglib.dir/*.o
 lgglib : lgglib.o
@@ -317,7 +318,7 @@ $(LF)(plot84lib.o) : $(srcdir)/plot84lib.f
 	echo '      END' >> plot84lib.dir/plot84lib.$F
 	cd plot84lib.dir && $(fsplit_dir)/fsplit $(srcdir)/plot84lib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f plot84lib.dir/*.o
 plot84lib : plot84lib.o
@@ -329,7 +330,7 @@ $(LF)(libhtml.o) : $(srcdir)/libhtml.f
 	echo '      END' >> libhtml.dir/libhtml.$F
 	cd libhtml.dir && $(fsplit_dir)/fsplit $(srcdir)/libhtml.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f libhtml.dir/*.o
 libhtml : libhtml.o
@@ -341,7 +342,7 @@ $(LF)(pxxml.o) : $(srcdir)/pxxml.f
 	echo '      END' >> pxxml.dir/pxxml.$F
 	cd pxxml.dir && $(fsplit_dir)/fsplit $(srcdir)/pxxml.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f pxxml.dir/*.o
 pxxml : pxxml.o
@@ -353,7 +354,7 @@ $(LF)(rwbrook.o) : $(srcdir)/rwbrook.f
 	echo '      END' >> rwbrook.dir/rwbrook.$F
 	cd rwbrook.dir && $(fsplit_dir)/fsplit $(srcdir)/rwbrook.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f rwbrook.dir/*.o
 rwbrook : rwbrook.o
@@ -365,7 +366,7 @@ $(LF)(cciflib.o) : $(srcdir)/cciflib.f
 	echo '      END' >> cciflib.dir/cciflib.$F
 	cd cciflib.dir && $(fsplit_dir)/fsplit $(srcdir)/cciflib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) -I$(srcdir) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f cciflib.dir/*.o
 cciflib : cciflib.o
@@ -377,11 +378,11 @@ $(LF)(harvlib.o) : $(srcdir)/harvlib.f
 	echo '      END' >> harvlib.dir/harvlib.$F
 	if test -n "$(ccifdir)" ; then cd harvlib.dir && $(fsplit_dir)/fsplit $(srcdir)/harvlib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) -I$(srcdir) $$i; done\
 	  && $(AR) ../$(LF) *.o ; else \
 	cd harvlib.dir && $(fsplit_dir)/fsplit $(srcdir)/harv_dummy.f >/dev/null && $(RMEMPTY) && \
 	for i in `pwd`/*.$F; do \
-	  $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
+	  $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) -I$(srcdir) $$i; done\
 	  && $(AR) ../$(LF) *.o ; fi
 	rm -f harvlib.dir/*.o
 harvlib : harvlib.o
@@ -393,7 +394,7 @@ $(LF)(keyparse.o) : $(srcdir)/keyparse.f
 	echo '      END' >> keyparse.dir/keyparse.$F
 	cd keyparse.dir && $(fsplit_dir)/fsplit $(srcdir)/keyparse.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f keyparse.dir/*.o
 keyparse : keyparse.o
@@ -402,10 +403,10 @@ keyparse : keyparse.o
 #  The image (un)packing routines which were needed for mosflm and are needed
 #  for ipdisp. May be useful but could be moved. 
 $(LF)(pack_c.o):   $(srcdir)/pack_c.c $(srcdir)/pack_c.h
-	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/pack_c.c
+	$(CC) $(CFLAGS) $(SHARED_LIB_CFLAGS) -I$(srcdir) -c $(srcdir)/pack_c.c
 	$(AR) $(LF) pack_c.o && rm pack_c.o
 $(LF)(pack_f.o):   $(srcdir)/pack_f.f
-	$(FC) -c $(FFLAGS) $(srcdir)/pack_f.$(F) && $(AR) $(LF) pack_f.o \
+	$(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $(srcdir)/pack_f.$(F) && $(AR) $(LF) pack_f.o \
           && rm pack_f.o
 pack:   $(LF)(pack_c.o) $(LF)(pack_f.o)
 	$(RANLIB) $(LF) 
@@ -416,7 +417,7 @@ $(LF)(sorting_main.o) : $(srcdir)/sorting_main.f
 	echo '      END' >> sorting_main.dir/sorting_main.$F
 	cd sorting_main.dir && $(fsplit_dir)/fsplit $(srcdir)/sorting_main.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f sorting_main.dir/*.o
 sorting_main : sorting_main.o
@@ -428,7 +429,7 @@ $(LF)(plotsubs.o) : $(srcdir)/plotsubs.f
 	echo '      END' >> plotsubs.dir/plotsubs.$F
 	cd plotsubs.dir && $(fsplit_dir)/fsplit $(srcdir)/plotsubs.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f plotsubs.dir/*.o
 plotsubs : plotsubs.o
@@ -440,7 +441,7 @@ $(LF)(modlib.o) : $(srcdir)/modlib.f
 	echo '      END' >> modlib.dir/modlib.$F
 	cd modlib.dir && $(fsplit_dir)/fsplit $(srcdir)/modlib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f modlib.dir/*.o
 modlib : modlib.o
@@ -452,7 +453,7 @@ $(LF)(fftlib.o) : $(srcdir)/fftlib.f
 	echo '      END' >> fftlib.dir/fftlib.$F
 	cd fftlib.dir && $(fsplit_dir)/fsplit $(srcdir)/fftlib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done \
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done \
 	  && $(AR) ../$(LF) *.o
 	rm -f fftlib.dir/*.o
 fftlib : fftlib.o
@@ -469,7 +470,7 @@ $(LF)(unix.o) : $(srcdir)/unix.m4
 	echo '      END' >> unix.dir/unix.f
 	cd unix.dir && $(fsplit_dir)/fsplit ../unix.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f unix.dir/*.o 
 unix : unix.o
@@ -615,7 +616,7 @@ csymlib_pl_wrap.o: $(srcdir)/csymlib_pl_wrap.c
 #
 
 testlib : $(srcdir)/testlib.c  $(LF)
-	$(CC) -o testlib $(CFLAGS) $(srcdir)/testlib.c -all $(LDCFLAGS)
+	$(CC) -o testlib $(CFLAGS) $(SHARED_LIB_CFLAGS) $(srcdir)/testlib.c -all $(LDCFLAGS)
 
 #
 # standard targets
