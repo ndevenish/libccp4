@@ -57,6 +57,8 @@
 #include "ccp4_program.h"
 #include "ccp4_utils.h"
 #include "ccp4_general.h"
+#include "cmtzlib.h"
+#include "csymlib.h"
 static char rcsid[] = "$Id$";
 
 /** Free all memory malloc'd from static pointers in Fortran interface.
@@ -70,7 +72,12 @@ void ccp4f_mem_tidy(void) {
 
 /* MVS was defaulting to assigning GETARG to be returning an int and it aint*/
 #ifdef _MVS
+ int __stdcall IARGC();
  void __stdcall GETARG(int *i,char *arg,int arg_len);
+ void __stdcall CCP4H_INIT_LIB(int *ihtml, int *isumm);
+ void __stdcall CCP4H_SUMMARY_BEG();
+ void __stdcall CCP4H_SUMMARY_END();
+ void __stdcall CCP4H_PRE_BEG();
 #endif
 
 FORTRAN_SUBR ( CCPFYP, ccpfyp,
@@ -290,7 +297,7 @@ FORTRAN_SUBR ( CCPTIM, ccptim,
     tim0 = time(NULL);
     *cpu = tlast = ccp4_utils_etime(tarray);
   } else {
-    *elaps = time(NULL) - tim0;
+    *elaps = time(NULL) - (float) tim0;
     *cpu = ccp4_utils_etime(tarray) - tlast;
   }
 
