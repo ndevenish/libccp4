@@ -139,7 +139,7 @@ C
       LOGICAL    EXIST
       LOGICAL    BUFACT(NCMAX), WRTACT(NCMAX), NEW(NCMAX), LUNIT(NCMAX)
       INTEGER    I, IEL, IER, IREC, IRET, IUNIT, L, LENGTH, LOCATION,
-     &           LRECL, MCHITM, MODE, MTIT, MTRT, NBYTES
+     &           LRECL, MCHITM, MODE, MTIT, MTRT, NBYTES, MODE1, MAXNC
       INTEGER    IBY, INDEX, ISAVE, ISTAT, IVBLK, J, JEL, NBY, NDO,
      &           NLEFT, NTOMOV
       INTEGER    MODES(0:MAXMO), MSIT(NCMAX), MSRT(NCMAX), NEL(NCMAX),
@@ -147,6 +147,8 @@ C
       INTEGER    LENSTR
       REAL       BUF(NSIZE/4,NCMAX)
       EQUIVALENCE(BUFFER,BUF)
+      COMMON /DISKIO_MODES_/ MAXNC, NMODE
+      DATA MAXNC/NCMAX/
       DATA       UNK/'UNKNOWN'/, LUNIT/NCMAX*.TRUE./
       SAVE
 C
@@ -439,18 +441,23 @@ C
 C
 C*QREAD
       ENTRY QREAD(IUNIT,ARRAY,NBYTES,IER)
+      ENTRY QREADR(IUNIT,ARRAY,NBYTES,IER)
+      ENTRY QREADI(IUNIT,ARRAY,NBYTES,IER)
+      ENTRY QREADQ(IUNIT,ARRAY,NBYTES,IER)
 C     ===================================
 C
 C==== Maybe this should be a soft fail: IUNIT = -1 ?
 C
+ 45   IF (IUNIT.GT.MCMAX .OR. IUNIT.LT.1)
+     +     CALL CCPERR (1,'QREAD: bad stream number')
       IF (LUNIT(IUNIT)) THEN
         CALL CCPERR(1,'QREAD error: File not open.')
         IUNIT = -1
         RETURN
       ENDIF
+      NTOMOV = NBYTES * NCHITM(IUNIT)
       IER = 0
       INDEX = 1
-      NTOMOV = NBYTES * NCHITM(IUNIT)
       NEW(IUNIT) = .FALSE.
 C
       IF (.NOT.BUFACT(IUNIT)) THEN
@@ -643,10 +650,15 @@ C
 C
 C*QWRITE
       ENTRY QWRITE(IUNIT,ARRAY,NBYTES)
+      ENTRY QWRITI(IUNIT,ARRAY,NBYTES)
+      ENTRY QWRITR(IUNIT,ARRAY,NBYTES)
+      ENTRY QWRITQ(IUNIT,ARRAY,NBYTES)
 C     ================================
 C
 C==== Maybe this should be a soft fail: IUNIT = -1 ?
 C
+      IF (IUNIT.GT.MCMAX .OR. IUNIT.LT.1)
+     +     CALL CCPERR (1,'QREAD: bad stream number')
       IF (LUNIT(IUNIT)) THEN
         CALL CCPERR(1,'QWRITE error: File not open.')
         IUNIT = -1
@@ -1238,3 +1250,39 @@ C
 C
 C
 C#######################################################################
+
+C     Reading and writing CHARACTER BUFFER, len(buffer) bytes, mode 0.
+C     (It may be possible to declare BUFFER as a structure and get the
+C     data address directly, without calling STR$ANALYZE_SDESC.)
+
+      SUBROUTINE QREADC (IUNIT,BUFFER,RESULT)
+      PARAMETER (NCMAX=10)
+      INTEGER IUNIT, NITEMS, RESULT, MODE, OLDMODE, NMODE(NCMAX), MITEM
+      CHARACTER BUFFER*(*)
+      COMMON /DISKIO_MODES_/ MAXNC, NMODE
+      IF (IUNIT.GT.MAXNC .OR. IUNIT.LT.0)
+     +     CALL CCPERR (1, 'QREADC: Bad unit number')
+C     save the old mode and change to bytes
+      OLDMODE = NMODE (IUNIT)
+      CALL QMODE (IUNIT,0,MITEM)
+      CALL STR$ANALYZE_SDESC (BUFFER, NITEMS, IPTR)
+      CALL QREAD (IUNIT,%VAL(IPTR),NITEMS,RESULT)
+C     restore mode
+      CALL QMODE (IUNIT,OLDMODE,MITEM)
+      END
+
+      SUBROUTINE QWRITC (IUNIT,BUFFER,RESULT)
+      PARAMETER (NCMAX=10)
+      INTEGER IUNIT, NITEMS, RESULT, MODE, OLDMODE, NMODE(NCMAX), MITEM
+      CHARACTER BUFFER*(*)
+      COMMON /DISKIO_MODES_/ MAXNC, NMODE
+      IF (IUNIT.GT.MAXNC .OR. IUNIT.LT.0)
+     +     CALL CCPERR (1, 'QREADC: Bad unit number')
+C     save the old mode and change to bytes
+      OLDMODE = NMODE (IUNIT)
+      CALL QMODE (IUNIT,0,MITEM)
+      CALL STR$ANALYZE_SDESC (BUFFER, NITEMS, IPTR)
+      CALL QWRITE (IUNIT,%VAL(IPTR),NITEMS,RESULT)
+C     restore mode
+      CALL QMODE (IUNIT,OLDMODE,MITEM)
+      END
