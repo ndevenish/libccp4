@@ -5,6 +5,8 @@ C  Original Author: Based on Mike Levitt's routine of the same name.
 C  Modified By: Peter Brick, Phil Evans, Eleanor Dodson
 C
 C
+C  19/2/93  added RDRESL, GTTREA, GTTINT  Phil Evans
+C
 C $Date$
 C
 C
@@ -33,6 +35,10 @@ C    GTCFLD(NFIELD,ITEXT,NCHAR,MINC,MAXC,IGFLAG)
 C    CPYCHR(STRINGA,STRINGB,NCHAR)
 C    CMOVE(STRINGA,STRINGB,NCHAR)
 C    CHKKEY(KEY,WORDS,NWORDS,IKEY)
+C
+C    RDRESL(ITOK,ITYPE,FVALUE,CVALUE,NTOK,RESMIN,RESMAX,SMIN,SMAX,ISTAT)
+C    GTTREA(N,X,LFLAG,NTOK,ITYP,FVALUE)
+C    GTTINT(N,I,LFLAG,NTOK,ITYP,FVALUE)
 C
 C FUNCTIONS
 C
@@ -2385,3 +2391,298 @@ C
 C     
       RETURN
       END 
+C
+C
+C
+C     =====================================================
+      SUBROUTINE RDRESL(ITOK,ITYPE,FVALUE,CVALUE,NTOK,RESMIN,
+     +                  RESMAX,SMIN,SMAX,ISTAT)
+C     =====================================================
+C     
+C     
+C---- Read and decode resolution limits.
+C     Subkeywords in CVALUE recognized:
+C       LOW   read next number as low resolution limit
+C       HIGH  read next number as high resolution limit
+C
+C     If LOW & HIGH are both present, the limits will still be swapped
+C     to the correct order
+C     
+C     On entry:
+C     
+C     ITYPE,FVALUE,NTOK,CVALUE contain information from Parser
+C     ITOK  is first field to interpret
+C     
+C     On exit:
+C     
+C     RESMIN  Minimum resolution (in As) (ie low resolution)
+C     RESMAX  Maximum resolution (in As) (ie high resolution)
+C     SMIN    Minimum resolution ( 4sin**2/lambda**2) (ie low resolution)
+C     SMAX    Maximum resolution ( 4sin**2/lambda**2) (ie high resolution)
+C     ISTAT   = 0, OK; = -1 illegal subkeyword ; = +1  no limits set
+C             = +2 illegal number (probably can't happen)
+C
+C     If only LOW or HIGH are given, the unset limit (ie either RESMAX, SMAX
+C     or RESMIN, SMIN) will be set to -1.0. If only one number is given,
+C     it is treated as a high resolution limit
+C     
+C      IMPLICIT NONE
+C     
+C     
+C     .. Scalar Arguments ..
+      REAL              RESMAX,RESMIN,SMAX,SMIN
+      INTEGER           ITOK,NTOK,ISTAT
+C     ..
+C     .. Array Arguments ..
+      REAL              FVALUE(*)
+      INTEGER           ITYPE(*)
+      CHARACTER*4       CVALUE(*)
+C     ..
+C     .. Local Scalars ..
+      REAL              RESTEM,STEM
+      INTEGER           N, KMNMX, NSET, LFLAG, NKEYS, IKEY
+      LOGICAL           BOTH
+      CHARACTER*4 SUBKEY(2)
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL          GTTREA, CCPUPC, CHKKEY
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC         SQRT
+C     ..
+      DATA SUBKEY /'LOW', 'HIGH'/
+      DATA NKEYS /2/
+C
+C---- Global defaults set here
+C
+      RESMAX = -1.0
+      RESMIN = -1.0
+      SMIN   = -1.0
+      SMAX   = -1.0
+      NSET   = 0
+      KMNMX  = 1
+      ISTAT  = 0
+      BOTH = .TRUE.
+C     
+      N  = ITOK
+C
+ 1    IF (N .LE. NTOK) THEN
+C
+         IF (ITYPE(N) .EQ. 1) THEN
+C String
+            CALL CCPUPC(CVALUE(N))
+            CALL CHKKEY(CVALUE(N),SUBKEY,NKEYS,IKEY)
+            IF(IKEY.LE.0) THEN
+               ISTAT = -1
+               RETURN
+C              ======
+            ELSEIF (IKEY .EQ. 1) THEN
+C----- subkey LOW
+               KMNMX = 1
+            ELSEIF (IKEY .EQ. 2) THEN
+C----- subkey HIGH
+               KMNMX = 2
+            ENDIF
+            BOTH = .NOT. BOTH
+         ELSE
+C Number
+            RESTEM = 0.0
+C                ******************************************
+            CALL GTTREA(N,RESTEM,LFLAG,NTOK,ITYPE,FVALUE)
+C                ******************************************
+            IF (LFLAG .EQ. 0) THEN
+               IF (KMNMX .EQ. 1) THEN
+                  RESMIN = RESTEM
+                  NSET   = NSET+1
+                  KMNMX  = 2
+               ELSEIF (KMNMX .EQ. 2) THEN
+                  RESMAX = RESTEM
+                  NSET = NSET+1
+               ENDIF
+            ELSE
+               ISTAT = +2
+            ENDIF
+         ENDIF
+         N = N+1
+         GO TO 1
+      ENDIF
+C
+C  Have any numbers been set?
+      IF (NSET .EQ. 0) THEN
+         ISTAT = +1
+         RETURN
+C        ======
+      ELSEIF (NSET .EQ. 1) THEN
+C One only set, if no keywords have been defined, use single number as
+C     high resolution limit
+         IF (BOTH) THEN
+            RESMAX = RESMIN
+            RESMIN = -1.0
+         ENDIF
+      ENDIF
+C     
+C---- option to read 4sin**2/lamda**2
+C     
+      IF (RESMIN .GT. 0.0) THEN
+         IF (RESMIN .LE. 1.0) THEN
+C     
+C---- swap over SMIN and RESMIN
+C     
+            SMIN = RESMIN
+            RESMIN = SQRT(1.0/SMIN)
+         ELSE
+            SMIN = 1.0/RESMIN**2
+         END IF
+      ENDIF
+C     
+      IF (RESMAX .GT. 0.0) THEN
+         IF(RESMAX .LE. 1.0) THEN
+C     
+C---- swap over SMAX and RESMAX 
+C     
+            SMAX = RESMAX
+            RESMAX = SQRT(1.0/SMAX)
+         ELSE
+            SMAX = 1.0/RESMAX**2
+         ENDIF
+      ENDIF
+C     
+C---- Check that they are in the correct order, if both limits read
+C     
+      IF (NSET .EQ. 2) THEN
+         IF (RESMIN.LE.RESMAX) THEN
+            RESTEM = RESMAX
+            RESMAX = RESMIN
+            RESMIN = RESTEM
+         ENDIF
+         IF (SMIN.GT.SMAX) THEN
+            STEM = SMAX
+            SMAX = SMIN
+            SMIN = STEM
+         ENDIF
+      ENDIF
+C     
+C     
+      RETURN
+      END
+C     
+C
+C
+C
+      SUBROUTINE GTTREA(N,X,LFLAG,NTOK,ITYP,FVALUE)
+C     =============================================
+C
+C---- Extract real number X from N'th value Parser array FVALUE,
+C     if possible
+C
+C---- If no value, leave X unchanged. If illegal, write message
+C  Returns
+C   LFLAG =  0  OK (valid number or null field)
+C         = -1  beyond end of line
+C         = +1  illegal number
+C
+C      IMPLICIT NONE
+C     .. Parameters ..
+      INTEGER NPARM
+      PARAMETER (NPARM=200)
+C     ..
+C     .. Scalar Arguments ..
+      REAL X
+      INTEGER N,NTOK,LFLAG
+C     ..
+C     .. Array arguments ..
+      REAL FVALUE(*)
+      INTEGER ITYP(*)
+C     ..
+C     .. Local Scalars ..
+      INTEGER ISTERR,IFGERR
+      CHARACTER LINERR*200
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL LERROR
+C     ..
+C
+C
+      LFLAG = 0
+      IF (N.LE.NTOK) THEN
+        IF (ITYP(N).EQ.2) THEN
+          X = FVALUE(N)
+        ELSE IF (ITYP(N).EQ.1) THEN
+           WRITE (LINERR,FMT='(A,I4)') 
+     +    ' Illegal number in field ',N
+          ISTERR = 1
+          IFGERR = 0
+C
+C              ****************************
+          CALL LERROR(ISTERR,IFGERR,LINERR)
+C              ****************************
+C
+          LFLAG = +1
+        END IF
+      ELSE
+         LFLAG = -1
+      END IF
+C
+C
+      END
+C
+C
+C
+      SUBROUTINE GTTINT(N,I,LFLAG,NTOK,ITYP,FVALUE)
+C     =============================================
+C
+C---- Extract integer I from N'th value Parser array FVALUE,
+C     if possible
+C
+C---- If no value, leave I unchanged. If illegal, write message
+C  Returns
+C   LFLAG =  0  OK (valid number or null field)
+C         = -1  beyond end of line
+C         = +1  illegal number
+C
+C      IMPLICIT NONE
+C     .. Parameters ..
+      INTEGER NPARM
+      PARAMETER (NPARM=200)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER I,N,NTOK,LFLAG
+C     ..
+C     .. Arrays arguments ..
+      REAL FVALUE(*)
+      INTEGER ITYP(*)
+C     ..
+C     .. Local Scalars ..
+      INTEGER ISTERR,IFGERR
+      CHARACTER LINERR*100
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL LERROR
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC NINT
+C     ..
+C
+C
+      LFLAG = 0
+      IF (N.LE.NTOK) THEN
+        IF (ITYP(N).EQ.2) THEN
+          I = NINT(FVALUE(N))
+        ELSE IF (ITYP(N).EQ.1) THEN
+           WRITE (LINERR,FMT='(A,I4)') 
+     +    ' Illegal number in field ',N
+          ISTERR = 1
+          IFGERR = 0
+C
+C              ****************************
+          CALL LERROR(ISTERR,IFGERR,LINERR)
+C              ****************************
+C
+          LFLAG = +1
+        END IF
+      ELSE
+         LFLAG = -1
+      END IF
+C
+C
+      END
