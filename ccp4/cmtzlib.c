@@ -2099,6 +2099,13 @@ void MtzPut(MTZ *mtz, const char *logname)
        } else {
          sprintf(hdrrec,"COLUMN %-30s ",mtz->xtal[i]->set[j]->col[k]->label);
        }
+       /* Check that the column type is set
+	  If it is blank then the COLUMN record will be incomplete */
+       if (mtz->xtal[i]->set[j]->col[k]->type[0] == '\0') {
+	 printf("From MtzPut: column type for %s is not set, assume type R\n",
+		mtz->xtal[i]->set[j]->col[k]->label);
+	 strncpy(mtz->xtal[i]->set[j]->col[k]->type,"R",2);
+       }
        sprintf(hdrrec+38,"%c %17.4f %17.4f %4d",
                    mtz->xtal[i]->set[j]->col[k]->type[0],
                    mtz->xtal[i]->set[j]->col[k]->min,
