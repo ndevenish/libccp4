@@ -2944,12 +2944,20 @@ MTZ *MtzMalloc(int nxtal, int nset[])
   mtz->hist = NULL;
   mtz->histlines = 0;
   mtz->nxtal = nxtal;
+  mtz->ncol_read = 0;
   mtz->nref = 0;
-  mtz->resmax_out = 0.0f;
-  mtz->resmin_out = 999.0f;
+  mtz->nref_filein = 0;
   mtz->refs_in_memory = 1;
   mtz->n_orig_bat = 0;
+  mtz->resmax_out = 0.0f;
+  mtz->resmin_out = 999.0f;
   sprintf(mtz->mnf.amnf,"NAN");
+  mtz->mtzsymm.spcgrp = 0;
+  mtz->mtzsymm.spcgrpname[0] = '\0';
+  mtz->mtzsymm.nsym = 0;
+  mtz->mtzsymm.nsymp = 0;
+  mtz->mtzsymm.symtyp = '\0';
+  mtz->mtzsymm.pgname[0] = '\0';
   mtz->batch = NULL;
   for (i = 0; i < 5; ++i) {
     mtz->order[i] = NULL;
