@@ -539,7 +539,6 @@ float ccp4_utils_etime (float tarray[2])
   static long clk_tck = 0;
 
   struct tms buffer;
-  time_t utime, stime;
   if (! clk_tck) clk_tck = sysconf(_SC_CLK_TCK);
   (void) times(&buffer);
   tarray[0] = (float) buffer.tms_utime / (float)clk_tck;

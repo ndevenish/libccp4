@@ -74,7 +74,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   CCP4PARSERARRAY *parser;
   CCP4PARSERTOKEN *token=NULL;
   char *key;
-  int ntok,iprint=0;
+  int iprint=0;
 
   /* initialisations */
   sg_nsymp=0;
@@ -135,7 +135,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   while (fgets(filerec,80,filein)) {
     if (strlen(filerec) > 1) {
 
-      ntok = ccp4_parser(filerec, 80, parser, iprint);
+      ccp4_parser(filerec, 80, parser, iprint);
 
       if (ccp4_keymatch(key, "number")) {
         sg_num = (int) token[1].value;
@@ -202,8 +202,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
              symop_to_mat4(sg_cenop[i],sg_cenop[i]+strlen(sg_cenop[i]),cent_ops[0]);
              for (j = 0; j < sg_nsymp; ++j) {
               symop_to_mat4(sg_symop[j],sg_symop[j]+strlen(sg_symop[j]),rot2[0]);
-              ccp4_4matmul(rot1,cent_ops,rot2);
-              op2[i*sg_nsymp+j] = mat4_to_rotandtrn(rot1);
+              ccp4_4matmul(rot1,(const float (*)[4])cent_ops,rot2);
+              op2[i*sg_nsymp+j] = mat4_to_rotandtrn((const float (*)[4])rot1);
 	     }
             }
 	    /* op1 are requested operators and op2 are from SYMINFO file */
@@ -279,8 +279,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
     for (j = 0; j < sg_nsymp; ++j) {
      strncpy(filerec,sg_symop[j],80);   /* symop_to_mat4 overwrites later sg_symop */
      symop_to_mat4(filerec,filerec+strlen(filerec),rot2[0]);
-     ccp4_4matmul(rot1,cent_ops,rot2);
-     invert4matrix(rot1,rot2);
+     ccp4_4matmul(rot1,(const float (*)[4])cent_ops,(const float (*)[4])rot2);
+     invert4matrix((const float (*)[4])rot1,rot2);
      for (k = 0; k < 3; ++k) {
       for (l = 0; l < 3; ++l) {
         spacegroup->symop[i*sg_nsymp+j].rot[k][l]=rot1[k][l];
@@ -638,8 +638,8 @@ ccp4_symop ccp4_symop_invert( const ccp4_symop op1 )
   float rot1[4][4],rot2[4][4];
 
   rotandtrn_to_mat4(rot1,op1);
-  invert4matrix(rot1,rot2);
-  return (mat4_to_rotandtrn(rot2));
+  invert4matrix((const float (*)[4])rot1,rot2);
+  return (mat4_to_rotandtrn((const float (*)[4])rot2));
 }
 
 int ccp4spg_name_equal(const char *spgname1, const char *spgname2) {
@@ -821,7 +821,7 @@ void ccp4spg_generate_indices(const CCP4SPG* sp, const int isym,
                   const int hin, const int kin, const int lin,
 		       int *hout, int *kout, int *lout ) {
 
-  int i, jsym, isign;
+  int jsym, isign;
 
   if (!sp) {  
     ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_generate_indices",NULL); 
@@ -1390,7 +1390,7 @@ void ccp4spg_print_recip_ops(const CCP4SPG* sp)
         tmp_symop[3][k] = 0.0;
       }
       tmp_symop[3][3] = 1.0;
-      mat4_to_recip_symop(rsymop,rsymop+rsymop_len,tmp_symop);
+      mat4_to_recip_symop(rsymop,rsymop+rsymop_len,(const float (*)[4])tmp_symop);
       rsymop[12] = '\0';
       printf(" %3d  %-12s",2*(4*i+j)+1,rsymop);
     }
@@ -1405,7 +1405,7 @@ void ccp4spg_print_recip_ops(const CCP4SPG* sp)
       tmp_symop[3][k] = 0.0;
     }
     tmp_symop[3][3] = 1.0;
-    mat4_to_recip_symop(rsymop,rsymop+rsymop_len,tmp_symop);
+    mat4_to_recip_symop(rsymop,rsymop+rsymop_len,(const float (*)[4])tmp_symop);
     rsymop[12] = '\0';
     printf(" %3d  %-12s",2*(4*(nrow-1)+j)+1,rsymop);
   }
@@ -1423,7 +1423,7 @@ void ccp4spg_print_recip_ops(const CCP4SPG* sp)
         tmp_symop[3][k] = 0.0;
       }
       tmp_symop[3][3] = 1.0;
-      mat4_to_recip_symop(rsymop,rsymop+rsymop_len,tmp_symop);
+      mat4_to_recip_symop(rsymop,rsymop+rsymop_len,(const float (*)[4])tmp_symop);
       rsymop[12] = '\0';
       printf(" %3d  %-12s",2*(4*i+j)+2,rsymop);
     }
@@ -1438,7 +1438,7 @@ void ccp4spg_print_recip_ops(const CCP4SPG* sp)
       tmp_symop[3][k] = 0.0;
     }
     tmp_symop[3][3] = 1.0;
-    mat4_to_recip_symop(rsymop,rsymop+rsymop_len,tmp_symop);
+    mat4_to_recip_symop(rsymop,rsymop+rsymop_len,(const float (*)[4])tmp_symop);
     rsymop[12] = '\0';
     printf(" %3d  %-12s",2*(4*(nrow-1)+j)+2,rsymop);
   }

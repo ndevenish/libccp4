@@ -72,7 +72,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   int ntok,iprint=0;
 
   /* For batches */
-  int ibat,nwords,nintegers,nreals;
+  int ibat,nintegers,nreals;
   float buf[NBATCHWORDS];
   int *intbuf = (int *) buf;
   float *fltbuf = buf + NBATCHINTEGERS;
@@ -326,9 +326,10 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
     /* this keyword not in use yet */
     else if (strncmp (mkey, "DRES",4) == 0) {
-      sscanf(hdrrec+16,"%d %d %d %d %d %d",
-                 indhigh,indhigh+sizeof(int),indhigh+2*sizeof(int),
-                 indlow,indlow+sizeof(int),indlow+2*sizeof(int));
+      for (i = 0; i < 3; ++i) {
+        indhigh[i] = (int) token[i+2].value;
+        indlow[i] = (int) token[i+5].value;
+      }
       MtzHklcoeffs(mtz->xtal[jxtalin[iiset]]->cell, coefhkl);
       mtz->xtal[jxtalin[iiset]]->resmax = MtzInd2reso(indhigh, coefhkl);
       mtz->xtal[jxtalin[iiset]]->resmin = MtzInd2reso(indlow, coefhkl);
@@ -538,7 +539,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
         }
         batch->next = NULL;
         batch->num = (int) token[1].value;
-        nwords = (int) token[2].value;
+        /* nwords = (int) token[2].value; */
         nintegers = (int) token[3].value;
         nreals = (int) token[4].value;
 	/* read batch title */
@@ -560,7 +561,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
           strcpy(batch->gonlab[0],token[1].fullstring); 
           strcpy(batch->gonlab[1],token[2].fullstring); 
           strcpy(batch->gonlab[2],token[3].fullstring); 
-          batch->gonlab[0][9] = batch->gonlab[1][9] = batch->gonlab[2][9] = '\0';
+          batch->gonlab[0][8] = batch->gonlab[1][8] = batch->gonlab[2][8] = '\0';
         } else {
           batch->gonlab[0][0] = batch->gonlab[1][0] = batch->gonlab[2][0] = '\0';
 	}
@@ -1405,7 +1406,7 @@ int ccp4_lhprt(const MTZ *mtz, int iprint) {
 
     printf("\n * Symmetry Operations : \n\n");
     for (i = 0; i < mtz->mtzsymm.nsym; ++i) {
-      mat4_to_symop(symline,symline+80,mtz->mtzsymm.sym[i]);
+      mat4_to_symop(symline,symline+80,(const float (*)[4])mtz->mtzsymm.sym[i]);
       symline[60] = '\0';
       printf(" Symmetry %d %s\n",i+1,symline);
       for (j = 0; j < 4; ++j) 
@@ -2117,7 +2118,7 @@ int MtzPut(MTZ *mtz, const char *logname)
  if (debug) printf(" MtzPut: SYMINF just written \n");
 
  for (i = 0; i < mtz->mtzsymm.nsym; ++i) {
-     mat4_to_symop(symline,symline+74,mtz->mtzsymm.sym[i]);
+     mat4_to_symop(symline,symline+74,(const float (*)[4])mtz->mtzsymm.sym[i]);
      symline[74] = '\0';
      sprintf(hdrrec,"SYMM %74s",symline);
      MtzWhdrLine(fileout,79,hdrrec); 
@@ -2295,7 +2296,7 @@ int MtzPut(MTZ *mtz, const char *logname)
      ccp4_file_write(fileout, (uint8 *) buf, nwords);
      ccp4_file_setmode(fileout,0);
      if (batch->gonlab[0] != "") {
-       sprintf(hdrrec,"BHCH %8s%8s%8s",batch->gonlab,batch->gonlab+9,batch->gonlab+17);
+       sprintf(hdrrec,"BHCH %8s%8s%8s",batch->gonlab,batch->gonlab[1],batch->gonlab[2]);
      } else {
        sprintf(hdrrec,"BHCH                         ");
      }

@@ -164,7 +164,7 @@ static const int ccp4_system_nerr = CCP4_COUNT(ccp4_errlist);
 const char *ccp4_strerror(int error)
 {
   int system = CCP4_ERRGETSYS(error);
-  int level = CCP4_ERRGETLEVEL(error);
+  /* int level = CCP4_ERRGETLEVEL(error); */
   int code = CCP4_ERRGETCODE(error);
 
   if (error == -1 || system == 0)

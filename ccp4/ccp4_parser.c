@@ -1366,7 +1366,7 @@ ccp4_symop symop_to_rotandtrn(const char *symchs_begin, const char *symchs_end) 
   float rsm[4][4];
 
   symop_to_mat4(symchs_begin, symchs_end, rsm[0]);
-  return (mat4_to_rotandtrn(rsm));
+  return (mat4_to_rotandtrn((const float (*)[4])rsm));
 
 }
 
@@ -1539,7 +1539,7 @@ char *rotandtrn_to_symop(char *symchs_begin, char *symchs_end, const ccp4_symop 
   float rsm[4][4];
 
   rotandtrn_to_mat4(rsm,symop);
-  return(mat4_to_symop(symchs_begin,symchs_end,rsm));
+  return(mat4_to_symop(symchs_begin,symchs_end,(const float (*)[4])rsm));
 }
 
 void rotandtrn_to_mat4(float rsm[4][4], const ccp4_symop symop) {
@@ -1571,7 +1571,7 @@ char *mat4_to_symop(char *symchs_begin, char *symchs_end, const float rsm[4][4])
   static int npntr1[12] = { 0,1,1,1,0,1,0,2,3,5,0,0 };
   static int npntr2[12] = { 0,6,4,3,0,2,0,3,4,6,0,0 };
 
-  int jdo10, jdo20, irsm, itr, ist, i;
+  int jdo10, jdo20, irsm, itr, ist;
   register char *ich;
   int debug=0;
 

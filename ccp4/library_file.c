@@ -1018,7 +1018,7 @@ int ccp4_file_rarch (CCP4File *cfile)
       ccp4_signal(CCP4_ERRLEVEL(3),"ccp4_file_rarch", NULL);
       return EOF; }
     
-    if (ccp4_file_raw_read(cfile, mtstring, 4UL) != 4) { 
+    if (ccp4_file_raw_read(cfile, (char *) mtstring, 4UL) != 4) { 
         ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_rarch", NULL);
         return EOF; }
         
@@ -1056,7 +1056,7 @@ int ccp4_file_warch (CCP4File *cfile)
   mtstring[1] = 1 | (cfile->iconvert << 4);
   mtstring[2] = mtstring[3] = 0;
 
-  if (ccp4_file_raw_write(cfile, mtstring, 4) != 4) { 
+  if (ccp4_file_raw_write(cfile, (const char *) mtstring, 4) != 4) { 
       ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_warch", NULL);
     return EOF; }
 
@@ -1076,7 +1076,7 @@ int ccp4_file_warch (CCP4File *cfile)
  */
 int ccp4_file_read (CCP4File *cfile, uint8 *buffer, size_t nitems)
 {
-  int i, n, result;
+  int result;
   
   if (!cfile)  {
     ccp4_signal(CCP4_ERRLEVEL(3)| CCP4_ERRNO(CIO_NullPtr),
@@ -1108,7 +1108,7 @@ int ccp4_file_read (CCP4File *cfile, uint8 *buffer, size_t nitems)
   
   switch (cfile->mode) {
   case BYTE:
-    result = ccp4_file_raw_read(cfile, buffer, nitems);
+    result = ccp4_file_raw_read(cfile, (char *) buffer, nitems);
     break;
   case INT16:
     result = ccp4_file_readshort(cfile, buffer, nitems);
@@ -1169,7 +1169,7 @@ int ccp4_file_readcomp (CCP4File *cfile, uint8 *buffer, size_t nitems)
       return EOF; }   
 
   n = _item_sizes[COMP64] * nitems;
-  if ( (result = ccp4_file_raw_read (cfile, buffer, n)) != n) {
+  if ( (result = ccp4_file_raw_read (cfile, (char *) buffer, n)) != n) {
     ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_readcomp", NULL);
     if (cfile->stream && !feof(cfile->stream)) 
       return EOF;  }  /* short count on stream is OK if EOF */
@@ -1266,7 +1266,7 @@ int ccp4_file_readshortcomp (CCP4File *cfile, uint8 *buffer, size_t nitems)
       return EOF; }   
 
   n = _item_sizes[COMP32] * nitems;
-  if ( (result = ccp4_file_raw_read (cfile, buffer, n)) != n) {
+  if ( (result = ccp4_file_raw_read (cfile, (char *) buffer, n)) != n) {
       ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_readshortcomp", NULL);
     if (cfile->stream && !feof(cfile->stream))
       return EOF; } 
@@ -1324,7 +1324,7 @@ int ccp4_file_readfloat (CCP4File *cfile, uint8 *buffer, size_t nitems)
       return EOF; }   
 
   n = _item_sizes[FLOAT32] * nitems;
-  if ( (result = ccp4_file_raw_read (cfile, buffer, n)) != n) { 
+  if ( (result = ccp4_file_raw_read (cfile, (char *) buffer, n)) != n) { 
     ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_readfloat", NULL);
     if (cfile->stream && !feof(cfile->stream)) 
       return EOF; } 
@@ -1420,7 +1420,7 @@ int ccp4_file_readint (CCP4File *cfile, uint8 *buffer, size_t nitems)
       return EOF; }   
 
   n = _item_sizes[INT32] * nitems;
-  if ( (result = ccp4_file_raw_read (cfile, buffer, n)) != n) {
+  if ( (result = ccp4_file_raw_read (cfile, (char *) buffer, n)) != n) {
     ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_readint", NULL);
     if (cfile->stream && !feof(cfile->stream)) 
       return EOF; } 
@@ -1480,7 +1480,7 @@ int ccp4_file_readshort (CCP4File *cfile, uint8 *buffer, size_t nitems)
       return EOF; }   
 
   n = _item_sizes[INT16] * nitems;
-  if ( (result = ccp4_file_raw_read (cfile, buffer, n)) != n) {
+  if ( (result = ccp4_file_raw_read (cfile, (char *) buffer, n)) != n) {
     ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_readshort", NULL);
     if (cfile->stream && !feof(cfile->stream)) 
       return EOF; } 
@@ -1575,22 +1575,22 @@ int ccp4_file_write (CCP4File *cfile, const uint8 *buffer, size_t nitems)
 
   switch (cfile->mode) {
   case BYTE:
-    result = ccp4_file_raw_write(cfile, buffer, nitems);
+    result = ccp4_file_raw_write(cfile, (const char *) buffer, nitems);
     break;
   case INT16:
-    result = ccp4_file_writeshort(cfile, buffer, nitems);
+    result = ccp4_file_writeshort(cfile, (const char *) buffer, nitems);
     break;
   case INT32:
-    result = ccp4_file_writeint(cfile, buffer, nitems);
+    result = ccp4_file_writeint(cfile, (const char *) buffer, nitems);
     break;
   case FLOAT32:
-    result = ccp4_file_writefloat(cfile, buffer, nitems);
+    result = ccp4_file_writefloat(cfile, (const char *) buffer, nitems);
     break;
   case COMP32:
-    result = ccp4_file_writeshortcomp(cfile, buffer, nitems);
+    result = ccp4_file_writeshortcomp(cfile, (const char *) buffer, nitems);
     break;
   case COMP64:
-    result = ccp4_file_writecomp(cfile, buffer, nitems);
+    result = ccp4_file_writecomp(cfile, (const char *) buffer, nitems);
     break;
   default:
     ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_BadMode), 
