@@ -31,7 +31,11 @@ void ccp4_utils_print (const char *message);
 
 int ccp4_utils_setenv (char *);
 
+/* turn on line buffering for stdout */
 int ccp4_utils_outbuf (void);
+
+/* turn off any buffering on stdin */
+int ccp4_utils_noinpbuf (void);
 
 union float_uint_uchar ccp4_nan ();
 

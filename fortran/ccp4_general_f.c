@@ -31,7 +31,11 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
      Fortran side). This ensures we get library messages, but will slow
      things down. Is this what we want? */
   if(ccp4_utils_outbuf())
-    ccp4_utils_print("OUTBUF:Can't turn off buffering");
+    ccp4_utils_print("OUTBUF:Can't turn off output buffering");
+  /* Turn off any buffering on input. This allows mized C and Fortran
+     reading of stdin */
+  if(ccp4_utils_noinpbuf())
+    ccp4_utils_print("NOINPBUF:Can't turn off input buffering");
 
   if (debug) 
     printf(" Entering CCPFYP \n");

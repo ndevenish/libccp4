@@ -130,6 +130,11 @@ int ccp4_utils_outbuf(void)
 #  endif
 #endif
 }
+
+int ccp4_utils_noinpbuf(void)
+{
+  return setvbuf(stdin, NULL, _IONBF, 0);
+}
 #endif
 
 union float_uint_uchar ccp4_nan ()
