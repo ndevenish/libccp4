@@ -18,6 +18,7 @@ C      CCFILL    Set specified number of elements of byte array
 C      CCPASZ    set array size suitable for current working set
 C      CCPBYI    Copy array of unsigned (or signed) bytes into integer array
 C      CCPBYT    Indicate whether byte handling is available
+C      CCPCPI    Copy array of BYTE or INTEGER*2 elements into integer array
 C      CCPDAT    Get calendar date
 C      CCPDEX    Periodicity reduction of 1024 (for PROLSQ)
 C      CCPDPN    more friendly CCPOPN
@@ -231,6 +232,100 @@ C     .. Scalar Arguments ..
 C     ..
       CCPBYT = .TRUE.
       NBW = 4
+      END
+C
+C
+C SUBROUTINE 'CCPCPI'
+C ===================
+C_BEGIN_CCPCPI
+      SUBROUTINE CCPCPI(IA,IB,MINEL,MAXEL,ITYP)
+C     =========================================
+C
+C Copy an array of BYTE or INTEGER*2 elements into an integer array
+C
+C (Must be implemented if ccpbyt function returns .TRUE.)
+C [for LAUE]
+C
+C Arguments:
+C ==========
+C
+C      IA (O)   INTEGER Array(*): to return values
+C      IB (I)   INTEGER Array(*): holding data with data packed into adjacant 
+C                                 BYTE or INTEGER*2 elements
+C   MINEL (I)   INTEGER: Minimum element to copy
+C   MAXEL (I)   INTEGER: Maximum element to copy
+C    ITYP (I)   INTEGER: Type =1 unsigned byte
+C                             =2 signed byte
+C                             =3 unsigned two byte integer
+C                             =4 signed two byte integer
+C
+C               Note: if MINEL>MAXEL elements will be copied in reverse order
+C_END_CCPCPI
+C
+C====== Specification statements
+C
+      LOGICAL SIGNED, SWAPB
+      INTEGER IA(*)
+      BYTE IB(*)
+      INTEGER*2 J2(2)
+      BYTE JBYT(4)
+      EQUIVALENCE (JA,J2(1),JBYT(1))
+      LOGICAL CALLED, LITEND
+      EXTERNAL LITEND
+      INTEGER IND1, IND2, INDB
+      SAVE CALLED, IND1, IND2, INDB
+      DATA CALLED/.FALSE./
+C
+      IF (.NOT.CALLED) THEN
+        IF (LITEND(1)) THEN
+          IND1 = 1
+          IND2 = 2
+          INDB = 1
+        ELSE
+          IND1 = 3
+          IND2 = 4
+          INDB = 4
+        ENDIF
+        CALLED=.TRUE.
+      ENDIF
+C
+C====== Copy data
+C
+      ISTEP = 1
+      IF (MINEL.GT.MAXEL) ISTEP=-1
+      IF (ITYP.EQ.1) THEN
+         JA=0
+         J=0
+         DO 10 I=MINEL,MAXEL,ISTEP
+            J=J+1
+            JBYT(INDB)=IB(I)
+            IA(J)=JA
+10       CONTINUE
+      ELSE IF (ITYP.EQ.2) THEN
+         J=0
+         DO 20 I=MINEL,MAXEL,ISTEP
+            J=J+1
+            IA(J)=IB(I)
+20       CONTINUE
+      ELSE IF (ITYP.EQ.3) THEN
+         JA=0
+         J=0
+         DO 30 I=MINEL,MAXEL,ISTEP
+            J=J+1
+            JBYT(IND1)=IB(2*I-1)
+            JBYT(IND2)=IB(2*I)
+            IA(J)=JA
+30       CONTINUE
+      ELSE IF (ITYP.EQ.4) THEN
+         J=0
+         DO 40 I=MINEL,MAXEL,ISTEP
+            J=J+1
+            JBYT(1)=IB(2*I-1)
+            JBYT(2)=IB(2*I)
+            IA(J)=J2(1)
+40       CONTINUE
+      END IF
+      RETURN
       END
 C
 C
