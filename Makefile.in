@@ -202,13 +202,13 @@ $L(symlib.o) : $(srcdir)/symlib.f
 symlib : $L(symlib.o)
 	$(RANLIB) $L
 
-$L(mtzlib.o) : $(srcdir)/mtzlib.f
+$L(mtzlib.o) : $(srcdir)/mtzlib.f $(srcdir)/mtzlib.fh
 	-rm -rf mtzlib.dir; mkdir mtzlib.dir
 	echo '      SUBROUTINE MTZLIB' > mtzlib.dir/mtzlib.$F
 	echo '      END' >> mtzlib.dir/mtzlib.$F
 	cd mtzlib.dir && fsplit $(srcdir)/mtzlib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
 	  && $(AR) ../$L *.o
 	rm -f mtzlib.dir/*.o
 mtzlib : $L(mtzlib.o)
