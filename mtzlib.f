@@ -1933,7 +1933,7 @@ C            ******************************
 C
         IF (IER.NE.0) THEN
           LINE2 = ' From LROPEN : Error reading 1st record of MTZ file'
-          LINE2(LENSTR(LINE2)+1:) = FILNAM
+          LINE2(LENSTR(LINE2)+2:) = FILNAM
 C
 C              *************************
           CALL LERROR(2,-1,LINE2)
@@ -1941,7 +1941,7 @@ C              *************************
         ELSE
           IF (MKEY(1:3).NE.'MTZ') THEN
             LINE2 = ' From LROPEN : File '
-            LINE2(LENSTR(LINE2)+1:) = FILNAM(1:LENSTR(FILNAM))
+            LINE2(LENSTR(LINE2)+2:) = FILNAM(1:LENSTR(FILNAM))
             IF (LENSTR(LINE2) .NE. 399) 
      .                 LINE2(LENSTR(LINE2)+1:) = ' is not an MTZ file'
 C
@@ -5159,9 +5159,9 @@ C
       CALL UTIME (TIME)
 C     Use a largeish buffer and truncate it later if necessary
       WRITE (BUFFER, 10) PROG(:MAX(LENSTR(PROG),1)), DATE, TIME
-      BUFFER(LENSTR(BUFFER)+1:) = EXTRA(:MAX(LENSTR(EXTRA),1))
+      BUFFER(LENSTR(BUFFER)+2:) = EXTRA(:MAX(LENSTR(EXTRA),1))
       HIST (1) = BUFFER
- 10   FORMAT ('From ',A,', ',A,' ',A,' ')
+ 10   FORMAT ('From ',A,', ',A,' ',A)
       CALL LWHIST (MINDX, HIST, 1)
       RETURN
       END
