@@ -1797,6 +1797,46 @@ FORTRAN_SUBR ( LWIDASX, lwidasx,
   free(dataset_name);
 }
 
+/* Fortran wrapper for MtzAssignColumn 
+   This is a simpler version of LWIDASX to assign all columns to one dataset */
+FORTRAN_SUBR ( LWIDALL, lwidall,
+	       (const int *mindx, fpstr xname, fpstr dname,
+                      int xname_len, int dname_len),
+	       (const int *mindx, fpstr xname, fpstr dname),
+	       (const int *mindx, fpstr xname, int xname_len, 
+                      fpstr dname, int dname_len))
+{ int i,j,k,l=0;
+  MTZCOL **colarray;
+  char *crystal_name;
+  char *dataset_name;
+
+  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWIDALL");)
+  if (MtzCheckSubInput(*mindx,"LWIDALL",2)) return;
+
+  crystal_name = ccp4_FtoCString(FTN_STR(xname), FTN_LEN(xname));
+  dataset_name = ccp4_FtoCString(FTN_STR(dname), FTN_LEN(dname));
+
+  if (strlen(crystal_name) && strlen(dataset_name)) {
+
+   /* need direct pointers to columns as we are going to mess with xtal/set hierarchy */
+   colarray = (MTZCOL **) ccp4_utils_malloc(MtzNcol(mtzdata[*mindx-1])*sizeof(MTZCOL *));
+
+   for (i = 0; i < mtzdata[*mindx-1]->nxtal; ++i)
+    for (j = 0; j < mtzdata[*mindx-1]->xtal[i]->nset; ++j)
+      for (k = 0; k < mtzdata[*mindx-1]->xtal[i]->set[j]->ncol; ++k)
+        colarray[l++] = mtzdata[*mindx-1]->xtal[i]->set[j]->col[k];
+
+   for (l = 0; l < MtzNcol(mtzdata[*mindx-1]); ++l)
+     MtzAssignColumn(mtzdata[*mindx-1], colarray[l], crystal_name, dataset_name);
+
+   free(colarray);
+
+  }
+
+  free(crystal_name);
+  free(dataset_name);
+}
+
 /* Fortran wrapper for ccp4_lwsymm */
 FORTRAN_SUBR ( LWSYMM, lwsymm,
 	       (int *mindx, int *nsymx, int *nsympx, float rsymx[MAXSYM][4][4],
@@ -2126,17 +2166,16 @@ FORTRAN_SUBR ( LWBSETID, lwbsetid,
   MTZBAT *batch;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWBSETID");)
+  if (MtzCheckSubInput(*mindx,"LWBSETID",2)) return;
 
- if (MtzCheckSubInput(*mindx,"LWBSETID",2)) return;
-
- /* No check on mtzdata[*mindx-1]->nbat  It might be 0 if this is the
+  /* No check on mtzdata[*mindx-1]->nbat  It might be 0 if this is the
     first batch written. */
 
- temp_pname = ccp4_FtoCString(FTN_STR(project_name), FTN_LEN(project_name));
- temp_dname = ccp4_FtoCString(FTN_STR(dataset_name), FTN_LEN(dataset_name));
+  temp_pname = ccp4_FtoCString(FTN_STR(project_name), FTN_LEN(project_name));
+  temp_dname = ccp4_FtoCString(FTN_STR(dataset_name), FTN_LEN(dataset_name));
 
   /* default crystal name to project name */
- temp_xname = strdup(temp_pname);
+  temp_xname = strdup(temp_pname);
 
   batch = mtzdata[*mindx-1]->batch;
   while (batch != NULL) {
@@ -2154,6 +2193,48 @@ FORTRAN_SUBR ( LWBSETID, lwbsetid,
 
   free(temp_xname); 
   free(temp_pname); 
+  free(temp_dname); 
+}
+
+/* Fortran wrapper for ccp4_lwbsetid */
+FORTRAN_SUBR ( LWBSETIDX, lwbsetidx,
+	       (const int *mindx, const int *batno, const fpstr crystal_name, 
+                  const fpstr dataset_name, 
+                  int crystal_name_len, int dataset_name_len),
+	       (const int *mindx, const int *batno, const fpstr crystal_name, 
+                  const fpstr dataset_name),
+	       (const int *mindx, const int *batno, const fpstr crystal_name, 
+                  int crystal_name_len,
+                  const fpstr dataset_name, int dataset_name_len))
+
+{ char *temp_xname, *temp_dname;
+  int istat=-1;
+  MTZBAT *batch;
+
+  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWBSETIDX");)
+  if (MtzCheckSubInput(*mindx,"LWBSETIDX",2)) return;
+
+  /* No check on mtzdata[*mindx-1]->nbat  It might be 0 if this is the
+    first batch written. */
+
+  temp_xname = ccp4_FtoCString(FTN_STR(crystal_name), FTN_LEN(crystal_name));
+  temp_dname = ccp4_FtoCString(FTN_STR(dataset_name), FTN_LEN(dataset_name));
+
+  batch = mtzdata[*mindx-1]->batch;
+  while (batch != NULL) {
+    if (*batno == batch->num) {
+     istat = 0;
+     break;
+    }
+    batch = batch->next;
+  }
+  if (istat == -1) {
+    printf("Error in lwbsetidx: file on %d has no batch %d ! \n",*mindx,*batno);
+  } else {
+    ccp4_lwbsetid(mtzdata[*mindx-1], batch, temp_xname, temp_dname);
+  }
+
+  free(temp_xname); 
   free(temp_dname); 
 }
 
