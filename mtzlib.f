@@ -2619,7 +2619,8 @@ C----  H name associated with a=b; Gamma = 120
      +             abs(cell(6,MINDX)-120.0).LT.0.001) THEN
                   SPGNAM(MINDX)(1:1)='H'
                   LTYPE(MINDX) = 'H'
-                  NSPGRP(MINDX) = 155
+                  IF(NSPGRP(MINDX).GT.1000) 
+     +            NSPGRP(MINDX) = NSPGRP(MINDX) - 1000
                   CALL CCPERR(2,
      +              ' Changing "rhombhedral" to "hexagonal"')
                END IF
@@ -2630,7 +2631,8 @@ C----  R name associated with a=b=c; Alpha=Beta=Gamma
      +             abs(cell(6,MINDX)-cell(4,MINDX)).LT.0.001) THEN
                   SPGNAM(MINDX)(1:1)='R'
                   LTYPE(MINDX) = 'R'
-                  NSPGRP(MINDX) = 1155
+                  IF(NSPGRP(MINDX).LT.1000) 
+     +            NSPGRP(MINDX) = NSPGRP(MINDX) + 1000
                   CALL CCPERR(2,
      +              ' Changing "hexagonal" to "rhombhedral"')
                END IF
