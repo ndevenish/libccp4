@@ -2537,7 +2537,7 @@ C
 C     .. Scalar Arguments ..
       CHARACTER*(*) PATCH_LEVEL
 
-      PATCH_LEVEL = '4.2.a'
+      PATCH_LEVEL = '4.2.b'
 
       END
 C
