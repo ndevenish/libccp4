@@ -370,7 +370,7 @@ C     don't print anything if it hasn't been initialised (by CCPFYP)
       IF (INITED) WRITE(LUNSTO(1),6000) TARRAY(1), TARRAY(2), 
      +     ELAPS/60, MOD(ELAPS, 60)
  6000 FORMAT(' Times: User: ', F6.1, 's System: ', F6.1, 's Elapsed:',
-     +     I5 , ':',I2.2,'s')
+     +     I5 , ':',I2.2)
 C     
       ENTRY INITFYP
       CALL USTIME(START)
