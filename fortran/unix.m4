@@ -8,7 +8,8 @@ dnl
 dnl * units for record lengths:
 ifelse(_sgi,1,
   [define(_ubytes,'WORDS')],
-_dec_fortran,1,dnl           as opposed to (old) MIPS compiler on Ultrix
+dnl Changed in `DEC fortran' as opposed to (old) MIPS compiler on Ultrix:
+_dec_fortran,1,
   [define(_ubytes,'WORDS')],
   [define(_ubytes,'BYTES')])dnl
 dnl
