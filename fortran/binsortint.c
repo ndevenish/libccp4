@@ -127,7 +127,7 @@ int	        *memsize;       /* size of memory (BYTES) used by sort */
 	(dup(fildesin[1]) < 0) ||
 	(close(fildesout[1]) != 0) ||
 	(close(fildesin[0]) != 0)) {
-      perror("Binsort streams");
+      perror("Binsort -- failed to handle I/O pipes to the parent process");
       _exit(1);
     }
 
