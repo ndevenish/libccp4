@@ -331,13 +331,24 @@ unintstall :
 	-rm -f $(bindir)/binsort $(libdir)/$L
 
 clean :
-	-rm -f core *.o *~ *.dir/*.o testlib disc.dft a.out
+	-rm -f core *.o *~ *.dir/*.o testlib disc.dft a.out *.orig *.rej
+	-rm -rf tagdir
 
 realclean : clean
-	-rm -rf $L *.$(F) ../../src/binsort binsort *.dir
+	-rm -rf $L *.$(F) ../../src/binsort binsort *.dir TAGS
 
 dist : realclean
 	-rm -f Makefile
 
 test : testlib
 	./testlib -v 3 testenv foo diskio disc.dft
+
+tags :
+	-rm -rf tagdir; mkdir tagdir
+	ln -s $(srcdir)/*.[ch] tagdir
+	for i in $(srcdir)/*.for; do \
+ 		ln -s $$i tagdir/`basename $$i .for`.f; done
+	cd tagdir; etags *.[fch]
+	sed -e 's|^\([a-zA-Z_]*\).f,|$(srcdir)/\1.for,|' \
+ 		-e 's|^\([a-zA-Z_]*.[ch]\),|$(srcdir)/\1,|' tagdir/TAGS > TAGS
+	rm -rf tagdir
