@@ -1,4 +1,323 @@
 C
+C                  GRAPHICS LIBRARY
+C                  ===============
+C
+C                for use with program
+C
+C             "MOSFLM","OSCGEN","STILLS"
+C
+C---- Allows graphics output to be directed to a Sigma or
+C      a Tectronix (or dec terminal in tectronix emulation mode),
+C      or to write a PLOT84 plotting file for hardcopy output
+C
+C      NGR = 1  Sigma
+C          = 2  Tektronix
+C          = 3  PLOT84 file
+C          = 4  LNO3 postscript laserprinter,
+C               code from Duilio Cascio
+C          = 5  Hewlett Packard
+C          = 6 Silicon Graphics
+C          = 7 Calcomp
+C          = 8 Postscript
+C
+C---- Last modified 11/5/89 to add LNO3 options. (AGWL)
+C
+C ****** These are NOT YET TESTED ******
+C
+C---- Also add a GS call in PIXINIT to put tektronix terminals into
+C     graphics mode.
+C
+C---- Add TKEND to set microterm terminals back into normal mode
+C     from 4010 (probably won't work for other terminals)
+C
+C---- Add PL84CLEAR to start a new picture for PLOT84 files,
+C     and remove call to PLT$PICT in PL84INIT.
+C
+C---- This file contains the following subroutines
+C
+C    Routines called by the source programs
+C
+C  GRalpha.f   GRclear.f    GRclose.f    GRcol.f
+C  GRcursor.f  GRdraw.f     GRend.f      GRfix.f
+C  GRflo.f     GRflush.f    GRinit.f     GRint.f
+C  GRinteg.f   GRmove.f     GRnewline.f  GRnewpage.f
+C  GRorigin.f  GRpixinit.f  GRpoint.f    GRposn.f
+C  GRreal.f    GRstring.f   GRxcur.f     
+C
+C
+C     Tek routines
+C
+C    tkalpha.f    tkclear.f    tkcross.f    tkcursor.f
+C    tkdecode.f   tkdraw.f     tkencode.f   tkend.f
+C    tkexgr.f     tkflush.f    tkinit.f     tkmove.f
+C    tknewpage.f  tkpixinit.f  tkpoint.f    
+C
+C
+C     Sigma routines
+C 
+C    sigalpha.f    sigclear.f    sigcol.f    sigcursor.f
+C    sigdraw.f     siginit.f     sigmove.f   sigpixinit.f
+C    sigpoint.f
+C
+C
+C     Plot84 routines
+C
+C    pl84clear.f    pl84close.f    pl84draw.f    pl84end.f
+C    pl84init.f     pl84integ.f    pl84move.f    pl84newline.f
+C    pl84origin.f   pl84real.f     pl84string.f  pl84xcur.f
+C
+C
+C     LNO3 routines
+C
+C    lno3draw.f    lno3init.f    lno3move.f    lno3point.f
+C    endplt.f       factor.f       newpen.f       plot3.f
+C    symbol.f
+C
+C
+C     SG (Silicon Graphics) routines
+C
+C     sgalpha.f    sgclear.f    sgcross.f    sgcursor.f
+C     sgdecode.f   sgdraw.f     sgencode.f   sgend.f
+C     sgexgr.f     sginit.f     sgmove.f     sgnewpage.f
+C     sgpixinit.f  sgpoint.f    sgstartup.f
+C
+C
+C  TOM's routines
+C
+C    tomatt.f    tomcha.f    tomcur.f    tomdev.f
+C    tomdot.f    tomdsh.f    tomfix.f    tomflo.f
+C    tomint.f    tomlin.f    tommod.f    tommov.f
+C    tompen.f    tomsiz.f    tomsym.f    
+C
+C
+C  HP routines
+C
+C      hpcol.f    hpcv.f
+C      hpinit.f   hpmd.f
+C
+C
+C Miscellaneous (??)
+C
+C    calcominit.f     calcommd.f
+C
+C    drawcha.f    nval.f    plotopen.f    rval.f 
+C
+C    postinit.f       postmd.f   
+C
+C    stringlength.f
+C
+C    tdvend.f    tekfin.f    tekstr.f    tgiend.f
+C    tgino.f     thp7475.f   tpiccle.f   tpltn.f
+C    tpost.f     tt4010.f
+C
+C    writerxy.f    writexy.f
+C
+C---- Plotting limits depend on the devicea/lled
+C          possibly the easiest method for scaling data
+C          for different screen plotting areas is 
+C
+C
+C     1)
+C           Use windowing in the program
+C     2)
+C           just multiply all values of x and y in the following
+C           routines by a scale factor. (this will also result in
+C           plotter output files being changed of course)
+C
+C            screen plot area                      = 180.0  x  140.0
+C            plot files produced by "PLOT" command = 300.0  x  300.0
+C            plot files produced by "HP" command   = 240.0  x  185.0
+C
+C        Note :
+C          absolute scale for tek =  1024 x 768
+C          therfore xscale=  5.689
+C                   yscale=  5.614
+C              let scale = 5.65        
+C
+C
+C
+      SUBROUTINE GRINIT
+C     =====================
+C
+C
+C---- Opens the graphics unit and clears screen, puts graphics
+C     display into alpha state
+C
+C---- For sigma, set default colour, clear pixel store
+C
+C
+C
+C---- Dummy set of NGX,NGY,NLI if not using a graphics device
+C
+C
+C     .. Scalars in Common ..
+      REAL DISPLAY,GRFACT
+      INTEGER NGR,NGX,NGY,NHALFX,NHALFY,NLI
+      LOGICAL VMSVAX
+C     ..
+C     .. Local Scalars ..
+      REAL DUM1,DUM2
+      INTEGER IDUM3
+      INTEGER SIGXOFF,SIGYOFF,SIGNGX,SIGNGY
+      INTEGER TEKXOFF,TEKYOFF,TEKNGX,TEKNGY
+      INTEGER HPPXOFF,HPLXOFF,HPPYOFF,HPLYOFF,HPNGX,HPNGY
+      INTEGER POPXOFF,POLXOFF,POPYOFF,POLYOFF,PONGX,PONGY
+      INTEGER CAPXOFF,CALXOFF,CAPYOFF,CALYOFF,CANGX,CANGY
+      REAL HPLSCALE,HPPSCALE,
+     +     POPSCALE,POLSCALE,
+     +     CALSCALE,CAPSCALE        
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL FACTOR,LNO3INIT,PL84INIT,SIGINIT,TKINIT
+      LOGICAL VAXVMS
+      EXTERNAL VAXVMS
+C     ..
+C     .. Common blocks ..
+      COMMON /GRAPHICS/NGR,NGX,NGY,NHALFX,NHALFY,GRFACT,DISPLAY,NLI
+      COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
+      COMMON /SITE/ VMSVAX
+      COMMON /PLOTDEF/ SIGSCALE,SIGXOFF,SIGYOFF,SIGNGX,SIGNGY,
+     +          TEKSCALE,TEKXOFF,TEKYOFF,TEKNGX,TEKNGY,
+     +          HPPSCALE,HPLSCALE,HPPXOFF,HPLXOFF,HPPYOFF,
+     +          HPLYOFF,HPNGX,HPNGY,
+     +          POPSCALE,POLSCALE,POPXOFF,POLXOFF,POPYOFF,
+     +          POLYOFF,PONGX,PONGY,
+     +          CAPSCALE,CALSCALE,CAPXOFF,CALXOFF,CAPYOFF,
+     +          CALYOFF,CANGX,CANGY
+C     ..
+C
+C
+      VMSVAX = .FALSE.
+      IF (VAXVMS()) VMSVAX = .TRUE.
+cc
+cc- next line for allinat
+cc
+cc-al      vmsvax = .true.
+C
+C---- Dummy set of ngx,ngy,nli if not using a graphics device
+C
+      IF (NGR.EQ.0) THEN
+        NLI = 100000
+        NGX = 100000
+        NGY = 100000
+      ELSE IF (NGR.EQ.1) THEN
+C
+C---- this is sigma terminal
+C
+        CALL SIGINIT
+cc??        NGX = 768
+cc??        NGY = 512
+          NGX=SIGNGX
+          NGY=SIGNGY
+          XSCALE=SIGSCALE
+          XOFFSET=SIGXOFF
+          YOFFSET=SIGYOFF                  
+C
+C---- Number of lines on screen (dummy for sigma)
+C
+        NLI = 1000
+      ELSE IF (NGR.EQ.2) THEN
+        CALL TKINIT
+        NGX = 1024
+        NGY = 768
+C This is from tom !!!
+	tekxscale=5.65
+	tekyscale=5.65
+	tekxoff=0
+	tekyoff=0
+        XSCALE=tekxscale
+        YSCALE=tekyscale
+        XOFFSET=tekxoff
+        YOFFSET=tekyoff
+C---- Number of lines on screen,
+C     should be 24 for DEC terminal in Tektronix emulation
+C
+        IF (NLI.EQ.0) NLI = 34
+      ELSE IF (NGR.EQ.3) THEN
+        CALL PL84INIT
+C
+C---- Default limits for PLOT84 files, 328mm across, 508mm down
+C
+        NGX = 32800
+        NGY = 50800
+      ELSE IF (NGR.EQ.4) THEN
+        CALL LNO3INIT(DUM1,DUM2,IDUM3)
+C
+C---- 8 inches x 300 dots/inch
+C
+        NGX = 2400
+        NGY = 2400
+        CALL FACTOR(1.44)
+C
+C---- !KLUDGE: scale factor to match real photo
+C              change here  for different printers
+C
+        ELSE IF (NGR.EQ.6) THEN
+          CALL SGSTARTUP
+          CALL SGINIT
+          NGX=1024
+          NGY=768
+          XSCALE=5.62
+          XOFFSET=0.0
+          YOFFSET=0.0
+        ELSE IF (NGR.EQ.5)THEN
+          CALL HPINIT
+          NGX=HPNGX
+          NGY=HPNGY
+C
+C
+          IF (NDIR.EQ.1)THEN
+            XOFFSET=HPLXOFF
+            YOFFSET=HPLYOFF
+            XSCALE=HPLSCALE
+          ELSE 
+            XOFFSET=HPPXOFF
+            XSCALE=HPPSCALE
+            YOFFSET=HPPYOFF
+          ENDIF
+C
+C
+        ELSE IF (NGR.EQ.8)THEN
+          CALL POSTINIT
+          NGX=PONGX
+          NGY=PONGY
+C
+C
+          IF (NDIR.EQ.1)THEN
+            XOFFSET=POLXOFF
+            YOFFSET=POLYOFF
+            XSCALE=POLSCALE
+          ELSE
+            XOFFSET=POPXOFF
+            YOFFSET=POPYOFF
+            XSCALE=POPSCALE
+          ENDIF
+C
+C
+        ELSE IF (NGR.EQ.7)THEN
+          CALL CALCOMINIT
+          NGX=CANGX
+          NGY=CANGY
+C
+C
+          IF (NDIR.EQ.1)THEN
+            XOFFSET=CALXOFF
+            YOFFSET=CALYOFF
+            XSCALE=CALSCALE
+          ELSE
+            XOFFSET=CAPXOFF
+            YOFFSET=CAPYOFF
+            XSCALE=CAPSCALE
+          ENDIF
+C
+C
+        END IF        
+C
+C
+      NHALFX = NGX/2
+      NHALFY = NGY/2
+      END
+C
 C
 C
         SUBROUTINE CALCOMINIT
@@ -20,6 +339,7 @@ C
         POINTER=1
         LINE=' '
 C
+        RETURN
         END
 C
 C
@@ -71,6 +391,7 @@ C
           POINTER=POINTER+LENGTH
         ENDIF
 C
+        RETURN
         END
 C
 C
@@ -89,7 +410,7 @@ C
       COMMON /GRAPHICS/NGR,NGX,NGY,NHALFX,NHALFY,GRFACT,DISPLAY,NLI
       COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
       COMMON /VECTORSAVE/ CONT
-      COMMON /FONTSCALE/ FONTSIZE,SPACING,SPACE,FONTSCALE
+      COMMON /FSCOMM/ FONTSIZE,SPACING,SPACE,FONTSCALE
       COMMON /FONTDAT/ IND(127),POSXY(2,2000),NUMBER(127),TYPE(2000),
      +                  WIDTH(127)
 C
@@ -151,6 +472,7 @@ C
         XX=NVAL(R)
         X=X+XX*FONTSIZE
 C
+        RETURN
         END
 C
 C
@@ -281,6 +603,10 @@ C
 C---- For sigma, set colour
 C
 C
+#include "fgl.h"
+#include "fdevice.h"
+cc-al         include 'fgl.h'
+cc-al         include 'fdevice.h'
 C
 C
 C     .. Scalar Arguments ..
@@ -297,10 +623,19 @@ C     .. Common blocks ..
       COMMON /GRAPHICS/NGR,NGX,NGY,NHALFX,NHALFY,GRFACT,DISPLAY,NLI
       COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
 C     ..
-
+C
+C
       IF (NGR.EQ.1) CALL SIGCOL(N)
 C
 C
+        IF (NGR.EQ.6)THEN
+          IF (N.EQ.1)CALL COLOR(WHITE)
+          IF (N.EQ.2)CALL COLOR(RED)
+          IF (N.EQ.3)CALL COLOR(BLUE)
+          IF (N.EQ.4)CALL COLOR(GREEN)
+          IF (N.EQ.5)CALL COLOR(YELLOW)
+          IF (N.EQ.6)CALL COLOR(CYAN)
+        ENDIF
 C
 C
         IF (NGR.EQ.5 .OR. NGR.EQ.7)THEN
@@ -322,6 +657,7 @@ C
         ENDIF
 C
 C
+        RETURN
         END
 C
 C
@@ -355,7 +691,7 @@ C     .. Common blocks ..
       COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
 C     ..
       IF (NGR.EQ.1) CALL SIGCURSOR(IX,IY)
-      IF (NGR.EQ.2) CALL TKCURSOR(IX,IY)
+      IF (NGR.EQ.2) CALL TKCURSOR(IX,IY,CHA)
       IF (NGR.EQ.6) CALL SGCURSOR(IX,IY,CHA)
       END
 
@@ -494,7 +830,7 @@ C
       REAL GRFACT,DISPLAY,XSCALE,YSCALE,XOFFSET,YOFFSET
       COMMON /GRAPHICS/NGR,NGX,NGY,NHALFX,NHALFY,GRFACT,DISPLAY,NLI
       COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
-      COMMON /FONTSCALE/ FONTSIZE,SPACING,SPACE,FONTSCALE
+      COMMON /FSCOMM/ FONTSIZE,SPACING,SPACE,FONTSCALE
       COMMON /LAST/ IXLAST,IYLAST
 C
 C
@@ -531,6 +867,7 @@ C
 C
         IXLAST=XXX+FONTSIZE*(SPACING+SPACE)
 C
+        RETURN
         END
 C
 C
@@ -552,7 +889,7 @@ C
       COMMON /GRAPHICS/NGR,NGX,NGY,NHALFX,NHALFY,GRFACT,DISPLAY,NLI
       COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
       COMMON /LAST/ IXLAST,IYLAST
-      COMMON /FONTSCALE/ FONTSIZE,SPACING,SPACE,FONTSCALE
+      COMMON /FSCOMM/ FONTSIZE,SPACING,SPACE,FONTSCALE
 C
 C
         XXX=X
@@ -643,6 +980,7 @@ C
 C
         IXLAST=XXX+FONTSIZE*(SPACING+SPACE)
 C
+        RETURN
         END
 C
 C
@@ -680,317 +1018,7 @@ C     .. Common blocks ..
       COMMON /SITE/ VMSVAX
 C     ..
 C
-      IF (NGR.EQ.2) THEN
-           CALL TKFLUSH
-ccx           CALL TKFLUSH2
-        END IF
-      END
-C
-C                  GRAPHICS LIBRARY
-C                  ===============
-C
-C                for use with program
-C
-C             "MOSFLM","OSCGEN","STILLS"
-C
-C---- Allows graphics output to be directed to a Sigma or
-C      a Tectronix (or dec terminal in tectronix emulation mode),
-C      or to write a PLOT84 plotting file for hardcopy output
-C
-C      NGR = 1  Sigma
-C          = 2  Tektronix
-C          = 3  PLOT84 file
-C          = 4  LNO3 postscript laserprinter,
-C               code from Duilio Cascio
-C          = 5  Hewlett Packard
-C          = 6 Silicon Graphics
-C          = 7 Calcomp
-C          = 8 Postscript
-C
-C---- Last modified 11/5/89 to add LNO3 options. (AGWL)
-C
-C ****** These are NOT YET TESTED ******
-C
-C---- Also add a GS call in PIXINIT to put tektronix terminals into
-C     graphics mode.
-C
-C---- Add TKEND to set MICRO_TERM terminals back into normal mode
-C     from 4010 (probably won't work for other terminals)
-C
-C---- Add PL84CLEAR to start a new picture for PLOT84 files,
-C     and remove call to GSPICT in PL84INIT.
-C
-C---- This file contains the following subroutines
-C
-C    Routines called by the source programs
-C
-C  GRalpha.f   GRclear.f    GRclose.f    GRcol.f
-C  GRcursor.f  GRdraw.f     GRend.f      GRfix.f
-C  GRflo.f     GRflush.f    GRinit.f     GRint.f
-C  GRinteg.f   GRmove.f     GRnewline.f  GRnewpage.f
-C  GRorigin.f  GRpixinit.f  GRpoint.f    GRposn.f
-C  GRreal.f    GRstring.f   GRxcur.f     
-C
-C
-C     Tek routines
-C
-C    TKalpha.f    TKclear.f    TKcross.f    TKcursor.f
-C    TKdecode.f   TKdraw.f     TKencode.f   TKend.f
-C    TKexgr.f     TKflush.f    TKinit.f     TKmove.f
-C    TKnewpage.f  TKpixinit.f  TKpoint.f    
-C
-C
-C     Sigma routines
-C 
-C    sigalpha.f    sigclear.f    sigcol.f    sigcursor.f
-C    sigdraw.f     siginit.f     sigmove.f   sigpixinit.f
-C    sigpoint.f
-C
-C
-C     Plot84 routines
-C
-C    pl84clear.f    pl84close.f    pl84draw.f    pl84end.f
-C    pl84init.f     pl84integ.f    pl84move.f    pl84newline.f
-C    pl84origin.f   pl84real.f     pl84string.f  pl84xcur.f
-C
-C
-C     LNO3 routines
-C
-C    lno3draw.f    lno3init.f    lno3move.f    lno3point.f
-C    endplt.f       factor.f       newpen.f       plot3.f
-C    symbol.f
-C
-C
-C     SG (Silicon Graphics) routines
-C
-C     sgalpha.f    sgclear.f    sgcross.f    sgcursor.f
-C     sgdecode.f   sgdraw.f     sgencode.f   sgend.f
-C     sgexgr.f     sginit.f     sgmove.f     sgnewpage.f
-C     sgpixinit.f  sgpoint.f    sgstartup.f
-C
-C
-C  TOM's routines
-C
-C    tomatt.f    tomcha.f    tomcur.f    tomdev.f
-C    tomdot.f    tomdsh.f    tomfix.f    tomflo.f
-C    tomint.f    tomlin.f    tommod.f    tommov.f
-C    tompen.f    tomsiz.f    tomsym.f    
-C
-C
-C  HP routines
-C
-C      HPcol.f    HPcv.f
-C      HPinit.f   HPmd.f
-C
-C
-C Miscellaneous (??)
-C
-C    calcominit.f     calcommd.f
-C
-C    drawcha.f    nval.f    plotopen.f    rval.f 
-C
-C    postinit.f       postmd.f   
-C
-C    stringlength.f
-C
-C    tdvend.f    tekfin.f    tekstr.f    tgiend.f
-C    tgino.f     thp7475.f   tpiccle.f   tpltn.f
-C    tpost.f     tt4010.f
-C
-C    writerxy.f    writexy.f
-C
-C---- Plotting limits depend on the devicea/lled
-C          possibly the easiest method for scaling data
-C          for different screen plotting areas is 
-C
-C
-C     1)
-C           Use windowing in the program
-C     2)
-C           just multiply all values of x and y in the following
-C           routines by a scale factor. (this will also result in
-C           plotter output files being changed of course)
-C
-C            screen plot area                      = 180.0  x  140.0
-C            plot files produced by "PLOT" command = 300.0  x  300.0
-C            plot files produced by "HP" command   = 240.0  x  185.0
-C
-C        Note :
-C          absolute scale for tek =  1024 x 768
-C          therfore xscale=  5.689
-C                   yscale=  5.614
-C              let scale = 5.65        
-C
-C
-C
-      SUBROUTINE GRINIT
-C     =====================
-C
-C
-C---- Opens the graphics unit and clears screen, puts graphics
-C     display into alpha state
-C
-C---- For sigma, set default colour, clear pixel store
-C
-C
-C
-C---- Dummy set of NGX,NGY,NLI if not using a graphics device
-C
-C
-C     .. Scalars in Common ..
-      REAL DISPLAY,GRFACT
-      INTEGER NGR,NGX,NGY,NHALFX,NHALFY,NLI
-      LOGICAL VMSVAX
-C     ..
-C     .. Local Scalars ..
-      REAL DUM1,DUM2
-      INTEGER IDUM3
-      INTEGER SIGXOFF,SIGYOFF,SIGNGX,SIGNGY
-      INTEGER TEKXOFF,TEKYOFF,TEKNGX,TEKNGY
-      INTEGER HPPXOFF,HPLXOFF,HPPYOFF,HPLYOFF,HPNGX,HPNGY
-      INTEGER POPXOFF,POLXOFF,POPYOFF,POLYOFF,PONGX,PONGY
-      INTEGER CAPXOFF,CALXOFF,CAPYOFF,CALYOFF,CANGX,CANGY
-      REAL HPLSCALE,HPPSCALE,
-     +     POPSCALE,POLSCALE,
-     +     CALSCALE,CAPSCALE        
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL FACTOR,LNO3INIT,PL84INIT,SIGINIT,TKINIT
-      LOGICAL VAXVMS
-      EXTERNAL VAXVMS
-C     ..
-C     .. Common blocks ..
-      COMMON /GRAPHICS/NGR,NGX,NGY,NHALFX,NHALFY,GRFACT,DISPLAY,NLI
-      COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
-      COMMON /SITE/ VMSVAX
-      COMMON /PLOTDEF/ SIGSCALE,SIGXOFF,SIGYOFF,SIGNGX,SIGNGY,
-     +          TEKSCALE,TEKXOFF,TEKYOFF,TEKNGX,TEKNGY,
-     +          HPPSCALE,HPLSCALE,HPPXOFF,HPLXOFF,HPPYOFF,
-     +          HPLYOFF,HPNGX,HPNGY,
-     +          POPSCALE,POLSCALE,POPXOFF,POLXOFF,POPYOFF,
-     +          POLYOFF,PONGX,PONGY,
-     +          CAPSCALE,CALSCALE,CAPXOFF,CALXOFF,CAPYOFF,
-     +          CALYOFF,CANGX,CANGY
-C     ..
-C
-C
-      VMSVAX = .FALSE.
-      IF (VAXVMS()) VMSVAX = .TRUE.
-C
-C---- Dummy set of ngx,ngy,nli if not using a graphics device
-C
-      IF (NGR.EQ.0) THEN
-        NLI = 100000
-        NGX = 100000
-        NGY = 100000
-      ELSE IF (NGR.EQ.1) THEN
-C
-C---- this is sigma terminal
-C
-        CALL SIGINIT
-cc??        NGX = 768
-cc??        NGY = 512
-          NGX=SIGNGX
-          NGY=SIGNGY
-          XSCALE=SIGSCALE
-          XOFFSET=SIGXOFF
-          YOFFSET=SIGYOFF                  
-C
-C---- Number of lines on screen (dummy for sigma)
-C
-        NLI = 1000
-      ELSE IF (NGR.EQ.2) THEN
-        CALL TKINIT
-        NGX = 1024
-        NGY = 768
-C
-C---- Number of lines on screen,
-C     should be 24 for DEC terminal in Tektronix emulation
-C
-        IF (NLI.EQ.0) NLI = 34
-      ELSE IF (NGR.EQ.3) THEN
-        CALL PL84INIT
-C
-C---- Default limits for PLOT84 files, 328mm across, 508mm down
-C
-        NGX = 32800
-        NGY = 50800
-      ELSE IF (NGR.EQ.4) THEN
-        CALL LNO3INIT(DUM1,DUM2,IDUM3)
-C
-C---- 8 inches x 300 dots/inch
-C
-        NGX = 2400
-        NGY = 2400
-        CALL FACTOR(1.44)
-C
-C---- !KLUDGE: scale factor to match real photo
-C              change here  for different printers
-C
-        ELSE IF (NGR.EQ.6) THEN
-          CALL SGSTARTUP
-          CALL SGINIT
-          NGX=1024
-          NGY=768
-          XSCALE=5.62
-          XOFFSET=0.0
-          YOFFSET=0.0
-        ELSE IF (NGR.EQ.5)THEN
-          CALL HPINIT
-          NGX=HPNGX
-          NGY=HPNGY
-C
-C
-          IF (NDIR.EQ.1)THEN
-            XOFFSET=HPLXOFF
-            YOFFSET=HPLYOFF
-            XSCALE=HPLSCALE
-          ELSE 
-            XOFFSET=HPPXOFF
-            XSCALE=HPPSCALE
-            YOFFSET=HPPYOFF
-          ENDIF
-C
-C
-        ELSE IF (NGR.EQ.8)THEN
-          CALL POSTINIT
-          NGX=PONGX
-          NGY=PONGY
-C
-C
-          IF (NDIR.EQ.1)THEN
-            XOFFSET=POLXOFF
-            YOFFSET=POLYOFF
-            XSCALE=POLSCALE
-          ELSE
-            XOFFSET=POPXOFF
-            YOFFSET=POPYOFF
-            XSCALE=POPSCALE
-          ENDIF
-C
-C
-        ELSE IF (NGR.EQ.7)THEN
-          CALL CALCOMINIT
-          NGX=CANGX
-          NGY=CANGY
-C
-C
-          IF (NDIR.EQ.1)THEN
-            XOFFSET=CALXOFF
-            YOFFSET=CALYOFF
-            XSCALE=CALSCALE
-          ELSE
-            XOFFSET=CAPXOFF
-            YOFFSET=CAPYOFF
-            XSCALE=CAPSCALE
-          ENDIF
-C
-C
-        END IF        
-C
-C
-      NHALFX = NGX/2
-      NHALFY = NGY/2
+      IF (NGR.EQ.2) CALL TKFLUSH
       END
 C
 C
@@ -1011,7 +1039,7 @@ C
       COMMON /GRAPHICS/NGR,NGX,NGY,NHALFX,NHALFY,GRFACT,DISPLAY,NLI
       COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
       COMMON /LAST/ IXLAST,IYLAST
-      COMMON /FONTSCALE/ FONTSIZE,SPACING,SPACE,FONTSCALE
+      COMMON /FSCOMM/ FONTSIZE,SPACING,SPACE,FONTSCALE
 C
 C
         XXX=X
@@ -1044,6 +1072,7 @@ C
 C
         IXLAST=XXX+FONTSIZE*(SPACING+SPACE)
 C
+        RETURN
         END            
 C
 C
@@ -1103,6 +1132,8 @@ C     ..
 C     .. Common blocks ..
       COMMON /GRAPHICS/NGR,NGX,NGY,NHALFX,NHALFY,GRFACT,DISPLAY,NLI
       COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
+
+          save
 C     ..
 C
 C----	now check the direction
@@ -1340,6 +1371,7 @@ C     .. Common blocks ..
       COMMON /GRAPHICS/NGR,NGX,NGY,NHALFX,NHALFY,GRFACT,DISPLAY,NLI
       COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
 C     ..
+      write(*,*)
       IF (NGR.EQ.2) CALL TKMOVE(IX,IY)
       END
 
@@ -1474,6 +1506,7 @@ C
         ENDIF
 C
 C
+        RETURN
         END
 C
 C
@@ -1516,6 +1549,7 @@ C
           POINTER=POINTER+4
         ENDIF
 C
+        RETURN
         END
 C
 C
@@ -1549,6 +1583,7 @@ C
         POINTER=1
         LINE=' '
 C
+        RETURN
         END
 C
 C
@@ -1608,6 +1643,7 @@ C
           POINTER=POINTER+LENGTH
         ENDIF
 C
+        RETURN
         END
 C
 C
@@ -1693,12 +1729,8 @@ C     ..
       CALL UGTENV ('PLOT',FILNAM)
       IF(FILNAM.EQ.' ') FILNAM = 'PLOT'
       IGUNIT = 92
-      NIGUNIT = -92
-      NLREC = 80
-      NIFAIL = 0
-      CALL CCPDPN(NIGUNIT,FILNAM,'NEW','F',NLREC,NIFAIL)
-CC      open (unit=92,file=filnam,status='new',form='formatted',
-CC     +     carriagecontrol='list')
+      OPEN (UNIT=92,FILE=FILNAM,STATUS='NEW',FORM='FORMATTED',
+     +     CARRIAGECONTROL='LIST')
       WRITE (92,FMT=6000) BEGIN
       WRITE (92,FMT=6000) 'INITGRAPHICS'
       WRITE (92,FMT=6000) 'NEWPATH'
@@ -1764,6 +1796,66 @@ C
 C
 C
 C
+      SUBROUTINE LNSYMBOL(X,Y,TZ,LABEL,ANGLE,NCHAR)
+C     ===========================================
+C
+C
+C---- Emulates calcomp routine "SYMBOL"
+C
+C
+C
+C     .. Scalar Arguments ..
+      REAL ANGLE,TZ,X,Y
+      INTEGER NCHAR
+      CHARACTER LABEL*160
+C     ..
+C     .. Scalars in Common ..
+      REAL FACT,XOFFS,YOFFS
+      INTEGER IPC,IPEN
+C     ..
+C     .. Local Scalars ..
+      REAL ANG,CORR,V1,V2
+      INTEGER ISF
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC NINT
+C     ..
+C     .. Common blocks ..
+      COMMON /LASOFFS/XOFFS,YOFFS,IPC,FACT,IPEN
+C     ..
+      ANG = ANGLE - 90.0
+      IPC = IPC + 1
+      V1 = (Y/2.51+YOFFS)*FACT
+      V2 = 26.0/2.51 - (X/2.51+XOFFS)*FACT
+      IF (NCHAR.LT.0) THEN
+        CORR = (TZ/5.02)*FACT
+        WRITE (92,FMT=6000) V1 - CORR,' inch',V2,' inch',' moveto'
+        WRITE (92,FMT=6000) V1 + CORR,' inch',V2,' inch',' lineto'
+        WRITE (92,FMT=6000) V1,' inch',V2 - CORR,' inch',' moveto'
+        WRITE (92,FMT=6000) V1,' inch',V2 + CORR,' inch',' lineto'
+      ELSE
+        ISF = NINT(FACT*TZ*40.0)
+        IF (ISF.LE.0) ISF = 1
+        IF (IPEN.LE.2) THEN
+          WRITE (92,FMT=6002) '/Times-Roman findfont ',ISF,
+     +      ' scalefont setfont'
+        ELSE
+          WRITE (92,FMT=6002) '/Times-Bold findfont ',ISF,
+     +      ' scalefont setfont'
+        END IF
+        WRITE (92,FMT=6000) V1,' inch',V2,' inch',' moveto'
+        WRITE (92,FMT='(F6.1,'' rotate'')') ANG
+        WRITE (92,FMT=6004) '(',LABEL(1:NCHAR),') show'
+        WRITE (92,FMT='(F6.1,'' rotate'')') - ANG
+      END IF
+C
+ 6000 FORMAT (1X,F8.4,A5,F8.4,A5,A7)
+ 6002 FORMAT (A22,I2,A18)
+ 6004 FORMAT (A1,A,A6)
+      END
+C
+C
+C
       SUBROUTINE NEWPEN(JPEN)
 C     =======================
 C
@@ -1809,6 +1901,7 @@ C
         RR=R*XSCALE
         NVAL=NINT(RR)
 C
+        RETURN
         END
 C
 C
@@ -2667,6 +2760,7 @@ C
       WRITE(88,*)' newpath'
 C
 C
+        RETURN
         END        
 C
 C
@@ -2758,6 +2852,7 @@ C
         ENDIF
 C
 C
+        RETURN
         END
 C
 C
@@ -2775,6 +2870,7 @@ C
 C
         RVAL=FLOAT(N)/XSCALE
 C
+        RETURN
         END
 C
 C
@@ -2784,6 +2880,7 @@ C     ===================
 C
 C
 C
+      RETURN
       END
 C
 C
@@ -2793,10 +2890,11 @@ C       ===================
 C
 C---- Subroutine to clear Silicon graphics window
 C
-cc        CALL RESHAP
-cc        CALL COLOR(0)
-cc        CALL CLEAR
-cc        CALL COLOR(7)
+        CALL RESHAP
+        CALL COLOR(0)
+        CALL CLEAR
+        CALL COLOR(7)
+        RETURN
         END
 C
 C
@@ -2837,14 +2935,58 @@ C     =============================
 C
 C---- Subroutine to return position of cross hairs
 C
+#include "fgl.h"
+#include "fdevice.h"
+cc-al         include 'fgl.h'
+cc-al         include 'fdevice.h'
 C
 C
         INTEGER X,Y,NUM,INT,SX,SY,AX,AY
         INTEGER*2 DATA,TOP,BOTTOM,LEFT,RIGHT
         CHARACTER CHA
         COMMON/LAST/IXLAST,IYLAST
-        END
-
+C
+C
+C
+        WRITE(6,'(A)')' Graphics input> '
+C
+C            *************
+        CALL QDEVIC(KEYBD)
+C            *************
+C
+1       CONTINUE
+C
+C            ******
+        CALL QRESET
+C            ******
+C        
+        INT=QREAD(DATA)
+        IF (DATA.LT.20.OR.DATA.GT.127)GOTO 1
+        CHA=CHAR(DATA)
+C
+C            *************
+        CALL GETORI(AX,AY)
+        CALL GETSIZ(SX,SY)
+C            *************
+C
+        X = GETVAL(MOUSEX)-AX
+        Y = GETVAL(MOUSEY)-AY
+C
+C
+        X=NINT(FLOAT(X)*1024.0/FLOAT(SX))
+        Y=NINT(FLOAT(Y)*768.0/FLOAT(SY))
+        IXLAST=X
+        IYLAST=Y
+C
+C            ************
+        CALL COLOR(WHITE)
+        CALL TOMSYM(7)
+C            ************
+C
+        WRITE(6,'(A)')' Text input> '
+C
+      RETURN
+      END
 C
 C
 C
@@ -2867,6 +3009,7 @@ C
         IX=IXHIGH*32+IXLOW
         IY=IYHIGH*32+IYLOW
 C
+        RETURN
         END
 C
       SUBROUTINE SGDRAW(IX,IY)
@@ -2876,9 +3019,10 @@ C
       INTEGER IX,IY
 C
 C          *************
-cc      CALL DRAW2I(IX,IY)
+      CALL DRAW2I(IX,IY)
 C          *************
 C
+      RETURN
       END
 C
 C
@@ -2907,6 +3051,7 @@ C
         OUTPUT(2:2)=CHAR(YLOW+96)
         OUTPUT(1:1)=CHAR((IY-YLOW)/32+32)
 C
+        RETURN
         END
 C
 C
@@ -2915,6 +3060,7 @@ C
 C     =================
 C
 C
+      RETURN
       END
 
 
@@ -2924,6 +3070,7 @@ C
 	SUBROUTINE SGEXGR
 C       ==================
 C
+	RETURN
 	END
 C
 C
@@ -2932,9 +3079,10 @@ C
 C       ==================
 C
 C            ******
-cc        CALL RESHAP
+        CALL RESHAP
 C            ******
 C
+        RETURN
         END
 C
 C
@@ -2956,9 +3104,10 @@ C
       JY=IY
 C
 C          *************
-cc      CALL MOVE2I(IX,IY)
+      CALL MOVE2I(IX,IY)
 C          *************
 C
+      RETURN
       END
 C
 C
@@ -2968,9 +3117,10 @@ C       =====================
 C
 C
 C            *****
-cc        CALL CLEAR
+        CALL CLEAR
 C            *****
 C
+	RETURN
 	END
 C
 C
@@ -2979,6 +3129,7 @@ C
 C     =====================
 C
 C
+      RETURN
       END
 C
 C
@@ -3011,6 +3162,7 @@ C     ..
       CALL SGMOVE(IX,ISY)
       CALL SGDRAW(IX,ILY)
       END
+C
 C
 C
         SUBROUTINE SGSTARTUP
@@ -3020,9 +3172,12 @@ C
 C        this is a start up routine for graphics, nothing for gino
 C        for the own graphics , the font is loaded
 C
-cc        IMPLICIT NONE
 C
 C
+#include "fgl.h"
+#include "fdevice.h"
+cc-al         include 'fgl.h'
+cc-al         include 'fdevice.h'
 C
 C
         INTEGER*2 IND
@@ -3039,14 +3194,88 @@ C
       COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
       COMMON /FONTDAT/ IND(127),POSXY(2,2000),NUMBER(127),
      +                  TYPE(2000),WIDTH(127)
-      COMMON /FONTSCALE/ FONTSIZE,SPACING,SPACE,FONTSCALE
+      COMMON /FSCOMM/ FONTSIZE,SPACING,SPACE,FONTSCALE
       COMMON /HELPFILE/ HELPOPEN
       LOGICAL ONLINE,LMB,DLAB,IMPC
       COMMON /IOO/IOUT,IUNIT,ONLINE,ITIN,ITOUT,INOD,INMO,IDU,NWRN,
      +            LMB,DLAB,IMPC,IGUNIT
 C
-           END
-
+CMJH
+C Start up the SG graphics.
+C
+        DO 111 I=1,4
+          DO 211 J=1,4
+            IDMAT(I,J)=0.
+            IF(I.EQ.J)IDMAT(I,J)=1.
+ 211      CONTINUE 
+ 111    CONTINUE 
+C
+C 
+        CALL FOREGR
+        CALL KEEPAS(1024,768)
+        NN=WINOPE('SQUID',5)
+        CALL GCONFI
+        CALL MMODE(MPROJE)
+        CALL ORTHO2(0.0,1024.0,0.0,768.0)
+        CALL MMODE (MVIEWI)
+        CALL LOADMA(IDMAT)
+        CALL QDEVIC(528)
+        CALL COLOR(0)
+        CALL CLEAR
+C
+C
+        OPEN (UNIT=2,FORM='UNFORMATTED',STATUS='OLD',
+     2           FILE='SQUIDFONT',ERR=2222,READONLY,SHARED)
+C
+        K=1
+C
+C
+        DO 200 I=1,127
+          READ(2,END=222)BYTE1,BYTE2,BYTE3,
+     1            (TYPE(J),POSXY(1,J),POSXY(2,J),J=K,K+BYTE2-1)
+          INUM=BYTE1
+          NU=BYTE2
+          IND(INUM)=K
+          NUMBER(INUM)=NU
+          WIDTH(INUM)=BYTE3
+          K=K+NU
+C
+C
+          IF (K.GT.2000)THEN
+            WRITE(6,*)'  No more room for font'
+            STOP
+          ENDIF
+C
+C
+200        CONTINUE
+222        CONTINUE
+        WRITE(6,*)' Number of characters in font = ',I-1
+        WRITE(6,*)' Number of points (max=2000)  = ',K
+        CLOSE (2)
+C
+C---- Now try to find the help
+C
+         OPEN(UNIT=91,ERR=99,STATUS='OLD',ACCESS='DIRECT',READONLY,
+     &       FORM='FORMATTED',RECL=70,FILE='HLP/HELP.RAB')
+        HELPOPEN=.TRUE.
+C
+        CALL TOMSIZ(2.5,2.5)
+C
+        RETURN        
+C
+2222        CONTINUE
+C
+        WRITE(6,*)'  '        
+        WRITE(6,*)'  No character font found !'
+        WRITE(6,*)'  have you assigned a file to font '
+        WRITE(6,*)'      Ugh '
+        STOP
+C
+99        CONTINUE
+         WRITE(6,*)'  Could not find main help file '
+         HELPOPEN=.FALSE.         
+         RETURN
+        END
 C
 C
 C
@@ -3301,12 +3530,9 @@ C     ..
       FILNAM = ' '
       CALL UGTENV('GRAPHICS',FILNAM)
       IF (FILNAM.EQ.' ') FILNAM = 'GRAPHICS'
-      IGUNIT = -12
-      LREC = 80
-      IFAIL = 0
-      CALL CCPDPN(IGUNIT,FILNAM,'UNKNOWN','F',LREC,IFAIL)
-CC      open (unit=12,file=filnam,carriagecontrol='list',
-CC     +     status='unknown')
+      IGUNIT = 12
+      OPEN (UNIT=12,FILE=FILNAM,CARRIAGECONTROL='LIST',
+     +     STATUS='UNKNOWN')
 C
 C---- reset default color to white
 C
@@ -3408,7 +3634,7 @@ C
 C
       COMMON /GRAPHICS/NGR,NGX,NGY,NHALFX,NHALFY,GRFACT,DISPLAY,NLI
       COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
-      COMMON /FONTSCALE/ FONTSIZE,SPACING,SPACE,FONTSCALE
+      COMMON /FSCOMM/ FONTSIZE,SPACING,SPACE,FONTSCALE
 C
 C----  this returns the length of a string of length
 C      "length" in the units of program (180*140)
@@ -3418,11 +3644,12 @@ C
 C
         STRINGLENGTH=LENGTH*SIZE*(FONTSCALE/0.01664)
 C
+        RETURN
         END
 C
 C
 C
-      SUBROUTINE LNSYMBOL(X,Y,TZ,LABEL,ANGLE,NCHAR)
+      SUBROUTINE SYMBOL(X,Y,TZ,LABEL,ANGLE,NCHAR)
 C     ===========================================
 C
 C
@@ -3535,6 +3762,7 @@ C
         LINE=' '
         POINTER=1
 C
+        RETURN
         END
 C
 C        
@@ -3543,6 +3771,7 @@ C
 C       ==================
 C
 C
+        RETURN
         END
 C
 C
@@ -3550,6 +3779,7 @@ C
         SUBROUTINE TEKSTR
 C       =================
 C
+        RETURN
         END
 C
 C
@@ -3563,6 +3793,7 @@ C
 C
 C        call ginend
 C
+        RETURN
         END
 C
 C
@@ -3572,6 +3803,7 @@ C       ================
 C
 C        call gino
 C
+        RETURN
         END
 C
 C
@@ -3594,6 +3826,7 @@ C
         NGR=5
         CALL GRINIT
 C
+        RETURN
         END
 C
 C
@@ -3658,13 +3891,12 @@ C
       FF = CHAR(12)
 C
 C
-cx      IF (VMSVAX) THEN
+      IF (VMSVAX) THEN
       WRITE (12,FMT=6000) ESC,FF
-cx      ELSE
-cx      WRITE (12,FMT=6001) ESC,FF
-cx      END IF
+      ELSE
+      WRITE (12,FMT=6001) ESC,FF
+      END IF
       CALL TKFLUSH
-cxx      CALL TKFLUSH2
 C
 C
  6000 FORMAT ('+',2A,$)
@@ -3701,88 +3933,63 @@ C     ..
       CALL TKMOVE(IX,ISY)
       CALL TKDRAW(IX,ILY)
       END
-C
-C
-C
-      SUBROUTINE TKCURSOR(IX,IY)
-C     ===========================
-C
-C
-C---- Subroutine to return position of cross hairs
-C
-C
-C     .. Scalar Arguments ..
-      INTEGER IX,IY
-C     ..
-C     .. Local Scalars ..
-      INTEGER J
-      CHARACTER ESC,SUB,X
-C     ..
-C     .. Local Arrays ..
-      BYTE STRING(6)
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL TKALPHA,TKCROSS,TKDECODE
+c----------------------------------------------------------
+      subroutine TKCURSOR(ix,iy,cha)
+c----------------------------------------------------------
+c
+      character esc,sub,x,cha
+c      BYTE STRING(6)
+      CHARACTER*6 string
+      data esc /27/,sub/26/,x/'+'/
       LOGICAL VMSVAX
       COMMON /SITE/ VMSVAX
-C     ..
-C     .. Data statements ..
-c-vms      DATA ESC/27/,SUB/26/,X/'+'/
-      DATA X/'+'/
-C     ..
-C
-      ESC = CHAR(27)
-      SUB = CHAR(26)
-C
-cx      IF (VMSVAX) THEN
-      WRITE (12,FMT=6000) ESC,SUB
-cx      ELSE
-cx      WRITE (12,FMT=6001) ESC,SUB
-cx      END IF
-C
-C
-      READ (12,FMT=6002) (STRING(J),J=1,6)
-      CALL TKDECODE(STRING(2),IY,IX)
+c
+      write(12,10) esc,sub
+10    format(2a,$)
+99      continue
+
+c      READ (12,FMT=6002) (STRING(J),J=1,6)
+c      CALL TKDECODE(STRING(2),IY,IX)
+      read(5,20,end=99) string
+20    format(a)
 C
 C---- Put up a cross at cursor position
 C
+      call tkdecode(string,iy,ix)
+      cha=string(1:1)
       CALL TKCROSS(IX,IY)
       CALL TKALPHA
- 6000 FORMAT ('+',2A,$)
- 6001 FORMAT (2A,$)
- 6002 FORMAT (6A)
-      END
-C
-C
-C
-      SUBROUTINE TKDECODE(I4,IY,IX)
-C     ==============================
-C
-C
-C---- The BYTEs are returned in the order:
-C     Character, high X, low X, high Y, low Y -
-C     and then optionally CR and EOT
-C
-C---- The 'tag' bits are ignored here.
-C
-C      CALL MVBITS(I4,0,5,IX,5)  !  high X  -  first BYTE
-C      CALL MVBITS(I4,8,5,IX,0)  !  low X   -  second BYTE
-C      CALL MVBITS(I4,16,5,IY,5) !  high Y  -  third BYTE
-C      CALL MVBITS(I4,24,5,IY,0) !  low Y   -  fouth BYTE
-C
-C
-C     .. Scalar Arguments ..
-      INTEGER I4,IX,IY
-C     ..
-C     .. External Subroutines ..
-cc      EXTERNAL MVBITS
-C     ..
-      CALL MVBITS(I4,0,5,IX,5)
-      CALL MVBITS(I4,8,5,IX,0)
-      CALL MVBITS(I4,16,5,IY,5)
-      CALL MVBITS(I4,24,5,IY,0)
-C
-      END
+c
+         
+
+6002   FORMAT (6A)
+      return
+      end
+
+c------------------------------------------------------
+c**********************************************************************
+c
+	subroutine TKDECODE(STRING,iy,ix)
+c
+C  The bytes are returned in the order:
+C  Character, high X, low X, high Y, low Y - and then optionally CR and EOT
+C  The 'tag' bits are ignored here.
+c
+	CHARACTER*6 STRING
+
+	ixhigh=ichar(string(2:2))-32
+	ixlow=ichar(string(3:3))-32
+	iyhigh=ichar(string(4:4))-32
+	iylow=ichar(string(5:5))-32
+
+	ix=ixhigh*32+ixlow
+	iy=iyhigh*32+iylow
+
+	return
+	end
+
+
+c
 C
 C
 C
@@ -3804,7 +4011,8 @@ C     .. Local Scalars ..
       CHARACTER FS,GS
 C     ..
 C     .. Local Arrays ..
-      BYTE STRING(4)
+C      BYTE STRING(4)
+       character string*4     
 C     ..
 C     .. External Subroutines ..
       EXTERNAL TKENCODE
@@ -3813,6 +4021,7 @@ C     .. Common blocks ..
       LOGICAL VMSVAX
       COMMON /SITE/ VMSVAX
       COMMON /TX/GRMODE,POINTMODE
+       SAVE
 C     ..
 C     .. Data statements ..
 c-vms      DATA GS/29/,FS/28/
@@ -3827,64 +4036,42 @@ C
       CALL TKENCODE(JX,JY,STRING)
 C
 C
-cx      IF (VMSVAX) THEN
-      WRITE (12,FMT=6000) (STRING(J),J=1,4)
-cx      ELSE
-cx      WRITE (12,FMT=6001) (STRING(J),J=1,4)
-cx      END IF
+      IF (VMSVAX) THEN
+      WRITE (12,FMT=6000) (STRING)
+      ELSE
+      WRITE (12,FMT=6001) (STRING)
+      END IF
 C
 C
- 6000 FORMAT ('+',4A,$)
- 6001 FORMAT (4A,$)
+ 6000 FORMAT ('+',A,$)
+ 6001 FORMAT (A,$)
       END
+	subroutine TKENCODE(ix,iy,output)
+c
+C  Pack coordinates into 4 bytes for Tektronic 4010 terminal
+C  Each coordinate can require up to 10 bits.  These are split into two
+C  groups of five - one group in the low order bits of each byte.
+C  Bits 5 and 6 are used as "tag' bits - see below.  The eighth bit (bit 7)
+C  is not used.
 C
-C
-C
-      SUBROUTINE TKENCODE(IX,IY,I4)
-C     =============================
-C
-C
-C---- Pack coordinates into 4 BYTEs for Tektronic 4010 terminal
-C     Each coordinate can require up to 10 bits.
-C     These are split into two groups of five -
-C     one group in the low order bits of each BYTE.
-C
-C---- Bits 5 and 6 are used as "tag' bits - see below.
-C     The eighth bit (bit 7) is not used.
-C
-C---- IT is used to set the TAG bits.
-C     BYTEs are sent in the order:  high y, low y, high x, low x
-C     with respective tag bits +32,+96,+32,+64
-C
-C
-C
-C     .. Scalar Arguments ..
-      INTEGER I4,IX,IY
-C     ..
-C     .. Local Scalars ..
-      INTEGER IT
-C     ..
-C     .. External Subroutines ..
-cc      EXTERNAL MVBITS
-C     ..
-C     .. Data statements
-      DATA IT/'40206020'X/
-C     ..
-C
-C
-      I4 = IT
-C
-C      CALL MVBITS(IY,5,5,I4,0)  !  high Y + 32  - first BYTE
-C      CALL MVBITS(IY,0,5,I4,8)  !  low Y  + 96  - second BYTE
-C      CALL MVBITS(IX,5,5,I4,16) !  high X + 32  - third BYTE
-C      CALL MVBITS(IX,0,5,I4,24) !  low X  + 64  - fourth BYTE
-C
-      CALL MVBITS(IY,5,5,I4,0)
-      CALL MVBITS(IY,0,5,I4,8)
-      CALL MVBITS(IX,5,5,I4,16)
-      CALL MVBITS(IX,0,5,I4,24)
-C
-      END
+C  IT is used to set the TAG bits.
+C  Bytes are sent in the order:  high y, low y, high x, low x
+C  with respective tag bits +32,+96,+32,+64
+c
+	character output*4
+	integer xlow,ylow
+
+	xlow = mod(ix,32)
+	ylow = mod(iy,32)
+	output(4:4)=char(xlow+64)
+	output(3:3)=char((ix-xlow)/32+32)
+	output(2:2)=char(ylow+96)
+	output(1:1)=char((iy-ylow)/32+32)
+c
+	return
+	end
+c
+c**********************************************************************
 C
 C
 C
@@ -3915,11 +4102,11 @@ C     ..
 C
       CAN = CHAR(24)
 C
-cx      IF (VMSVAX) THEN
+      IF (VMSVAX) THEN
       WRITE (12,FMT=6000) CAN
-cx      ELSE
-cx      WRITE (12,FMT=6001) CAN
-cx      END IF
+      ELSE
+      WRITE (12,FMT=6001) CAN
+      END IF
 C
 C
       GRMODE = .FALSE.
@@ -3967,18 +4154,18 @@ C          *****************************
       CALL CCPUPC(EMULATION)
 C          *****************************
 C
-      IF (EMULATION.EQ.' ') EMULATION = 'MICRO_TERM'
+      IF (EMULATION.EQ.' ') EMULATION = 'PERICOM'
 C
 C
       IF(EMULATION.EQ.'MICRO_TERM' .OR. EMULATION .EQ.
      +                'PERICOM') THEN
 C
 C
-cx         IF(VMSVAX) THEN
+         IF(VMSVAX) THEN
          WRITE (12,FMT=6000) US
-cx         ELSE
-cx         WRITE (12,FMT=6001) US
-cx         END IF
+         ELSE
+         WRITE (12,FMT=6001) US
+         END IF
        GO TO 200
        END IF
 C
@@ -3986,11 +4173,11 @@ C
       IF(EMULATION.EQ.'SELENAR') THEN
 C
 C
-cx      IF (VMSVAX) THEN
+      IF (VMSVAX) THEN
       WRITE(12,100)ESC,ANSI
-cx      ELSE
-cx      WRITE(12,101)ESC,ANSI
-cx      END IF
+      ELSE
+      WRITE(12,101)ESC,ANSI
+      END IF
 C
 C
       END IF
@@ -4021,7 +4208,7 @@ C
 C     .. Scalars in Common ..
       LOGICAL GRMODE,POINTMODE
 C     ..
-      CHARACTER FILNAM*255
+      CHARACTER FILNAM*100
 C     .. Common blocks ..
       LOGICAL VMSVAX
       COMMON /SITE/ VMSVAX
@@ -4036,18 +4223,11 @@ C
 C
 C
       CLOSE (UNIT=12)
-cx      RETURN
-C
-cx      ENTRY TKFLUSH2
 C
       FILNAM = ' '
       CALL UGTENV('GRAPHICS',FILNAM)
       IF(FILNAM.EQ.' ') FILNAM='GRAPHICS'
-      IGUNIT = -12
-      LREC = 80
-      IFAIL = 0
-      CALL CCPDPN(IGUNIT,FILNAM,'UNKNOWN','F',LREC,IFAIL)
-CC      open (unit=12,file=filnam,status='unknown')
+      OPEN (UNIT=12,FILE=FILNAM,STATUS='UNKNOWN')
 C
 C
       EMULATION = ' '
@@ -4056,37 +4236,37 @@ C
 C
 C---- hardwired for YORK pericoms... SITE SPECIFIC
 C
-      IF (EMULATION.EQ.' ') EMULATION = 'MICRO_TERM'
+      IF (EMULATION.EQ.' ') EMULATION = 'PERICOM'
 C
 C
        IF (EMULATION.EQ.'SELENAR') THEN
 C
 C
-cx           IF (VMSVAX) THEN
+           IF (VMSVAX) THEN
            WRITE(12,10)ESC,T4014
-cx           ELSE
-cx           WRITE(12,6000)ESC,T4014
-cx           END IF
+           ELSE
+           WRITE(12,6000)ESC,T4014
+           END IF
 C
 C
        ELSE IF (EMULATION.EQ.'MICRO_TERM') THEN
 C
 C
-cx           IF (VMSVAX) THEN
+           IF (VMSVAX) THEN
            WRITE(12,100)GS
-cx           ELSE
-cx           WRITE(12,6100)GS
-cx           END IF
+           ELSE
+           WRITE(12,6100)GS
+           END IF
 C
 C
         ELSE IF (EMULATION.EQ.'PERICOM') THEN
 C
 C
-cx          IF (VMSVAX) THEN
+          IF (VMSVAX) THEN
           WRITE(12,7000) ESC,BRAK,STAR
-cx          ELSE
-cx          WRITE(12,7001) ESC,BRAK,STAR
-cx          END IF
+          ELSE
+          WRITE(12,7001) ESC,BRAK,STAR
+          END IF
 C
 C
        END IF
@@ -4136,11 +4316,7 @@ C
       FILNAM = ' '
       CALL UGTENV('GRAPHICS',FILNAM)
       IF(FILNAM.EQ.' ') FILNAM='GRAPHICS'
-      IGUNIT = -12
-      LREC = 80
-      IFAIL = 0
-      CALL CCPDPN(IGUNIT,FILNAM,'UNKNOWN','F',LREC,IFAIL)
-CC      open (unit=12,file=filnam,status='unknown')
+      OPEN (UNIT=12,FILE=FILNAM,STATUS='UNKNOWN')
 C
 C
       EMULATION = ' '
@@ -4149,37 +4325,37 @@ C
 C
 C---- hardwired for YORK pericoms... SITE SPECIFIC
 C
-      IF (EMULATION.EQ.' ') EMULATION = 'MICRO_TERM'
+      IF (EMULATION.EQ.' ') EMULATION = 'PERICOM'
 C
 C
        IF (EMULATION.EQ.'SELENAR') THEN
 C
 C
-cx           IF (VMSVAX) THEN
+           IF (VMSVAX) THEN
            WRITE(12,10)ESC,T4014
-cx           ELSE
-cx           WRITE(12,6000)ESC,T4014
-cx           END IF
+           ELSE
+           WRITE(12,6000)ESC,T4014
+           END IF
 C
 C
        ELSE IF (EMULATION.EQ.'MICRO_TERM') THEN
 C
 C
-cx           IF (VMSVAX) THEN
+           IF (VMSVAX) THEN
            WRITE(12,100)GS
-cx           ELSE
-cx           WRITE(12,6100)GS
-cx           END IF
+           ELSE
+           WRITE(12,6100)GS
+           END IF
 C
 C
         ELSE IF (EMULATION.EQ.'PERICOM') THEN
 C
 C
-cx          IF (VMSVAX) THEN
+          IF (VMSVAX) THEN
           WRITE(12,7000) ESC,BRAK,STAR
-cx          ELSE
-cx          WRITE(12,7001) ESC,BRAK,STAR
-cx          END IF
+          ELSE
+          WRITE(12,7001) ESC,BRAK,STAR
+          END IF
 C
 C
        END IF
@@ -4239,24 +4415,25 @@ C
       JY = IY
 C
 C
-cx      IF (VMSVAX) THEN
+      IF (VMSVAX) THEN
       WRITE (12,FMT=6000) GS
-cx      ELSE
-cx      WRITE (12,FMT=6001) GS
-cx      END IF
+      ELSE
+      WRITE (12,FMT=6001) GS
+      END IF
 C
 C
       CALL TKENCODE(JX,JY,STRING)
 C
 C
-cx      IF (VMSVAX) THEN
+      IF (VMSVAX) THEN
       WRITE (12,FMT=6002) (STRING(J),J=1,4)
-cx      ELSE
-cx      WRITE (12,FMT=6003) (STRING(J),J=1,4)
-cx      END IF
+      ELSE
+      WRITE (12,FMT=6003) (STRING(J),J=1,4)
+      END IF
 C
 C
       GRMODE = .TRUE.
+      RETURN
 C
 C
  6000 FORMAT ('+',A,$)
@@ -4292,11 +4469,10 @@ cc??      IF (VAXVMS())  CALL TKALPHA
       CALL TKALPHA
       WRITE (6,FMT=6002)
       READ (5,FMT=6000,END=10)
-cx      CALL TKFLUSH2
       CALL TKCLEAR
    10 RETURN
  6000 FORMAT (1X)
- 6002 FORMAT(' Enter C/R ',$)
+ 6002 FORMAT(' Enter C/R ')
       END
 C
 C
@@ -4328,13 +4504,13 @@ C
       FS = CHAR(28)
 C
 C
-cx      IF (VMSVAX) THEN
+      IF (VMSVAX) THEN
       WRITE (12,FMT=6000) GS
       WRITE (12,FMT=6000) FS
-cx      ELSE
-cx      WRITE (12,FMT=6001) GS
-cx      WRITE (12,FMT=6001) FS
-cx      END IF
+      ELSE
+      WRITE (12,FMT=6001) GS
+      WRITE (12,FMT=6001) FS
+      END IF
 C
 C
       POINTMODE = .TRUE.
@@ -4380,11 +4556,11 @@ C
       CALL TKENCODE(JX,JY,STRING)
 C
 C
-cx      IF (VMSVAX) THEN
+      IF (VMSVAX) THEN
       WRITE (12,FMT=6000) (STRING(J),J=1,4)
-cx      ELSE
-cx      WRITE (12,FMT=6001) (STRING(J),J=1,4)
-cx      END IF
+      ELSE
+      WRITE (12,FMT=6001) (STRING(J),J=1,4)
+      END IF
 C
 C
  6000 FORMAT ('+',4A,$)
@@ -4428,7 +4604,7 @@ C
       COMMON /GRAPHICS/NGR,NGX,NGY,NHALFX,NHALFY,GRFACT,DISPLAY,NLI
       COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
       COMMON /LAST/ IXLAST,IYLAST
-      COMMON /FONTSCALE/ FONTSIZE,SPACING,SPACE,FONTSCALE
+      COMMON /FSCOMM/ FONTSIZE,SPACING,SPACE,FONTSCALE
 C
 C
         XXX=IXLAST
@@ -4820,7 +4996,7 @@ C
 C
       COMMON /GRAPHICS/NGR,NGX,NGY,NHALFX,NHALFY,GRFACT,DISPLAY,NLI
       COMMON /TOMG/ NDIR,XSCALE,YSCALE,XOFFSET,YOFFSET
-      COMMON /FONTSCALE/ FONTSIZE,SPACING,SPACE,FONTSCALE
+      COMMON /FSCOMM/ FONTSIZE,SPACING,SPACE,FONTSCALE
 C
         FONTSIZE=X*FONTSCALE
 C
