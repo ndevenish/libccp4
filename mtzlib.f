@@ -8587,7 +8587,7 @@ C     .. Local Scalars ..
 C     ..
 C     .. Local Arrays ..
       CHARACTER AXES(4)*4,LINES(MXLLIN)*(MXLLEN),SOMELN(MXLLIN)*(MXLLEN)
-      CHARACTER*20 LABTYP(0:3)
+      CHARACTER*25 LABTYP(0:3)
 C     ..
 C     .. External Subroutines ..
       INTEGER NEXTLN
