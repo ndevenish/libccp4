@@ -464,7 +464,7 @@ char *message;
 {
   int mone = -1, zero = 0;
 #if CALL_LIKE_HPUX
-  extern void ccperr(), qprint ();
+  extern void ccperr();
 
   ccperr (&mone, message, (int) strlen(message));
 #endif
@@ -504,6 +504,47 @@ char *message;
 #endif
  }
 @ %def fatal
+@ This prints a non-fatal [[message]] using the Fortran i/o.
+<<internal routines>>=
+static void cqprint (message)
+char *message;
+{
+  int zero = 0;
+#if CALL_LIKE_HPUX
+  extern void qprint();
+
+  qprint (&zero, message, (int) strlen(message));
+#endif
+#if CALL_LIKE_STARDENT
+  extern void QPRINT();
+  struct Str_Desc str;
+
+  str.Str_length = (int) strlen(message);
+  str.Str_pointer = message;
+  QPRINT (&zero, &str);
+#endif
+#if defined (VMS)
+  extern void QPRINT();
+  struct dsc$descriptor_s str;
+
+  str.dsc$a_pointer = message;
+  str.dsc$w_length = (int) strlen(message);
+  str.dsc$b_dtype = DSC$K_DTYPE_T;
+  str.dsc$b_class = DSC$K_CLASS_S;
+  QPRINT (&zero, &str);
+#endif
+#if CALL_LIKE_SUN
+  extern void qprint_();
+
+  qprint_ (&zero, message, (int) strlen(message));
+#endif
+#if CALL_LIKE_IRIS
+  extern fortran qprint_();
+
+  (void) qprint_ ((int) strlen(message), &zero, message);
+#endif
+ }
+@ %def cqprint
 @ \section{Miscellaneous routines}
 \subsection{{\tt subroutine ustenv(\meta{string}, \meta{result})}}
 
@@ -579,7 +620,8 @@ int *result;
 This unlinks \meta{filename} from the directory.  It's intended for
 use with scratch files, so that they can be hidden when opened but
 still be available as long as they remain connected (see [[CCPOPN]]).
-This functionality doesn't seem to exist in \idx{VMS}\@.
+This functionality doesn't seem to exist in \idx{VMS}\@.  Failure to
+unlink isn't fatal (it's been observed, apparently spuriously).
 <<miscellaneous routines>>=
 #if CALL_LIKE_HPUX
   void cunlink (filename, Lfilename)
@@ -622,7 +664,7 @@ This functionality doesn't seem to exist in \idx{VMS}\@.
 #  endif
   tempfile[Length] = '\0';
   if (unlink (tempfile) != 0)
-  fatal("CUNLINK: Can't unlink");
+    cqprint("CUNLINK: Can't unlink");
 #endif /* VMS */
 }
 @ %def cunlink
