@@ -690,7 +690,7 @@ FORTRAN_SUBR( MRDHDS, mrdhds,
 	       float *rhmax, float *rhmean, float * rhrms, int *ifail, 
 	       int *iprint))
 {
-  char temp_title[80], *temp_map, *file;
+  char temp_title[81], *temp_map, *file;
   int ii;
   double drhmean,drhrms;
 
@@ -757,7 +757,7 @@ FORTRAN_SUBR( CCP4_MAP_READ_OPEN_HEADER_CHECK,
 	       int *iprint))
      /* see MRDHDS */
 {
-  char temp_title[80], *temp_map, *file;
+  char temp_title[81], *temp_map, *file;
   int ii;
   double drhmean,drhrms;
 
@@ -843,7 +843,7 @@ FORTRAN_SUBR( MRDHDR, mrdhdr,
 	       float cell[6], int *lspgrp, int *lmode, float *rhmin, 
 	       float *rhmax, float *rhmean, float * rhrms))
 {  
-  char temp_title[80], *temp_map, *file;
+  char temp_title[81], *temp_map, *file;
   int ii;
   double drhmean,drhrms;
 
@@ -900,7 +900,7 @@ FORTRAN_SUBR( CCP4_MAP_READ_OPEN_HEADER,
 	       float *rhmax, float *rhmean, float * rhrms))
      /* see MRDHDR */
 {
-  char temp_title[80], *temp_map, *file;
+  char temp_title[81], *temp_map, *file;
   int ii;
   double drhmean,drhrms;
 
