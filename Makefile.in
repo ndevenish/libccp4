@@ -30,8 +30,9 @@
 # * rm any existing foo.dir and create a new one
 # * cd into foo.dir and fsplit the source file into it
 # * compile .o files from *.f
-# * make an empty `sentinel' file foo.o if there isn't already a
-#   routine foo in the library
+# * make a dummy `sentinel' file foo.o if there isn't already a
+#   routine foo in the library.  The original tactic of using an empty
+#   file doesn't work in AIX because it isn't in object format
 # * ar *.o into ../libccp4.a
 # * rm *.o from foo.dir (leave *.f there so you can do symbolic debug,
 #   although you then have to get the path right)
@@ -75,132 +76,137 @@ ranlib: ; $(RANLIB) $L
 
 $(LIBTARGETS) : ; $(MAKE) $(MFLAGS) "$L($@.o)"
 
+dummy.o: dummy.for
+	-rm -f dummy.$F
+	$(LNS) dummy.for dummy.$F
+	$(FC) -c $(FFLAGS) dummy.$F
+
 # explicit building of the real targets, sigh...
 
-$L(ccplib.o) : $(srcdir)/ccplib.for
+$L(ccplib.o) : $(srcdir)/ccplib.for dummy.o
 	-rm -rf ccplib.dir; mkdir ccplib.dir
 	cd ccplib.dir; fsplit $(srcdir)/ccplib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch ccplib.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o ccplib.o ; \
 	  $(AR) ../$L *.o
 	rm -f ccplib.dir/*.o
 
-$L(fftlib.o) : $(srcdir)/fftlib.for
+$L(fftlib.o) : $(srcdir)/fftlib.for dummy.o
 	-rm -rf fftlib.dir; mkdir fftlib.dir
 	cd fftlib.dir; fsplit $(srcdir)/fftlib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch fftlib.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o fftlib.o ; \
 	  $(AR) ../$L *.o
 	rm -f fftlib.dir/*.o
 
-$L(maplib.o) : $(srcdir)/maplib.for
+$L(maplib.o) : $(srcdir)/maplib.for dummy.o
 	-rm -rf maplib.dir; mkdir maplib.dir
 	cd maplib.dir; fsplit $(srcdir)/maplib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch maplib.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o maplib.o ; \
 	  $(AR) ../$L *.o
 	rm -f maplib.dir/*.o
 
 $L(parser.o) : $(srcdir)/parser.for
 	-rm -rf parser.dir; mkdir parser.dir
 	cd parser.dir; fsplit $(srcdir)/parser.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch parser.o; \
+	  $(FC) -c $(FFLAGS) *.$F; \
 	  $(AR) ../$L *.o
 	rm -f parser.dir/*.o
 
-$L(rwbrook.o) : $(srcdir)/rwbrook.for
+$L(rwbrook.o) : $(srcdir)/rwbrook.for dummy.o
 	-rm -rf rwbrook.dir; mkdir rwbrook.dir
 	cd rwbrook.dir; fsplit $(srcdir)/rwbrook.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch rwbrook.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o rwbrook.o ; \
 	  $(AR) ../$L *.o
 	rm -f rwbrook.dir/*.o
 
-$L(rwatom.o) : $(srcdir)/rwatom.for
+$L(rwatom.o) : $(srcdir)/rwatom.for dummy.o
 	-rm -rf rwatom.dir; mkdir rwatom.dir
 	cd rwatom.dir; fsplit $(srcdir)/rwatom.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch rwatom.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o rwatom.o ; \
 	  $(AR) ../$L *.o
 	rm -f rwatom.dir/*.o
 
-$L(modlib.o) : $(srcdir)/modlib.for
+$L(modlib.o) : $(srcdir)/modlib.for dummy.o
 	-rm -rf modlib.dir; mkdir modlib.dir
 	cd modlib.dir; fsplit $(srcdir)/modlib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch modlib.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o modlib.o ; \
 	  $(AR) ../$L *.o
 	rm -f modlib.dir/*.o
 
-$L(mthlib.o) : $(srcdir)/mthlib.for
+$L(mthlib.o) : $(srcdir)/mthlib.for dummy.o
 	-rm -rf mthlib.dir; mkdir mthlib.dir
 	cd mthlib.dir; fsplit $(srcdir)/mthlib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch mthlib.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o mthlib.o ; \
 	  $(AR) ../$L *.o
 	rm -f mthlib.dir/*.o
 
-$L(symlib.o) : $(srcdir)/symlib.for
+$L(symlib.o) : $(srcdir)/symlib.for dummy.o
 	-rm -rf symlib.dir; mkdir symlib.dir
 	cd symlib.dir; fsplit $(srcdir)/symlib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch symlib.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o symlib.o ; \
 	  $(AR) ../$L *.o
 	rm -f symlib.dir/*.o
 
-$L(lcflib.o) : $(srcdir)/lcflib.for
+$L(lcflib.o) : $(srcdir)/lcflib.for dummy.o
 	-rm -rf lcflib.dir; mkdir lcflib.dir
 	cd lcflib.dir; fsplit $(srcdir)/lcflib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch lcflib.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o lcflib.o ; \
 	  $(AR) ../$L *.o
 	rm -f lcflib.dir/*.o
 
-$L(mtzlib.o) : $(srcdir)/mtzlib.for
+$L(mtzlib.o) : $(srcdir)/mtzlib.for dummy.o
 	-rm -rf mtzlib.dir; mkdir mtzlib.dir
 	cd mtzlib.dir; fsplit $(srcdir)/mtzlib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch mtzlib.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o mtzlib.o ; \
 	  $(AR) ../$L *.o
 	rm -f mtzlib.dir/*.o
 
-$L(diskio.o) : $(srcdir)/diskio.for
+$L(diskio.o) : $(srcdir)/diskio.for dummy.o
 	-rm -rf diskio.dir; mkdir diskio.dir
 	cd diskio.dir; fsplit $(srcdir)/diskio.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch diskio.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o diskio.o ; \
 	  $(AR) ../$L *.o
 	rm -f diskio.dir/*.o
 
-$L(hlplib.o) : $(srcdir)/hlplib.for
+$L(hlplib.o) : $(srcdir)/hlplib.for dummy.o
 	-rm -rf hlplib.dir; mkdir hlplib.dir
 	cd hlplib.dir; fsplit $(srcdir)/hlplib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch hlplib.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o hlplib.o ; \
 	  $(AR) ../$L *.o
 	rm -f hlplib.dir/*.o
 
 # fixme: change >14 characters name!
-$L(frodo_maplib.o) : $(srcdir)/frodo_maplib.for
+$L(frodo_maplib.o) : $(srcdir)/frodo_maplib.f dummy.oor
 	-rm -rf frodo_maplib.dir; mkdir frodo_maplib.dir
 	cd frodo_maplib.dir; fsplit $(srcdir)/frodo_maplib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch frodo_maplib.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o frodo_maplib.o ; \
 	  $(AR) ../$L *.o
 	rm -f frodo_maplib.dir/*.o
 
-$L(plot84lib.o) : $(srcdir)/plot84lib.for
+$L(plot84lib.o) : $(srcdir)/plot84lib.for dummy.o
 	-rm -rf plot84lib.dir; mkdir plot84lib.dir
 	cd plot84lib.dir; fsplit $(srcdir)/plot84lib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch plot84lib.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o plot84lib.o ; \
 	  $(AR) ../$L *.o
 	rm -f plot84lib.dir/*.o
 
-$L(graflib.o) : $(srcdir)/graflib.for
+$L(graflib.o) : $(srcdir)/graflib.for dummy.o
 	-rm -rf graflib.dir; mkdir graflib.dir
 	cd graflib.dir; fsplit $(srcdir)/graflib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch graflib.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o graflib.o ; \
 	  $(AR) ../$L *.o
 	rm -f graflib.dir/*.o
 
-$L(graphics.o) : $(srcdir)/graphics.for
+$L(graphics.o) : $(srcdir)/graphics.for dummy.o
 	-rm -rf graphics.dir; mkdir graphics.dir
 	cd graphics.dir; fsplit $(srcdir)/graphics.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch graphics.o; \
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o graphics.o ; \
 	  $(AR) ../$L *.o
 	rm -f graphics.dir/*.o
 
 $L(gdummy.o) : $(srcdir)/gdummy.for
 	-rm -rf gdummy.dir; mkdir gdummy.dir
 	cd gdummy.dir; fsplit $(srcdir)/gdummy.for; \
-	  $(FC) -c $(FFLAGS) *.$F; touch gdummy.o; \
+	  $(FC) -c $(FFLAGS) *.$F ; \
 	  $(AR) ../$L *.o
 	rm -f gdummy.dir/*.o
 
@@ -231,11 +237,11 @@ binsort : $(srcdir)/binsort.c $(incdir)/binsort.h
 	$(LNS) binsort ../../src/binsort
 
 # the unix-specific bits need preprocessing for different unix variants
-$L(unix.o) : $(srcdir)/unix.m4
+$L(unix.o) : $(srcdir)/unix.m4 dummy.o
 	$(M4) $(srcdir)/unix.m4 >unix.$F
 	-rm -rf unix.dir; mkdir unix.dir
 	cd unix.dir; fsplit ../unix.$F; \
-	  $(FC) -c $(FFLAGS) *.$F; touch unix.o ;\
+	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o unix.o ;\
 	  $(AR) ../$L *.o
 	rm -f unix.dir/*.o
 
