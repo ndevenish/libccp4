@@ -4283,7 +4283,7 @@ C     .. External Functions ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL BLANK,LERROR,LHPRT,QWRITC,PUTLIN,QCLOSE,QSEEK,
-     +         QMODE,QWARCH,SORTUP,SYMTR3,WBATHD, QWRITI, QWRITC
+     +         QMODE,QWARCH,SORTUP,SYMTR3,WBATHD, QWRITI
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -4397,7 +4397,7 @@ C              **************************************************
 C              **************************************************
 C
           DO 10 JDO10 = 1,NSYM(MINDX)
-            LINE = 'SYMM' // SYMCHS(JDO10) (1:LENSTR(SYMCHS(JDO10)))
+            LINE = 'SYMM ' // SYMCHS(JDO10) (1:LENSTR(SYMCHS(JDO10)))
 C
 C                ******************************
             CALL QWRITC(WLUN(MINDX),LINE(1:80))
