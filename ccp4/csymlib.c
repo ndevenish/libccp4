@@ -1162,22 +1162,22 @@ int ccp4spg_is_sysabs(const CCP4SPG* sp, const int h, const int k, const int l)
 
 /* ccp4spg_generate_origins translated from Alexei Vagin's CALC_ORIG_PS */
 int ccp4spg_generate_origins(const char *namspg, const int nsym, const float rsym[][4][4],
-			     float origins[][3], int polarx, int polary, int polarz,
+			     float origins[][3], int *polarx, int *polary, int *polarz,
 			     const int iprint)
 {
   int i,j,k,norigins,k1,k2,k3,alt_orig,ichk;
   int id[6]={0,6,4,8,3,9},is[3];
   float xin=0.13,yin=0.17,zin=0.19,xout,yout,zout,rsymd[3][3];
 
-  polarx = polary = polarz = 1;
+  *polarx = *polary = *polarz = 1;
 
   for (i = 1; i < nsym; ++i) {
     xout = rsym[i][0][0]*xin + rsym[i][0][1]*yin + rsym[i][0][2]*zin;
-    if (fabs(xout-xin) > 0.01) polarx = 0;
+    if (fabs(xout-xin) > 0.01) *polarx = 0;
     yout = rsym[i][1][0]*xin + rsym[i][1][1]*yin + rsym[i][1][2]*zin;
-    if (fabs(yout-yin) > 0.01) polary = 0;
+    if (fabs(yout-yin) > 0.01) *polary = 0;
     zout = rsym[i][2][0]*xin + rsym[i][2][1]*yin + rsym[i][2][2]*zin;
-    if (fabs(zout-zin) > 0.01) polarz = 0;
+    if (fabs(zout-zin) > 0.01) *polarz = 0;
   }
 
   /*  First origin is 0,0,0 */
@@ -1196,9 +1196,9 @@ int ccp4spg_generate_origins(const char *namspg, const int nsym, const float rsy
 	is[0]=id[k1];
 	is[1]=id[k2];
 	is[2]=id[k3];
-        if ( polarx && is[0] )  break;
-        if ( polary && is[1] )  break;
-        if ( polarz && is[2] )  break;
+        if ( *polarx && is[0] )  break;
+        if ( *polary && is[1] )  break;
+        if ( *polarz && is[2] )  break;
 
 /*  Let [Si] =[RSYMi] be (3x4) symmetry operator.
  Need to Check if the symmetry operator shifts of each alternate origin 
@@ -1241,37 +1241,37 @@ int ccp4spg_generate_origins(const char *namspg, const int nsym, const float rsy
   }
 
   if (iprint) {
-    printf(" %s %d %d %d\n","lpaxisx y z",polarx,polary,polarz);
-    if( polarx && polary && polarz) {
+    printf(" %s %d %d %d\n","lpaxisx y z",*polarx,*polary,*polarz);
+    if( *polarx && *polary && *polarz) {
       printf(" this is p1: origin anywhere");
       printf("\n %s %s %s \n",
 	     " number of alternate origins for spacegroup:  ",namspg," is infinite.");
-    } else if( polarx && polary) {
+    } else if( *polarx && *polary) {
       printf(" this is a polar+ spacegroup: origin anywhere in a b plane");
       printf("\n %s %s %s %d \n",
      " number of alternate origin containing planes for spacegroup:",
        namspg, " is:",norigins);
-    } else if( polarx && polarz) {
+    } else if( *polarx && *polarz) {
       printf(" this is a polar+ spacegroup: origin anywhere in a c plane");
       printf("\n %s %s %s %d \n", 
      " number of alternate origin containing planes for spacegroup:",
        namspg, " is:",norigins);
-    } else if( polary && polarz) {
+    } else if( *polary && *polarz) {
       printf(" this is a polar+ spacegroup: origin anywhere in b c plane");
       printf("\n %s %s %s %d \n", 
      " number of alternate origin containing planes for spacegroup:",
        namspg, " is:",norigins);
-    } else if( polarx) {
+    } else if( *polarx) {
       printf(" this is a polar spacegroup: origin is not fixed along a axis");
       printf("\n %s %s %s %d \n", 
      " number of alternate origin containing lines for spacegroup: ",
        namspg, " is:",norigins);
-    } else if( polary) {
+    } else if( *polary) {
       printf(" this is a polar spacegroup: origin is not fixed along b axis");
       printf("\n %s %s %s %d \n", 
      " number of alternate origin containing lines for spacegroup: ",
        namspg, " is:",norigins);
-    } else if( polarz) {
+    } else if( *polarz) {
       printf(" this is a polar spacegroup: origin is not fixed along c axis");
       printf("\n %s %s %s %d \n", 
      " number of alternate origin containing lines for spacegroup: ",

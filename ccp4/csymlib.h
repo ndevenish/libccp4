@@ -232,7 +232,7 @@ int ccp4spg_is_sysabs(const CCP4SPG* sp, const int h, const int k, const int l);
 
 /* ccp4spg_generate_origins translated from Alexei Vagin's CALC_ORIG_PS */
 int ccp4spg_generate_origins(const char *namspg, const int nsym, const float rsym[][4][4],
-			     float origins[][3], int polarx, int polary, int polarz,
+			     float origins[][3], int *polarx, int *polary, int *polarz,
 			     const int iprint);
 
 int range_to_limits(const char *range, float limits[2]);

@@ -501,17 +501,17 @@ FORTRAN_SUBR ( MSYMLB, msymlb,
 		fpstr nampg, int nampg_len, 
                 int *nsymp, int *nsym, float rlsymmmatrx[192][4][4]))
 {
-  char *namspg_cifs;
+  char namspg_cifs;
   int namspg_cifs_len=0;
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: MSYMLB");)
 
   FORTRAN_CALL ( MSYMLB3, msymlb3,
-	       (ist, lspgrp, namspg_cif, namspg_cifs, nampg, nsymp, nsym, 
+	       (ist, lspgrp, namspg_cif, &namspg_cifs, nampg, nsymp, nsym, 
                 rlsymmmatrx, namspg_cif_len, namspg_cifs_len, nampg_len),
-	       (ist, lspgrp, namspg_cif, namspg_cifs, nampg, nsymp, nsym, 
+	       (ist, lspgrp, namspg_cif, &namspg_cifs, nampg, nsymp, nsym, 
                 rlsymmmatrx),
-	       (ist, lspgrp, namspg_cif, namspg_cif_len, namspg_cifs, 
+	       (ist, lspgrp, namspg_cif, namspg_cif_len, &namspg_cifs, 
                 namspg_cifs_len, nampg, nampg_len, nsymp, nsym, rlsymmmatrx));
 
 }
@@ -528,17 +528,17 @@ FORTRAN_SUBR ( MSYMLB2, msymlb2,
 		fpstr nampg, int nampg_len, 
                 int *nsymp, int *nsym, float rlsymmmatrx[192][4][4]))
 {
-  char *namspg_cifs;
+  char namspg_cifs;
   int namspg_cifs_len=0;
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: MSYMLB2");)
 
   FORTRAN_CALL ( MSYMLB3, msymlb3,
-	       (ist, lspgrp, namspg_cif, namspg_cifs, nampg, nsymp, nsym, 
+	       (ist, lspgrp, namspg_cif, &namspg_cifs, nampg, nsymp, nsym, 
                 rlsymmmatrx, namspg_cif_len, namspg_cifs_len, nampg_len),
-	       (ist, lspgrp, namspg_cif, namspg_cifs, nampg, nsymp, nsym, 
+	       (ist, lspgrp, namspg_cif, &namspg_cifs, nampg, nsymp, nsym, 
                 rlsymmmatrx),
-	       (ist, lspgrp, namspg_cif, namspg_cif_len, namspg_cifs, 
+	       (ist, lspgrp, namspg_cif, namspg_cif_len, &namspg_cifs, 
                 namspg_cifs_len, nampg, nampg_len, nsymp, nsym, rlsymmmatrx));
 
 }
@@ -551,18 +551,18 @@ FORTRAN_SUBR ( MSYGET, msyget,
 	       (const int *ist, int *lspgrp, int *nsym, 
                 float rlsymmmatrx[192][4][4]))
 {
-  char *namspg_cif, *namspg_cifs, *nampg;
+  char namspg_cif, namspg_cifs, nampg;
   int namspg_cif_len=0, namspg_cifs_len=0, nampg_len=0, nsymp=0;
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: MSYGET");)
 
   FORTRAN_CALL ( MSYMLB3, msymlb3,
-	       (ist, lspgrp, namspg_cif, namspg_cifs, nampg, &nsymp, nsym, 
+	       (ist, lspgrp, &namspg_cif, &namspg_cifs, &nampg, &nsymp, nsym, 
                 rlsymmmatrx, namspg_cif_len, namspg_cifs_len, nampg_len),
-	       (ist, lspgrp, namspg_cif, namspg_cifs, nampg, &nsymp, nsym, 
+	       (ist, lspgrp, &namspg_cif, &namspg_cifs, &nampg, &nsymp, nsym, 
                 rlsymmmatrx),
-	       (ist, lspgrp, namspg_cif, namspg_cif_len, namspg_cifs, 
-                namspg_cifs_len, nampg, nampg_len, &nsymp, nsym, rlsymmmatrx));
+	       (ist, lspgrp, &namspg_cif, namspg_cif_len, &namspg_cifs, 
+                namspg_cifs_len, &nampg, nampg_len, &nsymp, nsym, rlsymmmatrx));
 
 }
 
@@ -811,7 +811,7 @@ FORTRAN_SUBR ( CALC_ORIG_PS, calc_orig_ps,
       }
     }
   }
-  *norig = ccp4spg_generate_origins(namspg_cif, *nsym, crsym, orig, polarx, polary, polarz, 1);
+  *norig = ccp4spg_generate_origins(namspg_cif, *nsym, crsym, orig, &polarx, &polary, &polarz, 1);
   *lpaxisx = polarx ? FORTRAN_LOGICAL_TRUE : FORTRAN_LOGICAL_FALSE;
   *lpaxisy = polary ? FORTRAN_LOGICAL_TRUE : FORTRAN_LOGICAL_FALSE;
   *lpaxisz = polarz ? FORTRAN_LOGICAL_TRUE : FORTRAN_LOGICAL_FALSE;
