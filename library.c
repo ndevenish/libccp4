@@ -849,8 +849,8 @@ int *iunit, *nitems, *result;
   i = fread (buffer, (size_t) file_bytes_per_item[*iunit], 
                 (size_t) *nitems, file_stream[*iunit]);
   if (i != *nitems) {
-    if (i == 0) *result = -1;   /* fixme: should use feof */
-    else *result = i;
+    if (feof (file_stream[*iunit])) *result = -1;
+    else *result = i*file_bytes_per_item[*iunit];
     return;
   }
   *result = 0;
