@@ -1383,7 +1383,7 @@ int  *iunit, *istat;
   if (foreign != NULL) {
     if (strcmp (foreign, "BEIEEE") == 0) {
       mtstring[0] = DFNTF_BEIEEE | (DFNTF_BEIEEE << 4);
-      mtstring[1] = 1 | (DFNTI_IBO << 4); }
+      mtstring[1] = 1 | (DFNTI_MBO << 4); }
     else if (strcmp (foreign, "LEIEEE") == 0) {
       mtstring[0] = DFNTF_LEIEEE | (DFNTF_LEIEEE << 4);
       mtstring[1] = 1 | (DFNTI_IBO << 4); }
