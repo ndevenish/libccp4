@@ -3,6 +3,8 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
+C     $Id$
+C     
 C A set of Fortran subroutines to perform random access I/O on various
 C data items (including bytes). Uses the C functions fopen, fclose,
 C fread, fwrite, fseek, ftell, etc - by calling routines in library.c
@@ -21,6 +23,8 @@ C  CALL QSKIP   (IUNIT,LRECL)                - Skip 1 record
 C  CALL QQINQ   (IUNIT,LFILNM,FILNAM,LENGTH) - Get filename and length
 C  CALL QLOCATE (IUNIT,LOCATE)               - Get position in file
 C  CALL QOPEN   (IUNIT,FILNAM,ATBUTE)        - qqopen, for compatability
+C  CALL QRARCH (IUNIT, IOFFSET)              - set up number conversion
+C  CALL QWARCH (IUNIT, IOFFSET)              - write conversion info
 C
 C  QSEEK calculates the location as (IREC - 1)CLRECL + IEL. Note: as in
 C        Fortran, addressing begins at 1 for both record & el
@@ -363,3 +367,42 @@ C     ..
 C
       CALL QQOPEN(IUNIT,LOGNAM,ISTAT)
       END
+C======================================================================
+C
+C QRARCH - set up number conversion
+C
+C Usage:  CALL QRARCH   (IUNIT, IOFFSET)
+C         INTEGER       IUNIT, IOFFSET
+C
+C Input:  IUNIT         unit number number to assign to file
+C         IOFFSET       offset in words at which to find architecture
+C                       information
+C
+C Output: None.
+C
+C     Reads the `machine stamp' giving information about the
+C     architecture with which the file was written and arranges to
+C     translate a foreign format to native with QREAD, dependent on the
+C     current diskio mode.
+C
+C======================================================================
+C
+C======================================================================
+C
+C QWARCH - set up number conversion
+C
+C Usage:  CALL QWARCH   (IUNIT, IOFFSET)
+C         INTEGER       IUNIT, IOFFSET
+C
+C Input:  IUNIT         unit number number to assign to file
+C         IOFFSET       offset in words at which to write architecture
+C                       information
+C
+C Output: None.
+C
+C     Writes the `machine stamp' giving information about the
+C     architecture with which the file was written and which is used by
+C     QRARCH
+C
+C======================================================================
+C
