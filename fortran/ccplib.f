@@ -1,9 +1,9 @@
-C
+C_BEGIN_CCPLIB
 C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
-C   These are supposedly-machine-independent low-level routines.
+C     These are supposedly-machine-independent low-level routines.
 C     They're actually machine-dependent at least insofar as some
 C     contain non-standard code, but they do compile with the compilers
 C     tried on unix as well as VMS.
@@ -13,7 +13,7 @@ C     amalgamate ccppsf and fdir/fext/froot.  also add tests of these
 C     routines to testlib.
 C
 C     ccplib.for,v 1.7 1992/09/14 18:47:13 fx Exp
-C     
+C
 C      CCFILL    Set specified number of elements of byte array
 C      CCPASZ    set array size suitable for current working set
 C      CCPBYI    Copy array of unsigned (or signed) bytes into integer array
@@ -23,36 +23,35 @@ C      CCPDEX    Periodicity reduction of 1024 (for PROLSQ)
 C      CCPDPN    more friendly CCPOPN
 C      CCPERR    Report error or normal termination and stop
 C      CCPEXS    test if file exists
-C      CCPFIL    Return file name for an opened file
+C      CCPFYP    Set up environment & parse command line arguments
 C      CCPGI2    Get unsigned integer*2 value from 0 to 65535 from N'th
-C                unsigned integer*2 element of array. 
+C                unsigned integer*2 element of array.
 C      CCPGTB    Get unsigned byte value from 0 to 255 from N'th byte of
 C                array.
 C      CCPI2I    Copy an array of INTEGER*2 elements into an integer array
-C      CCPII2    Copy array of integers into array of INTEGER*2 elements. 
-C      CCPIBY    Copy array of integers into array of bytes. 
+C      CCPIBY    Copy array of integers into array of bytes.
+C      CCPII2    Copy array of integers into array of INTEGER*2 elements.
+C      CCPLWC    Convert a string to lower case
 C      CCPMDE    If byte handling available return nos. of bytes for map
 C                modes
 C      CCPMVB    Move bytes from one non-character array to another if
 C                byte handling is available
 C      CCPMVI    Move words from one non-character array to another
-C                using a simple loop 
+C                using a simple loop
 C      CCPONL    See if program is being run interactively
-C      CCPOVP    See if overprinting is available
-C      CCPPAG    Set paging parameters if available
 C      CCPPSF    Parse file name into components
-c      CCPRCS    Like CCPVRS but use RCS-format date string
-C      CCPRVR    Read variable length record of unknown length
+C      CCPRCS    Like CCPVRS but use RCS-format date string
+C      CSETNV    Associate logical name with file name
+C      CCPPAG    Set paging parameters if available
 C      CCPSI2    Set integer value from 0 to 65535 into the N'th
-C                unsigned integer*2 element of an array. 
-C      CCPSPW    Spawns sub-process
+C                unsigned integer*2 element of an array.
 C      CCPSTB    Set integer value from 0 to 255 into N'th byte of array.
+C      CCPSPW    Spawns sub-process
 C      CCPSUM    Sum the elements of an array
 C      CCPTIM    Get CPU and Elapsed times
 C      CCPTOI    Convert n'th byte or I*2 in a non-character array to an
 C                integer
 C      CCPUFL    Supress underflow messages
-C      CCPULI    See if underline option is available
 C      CCPUPC    Convert a string to upper case
 C      CCPVRS    Print program version number and date header
 C      CCPZBI    Sets an array of bytes to zero
@@ -60,26 +59,31 @@ C      CCPZI     Set 'n' words of an array to zero using a simple loop
 C      FDIR      Returns the directory part of a file name
 C      FEXTN     Returns the extension of a file name
 C      FROOT     Returns the root of a file name
-C      LENSTR    length of string to last non-space
 C      LITEND    determine endianness
+C      LENSTR    length of string to last non-space
+C      LUNSTI    Get logical unit number for input
+C      LUNSTO    Get logical unit number for output
 C      NBITST    Return the (unsigned) integer value held within a bit
-C                field in a word 
+C                field in a word
 C      NOCRLF    write line supressing cr/lf to standard output
 C      QPRINT    write debug messages
 C      STBITS    Set a bit field within a word to a given (unsigned)
 C                integer value
-CC
+C_END_CCPLIB
+C
 C
 C
+C_BEGIN_CCFILL
       SUBROUTINE CCFILL(ARR1,SCAL,NTIMES)
 C     ===================================
 C
-C PARAMETERS
+C Arguments:
 C ==========
 C
-C        ARR1 (I/O) ARRAY TO WHICH BYTES ARE TO BE COPIED
-C        SCAL (I)   byte value to be copied into ARR1
-C      NTIMES (I)   THE NUMBER OF BYTES TO BE COPIED
+C        ARR1 (O)   BYTE ARRAY (*): WHERE BYTES ARE TO BE COPIED
+C        SCAL (I)   BYTE: value to be copied into ARR1
+C      NTIMES (I)   INTEGER: NUMBER OF BYTES TO BE COPIED
+C_END_CCFILL
 C
 C     .. Scalar Arguments ..
       INTEGER NTIMES
@@ -99,6 +103,7 @@ C
 C
 C
 C
+C_BEGIN_CCPASZ
       SUBROUTINE CCPASZ(A,JSIZE,MINSIZ)
 C     =================================
 C
@@ -107,16 +112,26 @@ C
 C---- On entry, JSIZE is dimension of array A
 C               MINSIZ is the minimum size
 C
-C---- On exit:  JSIZE is the max dimension of A for an array which 
-C               will be held in memory to reduce page faulting. 
+C---- On exit:  JSIZE is the max dimension of A for an array which
+C               will be held in memory to reduce page faulting.
 C               If this info. is
 C               not available just return JSIZE as input.
 C
 C----  On the Vax set JSIZE as dimension of array A set to the working
 C      set size less a guessed program size, to minimise page faults in
-C      using the array. Only the working set quota is used 
+C      using the array. Only the working set quota is used
 C      (not the extent)
 C      MINSIZ  <= JSIZE <= initial JSIZE
+C
+C **** NOT IMPLEMENTED ****
+C
+C Arguments:
+C ==========
+C
+C       A (I)   INTEGER or REAL ARRAY(*)
+C   JSIZE (I/O) INTEGER
+C  MINSIZ (I)   INTEGER
+C_END_CCPASZ
 C
 C     .. Scalar Arguments ..
       INTEGER JSIZE,MINSIZ
@@ -131,19 +146,24 @@ C
 C SUBROUTINE 'CCPBYI'
 C ===================
 C
+C_BEGIN_CCPBYI
+      SUBROUTINE CCPBYI(IA,IBYT,NB)
+C     =============================
+C
 C COPY AN ARRAY OF UNSIGNED (OR SIGNED) BYTES INTO AN INTEGER ARRAY
 C
 C (MUST BE IMPLEMENTED IF CCPBYT FUNCTION RETURNS .TRUE.)
 C [added for LAUE]
-      SUBROUTINE CCPBYI(IA,IBYT,NB)
 C
-C PARAMETERS
+C Arguments:
+C ==========
 C
-C      IA (O)   ARRAY TO RETURN INTEGER VALUES
-C    IBYT (I)   ARRAY HOLDING BYTE DATA (MAY BE AN INTEGER ARRAY FOR EXAMPLE
-C               WITH DATA PACKED INTO ADJACANT BYTES
-C      NB (I)   IF >0, THE NUMBER OF UNSIGNED BYTES TO BE COPIED 
-C               IF <0, -THE NUMBER OF SIGNED BYTES TO BE COPIED
+C      IA (O)   INTEGER ARRAY(*): TO RETURN INTEGER VALUES
+C    IBYT (I)   BYTE ARRAY(*): DATA (MAY BE AN INTEGER ARRAY FOR EXAMPLE
+C               WITH DATA PACKED INTO ADJACENT BYTES
+C      NB (I)   INTEGER: IF >0, THE NUMBER OF UNSIGNED BYTES TO BE COPIED
+C                        IF <0, -THE NUMBER OF SIGNED BYTES TO BE COPIED
+C_END_CCPBYI
 C
 C SPECIFICATION STATEMENTS
 C ------------------------
@@ -187,6 +207,7 @@ C
 C
 C
 C
+C_BEGIN_CCPBYT
       LOGICAL FUNCTION CCPBYT(NBW)
 C     ============================
 C
@@ -194,15 +215,16 @@ C---- This function indicates whether byte handling is available or not.
 C      if a value of .true. is returned then the subroutines ccpmde and
 C      ccpmvb must be fully implemented.
 C
-C PARAMETERS
+C Arguments:
 C ==========
 C
-C         NBW (O)   RETURNS THE NUMBER OF BYTES PER WORD OR A VALUE
+C         NBW (O)   INTEGER: RETURNS THE NUMBER OF BYTES PER WORD OR A VALUE
 C                   OF 1 IF NO BYTE HANDLING IS AVAILABLE.
 C
 C  RETURNS   CCPBYT  = .TRUE.  BYTE HANDLING AND ASSOCIATED CCPLIB
 C                              ROUTINES AVAILABLE.
 C                    = .FALSE. NO BYTE HANDLING AVAILABLE.
+C_END_CCPBYT
 C
 C     .. Scalar Arguments ..
       INTEGER NBW
@@ -213,16 +235,18 @@ C     ..
 C
 C
 C
+C_BEGIN_CCPDAT
       SUBROUTINE CCPDAT(CALDAT)
 C     =========================
 C
 C---- This subroutine returns the date if available
 C
-C PARAMETERS
+C Arguments:
 C ==========
 C
-C      CALDAT (O)   CHARACTER*8 VARIABLE RETURNING DATE AS DD/MM/YY
+C      CALDAT (O)   CHARACTER*8: DATE AS DD/MM/YY
 C                   (RETURNED AS A BLANK STRING IF NOT AVAILABLE)
+C_END_CCPDAT
 C
 C SPECIFICATION STATEMENTS
 C ------------------------
@@ -250,21 +274,22 @@ C
 C
 C
 C
+C_BEGIN_CCPDEX
       SUBROUTINE CCPDEX(INDX,N)
-C     ========================
+C     =========================
 C
 C---- This subroutine performs a periodicity reduction for a period
 C     of 1024 for the elements of an array. written particularly for
-C     'prolsq' to allow for use of the 'and' function on the cray or 
-C     'moveb' on the m28oh(iap). 
+C     'prolsq' to allow for use of the 'and' function on the cray or
+C     'moveb' on the m28oh(iap).
 C      These are much faster than the mod function used in
 C      the standard fortran77 version.
-c
-C PARAMETERS
+C
+C Arguments:
 C ==========
 C
-C        INDX (I/O) ARRAY HOLDING NUMBERS FOR PERIODICITY REDUCTION
-C           N (I)   NO. OF ELEMENTS IN INDX
+C        INDX (I/O) INTEGER ARRAY(*): NUMBERS FOR PERIODICITY REDUCTION
+C           N (I)   INTEGER: NO. OF ELEMENTS IN INDX
 C
 C EXAMPLE OF FUNCTIONS:
 C
@@ -272,6 +297,7 @@ C FORTRAN77     INDX(I)=MOD(INDX(I),1024)+1
 C CRAY-1S       INDX(I)=AND(INDX(I),1023)+1
 C M280H(IAP)    CALL MOVEB(INDX(I),1,0,1,22)
 C               INDX(I)=INDX(I)+1
+C_END_CCPDEX
 C
 C SPECIFICATION STATEMENTS AND CODE
 C
@@ -292,36 +318,45 @@ C     ..
    10 CONTINUE
       END
 C
+C_BEGIN_CCPDPN
       SUBROUTINE CCPDPN(IUN,LOGNAM,STATUS,TYPE,LREC,IFAIL)
 C     ====================================================
 C
 C---- Calls CCPOPN to open a file, but with mnemonic arguments
 C
-C PARAMETERS
+C Arguments:
 C ==========
 C
-C         IUN (I)   UNIT NUMBER
-C      LOGNAM (I)   LOGICAL FILE NAME
-C      STATUS (I)   FILE STATUS FLAG  'UNKNOWN'
-C                    CHARACTER*(*)    'SCRATCH'
+C         IUN (I)   INTEGER: UNIT NUMBER
+C
+C      LOGNAM (I)   CHARACTER*(*): LOGICAL FILE NAME
+C
+C      STATUS (I)   CHARACTER*(*): FILE STATUS FLAG:
+C                                     'UNKNOWN'
+C                                     'SCRATCH'
 C                                     'OLD'
 C                                     'NEW'
 C                                     'READONLY'
 C                                     'PRINTER'
-C        TYPE (I)   FILE TYPE FLAG ='F', 'SEQUENTIAL' 'FORMATTED'
+C
+C        TYPE (I)   CHARACTER*(*): FILE TYPE FLAG:
+C                                  ='F', 'SEQUENTIAL' 'FORMATTED'
 C                                  ='U', 'SEQUENTIAL' 'UNFORMATTED'
 C                                  ='DF', 'DIRECT'     'FORMATTED'
 C                                  ='DU', 'DIRECT'     'UNFORMATTED'
 C     [STATUS and TYPE are case-insensitive]
-C        LREC (I)   RECORD LENGTH FOR DIRECT ACCESS FILE (NO. OF
+C
+C        LREC (I)   INTEGER: RECORD LENGTH FOR DIRECT ACCESS FILE (NO. OF
 C                   CHARACTERS FOR A FORMATTED FILE OR WORDS FOR
 C                   AN UNFORMATTED FILE). NOT RELEVANT FOR A SEQUENTIAL
 C                   FILE
-C       IFAIL (I/O) ON INPUT:     =0, STOP ON OPEN FAILURE
-C                                 =1, CONTINUE AFTER OPEN FAILURE
-C                                      (only on file not found)
-C                   ON OUTPUT:    UNCHANGED IF FILE OPEN OK
-C                                 =-1, ERROR IN OPENING FILE
+C
+C       IFAIL (I/O) INTEGER: ON INPUT     =0, STOP ON OPEN FAILURE
+C                                         =1, CONTINUE AFTER OPEN FAILURE
+C                                             (only on file not found)
+C                            ON OUTPUT    UNCHANGED IF FILE OPEN OK
+C                                         =-1, ERROR IN OPENING FILE
+C_END_CCPDPN
 C
 C     .. Scalar Arguments ..
       INTEGER IFAIL,IUN,LREC
@@ -365,19 +400,23 @@ C
       END
 C
 C
-C  
+C
 C     ===============================
+C_BEGIN_CCPERR
       SUBROUTINE CCPERR(ISTAT,ERRSTR)
 C     ===============================
-C
 C
 C     Report error or normal termination and stop.  Also reports latest
 C     system error (at least under un*x)
 C
-C     Parameters:
-C     ISTAT (I)   exit status (0 for normal termination)
-C     ERRST (I)   message
-C     
+C     Arguments:
+C     ==========
+C
+C     ISTAT (I)   INTEGER: exit status (0 for normal termination,
+C                 1 for fatal error)
+C     ERRST (I)   CHARACTER*(*): message
+C_END_CCPERR
+C
       CHARACTER ERRSTR*(*), ERRBUF*100
       INTEGER ISTAT
       EXTERNAL VAXVMS
@@ -393,12 +432,24 @@ C
       ENDIF
       CALL QPRINT(0,ERRSTR)
       CALL GETELAPSED
-C     avoid VMS `Message number 00000000'
-      IF ((.NOT. VAXVMS()) .OR. ISTAT.NE.0) CALL EXIT(ISTAT)
+C     (avoid VMS `Message number 00000000')
+      IF (VAXVMS()) THEN
+        IF (ISTAT.EQ.0) THEN
+C         success
+          CALL EXIT(1)
+        ELSE
+C         FOR$_NOTFORSPE, "Not a FORTRAN-specific error"
+          CALL EXIT(1605644)
+        ENDIF
+      ELSE
+        CALL EXIT(ISTAT)
+      ENDIF
+      STOP
       END
 C
 C
 C
+C_BEGIN_CCPEXS
       LOGICAL FUNCTION CCPEXS(NAME)
 C     =============================
 C
@@ -406,6 +457,12 @@ C---- Tests if file assigned to logical name NAME exists
 C
 C Returns CCPEXS  .true.  if file exists
 C                 .false. if file does not exist
+C
+C Arguments:
+C ==========
+C
+C    NAME (I)   CHARACTER*(*): Logical name
+C_END_CCPEXS
 C
 C     .. Scalar Arguments ..
       CHARACTER NAME* (*)
@@ -423,23 +480,13 @@ C
 C
 C
 C     =================
+C_BEGIN_CCPFYP
       SUBROUTINE CCPFYP
 C     =================
 C
 C---- Used to set up the environment in which the program runs
 C     and then parse the command line arguments.
 C
-C	My changes to CCPFYP, although they fixed the bugs, do not
-C work quite as Peter intended (or as the documentation says), because
-C if the *.def filenames are given on the command line it looks in the
-C current directory, rather than the home directory.  It would be better
-C if at least the code and documentation were consistent on this point.
-C The following version of CCPFYP fixes this (see also explanatory
-C comments in code):
-C
-C	Ian Tickle
-C
-C==============================================================================
 C
 C---- The logic for locating the "environ.def" and "default.def" files
 C     is as follows:
@@ -458,6 +505,10 @@ C       Else if the SYS$LOGIN or HOME variable is defined then
 C         Use "SYS$LOGIN:filename" or "$HOME/filename".
 C       Else
 C         Use the filename as is (in current directory).
+C
+C Arguments:  NONE
+C ==========
+C_END_CCPFYP
 C
 C==============================================================================
 C
@@ -584,7 +635,7 @@ C
             IF (VAX) THEN
               FILNAM = 'SYS$LOGIN:'
               II = LENSTR(FILNAM)
-	    ELSE
+            ELSE
               II = LENSTR(FILNAM)
               IF (FILNAM(II:II).NE.'/') THEN
                 II = II + 1
@@ -664,7 +715,7 @@ C
             IF (VAX) THEN
               FILNAM = 'SYS$LOGIN:'
               II = LENSTR(FILNAM)
-	    ELSE
+            ELSE
               II = LENSTR(FILNAM)
               IF (FILNAM(II:II).NE.'/') THEN
                 II = II + 1
@@ -736,20 +787,25 @@ C
 C SUBROUTINE 'CCPGI2'
 C ===================
 C
+C_BEGIN_CCPGI2
+      SUBROUTINE CCPGI2(IVAL,IA,N)
+C     ============================
+C
 C GET AN UNSIGNED INTEGER*2 VALUE FROM 0 TO 65535 FROM THE N'TH unsigned
 C INTEGER*2 ELEMENT OF AN INTEGER (OR OTHER) ARRAY.
 C
 C (MUST BE IMPLEMENTED IF CCPBYT FUNCTION RETURNS .TRUE.)
 C [added for LAUE]
-      SUBROUTINE CCPGI2(IVAL,IA,N)
 C
-C PARAMETERS
+C Arguments:
+C ==========
 C
-C    IVAL (O)   THE RETURNED INTEGER VALUE FROM 0 TO 65535
-C      IA (I/O) THE ARRAY FROM WHICH THE UNSIGNED INTEGER*2 VALUE IS TO BE 
-C               RETRIEVED
-C       N (I)   THE POSITION IN 'IA' WHERE THE UNSIGNED INTEGER*2 VALUE IS TO 
-C               BE RETRIEVED
+C    IVAL (O)   INTEGER: THE RETURNED VALUE FROM 0 TO 65535
+C      IA (I/O) INTEGER*2 ARRAY(*): FROM WHICH THE UNSIGNED INTEGER*2 VALUE
+C               IS TO BE RETRIEVED
+C       N (I)   INTEGER: POSITION IN 'IA' WHERE THE UNSIGNED INTEGER*2 VALUE
+C               IS TO BE RETRIEVED
+C_END_CCPGI2
 C
 C SPECIFICATION STATEMENTS
 C ------------------------
@@ -784,18 +840,24 @@ C
 C SUBROUTINE 'CCPGTB'
 C ===================
 C
+C_BEGIN_CCPGTB
+      SUBROUTINE CCPGTB(IVAL,IA,N)
+C     ============================
+C
 C GET AN UNSIGNED BYTE VALUE FROM 0 TO 255 FROM THE N'TH BYTE OF AN INTEGER
 C (OR OTHER) ARRAY.
 C
 C (MUST BE IMPLEMENTED IF CCPBYT FUNCTION RETURNS .TRUE.)
 C [for LAUE]
-      SUBROUTINE CCPGTB(IVAL,IA,N)
 C
-C PARAMETERS
+C Arguments:
+C ==========
 C
-C    IVAL (O)   THE RETURNED INTEGER VALUE FROM 0 TO 255
-C      IA (I/O) THE ARRAY FROM WHICH THE BYTE VALUE IS TO BE RETRIEVED
-C       N (I)   THE POSITION IN 'IA' WHERE THE BYTE VALUE IS TO BE RETRIEVED
+C    IVAL (O)   INTEGER: THE RETURNED VALUE FROM 0 TO 255
+C      IA (I/O) BYTE ARRAY(*): FROM WHICH THE BYTE VALUE IS TO BE RETRIEVED
+C       N (I)   INTEGER: THE POSITION IN 'IA' WHERE THE BYTE VALUE IS
+C               TO BE RETRIEVED
+C_END_CCPGTB
 C
 C SPECIFICATION STATEMENTS
 C ------------------------
@@ -829,23 +891,27 @@ C
 C
 C SUBROUTINE 'CCPI2I'
 C ===================
+C_BEGIN_CCPI2I
+      SUBROUTINE CCPI2I(IA,I2,NE,SIGNED,SWAPB)
+C     ========================================
 C
 C Copy an array of INTEGER*2 elements into an integer array
 C
 C (Must be implemented if ccpbyt function returns .TRUE.)
 C [for LAUE]
-      SUBROUTINE CCPI2I(IA,I2,NE,SIGNED,SWAPB)
 C
-C Parameters
+C Arguments:
+C ==========
 C
-C      IA (O)   Array to return INTEGER values
-C      I2 (I)   Array holding INTEGER*2 data (may be an INTEGER array for 
+C      IA (O)   INTEGER Array(*): to return values
+C      I2 (I)   INTEGER*2 Array(*): holding data (may be an INTEGER array for
 C               example with data packed into adjacant INTEGER*2 elements
-C      NE (I)   The number of elements to be copied
-C  SIGNED (I)   Logical flag =.TRUE.  Copy as signed integer*2 values
-C                            =.FALSE. Copy as unsigned integer*2 values
-C   SWAPB (I)   Logical flag =.TRUE.  Swap bytes in the integer*2 elements
-C                            =.FALSE. Do not swap bytes
+C      NE (I)   INTEGER: The number of elements to be copied
+C  SIGNED (I)   LOGICAL: =.TRUE.  Copy as signed integer*2 values
+C                        =.FALSE. Copy as unsigned integer*2 values
+C   SWAPB (I)   LOGICAL: =.TRUE.  Swap bytes in the integer*2 elements
+C                        =.FALSE. Do not swap bytes
+C_END_CCPI2I
 C
 C====== Specification statements
 C
@@ -901,20 +967,27 @@ C
 C SUBROUTINE 'CCPIBY'
 C ===================
 C
-C COPY AN ARRAY OF INTEGERS INTO AN ARRAY OF UNSIGNED (OR UNSIGNED) BYTES. 
+C_BEGIN_CCPIBY
+      SUBROUTINE CCPIBY(IBYT,IA,NB)
+C     =============================
+C
+C COPY AN ARRAY OF INTEGERS INTO AN ARRAY OF UNSIGNED (OR UNSIGNED) BYTES.
 C NOTE: NO OVERFLOW CHECKING IS DONE.
 C
 C (MUST BE IMPLEMENTED IF CCPBYT FUNCTION RETURNS .TRUE.)
 C [for LAUE]
-      SUBROUTINE CCPIBY(IBYT,IA,NB)
 C
-C PARAMETERS
+C Arguments:
+C ==========
 C
-C    IBYT (O)   ARRAY RETURNING BYTE DATA (MAY BE AN INTEGER ARRAY FOR EXAMPLE
-C               WITH DATA PACKED INTO ADJACANT BYTES
-C      IA (I)   ARRAY HOLDING INTEGER VALUES
-C      NB (I)   IF >0, THE NUMBER OF ELEMENTS TO BE COPIED TO UNSIGNED BYTES
-C               IF <0, -THE NUMBER OF ELEMENTS TO BE COPIED TO SIGNED BYTES
+C    IBYT (O)   BYTE ARRAY(*) RETURNING DATA (MAY BE AN INTEGER ARRAY
+C               FOR EXAMPLE WITH DATA PACKED INTO ADJACENT BYTES)
+C      IA (I)   INTEGER ARRAY(*): Input values
+C      NB (I)   INTEGER: IF >0, THE NUMBER OF ELEMENTS TO BE COPIED TO
+C                        UNSIGNED BYTES
+C                        IF <0, -THE NUMBER OF ELEMENTS TO BE COPIED TO
+C                        SIGNED BYTES
+C_END_CCPIBY
 C
 C SPECIFICATION STATEMENTS
 C ------------------------
@@ -960,23 +1033,28 @@ C
 C SUBROUTINE 'CCPII2'
 C ===================
 C
-C Copy an array of integers into an array of INTEGER*2 elements. 
+C_BEGIN_CCPII2
+      SUBROUTINE CCPII2(I2,IA,NE,SIGNED,SWAPB)
+C     ========================================
+C
+C Copy an array of integers into an array of INTEGER*2 elements.
 C NOTE: No overflow checking is done.
 C
 C (Must be implemented if ccpbyt function returns .TRUE.)
 C [for LAUE]
-      SUBROUTINE CCPII2(I2,IA,NE,SIGNED,SWAPB)
 C
-C Parameters
+C Arguments:
+C ==========
 C
-C      I2 (O)   Array returning INTEGER*2 data (may be an INTEGER array for 
-C               example with data packed into adjacant INTEGER*2 elements
-C      IA (I)   Array holding INTEGER values
-C      NE (I)   The number of elements to be copied
-C  SIGNED (I)   Logical flag =.TRUE.  Copy as signed integer*2 values
-C                            =.FALSE. Copy as unsigned integer*2 values
-C   SWAPB (I)   Logical flag =.TRUE.  Swap bytes in the integer*2 elements
-C                            =.FALSE. Do not swap bytes
+C      I2 (O)   INTEGER*2 ARRAY(*): returning data (may be an INTEGER array for
+C               example with data packed into adjacent INTEGER*2 elements)
+C      IA (I)   INTEGER ARRAY(*): holding input values
+C      NE (I)   INTEGER: The number of elements to be copied
+C  SIGNED (I)   LOGICAL: =.TRUE.  Copy as signed integer*2 values
+C                        =.FALSE. Copy as unsigned integer*2 values
+C   SWAPB (I)   LOGICAL: =.TRUE.  Swap bytes in the integer*2 elements
+C                        =.FALSE. Do not swap bytes
+C_END_CCPII2
 C
 C====== Specification statements
 C
@@ -1028,10 +1106,17 @@ C
 C
 C
 C
+C_BEGIN_CCPLWC
       SUBROUTINE CCPLWC(STRING)
-C     ========================
+C     =========================
 C
 C---- convert a text string to lower case in situ
+C
+C Arguments:
+C ==========
+C
+C  STRING (I/O) CHARACTER*(*): string to convert
+C_END_CCPLWC
 C
 C     .. Scalar Arguments ..
       CHARACTER STRING* (*)
@@ -1060,6 +1145,7 @@ C
 C
 C
 C
+C_BEGIN_CCPMDE
       SUBROUTINE CCPMDE(MODE,NBYT)
 C     ============================
 C
@@ -1070,15 +1156,18 @@ C
 C---- If byte handling is not available, then the number of words per
 C     item is returned with zeros for the undefined items
 C
-C PARAMETERS
-C =========
+C Arguments:
+C ==========
 C
-C        MODE (I)   MODE = 0,   BYTES
+C        MODE (I)   INTEGER:
+C                   MODE = 0,   BYTES
 C                        = 1,   SHORT (2 BYTE) INTEGERS
 C                        = 2,   REAL/INTEGER (SINGLE WORD)
 C                        = 3,   SHORT COMPLEX (2 * 2 BYTE INTEGERS)
 C                        = 4,   COMPLEX (TWO WORDS)
-C        NBYT (O)        > 0,   THE NUMBER OF BYTES FOR THE ITEM  IF
+C
+C        NBYT (O)   INTEGER:
+C                        > 0,   THE NUMBER OF BYTES FOR THE ITEM  IF
 C                               CCPBYT RETURNS .TRUE. OR THE  NUMBER
 C                               OF WORDS IF CCPBYT RETURNS .FALSE.
 C                        = 0,   NO VALUE AVAILABLE FOR THIS MODE
@@ -1087,6 +1176,7 @@ C
 C  TYPICAL VALUES:  1  2  4  4  8    IF BYTE HANDLING AVAILABLE WITH 4
 C                                    BYTES/WORD
 C                   0  0  1  0  2    IF BYTE HANDLING UNAVAILABLE
+C_END_CCPMDE
 C
 C SPECIFICATION STATEMENTS
 C ------------------------
@@ -1109,23 +1199,25 @@ C
 C
 C
 C
+C_BEGIN_CCPMVB
       SUBROUTINE CCPMVB(ARR1,I1,ARR2,I2,NTOMOV)
-C     ========================================
+C     =========================================
 C
-C---- This subroutine moves bytes from one non-character array 
-C     to another. I must be implemented if ccpbyt returns .true. 
+C---- This subroutine moves bytes from one non-character array
+C     to another. I must be implemented if ccpbyt returns .true.
 C     but will otherwise be a dummy routine.
 C
-C PARAMETERS
+C Arguments:
 C ==========
 C
-C        ARR1 (I/O) ARRAY TO WHICH BYTES ARE TO BE COPIED
-C          I1 (I)   THE START BYTE NUMBER IN ARR1 WHERE THE BYTES ARE
+C        ARR1 (I/O) BYTE ARRAY(*): TO WHICH BYTES ARE TO BE COPIED
+C          I1 (I)   INTEGER: THE START BYTE NUMBER IN ARR1 WHERE THE BYTES ARE
 C                   TO BE COPIED
-C        ARR2 (I)   ARRAY FROM WHICH BYTES ARE TO BE COPIED
+C        ARR2 (I)   BYTE ARRAY(*): FROM WHICH BYTES ARE TO BE COPIED
 C          I2 (I)   THE START BYTE NUMBER IN ARR2 FROM WHICH THE BYTES
 C                   ARE TO BE COPIED
-C      NTOMOV (I)   THE NUMBER OF BYTES TO BE COPIED
+C      NTOMOV (I)   INTEGER: THE NUMBER OF BYTES TO BE COPIED
+C_END_CCPMVB
 C
 C     .. Scalar Arguments ..
       INTEGER I1,I2,NTOMOV
@@ -1147,10 +1239,19 @@ C
       END
 C
 C
+C_BEGIN_CCPMVI
       SUBROUTINE CCPMVI (ARR1,ARR2,NUM)
 C     =================================
 C
 C  This routine assigns the first NUM words of ARR2 to ARR1
+C
+C Arguments:
+C ==========
+C
+C    ARR1 (O)   INTEGER or REAL ARRAY(*)
+C    ARR2 (O)   INTEGER or REAL ARRAY(*)
+C     NUM (I)   Number of words to copy
+C_END_CCPMVI
 C
 C  Arguments
       INTEGER NUM
@@ -1160,23 +1261,25 @@ C
 C
       DO 10 J=1,NUM
    10 ARR1(J)=ARR2(J)
-      END 
+      END
 C
 C
 C
+C_BEGIN_CCPONL
       LOGICAL FUNCTION CCPONL(IDUM)
-C     ============================
+C     =============================
 C
 C---- This function determines whether a program is being run on-line
 C     if this information is available
 C
-C PARAMETERS
+C Arguments:
 C ==========
 C
-C        IDUM (I)   DUMMY PARAMETER
+C        IDUM (D)   DUMMY
 C
 C RETURNS .TRUE.  IF PROGRAM IS BEING RUN ON-LINE
 C RETURNS .FALSE. IF BATCH MODE OR STATUS UNKNOWN
+C_END_CCPONL
 C
 C     .. Scalar Arguments ..
       INTEGER IDUM
@@ -1203,28 +1306,36 @@ C
 C SUBROUTINE 'CCPPSF'
 C ===================
 C
+C_BEGIN_CCPPSF
+      SUBROUTINE CCPPSF(FILNAM,PATH,NAME,TYPE,VERS)
+C     =============================================
+C
 C PARSE FILE NAME INTO COMPONENTS
 C
 C NOTE: THE ROUTINE  CONTAINS MACHINE DEPENDENT CODE
 C
-      SUBROUTINE CCPPSF(FILNAM,PATH,NAME,TYPE,VERS)
 C
-C PARAMETERS
+C Arguments:
+C ==========
 C
-C      FILNAM (I)   FILE NAME STRING (NO EMBEDDED BLANKS ASSUMED)
-C        PATH (O)   CHARACTER STRING RETURNING PATH OR, FOR VAX VMS,
+C      FILNAM (I)   CHARACTER*(*): FILE NAME STRING (NO EMBEDDED BLANKS ASSUMED)
+C
+C        PATH (O)   CHARACTER*(*): STRING RETURNING PATH OR, FOR VAX VMS,
 C                   THE PART OF THE FILE SPECIFICATION UP TO THE
 C                   END OF THE DIRECTORY SPECIFICATION (BLANK IF NONE)
 C                   (INCLUDES TERMINATING ] or : or /)
-C        NAME (O)   CHARACTER STRING RETURNING NAME.  (BLANK IF NONE)
-C        TYPE (O)   CHARACTER STRING RETURNING FILE TYPE/EXTENSION
+C
+C        NAME (O)   CHARACTER*(*): STRING RETURNING NAME.  (BLANK IF NONE)
+C
+C        TYPE (O)   CHARACTER*(*): STRING RETURNING FILE TYPE/EXTENSION
 C                   (BLANK IF NONE)
-C        VERS (O)   CHARACTER STRING RETURNING THE VERSION.
+C
+C        VERS (O)   CHARACTER*(*): STRING RETURNING THE VERSION.
 C                   (BLANK IF NONE)
 C
 C AFTER REMOVAL OF THE PATH PART OF THE STRING, IF PRESENT, THE VERSION ON
-C A VAX IS TAKEN AS ANY TEXT FOLLOWING A SEMICOLON IN THE STRING OR, IF NO 
-C SEMICOLON IS PRESENT, ANY TEXT FOLLOWING THE LAST DOT IN THE STRING 
+C A VAX IS TAKEN AS ANY TEXT FOLLOWING A SEMICOLON IN THE STRING OR, IF NO
+C SEMICOLON IS PRESENT, ANY TEXT FOLLOWING THE LAST DOT IN THE STRING
 C PROVIDED THAT AT LEAST TWO DOTS ARE PRESENT. ON A UNIX SYSTEM THE VERSION
 C WILL ALWAYS BE RETURNED AS A BLANK.
 C
@@ -1233,6 +1344,7 @@ C THERE IS AT LEAST ONE DOT, THE NAME IS THE STRING UP TO THE LAST DOT
 C REMAINING AND THE TYPE IS THE PART OF THE STRING AFTER THE DOT. IF
 C NO DOT IS PRESENT THEN THE REMAINING STRING IS THE NAME AND THE TYPE
 C IS BLANK.
+C_END_CCPPSF
 C
 C SPECIFICATION STATEMENTS
 C ------------------------
@@ -1319,7 +1431,8 @@ C
       END
 C
 C
-C     
+C
+C_BEGIN_CCPRCS
       SUBROUTINE CCPRCS(ILP,PROG,RCSDAT)
 C     ==================================
 C
@@ -1327,7 +1440,16 @@ C     Interface to CCPVRS using RCS-format date e.g.,
 C     '1992/09/14 18:47:13' or its form expanded with RCS
 C     option `-kv' as for a CVS export, in which case it will have the
 C     `1992/09/14 18:47:13' stripped.
-C     
+C
+C Arguments:
+C ==========
+C
+C         ILP (I)   INTEGER: UNIT NUMBER FOR PRINTER OUTPUT
+C        PROG (I)   CHARACTER*(*): VARIABLE HOLDING PROGRAM NAME (MAX
+C                   OF 10 CHARACTERS)
+C      RCSDAT (I)   CHARACTER*(*): VARIABLE HOLDING DATE IN RCS FORMAT
+C_END_CCPRCS
+C
       CHARACTER*(*) RCSDAT, PROG
       CHARACTER*8 DATE
       INTEGER ILP
@@ -1354,14 +1476,34 @@ C       fallback
 C
 C
 C
-C     =======================================================
+C_BEGIN_CSETNV
       SUBROUTINE CSETNV(LNAME,FILNAM,ENAME,ETYPE,EXTN,ICOUNT,LSKIP)
-C     =======================================================
+C     =============================================================
 C
-C     Associate `logical name' LNAME with value FILNAM using environment
-C     an variable LNAME.  It is passed arrays of (name, type, extension)
-C     for ICOUNT number of name lines read from environ.def.  Doesn't
-C     re-define existing name if LSKIP is true.
+C     Associate `logical name' LNAME with value FILNAM.  It is passed
+C     arrays of (name, type, extension) for ICOUNT number of name lines
+C     read from environ.def.  Doesn't re-define existing name if LSKIP is true.
+C
+C Arguments:
+C ==========
+C
+C   LNAME (I)   CHARACTER*(*): Logical name (environment variable).
+C
+C  FILNAM (I/O) CHARACTER*(*): File name, if extension is omitted it is appended
+C
+C   ENAME (I/O) CHARACTER(150)*20 ARRAY: containing list of environment
+C               variables; if LNAME is not in list it is appended
+C               (also to ETYPE & EXTN arrays).
+C
+C   ETYPE (I,O) CHARACTER(150)*5 ARRAY: containing list of in/out types.
+C
+C    EXTN (I/O) CHARACTER(150)*4 ARRAY: containing list of extensions.
+C
+C  ICOUNT (I/O) INTEGER: Length of arrays ENAME, ETYPE & EXTN.
+C
+C   LSKIP (I)   LOGICAL: If .TRUE. existing name not re-defined.
+C
+C_END_CSETNV
 C
 C     .. Parameters ..
       INTEGER ILIMIT,ISTRLN,IENV
@@ -1399,7 +1541,7 @@ C     ..
 C
 C---- Check Logical Name does not already exist (unless processing
 C     command line, in which case LSKIP will be true to override
-C     environment) 
+C     environment)
 C
       CALL UGTENV(LNAME,TMPNAM)
       IF (TMPNAM.NE.' ' .AND. LSKIP ) RETURN
@@ -1481,7 +1623,7 @@ C         actually create <ccp4_scr>/<prognm>_.<pid>
           IF (VAX) THEN
             IF (TMPNAM.EQ.' ') THEN
               TMPNAM = PROGNM
-            ELSE 
+            ELSE
               TMPNAM = 'CCP4_SCR:' // PROGNM
             ENDIF
           ELSE
@@ -1534,21 +1676,23 @@ C     =======================================
 C
 C
 C
+C_BEGIN_CCPPAG
       SUBROUTINE CCPPAG(IUN,NCOL,NLIN)
-C     ===============================
+C     ================================
 C
-C---- This subroutine returns the number of columns and lines 
-C     for a printer output page on a given fortran unit number 
+C---- This subroutine returns the number of columns and lines
+C     for a printer output page on a given fortran unit number
 C     if the information is available
 C
-C PARAMETERS
+C Arguments:
 C ==========
 C
-C         IUN (I)   FORTRAN UNIT NUMBER
-C        NCOL (O)   NUMBER OF COLUMNS IN THE PAGE
-C        NLIN (O)   NUMBER OF LINES IN THE PAGE
+C         IUN (I)   INTEGER: FORTRAN UNIT NUMBER
+C        NCOL (O)   INTEGER: NUMBER OF COLUMNS IN THE PAGE
+C        NLIN (O)   INTEGER: NUMBER OF LINES IN THE PAGE
 C
 C Return 80,132 unless a terminal whence 0,80
+C_END_CCPPAG
 C
 C     .. Scalar Arguments ..
       INTEGER IUN,NCOL,NLIN
@@ -1574,21 +1718,28 @@ C
 C SUBROUTINE 'CCPSI2'
 C ===================
 C
+C_BEGIN_CCPSI2
+      SUBROUTINE CCPSI2(IVAL,IA,N)
+C     ============================
+C
 C SET AN INTEGER VALUE FROM 0 TO 65535 INTO THE N'TH UNSIGNED INTEGER*2 ELEMENT
 C OF AN INTEGER (OR OTHER) ARRAY.
 C NOTE: NO OVERFLOW CHECKING IS DONE.
 C
 C (MUST BE IMPLEMENTED IF CCPBYT FUNCTION RETURNS .TRUE.)
 C [for LAUE]
-      SUBROUTINE CCPSI2(IVAL,IA,N)
 C
-C PARAMETERS
+C Arguments:
+C ==========
 C
-C    IVAL (I)   THE INTEGER VALUE FROM 0 TO 65535
-C      IA (I/O) THE ARRAY INTO WHICH THE UNSIGNED INTEGER*2 VALUE IS TO BE 
+C    IVAL (I)   INTEGER: VALUE FROM 0 TO 65535
+C
+C      IA (I/O) INTEGER*2 ARRAY: WHERE THE UNSIGNED INTEGER*2 VALUE IS TO BE
 C               INSERTED
-C       N (I)   THE POSITION IN 'IA' WHERE THE UNSIGNED INTEGER*2 VALUE IS 
-C               TO BE INSERTED
+C
+C       N (I)   INTEGER: THE POSITION IN 'IA' WHERE THE UNSIGNED INTEGER*2
+C               VALUE IS TO BE INSERTED
+C_END_CCPSI2
 C
 C SPECIFICATION STATEMENTS
 C ------------------------
@@ -1623,19 +1774,25 @@ C
 C SUBROUTINE 'CCPSTB'
 C ===================
 C
+C_BEGIN_CCPSTB
+      SUBROUTINE CCPSTB(IVAL,IA,N)
+C     ============================
+C
 C SET AN INTEGER VALUE FROM 0 TO 255 INTO THE N'TH BYTE OF AN INTEGER
 C (OR OTHER) ARRAY.
 C NOTE: NO OVERFLOW CHECKING IS DONE.
 C
 C (MUST BE IMPLEMENTED IF CCPBYT FUNCTION RETURNS .TRUE.)
 C [for LAUE]
-      SUBROUTINE CCPSTB(IVAL,IA,N)
 C
-C PARAMETERS
+C Arguments:
+C ==========
 C
-C    IVAL (I)   THE INTEGER VALUE FROM 0 TO 255
-C      IA (I/O) THE ARRAY INTO WHICH THE BYTE VALUE IS TO BE INSERTED
-C       N (I)   THE POSITION IN 'IA' WHERE THE BYTE VALUE IS TO BE INSERTED
+C    IVAL (I)   INTEGER: VALUE FROM 0 TO 255
+C      IA (I/O) BYTE ARRAY(*): WHERE THE BYTE VALUE IS TO BE INSERTED
+C       N (I)   INTEGER: THE POSITION IN 'IA' WHERE THE BYTE VALUE IS TO
+C               BE INSERTED
+C_END_CCPSTB
 C
 C SPECIFICATION STATEMENTS
 C ------------------------
@@ -1668,10 +1825,17 @@ C
 C
 C
 C
+C_BEGIN_CCPSPW
       SUBROUTINE CCPSPW(STRING)
 C     =========================
 C
-C     Spawns a new process using shell command STRING
+C     Spawns a new process using shell command
+C
+C Arguments:
+C ==========
+C
+C  STRING (I)   CHARACTER*(*): string containing command
+C_END_CCPSPW
 C
        CHARACTER STRING*(*)
        EXTERNAL SYSTEM
@@ -1680,20 +1844,22 @@ C
 C
 C
 C
+C_BEGIN_CCPSUM
       REAL FUNCTION CCPSUM(A,N,L)
-C     ======================
+C     ===========================
 C
 C---- This function sums the elements of an array. (for the cray this
 C     function will call the cray 'ssum' function)
 C
-C PARAMETERS
+C Arguments:
 C ==========
 C
-C           A (I)   ARRAY TO BE SUMMED
-C           N (I)   NO. OF ELEMENTS IN THE ARRAY
-C           L (I)   SUM EVERY L'TH ELEMENT
+C           A (I)   REAL ARRAY(N): ARRAY TO BE SUMMED
+C           N (I)   INTEGER: NO. OF ELEMENTS IN THE ARRAY
+C           L (I)   INTEGER: SUM EVERY L'TH ELEMENT
 C
 C  CCPSUM RETURNS THE SUM
+C_END_CCPSUM
 C
 C SPECIFICATION STATEMENTS AND CODE
 C
@@ -1714,6 +1880,7 @@ C     ..
 C
 C
 C
+C_BEGIN_CCPTIM
       SUBROUTINE CCPTIM(IFLAG,CPU,ELAPS)
 C     ==================================
 C
@@ -1721,14 +1888,15 @@ C---- Return cpu time and elapsed time in seconds as
 C     intervals from the initial call with iflag=0.  Note that there is
 C     only one timer!
 C
-C PARAMETERS
+C Arguments:
 C ==========
 C
-C       IFLAG (I/O) =0, initialise, =1, return times, =-1 dummy call
+C       IFLAG (I/O) INTEGER: =0, initialise, =1, return times, =-1 dummy call
 C                   returns -1 if time not available, in which case CPU
 C                   and ELAPS are zero
-C         CPU (O)   cpu time in seconds
-C       ELAPS (O)   elapsed time in seconds
+C         CPU (O)   REAL: cpu time in seconds
+C       ELAPS (O)   REAL: elapsed time in seconds
+C_END_CCPTIM
 C
 C     .. Scalar Arguments ..
       REAL CPU,ELAPS
@@ -1756,6 +1924,7 @@ C     ..
       END IF
       END
 C
+C_BEGIN_CCPTOI
       SUBROUTINE CCPTOI(ARRAY,N,II,ITYP,IFAIL)
 C     ========================================
 C
@@ -1764,19 +1933,24 @@ C     non-character array to an integer value. it is used by the
 C     map file handling routines and must be implemented if map modes
 C     0,1,3 or 5 are to be used.
 C
-C PARAMETERS
+C Arguments:
 C ==========
 C
-C       ARRAY (I)   REAL ARRAY CONTAINING THE ELEMENTS TO BE CONVERTED
-C           N (I)   THE NUMBER OF THE ELEMENT TO BE CONVERTED
-C          II (O)   THE CALCULATED INTEGER VALUE (FOR BYTES THIS WILL
+C       ARRAY (I)   REAL ARRAY(*): CONTAINING THE ELEMENTS TO BE CONVERTED
+C
+C           N (I)   INTEGER: THE NUMBER OF THE ELEMENT TO BE CONVERTED
+C
+C          II (O)   INTEGER: THE CALCULATED INTEGER VALUE (FOR BYTES THIS WILL
 C                   BE IN THE RANGE 0-255)
-C        ITYP (I)   THE CONVERSION TYPE =1, BYTE TO INTEGER
-C                                       =2, INTEGER*2 TO INTEGER
-C       IFAIL (I/O) ON INPUT   =0, STOP IF CONVERSION NOT AVAILABLE
-C                              =1, RETURN FROM SUBROUTINE ALWAYS
-C                   ON OUTPUT  UNCHANGED IF CONVERSION CARRIED OUT
-C                              =-1 IF CONVERSION NOT AVAILABLE
+C
+C        ITYP (I)   INTEGER: THE CONVERSION TYPE =1, BYTE TO INTEGER
+C                                                =2, INTEGER*2 TO INTEGER
+C
+C       IFAIL (I/O) INTEGER: ON INPUT   =0, STOP IF CONVERSION NOT AVAILABLE
+C                                       =1, RETURN FROM SUBROUTINE ALWAYS
+C                            ON OUTPUT  UNCHANGED IF CONVERSION CARRIED OUT
+C                                       =-1 IF CONVERSION NOT AVAILABLE
+C_END_CCPTOI
 C
 C     .. Scalar Arguments ..
       INTEGER IFAIL,II,ITYP,N
@@ -1836,29 +2010,33 @@ C
 C
 C
 C
+C_BEGIN_CCPUFL
       SUBROUTINE CCPUFL
 C     =================
 C
 C---- This subroutine is called to suppress underflow error messages
 C     if required and if the facility is available.
 C
-C PARAMETERS  NONE
-C =========
+C Arguments:  NONE
+C ==========
 C
-C----  Not implemented, but Maybe correC
+C----  Not implemented.
+C_END_CCPUFL
       END
 C
 C
 C
+C_BEGIN_CCPUPC
       SUBROUTINE CCPUPC(STRING)
-C     ========================
+C     =========================
 C
 C---- Convert a text string to upper case in situ
 C
-C PARAMETERS
+C Arguments:
 C ==========
 C
-C      STRING (I/O) CHARACTER STRING TO BE CONVERTED
+C      STRING (I/O) CHARACTER*(*): STRING TO BE CONVERTED
+C_END_CCPUPC
 C
 C     .. Scalar Arguments ..
       CHARACTER STRING* (*)
@@ -1885,21 +2063,24 @@ C     ..
 C
 C
 C
+C_BEGIN_CCPVRS
       SUBROUTINE CCPVRS(ILP,PROG,VDATE)
 C     =================================
 C
 C---- Print program name and date of current version (also prints run
 C     date if available)
 C
-C PARAMETERS
+C Arguments:
 C ==========
 C
-C         ILP (I)   UNIT NUMBER OF PRINTER OUTPUT
-C        PROG (I)   CHARACTER VARIABLE HOLDING PROGRAM NAME (MAX
+C         ILP (I)   INTEGER: UNIT NUMBER FOR PRINTER OUTPUT
+C        PROG (I)   CHARACTER*(*): VARIABLE HOLDING PROGRAM NAME (MAX
 C                   OF 10 CHARACTERS)
-C       VDATE (I)   CHARACTER VARIABLE HOLDING DATE OF THE CURRENT
+C       VDATE (I)   CHARACTER*(*): VARIABLE HOLDING DATE OF THE CURRENT
 C                   VERSION AS DD/MM/YY
+C_END_CCPVRS
 C     .. Scalar Arguments ..
+
       INTEGER ILP
       CHARACTER PROG* (*),VDATE* (*)
 C     ..
@@ -1922,7 +2103,7 @@ C
       CALL UGTUID(UID)
       CALL UTIME(CTIME)
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
- 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.2alpha: ',
+ 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.2: ',
      +       A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
      +       /)
 C
@@ -1930,12 +2111,19 @@ C
 C
 C
 C
+C_BEGIN_CCPZBI
       SUBROUTINE CCPZBI (ARR1,NUM)
 C     ============================
 C
 C  This routine zeros NUM bytes of the array ARR1
 C
-C  Arguements ......
+C Arguments:
+C
+C    ARR1 (O)   BYTE ARRAY(*): array to be zeroed
+C     NUM (I)   INTEGER: Number of bytes
+C_END_CCPZBI
+C
+C  Arguments ......
       INTEGER NUM
       BYTE ARR1(*)
 C
@@ -1946,10 +2134,17 @@ C
       END
 C
 C
+C_BEGIN_CCPZI
       SUBROUTINE CCPZI (ARR1,NUM)
 C     ===========================
 C
 C  This routine assigns zero to ARR1 using NUM words
+C
+C Arguments:
+C
+C    ARR1 (O)   INTEGER or REAL ARRAY(*): array to be zeroed
+C     NUM (I)   INTEGER: Number of words
+C_END_CCPZI
 C
 C  Arguments ..........
       INTEGER NUM
@@ -1959,15 +2154,20 @@ C
 C
       DO 10 J=1,NUM
    10 ARR1(J)=0.0
-      END 
+      END
 C
 C
-C     ==================================
+C     ===================================
+C_BEGIN_FDIR
       CHARACTER*(*) FUNCTION FDIR(FILNAM)
-C     ==================================
+C     ===================================
 C
 C---- Returns the path (directory) of a file name or ' '
 C
+C Arguments:
+C
+C  FILNAM (I)   CHARACTER*(*): File name
+C_END_FDIR
       CHARACTER FILNAM* (*)
       CHARACTER*1 NAME, TYPE, VERS
       EXTERNAL CCPPSF
@@ -1976,12 +2176,17 @@ C
       END
 C
 C
-C     ===================================
+C     ====================================
+C_BEGIN_FEXTN
       CHARACTER*(*) FUNCTION FEXTN(FILNAM)
-C     ===================================
+C     ====================================
 C
 C---- Returns the extension of a file name or ' '
 C
+C Arguments:
+C
+C  FILNAM (I)   CHARACTER*(*): File name
+C_END_FEXTN
       CHARACTER FILNAM* (*)
       CHARACTER*1 PATH, NAME, VERS
       EXTERNAL CCPPSF
@@ -1990,11 +2195,17 @@ C
       END
 C
 C
-C     ===================================
+C     ====================================
+C_BEGIN_FROOT
       CHARACTER*(*) FUNCTION FROOT(FILNAM)
-C     ===================================
+C     ====================================
 C
-C---- Returns a file name minus an extension.
+C---- Returns a file name minus an extension.C
+C
+C Arguments:
+C
+C  FILNAM (I)   CHARACTER*(*): File name
+C_END_FROOT
 C
       CHARACTER FILNAM* (*)
       CHARACTER*1 PATH, TYPE, VERS
@@ -2005,12 +2216,19 @@ C
 C
 C
 C
+C_BEGIN_LITEND
          LOGICAL FUNCTION LITEND(IDUM)
-C        =======================
+C        =============================
 C
 C---- Check endedness, Returns TRUE if little endian (VAX, FX2800,
 C                                                   Ultrix, Convex)
 C                              FALSE if big endian (IBM,IRIS,ESV)
+C
+C Arguments:
+C ==========
+C
+C    IDUM (D)   DUMMY
+C_END_LITEND
 C
          INTEGER I, IDUM
          BYTE B(4)
@@ -2035,10 +2253,17 @@ C
 C
 C======================================================================
 C
+C_BEGIN_LENSTR
       INTEGER FUNCTION LENSTR(STRING)
 C     ===============================
 C
 C---- Returns significant string length excluding trailing spaces
+C
+C Arguments:
+C ==========
+C
+C  STRING (I)   CHARACTER*(*): Input string
+C_END_LENSTR
 C
 C     .. Scalar Arguments ..
       CHARACTER STRING* (*)
@@ -2062,13 +2287,17 @@ C
 C FUNCTION 'LUNSTI'
 C =================
 C
+C_BEGIN_LUNSTI
+      FUNCTION LUNSTI(IDUM)
+C     =====================
+C
 C Returns the fortran standard input unit number
 C
-      FUNCTION LUNSTI(IDUM)
+C Arguments:
+C ==========
 C
-C PARAMETERS
-C
-C       IDUM (I)   Dummy parameter
+C       IDUM (D)   Dummy
+C_END_LUNSTI
 C
       LUNSTI = 5
       END
@@ -2077,13 +2306,17 @@ C
 C FUNCTION 'LUNSTO'
 C =================
 C
+C_BEGIN_LUNSTO
+      FUNCTION LUNSTO(IDUM)
+C     =====================
+C
 C Returns the fortran standard output unit number
 C
-      FUNCTION LUNSTO(IDUM)
+C Arguments:
+C ==========
 C
-C PARAMETERS
-C
-C       IDUM (I)   Dummy parameter
+C       IDUM (I)   Dummy argument
+C_END_LUNSTO
 C
       LUNSTO = 6
       END
@@ -2092,16 +2325,23 @@ C
 C FUNCTION 'NBITST'
 C =================
 C
+C_BEGIN_NBITST
+      FUNCTION NBITST(IWORD,LSB,NBITS)
+C     ================================
+C
 C Return the (unsigned) integer value held within a bit field in a word
 C [for LAUE]
-      FUNCTION NBITST(IWORD,LSB,NBITS)
 C
-C PARAMETERS
+C Arguments:
+C ==========
 C
-C      IWORD (I)    The word containing the bits to be examined
-C        LSB (I)    The least significant bit offset for the bit field
-C      NBITS (I)    The number of bits in the bit field (Must be less
+C      IWORD (I)    INTEGER: The word containing the bits to be examined
+C
+C        LSB (I)    INTEGER: The least significant bit offset for the bit field
+C
+C      NBITS (I)    INTEGER: The number of bits in the bit field (Must be less
 C                   than the word length)
+C_END_NBITST
 C
 C====== Get the bit value
 C
@@ -2111,10 +2351,17 @@ C
 C
 C
 C     =======================
+C_BEGIN_NOCRLF
       SUBROUTINE NOCRLF(LINE)
 C     =======================
 C
-C---- Output a line supressing cr/lf. 
+C---- Output a line supressing cr/lf.
+C
+C Arguments:
+C ==========
+C
+C    LINE (I)   CHARACTER*(*): Line to output.
+C_END_NOCRLF
 C
       EXTERNAL LUNSTO,TTSEND
       INTEGER LUNSTO
@@ -2124,6 +2371,10 @@ C
 C
 C
 C======================================================================
+C
+C_BEGIN_QPRINT
+      SUBROUTINE QPRINT(IFLAG,MSG)
+C     ============================
 C
 C QPRINT - Set print flag or conditionally print MSG (less trailing
 C     blanks)
@@ -2136,11 +2387,9 @@ C Input:  IFLAG         debug level 0-9 higher numbers give more output
 C         MSG           the output message itself
 C
 C Output: None.
+C_END_QPRINT
 C
 C======================================================================
-C
-      SUBROUTINE QPRINT(IFLAG,MSG)
-C     ============================
 C
       INTEGER IFLAG
       CHARACTER MSG* (*)
@@ -2158,20 +2407,26 @@ C
 C SUBROUTINE 'STBITS'
 C ===================
 C
+C_BEGIN_STBITS
+      SUBROUTINE STBITS (IWORD,LSB,NBITS,IVAL)
+C     ========================================
 C Set a bit field within a word to a given (unsigned) integer value
 C [for LAUE]
 C
-      SUBROUTINE STBITS (IWORD,LSB,NBITS,IVAL)
+C Arguments:
+C ==========
 C
-C PARAMETERS
+C      IWORD (I/O)  INTEGER: The word in which the bits are to be set
 C
-C      IWORD (I/O)  The word in which the bits are to be set
-C        LSB (I)    The least significant bit offset for the bit field
-C      NBITS (I)    The number of bits in the bit field (must be less than
-C                   the word length)
-C       IVAL (I)    The unsigned integer value to be set in the bit
+C        LSB (I)    INTEGER: The least significant bit offset for the bit field
+C
+C      NBITS (I)    INTEGER: The number of bits in the bit field (must be less
+C                   than the word length)
+C
+C       IVAL (I)    INTEGER: The unsigned integer value to be set in the bit
 C                   field (The user should ensure that this value will
 C                   fit within the requested bit field)
+C_END_STBITS
 C
 C====== Set the bits
 C
