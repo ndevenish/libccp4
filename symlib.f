@@ -12,13 +12,14 @@ C 1) Subroutines for manipulating symmetry operators.
 C   
 C    invsym        msyget        msymlb        pgdefn    
 C    pgmdf         pgnlau        symfr2        symtrn 
-C    msymlb2       msymlb3
+C    msymlb2       msymlb3       symfr3        symtr3
+C    symtr4        hklrange
 c  Internal routines:-
 C    determ     
 C
 C 2) Subroutines for testing reflection  data.
 C    centr         centric       epsln        epslon     
-C    sysab        
+C    sysab         hkleq         centrc
 C
 C 3) Subroutines for choosing asymmetric units for reflection
 C    data.
@@ -27,7 +28,7 @@ c  Internal routines:-
 C    prtrsm       inasu 
 C
 C 4) Subroutines for testing coordinate  data.
-C    xspecials     
+C    xspecials     krot
 C
 C 5) Subroutines for choosing asymmetric units for Fourier
 C    maps consistent with FFT expectations; FFT grids etc.
@@ -37,6 +38,16 @@ C    fndsmp    factrz
 C
 C 6) Subroutines for permuting symmetry operators, etc.
 C    prmvci        prmvcr        rotfix      
+C
+C 7) Subroutines for generating and accessing hash table.
+C    ccp4_hash_lookup            ccp4_hash_setup
+C    ccp4_hash_zeroit
+C
+C 8) Subroutines for calculating (sin theta/lamba)**2.0.
+C    setrsl        sthlsq        sts3r2
+C
+C 9) Miscellaneous (subroutines with exact function not clear):
+C    pstoph
 C
 C_END_SYMLIB
 C_BEGIN_OUTLINE
@@ -57,6 +68,30 @@ C                      [x']    = [s][x]
 C
 C                x'(I)=Sum(J=1,3)ROT(I,J,NS)*x(J) + ROT(I,4,NS)
 C                 ROT(I,4,NS)    contains the fractional translations
+C
+C
+C---- SUBROUTINE SYMFR3(ICOL,I1,NS,ROT,EFLAG)
+C
+C       Read and interpret symmetry operations
+C       Arguments :
+C       ICOL      (I)	CHARACTER*80    Line containing the symmetry ops
+C       I1        (I)	INTEGER         First character to look at
+C                               	(say after keyword 'SYM')
+C       NS        (I/O)	INTEGER         is the number of the first symmetry
+C                               	operation to be read, & returns with the
+C                               	number of the last one read (ie you can
+C                               	have more than one on a line!)
+C       ROT       (O)	REAL            Array (4,4,at_least_NS),
+C                               	on exit contains the real-space
+C                               	symmetry matrices, in standard
+C                               	convention, ie
+C                                 	[x']    = [s][x]
+C                     			x'(I)=Sum(J=1,3)ROT(I,J,NS)*x(J) + ROT(I,4,NS)
+C                     			ROT(I,4,NS) contains the fractional translations
+C       EFLAG     (O)	INTEGER         Error flag - on exit,
+C                                  	if 0 then OK,
+C                                  	gt 0, an error occurred.
+C
 C
 C---- SUBROUTINE INVSYM(S,ST)
 C          Input S    - 4*4 matrix
@@ -165,6 +200,47 @@ C           It gives the real and reciprocal space operations.
 C                eg     X,Y,Z        H  , K, L
 C                eg     -Y,X-Y, Z   -H-K, H, L  etc
 C           That is more complicated than you might think!!
+C
+C
+C---- SUBROUTINE SYMTR3(NSM,RSM)
+C           symmetry translation from matrix back to characters
+C
+C           This translates the Symmetry matrices into INT TAB
+C           character strings
+C
+C           It gives the real space operations.
+C                eg     X,Y,Z
+C                eg     -Y,X-Y, Z
+C           That is more complicated than you might think!!
+C
+C     Arguments :
+C     NSM       (I)     INTEGER         Number of Symmetry operations
+C     RSM       (I)     REAL            Array of dimension (4,4,at least NSM)
+C                                       containing symmetry operations on input
+C     SYMCHS    (O)     CHARACTER*(*)   Array of dimension at least NSM
+C                                       containing int tab char strings on output
+C     IPRINT    (I)     INTEGER         Print flag
+C                                       =0 No printing
+C                                       =1 Print the int tab strings
+C
+C---- SUBROUTINE SYMTR4(NSYM,RSM,SYMCHS)
+C           symmetry translation from matrix back to characters
+C
+C           This translates the Symmetry matrices into INT TAB
+C           character strings
+C
+C           It gives the real space operations.
+C                eg     X,Y,Z
+C                eg     -Y,X-Y, Z
+C           That is more complicated than you might think!!
+C
+C      Arguments :
+C      Nsym (I) INTEGER   Number of Symmetry operations
+C      Rsm  (I) REAL      Array of dimension (4,4,at least Nsym)
+C                         coNTaining symmetry operations on input
+c      Symchs (O) CHARACTER*(*)   Array of dimension at least Nsym
+C                         coNTaining int tab char strings on output
+C
 C
 C---- SUBROUTINE DETERM(det,a)  
 C          Input A - 4*4 matrix  (real)
@@ -276,6 +352,21 @@ C         Determine whether a reflection is centric (return ic=1)
 C         or not (ic=0).  If none of the zone tests is satisfied,
 C         the reflection is non-centric.
 C
+C---- LOGICAL FUNCTION CENTRC(KHKL,ICENT)
+C
+C     returns value true if reflection khkl is centric, false otherwise.
+C     general for all point groups - but only for the unique set of
+C     indices which conforms to the criterion of maximising the value
+C     of        (khkl(3)*256 + khkl(2))*256 + khkl(1)
+C
+C    as produced by e.g. subroutine turnip in protin and ulysses.
+C
+C---- in this case the required tests are controlled by 7 flags in
+C     icent fo
+C
+C  0KL  H0L  HK0  HKK  HKH  HHL  H,-2H,L
+C     (the last is needed in pg312)
+C
 C---- SUBROUTINE EPSLN(NSM,NSMP,RSMT,IPRINT)
 C
 C       It works out the epsilon cards
@@ -304,6 +395,9 @@ C
 C       Find the zone a reflection falls into, and return the
 C       appropriate value for the reflection multiplicity factor.
 C       each reflection must have a zone.
+C
+C---- LOGICAL FUNCTION HKLEQ(IH,KH)
+C       Returns true if indices ih = kh
 C
 C---- SUBROUTINE SYSAB(IN,ISYSAB)
 C        Input IN(3) - reflection indices
@@ -427,6 +521,13 @@ C---- This subroutine finds what coordinates occupy special positions
 C     ie have occupancies less than 1.0
 C     from consideration of the Symmetry Operations.
 C
+C---- INTEGER FUNCTION KROT(NS)
+C       Apply ns'th symmetry operation to jp to get lp,
+C       check if lies in asymmetric unit given by nau
+C
+C       Returns KROT=0  correct operation
+C                   =1  if not
+C
 C Part 5:
 C======================================================================
 C---- SUBROUTINE SETLIM(LSPGRP,XYZLIM)
@@ -492,6 +593,7 @@ C
 C  On exit:
 C     nsampl     grid sample
 C                if MINSMP<=0, nsampl=nmul
+C
 C     LOGICAL FUNCTION FACTRZ(N)
 C
 C---- Returns true if N has all prime factors .le. 19
@@ -537,6 +639,90 @@ C          Output AV  - N1*3 matrix (real)
 C                       This has been modified by permuting the  
 C                       Nth column by matrix PERM.
 C      See PRMVCI - real equivalent.
+C
+C Part 7:
+C======================================================================
+C
+C---- CCP4_HASH_SETUP CCP4_HASH_LOOKUP CCP4_HASH_ZEROIT
+C
+C         Routines and functions used to initialise, set up and access
+C         an internal look-up table. Not clear why these routines are
+C         here in particular.
+C
+C---- SUBROUTINE CCP4_HASH_SETUP(NSER,NFIND)
+C
+C---- This subroutine sets up a value for the function ccp4_hash_lookup
+C     when ccp4_hash_lookup(nser) is later evaluated it will return nfind
+C     this function will allow the efficient retrieval of an identifier
+C     for a large range variable (such as a crystal number).  the values
+C     of the function ccp4_hash_lookup(nser) are stored in the array
+C     it(2, kpri) where kpri is the prime number used to generate the
+C     function.
+C     The array it  lives in the common look which is shared by
+C     ccp4_hash_setup and the function ccp4_hash_lookup
+C
+C     NOTES: A hash table is a way of storing information so that it
+C     easily be retrieved without the need for indexing or long searches.
+C     NSER is referred to as the "key", which is "hashed" (computer-
+C     science speak for "messed up") by the hashing function (in this
+C     case MOD(NSER4,KPRI) + 1) to determine where the value pair will
+C     be stored. The function LOOKUP can then search on the same basis
+C     when supplied with the key, to retreive the pair in (at most) 3
+C     calculations. Note that KPRI (the table size) MUST BE A PRIME in
+C     order for this method to work.
+C
+C     IT(1, NDX) = NSER,  IT(2, NDX) = NFIND
+C
+C---- INTEGER FUNCTION CCP4_HASH_LOOKUP(NSER)
+C
+C---- The function ccp4_hash_lookup returns the value nfind (which was
+C     input when setting up the function in the subroutine ccp4_hash_setup)
+C     for the large range variable nser.  Uses hashing. (see comments for
+C     CCP4_HASH_SETUP for description of hashing method).
+C
+C---- SUBROUTINE CCP4_HASH_ZEROIT()
+C
+C     Initialises elements of array it used in ccp4_hash_setup and
+C     ccp4_hash_lookup to zero.
+C
+C Part 8:
+C======================================================================
+C
+C---- SETRSL STHLSQ STS3R4
+C
+C         Routines and functions used to obtain values of
+C         (sin theta/lamba)**2.0. Not clear why these routines are
+C         here in particular.
+C
+C---- SUBROUTINE SETRSL(A,B,C,ALPHA,BETA,GAMMA)
+C
+C---- Routine to calculate coefficients for (sin(theta)/lambda)**2 from
+C     h,k,l for general axes
+C     first calculated the components of input axes in an orthonormal
+C     basis, then calculate components of reciprocal axes in same basis
+C
+C    Input angles are in degrees
+C
+C---- REAL FUNCTION STHLSQ(IH,IK,IL)
+C
+C      Calculate (sin(theta)/lambda)**2 from h,k,l; coef's set by call to
+C        SETRSL : good for any kind of axes
+C
+C---- REAL FUNCTION STS3R4(IH,IK,IL)
+C
+C      calculate (sin(theta)/lambda)**2 from h,k,l; coef's set by call to
+C        setrsl : good for any kind of axes
+C
+C
+C Part 9:
+C======================================================================
+C
+C---- SUBROUTINE PSTOPH (PSIX,PSIY,PSIZ,PHIX,PHIY,PHIZ,AVPHI)
+C
+C***   *****  PSTOPH  *****
+C***   Convert PSIX,PSIY,PSIZ (= epsx,epsy,epsz) to PHIX,PHIY,PHIZ ,
+C***    using AVPHI
+C      All angles in radians
 C
 C  End of Brief Description.
 C +++++++++++++++++++++++++
@@ -3138,16 +3324,18 @@ C
       END
 C
 C
-C     ============================
-      INTEGER FUNCTION LOOKUP(NSER)
-C     ============================
+C     =======================================
+      INTEGER FUNCTION CCP4_HASH_LOOKUP(NSER)
+C     =======================================
 C
-C---- The function lookup returns the value nfind (which was input when
-C     setting up the function in the subroutine setup) for the large
-C     range variable nser.  Uses hashing.
+C---- The function ccp4_hash_lookup returns the value nfind (which was
+C     input when setting up the function in the subroutine ccp4_hash_setup)
+C     for the large range variable nser.  Uses hashing. (see comments for
+C     CCP4_HASH_SETUP for description of hashing method).
 C
+C     .. Parameter (table size: MUST BE A PRIME NUMBER)
       INTEGER KPRI
-      PARAMETER (KPRI=1009)
+      PARAMETER (KPRI=1999)
 C
 C     .. Scalar Arguments ..
       INTEGER NSER
@@ -3183,23 +3371,35 @@ C
       END
 C
 C
-C     ==============================
-      SUBROUTINE SETUP(NSER,NFIND)
-C     ==============================
+C     ======================================
+      SUBROUTINE CCP4_HASH_SETUP(NSER,NFIND)
+C     ======================================
 C
-C---- This subroutine sets up a value for the function lookup(nser)
-C     when lookup(nser) is later evaluated it will return nfind
+C---- This subroutine sets up a value for the function ccp4_hash_lookup
+C     when ccp4_hash_lookup(nser) is later evaluated it will return nfind
 C     this function will allow the efficient retrieval of an identifier
 C     for a large range variable (such as a crystal number).  the values
-C     of the function lookup(nser) are stored in the array it(2, kpri)
-C     where kpri is the prime number used to generate the function
-C     the array it  lives in the common look which is shared by setup
-C     and the function lookup
+C     of the function ccp4_hash_lookup(nser) are stored in the array
+C     it(2, kpri) where kpri is the prime number used to generate the
+C     function
+C     The array it  lives in the common look which is shared by
+C     ccp4_hash_setup and the function ccp4_hash_lookup
+C
+C     NOTES: A hash table is a way of storing information so that it
+C     easily be retrieved without the need for indexing or long searches.
+C     NSER is referred to as the "key", which is "hashed" (computer-
+C     science speak for "messed up") by the hashing function (in this
+C     case MOD(NSER4,KPRI) + 1) to determine where the value pair will
+C     be stored. The function LOOKUP can then search on the same basis
+C     when supplied with the key, to retreive the pair in (at most) 3
+C     calculations. Note that KPRI (the table size) MUST BE A PRIME in
+C     order for this method to work.
 C
 C     IT(1, NDX) = NSER,  IT(2, NDX) = NFIND
 C
+C     .. Parameter (table size: MUST BE A PRIME NUMBER)
       INTEGER KPRI
-      PARAMETER (KPRI=1009)
+      PARAMETER (KPRI=1999)
 C
 C     .. Scalar Arguments ..
       INTEGER NFIND,NSER
@@ -3222,7 +3422,7 @@ C
       NSER4 = NSER
    10 CONTINUE
       NDX = MOD(NSER4,KPRI) + 1
-      IF (NDX .GT. KPRI) THEN
+      IF (NSER4 .GT. 3*KPRI) THEN
          WRITE (STROUT, '(A,I8)')
      $     ' **** Error in SETUP: overflowed hash table, size ', KPRI
          CALL PUTLIN(STROUT,'CURWIN')
@@ -3238,12 +3438,13 @@ C
       RETURN
       END
 C
-C     ===================
-      SUBROUTINE ZEROIT()
-C     ===================
+C     =============================
+      SUBROUTINE CCP4_HASH_ZEROIT()
+C     =============================
 C
+C     .. Parameter (table size: MUST BE A PRIME NUMBER)
       INTEGER KPRI
-      PARAMETER (KPRI=1009)
+      PARAMETER (KPRI=1999)
 C
 C     .. Arrays in Common ..
       INTEGER IT
