@@ -2792,8 +2792,9 @@ FORTRAN_SUBR ( LWREFL, lwrefl,
  if (MtzCheckSubInput(*mindx,"LWREFL",2)) return;
 
  ++iwref[*mindx-1];
- ccp4_lwrefl(mtzdata[*mindx-1],adata,collookup_out[*mindx-1],
-                    MtzNumActiveCol(mtzdata[*mindx-1]),iwref[*mindx-1]);
+ if (!ccp4_lwrefl(mtzdata[*mindx-1],adata,collookup_out[*mindx-1],
+		  MtzNumActiveCol(mtzdata[*mindx-1]),iwref[*mindx-1]) )
+   ccperror(1,"LWREFL: failed to write reflection");
 }
 
 /* Fortran wrapper for MtzPut */

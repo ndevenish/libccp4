@@ -2237,7 +2237,8 @@ int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[],
 	    }
 	}
 
-     MtzWrefl(mtz->fileout, icol+1, refldata);
+    if (MtzWrefl(mtz->fileout, icol+1, refldata) != icol+1 )
+      return 0;
 
      /* Update resolution limits. For in-memory mode, this is done in MtzPut. */
      /* Check if HKL are first 3 columns */
@@ -2324,7 +2325,7 @@ int MtzPut(MTZ *mtz, const char *logname)
        }
       }
      }
-     MtzWrefl(fileout, icol, refldata);
+     if (MtzWrefl(fileout, icol, refldata) != icol ) return 0;
    }
 
    if (debug) 

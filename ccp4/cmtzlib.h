@@ -188,7 +188,8 @@ int MtzWhdrLine(CCP4File *fileout, int nitems, char buffer[]);
  * @param fileout pointer to output MTZ file.
  * @param ncol number of reflection data items to write.
  * @param refldata array of reflection data items.
- * @return number of items written.
+ * @return Number of items written. If this is less than ncol, then
+ * that indicates a write error.
  */
 int MtzWrefl(CCP4File *fileout, int ncol, float *refldata);
 
@@ -924,7 +925,7 @@ int ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
  * @param lookup array of pointers to columns.
  * @param ncol number of columns.
  * @param iref Reflection number such that 1st reflection is iref=1.
- * @return void
+ * @return 1 on success, 0 on failure
  */
 int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[], 
 		 const int ncol, const int iref);
