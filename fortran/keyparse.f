@@ -48,9 +48,10 @@ C     ECHO is set to echo the parser i/p.
 C     Args
       character*(*) key, subkey, spgnam, pgname, rest
       character*30 prglab(*)
+      character*1 chnam
       logical echo, flag, cont
       integer ival, nsym, numsgp, nsymp, n, ivals (n), nth, mtznum,
-     +  nprglab, toks
+     +  nprglab, toks, inat0, inat1, ires0, ires1, imode, ifail
       real rval, cell (6), rsym (4,4,*), resmin, resmax, smin, smax,
      +  rvals(n)
 
@@ -361,7 +362,25 @@ C     SYMMetry -- usual values returned
         enddo
       end if
       return
-      
+
+      entry parseatomselect(key, inat0, inat1, ires0, ires1, chnam,
+     +                      imode)
+C     KEYword followed by atom/residue selection syntax
+C     key atom <ai> [[to] <aj>] |
+C         residue [all|ons|ca] [chain <chn>] <ri> [[to] <rj>]
+C     Returns values of <ai>,<aj>,imode...
+      if (memokey.eq.key) then
+C       matched key
+        ifail = -1
+        call rdatomselect(2, inat0, inat1, ires0, ires1, chnam, imode,
+     +                     ntok, line, ibeg, iend, ityp, idec, fvalue,
+     +                     ifail)
+        do i=1,ntok
+          if (i.ne.ifail) success(i)=.true.
+        enddo
+      endif
+      return
+
       entry parsereso (resmin, resmax, smin, smax)
 C     RESOlution -- usual values returned
       if (memokey.eq.'RESO') then
