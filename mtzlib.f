@@ -3,6 +3,11 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
+C     16/6/94  DJGL
+C     Change 96s to (parameterised) 192s to allow the possibility of
+C     using the 3 SGs in the complete symop file with this number of
+C     operators, although not relevant for protein work.
+C
 C     6th June 1993                                   Phil Evans
 C      Increased MBATCH to 1000
 C      Check NBATCH .le. MBATCH in LROPEN, LWBAT
@@ -397,6 +402,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,NLPRGI
@@ -435,7 +442,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -658,6 +665,8 @@ C     .. Parameters ..
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=1000)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,NBATX
@@ -678,7 +687,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -744,6 +753,8 @@ C     .. Parameters ..
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=1000)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX, BATNO
@@ -761,7 +772,7 @@ C     .. Local Scalars ..
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),
      +       ISORT(5,MFILES),CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -1041,6 +1052,8 @@ C     .. Parameters ..
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=1000)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
@@ -1061,7 +1074,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -1126,6 +1139,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,NCOL
@@ -1156,7 +1171,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -1404,6 +1419,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,NCOLX,NREFLX
@@ -1425,7 +1442,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -1486,6 +1503,8 @@ C     .. Parameters ..
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=1000)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar arguments ..
       INTEGER MINDX,NCOLX
@@ -1503,7 +1522,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Common Blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -1662,6 +1681,8 @@ C     .. Parameters ..
       PARAMETER (NHISLM=30)
       INTEGER NPARSE
       PARAMETER (NPARSE=200)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER IFAIL,MINDX,IPRINT
@@ -1703,7 +1724,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -1808,7 +1829,7 @@ C
         NSYM(MINDX) = 0
         NSYMP(MINDX) = 0
 C
-        DO 40 JDO40 = 1,96
+        DO 40 JDO40 = 1,MAXSYM
           DO 30 JDO30 = 1,4
             DO 20 JDO20 = 1,4
               RSYM(JDO20,JDO30,JDO40,MINDX) = 0.0
@@ -2056,7 +2077,7 @@ C
                   NSYM(MINDX) = 0
                   NSYMP(MINDX) = 0
 C
-                  DO 130 JDO130 = 1,96
+                  DO 130 JDO130 = 1,MAXSYM
                     DO 120 JDO120 = 1,4
                       DO 110 JDO110 = 1,4
                         RSYM(JDO110,JDO120,JDO130,MINDX) = 0.0
@@ -2402,6 +2423,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,MINDEX
@@ -2421,7 +2444,7 @@ C     .. Arrays in Common ..
      +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
-      INTEGER IERR,IFAIL,ISTAT,JDO10,JDO20,IH,IK,IL
+      INTEGER IERR,IFAIL,ISTAT,JDO10,IH,IK,IL
       CHARACTER LINE*400
       REAL RSOL
       LOGICAL BIOMOL
@@ -2443,7 +2466,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -2622,6 +2645,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX, MINDEX
@@ -2641,7 +2666,7 @@ C     .. Arrays in Common ..
      +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
-      INTEGER IERR,IFAIL,ISTAT,JDO10,IH,IK,IL
+      INTEGER IERR,IFAIL,ISTAT,IH,IK,IL
       CHARACTER LINE*400
       REAL RSOL
 C     .. 
@@ -2660,7 +2685,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -2810,6 +2835,8 @@ C     .. Parameters ..
       PARAMETER (SIZE1=20)
       INTEGER MBLENG
       PARAMETER (MBLENG=185)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
@@ -2830,7 +2857,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -2927,6 +2954,8 @@ C     .. Parameters ..
       PARAMETER (SIZE1=20)
       INTEGER MBLENG
       PARAMETER (MBLENG=185)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
@@ -2945,7 +2974,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -3009,6 +3038,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,REFNUM
@@ -3029,7 +3060,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -3115,6 +3146,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
@@ -3135,7 +3168,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -3206,6 +3239,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,NSPGRX,NSYMPX
@@ -3229,7 +3264,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -3289,7 +3324,7 @@ C     NSYMX     (O)	INTEGER         total no. of symmetry operations
 C                               	if =0 on exit then no symm info present
 C
 C     RSYMX     (O)	REAL            array of dimensions (4,4,NSYM) of
-C                               	symmetry ops on exit (max. NSYM is 96)
+C                               	symmetry ops on exit (max. NSYM is 192)
 C
 C
 C
@@ -3300,12 +3335,14 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,NSYMX
 C     ..
 C     .. Array Arguments ..
-      REAL RSYMX(4,4,96)
+      REAL RSYMX(4,4,*)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RSYM
@@ -3320,7 +3357,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -3484,6 +3521,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER IAPPND,MINDX,NLPRGO
@@ -3524,7 +3563,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -3908,6 +3947,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
@@ -3935,7 +3976,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -4045,6 +4086,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER IAPPND,MINDX,NLPRGO
@@ -4081,7 +4124,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -4250,6 +4293,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,IPRINT
@@ -4270,7 +4315,7 @@ C     .. Local Scalars ..
 C     ..
 C     .. Local Arrays ..
       INTEGER WINDEX(MBATCH)
-      CHARACTER SYMCHS(96)*80
+      CHARACTER SYMCHS(MAXSYM)*80
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -4285,7 +4330,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -4749,6 +4794,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
@@ -4779,7 +4826,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -4823,7 +4870,7 @@ C
           NSYM(MINDX) = 0
           NSYMP(MINDX) = 0
 C
-          DO 40 JDO40 = 1,96
+          DO 40 JDO40 = 1,MAXSYM
             DO 30 JDO30 = 1,4
               DO 20 JDO20 = 1,4
                 RSYM(JDO20,JDO30,JDO40,MINDX) = 0.0
@@ -4951,6 +4998,8 @@ C     .. Parameters ..
       PARAMETER (NHISLM=30)
       REAL MDFBIG
       PARAMETER (MDFBIG=-1.0E10)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
@@ -4986,7 +5035,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -5104,6 +5153,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
@@ -5124,7 +5175,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -5180,8 +5231,8 @@ C                               	are not changed
 C
 C     NSYMPX    (I)	INTEGER         no. of primitive operations
 C
-C     RSYMX     (I)	REAL            array of dimensions (4,4,96) of
-C                               	symmetry ops on entry
+C     RSYMX     (I)	REAL            array of dimensions (4,4,N) of
+C                               	symmetry ops on entry, where N>=NSYMX
 C
 C     LTYPEX    (I)	CHARACTER*1     single character denoting the lattice
 C                               	type (possible values are P,A,B,C,I,F,R)
@@ -5203,13 +5254,15 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,NSPGRX,NSYMPX,NSYMX
       CHARACTER LTYPEX*1,PGNAMX*10,SPGRNX*10
 C     ..
 C     .. Array Arguments ..
-      REAL RSYMX(4,4,96)
+      REAL RSYMX(4,4,192)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RSYM
@@ -5222,7 +5275,7 @@ C     .. Local Scalars ..
       CHARACTER LINE*400,STROUT*400
 C     ..
 C     .. Local Arrays ..
-      CHARACTER LTYPES(LTYP)*1,SYMCHS(96)*80
+      CHARACTER LTYPES(LTYP)*1,SYMCHS(MAXSYM)*80
 C     ..
 C     .. External Subroutines ..
       EXTERNAL LERROR,PUTLIN,SYMTR3
@@ -5232,7 +5285,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -5512,6 +5565,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER BATNO,MINDX,IPRINT
@@ -5542,7 +5597,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -5669,6 +5724,8 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
       PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER BATNO,MINDX
@@ -5695,7 +5752,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
@@ -6922,6 +6979,8 @@ C     .. Parameters ..
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=1000)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,IPRINT
@@ -6939,7 +6998,7 @@ C     .. Local Scalars ..
       REAL RESMIN,RESMAX
 C     ..
 C     .. Local Arrays ..
-      CHARACTER SYMCHS(96)*80
+      CHARACTER SYMCHS(MAXSYM)*80
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -6956,7 +7015,7 @@ C     .. Common blocks ..
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)

@@ -236,8 +236,6 @@ C        Returns  ISYSAB flag.
 C       Systematic absences flagged with ISYSAB = 1
 C       Only reflns with EPSI gt 1 need be considered
 C
-C      REAL RSYM(4,4,96)
-C
 C Part 3:
 C======================================================================
 c       ASUSET  set up symmetry for ASUPUT & ASUGET, print it
@@ -552,7 +550,7 @@ C     .. Scalar Arguments ..
       INTEGER NSM,IPRINT
 C     ..
 C     .. Array Arguments ..
-      REAL RSM(4,4,96)
+      REAL RSM(4,4,*)
 C     ..
 C     .. Scalars in Common ..
       INTEGER NCENT
@@ -672,7 +670,7 @@ C     .. Local Scalars ..
       INTEGER I,I1,II,J,J1,JJ
 C     ..
 C     .. Local Arrays ..
-      REAL AI(4,4),C(4,4),X(3,3)
+      REAL C(4,4),X(3,3)
 C     ..
 C
 C
@@ -1811,7 +1809,7 @@ C     .. Array Arguments ..
 C     ..
 C     .. Local Scalars ..
       REAL A,REAL,RECIP,S,T
-      INTEGER I,ICOMST,IERR,IFOUND,IMAX,IP,ISL,J,K,NOP,NP,NS1,NSYM
+      INTEGER I,ICOMST,IERR,IFOUND,IMAX,IP,ISL,J,K,NOP,NP,NSYM
       CHARACTER ICH*1
 C     ..
 C     .. Local Arrays ..
@@ -1825,7 +1823,6 @@ C     ..
 C
       IMAX = LEN (ICOL)
       IERR = 0
-      NS1 = NS
 C
 C---- Search for first blank to skip flag sym symtr symmetry
 C     or whatever
@@ -2181,7 +2178,7 @@ C     .. Array Arguments ..
       REAL RSM(4,4,*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,ICH,IST,ITR,J,K,N,NS
+      INTEGER I,ICH,IST,J,K,NS
 C     ..
 C     .. Local Arrays ..
       REAL RSMT(4,4,96)
@@ -2509,7 +2506,7 @@ C     .. Arrays in Common ..
       INTEGER IT
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,NDX,NSER4
+      INTEGER NDX,NSER4
       CHARACTER STROUT*140
 C     ..
 C     .. Intrinsic Functions ..
@@ -2965,9 +2962,6 @@ C
 c  this subroutine assigns a possible point group, using the 
 C  symmetry operators. Only simplest ones returned.
 C
-C
-C
-C
 C  Things for MDF files... Draft for Bauke...
 C
 C     ICENTR   : axis of centering
@@ -3012,38 +3006,38 @@ C      14    CUBIC       II  M3_BARM (PG432)              207 - 214
 C      15    MONOCLINIC  II  2/M (??)  A UNIQUE           3 -   5
 C      16    MONOCLINIC III  2/M (??)  C UNIQUE           3 -   5
 C
-C     In this table only the enantiomorphic spacegroups are
+C
+C---- In this table only the enantiomorphic spacegroups are
 C     included. For the other spacgroups (which contain (glide)
 C     mirrors or an inversion center) this routine can still be
 C     used, but then isym has no meaning anymore.
 C
-C
-C      COMMON /MDFPAR/MAXR,MAXB,CELL(6),ISLOW,INTER,IFAST,KLASS,ICENTR,
-C     +       ISCREW(3),IVERSN
-C
-C
-C LCF CADLCF nlaue number
 C   3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
-C   4 pg2    2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
-C   6 pg222  mmm        hkl:h>=0, k>=0, l>=0            16 ...
-C                                                k>0 if h>0
-C   7 pg4    4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
-C   8 pg422 4/mmm       hkl:h>=0, k>=0, l>=0            89..
+C     pg1bar
+C   4 pg2     2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
+C     pgm pg2/m
+C   6 pg222   mmm        hkl:h>=0, k>=0, l>=0            16 ...
+C     pgmm2 pgmmm 
+C   7 pg4     4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
+C     pg4bar pg4/m                            k>0 if h>0
+C   8 pg422   4/mmm       hkl:h>=0, k>=0, l>=0            89..
+C     pg4mm pg4bar2m pg4barm2 pg4/mmm
 C   9 pg3     3bar      hkl:h>=0, k>0  00l:l>0         143..
-C  10 pg312  3/m        hkl:h>=0, k>=0 with k<=h for all l.
-C                           if k = 0  l>=0
-C           Space group numbers :   149-151-153
-C  11 pg321  3/m        hkl:h>=0, k>=0 with k<=h for all l.
-C                           if h = k  l>=0
+C     pg3bar
+C  10 pg312   3/m        hkl:h>=0, k>=0 with k<=h for all l.
+C     pg32 pg3m pg3m1 pg3barm1 if k = 0  l>=0
+C           Space group numbers :   149-151-153 157 159 162 163
+C  11 pg321   3bar1m     hkl:h>=0, k>=0 with k<=h for all l.
+C     pg31m pg3bar1m      if h = k  l>=0
 C           Space group numbers :   150-152-154
-C  12 pg6    6/m        hkl:h>=0, k>=0, l>=0 with k>=0 if  h=0
-C                       and k> 0 if h>0
-C  13 pg622 6/mmm       hkl:h>=0, k>=0, l>=0 with h>=k 177..
-C  14 pg23   m3         hkl:h>=0, k>=0, l>=0 with l>=h,  k>=h
-C  15 pg432  m3m        hkl:h>=0, k>=0, l>=0  with  k>=l  and
-C
-C
-C
+C  12 pg6     6/m        hkl:h>=0, k>=0, l>=0 with k>=0 if  h=0
+C     pg6bar  6/m        and k> 0 if h>0
+C  13 pg622   6/mmm       hkl:h>=0, k>=0, l>=0 with h>=k 177..
+C     pg6mm pg6barm2 pg6bar2m  pg 6/mmm
+C  14 pg23    m3         hkl:h>=0, k>=0, l>=0 with l>=h,  k>=h
+C     pgm3bar 
+C  15 pg432   m3m        hkl:h>=0, k>=0, l>=0  with  k>=l
+C     pg4bar3m pgm3barm
 C
 C
 C---- Find unique set of rsmt - these are the reciprocal space symmetry
@@ -3053,13 +3047,15 @@ C
 C   Copy  symmetry into RJUNK(i,j,n) to preserve it.
 C   Set rsmt(4,4,??) = 0.0 as a flag for a duplicate while checking.
 C
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
 C     .. Scalar Arguments ..
       INTEGER NSYM,NSYMP
       CHARACTER NAMPG* (*)
       LOGICAL LPRINT
 C     ..
 C     .. Array Arguments ..
-      REAL RSMT(4,4,96)
+      REAL RSMT(4,4,*)
 C     ..
 C     .. Scalars in Common ..
       INTEGER ICENTR,IFAST,INTER,ISLOW,IVERSN,KLASS,MAXB,MAXR
@@ -3075,8 +3071,9 @@ C     .. Local Scalars ..
      +        ISS,ISYM,J,JMIN,JROT,JSM,JUNIQU,N,NREP,NREPET
 C     ..
 C     .. Local Arrays ..
-      REAL RJUNK(4,4,96)
-      INTEGER IN(3),JROTS(96),NORIG(96),NREPP(96),NROT(96),NROTS(96)
+      REAL RJUNK(4,4,MAXSYM)
+      INTEGER IN(3),JROTS(MAXSYM),NORIG(MAXSYM),NREPP(MAXSYM),
+     +     NROT(MAXSYM),NROTS(MAXSYM)
 C     ..
 C     .. External Subroutines ..
       EXTERNAL DETERM
@@ -3609,41 +3606,7 @@ C
         CALL PUTLIN(STROUT,'CURWIN')
       ENDIF
 C
-C---- In this table only the enantiomorphic spacegroups are
-C     included. For the other spacgroups (which contain (glide)
-C     mirrors or an inversion center) this routine can still be
-C     used, but then isym has no meaning anymore.
-C
       END
-C     
-C
-C   3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
-C     pg1bar
-C   4 pg2     2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
-C     pgm pg2/m
-C   6 pg222   mmm        hkl:h>=0, k>=0, l>=0            16 ...
-C     pgmm2 pgmmm 
-C   7 pg4     4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
-C     pg4bar pg4/m                            k>0 if h>0
-C   8 pg422   4/mmm       hkl:h>=0, k>=0, l>=0            89..
-C     pg4mm pg4bar2m pg4barm2 pg4/mmm
-C   9 pg3     3bar      hkl:h>=0, k>0  00l:l>0         143..
-C     pg3bar
-C  10 pg312   3/m        hkl:h>=0, k>=0 with k<=h for all l.
-C     pg32 pg3m pg3m1 pg3barm1 if k = 0  l>=0
-C           Space group numbers :   149-151-153 157 159 162 163
-C  11 pg321   3bar1m     hkl:h>=0, k>=0 with k<=h for all l.
-C     pg31m pg3bar1m      if h = k  l>=0
-C           Space group numbers :   150-152-154
-C  12 pg6     6/m        hkl:h>=0, k>=0, l>=0 with k>=0 if  h=0
-C     pg6bar  6/m        and k> 0 if h>0
-C  13 pg622   6/mmm       hkl:h>=0, k>=0, l>=0 with h>=k 177..
-C     pg6mm pg6barm2 pg6bar2m  pg 6/mmm
-C  14 pg23    m3         hkl:h>=0, k>=0, l>=0 with l>=h,  k>=h
-C     pgm3bar 
-C  15 pg432   m3m        hkl:h>=0, k>=0, l>=0  with  k>=l
-C     pg4bar3m pgm3barm
-C
 C
 C   
 C     
@@ -3802,7 +3765,7 @@ C
 C
 C Arguments:
       INTEGER NUMSGP, MSYM, MSYMP, MLAUE
-      REAL    RRSYM(4,4,96) 
+      REAL    RRSYM(4,4,192) 
 ccMSYM)
       CHARACTER*(*) SPGNAM, PGNAME
       LOGICAL LPRINT
@@ -3816,7 +3779,7 @@ C   NSYM     number of symmetry operations
 C   NSYMP    number of primitive symmetry operations
 C   NLAUE    number of Laue group
       INTEGER MAXSYM
-      PARAMETER (MAXSYM=96)
+      PARAMETER (MAXSYM=192)
       COMMON /RECSYM/RSYM(4,4,MAXSYM),RSYMIV(4,4,MAXSYM),
      .    NSYM,NSYMP,NLAUE
       INTEGER NSYM,NSYMP,NLAUE
@@ -3826,7 +3789,7 @@ C
 C Functions
       INTEGER LENSTR
 C Locals
-      INTEGER I, J, L
+      INTEGER I, L
       CHARACTER*100 STROUT, NAME*8, LAUNAM*8
 C
 C Get point group and primitive-only operations from symmetry matrices
@@ -3941,7 +3904,7 @@ C   NSYM     number of symmetry operations
 C   NSYMP    number of primitive symmetry operations
 C   NLAUE    number of Laue group
       INTEGER MAXSYM
-      PARAMETER (MAXSYM=96)
+      PARAMETER (MAXSYM=192)
       COMMON /RECSYM/RSYM(4,4,MAXSYM),RSYMIV(4,4,MAXSYM),
      .    NSYM,NSYMP,NLAUE
       INTEGER NSYM,NSYMP,NLAUE
@@ -4027,7 +3990,7 @@ C   NSYM     number of symmetry operations
 C   NSYMP    number of primitive symmetry operations
 C   NLAUE    number of Laue group
       INTEGER MAXSYM
-      PARAMETER (MAXSYM=96)
+      PARAMETER (MAXSYM=192)
       COMMON /RECSYM/RSYM(4,4,MAXSYM),RSYMIV(4,4,MAXSYM),
      .    NSYM,NSYMP,NLAUE
       SAVE /RECSYM/
@@ -4372,7 +4335,7 @@ C
 C
 C Locals
       INTEGER I,J,K,L,M,ISYM,ISGN,LP,NLINC,NLMAX
-      CHARACTER LINE*80, HKL(3)*1,NAME*8
+      CHARACTER LINE*80, HKL(3)*1
       DATA   HKL/'h','k','l'/
 C
       LINE = ' '
@@ -4474,7 +4437,7 @@ C
 C
 C     .. Parameters ..
       INTEGER           MAXSYM
-      PARAMETER         (MAXSYM=96)
+      PARAMETER         (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
       REAL              PHASIN,PHSOUT
@@ -4887,13 +4850,10 @@ C Spacegroup not found
       XYZLIM(1,1) = -1.0
       RETURN
 C
-C
  20   DO 30, I=1,3
          XYZLIM(1,I) = 0.0
          XYZLIM(2,I) = ASULIM(I,J)
  30   CONTINUE
-C
-      RETURN
 C
       END
 C
