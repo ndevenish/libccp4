@@ -281,6 +281,12 @@ FORTRAN_SUBR ( PGDEFN, pgdefn,
   free(op1);
 }
 
+
+/** Return Laue number and name for current spacegroup. 
+ * @param nampg Point group name (unused in this implementation)
+ * @param nlaue Laue number
+ * @param launam Laue name
+ */
 FORTRAN_SUBR ( PGNLAU, pgnlau,
                (const fpstr nampg, int *nlaue, fpstr launam,
                 int nampg_len, int launam_len),
@@ -301,6 +307,33 @@ FORTRAN_SUBR ( PGNLAU, pgnlau,
 
   *nlaue = spacegroup->nlaue;
   ccp4_CtoFString(FTN_STR(launam),FTN_LEN(launam),spacegroup->laue_name);
+
+}
+
+/** Return Laue number and name for a spacegroup onto index "sindx". 
+ * @param sindx index of this spacegroup.
+ * @param nlaue Laue number
+ * @param launam Laue name
+ */
+FORTRAN_SUBR ( CCP4SPG_F_GET_LAUE, ccp4spg_f_get_laue,
+               (const int *sindx, int *nlaue, fpstr launam, int launam_len),
+               (const int *sindx, int *nlaue, fpstr launam),
+               (const int *sindx, int *nlaue, fpstr launam, int launam_len))
+{
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_GET_LAUE");)
+
+  if (*sindx <= 0 || *sindx > MSPAC) {
+    printf("Error in CCP4SPG_F_GET_LAUE: sindx %d out of range!\n",*sindx);
+    return;
+  }
+
+  if ( ! spacegrp[*sindx-1] ) {
+    printf("CCP4SPG_F_GET_LAUE: No spacegroup loaded on channel %d ! \n",*sindx);
+    return;
+  }
+
+  *nlaue = spacegrp[*sindx-1]->nlaue;
+  ccp4_CtoFString(FTN_STR(launam),FTN_LEN(launam),spacegrp[*sindx-1]->laue_name);
 
 }
 
@@ -522,6 +555,11 @@ FORTRAN_SUBR ( CCP4SPG_F_LOAD_BY_NAME, ccp4spg_f_load_by_name,
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_LOAD_BY_NAME");)
 
+  if (*sindx <= 0 || *sindx > MSPAC) {
+    printf("Error in CCP4SPG_F_LOAD_BY_NAME: sindx %d out of range!\n",*sindx);
+    return;
+  }
+
   /* free any existing spacegroup and start again */
   if ( spacegrp[*sindx-1] ) ccp4spg_free(&spacegrp[*sindx-1]);
 
@@ -547,6 +585,11 @@ FORTRAN_SUBR ( CCP4SPG_F_LOAD_BY_OPS, ccp4spg_f_load_by_ops,
   ccp4_symop *op1;
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_LOAD_BY_OPS");)
+
+  if (*sindx <= 0 || *sindx > MSPAC) {
+    printf("Error in CCP4SPG_F_LOAD_BY_OPS: sindx %d out of range!\n",*sindx);
+    return;
+  }
 
   /* free any existing spacegroup and start again */
   if ( spacegrp[*sindx-1] ) ccp4spg_free(&spacegrp[*sindx-1]);
@@ -592,6 +635,11 @@ FORTRAN_SUBR ( CCP4SPG_F_ASUPUT, ccp4spg_f_asuput,
   int hin,kin,lin,hout,kout,lout;
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_ASUPUT");)
+
+  if (*sindx <= 0 || *sindx > MSPAC) {
+    printf("Error in CCP4SPG_F_ASUPUT: sindx %d out of range!\n",*sindx);
+    return;
+  }
 
   if ( ! spacegrp[*sindx-1] ) {
     printf("CCP4SPG_F_ASUPUT: No spacegroup loaded on channel %d ! \n",*sindx);
@@ -644,6 +692,38 @@ FORTRAN_FUN (int, INASU, inasu,
     /* Restore previous settings */
     ccp4spg_load_laue(spacegroup,nlaue_save);
   }
+
+  return retval;
+}
+
+/** Test whether reflection or it's Friedel mate is in the asymmetric
+ * unit of the spacegroup on index "sindx".
+ * @param sindx index of this spacegroup.
+ * @param ihkl reflection indices.
+ * @return 1 if in asu, -1 if -h -k -l is in asu, 0 otherwise
+ */
+FORTRAN_FUN (int, CCP4SPG_F_INASU, ccp4spg_f_inasu,
+	       (const int *sindx, const int ihkl[3]),
+               (const int *sindx, const int ihkl[3]),
+               (const int *sindx, const int ihkl[3]))
+{
+  int ih, ik, il, retval;
+
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_INASU");)
+
+  if (*sindx <= 0 || *sindx > MSPAC) {
+    printf("Error in CCP4SPG_F_INASU: sindx %d out of range!\n",*sindx);
+    return 999;
+  }
+
+  if ( ! spacegrp[*sindx-1] ) {
+    printf("CCP4SPG_F_INASU: No spacegroup loaded on channel %d ! \n",*sindx);
+    return 999;
+  }
+  ih = ihkl[0];
+  ik = ihkl[1];
+  il = ihkl[2];
+  retval = ccp4spg_is_in_pm_asu(spacegrp[*sindx-1],ih,ik,il);
 
   return retval;
 }
@@ -970,6 +1050,11 @@ FORTRAN_SUBR ( CCP4SPG_F_IS_CENTRIC, ccp4spg_f_is_centric,
   int h,k,l;
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_IS_CENTRIC");)
+
+  if (*sindx <= 0 || *sindx > MSPAC) {
+    printf("Error in CCP4SPG_F_IS_CENTRIC: sindx %d out of range!\n",*sindx);
+    return;
+  }
 
   if ( ! spacegrp[*sindx-1] ) {
     printf("CCP4SPG_F_IS_CENTRIC: No spacegroup loaded on channel %d ! \n",*sindx);
