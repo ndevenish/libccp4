@@ -140,11 +140,10 @@ C
       LOGICAL    BUFACT(NCMAX), WRTACT(NCMAX), NEW(NCMAX), LUNIT(NCMAX)
       INTEGER    I, IEL, IER, IREC, IRET, IUNIT, L, LENGTH, LOCATION,
      &           LRECL, MCHITM, MODE, MTIT, MTRT, NBYTES, MODE1, MAXNC
-      INTEGER    IBY, INDEX, ISAVE, ISTAT, IVBLK, J, JEL, KEL, KRECSZ,
-     &           NBY, NDO, NLEFT, NOBLK, NTOMOV
-      INTEGER    LRECSZ(NCMAX), MRECSZ(NCMAX), MODES(0:MAXMO),
-     &           MSIT(NCMAX), MSRT(NCMAX), NCHITM(NCMAX), NEL(NCMAX),
-     &           NMODE(NCMAX), NRECSZ(NCMAX), NVBLK(NCMAX)
+      INTEGER    IBY, INDEX, ISAVE, ISTAT, IVBLK, J, JEL, NBY, NDO,
+     &           NLEFT, NTOMOV
+      INTEGER    MODES(0:MAXMO), MSIT(NCMAX), MSRT(NCMAX), NEL(NCMAX),
+     &           NCHITM(NCMAX), NMODE(NCMAX), NVBLK(NCMAX)
       INTEGER    LENSTR
       REAL       BUF(NSIZE/4,NCMAX)
       EQUIVALENCE(BUFFER,BUF)
@@ -334,18 +333,15 @@ C
      &',   Logical name: ',NAME(:LENSTR(NAME)),
      &' File name: ',FNAME(IUNIT)(:LENSTR(FNAME(IUNIT)))
       IF (NEW(IUNIT)) THEN
-        WRITE (*,'(A,2I8/)')
+        WRITE (*,'(A,2I8//)')
      &  ' Initial & extend sizes in physical blocks =',
      &  FAB(IUNIT).FAB$L_ALQ,FAB(IUNIT).FAB$W_DEQ
       ELSE
-        WRITE (*,'(A,I10/)') ' File size in physical blocks =',
-     &  MAPXAB(IUNIT).XABFHC.XAB$L_EBK - 1 +
-     &  (MAPXAB(IUNIT).XABFHC.XAB$W_FFB + NPBSZ - 1) / NPBSZ
+        WRITE (*,'(A,I10//)') ' File size in physical blocks =',
+     &  MAPXAB(IUNIT).XABFHC.XAB$L_EBK-1 +
+     &  (MAPXAB(IUNIT).XABFHC.XAB$W_FFB+NPBSZ-1)/NPBSZ
       ENDIF
 C
-      LRECSZ(IUNIT) = NSIZE
-      MRECSZ(IUNIT) = 1
-      NRECSZ(IUNIT) = 0
       NVBLK(IUNIT) = 1
       NEL(IUNIT) = 1
       BUFACT(IUNIT) = .FALSE.
@@ -384,30 +380,21 @@ C
 C
       ISTAT = 1
       IF (WRTACT(IUNIT) .AND. BUFACT(IUNIT)) THEN
-        IF (MRECSZ(IUNIT).GT.1) THEN
-          NOBLK = (LRECSZ(IUNIT) - 1) / NPBSZ
-          KEL = NPBSZ * NOBLK
-          KRECSZ = MRECSZ(IUNIT) - 1
-          IF (KRECSZ.LT.NRECSZ(IUNIT)) KRECSZ =
-     &    MIN(NPBSZ * ((KRECSZ - 1) / NPBSZ + 1), NRECSZ(IUNIT))
-          KRECSZ = KRECSZ - KEL
-          IF (KRECSZ.GE.I2P15) KRECSZ = KRECSZ - I2P16
 C
 C==== Virtual block number, record buffer address and size.
 C
-          RAB(IUNIT).RAB$L_BKT = NVBLK(IUNIT) + NOBLK
-          RAB(IUNIT).RAB$L_RBF = %LOC(BUFFER(KEL+1,IUNIT))
-          RAB(IUNIT).RAB$W_RSZ = KRECSZ
+        RAB(IUNIT).RAB$L_BKT = NVBLK(IUNIT)
+        RAB(IUNIT).RAB$L_RBF = %LOC(BUFFER(1,IUNIT))
+        RAB(IUNIT).RAB$W_RSZ = NSIZE
 C
 C==== Write out the block.
 C
-          ISTAT = SYS$WRITE(RAB(IUNIT))
-D         WRITE (*,'(A,6I8)') ' SYS$WRITE 1:',
-D    &    NTOMOV,IUNIT,NVBLK(IUNIT)+NOBLK,KEL+1,KRECSZ,ISTAT
-          IF (.NOT.ISTAT) THEN
-            CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
-            WRITE (*,'(/1X,A/)') MSG(:L)
-          ENDIF
+        ISTAT = SYS$WRITE(RAB(IUNIT))
+C        WRITE (*,'(A,5I6)') ' CLOSE:',
+C     &  NTOMOV,IUNIT,NVBLK(IUNIT),NSIZE,ISTAT
+        IF (.NOT.ISTAT) THEN
+          CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
+          WRITE (*,'(/1X,A/)') MSG(:L)
         ENDIF
       ENDIF
       LUNIT(IUNIT) = .TRUE.                             !FREE THIS UNIT #
@@ -462,7 +449,7 @@ C     ===================================
 C
 C==== Maybe this should be a soft fail: IUNIT = -1 ?
 C
- 45   IF (IUNIT.GT.MAXNC .OR. IUNIT.LT.1)
+ 45   IF (IUNIT.GT.NCMAX .OR. IUNIT.LT.1)
      +     CALL CCPERR (1,'QREAD: bad stream number')
       IF (LUNIT(IUNIT)) THEN
         CALL CCPERR(1,'QREAD error: File not open.')
@@ -485,16 +472,14 @@ C
 C==== Read in the block.
 C
         ISTAT = SYS$READ(RAB(IUNIT))
-        NRECSZ(IUNIT) = RAB(IUNIT).RAB$W_RSZ
-        IF (NRECSZ(IUNIT).LT.0) NRECSZ(IUNIT) = NRECSZ(IUNIT) + I2P16
-D       WRITE (*,'(A,6I8)') ' SYS$READ  1:',
-D    &  NTOMOV,IUNIT,NVBLK(IUNIT),NSIZE,NRECSZ(IUNIT),ISTAT
+C        WRITE (*,'(A,5I6)') ' READ: ',
+C     &  NTOMOV,IUNIT,NVBLK(IUNIT),NSIZE,ISTAT
         IF (.NOT.ISTAT) GOTO 60
 C        WRITE (*,'(1X,16F8.0)') (BUF(I,IUNIT),I=1,NSIZE/4)
         BUFACT(IUNIT) = .TRUE.
       ENDIF
 C
-50    NLEFT = NRECSZ(IUNIT) + 1 - NEL(IUNIT)
+50    NLEFT = NSIZE1 - NEL(IUNIT)
       IF (NTOMOV.LE.NLEFT) THEN
 C      WRITE (*,*) 'QREAD: NTOMOV =',NTOMOV,NEL(IUNIT),INDEX
 C
@@ -526,29 +511,18 @@ C==== Convert buffer size to unsigned integer.
           INDEX = INDEX + NLEFT
         ENDIF
         IF (WRTACT(IUNIT)) THEN
-          IF (MRECSZ(IUNIT).GT.1) THEN
-            NOBLK = (LRECSZ(IUNIT) - 1) / NPBSZ
-            KEL = NPBSZ * NOBLK
-            KRECSZ = MRECSZ(IUNIT) - 1
-            IF (KRECSZ.LT.NRECSZ(IUNIT)) KRECSZ =
-     &      MIN(NPBSZ * ((KRECSZ - 1) / NPBSZ + 1), NRECSZ(IUNIT))
-            KRECSZ = KRECSZ - KEL
-            RAB(IUNIT).RAB$L_BKT = NVBLK(IUNIT) + NOBLK
-            RAB(IUNIT).RAB$L_RBF = %LOC(BUFFER(KEL+1,IUNIT))
-            RAB(IUNIT).RAB$W_RSZ = KRECSZ
-            ISTAT = SYS$WRITE(RAB(IUNIT))
-D           WRITE (*,'(A,6I8)') ' SYS$WRITE 2:',
-D    &      NTOMOV,IUNIT,NVBLK(IUNIT)+NOBLK,KEL+1,KRECSZ,ISTAT
-            IF (.NOT.ISTAT) THEN
-              CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
-              WRITE (*,'(/1X,A/)') MSG(:L)
-              CALL CCPERR(1,'QREAD: FATAL ERROR.')
-              IER = -1
-              RETURN
-            ENDIF
-            LRECSZ(IUNIT) = NSIZE
-            MRECSZ(IUNIT) = 1
-            NRECSZ(IUNIT) = 0
+          RAB(IUNIT).RAB$L_BKT = NVBLK(IUNIT)
+          RAB(IUNIT).RAB$L_RBF = %LOC(BUFFER(1,IUNIT))
+          RAB(IUNIT).RAB$W_RSZ = NSIZE
+          ISTAT = SYS$WRITE(RAB(IUNIT))
+C          WRITE (*,'(A,5I6)') ' WRITE:',
+C     &    NTOMOV,IUNIT,NVBLK(IUNIT),NSIZE,ISTAT
+          IF (.NOT.ISTAT) THEN
+            CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
+            WRITE (*,'(/1X,A/)') MSG(:L)
+            CALL CCPERR(1,'QREAD: FATAL ERROR.')
+            IER = -1
+            RETURN
           ENDIF
           WRTACT(IUNIT) = .FALSE.
         ENDIF
@@ -569,10 +543,8 @@ C
           RAB(IUNIT).RAB$L_UBF = %LOC(ARRAY(INDEX))
           RAB(IUNIT).RAB$W_USZ = IBY
           ISTAT = SYS$READ(RAB(IUNIT))
-D         NRECSZ(IUNIT) = RAB(IUNIT).RAB$W_RSZ
-D         IF (NRECSZ(IUNIT).LT.0) NRECSZ(IUNIT) = NRECSZ(IUNIT) + I2P16
-D         WRITE (*,'(A,6I8)') ' SYS$READ  2:',
-D    &    NTOMOV,IUNIT,NVBLK(IUNIT),IBY,NRECSZ(IUNIT),ISTAT
+C          WRITE (*,'(A,5I6)') ' READ: ',
+C     &    NTOMOV,IUNIT,NVBLK(IUNIT),IBY,ISTAT
           IF (.NOT.ISTAT) GOTO 60
           NTOMOV = NTOMOV - NBY
           NVBLK(IUNIT) = NVBLK(IUNIT) + NDO
@@ -586,21 +558,20 @@ D    &    NTOMOV,IUNIT,NVBLK(IUNIT),IBY,NRECSZ(IUNIT),ISTAT
         RAB(IUNIT).RAB$L_UBF = %LOC(BUFFER(1,IUNIT))
         RAB(IUNIT).RAB$W_USZ = NSIZE
         ISTAT = SYS$READ(RAB(IUNIT))
-        NRECSZ(IUNIT) = RAB(IUNIT).RAB$W_RSZ
-        IF (NRECSZ(IUNIT).LT.0) NRECSZ(IUNIT) = NRECSZ(IUNIT) + I2P16
-D       WRITE (*,'(A,6I8)') ' SYS$READ  3:',
-D    &  NTOMOV,IUNIT,NVBLK(IUNIT),NSIZE,NRECSZ(IUNIT),ISTAT
+C        WRITE (*,'(A,5I6)') ' READ: ',
+C     &  NTOMOV,IUNIT,NVBLK(IUNIT),NSIZE,ISTAT
         IF (.NOT.ISTAT) GOTO 60
 C        WRITE (*,'(1X,16F8.0)') (BUF(I,IUNIT),I=1,NSIZE/4)
       ENDIF
       GOTO 50
 C
-60    IF (ISTAT.NE.RMS$_EOF) THEN
+60    IF (ISTAT.EQ.RMS$_EOF) THEN
+        BUFACT(IUNIT) = .FALSE.
+      ELSE
         CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
         WRITE (*,'(/1X,A/)') MSG(:L)
         CALL CCPERR(1,'QREAD: FATAL ERROR.')
       ENDIF
-      BUFACT(IUNIT) = .FALSE.
       IER = NBYTES - NTOMOV/NCHITM(IUNIT)
       IF (IER.EQ.0) IER = -1
 C
@@ -689,7 +660,7 @@ C     ================================
 C
 C==== Maybe this should be a soft fail: IUNIT = -1 ?
 C
-      IF (IUNIT.GT.MAXNC .OR. IUNIT.LT.1)
+      IF (IUNIT.GT.NCMAX .OR. IUNIT.LT.1)
      +     CALL CCPERR (1,'QREAD: bad stream number')
       IF (LUNIT(IUNIT)) THEN
         CALL CCPERR(1,'QWRITE error: File not open.')
@@ -700,22 +671,13 @@ C
       NTOMOV = NBYTES * NCHITM(IUNIT)
       IF (NEL(IUNIT).GT.NSIZE) THEN
         IF (WRTACT(IUNIT)) THEN
-          IF (MRECSZ(IUNIT).GT.1) THEN
-            NOBLK = (LRECSZ(IUNIT) - 1) / NPBSZ
-            KEL = NPBSZ * NOBLK + 1
-            KRECSZ = NPBSZ * ((MRECSZ(IUNIT) - 2) / NPBSZ - NOBLK + 1)
-            IF (KRECSZ.GE.I2P15) KRECSZ = KRECSZ - I2P16
-            RAB(IUNIT).RAB$L_BKT = NVBLK(IUNIT) + NOBLK
-            RAB(IUNIT).RAB$L_RBF = %LOC(BUFFER(KEL,IUNIT))
-            RAB(IUNIT).RAB$W_RSZ = KRECSZ
-            ISTAT = SYS$WRITE(RAB(IUNIT))
-D           WRITE (*,'(A,6I8)') ' SYS$WRITE 3:',
-D    &      NTOMOV,IUNIT,NVBLK(IUNIT)+NOBLK,KEL,KRECSZ,ISTAT
-            IF (.NOT.ISTAT) GOTO 80
-            LRECSZ(IUNIT) = NSIZE
-            MRECSZ(IUNIT) = 1
-            NRECSZ(IUNIT) = 0
-          ENDIF
+          RAB(IUNIT).RAB$L_BKT = NVBLK(IUNIT)
+          RAB(IUNIT).RAB$L_RBF = %LOC(BUFFER(1,IUNIT))
+          RAB(IUNIT).RAB$W_RSZ = NSIZE
+          ISTAT = SYS$WRITE(RAB(IUNIT))
+C          WRITE (*,'(A,5I6)') ' WRITE:',
+C     &    NTOMOV,IUNIT,NVBLK(IUNIT),NSIZE,ISTAT
+          IF (.NOT.ISTAT) GOTO 80
         ENDIF
         NEL(IUNIT) = 1
         NVBLK(IUNIT) = NVBLK(IUNIT) + NRBLK
@@ -731,11 +693,8 @@ C
             RAB(IUNIT).RAB$L_UBF = %LOC(BUFFER(1,IUNIT))
             RAB(IUNIT).RAB$W_USZ = NSIZE
             ISTAT = SYS$READ(RAB(IUNIT))
-            NRECSZ(IUNIT) = RAB(IUNIT).RAB$W_RSZ
-            IF (NRECSZ(IUNIT).LT.0)
-     &      NRECSZ(IUNIT) = NRECSZ(IUNIT) + I2P16
-D           WRITE (*,'(A,6I8)') ' SYS$READ  4:',
-D    &      NTOMOV,IUNIT,NVBLK(IUNIT),NSIZE,NRECSZ(IUNIT),ISTAT
+C            WRITE (*,'(A,5I6)') ' READ: ',
+C     &      NTOMOV,IUNIT,NVBLK(IUNIT),NSIZE,ISTAT
 C
 C     ERROR=BLANK FILE
 C
@@ -766,9 +725,7 @@ C==== Convert buffer size to unsigned integer.
           CALL LIB$MOVC3(NTOMOV-I2P16,ARRAY(INDEX),
      &    BUFFER(NEL(IUNIT),IUNIT))
         ENDIF
-        LRECSZ(IUNIT)=MIN(LRECSZ(IUNIT),NEL(IUNIT))
         NEL(IUNIT) = NEL(IUNIT) + NTOMOV
-        MRECSZ(IUNIT)=MAX(MRECSZ(IUNIT),NEL(IUNIT))
         RETURN
       ELSE
 C        WRITE (*,*) 'QWRITE: NLEFT  =',NLEFT,INDEX,NEL(IUNIT)
@@ -782,20 +739,13 @@ C==== Convert buffer size to unsigned integer.
           CALL LIB$MOVC3(NLEFT-I2P16,ARRAY(INDEX),
      &    BUFFER(NEL(IUNIT),IUNIT))
         ENDIF
-        NOBLK = (LRECSZ(IUNIT) - 1) / NPBSZ
-        KEL = NPBSZ * NOBLK + 1
-        KRECSZ = NPBSZ * (NRBLK - NOBLK)
-        IF (KRECSZ.GE.I2P15) KRECSZ = KRECSZ - I2P16
-        RAB(IUNIT).RAB$L_BKT = NVBLK(IUNIT) + NOBLK
-        RAB(IUNIT).RAB$L_RBF = %LOC(BUFFER(KEL,IUNIT))
-        RAB(IUNIT).RAB$W_RSZ = KRECSZ
+        RAB(IUNIT).RAB$L_BKT = NVBLK(IUNIT)
+        RAB(IUNIT).RAB$L_RBF = %LOC(BUFFER(1,IUNIT))
+        RAB(IUNIT).RAB$W_RSZ = NSIZE
         ISTAT = SYS$WRITE(RAB(IUNIT))
-D       WRITE (*,'(A,6I8)') ' SYS$WRITE 4:',
-D    &  NTOMOV,IUNIT,NVBLK(IUNIT)+NOBLK,KEL,KRECSZ,ISTAT
+C        WRITE (*,'(A,5I6)') ' WRITE:',
+C     &  NTOMOV,IUNIT,NVBLK(IUNIT),NSIZE,ISTAT
         IF (.NOT.ISTAT) GOTO 80
-        LRECSZ(IUNIT) = NSIZE
-        MRECSZ(IUNIT) = 1
-        NRECSZ(IUNIT) = 0
         NVBLK(IUNIT) = NVBLK(IUNIT) + NRBLK
         NEL(IUNIT) = 1
         NTOMOV = NTOMOV - NLEFT
@@ -814,8 +764,8 @@ C
           RAB(IUNIT).RAB$L_RBF = %LOC(ARRAY(INDEX))
           RAB(IUNIT).RAB$W_RSZ = IBY
           ISTAT = SYS$WRITE(RAB(IUNIT))
-D         WRITE (*,'(A,6I8)') ' SYS$WRITE 5:',
-D    &    NTOMOV,IUNIT,NVBLK(IUNIT),1,IBY,ISTAT
+C          WRITE (*,'(A,5I6)') ' WRITE:',
+C     &    NTOMOV,IUNIT,NVBLK(IUNIT),IBY,ISTAT
           IF (.NOT.ISTAT) GOTO 80
           NVBLK(IUNIT) = NVBLK(IUNIT) + NDO
           INDEX = INDEX + NBY
@@ -897,30 +847,18 @@ C
 C
 90    IF (IVBLK.NE.NVBLK(IUNIT)) THEN
         IF (WRTACT(IUNIT) .AND. NEL(IUNIT).NE.1) THEN
-          IF (MRECSZ(IUNIT).GT.1) THEN
-            NOBLK = (LRECSZ(IUNIT) - 1) / NPBSZ
-            KEL = NPBSZ * NOBLK
-            KRECSZ = MRECSZ(IUNIT) - 1
-            IF (KRECSZ.LT.NRECSZ(IUNIT)) KRECSZ =
-     &      MIN(NPBSZ * ((KRECSZ - 1) / NPBSZ + 1), NRECSZ(IUNIT))
-            KRECSZ = KRECSZ - KEL
-            IF (KRECSZ.GE.I2P15) KRECSZ = KRECSZ - I2P16
-            RAB(IUNIT).RAB$L_BKT = NVBLK(IUNIT) + NOBLK
-            RAB(IUNIT).RAB$L_RBF = %LOC(BUFFER(KEL+1,IUNIT))
-            RAB(IUNIT).RAB$W_RSZ = KRECSZ
-            ISTAT = SYS$WRITE(RAB(IUNIT))
-D           WRITE (*,'(A,6I8)') ' SYS$WRITE 6:',
-D    &      NTOMOV,IUNIT,NVBLK(IUNIT)+NOBLK,KEL+1,KRECSZ,ISTAT
+          RAB(IUNIT).RAB$L_BKT = NVBLK(IUNIT)
+          RAB(IUNIT).RAB$L_RBF = %LOC(BUFFER(1,IUNIT))
+          RAB(IUNIT).RAB$W_RSZ = NSIZE
+          ISTAT = SYS$WRITE(RAB(IUNIT))
+C          WRITE (*,'(A,5I6)') ' SEEK: ',
+C     &    NTOMOV,IUNIT,NVBLK(IUNIT),NSIZE,ISTAT
 C
-            IF (.NOT.ISTAT) THEN
-              CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
-              WRITE (*,'(/1X,A/)') MSG(:L)
-              CALL CCPERR(1,'QSEEK: FATAL ERROR.')
-              RETURN
-            ENDIF
-            LRECSZ(IUNIT) = NSIZE
-            MRECSZ(IUNIT) = 1
-            NRECSZ(IUNIT) = 0
+          IF (.NOT.ISTAT) THEN
+            CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
+            WRITE (*,'(/1X,A/)') MSG(:L)
+            CALL CCPERR(1,'QSEEK: FATAL ERROR.')
+            RETURN
           ENDIF
           WRTACT(IUNIT) = .FALSE.
         ENDIF
@@ -967,7 +905,7 @@ C
         LENGTH = -1
       ELSE
         FILNAM = FNAME(IUNIT)
-        LENGTH = NPBSZ * (MAPXAB(IUNIT).XABFHC.XAB$L_EBK - 1) +
+        LENGTH = (MAPXAB(IUNIT).XABFHC.XAB$L_EBK-1)*NPBSZ +
      &  MAPXAB(IUNIT).XABFHC.XAB$W_FFB
       ENDIF
       RETURN
