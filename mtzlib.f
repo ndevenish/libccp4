@@ -2667,6 +2667,7 @@ C
 C                     ************************
                  CALL LERROR(ISTAT,IFAIL,LINE)
 C                     ************************
+                 CALL CCPERR (1, 'Corrupt MTZ file?')
               ENDIF
 C
             ELSE
@@ -2892,6 +2893,7 @@ C
 C                     ************************
                  CALL LERROR(ISTAT,IFAIL,LINE)
 C                     ************************
+                 CALL CCPERR (1, 'Corrupt MTZ file?')
               ENDIF
 C
             ELSE
