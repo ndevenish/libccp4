@@ -81,7 +81,7 @@ KEYBUF consist of NKEYS entries, each of the form:
 /* F2C isn't disjoint with the rest, so be careful (also for other
    routines). */
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77)
   int srtbeg_ (nkeys, keybuf, lrecl, memsize)
 
 #else
@@ -223,7 +223,7 @@ SRTRLS:	Release one record into Sort
 
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77)
   int srtrls_ (record)
 
 #else
@@ -244,7 +244,7 @@ SRTRLS:	Release one record into Sort
 
 char		*record;
 {
-  register unsigned long ret;
+  register size_t ret;
 
   ret = fwrite(record, sizeof(char), recl, filout);
   return(ret == recl ? 0 : ferror(filout));
@@ -260,7 +260,7 @@ SRTMRG:	Merge - finish release phase
 
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77)
   int srtmrg_ ()
 
 #else
@@ -299,7 +299,7 @@ SRTRET:	Return 1 record from sort
 
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77)
   int srtret_ (record)
 
 #else
@@ -320,7 +320,8 @@ SRTRET:	Return 1 record from sort
 
 char		*record;
 {
-    register int	ret;
+    register size_t	ret;
+    int reterr;
 # if defined (ESV) || defined (ultrix) || defined (alliant)
     /* Ultrix guessed as BSD-ish */
     union wait *status;
@@ -343,9 +344,9 @@ char		*record;
     fclose(filin);
     if (status != 0)
       return (status);		/* sub-process abended */
-    ret=ferror(filin);
-    if (ret != 0) {
-      return (ret);
+    reterr=ferror(filin);
+    if (reterr != 0) {
+      return (reterr);
     } else			/* e.g. premature EOF */
       return (EIO);
 }
