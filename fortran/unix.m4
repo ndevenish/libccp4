@@ -565,13 +565,19 @@ C     .. Scalar Arguments ..
 C     .. Local Arrays ..
       INTEGER IARRAY(3)
 C     ..
-C     don't declare IDATE
+C     don't declare IDATE -- it's often an intrinsic to avoid confusion
+C     between the two possible calling sequences.  On SGI, it's only
+C     documented in one style but seems to work with the canonical
+C     Unix one too; however, the order of the arguments of the
+C     documented version (used here) *isn't* the same as for VMS...
 C
 ifelse(_sgi,1,
-[      CALL IDATE(IARRAY(1),IARRAY(2),IARRAY(3))],dnl VMS-style
-[      CALL IDATE (IARRAY)])
+[C     Updating 3 array elements separately would be illegal aliasing,
+C     of course
+      CALL IDATE(IDAY,IMONTH,IARRAY(3))],dnl VMS-style
+[      CALL IDATE (IARRAY)
       IDAY = IARRAY(1)
-      IMONTH = IARRAY(2)
+      IMONTH = IARRAY(2)])
 C     This may or may not be necessary, depending on system, but does no
 C     harm:
       IYEAR = MOD(IARRAY(3), 100)
@@ -632,9 +638,8 @@ C     =======================
       SUBROUTINE USTIME(ISEC)
 C     =======================
 C
-C USTIME - Get absolute time in seconds. (returns with -1 under VMS)
-C          Convex uses STIME (), others seem to use TIME (). Alliant
-C          has TIME defined as INTEGER*4
+C USTIME - Get absolute time in seconds.
+C          Convex uses STIME (), others seem to use TIME ().
 C
 C Input:     none
 C
@@ -650,7 +655,7 @@ ifelse(_convex,1,
 [      INTEGER STIME
       ISEC = STIME()],
 _hpux,1,
-[      ISEC = SECNDS(0.0)],
+[ifelse(_hpux9,1,,[      ISEC = SECNDS(0.0)])],
 [      INTEGER TIME
 C
       ISEC = TIME()])
