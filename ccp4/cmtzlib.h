@@ -659,8 +659,19 @@ int ccp4_lhprt(const MTZ *mtz, int iprint);
 
 int ccp4_lhprt_adv(const MTZ *mtz, int iprint);
 
+/** Function to return batch header data for a specified batch.
+ * @param batch Pointer to requested batch.
+ * @param buf Real and integer batch data.
+ * @param charbuf Character batch data (title and axes names).
+ * @param iprint =0 no printing, =1 print title only, >1 print full header.
+ * @return 1 on success 
+ */
 int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint);
 
+/** Function to print batch header data for a specified batch to stdout.
+ * @param batch Pointer to requested batch.
+ * @return 1 on success 
+ */
 int MtzPrintBatchHeader(MTZBAT *batch);
 
 int ccp4_lwtitl(MTZ *mtz, const char *ftitle, int flag);

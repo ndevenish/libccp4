@@ -540,6 +540,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
 	/* read batch title */
         istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
         strncpy(batch->title,hdrrec+6,70); 
+        batch->title[70]='\0';
 
         ccp4_file_setmode(filein,6);
         istat = ccp4_file_read(filein, (uint8 *) intbuf, nintegers);
@@ -666,7 +667,7 @@ int MtzArrayToBatch(const int *intbuf, const float *fltbuf, MTZBAT *batch)
   batch->delcor = fltbuf[88];
   batch->divhd = fltbuf[89];
   batch->divvd = fltbuf[90];
-  for (i = 0; i < batch->ndet; ++i)
+  for (i = 0; i < 2; ++i)
   { batch->dx[i] = fltbuf[111 + (i * 6)];
     batch->theta[i] = fltbuf[112 + (i * 6)];
     batch->detlm[i][0][0] = fltbuf[113 + (i * 6)];
@@ -1514,7 +1515,9 @@ int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint)
   strncpy(charbuf+78,batch->gonlab[1],8); 
   strncpy(charbuf+86,batch->gonlab[2],8); 
 
-  if (iprint > 0) {
+  if (iprint == 1) {
+    printf(" Batch number: \n %6d    %s\n",batch->num,batch->title);
+  } else if (iprint > 1) {
     MtzPrintBatchHeader(batch);
   }
 
@@ -1523,6 +1526,7 @@ int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint)
 
 int MtzPrintBatchHeader(MTZBAT *batch) {
 
+  int i;
   char labtype[20],axes[5],string1[40],string2[40];
 
   switch (batch->ldtype) {
@@ -1592,8 +1596,11 @@ int MtzPrintBatchHeader(MTZBAT *batch) {
     printf("   %s %6.3f %6.3f \n",
            "Mosaicity (horizontal, vertical)..",batch->crydat[0],batch->crydat[1]);
   }
-  printf("   %s %7.3f %8.3f %8.3f \n",
-	 "Datum goniostat angles (degrees)..",batch->datum[0],batch->datum[1],batch->datum[2]);
+  printf("   Datum goniostat angles (degrees)..");
+  for (i = 0; i < batch->ngonax; ++i) 
+    printf(" %8.3f",batch->datum[i]);
+  printf("\n");
+
   if (batch->jsaxs > 0 && batch->jsaxs <= batch->ngonax) 
     printf("   %s  %s \n",
 	 "Scan axis ........................",batch->gonlab[batch->jsaxs-1]);
@@ -1629,7 +1636,12 @@ int MtzPrintBatchHeader(MTZBAT *batch) {
 	   "   Divergence .......................",batch->divhd,batch->divvd);
   }
 
-  /* sorry, bored now ... */
+  printf(" Detector information :-\n   Number of detectors...............%7d \n",batch->ndet);
+  printf("   %s%9.3f\n%s%9.3f\n%s%7.1f%7.1f%7.1f%7.1f\n",
+         "   Crystal to Detector distance (mm).",batch->dx[0],
+         "   Detector swing angle..............",batch->theta[0],
+         "   Pixel limits on detector..........",batch->detlm[0][0][0],batch->detlm[0][0][1],batch->detlm[0][1][0],batch->detlm[0][1][1]);
+  printf(" ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
 
   return 1;
 }
