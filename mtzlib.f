@@ -3,6 +3,9 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
+C     12/10/99 AWA
+C     initialise the html routines - a call to ccp4h_init_lib
+C
 C     19/4/99 AWA
 C     AWA/PRE MBATCH incresed to 5000
 C
@@ -347,6 +350,9 @@ C     ..
 C     .. Local Scalars ..
       INTEGER JDO10,JDO20,JDO30
 C     ..
+C     .. External subroutines
+      EXTERNAL CCP4H_INIT_LIB
+C     ..
 C     .. Common blocks ..
       COMMON /MTZLAB/NLUSRI(MFILEX),NLUSRO(MFILEX)
       COMMON /MTZLBC/LSUSRI(MFILEX,MCOLS),LSUSRO(MFILEX,MCOLS)
@@ -385,6 +391,9 @@ C
         RLUN(JDO30) = 0
         WLUN(JDO30) = 0
  30   CONTINUE
+C Iniitialise the html flag so there are no prblems with stderr
+      CALL CCP4H_INIT_LIB()
+
       END
 C
 C
