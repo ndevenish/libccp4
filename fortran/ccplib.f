@@ -2993,7 +2993,7 @@ C      NAME (I)  CHARACTER: Which license to test for. Only CCP4 currently works
 C
 C_END_CCPLIC
 C
-C====== Set the bits
+C====== 
 C
       LOGICAL FUNCTION CCPLIC(NAME)
 
