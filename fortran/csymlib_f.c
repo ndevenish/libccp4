@@ -606,10 +606,10 @@ FORTRAN_SUBR ( CCP4SPG_F_ASUPUT, ccp4spg_f_asuput,
 }
 
 /** Test whether reflection or it's Friedel mate is in asu.
- * Note that the argument nlaue is ignored, and the most recent
- * spacegroup information used instead.
- * @param ihkl reflection indices
- * @param nlaue (ignored)
+ * The argument nlaue is checked against the value for the current
+ * spacegroup: if it differs then spacegroup->nlaue is updated temporarily.
+ * @param ihkl reflection indices.
+ * @param nlaue Laue group number.
  * @return 1 if in asu, -1 if -h -k -l is in asu, 0 otherwise
  */
 FORTRAN_FUN (int, INASU, inasu,
@@ -617,7 +617,7 @@ FORTRAN_FUN (int, INASU, inasu,
                (const int ihkl[3], const int *nlaue),
                (const int ihkl[3], const int *nlaue))
 {
-  int ih, ik, il;
+  int ih, ik, il, nlaue_save = -1, retval;
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: INASU");)
 
@@ -626,11 +626,26 @@ FORTRAN_FUN (int, INASU, inasu,
     return 999;
   }
 
+  if (spacegroup->nlaue != *nlaue) {
+    /* The requested Laue number is different to that for the
+       current spacegroup
+       Save the current Laue code and load the data for the requested code */
+    nlaue_save = spacegroup->nlaue;
+    if (ccp4spg_load_laue(spacegroup,*nlaue)) {
+      printf("INASU: unrecognised CCP4 Laue code\n");
+      return 999;
+    }
+  }
   ih = ihkl[0];
   ik = ihkl[1];
   il = ihkl[2];
+  retval = ccp4spg_is_in_pm_asu(spacegroup,ih,ik,il);
+  if (nlaue_save > -1) {
+    /* Restore previous settings */
+    ccp4spg_load_laue(spacegroup,nlaue_save);
+  }
 
-  return ccp4spg_is_in_pm_asu(spacegroup,ih,ik,il);
+  return retval;
 }
 
 FORTRAN_SUBR ( PRTRSM, prtrsm,
