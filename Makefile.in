@@ -85,7 +85,7 @@ MMDBOBJS = bfgs_min.o mmdb_chain.o    mmdb_manager.o  mmdb_symop.o \
            machine_.o mmdb_cryst.o    mmdb_model.o    stream_.o \
            mattype_.o mmdb_file.o     mmdb_rwbrook.o  mmdb_atom.o \
            mmdb_graph.o  mmdb_selmngr.o  mmdb_align.o \
-           mmdb_tables.o math_.o mmdb_sbase.o mmdb_uddata.o \
+           mmdb_tables.o math_.o mmdb_sbase.o mmdb_sbase0.o mmdb_uddata.o \
            mmdb_xml.o   mmdb_bondmngr.o mmdb_ficif.o random_n.o
 CORELIBFILES = $(srcdir)/library_err.c $(srcdir)/ccp4_errno.h $(srcdir)/library_file.c \
                $(srcdir)/library_file.h $(srcdir)/ccp4_file_err.h $(srcdir)/library_utils.c \
@@ -145,7 +145,8 @@ $(mmdbsrcdir)/mmdb_manager.h   $(mmdbsrcdir)/mmdb_rwbrook.h   $(mmdbsrcdir)/mmdb
 $(mmdbsrcdir)/linalg_.h        $(mmdbsrcdir)/mmdb_align.h     $(mmdbsrcdir)/mmdb_cifdefs.h   $(mmdbsrcdir)/mmdb_ficif.h \
 $(mmdbsrcdir)/mmdb_mask.h      $(mmdbsrcdir)/mmdb_sbase.h     $(mmdbsrcdir)/mmdb_title.h     $(mmdbsrcdir)/random_n.h \
 $(mmdbsrcdir)/machine_.h       $(mmdbsrcdir)/mmdb_atom.h      $(mmdbsrcdir)/mmdb_coormngr.h  $(mmdbsrcdir)/mmdb_file.h \
-$(mmdbsrcdir)/mmdb_mmcif.h     $(mmdbsrcdir)/mmdb_selmngr.h   $(mmdbsrcdir)/mmdb_uddata.h    $(mmdbsrcdir)/stream_.h
+$(mmdbsrcdir)/mmdb_mmcif.h     $(mmdbsrcdir)/mmdb_selmngr.h   $(mmdbsrcdir)/mmdb_uddata.h    $(mmdbsrcdir)/stream_.h \
+$(mmdbsrcdir)/mmdb_sbase0.h
 
 
 ##### Makefile targets ######
@@ -600,6 +601,7 @@ mmdb_selmngr.o:   $(mmdbsrcdir)/mmdb_selmngr.cpp
 mmdb_align.o:     $(mmdbsrcdir)/mmdb_align.cpp
 mmdb_tables.o:    $(mmdbsrcdir)/mmdb_tables.cpp
 mmdb_sbase.o:     $(mmdbsrcdir)/mmdb_sbase.cpp
+mmdb_sbase0.o:    $(mmdbsrcdir)/mmdb_sbase0.cpp
 math_.o:          $(mmdbsrcdir)/math_.cpp
 mmdb_bondmngr.o:  $(mmdbsrcdir)/mmdb_bondmngr.cpp
 mmdb_uddata.o:    $(mmdbsrcdir)/mmdb_uddata.cpp
