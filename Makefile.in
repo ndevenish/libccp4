@@ -118,19 +118,13 @@ all:  fsplit $(LMMDB) $(LC) $(LF)
 # maybe create shared library
 	$(SHARE_LIB)
 
-$(LC) : cobjs 
-# we could presumably avoid the next two steps if we haven't changed anything
-	$(RANLIB) $@
-
-$(LF) : $(FORTRANOBJS) fintobjs
-# we could presumably avoid the next two steps if we haven't changed anything
-	$(RANLIB) $@
-
-fintobjs : $(FINTERFACEOBJS)
-	$(AR) $(LF) $?
-
-cobjs: $(CORELIBOBJS) $(CGENERALOBJS) $(CUCOBJS) $(CMTZOBJS) $(CMAPOBJS) $(CSYMOBJS)
+$(LC) : $(CORELIBOBJS) $(CGENERALOBJS) $(CUCOBJS) $(CMTZOBJS) $(CMAPOBJS) $(CSYMOBJS)
 	$(AR) $(LC) $?
+	$(RANLIB) $@
+
+$(LF) : $(FORTRANOBJS) $(FINTERFACEOBJS)
+# we could presumably avoid the next two steps if we haven't changed anything
+	$(RANLIB) $@
 
 # cmtz library only
 
@@ -246,8 +240,12 @@ $(MMDBOBJS):
 	$(CXX) $(CXXFLAGS) -I$(mmdbsrcdir) -c $(mmdbsrcdir)/`basename $@ .o`.cpp
 
 $(CORELIBOBJS) $(CGENERALOBJS) $(CMTZOBJS) $(CMAPOBJS) $(CUCOBJS) \
-            $(CSYMOBJS) $(FINTERFACEOBJS) $(UMTZOBJS) $(MMTZOBJS): 
+            $(CSYMOBJS) $(UMTZOBJS) $(MMTZOBJS): 
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/`basename $@ .o`.c
+
+$(FINTERFACEOBJS):
+	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/`basename $@ .o`.c
+	$(AR) $(LF) $?
 
 $(CMTZPYOBJS) $(CMAPPYOBJS) $(CSYMPYOBJS): 
 	$(CC) $(CFLAGS) -I$(srcdir) -I$(PYTHON_INCLUDE) -c $(srcdir)/`basename $@ .o`.c
@@ -619,8 +617,8 @@ testlib : $(srcdir)/testlib.c  $(LF)
 #
 
 install : all
-	$(INSTALL_DATA) `pwd`/$(LF) $(libdir)/$(LMMDB)
-	$(INSTALL_DATA) `pwd`/$(LF) $(libdir)/$(LC)
+	$(INSTALL_DATA) `pwd`/$(LMMDB) $(libdir)/$(LMMDB)
+	$(INSTALL_DATA) `pwd`/$(LC) $(libdir)/$(LC)
 	$(INSTALL_DATA) `pwd`/$(LF) $(libdir)/$(LF)
 	$(RANLIB) $(libdir)/$(LMMDB)
 	$(RANLIB) $(libdir)/$(LC)
@@ -629,14 +627,19 @@ install : all
 
 uninstall :
 	-rm -f $(libdir)/$(LMMDB) $(libdir)/$(LC) $(libdir)/$(LF)
-	test -f $(libdir)/libccp4.so && rm -f $(libdir)/libccp4.so
+	test -f $(libdir)/libccp4f.so && rm -f $(libdir)/libccp4f.so
+	test -f $(libdir)/libccp4c.so && rm -f $(libdir)/libccp4c.so
+	test -f $(libdir)/libmmdb.so && rm -f $(libdir)/libmmdb.so
 
 clean :
 	-rm -f core *.o *~ *.dir/*.o testlib disc.dft a.out *.orig *.rej defs.m4
 	-rm -rf tagdir
 
 realclean : clean
-	-rm -rf $(LF) *.dir TAGS unix.f libccp4.so fsplit
+	-rm -rf $(LF) $(LC) $(LMMDB) *.dir TAGS unix.f fsplit
+	test -f libccp4f.so && rm -f libccp4f.so
+	test -f libccp4c.so && rm -f libccp4c.so
+	test -f libmmdb.so && rm -f libmmdb.so
 
 distclean : realclean
 	-rm -f Makefile
