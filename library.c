@@ -2690,7 +2690,7 @@ int __stdcall ISATTY (int *lunit)
   void *ccp4realloc(void *ptr, size_t size)
 #else
   void *ccp4realloc(ptr, size)
-  void *ptr
+  void *ptr;
   size_t size;
 #endif
 
@@ -2712,7 +2712,7 @@ int __stdcall ISATTY (int *lunit)
   void *ccp4calloc(size_t nelem , size_t elsize)
 #else
   void *ccp4calloc(nelem, elsize)
-  size_t nelem
+  size_t nelem;
   size_t elsize;
 #endif
 
