@@ -27,13 +27,14 @@
 \noindent
 This file contains the lowest level routines for the CCP4 Program
 Suite, mainly for i/o (as required by the {\tt diskio} routines) and
-bit-twiddling.
+bit-twiddling.  It's been partly re-engineered from a non-literate C
+file and isn't properly documented yet.
 \bigskip
 
 \tableofcontents
 
 \subsection*{List of chunks}
-\chunklist
+\nowebchunks
 
 @ \section{Summary}
 
@@ -291,7 +292,7 @@ configuration makes the appropriate [[#define]] of [[NOUNISTD]].
 #include <errno.h>
 #include <ctype.h>
 
-#ifdef _AIX                     /* would do no harm on others, though */
+#if defined(_AIX) || defined (__hpux) /* would do no harm on others, though */
 #  include <time.h>
 #endif
 @ \section{{\tt define}s}
@@ -399,39 +400,38 @@ static void fatal (message)
 char *message;
 {
   int one = 1;
-  int *code = &one;
-  int length = strlen(message);
 #if CALL_LIKE_HPUX
   extern void ccperr();
 
-  ccperr (code, message, length);
+  ccperr (&one, message, (int) strlen(message));
 #endif
 #if CALL_LIKE_STARDENT
   extern void CCPERR();
-  struct Str_Desc *str;
+  struct Str_Desc str;
 
-  str->Str_length = length;
-  str->Str_pointer = message;
-  (void) strncpy (str->Str_pointer, message, length);
-  CCPERR (code, str);
+  str.Str_length = (int) strlen(message);
+  str.Str_pointer = message;
+  CCPERR (&one, &str);
 #endif
 #if defined (VMS)
   extern void CCPERR();
-   struct dsc$descriptor_s *str;
+   struct dsc$descriptor_s str;
 
-   str->dsc$a_pointer = message;
-   str->dsc$w_length = length;
-  CCPERR (code, str);
+   str.dsc$a_pointer = message;
+   str.dsc$w_length = (int) strlen(message);
+   str.dsc$b_dtype = DSC$K_DTYPE_T;
+   str.dsc$b_class = DSC$K_CLASS_S;
+  CCPERR (&one, &str);
 #endif
 #if CALL_LIKE_SUN
   extern void ccperr_();
 
-  ccperr_ (code, message, length);
+  ccperr_ (&one, message, (int) strlen(message));
 #endif
 #if CALL_LIKE_IRIS
   extern fortran ccperr_();
 
-  (void) ccperr_ (length, code, message);
+  (void) ccperr_ ((int) strlen(message), &one, message);
 #endif
  }
 @ 
@@ -591,8 +591,8 @@ int  *iunit, *istat;
 {
   size_t Length;
   int i, jstat;
-  int16 fileFT=0, fileIT=0;     /* float and integer machine types of file */
-  unsigned char mtstring[2] = {0,0}; /* machine stamp */
+  uint16 fileFT=0, fileIT=0;     /* float and integer machine types of file */
+  unsigned char mtstring[2]; /* machine stamp */
 
   jstat = *istat;
   if (! initialised) {
@@ -659,17 +659,19 @@ returns here, since a random file might have rather few bytes in it
 and we don't assume that we can read any particular part of it.
 <<set up number conversion for read if necessary>>=
 Fconvert[*iunit] = Iconvert[*iunit] = 0;
-fileFT = fileIT =0;
+mtstring[0] = mtstring[1] = 0;
 if ((*file_attribute[*istat - 1] != 'w') &&
     (! file_is_scratch[*iunit]) &&
     (fread (fileType[*iunit], (size_t) sizeof(char), (size_t) 4,
             file_stream[*iunit]) == 4))
 {
-  <<if VMS, check file type>>
+<<if VMS, check file type>>
   if (strncmp (fileType[*iunit],"MTZ",3) == 0) { /* MTZ file? */
-    if (! (fseek (file_stream[*iunit], mt_stamp_posn, SEEK_SET) == 0)
-          && (fread (mtstring,(size_t)  sizeof(char), (size_t) 2,
-                   file_stream[*iunit]) == 2))
+    if (! ((fseek (file_stream[*iunit], mt_stamp_posn, SEEK_SET)
+	    == 0) &&
+	   (fread (mtstring,(size_t)  sizeof(char), (size_t) 2,
+		      file_stream[*iunit])
+	    == 2)))
       fatal("(Q)QOPEN: can't read machine stamp in MTZ file");
   } else {                      /* map file? */
     if (fseek (file_stream[*iunit], map_stamp_posn, SEEK_SET)==0 &&
@@ -702,12 +704,12 @@ documentation.
 <<if VMS, check file type>>=
 #ifdef VMS
 {
-stat_t statbuf;			/* fstat info -- see VM specifics below */
+stat_t statbuf;                 /* fstat info -- see VM specifics below */
 if (fstat (fileno (file_stream[*iunit]), &statbuf) != 0)
     fatal ("(Q)QOPEN: Can't stat input file");
 if (statbuf.st_fab_rfm != 5) {
   errno = 0;
-  fatal ("(Q)QOPEN: input file not Stream_LF -- run convert_old");
+  fatal ("(Q)QOPEN: input file not Stream_LF -- run convert_old?");
 }
 }
 #endif
@@ -757,11 +759,9 @@ int *iunit;
 }
 @ \subsection{{\tt subroutine qmode (\meta{iunit}, \meta{mode},
     \meta{size})}}
-Changes the \idx{diskio} \idx{access mode}.  At present it does this
-globally rather than just for \meta{iunit}.  \fixme{Investigate
-  whether anything will break if this is done properly per-unit}
-The resulting size in bytes of items for transfer is returned as
-\meta{size}.
+Changes the \idx{diskio} \idx{access mode} for stream \meta{iunit} to
+\meta{mode}.  The resulting size in bytes of items for transfer is
+returned as \meta{size}.
 <<routines>>=
 #if CALL_LIKE_HPUX
   void qmode (iunit, mode, size)
@@ -896,41 +896,39 @@ int *iunit, *nitems;
                     (size_t) *nitems, file_stream[*iunit]);
   if (i != *nitems) fatal ("QWRITE: i/o error");
 }
-
-/****************************************************************************
- * Routine: qseek                                                           *
- ****************************************************************************/
-
+@ \section{{\tt subroutine qseek (\meta{iunit}, \meta{irecl},
+    \meta{iel}, \meta{lrecl})}}
+Seeks to element \meta{iel} in record \meta{irec} in diskio file
+\meta{iunit} whose record length is \meta{irecl}.
+<<routines>>=
 #if CALL_LIKE_HPUX
-  void qseek (iunit, irecl, iel, lrecl)
+  void qseek (iunit, irec, iel, lrecl)
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void QSEEK (iunit, irecl, iel, lrecl)
+  void QSEEK (iunit, irec, iel, lrecl)
 #endif
 #if CALL_LIKE_SUN
-  void qseek_ (iunit, irecl, iel, lrecl)
+  void qseek_ (iunit, irec, iel, lrecl)
 #endif
 #if CALL_LIKE_IRIS
-  fortran qseek_ (iunit, irecl, iel, lrecl)
+  fortran qseek_ (iunit, irec, iel, lrecl)
 #endif
 
-int *iunit, *irecl, *iel, *lrecl;
+int *iunit, *irec, *iel, *lrecl;
 {
   long int position;
 
   if (! initialised) 
     fatal ("QSEEK: qopen/qqopen not yet called");
-  position = (long) ((*lrecl)*(*irecl - 1) + (*iel - 1));
+  position = (long) ((*lrecl)*(*irec - 1) + (*iel - 1));
   position *= (long) file_bytes_per_item[*iunit];
   file_last_op[*iunit] = IRRELEVANT_OP;
   if (fseek (file_stream[*iunit],position,SEEK_SET) != 0)
     fatal ("QSEEK failed");     /* fixme: add file info */
-} /* End of qseek */
-
-/****************************************************************************
- * Routine: qback                                                           *
- ****************************************************************************/
-
+}
+@ \subsection{{\tt subroutine qback (\meta{iunit}, \meta{lrecl})}}
+Backspaces one record, of length \meta{lrecl} on stream \meta{iunit}.
+<<routines>>=
 #if CALL_LIKE_HPUX
   void qback (iunit, lrecl)
 #endif
@@ -955,11 +953,9 @@ int *iunit, *lrecl;
   if (fseek (file_stream[*iunit], position, SEEK_SET) != 0)
     fatal ("QBACK failed");     /* fixme: add file info */
 }
-
-/****************************************************************************
- * Routine: qskip                                                           *
- ****************************************************************************/
-
+@ \subsection{{\tt subroutine qskip (\meta{iunit}, \meta{lrecl})}}
+Skip forward 1 record of length \meta{lrecl} on stream \meta{iunit}.
+<<routines>>=
 #if CALL_LIKE_HPUX
   void qskip (iunit, lrecl)
 #endif
@@ -985,11 +981,11 @@ int *iunit, *lrecl;
   if (fseek (file_stream[*iunit],position,SEEK_SET) != 0)
     fatal ("QSKIP failed");     /* fixme: add file info */
 }
-
-/****************************************************************************
- * Routine: cqinq                                                           *
- ****************************************************************************/
-
+@ \subsection{{\tt subroutine cqinq (\meta{iunit}, \meta{filnam},
+    \meta{length})}}
+Returns the name \meta{filnam} and \meta{length} of the file (if any)
+open on diskio stream \meta{iunit}.
+<<routines>>=
 #if CALL_LIKE_HPUX
   void cqinq (iunit, filnam, length, len_filnam)
   char *filnam; 
@@ -1048,7 +1044,7 @@ int *iunit, *length;
   }
   if (file_stream[stream] != NULL) {
     file_last_op[stream] = IRRELEVANT_OP;
-    (void) fflush (file_stream[stream]);               /* flush the output stream */
+    (void) fflush (file_stream[stream]); /* flush the output stream */
 #if 0
     /* checking the return value reportedly causes problems in ultrix
        under unknown circumstances... */
@@ -1060,12 +1056,10 @@ int *iunit, *length;
     if (fseek (file_stream[stream],position,SEEK_SET) != 0) /* seek position */
       fatal ("QQINQ: seek failed"); /* fixme: add file info */
   }
-} /* End of cqinq */
-
-/****************************************************************************
- * Routine: qlocate                                                         *
- ****************************************************************************/
-
+}
+@ \subsection{{\tt subroutine qlocate (\meta{iunit}, \meta{locate})}}
+Returns the current position \meta{locate} in the diskio stream \meta{iunit}.
+<<routines>>=
 #if CALL_LIKE_HPUX
   void qlocate (iunit, locate)
 #endif
@@ -1086,12 +1080,11 @@ int *iunit, *locate;
   *locate = -1;
   if (file_stream[*iunit] != NULL)
     *locate = (int) ftell (file_stream[*iunit]) / file_bytes_per_item[*iunit];
-} /* End of qlocate */
-
-/****************************************************************************
- * Routine: qtype                                                          *
- ****************************************************************************/
-
+}
+@ \subsection{{\tt subroutine qtype (\meta{istamp})}}
+Returns the \idx{machine stamp} \meta{istamp}.  It's unfortunate that
+this is defined as an integer value, with byte-sex problems\dots
+<<routines>>=
 #if CALL_LIKE_HPUX
   void qtype (istamp)
 #endif
@@ -1156,9 +1149,9 @@ void itime (array)
      array[0] = lt->tm_hour; array[1] = lt->tm_min; array[2] = lt->tm_sec;
 }
 
-#if 0                           /* dtime isn't used at present */
 static long clk_tck = 0;
 
+#if 0                           /* dtime isn't used at present */
 float dtime (tarray)
      float tarray[2];
 {
@@ -1213,10 +1206,11 @@ necessary, to the native format ina separate stage.  This is going to
 be somewhat slower than it might be, but what the heck\dots{}
 
 The basic idea of this is due to David Wild (EMBL, Hamburg, 1991).
-The original, partially-functional implementation used code from the
-\idx{HDF} 3.1 distribution.  This re-write is by Dave Love, based on
-HDF3.3, but doing the conversion in-place.  (HDF stuff can be found on
-{\tt ftp.ncsa.uiuc.edu}.)
+His original, partially-functional implementation used code from the
+\idx{HDF} 3.1 distribution.  This re-write is by Dave Love, losely
+based on HDF3.3, but doing the conversion in-place.  It works for the
+full set of relevant systems.  (HDF stuff can be found on {\tt
+ftp.ncsa.uiuc.edu}.)
 
 \subsection{`Machine stamps'}
 
@@ -1330,6 +1324,7 @@ other \idx{Intel} chips like \idx{PCs} and \idx{Alpha}.
 #define mt_stamp_posn   8L      /* machine stamp offset in MTZ header */
 <<global variables>>=
 typedef short int16;
+typedef unsigned short uint16;
 typedef unsigned long uint32;
 typedef float float32;
 typedef unsigned char uint8;
@@ -1339,20 +1334,20 @@ union float_uint_uchar {
     uint32 i;
     uint8 c[4]; };
 #if DF_MT == DFMT_BEIEEE
-static int16 userIT = (int16) DFNTI_MBO; /* machine integer type */ 
-static int16 userFT = (int16) DFNTF_BEIEEE; /* machine float type */
+static uint16 userIT = DFNTI_MBO; /* machine integer type */ 
+static uint16 userFT = DFNTF_BEIEEE; /* machine float type */
 #endif
 #if DF_MT == DFMT_LEIEEE
-static int16 userIT = (int16) DFNTI_IBO; /* machine integer type */ 
-static int16 userFT = (int16) DFNTF_LEIEEE; /* machine float type */
+static uint16 userIT = DFNTI_IBO; /* machine integer type */ 
+static uint16 userFT = DFNTF_LEIEEE; /* machine float type */
 #endif
 #if DF_MT == DFMT_VAX
-static int16 userIT = (int16) DFNTI_IBO; /* machine integer type */ 
-static int16 userFT = (int16) DFNTF_VAX; /* machine float type */
+static uint16 userIT = DFNTI_IBO; /* machine integer type */ 
+static uint16 userFT = DFNTF_VAX; /* machine float type */
 #endif
 #if DF_MT == DFMT_CONVEXNATIVE
-static int16 userIT = (int16) DFNTI_MBO; /* machine integer type */ 
-static int16 userFT = (int16) DFMT_CONVEXNATIVE; /* machine float type */
+static uint16 userIT = DFNTI_MBO; /* machine integer type */ 
+static uint16 userFT = DFNTF_CONVEXNATIVE; /* machine float type */
 #endif
 static int
     Iconvert[MAXFILES],         /* integer convserion needed on read*/
@@ -1429,9 +1424,8 @@ switch (userFT) {
 }
 @ \section{Non-\ac{ieee} floating-point conversion}
 
-These conversion routines are based on \idx{HDF}, but I think you
-could do it better with bit-fields in a structure representing the
-sign, exponent and mantissa (does K\&R have bit fields?)\dots
+These conversion routines are based on \idx{HDF}, but do the
+conversion in-place.
 <<internal routines>>=
 static void vaxF2ieeeF(buffer, size)
 union float_uint_uchar buffer[];
@@ -1584,7 +1578,7 @@ int size;
       out.c[3] = buffer[i].c[3];
       out.c[2] = buffer[i].c[2];
       if (exp < 254)            /* normal value */
-        out.c[1] = buffer[i].c[0] + (uint8)1; /* actually adds two to exp */
+        out.c[0] = buffer[i].c[0] + (uint8)1; /* actually adds two to exp */
       else {                    /* infinity or NaN */
         if (exp == 254)         /* unrepresentable - OFL */
           /* set mant=0 for overflow */
