@@ -1324,6 +1324,12 @@ int doublefromstr(const char *str, const double max_exp, const double min_exp,
   return 1;
 }
 
+/** Convert symmetry operator as string to ccp4_symop struct.
+ * @param symchs_begin pointer to beginning of string
+ * @param symchs_end pointer to end of string (i.e. last character
+ *   is *(symchs_end-1) )
+ * @return pointer to ccp4_symop struct
+ */
 ccp4_symop symop_to_rotandtrn(const char *symchs_begin, const char *symchs_end) {
 
   float rsm[4][4];
@@ -1337,7 +1343,8 @@ ccp4_symop symop_to_rotandtrn(const char *symchs_begin, const char *symchs_end) 
  * This is Charles' version of symfr. Note that translations
  * are held in elements [*][3] and [3][3] is set to 1.0
  * @param symchs_begin pointer to beginning of string
- * @param symchs_endpointer to end of string
+ * @param symchs_end pointer to end of string (i.e. last character
+ *   is *(symchs_end-1) )
  * @param rot 4 x 4 matrix operator
  * @return number of operators converted 
  */
@@ -1359,7 +1366,7 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
       rot[(k << 2) +j] = 0.0f; 
   rot[(3 << 2) +3] = 1.0f;
 
-  while (ptr_symchs <= symchs_end) {
+  while (ptr_symchs < symchs_end) {
     ch = *ptr_symchs;
 
     /* parse it */
