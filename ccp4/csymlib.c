@@ -69,7 +69,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   /* spacegroup variables */
   int sg_num, sg_ccp4_num, sg_nsymp, sg_num_cent;
   float cent_ops[4][4];
-  char sg_symbol_old[20],sg_symbol_Hall[20],sg_symbol_xHM[20],sg_point_group[20];
+  char sg_symbol_old[20],sg_symbol_Hall[20],sg_symbol_xHM[20],
+       sg_point_group[20],sg_patt_group[20];
   char sg_basisop[80],sg_symop[192][80],sg_cenop[4][80];
   char sg_asu_descr[80], map_asu_x[12], map_asu_y[12], map_asu_z[12];    
   char map_asu_ccp4_x[12], map_asu_ccp4_y[12], map_asu_ccp4_z[12]; 
@@ -160,6 +161,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
           strcpy(sg_symbol_xHM,token[2].fullstring);
         if (strcmp(token[1].fullstring,"old") == 0)
           strcpy(sg_symbol_old,token[2].fullstring);
+        if (strcmp(token[1].fullstring,"patt") == 0)
+          strcpy(sg_patt_group,token[3].fullstring);
         if (strcmp(token[1].fullstring,"pgrp") == 0)
           strcpy(sg_point_group,token[3].fullstring);
       }
@@ -366,7 +369,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
      }
      ierr = 0;
   }
-  if ( strcmp( sg_asu_descr, "l>=0 and ((h>=0 and k>0) or (h=0 and k=0))" ) == 0 ) {
+  if ( strcmp( sg_asu_descr, "l>=0 and ((h>=0 and k>0) or (h=0 and k=0))" ) == 0  &&
+       strcmp( sg_patt_group, "4/m" ) == 0 ) {
      spacegroup->asufn = &ASU_4_m;
      ilaue = ccp4spg_load_laue(spacegroup,7);
      spacegroup->nlaue = 7;
@@ -383,7 +387,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
      }
      ierr = 0;
   }
-  if ( strcmp( sg_asu_descr, "h>=k and k>=0 and l>=0" ) == 0 ) {
+  if ( strcmp( sg_asu_descr, "h>=k and k>=0 and l>=0" ) == 0 &&
+       strcmp( sg_patt_group, "4/mmm" ) == 0 ) {
      spacegroup->asufn = &ASU_4_mmm;
      ilaue = ccp4spg_load_laue(spacegroup,8);
      if (strchr(spacegroup->symbol_Hall,'P')) {
@@ -432,14 +437,16 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
      }
      ierr = 0;
   }
-  if ( strcmp( sg_asu_descr, "l>=0 and ((h>=0 and k>0) or (h=0 and k=0))" ) == 0 ) {
+  if ( strcmp( sg_asu_descr, "l>=0 and ((h>=0 and k>0) or (h=0 and k=0))" ) == 0 &&
+       strcmp( sg_patt_group, "6/m" ) == 0 ) {
      spacegroup->asufn = &ASU_6_m;
      ilaue = ccp4spg_load_laue(spacegroup,12);
      spacegroup->npatt = 175;
      strcpy(spacegroup->patt_name,"P6/m");
      ierr = 0;
   }
-  if ( strcmp( sg_asu_descr, "h>=k and k>=0 and l>=0" ) == 0 ) {
+  if ( strcmp( sg_asu_descr, "h>=k and k>=0 and l>=0" ) == 0 &&
+       strcmp( sg_patt_group, "6/mmm" ) == 0 ) {
      spacegroup->asufn = &ASU_6_mmm;
      ilaue = ccp4spg_load_laue(spacegroup,13);
      spacegroup->nlaue = 13;
