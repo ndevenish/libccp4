@@ -150,12 +150,7 @@ C
 C
 C---- End of tests
 C
-      WRITE (LUNOUT,FMT=6000) ' End of test routines'
-      CALL UGTENV('DISKIO',ENVNAM)
-      IF (ENVNAM.EQ.' ') THEN
-        WRITE (LUNOUT,FMT=6000) ' Not tested diskio routines'
-        CALL CCPERR(2,'check $status value - should be 2')
-      END IF
+      WRITE (LUNOUT,FMT=6000) 'Now test diskio routines'
 C
 C---- Now test the diskio stuff
 C
@@ -224,12 +219,13 @@ C
           WRITE (LUNOUT,FMT=6014) NREC,BUFFER(1),IER
         GOTO 50
       ENDIF
-C
-C---- End of Test Program
-C
+
    60 CALL QCLOSE (LUN)
       CALL UGTENV ('DISKIO',ENVNAM)
       IF (ENVNAM.NE.' ' ) CALL CUNLINK (ENVNAM)
+C     Now check we can open and close a scratch file
+      CALL QOPEN (LUN, 'DISKIO', 'SCRATCH')
+      CALL QCLOSE (LUN)
       CALL CCPERR(0,'Normal Termination')
 C
 C---- Format Statements
