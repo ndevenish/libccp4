@@ -5932,7 +5932,7 @@ C     ===========================================
 C     ===========================================
 C
 C     Read next batch header from multi-record MTZ file open on
-C     unit ILUN, and return it's batch number, plus real and
+C     unit ILUN, and return its batch number, plus real and
 C     character arrays.
 C
 C---- Arguments :
@@ -7616,6 +7616,7 @@ C            ***********************
 C
       END IF
 C
+      STROUT = ' '
       WRITE (STROUT,FMT='(1X,I6,4X,A)') IBATCH,BTITLE
 C
       IF (IPRINT.GT.30) THEN
