@@ -910,6 +910,35 @@ int MtzListColumn(const MTZ *mtz, char clabs[][31], char ctyps[][3], int csetid[
    return icol;
 }
 
+/* List of column information from input file: label, type, dataset.
+   Returns number of columns in input file. */
+int MtzListInputColumn(const MTZ *mtz, char clabs[][31], char ctyps[][3], int csetid[]) {
+
+ int i,j,k,colin,icol=0;
+
+ /* Loop over crystals */
+   for (i = 0; i < mtz->nxtal; ++i) {
+ /* Loop over datasets for each crystal */
+    for (j = 0; j < mtz->xtal[i]->nset; ++j) {
+ /* Loop over columns for each dataset */
+     for (k = 0; k < mtz->xtal[i]->set[j]->ncol; ++k) {
+      if (colin = mtz->xtal[i]->set[j]->col[k]->source) {
+       if (strcmp(mtz->xtal[i]->set[j]->col[k]->type,"Y") == 0 && 
+           strcmp(mtz->xtal[i]->set[j]->col[k]->label,"M_ISYM") == 0) {
+         strcpy(clabs[colin - 1],"M/ISYM");
+       } else {
+         strcpy(clabs[colin - 1],mtz->xtal[i]->set[j]->col[k]->label);
+       }
+       strcpy(ctyps[colin - 1],mtz->xtal[i]->set[j]->col[k]->type);
+       csetid[colin - 1] = mtz->xtal[i]->set[j]->setid;
+       ++icol;
+      }
+     }
+    }
+   }
+   return icol;
+}
+
 int ccp4_lrcell(const MTZXTAL *xtl, float cell[]) {
 
   int i;
@@ -1131,7 +1160,7 @@ int ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64],
 
 int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int iref) {
 
-  int i,j,k,icol;
+  int i,j,k;
   int ind[3],ixtal=0;
   unsigned int colin;
   float refldata[MCOLUMNS];
@@ -1148,18 +1177,16 @@ int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int i
 
  /* Loop over all columns in the MTZ struct, and select those which
     derive from the input file. */
-  icol = -1;
   for (i = 0; i < mtz->nxtal; ++i) {
     for (j = 0; j < mtz->xtal[i]->nset; ++j) {
      for (k = 0; k < mtz->xtal[i]->set[j]->ncol; ++k) {
        if (colin = mtz->xtal[i]->set[j]->col[k]->source) {
-         ++icol;
          if (mtz->refs_in_memory) {
-           adata[icol] = mtz->xtal[i]->set[j]->col[k]->ref[iref-1];
+           adata[colin - 1] = mtz->xtal[i]->set[j]->col[k]->ref[iref-1];
          } else {
-           adata[icol] = refldata[colin - 1];
+           adata[colin - 1] = refldata[colin - 1];
 	 }
-         logmss[icol] = ccp4_ismnf(mtz, adata[icol]);
+         logmss[colin - 1] = ccp4_ismnf(mtz, adata[colin - 1]);
        }
      }
     }
