@@ -1831,7 +1831,7 @@ C     header record. Puts number of characters of symmetry
 C     information NSYMBT into header record in com  MOHDR.
 C
 C     IST      (I)     Fortran stream number to use to read SYMOP library
-C     LSPGRP   (I)     Spacegroup name
+C     LSPGRP   (I)     Spacegroup number
 C     IUNIT    (I)     Map stream number
 C
 C_END_MSYPUT
