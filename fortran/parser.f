@@ -880,8 +880,7 @@ C
 C     
 C---- Read symmetry operations
 C     
-            NSYM = NSYM + 1
-            NSYMP = NSYM
+            NSYMP = NSYM + 1
             CALL  CCPUPC(LINE)
             CALL  SYMFR2(LINE,IBEG(JTOK),NSYM,RSYM)
             NUMSGP = 0
