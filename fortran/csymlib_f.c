@@ -734,7 +734,7 @@ FORTRAN_SUBR ( ASUSET, asuset,
   *msymp = spacegroup->nsymop_prim;
   *mlaue = spacegroup->nlaue;
 
-  if (*lprint == FORTRAN_LOGICAL_TRUE) ccp4spg_print_recip_spgrp(spacegroup);
+  if (*lprint != FORTRAN_LOGICAL_FALSE) ccp4spg_print_recip_spgrp(spacegroup);
 
   free(op1);
 }

@@ -397,7 +397,7 @@ FORTRAN_SUBR(PARSER,parser,
 
   /* Silent or verbose output? */
     PARSER_DEBUG(printf("PARSER: print set to %d\n",*print);)
-  if (*print == FORTRAN_LOGICAL_TRUE) cprint = 1;
+  if (*print != FORTRAN_LOGICAL_FALSE) cprint = 1;
 
   PARSER_DEBUG({ 
     if (cprint) {
