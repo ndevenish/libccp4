@@ -2,7 +2,7 @@ C
 C  cross.f        dot.f          ea06c.f      ea08c.f     ea09c.f
 C  fa01as.f       fa01bs.f       fa01cs.f     fa01ds.f    fm02ad.f
 C  icross.f       idot.f         iminv3       match.f     matmul.f
-C  matmulnm.f
+C  matmulnm.f     matmulgen.f
 C  matvec.f       mc04b.f        minvn.f      minv3.f     ranmar.f
 C  scalev.f       transp.f       unit.f       vdif.f      vset.f
 C  vsum.f         zipin.f        zipout.f
@@ -689,6 +689,41 @@ C     ..
    10         CONTINUE
           V(I) = S
    20     CONTINUE
+      END
+C
+C
+C_BEGIN_MATMULGEN
+C
+      SUBROUTINE MATMULGEN(Nb,Mbc,Nc,A,B,C)
+C     =====================================
+C
+C      Generalised matrix multiplication subroutine
+C      Multiplies a NbxMbc matrix (B) by a  MbcXNc
+C      (C) matrix, so that
+C
+C      A = BC
+C
+      IMPLICIT NONE
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER           Nb,Mbc,Nc
+C     ..
+C     .. Array Arguments ..
+      REAL              A(Nb,Nc),B(Nb,Mbc),C(Mbc,Nc)
+C
+C_END_MATMULGEN
+C     ..
+C     .. Local Scalars ..
+      INTEGER           I,J,K
+C     ..
+      DO 30 J = 1,Nc
+          DO 20 I = 1,Nb
+            A(I,J) = 0.0
+              DO 10 K = 1,Mbc
+                  A(I,J) = B(I,K)*C(K,J) + A(I,J)
+   10         CONTINUE
+   20     CONTINUE
+   30   CONTINUE
       END
 C
 C
