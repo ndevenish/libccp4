@@ -1,7 +1,7 @@
 
 # Makefile tail for CCP4 Library.  This will be modified by configure.
 
-# $Header$
+# $Id$
 
 # Usage: make                 - to make the library in this directory
 #        make <module>        - to make that particular module
