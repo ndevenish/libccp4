@@ -1620,11 +1620,11 @@ translate.
 @ %def DFNT_UINT DFNT_SINT DFNT_INT DFNT_UCHAR DFNT_CHAR DFNT_FLOAT DFNT_DOUBLE
 @ These typedefs define 16-bit unsigned, 32-bit unsigned, 32-bit float
 and 8-bit unsigned char types respectively.  You'd need to define
-[[INT16]] for a compiler with 16-bit ints; using [[long]] here is
+[[SIXTEENBIT]] for a compiler with 16-bit ints; using [[long]] here is
 wrong, for instance, on \idx{OSF/1} \idx{Alpha} systems.
 <<typedefs>>=
 typedef unsigned short uint16;
-#ifdef INT16
+#ifdef SIXTEENBIT
 typedef unsigned long uint32;
 #else
 typedef unsigned int uint32;

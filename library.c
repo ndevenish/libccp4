@@ -193,7 +193,7 @@
 #define DFNT_FLOAT      5       /* float */
 #define DFNT_DOUBLE     6       /* double */
 typedef unsigned short uint16;
-#ifdef INT16
+#ifdef SIXTEENBIT
 typedef unsigned long uint32;
 #else
 typedef unsigned int uint32;
