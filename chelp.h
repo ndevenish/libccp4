@@ -146,7 +146,7 @@
 #include <string.h>		/* BSD might need strings.h and index
 				   instead of strchr.  This is ANSI
 				   header, not POSIX.1 */
-#ifndef NOUNISTD
+#if !defined(NOUNISTD) && !defined(VMS)
 #  include <unistd.h>
 #endif
 
