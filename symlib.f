@@ -3374,7 +3374,7 @@ C
           KLASS = 5
         END IF
         IF (NROTS(2).EQ.13) THEN
-          NAMPG = '321'
+          NAMPG = 'PG321'
           KLASS = 9
         END IF
         IF (NROTS(2).EQ.12 .AND. NROTS(3).EQ.13) THEN
