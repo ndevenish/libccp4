@@ -122,9 +122,13 @@ FORTRAN_SUBR ( CCPERR, ccperr,
                (const int *istat, const fpstr errstr),
                (const int *istat, const fpstr errstr, int errstr_len))
 { 
-  char *tmp_errstr;
+  static const int TMP_LENGTH = 128;
+  int length;
+  char tmp_errstr[TMP_LENGTH];
 
-  tmp_errstr = ccp4_FtoCString(FTN_STR(errstr), FTN_LEN(errstr));
+  length = (FTN_LEN(errstr) < TMP_LENGTH-1) ? FTN_LEN(errstr)+1 : TMP_LENGTH-1 ; 
+  strncpy(tmp_errstr,errstr,length);
+  tmp_errstr[length]='\0';
   ccperror(*istat, tmp_errstr);
 
   free((char *) tmp_errstr);
