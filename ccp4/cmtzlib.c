@@ -1311,7 +1311,7 @@ void ccp4_lhprt(const MTZ *mtz, int iprint) {
   printf(" %10.5f %10.5f     ( %10.3f - %10.3f A )\n\n",
        minres,maxres,1.0/sqrt(minres),1.0/sqrt(maxres));
   ccp4_lrsort(mtz, isort);
-  printf(" * Sort Order : %d %d %d %d %d\n\n",isort[0],isort[1],isort[2],
+  printf(" * Sort Order :\n\n  %5d %5d %5d %5d %5d\n\n",isort[0],isort[1],isort[2],
        isort[3],isort[4]);
 
   if (iprint == 3 || iprint == 4 ) {
@@ -1578,7 +1578,7 @@ int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nli
 }
 
 void ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
-	    const char project_name[], float datcell[6], float *datwave) {
+       const char project_name[], const float datcell[6], const float *datwave) {
 
   MTZXTAL *xtl;
   MTZSET *set;
@@ -1895,12 +1895,14 @@ void ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[],
      }
 
      for (i = 0; i < mtz->nxtal; ++i) {
+      if (mtz->xtal[i]->cell[0] > 0.0) {
        MtzHklcoeffs(mtz->xtal[i]->cell, coefhkl);
        res = MtzInd2reso(ind, coefhkl);
        if (res > 0.0) {
          if (res > mtz->xtal[i]->resmax) mtz->xtal[i]->resmax = res;
          if (res < mtz->xtal[i]->resmin) mtz->xtal[i]->resmin = res;
        }
+      }
      }
   }
 

@@ -499,7 +499,7 @@ MTZCOL **ccp4_lwassn(MTZ *mtz, const char labels[][31], const int nlabels,
              const char types[][3], const int iappnd);
 
 void ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
-	    const char project_name[], float datcell[6], float *datwave);
+	const char project_name[], const float datcell[6], const float *datwave);
 
 
 /** Function to output reflection values for iref'th reflection.
