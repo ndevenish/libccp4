@@ -17,6 +17,7 @@ C      CCPBYT    Indicate whether byte handling is available
 C      CCPDAT    Get calendar date
 C      CCPDEX    Periodicity reduction of 1024 (for PROLSQ)
 C      CCPDPN    more friendly CCPOPN
+C      CCPERR    Report error or normal termination and stop
 C      CCPEXS    test if file exists
 C      CCPFIL    Return file name for an opened file
 C      CCPGI2    Get unsigned integer*2 value from 0 to 65535 from N'th
@@ -357,6 +358,35 @@ C
  6000 FORMAT (/' CCPDPN: illegal status : ',A)
  6002 FORMAT (/' CCPDPN: illegal type: ',A)
 C
+      END
+C
+C
+C  
+C     ===============================
+      SUBROUTINE CCPERR(ISTAT,ERRSTR)
+C     ===============================
+C
+C
+C     Report error or normal termination and stop.  Also reports latest
+C     system error (at least under un*x)
+C
+C     Parameters:
+C     ISTAT (I)   exit status (0 for normal termination)
+C     ERRST (I)   message
+C     
+      CHARACTER ERRSTR*(*), ERRBUF*100
+      INTEGER ISTAT
+C
+C
+      IF (ISTAT.NE.0) THEN
+        CALL UGERR(0,ERRBUF)
+        IF (ERRBUF .NE. ' ') WRITE(6,6000) ERRBUF(1:LENSTR(ERRBUF))
+      ENDIF
+      WRITE(6,6000) ERRSTR(1:LENSTR(ERRSTR))
+      CALL GETELAPSED
+      CALL EXIT(ISTAT)
+C
+6000  FORMAT (' ',A)
       END
 C
 C

@@ -62,7 +62,6 @@ C ========
 C UNIX.FOR
 C ========
 C
-C CCPERR - report error or normal termination and stop
 C CCPOPN - open a file
 C NOCRLF - write line supressing cr/lf to unit 6
 C UBYTES - Returns number of bytes per word and 'words'/'bytes'
@@ -78,24 +77,6 @@ C UTIME  - Get current time
 C VAXVMS - Logical function returns TRUE if VAX/VMS
 C TTSEND - Write string to terminal with various carriage control options
 C
-C  
-C           ===============================
-            SUBROUTINE CCPERR(ISTAT,ERRSTR)
-C           ===============================
-C
-C
-            CHARACTER ERRSTR*(*)
-            INTEGER ISTAT
-C
-C
-      WRITE(6,6000) ERRSTR(1:LENSTR(ERRSTR))
-      CALL GETELAPSED
-      CALL EXIT(ISTAT)
-C
-6000  FORMAT (' ',A)
-            END
-C
-C
 C
       SUBROUTINE CCPOPN(IIUN,LOGNAM,KSTAT,ITYPE,LREC,IFAIL)
 C     ====================================================

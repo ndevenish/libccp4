@@ -22,7 +22,6 @@ C URENAM - Rename file
 C VAXVMS - Logical function returns TRUE if VAX/VMS
 C UBYTES - Returns number of bytes per word and 'words'/'bytes'
 C          to indicate if byte handling is available
-C CCPERR - Signal VMS that serious error occurred and must not continue
 C GETPID - Get unique process id.
 C USTENV - Create logical name.
 C NOCRLF - write line supressing cr/lf
@@ -369,30 +368,6 @@ C---- Rename file
 C
       STATUS = LIB$RENAME_FILE (NAME1,NAME2)
       IF (STATUS .EQ. SS$_NORMAL) STATUS = 0
-C
-      END
-C
-C
-C     ============================
-      SUBROUTINE CCPERR(ISTAT,MSG)
-C     ============================
-C
-C CCPERR - Return serious error to OS and stops processing completely.
-C
-C Input:  none
-C
-C Output: none
-C
-C Arguments: ISTAT, MSG
-C
-C Usage:     CALL CCPERR
-C
-      INTEGER ISTAT
-      CHARACTER*(*) MSG
-C
-      WRITE (6, 100) MSG(1:LENSTR(MSG))
-100   FORMAT (' ',A)      
-      CALL EXIT(ISTAT)
 C
       END
 C
