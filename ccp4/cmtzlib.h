@@ -238,7 +238,8 @@ int MtzNumActiveSet(const MTZ *mtz);
  * The pointer to MTZ is required to do reverse lookup of xname. 
  * @param mtz pointer to MTZ struct
  * @param set pointer to dataset
- * @return pointer to parent crystal
+ * @return pointer to parent crystal, or NULL if "set" is
+ *    not present in "mtz".
  */
 MTZXTAL *MtzSetXtal(const MTZ *mtz, const MTZSET *set);
 
@@ -319,8 +320,13 @@ int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],
 /* Toggle active flag of column */
 int MtzToggleColumn(MTZCOL *col);
 
+/** Get the dataset associated with a column.
+ * @param mtz pointer to MTZ struct
+ * @param col pointer to column of interest
+ * @return pointer to set containing column of interest, or NULL
+ *   if "col" is not contained in "mtz".
+ */
 MTZSET  *MtzColSet(const MTZ *mtz, const MTZCOL *col);
-/* get the dataset associated with a column */
 
 /** Get the number of columns in the MTZ data structure.
  * @param mtz pointer to MTZ struct
@@ -520,6 +526,9 @@ int MtzSetSortOrder(MTZ *mtz, MTZCOL *colsort[5]);
  * @return total number of history lines
  */
 int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nlines);
+
+int ccp4_lwsymm(MTZ *mtz, int *nsymx, int *nsympx, float rsymx[192][4][4], 
+		char ltypex[], int *nspgrx, char spgrnx[], char pgnamx[]);
 
 MTZCOL **ccp4_lwassn(MTZ *mtz, const char labels[][31], const int nlabels, 
              const char types[][3], const int iappnd);

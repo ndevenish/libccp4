@@ -1491,7 +1491,6 @@ int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint)
 
 int MtzPrintBatchHeader(MTZBAT *batch) {
 
-  int i;
   char labtype[20],axes[5],string1[40],string2[40];
 
   switch (batch->ldtype) {
@@ -1823,8 +1822,7 @@ int ccp4_lwbat(MTZ *mtz, MTZBAT *batch, const int batno, const float *buf, const
 /* new batch header with batch number 'batno'                           */
 /* don't update mtz->n_orig_bat - input no. of batches - use MtzNbat instead */
 
-{  int i;
-
+{  
   int *intbuf = (int *) buf;
   const float *fltbuf = buf + NBATCHINTEGERS;
   char cbatch[95]=" ";
@@ -2552,9 +2550,10 @@ MTZBAT *MtzMallocBatch()
 { MTZBAT *batch;
 
   batch = (MTZBAT *) ccp4_utils_malloc(sizeof(MTZBAT));
-  if (batch == NULL)
-  { printf("MtzMallocBatch: not enough memory for operation!!\n");
-    exit(1);}
+  if (batch == NULL) {
+    ccp4_signal(CMTZ_ERRNO(CMTZERR_AllocFail),"MtzMallocBatch",NULL);
+    return NULL;
+  }
 
   return(batch);
 }
@@ -2576,16 +2575,18 @@ MTZCOL *MtzMallocCol(MTZ *mtz, int nref)
 { MTZCOL *col;
 
   col = (MTZCOL *) ccp4_utils_malloc(sizeof(MTZCOL));
-  if (col == NULL)
-  { printf("MtzMallocCol: not enough memory for operation!!\n");
-    exit(1);}
+  if (col == NULL) {
+    ccp4_signal(CMTZ_ERRNO(CMTZERR_AllocFail),"MtzMallocCol",NULL);
+    return NULL;
+  }
 
   col->ref = NULL;
   if (mtz->refs_in_memory) {
     ccp4array_new_size(col->ref,nref);
-    if (col->ref == NULL)
-    { printf("MtzMallocCol: not enough memory for operation!!\n");
-      exit(1);}
+    if (col->ref == NULL) {
+      ccp4_signal(CMTZ_ERRNO(CMTZERR_AllocFail),"MtzMallocCol",NULL);
+      return NULL;
+    }
   }
 
   return(col);
@@ -2694,7 +2695,10 @@ MTZCOL *MtzAddColumn(MTZ *mtz, MTZSET *set, const char *label,
   union float_uint_uchar uf;
   MTZCOL *col;
 
-  if (set->ncol == 200) { printf("No more columns!"); exit(1); }
+  if (set->ncol == 200) { 
+    printf("MtzAddColumn: No more columns! \n");
+    return NULL;
+  }
 
   /* allocate some memory for first column */
   if (!mtz->refs_in_memory) {
@@ -2705,7 +2709,10 @@ MTZCOL *MtzAddColumn(MTZ *mtz, MTZSET *set, const char *label,
     nref = mtz->nref;
   }
   col = MtzMallocCol(mtz, nref);
-  if (col == NULL) { printf("Not enough memory for column!"); exit(1); }
+  if (col == NULL) {
+    ccp4_signal(CMTZ_ERRNO(CMTZERR_AllocFail),"MtzAddColumn",NULL);
+    return NULL;
+  }
 
   /* fill out the data */
   strncpy( col->label, label, 30 );
@@ -2744,25 +2751,25 @@ int MtzToggleColumn(MTZCOL *col)
 
 MTZSET *MtzColSet(const MTZ *mtz, const MTZCOL *col)
 {
-  /* get the dataset associated with a column */
   int x,s,c;
   for (x=0; x < mtz->nxtal; x++)
     for (s=0; s < mtz->xtal[x]->nset; s++)
       for (c=0; c < mtz->xtal[x]->set[s]->ncol; c++)
       if (mtz->xtal[x]->set[s]->col[c] == col)
         return mtz->xtal[x]->set[s];
-  printf ("MtzColSet: no such column"); exit(1);
+  printf ("MtzColSet: no such column. \n"); 
+  return NULL;
 }
 
 MTZXTAL *MtzSetXtal(const MTZ *mtz, const MTZSET *set)
 {
-  /* get the crystal associated with a dataset */
   int x,s;
   for (x=0; x < mtz->nxtal; x++)
     for (s=0; s < mtz->xtal[x]->nset; s++)
       if (mtz->xtal[x]->set[s] == set)
         return mtz->xtal[x];
-  printf ("MtzSetXtal: no such dataset"); exit(1);
+  printf ("MtzSetXtal: no such dataset. \n"); 
+  return NULL;
 }
 
 int MtzNxtal(const MTZ *mtz)
