@@ -178,7 +178,8 @@ C
 C
 20    IUNIT = J
       LUNIT(IUNIT) = .FALSE.
-      NCHITM(IUNIT) = 1
+      NMODE(IUNIT) = 2
+      NCHITM(IUNIT) = 4
 C
 C==== Identify File Access Block.
 C
@@ -564,7 +565,9 @@ C        WRITE (*,'(1X,16F8.0)') (BUF(I,IUNIT),I=1,NSIZE/4)
       ENDIF
       GOTO 50
 C
-60    IF (ISTAT.NE.RMS$_EOF) THEN
+60    IF (ISTAT.EQ.RMS$_EOF) THEN
+        BUFACT(IUNIT) = .FALSE.
+      ELSE
         CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
         WRITE (*,'(/1X,A/)') MSG(:L)
         CALL CCPERR(1,'QREAD: FATAL ERROR.')
@@ -965,9 +968,7 @@ C
 40    CALL QOPEN(IUNIT,NAME,'NEW')
       GOTO 100
 50    CALL QOPEN(IUNIT,NAME,'RO')
-C
-C Set default mode = 2
-100   CALL QMODE(IUNIT,2,NCH)
+100   RETURN
       END
 C
 C
