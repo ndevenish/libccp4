@@ -371,7 +371,7 @@ install : all
 	$(RANLIB) $(libdir)/$L
 	$(SHARE_INST)
 
-unintstall :
+uninstall :
 	-rm -f $(libdir)/$L
 	test -f $(libdir)/libccp4.so && rm -f $(libdir)/libccp4.so
 
