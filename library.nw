@@ -750,8 +750,12 @@ int  *iunit, *istat;
     file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1],
                             "mbc=16", /* bigger blocksize */
                             "ctx=stm", "mrs=0", "rat=cr", "rfm=stmlf");
+  if (file_stream[i] == NULL)
+    fatal ("(Q)QOPEN: can't open file");
 #else
   file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1]);
+  if (file_stream[i] == NULL)
+    fatal ("(Q)QOPEN: can't open file");
   if (file_is_scratch[i] && unlink (file_name[i])!=0)
     fatal ("(Q)QOPEN: error unlinking scratch file");
 #endif
