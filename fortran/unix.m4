@@ -5,7 +5,7 @@ C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
 dnl *** This file is meant to be processed by m4 with an appropriate 
-dnl     definition for the system type to produce unix.f.
+dnl     definition for the system type to produce Unix.f.
 dnl     Be very careful about changing the m4-isms -- it's particularly easy 
 dnl     to introduce spurious spaces.  It would be less fragile with cpp, but
 dnl     we can't rely on being able to find it and use it with Fortran.
@@ -131,7 +131,7 @@ C     Some compilers accept VAXtran `carriagecontrol=' and `readonly'
 C     specifiers; if so we use them.  Others have IOINIT, which can be
 C     used to specify the carriage control.  The HPUX compiler is said
 C     not to have any means of doing this and AIX seems to be likewise,
-C     sigh; they both seem to obey the normal unix convention of
+C     sigh; they both seem to obey the normal Unix convention of
 C     printing the format as-is rather than obeying the first character
 C     as carriage control.  Concentrix does obey the first column a la
 C     VMS and `traditional' Fortran; the MIPS compilers have a compile
@@ -629,7 +629,7 @@ C     .. Scalar Arguments ..
       INTEGER ANSWER,FLUN
 C     ..
 dnl there doesn't seem to be an AIX hook to translate between
-dnl            fortran units and unix stream numbers
+dnl            fortran units and Unix stream numbers
 ifelse(_AIX,1,
 [      INTEGER IFLUN
       INTEGER ISATTY
@@ -796,7 +796,7 @@ C
 C
 C====== Write string
 C
-C     'LIST' is the equivalent of the normal unix state
+C     'LIST' is the equivalent of the normal Unix state
       CCNTRL = 'LIST'
 ifdef(_carriagecontrol,[],,
       INQUIRE(IUN,_carriagecontrol)
@@ -1116,16 +1116,16 @@ cc          return
 ])dnl
 
 C
-CA dummy function for unix
+CA dummy function for Unix
 C     =========================
        CHARACTER FUNCTION RTNBKS()
 C     =========================
 C
-C RTNBKS - Returns a Backslash for nt as unix compilers are fussy!
+C RTNBKS - Returns a Backslash for nt as Unix compilers are fussy!
 C
 C Input:     none
 C
-C Returns:   \ if WIN32 or not if unix or vms
+C Returns:   \ if WIN32 or not if Unix or vms
 C
 C Arguments: none
 C
