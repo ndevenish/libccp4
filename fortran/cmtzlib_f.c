@@ -1920,72 +1920,78 @@ FORTRAN_SUBR ( LWASSN, lwassn,
 	       (const int *mindx, fpstr lsprgo, int lsprgo_len, const int *nlprgo, 
                       fpstr ctprgo, int ctprgo_len, int *iappnd))
 {int i,j,istart;
-  char *label;
-  char *type;
-  MTZCOL **colarray, *colsort[5];
+    char *label;
+    char *type;
+    MTZCOL **colarray, *colsort[5];
 
-  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWASSN");)
+    CMTZLIB_DEBUG(puts("CMTZLIB_F: LWASSN");)
 
- if (MtzCheckSubInput(*mindx,"LWASSN",2)) return;
+        if (MtzCheckSubInput(*mindx,"LWASSN",2)) return;
 
-  label = (char *) ccp4_utils_malloc((*nlprgo)*31*sizeof(char));
-  type = (char *) ccp4_utils_malloc((*nlprgo)*3*sizeof(char));
+    label = (char *) ccp4_utils_malloc((*nlprgo)*31*sizeof(char));
+    type = (char *) ccp4_utils_malloc((*nlprgo)*3*sizeof(char));
 
-  for (i = 0; i < *nlprgo; ++i) {
-    if (strcmp(user_label_out[*mindx-1][i][1],"") != 0) {
-      strcpy(label+i*31,user_label_out[*mindx-1][i][1]);
-    } else {
-      for (j = 0; j < 30; ++j) {
-        if (j == lsprgo_len || lsprgo[lsprgo_len*i+j] == ' ') {
-          break;
-        } else {
-          label[i*31+j] = lsprgo[lsprgo_len*i+j];
+    /* to retain primacy of read structure for copy/rename
+        the read assignments should be done first, then
+        column information should be updated
+        */
+    for (i = 0; i < *nlprgo; ++i) {
+        for (j = 0; j != lsprgo_len && lsprgo[lsprgo_len*i+j] != ' ' ; ++j) {
+            label[i*31+j] = lsprgo[lsprgo_len*i+j];
         }
-      }
-      label[i*31+j] = '\0';
-      /* now check if label was set on LABIN e.g. revise */
-      for (j = 0; j < MCOLUMNS; ++j) {
-        if (!strcmp(user_label_in[*mindx-1][j][0],label+i*31)) {
-          strcpy(label+i*31,user_label_in[*mindx-1][j][1]);
-	  break;
-	}
-      }
+        label[i*31+j] = '\0';
+        for (j = 0; j < MCOLUMNS; ++j) {
+            if (strcmp(user_label_in[*mindx-1][j][1],"") && !strcmp(user_label_in[*mindx-1][j][0],label+i*31)) {
+                strcpy(label+i*31,user_label_in[*mindx-1][j][1]);
+                break;
+            } /* strcmp if */
+        }   /* MCOLUMNS loop */ 
+/* use invariance of j */
+    if (j == MCOLUMNS) {
+        if (strcmp(user_label_out[*mindx-1][i][1],"") != 0) {
+            strcpy(label+i*31,user_label_out[*mindx-1][i][1]);
+        }
+    } /* nlprgo for */
     }
-  }
-
+  /* types loop */
   for (i = 0; i < *nlprgo; ++i) {
-    for (j = 0; j < 2; ++j) {
-      if (j == ctprgo_len || ctprgo[ctprgo_len*i+j] == ' ') {
-        break;
-      } else {
-        type[i*3+j] = ctprgo[ctprgo_len*i+j];
+      for (j = 0; j < 2; ++j) {
+          if (j == ctprgo_len || ctprgo[ctprgo_len*i+j] == ' ') {
+              break;
+          } else {
+              type[i*3+j] = ctprgo[ctprgo_len*i+j];
+          }
       }
-    }
-    type[i*3+j] = '\0';
-  }
+      type[i*3+j] = '\0';
+  } /* type loop */
 
   /* if we are appending columns, shift collookup_out */
-  istart = 0;
-  if (*iappnd == 1) istart = MtzNumActiveCol(mtzdata[*mindx-1]);
-
-  /* assign new columns for output */
-  colarray = ccp4_lwassn(mtzdata[*mindx-1],label,*nlprgo,type,*iappnd); 
-  for (j = 0; j < 5; ++j)
-    colsort[j] = NULL;
-  for (i = 0; i < *nlprgo; ++i) {
-    collookup_out[*mindx-1][i+istart] = colarray[i];
-    /* register sort order */
+    istart = 0;
+    if (*iappnd == 1) istart = MtzNumActiveCol(mtzdata[*mindx-1]);
+    
+    /* assign new columns for output */
+    colarray = ccp4_lwassn(mtzdata[*mindx-1],label,*nlprgo,type,*iappnd); 
     for (j = 0; j < 5; ++j)
-      if (sortorder[*mindx-1][j] == (i + 1)) 
-        colsort[j] = colarray[i];
-  }
-  MtzSetSortOrder(mtzdata[*mindx-1],colsort);
-
-  free(colarray);
-  free(label);
-  free(type);
-
-}
+        colsort[j] = NULL;
+    for (i = 0; i < *nlprgo; ++i) {
+        collookup_out[*mindx-1][i+istart] = colarray[i];
+        /* register sort order */
+        for (j = 0; j < 5; ++j)
+            if (sortorder[*mindx-1][j] == (i + 1))
+                colsort[j] = colarray[i];
+    }
+    MtzSetSortOrder(mtzdata[*mindx-1],colsort);
+    
+    /* now must update col data for write */
+    for (i = 0; i < *nlprgo; ++i)
+        if (strcmp(user_label_out[*mindx-1][i][1],"") ) strcpy(colarray[i]->label,user_label_out[*mindx-1][i][1]);
+    /*should confirm ctype */
+    
+    free(colarray);
+    free(label);
+    free(type);
+    
+    }
 
 /* Fortran wrapper for ccp4_lwassn */
 /* As lwassn except doesn't check user_label_out */
