@@ -179,9 +179,11 @@ FORTRAN_SUBR ( QOPEN, qopen,
     fname = temp_lognam;
 
   if (!(_ioChannels[*iunit]->iobj = ccp4_file_open (fname, 
-		   file_attribute[istat]) ) ) 
-    ccp4_signal(CCP4_ERRLEVEL(4) | CCP4_ERRNO(CIO_MaxFile),
+                 file_attribute[istat]) ) ) {
+    printf("  Can't open file %s\n",fname);
+    ccp4_signal(CCP4_ERRLEVEL(4) | CCP4_ERRNO(CIO_CantOpenFile),
                 "COPEN2", NULL);
+  }
 
   _ioChannels[*iunit]->klass = CCP4_FILE;
 
@@ -545,7 +547,7 @@ FORTRAN_SUBR ( QREADC, qreadc,
 
   n = FTN_LEN(buffer);
 
-  if (ccp4_file_readchar (_ioChannels[*iunit]->iobj, FTN_STR(buffer), (size_t) n) != n)
+  if (ccp4_file_readchar (_ioChannels[*iunit]->iobj, (uint8 *) FTN_STR(buffer), (size_t) n) != n)
       ccp4_signal(CCP4_ERRLEVEL(4) | CCP4_ERRNO(CIO_ReadFail),
 		  "QREADC", NULL);
   *result = 0;
@@ -642,7 +644,7 @@ FORTRAN_SUBR ( QWRITC, qwritc,
 
   n = FTN_LEN(buffer);
 
-  if (ccp4_file_writechar (_ioChannels[*iunit]->iobj, FTN_STR(buffer), 
+  if (ccp4_file_writechar (_ioChannels[*iunit]->iobj, (uint8 *) FTN_STR(buffer), 
 			   (size_t) n) != n)
       ccp4_signal(CCP4_ERRLEVEL(4), "WWRITC", NULL);
 }
