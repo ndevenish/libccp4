@@ -1049,7 +1049,6 @@ C      COMMON /RBREC/AC(6)
 C
 C_END_RBFROR
 C
-      DIMENSION DD(6)
       COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /RBREC/AC(6)
       SAVE /RBRKZZ/, /RBREC/
@@ -1450,17 +1449,20 @@ C
       SAVE /RBRKXX/,/RBRKYY/
       DATA IAT/0,1,5,6,7,8,9,15,16,19,23,39,53,74,92/
       DATA ITYPE/'CRYST1','SCALE ','TER   ','ATOM  ','HETATM'/
+      DATA FTNOT /' '/
 C
 C---- Choose output format to give correct position for atom name
 C     and option for residue number treatment
 C
       JTYP=ITYP
-      IF(IZ.EQ.0)FTNOT='   '
 C      ALTLOC=BROOK(17)
       ALTLOC=ATNAM(4:4)
       FOOTN=FTNOT
-      IF(IZ.GT.0)WRITE(FOOTN,9876)IZ
-9876  FORMAT(1X,I2)
+C     Dropped the feature of writing out atomic number where footnote
+C     should be
+CCC      IF(IZ.EQ.0)FTNOT='   '
+CCC      IF(IZ.GT.0)WRITE(FOOTN,9876)IZ
+CCC9876  FORMAT(1X,I2)
       IF(ITYP.EQ.0)THEN
       JTYP=4
       ALTLOC=' '
@@ -1625,7 +1627,7 @@ C
 C_END_RBCELL
 C
       COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
-      REAL CELL(6),RR(3,3,6),VOL,CELLAS(6)
+      REAL CELL,RR,VOL,CELLAS
       REAL CELLD(6), CVOL
       SAVE /RBRKZZ/
 C
