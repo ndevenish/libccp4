@@ -19,7 +19,7 @@ C     .. Local Arrays ..
 C     ..
 C     .. External Functions ..
       LOGICAL LITEND,VAXVMS, QISNAN
-      REAL QNAN, RANU
+      REAL RANU
       INTEGER CCPNUN
       EXTERNAL LITEND,VAXVMS, QISNAN, RANU, CCPNUN
 C     ..
