@@ -581,7 +581,7 @@ FORTRAN_SUBR ( MWRHDR, mwrhdr,
 
   if ((ioArray[ii]->mapfile = ccp4_cmap_open(file, O_WRONLY)) == NULL) 
       ccp4_signal(CCP4_ERRLEVEL(4) | CMAP_ERRNO(CMERR_CantOpenFile),
-		  "MWRHDL", NULL);
+		  "MWRHDR", NULL);
   ioArray[ii]->ipc = *iunit;
   ioArray[ii]->logname = strdup("MAPOUT");
 
