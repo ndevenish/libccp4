@@ -1552,17 +1552,17 @@ C     other code.  (The value returned will be the same until the unit in
 C     question is opened or a lower-numbered one is closed.)
 C
 C_END_CCPNUN
-      LOGICAL OD
+      LOGICAL OD, EX
       EXTERNAL CCPERR
-      INTEGER IOSTAT
+      INTEGER IOS
 C     The `standard' unit 5 and 6 may or may not be reported as open,
 C     normally depending on whether an appropriate read or write has
 C     happened, so we'll start at 7.  Lower-numbered ones might be used
 C     for other things such as standard error.  99 seems a reasonable
 C     place to stop.
       DO 10 CCPNUN=7,99
-        INQUIRE (UNIT=CCPNUN, OPENED=OD, IOSTAT=IOSTAT)
-        IF (.NOT. OD .AND. IOSTAT.EQ.0) RETURN
+        INQUIRE (UNIT=CCPNUN, OPENED=OD, IOSTAT=IOS, EXIST=EX)
+        IF (EX .AND. .NOT. OD .AND. IOSTAT.EQ.0) RETURN
  10   CONTINUE
       CALL CCPERR (1, 'CCPNUN: Can''t find an unused unit')
       END
