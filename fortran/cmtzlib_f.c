@@ -97,6 +97,7 @@ this may be re-implemented.
 #include "cmtzlib.h"
 #include "csymlib.h"
 #include "ccp4_program.h"
+#include "ccp4_general.h"
 static char rcsid[] = "$Id$";
 
 #define MFILES 4
@@ -119,6 +120,11 @@ static int ndatmss[MFILES];
 static MTZBAT *rbat[MFILES];
 static int nbatw[MFILES] = {0};
 static double coefhkl[MFILES][6] = {0};
+
+/* MVS defaults to int and doesn't like it */
+#ifdef _MVS
+ void __stdcall CCP4H_INIT_LIB(int *ihtml, int *isumm);
+#endif
 
 void MtzMemTidy(void) {
 
