@@ -114,7 +114,7 @@
 #  define CALL_LIKE_SUN 1
 #endif
 
-#if defined __linux__ && defined __PPC
+#if defined __linux__ && ( defined __PPC || defined __PPC__ )
 #  undef CALL_LIKE_SUN
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_SUN 1
