@@ -463,12 +463,12 @@ static CCP4File *_file_init()
  * @param cfile (CCP4File *)
  * @param flag (const int) mode flag
  *
- * set file open mode elements of @cfile
- *  O_TMP    = 
- *  O_RDONLY =
- *  O_WRONLY =
- *  O_RDWR   =
- *  O_APPEND =
+ * set file open mode elements of @cfile (see ccp4_sysdep.h)
+ *  O_TMP    = 0x0010
+ *  O_RDONLY = 0x0000
+ *  O_WRONLY = 0x0001
+ *  O_RDWR   = 0x0002
+ *  O_APPEND = 0x0008
  */
 static void _file_open_mode(CCP4File * cfile, const int flag)
 {
@@ -858,7 +858,7 @@ CCP4File *ccp4_file_open_fd (const int fd, const int flag)
  * ccp4_file_open:
  * @param filename (const char *) filename
  * @param flag (const int) io mode (O_RDONLY =0, O_WRONLY =1, O_RDWR =2,
- *        O_TMP =, O_APPEND =)
+ *        O_TMP =, O_APPEND =, O_TRUNC=)
  *
  * initialise CCP4File struct for file @filename with mode @flag.
  * If !buffered use open(), otherwise fopen()
@@ -884,9 +884,9 @@ CCP4File *ccp4_file_open (const char *filename, const int flag)
 
   if (!cfile->buffered) {
     if (cfile->read && cfile->write) openflags = (O_RDWR | O_CREAT);
-    else if (cfile->write) openflags = (O_WRONLY | O_CREAT);
+    else if (cfile->write)  openflags = (O_WRONLY | O_CREAT); 
     if (cfile->append) openflags |= O_APPEND;
-    else if (cfile->write) openflags |= O_TRUNC;
+    if (flag & O_TRUNC) openflags |= O_TRUNC;
 #if defined _MVS
     if (cfile->scratch) openflags |= O_TEMPORARY;
 #endif
@@ -915,7 +915,8 @@ CCP4File *ccp4_file_open (const char *filename, const int flag)
       if (cfile->read) *mptr++ = '+';
     } else {
       if (cfile->read && cfile->write) {
-        *mptr++ = 'w';
+        if (flag & O_TRUNC) {*mptr++ = 'w'; }
+        else *mptr++ = 'r';
         *mptr++ = '+';
       } else if (cfile->write) 
         *mptr++ = 'w';

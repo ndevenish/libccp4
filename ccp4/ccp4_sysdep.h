@@ -177,6 +177,7 @@
 #define O_RDWR   0x0002
 #define O_APPEND 0x0008
 #define O_CREAT  0x0200
+#define O_TRUNC  0x0400
 #endif
 #define O_TMP    0x0010
 

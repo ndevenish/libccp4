@@ -64,10 +64,10 @@ CCP4IObj *_iobj_init()
 }
 
 static int file_attribute[] = { /* DISKIO file modes */
-  O_RDWR,   /* 'UNKNOWN'   open as 'OLD'/'NEW' check existence */
-  O_TMP | O_RDWR,   /* 'SCRATCH'   open as 'OLD' and delete on closing */
+  O_RDWR | O_TRUNC,   /* 'UNKNOWN'   open as 'OLD'/'NEW' check existence */
+  O_TMP | O_RDWR | O_TRUNC,   /* 'SCRATCH'   open as 'OLD' and delete on closing */
   O_RDWR,   /* 'OLD'       file MUST exist or program halts */
-  O_RDWR,   /* 'NEW'       create (overwrite) new file */
+  O_RDWR | O_TRUNC,   /* 'NEW'       create (overwrite) new file */
   O_RDONLY     /* 'READONLY'  self explanatory */
 };
 
@@ -116,7 +116,7 @@ FORTRAN_SUBR ( QOPEN, qopen,
 
   if ((*iunit = _get_channel()) == -1)
    ccp4_signal(CCP4_ERRLEVEL(4) | CCP4_ERRNO(CIO_MaxFile),
-                "COPEN", NULL);
+                "COPEN1", NULL);
 
   _ioChannels[*iunit] = _iobj_init();
 
@@ -127,7 +127,7 @@ FORTRAN_SUBR ( QOPEN, qopen,
   if (!(_ioChannels[*iunit]->iobj = ccp4_file_open (fname, 
 		   file_attribute[istat]) ) ) 
     ccp4_signal(CCP4_ERRLEVEL(4) | CCP4_ERRNO(CIO_MaxFile),
-                "COPEN", NULL);
+                "COPEN2", NULL);
 
   _ioChannels[*iunit]->klass = CCP4_FILE;
 
