@@ -57,8 +57,8 @@ C
 C
 C
       IF(IUN.LE.0.OR.IUN.GT.NSTRM) THEN
-	    WRITE(MSG,*) 'RDAINI: unit number out of range'
-	    call ccperr(1,' stop in rwatom.for 5555')
+        WRITE(MSG,*) 'RDAINI: unit number out of range'
+        call ccperr(1,' stop in rwatom.for 5555')
       ENDIF
 C
       REWIND IUN
@@ -68,21 +68,21 @@ C
 C
 C---- Check file type by reading 1st character of 4th line
 C
-	    READ(IUN,1003) JUNK
-1003	    FORMAT(///A1)
+        READ(IUN,1003) JUNK
+ 1003   FORMAT(///A1)
 C
 C---- If alphabetic, then file is Brookhaven
 C
-	    IF((LGE(JUNK,'A').AND.LLE(JUNK,'Z')).OR.
+        IF((LGE(JUNK,'A').AND.LLE(JUNK,'Z')).OR.
      .         (LGE(JUNK,'a').AND.LLE(JUNK,'z'))) THEN
-		  LTYPE=0
-		  WRITE(MSG,1004) 'Brookhaven'
-1004		  FORMAT(' Input file is ',A)
-	    ELSE
-		  LTYPE=1
-		  WRITE(MSG,1004) 'Diamond'
-	    ENDIF
-	    REWIND IUN
+          LTYPE=0
+          WRITE(MSG,1004) 'Brookhaven'
+ 1004     FORMAT(' Input file is ',A)
+        ELSE
+          LTYPE=1
+          WRITE(MSG,1004) 'Diamond'
+        ENDIF
+        REWIND IUN
       ENDIF
 C
       JTYPES(IUN)=LTYPE
@@ -91,19 +91,19 @@ C
 C
 C---- Brookhaven
 C
-	    CALL RBINIT(IUN)
+        CALL RBINIT(IUN)
       ELSEIF(LTYPE.EQ.1) THEN
 C
 C---- Diamond
 C
-	    READ(IUN,1001) TITLE
-1001	    FORMAT(/A/)
-	    WRITE(MSG,1002) TITLE
-1002	    FORMAT(/' Title from input atom file: ',A/)
-	    IBRKFL=1
+        READ(IUN,1001) TITLE
+ 1001   FORMAT(/A/)
+        WRITE(MSG,1002) TITLE
+ 1002   FORMAT(/' Title from input atom file: ',A/)
+        IBRKFL=1
       ELSE
-	    WRITE(MSG,*) 'RDAINI: illegal type'
-	    call ccperr(1,' stop in rwatom.for 5566')
+        WRITE(MSG,*) 'RDAINI: illegal type'
+        call ccperr(1,' stop in rwatom.for 5566')
       ENDIF
       RETURN
       END
@@ -163,57 +163,57 @@ C
 C
 C---- Brookhaven input file
 C
-	    CALL RBROOK(IUN,ISER,ATNAM,RESTYP,IDCH,IRES,RESNO,IS,
+        CALL RBROOK(IUN,ISER,ATNAM,RESTYP,IDCH,IRES,RESNO,IS,
      .  X,Y,Z,Q,B,IZ,IOUT,MSG1,MSG2,ITER,*10,*11)
-	    RETURN
-10	    RETURN 1
-11	    RETURN 2
+        RETURN
+ 10     RETURN 1
+ 11     RETURN 2
 C
       ELSEIF(LTYPE.EQ.1) THEN
 C 
 C---- Diamond format file
 C
-	    READ(IUN,1001,END=29) X,Y,Z,B,IDW,JRES,JUNK,WEIGHT,
+        READ(IUN,1001,END=29) X,Y,Z,B,IDW,JRES,JUNK,WEIGHT,
      .         RESTYP,RESNAM,ATNAM
-1001	    FORMAT(4F10.5,3I5,F9.0,1X,A3,A4,3X,A4)
+ 1001   FORMAT(4F10.5,3I5,F9.0,1X,A3,A4,3X,A4)
 C
 C---- Atom serial number
 C
-	    NSER=NSER+1
-	    ISER=NSER
+        NSER=NSER+1
+        ISER=NSER
 C
 C---- Check if last character of residue name is a digit
 C
-	    IF(LGE(RESNAM(4:4),'0').AND.LLE(RESNAM(4:4),'9')) THEN
+        IF(LGE(RESNAM(4:4),'0').AND.LLE(RESNAM(4:4),'9')) THEN
 C
 C---- Last character is a digit, try treating RESNAM as a 
 C     4-digit number set chain identifier blank
 C
-		  IDCH=' '
-		  RESNO=RESNAM
+          IDCH=' '
+          RESNO=RESNAM
 C
-	    ELSE
+        ELSE
 C
 C---- Last character is not a digit, use as chain identifier
 C
-		  IDCH=RESNAM(4:4)
-		  RESNO=' '//RESNAM(1:3)
-	    ENDIF
+          IDCH=RESNAM(4:4)
+          RESNO=' '//RESNAM(1:3)
+        ENDIF
 C
 C---- Set residue number from 6th field
 C
-	    IRES=JRES
+        IRES=JRES
 C
 C---- Occupancy = electron count
 C
-	    Q=WEIGHT
-	    IS=IDW
-	    IZ=NINT(Q)
-	    RETURN
+        Q=WEIGHT
+        IS=IDW
+        IZ=NINT(Q)
+        RETURN
 C
 C---- End of file
 C
-29	    RETURN 2
+ 29     RETURN 2
       ENDIF
 C
 C
@@ -238,8 +238,8 @@ C
 C
 C
       IF(IUN.LE.0.OR.IUN.GT.NSTRM) THEN
-	    WRITE(MSG,*) 'WTAINI: unit number out of range'
-	    call ccperr(1,' stop in rwatom.for 5544')
+        WRITE(MSG,*) 'WTAINI: unit number out of range'
+        call ccperr(1,' stop in rwatom.for 5544')
       ENDIF
       JTYPES(IUN)=LTYPE
       NSER=0
@@ -248,16 +248,16 @@ C
 C
 C---- Brookhaven
 C
-	    CONTINUE
+        CONTINUE
       ELSEIF(LTYPE.EQ.1) THEN
 C
 C---- Diamond
 C
-	    WRITE(IUN,1001) TITLE
-1001	    FORMAT(/A/)
+        WRITE(IUN,1001) TITLE
+ 1001   FORMAT(/A/)
       ELSE
-	    WRITE(MSG,*) 'WTAINI: illegal type'
-	    call ccperr(1,' stop in rwatom.for 5533')
+        WRITE(MSG,*) 'WTAINI: illegal type'
+        call ccperr(1,' stop in rwatom.for 5533')
       ENDIF
       RETURN
       END
@@ -308,36 +308,36 @@ C
 C
 C---- Brookhaven
 C
-	    CALL WBROOK(
+        CALL WBROOK(
      .       IUN,ISER,ATNAM,RESTYP,IDCH,IRES,IS,X,Y,Z,Q,B,IZ)
       ELSEIF(JTYPES(IUN).EQ.1) THEN
 C
 C---- Diamond
 C     Find atom type code
 C
-	    IF(IS.LE.0) THEN
-		  IF(IZ.EQ.0) THEN
-			IZ=7
-			IDW=2
-		  ELSE
-			DO 10,IDW=1,NTYPES
-			IF(IZ.EQ.JZATYP(IDW)) GO TO 11
+        IF(IS.LE.0) THEN
+          IF(IZ.EQ.0) THEN
+            IZ=7
+            IDW=2
+          ELSE
+            DO 10,IDW=1,NTYPES
+              IF(IZ.EQ.JZATYP(IDW)) GO TO 11
 10                      CONTINUE
-			WRITE(MM,1001) ATNAM,IRES,IZ
-1001	                FORMAT(/
+                        WRITE(MM,1001) ATNAM,IRES,IZ
+ 1001                   FORMAT(/
      .          ' WTATOM: no atom type number for atom ',A,2I5,
      .             ', set to 2')
-			IDW=2
-		  ENDIF
-	    ELSE
-		  IDW=IS
-	    ENDIF
+                        IDW=2
+                      ENDIF
+                    ELSE
+                      IDW=IS
+                    ENDIF
 C
 11          WEIGHT=Q
 C
-	    WRITE(IUN,1011) 
+            WRITE(IUN,1011) 
      .       X,Y,Z,B,IDW,IRES,ISER,WEIGHT,RESTYP,IRES,IDCH,ATNAM
-1011	    FORMAT(4F10.5,3I5,F9.4,1X,A3,I3,A1,3X,A4)
+ 1011       FORMAT(4F10.5,3I5,F9.4,1X,A3,I3,A1,3X,A4)
       ENDIF
       RETURN
       END
@@ -383,15 +383,15 @@ C
       NCODE=NCODEI
 C
       IF(NCODE.LE.0.OR.NCODE.GT.5) THEN
-	    WRITE(5,300)
+        WRITE(5,300)
 300         FORMAT(//'  NCODE ouside range 1 to 5, reset to 1')
-	    NCODE=1
+            NCODE=1
       ENDIF
 C
 C
       IF(MSG.GT.0) THEN
-	    WRITE(MSG,1001) NCODE,CODES(NCODE)
-1001	    FORMAT(/' Orthogonalisation code ',I4,' axes along ',A)
+        WRITE(MSG,1001) NCODE,CODES(NCODE)
+ 1001   FORMAT(/' Orthogonalisation code ',I4,' axes along ',A)
       ENDIF
 C
 C
