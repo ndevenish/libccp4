@@ -330,12 +330,12 @@ C         soft failure
       ELSE
         IF (IIUN.LE.0) RETURN 
         WRITE (ERRSTR,FMT=6000) FRM,ST,IUN
-        CALL QPRINT (3, ' ')
-        CALL QPRINT (3, ERRSTR)
+        CALL QPRINT (1, ' ')
+        CALL QPRINT (1, ERRSTR)
         WRITE (ERRSTR,FMT=6001) LOGNAM(1:LENSTR(LOGNAM)),
      +       NAMFIL(1:LENSTR(NAMFIL))
-        CALL QPRINT (3, ERRSTR)
-        CALL QPRINT (3, ' ')
+        CALL QPRINT (1, ERRSTR)
+        CALL QPRINT (1, ' ')
  6000 FORMAT (A,3X,A,' file opened on unit ',I3)
  6001 FORMAT ('Logical name: ',A,', Full name: ',A)
       ENDIF 
