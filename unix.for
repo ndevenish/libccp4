@@ -442,3 +442,358 @@ C
       VAXVMS = .FALSE.
 C
       END
+C
+C
+C
+      SUBROUTINE CCPOPN(IIUN,LOGNAM,KSTAT,ITYPE,LREC,IFAIL)
+C     ====================================================
+C
+C---- This subroutine is used to open a file
+C
+C---- If appropriate the subroutine will use the standard fortran77
+C     open statement. on machines where this is not adequate, machine
+C     specific parameters may be included. if necessary each program may
+C     be given its own version of 'ccpopn' if a general version cannot
+C     meet the requirements.
+C
+C
+C PARAMETERS
+C ==========
+C
+C        IIUN (I)   UNIT NUMBER
+C      LOGNAM (I)   LOGICAL FILE NAME (UP TO 8 CHARACTERS)
+C       KSTAT (I)   FILE STATUS FLAG =1, 'UNKNOWN'
+C                                    =2, 'SCRATCH'
+C                                    =3, 'OLD'
+C                                    =4, 'NEW'
+C                                    =5, 'READONLY'
+C                                    =6, 'PRINTER'
+C       ITYPE (I)   FILE TYPE FLAG =1, 'SEQUENTIAL' 'FORMATTED'
+C                                  =2, 'SEQUENTIAL' 'UNFORMATTED'
+C                                  =3, 'DIRECT'     'FORMATTED'
+C                                  =4, 'DIRECT'     'UNFORMATTED'
+C        LREC (I)   RECORD LENGTH FOR DIRECT ACCESS FILE (NO. OF
+C                   CHARACTERS FOR A FORMATTED FILE OR WORDS FOR
+C                   AN UNFORMATTED FILE). NOT RELEVANT FOR A SEQUENTIAL
+C                   FILE
+C       IFAIL (I/O) ON INPUT:     =0, STOP ON OPEN FAILURE
+C                                 =1, CONTINUE AFTER OPEN FAILURE
+C                   ON OUTPUT:    UNCHANGED IF FILE OPEN OK
+C                                 =-1, ERROR IN OPENING FILE
+C
+C
+C I/O STATUS RETURNED IN 'IOS' IN COMMON 'CCPSTT' IF NEEDED
+C
+C
+C SPECIFICATION STATEMENTS
+C
+C
+C     .. Scalar Arguments ..
+      INTEGER IFAIL,KSTAT,ITYPE,IIUN,LREC
+      CHARACTER LOGNAM* (*)
+C     ..
+C     .. Scalars in Common ..
+      INTEGER IOS
+C     ..
+C     .. Local Scalars ..
+      INTEGER LLREC,IUN,IBYTES,ISTAT
+      CHARACTER CCNTRL*7,DISPOS*7,ST*7,FRM*12,ERRSTR*80,FULNAM*255,
+     +          NAMFIL*255,HANDLE*5,CCP4_OPEN*20
+C     ..
+C     .. Local Arrays ..
+      CHARACTER STAT(6)*7
+C     ..
+C     .. External Functions ..
+      INTEGER LENSTR
+      LOGICAL VAXVMS
+      EXTERNAL LENSTR,VAXVMS
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL UGERR,UGTENV
+C     ..
+C     .. Common blocks ..
+      COMMON /CCPSTT/IOS
+C     ..
+C     .. Save statement ..
+      SAVE /CCPSTT/
+C     ..
+C     .. Data statements ..
+      DATA STAT/'UNKNOWN','SCRATCH','OLD','NEW','OLD','UNKNOWN'/
+C     ..
+C
+      ISTAT = KSTAT
+C
+C---- Negative unit number means dont give messages for
+C     successful open
+C
+      IUN = IIUN
+      IF (IIUN.LT.0) IUN = -IIUN
+C
+C---- Open the file
+C
+      IF (LOGNAM.NE.'DATA' .AND. LOGNAM.NE.'PRINTER') THEN
+        IF (LOGNAM(1:4).NE.'TERM') THEN
+          IF (ISTAT.GE.1 .AND. ISTAT.LE.6) THEN
+            IF (ITYPE.GE.1 .AND. ITYPE.LE.4) THEN
+C
+C---- Executive call (see unix.for or vms.for)
+C
+              CALL UGTENV(LOGNAM,NAMFIL)
+              IF (NAMFIL.EQ.' ') NAMFIL = LOGNAM
+              ST = STAT(ISTAT)
+              FRM = 'FORMATTED'
+              DISPOS = 'KEEP'
+C
+C--------------------------------------start of patch for null file 
+C---- patch for NULL ???
+C
+              IF ( NAMFIL.EQ.'/dev/null') THEN
+              ISTAT = 1
+              ST = STAT(ISTAT)
+              END IF
+C-----------------------------------------end of patch for null file
+C
+C-------------------------------------------start of patch for override
+C                                           NEW to UNKNOWN via
+C                                           environment variable
+C                                           CCP4_OPEN
+C
+       IF (ISTAT.EQ.4) THEN
+         CCP4_OPEN = ' '
+         CALL UGTENV('CCP4_OPEN',CCP4_OPEN)
+         IF (CCP4_OPEN.EQ.'UNKNOWN') THEN
+          ISTAT = 1
+          ST = STAT(ISTAT)
+          END IF
+        END IF
+C
+C
+C---- If scratch file on DL Convex,
+C     then treat as UNKNOWN with DISPOSE=DELETE
+C     The file should be defined by setting the name of a file
+C     within one of the scratch areas /SCR1/ or /SCR2/ 
+C     in a environment variable with
+C     a name of the required logical file name
+C
+              IF (ISTAT.EQ.2) THEN
+                ST = 'UNKNOWN'
+                DISPOS = 'DELETE'
+              END IF
+C
+              IF (ITYPE.EQ.2 .OR. ITYPE.EQ.4) FRM = 'UNFORMATTED'
+              IF (ITYPE.GT.2) THEN
+C
+C---- direct access
+C
+C---- These few lines are necessary due to VAX/VMS, which uses different
+C     record length specifivation for FORMATTED and UNFORMATTED file.
+C     (See VAX/VMS  VMSSUPPORT.FOR file).
+C     If you remember, LREC for UNFORMATED file is meassured in WORDS!!!
+C
+                CALL UBYTES (IBYTES,HANDLE)
+                LLREC = LREC*IBYTES
+                IF (HANDLE.EQ.'WORDS'.AND.ITYPE.EQ.4)LLREC=LLREC/IBYTES
+                IF (IFAIL.EQ.0) THEN
+C
+C---- If 'SCRATCH'
+C
+                  IF (ISTAT.EQ.2) THEN
+C
+C---- open for Convex and VMS
+C
+        OPEN(UNIT=IUN,STATUS=ST,ACCESS='DIRECT',FORM=FRM,
+     +  FILE=NAMFIL,RECL=LLREC,DISPOSE=DISPOS,IOSTAT=IOS)
+C
+C---- limited standard open
+C
+cc      OPEN (UNIT=IUN,STATUS='SCRATCH',ACCESS='DIRECT',
+cc     +  FORM=FRM,RECL=LLREC,IOSTAT=IOS)
+        CALL CUNLINK (NAMFIL)
+                  ELSE
+C
+C
+C---- open for Convex and VMS
+C
+       OPEN(UNIT=IUN,STATUS=ST,ACCESS='DIRECT',FORM=FRM,
+     + FILE=NAMFIL,RECL=LLREC,DISPOSE=DISPOS,IOSTAT=IOS)
+C
+C---- limited standard open
+C
+cc      OPEN (UNIT=IUN,STATUS=ST,ACCESS='DIRECT',
+cc     +  FILE=NAMFIL,FORM=FRM,RECL=LLREC,IOSTAT=IOS)
+C
+                  END IF
+C
+C
+                  IF (IOS.NE.0) THEN
+C
+C---- Executive call  (see uxsupport.c)
+C
+                    CALL UGERR(IOS,ERRSTR)
+                    WRITE (6,FMT=6002) IUN,NAMFIL(1:LENSTR(NAMFIL)),ST
+                    WRITE (6,FMT=6008) ERRSTR(1:LENSTR(ERRSTR))
+                    CALL CCPERR(1, '**CCPOPN ERROR** IN CCPLIB 6008')
+                  ELSE
+                    GO TO 10
+                  END IF
+                ELSE
+C
+C---- open for Convex and VMS
+C
+      OPEN(UNIT=IUN,STATUS=ST,ACCESS='DIRECT',FORM=FRM,FILE=NAMFIL,
+     + RECL=LLREC,DISPOSE=DISPOS,IOSTAT=IOS)
+C
+C---- standard open
+C
+cc      OPEN (UNIT=IUN,STATUS=ST,ACCESS='DIRECT',FILE=NAMFIL,
+cc     +   FORM=FRM,RECL=LLREC,IOSTAT=IOS)
+C
+                  IF (IOS.NE.0) THEN
+C
+C---- Executive call (see uxsupport.c)
+C
+                    CALL UGERR(IOS,ERRSTR)
+                  ELSE
+                    GO TO 10
+                  END IF
+                END IF
+              ELSE
+C
+C---- Set carriagecontrol='fortran' for print file, else = 'list'
+C
+                IF (ISTAT.EQ.6) THEN
+                  CCNTRL = 'FORTRAN'
+                ELSE
+                  CCNTRL = 'LIST'
+                END IF
+C
+C---- ISTAT = 5 for readonly
+C
+                IF (ISTAT.EQ.5) THEN
+C
+C---- open for Convex and VMS
+C
+                    IF (ITYPE .EQ. 1) THEN
+       OPEN(UNIT=IUN,STATUS=ST,ACCESS='SEQUENTIAL',FILE=NAMFIL,
+     + CARRIAGECONTROL=CCNTRL,READONLY,FORM=FRM,DISPOSE=DISPOS,
+     + IOSTAT=IOS)
+                    ELSE
+       OPEN(UNIT=IUN,STATUS=ST,ACCESS='SEQUENTIAL',FILE=NAMFIL,
+     + READONLY,FORM=FRM,DISPOSE=DISPOS,
+     + IOSTAT=IOS)
+                    ENDIF
+C
+C---- open for limited number of keywords
+C
+cc      OPEN (UNIT=IUN,STATUS=ST,ACCESS='SEQUENTIAL',
+cc     +  FILE=NAMFIL,FORM=FRM,IOSTAT=IOS)
+C
+C---- ISTAT = 2 for 'SCRATCH'
+C
+                ELSE IF (ISTAT.EQ.2) THEN
+C
+C---- open for limited number of keywords
+C
+cc      OPEN (UNIT=IUN,STATUS='SCRATCH',ACCESS='SEQUENTIAL',
+cc     +  FORM=FRM,IOSTAT=IOS)
+C
+C---- open for Convex and VMS
+C
+                    IF (ITYPE .EQ. 1) THEN
+        OPEN(UNIT=IUN,STATUS=ST,ACCESS='SEQUENTIAL',FILE=NAMFIL,
+     + CARRIAGECONTROL=CCNTRL,FORM=FRM,DISPOSE=DISPOS,IOSTAT=IOS)
+                    ELSE
+        OPEN(UNIT=IUN,STATUS=ST,ACCESS='SEQUENTIAL',FILE=NAMFIL,
+     + FORM=FRM,DISPOSE=DISPOS,IOSTAT=IOS)
+                    ENDIF
+                ELSE
+C
+C---- open for Convex and VMS
+C
+                    IF (ITYPE .EQ. 1) THEN
+        OPEN(UNIT=IUN,STATUS=ST,ACCESS='SEQUENTIAL',FILE=NAMFIL,
+     + CARRIAGECONTROL=CCNTRL,FORM=FRM,DISPOSE=DISPOS,IOSTAT=IOS)
+                    ELSE
+        OPEN(UNIT=IUN,STATUS=ST,ACCESS='SEQUENTIAL',FILE=NAMFIL,
+     + FORM=FRM,DISPOSE=DISPOS,IOSTAT=IOS)
+                    ENDIF
+C
+C---- open for limied number of keywords
+C
+cc      OPEN (UNIT=IUN,STATUS=ST,ACCESS='SEQUENTIAL',
+cc     +  FILE=NAMFIL,FORM=FRM,IOSTAT=IOS)
+C
+                END IF
+C
+                IF (IOS.NE.0) THEN
+C
+C---- UNIX Executive call  (uxsupport.c)
+C
+                  CALL UGERR(IOS,ERRSTR)
+                  IF (IFAIL.EQ.0) THEN
+C
+C---- Hard fail
+C
+                    WRITE (6,FMT=6002) IUN,NAMFIL(1:LENSTR(NAMFIL)),ST
+                    WRITE (6,FMT=6008) ERRSTR(1:LENSTR(ERRSTR))
+                    CALL CCPERR(1, '**CCPOPN ERROR** IN CCPLIB 6008-1')
+                  ELSE
+C
+C----  Soft fail
+C
+                  END IF
+                ELSE
+                  GO TO 10
+                END IF
+              END IF
+C
+c---- error return
+C
+C---- Soft fail (IFAIL .ne. 0)
+C
+              WRITE (6,FMT=6004) FRM,ST,IUN,LOGNAM(1:LENSTR(LOGNAM)),
+     +          NAMFIL(1:LENSTR(NAMFIL))
+              WRITE (6,FMT=6008) ERRSTR(1:LENSTR(ERRSTR))
+              IFAIL = -1
+              RETURN
+C
+C---- Successful open, print file info except for files DATA,
+C     PRINTER or TERM...
+C
+   10         CONTINUE
+              IF (IIUN.LE.0) GO TO 15
+              IF (LOGNAM.NE.'DATA' .AND. LOGNAM.NE.'PRINTER' .AND.
+     +            LOGNAM(1:4).NE.'TERM') THEN
+                INQUIRE (FILE=NAMFIL,NAME=FULNAM)
+                WRITE (6,FMT=6000) FRM,ST,IUN,LOGNAM(1:LENSTR(LOGNAM)),
+     +            FULNAM(1:LENSTR(FULNAM))
+              END IF
+   15         CONTINUE
+              RETURN
+            END IF
+          END IF
+C
+C---- Invalid arguments
+C
+          WRITE (6,FMT=6006)
+          IF (IFAIL.EQ.0) THEN
+            CALL CCPERR(1,'**CCPOPN ERROR** IN CCPLIB 6006')
+          ELSE
+            IFAIL = -1
+          END IF
+        END IF
+      END IF
+C
+c---- format statements
+C
+ 6000 FORMAT (/1X,A,3X,A,' file opened on unit ',I3,/' Logical name: ',
+     +       A,', Full name: ',A,/)
+ 6002 FORMAT (' **CCPOPN ERROR** Unit',I4,', File ',A,', Status ',A,/)
+ 6004 FORMAT (' **CCPOPN ERROR**  ',A,3X,A,
+     +       ' file open failure on unit ',I3,/' Logical name: ',A,', ',
+     +       'File name: ',A,/)
+ 6006 FORMAT (' **CCPOPN ERROR** Invalid parameters in call',/)
+ 6008 FORMAT (' Op-system  error: ',A,/)
+C
+C
+      END
