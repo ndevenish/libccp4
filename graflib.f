@@ -1722,6 +1722,7 @@ C     ..
 C     .. Local Scalars ..
       BYTE BEGIN
       CHARACTER FILNAM*100
+      INTEGER ISTAT
 C     ..
 C     .. Common blocks ..
       COMMON /LASOFFS/XOFFS,YOFFS,IPC,FACT,IPEN
@@ -1738,14 +1739,15 @@ C     ..
       CALL UGTENV ('PLOT',FILNAM)
       IF(FILNAM.EQ.' ') FILNAM = 'PLOT'
       IGUNIT = 92
-      OPEN (UNIT=92,FILE=FILNAM,STATUS='NEW',FORM='FORMATTED',
-     +     CARRIAGECONTROL='LIST')
+      ISTAT = 0
+      CALL CCPDPN(92, FILNAM, 'NEW', 'F',0, ISTAT)
+      IF (ISTAT.NE.0) CALL CPPERR(1,'Can''t open PLOT file')
       WRITE (92,FMT=6000) BEGIN
-      WRITE (92,FMT=6000) 'INITGRAPHICS'
-      WRITE (92,FMT=6000) 'NEWPATH'
-      WRITE (92,FMT=6000) '/INCH {72 MUL} DEF'
-      WRITE (92,FMT=6000) '.3 SETLINEWIDTH'
-      WRITE (92,FMT=6000) '2.0 INCH -2.0 INCH TRANSLATE'
+      WRITE (92,FMT=6000) 'initgraphics'
+      WRITE (92,FMT=6000) 'newpath'
+      WRITE (92,FMT=6000) '/inch {72 mul} def'
+      WRITE (92,FMT=6000) '.3 setlinewidth'
+      WRITE (92,FMT=6000) '2.0 inch -2.0 inch translate'
 C
  6000 FORMAT (A)
       END
@@ -3226,6 +3228,7 @@ C
       LOGICAL ONLINE,LMB,DLAB,IMPC
       COMMON /IOO/IOUT,IUNIT,ONLINE,ITIN,ITOUT,INOD,INMO,IDU,NWRN,
      +            LMB,DLAB,IMPC,IGUNIT
+      INTEGER ISTAT
 C
 CMJH
 C Start up the SG graphics.
@@ -3251,8 +3254,9 @@ C
         CALL CLEAR
 C
 C
-        OPEN (UNIT=2,FORM='UNFORMATTED',STATUS='OLD',
-     2           FILE='SQUIDFONT',ERR=2222,READONLY,SHARED)
+        ISTAT = 0
+        CALL CCPDPN(2, 'SQUIDFONT', 'READONLY', 'U', 0, ISTAT)
+        IF (ISTAT.NE.0) GOTO 2222
 C
         K=1
 C
@@ -3417,7 +3421,7 @@ C     ..
         IF (ICOL.GE.0 .AND. ICOL.LE.15) THEN
 C
           IF (GRMODE) THEN
-            WRITE (12,FMT='(''HI''Z1)') ICOL
+            WRITE (12,FMT='(''HI'',Z1)') ICOL
           ELSE
             WRITE (12,FMT='(''+-*/HI'',Z1,''DB''/)') ICOL
           END IF
@@ -3554,12 +3558,14 @@ C     .. Common blocks ..
      +            LMB,DLAB,IMPC,IGUNIT
       COMMON /SIGMA/GRMODE,ICOLOR,POINTMODE
 C     ..
+      INTEGER ISTAT
       FILNAM = ' '
       CALL UGTENV('GRAPHICS',FILNAM)
       IF (FILNAM.EQ.' ') FILNAM = 'GRAPHICS'
       IGUNIT = 12
-      OPEN (UNIT=12,FILE=FILNAM,CARRIAGECONTROL='LIST',
-     +     STATUS='UNKNOWN')
+      ISTAT = 0
+      CALL CCPDPN(12, FILNAM, 'UNKNOWN', 'F', 0, ISTAT)
+      IF (ISTAT.NE.0) CALL CCPERR(1,'Can''t open GRAPHICS')
 C
 C---- reset default color to white
 C
@@ -3904,14 +3910,15 @@ c----------------------------------------------------------
       subroutine TKCURSOR(ix,iy,cha)
 c----------------------------------------------------------
 c
-      character esc,sub,x,cha
+      character x,cha
+      integer esc,sub
 c      BYTE STRING(6)
       CHARACTER*6 string
       data esc /27/,sub/26/,x/'+'/
       LOGICAL VMSVAX
       COMMON /SITE/ VMSVAX
 c
-      write(12,10) esc,sub
+      write(12,10) char(esc),char(sub)
 10    format(2a,$)
 99      continue
 
