@@ -242,23 +242,30 @@ C
 C_END_XYZOPEN
 C
 C   
+      implicit none
 C     .. Parameters ..
-      INTEGER MAXFILESOPEN
-      PARAMETER (MAXFILESOPEN=10)
+      INTEGER MAXFILESOPEN,MAXSYM
+      PARAMETER (MAXFILESOPEN=10,MAXSYM=96)
 C     ..
 C     .. Arguments ..
-      INTEGER IFAIL,IUNIT
+      INTEGER IFAIL,IUNIT,II,JJ,K,ISYM
+      REAL AM,BM,RCHK1,RCHK2,FAC
       CHARACTER*(*) FILTYP,LOGNAM,RWSTAT
 C     ..
 C     .. Variables in Common ..
-      REAL CELL,CELLAS,RF,RO,RR,VOL
+      REAL CELL,CELLAS,RF,RO,RR,VOL,ROU,RFU
       INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
       CHARACTER*80 LOGUNIT,BROOK*1,WBROOK*1,WBROOK1*1, BRKSPGRP*11
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
+c  Check symmetry stuff
+C
+      integer  nsymchk,lspgrp,nsymppdbs,nsympdbs
+      real rsymchk(4,4,maxsym), rsympdbs(4,4,maxsym)
+      character SPGRPpdb*11,NAMSPG_CIFS*20,nampg*10
 C     ..
 C     .. Local Scalars ..
       REAL ERROR,VOLCHK
-      INTEGER I,II,IORTH,IFILTYP,J,LL
+      INTEGER I,IORTH,IFILTYP,J,LL
       CHARACTER BROOKA*80,ERRLIN*600,FILNAM*255,IE*2,IRTYPE*4
       CHARACTER LFILTYP*3,LRWSTAT*5
       CHARACTER*40 ORTH(6)
@@ -381,12 +388,60 @@ C
 C---- Read PDB header info.
 C
         IF (TYPE(FILESOPEN) .EQ. 1) THEN
-
+          NSYMCHK=0
    40     READ(UNIT(FILESOPEN),FMT='(80A1)',END=1000)BROOK
+C
+C---- Read symmetry operators from REMARK 290 lines:
+C---123456789012345678901234567890
+C---REMARK 290      SYMOP   SYMMETRY
+C---REMARK 290     NNNMMM   OPERATOR
+C---REMARK 290       1555   X,Y,Z
+C---REMARK 290       2555   1/2-X,-Y,1/2+Z
+C---REMARK 290       3555   -X,1/2+Y,1/2-Z
+C---REMARK 290       4555   1/2+X,1/2-Y,-Z
+          IF(BROOKA(1:10) .EQ.'REMARK 290') then
+           IF(BROOKA(19:21).EQ.'555')THEN 
+             READ(BROOKA(11:18),'(I8)')NSYMCHK
+             CALL  symfr2 (BROOKA,22,nsymchk,rsymchk)
+              write(6,'(a,i3,4(/,4f10.3))')' remark 290',nsymchk,
+     + ((rsymchk(ii,jj,nsymchk),ii=1,4),jj=1,4)
+           ENDIF
+          ENDIF
+C
 C
 C---- Escape if ATOM card found
 C
           IF (IRTYPE.EQ.'ATOM') THEN
+C   Check possible symmetry first..
+         if(nsymchk.gt.0 .and.nsympdbs .gt.0) then
+           DO isym = 1,nsympdbs
+           AM=
+     *      Rsymchk(1,1,isym)*(Rsymchk(2,2,isym)*Rsymchk(3,3,isym)
+     *                        -Rsymchk(2,3,isym)*Rsymchk(3,2,isym))
+     *     +Rsymchk(1,2,isym)*(Rsymchk(2,3,isym)*Rsymchk(3,1,isym)
+     *                        -Rsymchk(2,1,isym)*Rsymchk(3,3,isym))
+     *     +Rsymchk(1,3,isym)*(Rsymchk(2,1,isym)*Rsymchk(3,2,isym)
+     *                        -Rsymchk(2,2,isym)*Rsymchk(3,1,isym))
+             IF( abs(AM).GT.0.05) then
+               BM = 0
+                do i = 1, 4
+                  do j = 1,4
+                   BM = BM + abs(Rsymchk(i,j,isym) - rsympdbs(i,j,isym))
+                  enddo
+                enddo
+                if (BM .gt.0.1) then
+                  WRITE(6,'(a,i4,a,2(/a,4(/,4f10.3)))')
+     +            ' Symmetry operators',isym,
+     +            ' from symop.lib and remark 290 inputdo not match:',
+     +            ' Remark 290',
+     +            ((Rsymchk(i,j,isym),i=1,4),j=1,4) ,
+     +            ' symop.lib',
+     +            ((Rsympdbs(i,j,isym),i=1,4),j=1,4)
+                  call ccperr(1,' Problem with symmetry match')
+                endif
+             endIF
+           ENDDO
+         endif
             GOTO 1000
 C
 C---- Cell card found - calculate standard orthogonalising matrix
@@ -398,7 +453,10 @@ C
             IFCRYS=.TRUE.
             BRKSPGRP = ' '
             READ(BROOKA,FMT='(6X,3F9.3,3F7.2,1x,a11)')CELL,BRKSPGRP
-
+C  Read symmetry operators..
+             IF(BRKSPGRP.NE.' ')
+     +     call MSYMLB3(1,LSPGRP,BRKSPGRP,NAMSPG_CIFS,
+     +                   NAMPG,NSYMPpdbs,NSYMpdbs,RSYMpdbs)
             CALL RBFROR
             IF(NCODE.EQ.0)NCODE=1
 
@@ -901,13 +959,13 @@ C     .. Common Blocks ..
       COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
       COMMON /RBRKYY/ BROOK(80),WBROOK(80),WBROOK1(80)
 C     ..
+C     .. Equivalences ..
+      EQUIVALENCE (BROOKA,WBROOK(1))
+C
 C     .. Data Statements ..
       DATA ITYPE/'CRYST1','SCALE','TER   ','ATOM  ','HETATM',
      +           'ANISOU','END   '/
       DATA Cnums /'0','1','2','3','4','5','6','7','8','9'/
-C
-C     .. Equivalences ..
-      EQUIVALENCE (BROOKA,WBROOK(1))
 C     ..
 C     .. Save ..
       SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/
