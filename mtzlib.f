@@ -2477,6 +2477,8 @@ C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
 C     ..
+C     .. Array Arguments ..
+      LOGICAL LOGMSS(MCOLS)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
@@ -2485,11 +2487,13 @@ C     .. Arrays in Common ..
      +        WLUN,WOMBAT
       LOGICAL SORTB,DATMSS,VAL_SET
 C     ..
-C     .. Local Arrays 
-      LOGICAL LOGMSS(*)
-C     ..
 C     .. Local Scalars
+      INTEGER JDO
       CHARACTER LINE*132
+C     ..
+C     .. External Routines ..
+      EXTERNAL LERROR
+C
 C     .. 
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
@@ -2508,7 +2512,15 @@ C     .. Save statement ..
       SAVE /MTZHDR/,/MTZWRK/
 C     ..
 C
-C---- First check that the MINDX is valid
+C---- In case programs check LOGMSS before the lookup value for the
+C     program label, it should be false for unassigned columns.  (This
+C     loop is excessive...)
+C
+      DO 10 JDO = 1,MCOLS
+        LOGMSS(JDO) = .FALSE.
+   10 CONTINUE
+C
+C---- Next check that the MINDX is valid
 C
       IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
         WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
@@ -2524,9 +2536,10 @@ C
      +       MINDX
         CALL LERROR(2,-1,LINE)
       END IF
-      DO 10 JDO10 = 1,NCOLS(MINDX)
-        LOGMSS(JDO10) = DATMSS(JDO10) 
- 10   CONTINUE
+
+      DO 20 JDO = 1,NCOLS(MINDX)
+        LOGMSS(JDO) = DATMSS(JDO) 
+ 20   CONTINUE
       END
 C
 C
