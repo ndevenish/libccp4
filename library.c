@@ -47,13 +47,13 @@
 /*                                                                          */
 /* Routine and  arguments &                      Purpose \\                 */
 /* \hline                                                                   */
-/* [[ustenv(string, result)]]         & set an environment variable  \\     */
-/* [[copen(iunit,filnam,istat)]]      & open random access file using [[fopen]] \\ */
-/* [[qclose(iunit)]]                  & shut random access file using [[fclose]] \\ */
+/* [[result = ccp4_ustenv(string)]]      & set an environment variable  \\     */
+/* [[iunit = ccp4_qopen(filnam,istat)]]  & open random access file using [[fopen]] \\ */
+/* [[ccp4_qclose(iunit)]]                & shut random access file using [[fclose]] \\ */
 /* [[qmode(iunit,mode,nmcitm)]]       & change size of item in file ops. \\ */
 /* [[qread(iunit,array,nitems,ier)]]  & [[fread]] from random access file \\ */
 /* [[qwrite(iunit,array,nitems)]]     & [[fwrite]] to random access file \\ */
-/* [[qrarch(iunit,ipos,ireslt)]] & set up diskio number translation \\      */
+/* [[int qrarch(iunit,ipos)]]         & set up diskio number translation \\      */
 /* [[qwarch(iunit,ipos)]] & write `machine stamp' to diskio file \\         */
 /* [[qseek(iunit,irec,iel,lrecl)]]    & [[fseek]] within random access file \\ */
 /* [[qback(iunit,lrecl)]]             & backspace within random access file \\ */
@@ -163,6 +163,15 @@ static int
     Iconvert[MAXFILES],         /* integer convserion needed on read*/
     Fconvert[MAXFILES];         /* real convserion needed on read*/
 
+/* This gets the length of a \ft{} string ([[character*]]\meta{len}         */
+/* variable) \meta{s} with trailing blanks removed.  \fixme{Avoid lossage   */
+/*   on null/blank string}                                                  */
+/*                                                                          */
+size_t ccp4_flength (char *s, int len)
+{
+  while (s[--len] == ' ');
+  return (++len);
+}
 /****************************************************************************/
 /* %def file_last_op file_mode                                              */
 /*                                                                          */
@@ -172,34 +181,41 @@ static int
 /* originally done.\index{error reporting}                                  */
 /*                                                                          */
 /* <internal routines>=                                                     */
-static void fatal (char *message)
+void ccp4_fatal (const char *message)
 {
-  int mone = -1;
 /* NOFORTRANLIB is not generally defined but could be for C apps */
 #if defined (NOFORTRANLIB) 
   printf(" Last system error message: %s\n",strerror(errno));
   printf(" PROGRAM:%s\n",message);
   exit(1);
 #else
+  int mone = -1;
+  char_struct(tmp_string);
+
+  fill_char_struct(tmp_string,message);
 FORTRAN_CALL ( CCPERR, ccperr,
-         (&mone, message, (int) strlen(message)),
-         (&mone, message),
-	 (&mone, message, (int) strlen(message)));
+         (&mone, FTN_STR(tmp_string), (int) FTN_LEN(tmp_string)),
+         (&mone, &tmp_string),
+	 (&mone, FTN_STR(tmp_string), (int) FTN_LEN(tmp_string)));
 #endif
  }
 /* This prints a non-fatal [[message]] using the Fortran i/o.               */
 /*                                                                          */
 /* <internal routines>=                                                     */
-static void cqprint (char *message)
+void qprint (const char *message)
 {
-  int zero = 0;
 #if defined (NOFORTRANLIB)
   printf ("%s\n",message);
 #else
+  int zero = 0;
+  char_struct(tmp_string);
+
+  fill_char_struct(tmp_string,message);
+
 FORTRAN_CALL ( QPRINT, qprint,
-         (&zero, message, (int) strlen(message)),
-         (&zero, message),
-	 (&zero, message, (int) strlen(message)));
+         (&zero, FTN_STR(tmp_string), (int) FTN_LEN(tmp_string)),
+         (&zero, &tmp_string),
+	 (&zero, FTN_STR(tmp_string), (int) FTN_LEN(tmp_string)));
 #endif
  }
 /* This reports a fatal error with a given file.                            */
@@ -213,11 +229,11 @@ static void file_fatal (char *message, char *file)
   l = strlen (message) + strlen (file) + 1;
   buff = malloc (l);
   if (buff == NULL)
-    fatal ("Memory allocation failed");
+    ccp4_fatal ("Memory allocation failed");
   buff[0] = '\0';
   strcat (buff, message);
   strcat (buff, file);
-  fatal (buff);
+  ccp4_fatal (buff);
 }
 /* \subsection{Non-\ac{ieee} floating-point conversion}                     */
 /*                                                                          */
@@ -403,7 +419,7 @@ static void ieeeF2convexF(union float_uint_uchar buffer[], int size)
   }
 }
 /* \section{Miscellaneous routines}                                         */
-/* \subsection{{\tt subroutine ustenv(\meta{string}, \meta{result})}}       */
+/* \subsection{{\tt int ustenv(\meta{string})}}                             */
 /*                                                                          */
 /* This sets an environment variable \meta{var} to \meta{val}, where the    */
 /* argument \meta{string}[[==']]\meta{var}[['//'='//']]\meta{val}[[']].     */
@@ -417,216 +433,66 @@ static void ieeeF2convexF(union float_uint_uchar buffer[], int size)
 /* <miscellaneous routines>=                                                */
 #if ! defined (VMS)
 /* <ustenv code>=                                                           */
-void ccp4_ustenv (char *str, int *result)
+int ccp4_ustenv (char *str)
 {
   int putenv ();
-  char value[MAXFLEN], *temp;
+  char *temp;
 
 #if defined (sgi) || defined (sun) || defined (__hpux) || \
     defined(_AIX) || defined(ultrix) || defined (__OSF1__) || \
     defined (__osf__) || defined (__FreeBSD__) || defined (linux) || \
     defined (titan) || defined (_WIN32)
-      /* putenv is the POSIX.1, draft 3 proposed mechanism */
+  /* putenv is the POSIX.1, draft 3 proposed mechanism */
       /* ESV seems to have it in the SysVile universe */
-  temp = (char *) malloc (MAXFLEN);
-  if (temp == NULL) fatal("USTENV: Memory allocation failed");
-  (void) strcpy (temp, str);
-  *result = putenv (temp);
+  if ( (temp = (char *) malloc(strlen(str) +1)) == NULL) 
+    ccp4_fatal("CCP4_USTENV: Memory allocation failed");
+  return (putenv (strcpy(temp,str)));
   /* note the necessary lack of free() */
 #else
-  /* setenv is not POSIX */
-  temp = (char *) strchr (str, '='); /* BSD might have to use `index' */
-  if (temp != NULL) {
-    *temp = '\0';
-    temp++;
-    (void) strcpy (value, temp);
-  };
-  *result = setenv (str, value, 1);
+  /* setenv is not POSIX, BSD might have to use `index' */
+  if ((temp = (char *) strchr(str, '=')) != NULL)
+    *temp++ = '\0';
+  return (setenv (str, temp, 1));
 #endif
 }
 #endif
-/* \subsection{{\tt subroutine cunlink (\meta{filename})}}                  */
-/* This unlinks \meta{filename} from the directory.  It's intended for      */
-/* use with scratch files, so that they can be hidden when opened but       */
-/* still be available as long as they remain connected (see [[CCPOPN]]).    */
-/* This functionality doesn't seem to exist in \idx{VMS}\@.  Failure to     */
-/* unlink isn't fatal (it's been observed, apparently spuriously).          */
-/*                                                                          */
-/* <miscellaneous routines>=                                                */
-void ccp4_cunlink (char *filename)
-{
-  if (unlink (filename) != 0)
-    cqprint("CUNLINK: Can't unlink");
-}
-/* \section{Dynamic memory allocation}                                      */
-/* It's nice to be able to determine array sizes at run time to avoid       */
-/* messy recompilation.  The only way effectively to get dynamic            */
-/* allocation in Fortran77 reasonably portably is to do the allocation,     */
-/* e.g.\ in C, and invoke the Fortran routine passed as a parameter with    */
-/* pointers to the allocated memory which it will treat as arrays.  If we   */
-/* want to allow more than one array, it's more tricky.                     */
-/*                                                                          */
-/* \subsection{{\tt subroutine ccpal1 (\meta{routne}, \meta{n}.             */
-/*     \meta{type}, \meta{length})}}                                        */
-/* Arranges to call subroutine \meta{routne} with \meta{n} array            */
-/* arguments.  Each has a type indicated by \meta{type}$(i)$ and a length   */
-/* given by \meta{length}($i$).  \meta{type} is an integer array with       */
-/* values 1, 2, 3, 4 inidcating {\tt                                        */
-/*   INTEGER}, {\tt REAL}, {\tt DOUBLE PRECISION} and {\tt COMPLEX}         */
-/* respectively.                                                            */
-/* It's not immediately clear what all the Fortran/C                        */
-/* conventions are for passing [[CHARACTER]] arrays, so we'll arrange a     */
-/* higher-level interface and have [[types]] here just numeric.  The        */
-/* Fortran ([[CCPALC]]) will also do argument validation.  Also the rules   */
-/* for passing external routines as arguments aren't clear---assume         */
-/* the obvious way.                                                         */
-/*                                                                          */
-/* There's a \idx{VMS} Fortran version of this, although the code here      */
-/* does work fine in VMS\@.                                                 */
-/*                                                                          */
-/* NB: there's a possibility of a hook here to use memory-mapped files on   */
-/* systems with the capability and insufficient VM\@.                       */
-/*                                                                          */
-/* Under protest, this now allocates zeroed storage for where programs      */
-/* make bad assumptions.                                                    */
-/*                                                                          */
-/* <miscellaneous routines>=                                                */
-#ifndef VMS                     /* we'll use the Fortran version in VMS*/
-#ifndef _MVS
-void ccp4_ccpal1 (void (* routne) (), int *n, int type[], int length[])
-{
-  int i, size, *leng[13];
-  void *pointer[13];
 
-  for (i=0; i<*n; i++) {
-    switch (type[i]) {
-    case 1:
-      size = item_sizes[6]; break; /* integer */
-    case 2:
-      size = item_sizes[2]; break; /* real */
-    case 3:
-      size = 2*item_sizes[2]; break; /* double */
-    case 4:
-      size = 2*item_sizes[2]; break; /* complex */
-    case 5:
-      size = item_sizes[1]; break; /* bytes (logical or integer *1) */
-    }
-    pointer[i+1] = calloc ((size_t) length[i], (size_t) size);
-    if (pointer[i+1] == NULL) fatal ("CCPALC: can't allocate memory");
-    leng[i+1] = &(length[i]);   /* convenience */
-  }
-  switch (*n) {
-  case 1:
-    (* routne) (leng[1], pointer[1]);
-    break;
-  case 2:
-    (* routne) (leng[1], pointer[1], leng[2], pointer[2]);
-    break;
-  case 3:
-    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
-                leng[3], pointer[3]);
-    break;
-  case 4:
-    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
-                leng[3], pointer[3], leng[4], pointer[4]);
-    break;
-  case 5:
-    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
-                leng[3], pointer[3], leng[4], pointer[4],
-                leng[5], pointer[5]);
-    break;
-  case 6:
-    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
-                leng[3], pointer[3], leng[4], pointer[4],
-                leng[5], pointer[5], leng[6], pointer[6]);
-    break;
-  case 7:
-    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
-                leng[3], pointer[3], leng[4], pointer[4],
-                leng[5], pointer[5], leng[6], pointer[6],
-                leng[7], pointer[7]);
-    break;
-  case 8:
-    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
-                leng[3], pointer[3], leng[4], pointer[4],
-                leng[5], pointer[5], leng[6], pointer[6],
-                leng[7], pointer[7], leng[8], pointer[8]);
-    break;
-  case 9:
-    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
-                leng[3], pointer[3], leng[4], pointer[4],
-                leng[5], pointer[5], leng[6], pointer[6],
-                leng[7], pointer[7], leng[8], pointer[8],
-                leng[9], pointer[9]);
-    break;
-  case 10:
-    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
-                leng[3], pointer[3], leng[4], pointer[4],
-                leng[5], pointer[5], leng[6], pointer[6],
-                leng[7], pointer[7], leng[8], pointer[8],
-                leng[9], pointer[9], leng[10], pointer[10]);
-    break;
-  case 11:
-    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
-                leng[3], pointer[3], leng[4], pointer[4],
-                leng[5], pointer[5], leng[6], pointer[6],
-                leng[7], pointer[7], leng[8], pointer[8],
-                leng[9], pointer[9], leng[10], pointer[10],
-                leng[11], pointer[11]);
-    break;
-  case 12:
-    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
-                leng[3], pointer[3], leng[4], pointer[4],
-                leng[5], pointer[5], leng[6], pointer[6],
-                leng[7], pointer[7], leng[8], pointer[8],
-                leng[9], pointer[9], leng[10], pointer[10],
-                leng[11], pointer[11], leng[12], pointer[12]);
-    break;
-  }
-  for (i=0; i<*n; i++)
-    free (pointer[i+1]);
-}
-#endif /* VMS */
-#endif
 /* \section{Diskio routines}                                                */
 /*                                                                          */
-/* \subsection{{\tt subroutine copen(\meta{iunit}, \meta{filename},         */
-/*     \meta{istat})}}                                                      */
+/* \subsection{{\tt int ccp4_qopen(\meta{filename}, \meta{istat})}}         */
 /* Opens \meta{filename} on diskio stream \meta{iunit}.  \meta{istat}       */
 /* corresponds to the open mode given to [[qopen]], from which [[copen]]    */
-/* is always called---see diskio documentation.                             */
+/* is always called ---see diskio documentation.                            */
+/* Returns stream number.                                                   */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-void ccp4_copen (int *iunit, const char *filename, int istat)
+int ccp4_qopen (const char *filename, int istat)
 {
-  int i;
+  int iunit;
 
   if (! initialised) {
     /* note that array element 0 is unused -- using it produced
        complaints from mtzlib about a zero stream */
-    for (i = 1; i < MAXFILES; i++) {
-      file_stream[i]         = NULL;
-      file_name[i][0]        = '\0';
-      file_bytes_per_item[i] = item_sizes[DEFMODE];  /* default item size */
-      file_is_scratch[i]     = 0;
-      file_last_op[i]        = IRRELEVANT_OP;
-      file_mode[i] = DEFMODE;
+    for (iunit = 1; iunit < MAXFILES; iunit++) {
+      file_stream[iunit]         = NULL;
+      file_name[iunit][0]        = '\0';
+      file_bytes_per_item[iunit] = item_sizes[DEFMODE];  /* default item size */
+      file_is_scratch[iunit]     = 0;
+      file_last_op[iunit]        = IRRELEVANT_OP;
+      file_mode[iunit] = DEFMODE;
     }
     initialised = 1;
   }
-  for (i = 1; i < MAXFILES; i++) /* Find next available stream */
-    if (file_stream[i] == NULL) break;
-  if (i == MAXFILES) {
-    *iunit = -1;                /* return no more units flag */
-    return;
-  } else {
-    *iunit = i;}                 /* will return the stream number */
+  for (iunit = 1; iunit < MAXFILES; iunit++) /* Find next available stream */
+    if (file_stream[iunit] == NULL) break;
+  if (iunit == MAXFILES) 
+    return -1;                /* return no more units flag */
 
-  (void) strcpy (file_name[i], filename);
-  file_last_op[i] = IRRELEVANT_OP;
-  file_bytes_per_item[i] = item_sizes[DEFMODE]; /* default item size */
-  file_mode[i] = DEFMODE;
-  file_is_scratch[i] = (istat == 2);
+  (void) strcpy (file_name[iunit], filename);
+  file_last_op[iunit] = IRRELEVANT_OP;
+  file_bytes_per_item[iunit] = item_sizes[DEFMODE]; /* default item size */
+  file_mode[iunit] = DEFMODE;
+  file_is_scratch[iunit] = (istat == 2);
 
 /* There are complications involved with the \idx{VMS} code:                */
 /* \begin{itemize}                                                          */
@@ -651,50 +517,52 @@ void ccp4_copen (int *iunit, const char *filename, int istat)
 /*                                                                          */
 /* <diskio routines>=                                                       */
 #ifdef VMS
-  if (file_is_scratch[i])
-    file_stream[i] = fopen (file_name[i], file_attribute[istat - 1],
-                            "mbc=16", /* bigger blocksize */
-                            "fop=tmd"); /* temporary, delete on close */
+  if (file_is_scratch[iunit])
+    file_stream[iunit] = fopen (file_name[iunit], file_attribute[istat - 1],
+				"mbc=16", /* bigger blocksize */
+				"fop=tmd"); /* temporary, delete on close */
   else
-    file_stream[i] = fopen (file_name[i], file_attribute[istat - 1],
-                            "mbc=16", /* bigger blocksize */
-                            "ctx=stm", "mrs=0", "rat=cr", "rfm=stmlf");
-  if (file_stream[i] == NULL)
-    file_fatal ("(Q)QOPEN: can't open ", file_name[i]);
+    file_stream[iunit] = fopen (file_name[iunit], file_attribute[istat - 1],
+				"mbc=16", /* bigger blocksize */
+				"ctx=stm", "mrs=0", "rat=cr", "rfm=stmlf");
+  if (file_stream[iunit] == NULL)
+    file_fatal ("(CCP4_QOPEN: can't open ", file_name[iunit]);
 #else
 # ifdef _MVS
-  if (file_is_scratch[i]) {
-    if ((file_stream[i] = tmpfile()) == NULL) 
-      file_fatal ("(Q)QOPEN: can't open ", file_name[i]);}
+  if (file_is_scratch[iunit]) {
+    if ((file_stream[iunit] = tmpfile()) == NULL) 
+      file_fatal ("CCP4_QOPEN: can't open ", file_name[iunit]);}
   else {
-    file_stream[i] = fopen (file_name[i], file_attribute[istat - 1]);
+    file_stream[iunit] = fopen (file_name[iunit], file_attribute[istat - 1]);
+    if (file_stream[iunit] == NULL)
+      file_fatal ("CCP4_QOPEN: can't open ", file_name[iunit]);
   }
 # else
-  file_stream[i] = fopen (file_name[i], file_attribute[istat - 1]);
-  if (file_stream[i] == NULL)
-    file_fatal ("(Q)QOPEN: can't open ", file_name[i]);
-  if (file_is_scratch[i] && unlink (file_name[i])!=0)
-    file_fatal ("(Q)QOPEN: error unlinking ", file_name[i]);
+  file_stream[iunit] = fopen (file_name[iunit], file_attribute[istat - 1]);
+  if (file_stream[iunit] == NULL)
+    file_fatal ("CCP4_QOPEN: can't open ", file_name[iunit]);
+  if (file_is_scratch[iunit] && unlink (file_name[iunit])!=0)
+    file_fatal ("CCP4_QOPEN: error unlinking ", file_name[iunit]);
 # endif
 #endif
-  if (file_stream[i] == NULL) {
-    *iunit = -2;                /* return open failure flag */
-    return; }
-  Iconvert[i] = Fconvert[i] = 0;
+  if (file_stream[iunit] == NULL) 
+    return -2;                /* (catcher) return open failure flag (*/
+
+  Iconvert[iunit] = Fconvert[iunit] = 0;
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
 /* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[*iunit]]!   */
 /*                                                                          */
 /* <OpenVMS seek fudge>=                                                    */
 #if defined (__alpha) && defined (vms)
-(void) fflush (file_stream[*iunit]);
+(void) fflush (file_stream[iunit]);
 #endif
-  if (fseek (file_stream[*iunit], 0L, SEEK_SET) != 0)
-    file_fatal("(Q)QOPEN: fseek failed on", file_name[i]);
-  *iunit = i;
+  if (fseek (file_stream[iunit], 0L, SEEK_SET) != 0)
+    file_fatal("CCP4_QOPEN: fseek failed on", file_name[iunit]);
+  
+  return iunit;                /* return filestream number */
 }
-/* \subsection{{\tt subroutine qrarch (\meta{iunit},                        */
-/*     \meta{ipos}, \meta{ireslt})}}                                        */
+/* \subsection{{\tt int ccp4_qrarch (\meta{iunit}, \meta{ipos})}}           */
 /*                                                                          */
 /* For binary files with a well-determined structure in terms of            */
 /* [[float]]s and [[int]]s we may want to set up the connected stream to    */
@@ -706,11 +574,11 @@ void ccp4_copen (int *iunit, const char *filename, int istat)
 /* [[qrarch]] reads the \idx{machine stamp} at {\em word\/} \meta{ipos}     */
 /* for the diskio file on stream \meta{iunit} and sets up the appropriate   */
 /* bit-twiddling for subsequent [[qread]]s on that stream.  The             */
-/* information read from the file is returned in \meta{ireslt} in the       */
+/* information read from the file is returned in the                        */
 /* form $\mbox{[[fileFT]]}+16\mbox{[[fileIT]]}$.  If the stamp is zero      */
 /* (as it would be for files written with a previous version of the         */
 /* library) we assume the file is in native format and needs no             */
-/* conversion in [[qread]]; in this case \meta{ireslt} will be zero and     */
+/* conversion in [[qread]]; in this case the return value will be zero and  */
 /* the caller can issue a warning.  [[Iconvert]] and [[Fconvert]] are       */
 /* used by [[qread]] to determine the type of conversion (if any) to be     */
 /* applied to integers and reals.                                           */
@@ -729,14 +597,14 @@ void ccp4_copen (int *iunit, const char *filename, int istat)
 /* N.B.: leaves the stream positioned just after the machine stamp.         */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-void ccp4_qrarch (int iunit, int ipos, int *ireslt)
+int ccp4_qrarch (int iunit, int ipos)
 {
   uint16 fileFT, fileIT;        /* float and integer machine types of file */
   unsigned char mtstring[4];    /* machine stamp */
   char *native = getenv ("NATIVEMTZ");
   char *foreign = getenv ("CONVERT_FROM");
 
-  if (native != NULL) { *ireslt = 0; return; }
+  if (native != NULL) return 0; 
   if (foreign != NULL) {
     if (strcmp (foreign, "BEIEEE") == 0) {
       mtstring[0] = DFNTF_BEIEEE | (DFNTF_BEIEEE << 4);
@@ -761,11 +629,11 @@ void ccp4_qrarch (int iunit, int ipos, int *ireslt)
 #endif
     if ((fseek (file_stream[iunit], (long int) ((ipos)*item_sizes[2]),
                 SEEK_SET) != 0))
-      file_fatal ("QRARCH: seek failed on ", file_name[iunit]);
+      file_fatal ("CCP4_QRARCH: seek failed on ", file_name[iunit]);
     file_last_op[iunit] = READ_OP;
     if (fread (mtstring, (size_t) sizeof(char), (size_t) 4,
                file_stream[iunit]) != 4)
-      file_fatal ("QRARCH: can't read machine stamp in ", file_name[iunit]);
+      file_fatal ("CCP4_QRARCH: can't read machine stamp in ", file_name[iunit]);
   }
   fileIT = (mtstring[1]>>4) & 0x0f;
   fileFT = (mtstring[0]>>4) & 0x0f;
@@ -774,7 +642,7 @@ void ccp4_qrarch (int iunit, int ipos, int *ireslt)
     Fconvert[iunit] = fileFT;  /* else assume native */
   if (fileIT != 0 && fileIT != nativeIT)
     Iconvert[iunit] = fileIT;  /* else assume native */
-  *ireslt = fileFT + (16*fileIT);
+  return (fileFT + (16*fileIT));
 }
 /* \subsection{{\tt subroutine qwarch(\meta{iunit}, \meta{ipos})}}          */
 /* This is the complement of [[qrarch]], writing the native machine         */
@@ -803,7 +671,7 @@ void ccp4_qwarch (int iunit, int ipos)
 #endif
   if (fseek (file_stream[iunit], (long int) ((ipos)*item_sizes[2]),
              SEEK_SET) != 0)
-    file_fatal ("QWARCH: seek failed on ", file_name[iunit]);
+    file_fatal ("CCP4_QWARCH: seek failed on ", file_name[iunit]);
   /* nibbles packed by masking and ORing: */
   mtstring[0] = nativeFT | (nativeFT << 4);
   mtstring[1] = 1 | (nativeIT << 4);
@@ -811,44 +679,44 @@ void ccp4_qwarch (int iunit, int ipos)
   file_last_op[iunit] = WRITE_OP;
   if (fwrite (mtstring, (size_t) sizeof(char), (size_t) 4,
              file_stream[iunit]) != 4)
-    file_fatal ("QWARCH: can't write machine stamp to ", file_name[iunit]);
+    file_fatal ("CCP4_QWARCH: can't write machine stamp to ", file_name[iunit]);
 }
-/* \subsection{{\tt subroutine qclose (\meta{iunit})}}                      */
+/* \subsection{{\tt int ccp4_qclose (\meta{iunit})}}                        */
 /* Closes the file open on \idx{diskio} stream \meta{iunit}.                */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-void ccp4_qclose (int iunit)
+int ccp4_qclose (int iunit)
 {
   if (! initialised) 
-    fatal ("QCLOSE: qopen/qqopen not yet called");
+    ccp4_fatal ("CCP4_QCLOSE: qopen not yet called");
   if (file_stream[iunit] != NULL) {
     if (fclose (file_stream[iunit]) == EOF) 
-      file_fatal ("QCLOSE: failed on ", file_name[iunit]);
+      file_fatal ("CCP4_QCLOSE: failed on ", file_name[iunit]);
     file_stream[iunit] = NULL;
   }
   file_name[iunit][0] = '\0';
+  return (0);
 }
-/* \subsection{{\tt subroutine qmode (\meta{iunit}, \meta{mode},            */
-/*     \meta{size})}}                                                       */
+/* \subsection{{\tt int ccp4_qmode (\meta{iunit}, \meta{mode})}}            */
 /* Changes the \idx{diskio} \idx{access mode} for stream \meta{iunit} to    */
 /* \meta{mode}.  The resulting size in bytes of items for transfer is       */
 /* returned as \meta{size}.                                                 */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-void ccp4_qmode (int iunit, int mode, int *size)
+int ccp4_qmode (int iunit, int mode)
 {
   if (! initialised) 
-    fatal ("QMODE: qopen/qqopen not yet called");
+    ccp4_fatal ("CCP4_QMODE: qopen  not yet called");
 
   if (mode >= 0 && mode <= 6 && mode != 5)
     file_bytes_per_item[iunit] = item_sizes[mode];
   else
-    fatal ("QMODE: bad mode");
-  *size = file_bytes_per_item[iunit];       /* return number of bytes/item */
+    ccp4_fatal ("CCP4_QMODE: bad mode");
   file_mode[iunit] = mode;
+  return  (file_bytes_per_item[iunit]);       /* return number of bytes/item */
 }
-/* \subsection{{\tt subroutine qread(\meta{iunit}, \meta{buffer},           */
-/*     \meta{nitems}, \meta{result})}}                                      */
+/* \subsection{{\tt int ccp4_qread(\meta{iunit}, \meta{buffer},             */
+/*     \meta{nitems})}}                                                     */
 /*                                                                          */
 /* Reads \meta{nitems} in the current mode (set by [[qmode]]) from diskio stream */
 /* \meta{iunit} previously opened by [[qopen]](/[[copen]]) and returns      */
@@ -858,12 +726,13 @@ void ccp4_qmode (int iunit, int mode, int *size)
 /* the stream is connected to an MTZ or map file.                           */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-void ccp4_qread (int iunit, uint8 *buffer, int nitems, int *result)
+int ccp4_qread (int iunit, uint8 *buffer, int nitems)
 {
-  int i, n;
+  int i, n, result;
 
   if (! initialised) 
-    fatal ("QREAD: qopen/qqopen not yet called");
+    ccp4_fatal ("CCP4_QREAD: qopen  not yet called");
+
   if (file_last_op[iunit] == WRITE_OP) {
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
@@ -874,23 +743,22 @@ void ccp4_qread (int iunit, uint8 *buffer, int nitems, int *result)
 (void) fflush (file_stream[iunit]);
 #endif
     if (fseek (file_stream[iunit], 0L, SEEK_CUR) != 0) {
-      /**result = -1;*/
-      file_fatal ("QREAD: seek error on file ", file_name[iunit]);
-      return; } }
+      /* return (-1);*/
+      file_fatal ("CCP4_QREAD: seek error on file ", file_name[iunit]);
+    }
+  }
+
   file_last_op[iunit] = READ_OP;
   errno = 0;
-  i = (int) fread (buffer, (size_t) file_bytes_per_item[iunit], 
-                (size_t) nitems, file_stream[iunit]);
-  if (i != nitems) {
-    if (feof (file_stream[iunit])) *result = -1;
+  result = (int) fread (buffer, (size_t) file_bytes_per_item[iunit], 
+			(size_t) nitems, file_stream[iunit]);
+  if (result != nitems) {
+    if (feof (file_stream[iunit])) return (-1);
     else {
-      /**result = i;*/
-      file_fatal ("QREAD: i/o error on ", file_name[iunit]);
+      file_fatal ("CCP4_QREAD: i/o error on ", file_name[iunit]);
     }
-    return;
   }
-  *result = 0;
-  n = nitems;
+  n = result;
   /* <convert numbers if necessary>=                                          */
     switch (file_mode[iunit]) {
     case BYTE:
@@ -912,7 +780,7 @@ void ccp4_qread (int iunit, uint8 *buffer, int nitems, int *result)
             buffer[i] = buffer[i+1];
             buffer[i+1] = j; } }
         else
-          fatal("QREAD: bad file integer type in conversion");
+          ccp4_fatal("CCP4_QREAD: bad file integer type in conversion");
         }
       break;
     case INT32:
@@ -933,7 +801,7 @@ void ccp4_qread (int iunit, uint8 *buffer, int nitems, int *result)
               buffer[i+2] =j; }
           }
         else
-          fatal("QREAD: bad file integer type in conversion");
+          ccp4_fatal("CCP4_QREAD: bad file integer type in conversion");
         }
       break;
     case FLOAT32:
@@ -967,7 +835,7 @@ void ccp4_qread (int iunit, uint8 *buffer, int nitems, int *result)
              }
              break;
            default :
-             fatal("QREAD: bad file real type in conversion");
+             ccp4_fatal("CCP4_QREAD: bad file real type in conversion");
            }
         /* We've now got a guaranteed big-endian \ac{ieee} [[buffer]].  Turn it     */
         /* into the native form if necessary.  (This could be done with             */
@@ -998,7 +866,7 @@ void ccp4_qread (int iunit, uint8 *buffer, int nitems, int *result)
             ieeeF2vaxF((union float_uint_uchar *) buffer, n);
             break;
           default :
-            fatal("QREAD: bad native real type in conversion");
+            ccp4_fatal("CCP4_QREAD: bad native real type in conversion");
           }
         }
       break;
@@ -1020,13 +888,13 @@ void ccp4_qread (int iunit, uint8 *buffer, int nitems, int *result)
             buffer[i] = buffer[i+1];
             buffer[i+1] = j; } }
         else
-          fatal("QREAD: bad file integer type in conversion");
+          ccp4_fatal("CCP4_QREAD: bad file integer type in conversion");
         }
       }
       break;
     case COMP64:
       if (Fconvert[iunit]) {
-        n = 2*n;                  /* pairs of reals */
+        n = 2*result;                  /* pairs of reals */
         /* \subsubsection{Converting reals}                                         */
         /* There are more possibilities than for integers\dots{}  Remember we use   */
         /* two stages and a canonical form.                                         */
@@ -1056,7 +924,7 @@ void ccp4_qread (int iunit, uint8 *buffer, int nitems, int *result)
              }
              break;
            default :
-             fatal("QREAD: bad file real type in conversion");
+             ccp4_fatal("CCP4_QREAD: bad file real type in conversion");
            }
         /* We've now got a guaranteed big-endian \ac{ieee} [[buffer]].  Turn it     */
         /* into the native form if necessary.  (This could be done with             */
@@ -1087,31 +955,34 @@ void ccp4_qread (int iunit, uint8 *buffer, int nitems, int *result)
             ieeeF2vaxF((union float_uint_uchar *) buffer, n);
             break;
           default :
-            fatal("QREAD: bad native real type in conversion");
+            ccp4_fatal("CCP4_QREAD: bad native real type in conversion");
           }
         }
       }
       break;
     default:
-      fatal ("QREAD: Bad mode");
+      ccp4_fatal ("CCP4_QREAD: Bad mode");
     }
+
+    return (result);
 }
-/* \subsection{{\tt subroutine qreadc(\meta{iunit}, \meta{buffer},          */
-/*     \meta{result})}}                                                     */
+/* \subsection{{\tt int ccp4_qreadc(\meta{iunit}, \meta{buffer},            */
+/*                                  \meta{nchars})}}                        */
 /*                                                                          */
 /* Fills [[CHARACTER]] buffer in byte mode from diskio stream               */
 /* \meta{iunit} previously opened by [[qopen]](/[[copen]]) and returns      */
-/* \meta{result} which is the number of items read or [[0]] on failure.     */
+/*  the number of items read or [[-1]] or [[0]] on failure.                 */
 /* Call it with a character substring if necessary to control the number    */
 /* of bytes read.                                                           */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-void ccp4_qreadc (int iunit, char *buffer, size_t nchars, int *result)
+int ccp4_qreadc (int iunit, char *buffer, size_t nchars)
 {
-  size_t i;
+  size_t result;
 
   if (! initialised) 
-    fatal ("QREAD: qopen/qqopen not yet called");
+    ccp4_fatal ("CCP4_QREADC: qopen not yet called");
+
   if (file_last_op[iunit] == WRITE_OP) {
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
@@ -1121,32 +992,37 @@ void ccp4_qreadc (int iunit, char *buffer, size_t nchars, int *result)
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[iunit]);
 #endif
-    if (fseek (file_stream[iunit], 0L, SEEK_CUR) != 0) {
-      *result = -1;
-      return; } }
+   if (fseek (file_stream[iunit], 0L, SEEK_CUR) != 0) {
+     /* return (-1); */
+     file_fatal ("CCP4_QREADC: seek error on file ", file_name[iunit]);
+   }
+  }
+
   file_last_op[iunit] = READ_OP;
 
-  i = fread (buffer, (size_t) item_sizes[BYTE], 
-                nchars, file_stream[iunit]);
-  if (i != nchars) {
-    if (feof (file_stream[iunit])) *result = -1;
-    else *result = i;
-    return;
+  result = fread (buffer, (size_t) item_sizes[BYTE], 
+	     nchars, file_stream[iunit]);
+  if (result != nchars) {
+    if (feof (file_stream[iunit])) 
+      return (-1);
+    else 
+      file_fatal ("CCP4_QREAD:C i/o error on ", file_name[iunit]);
   }
-  *result = 0;
+  return (result);
 }
-/* \subsection{{\tt subroutine qwrite (\meta{iunit}, \meta{buffer},         */
+/* \subsection{{\tt int ccp4_qwrite (\meta{iunit}, \meta{buffer},           */
 /*     \meta{nitems})}}                                                     */
 /* This write \meta{nitems} items from \meta{buffer} to [[qopen]]ed         */
 /* stream \meta{iunit} using the current mode.                              */
+/* Returns number of items written, or exits                                */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-void ccp4_qwrite (int iunit, uint8 *buffer, int nitems)
+int ccp4_qwrite (int iunit, uint8 *buffer, int nitems)
 {
-  int i;
+  size_t result;
 
   if (! initialised) 
-    fatal ("QWRITE: qopen/qqopen not yet called");
+    ccp4_fatal ("CCP4_QWRITE: qopen not yet called");
   if (file_last_op[iunit] == READ_OP) {
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
@@ -1157,62 +1033,73 @@ void ccp4_qwrite (int iunit, uint8 *buffer, int nitems)
 (void) fflush (file_stream[iunit]);
 #endif
     if (fseek (file_stream[iunit], 0L, SEEK_CUR) != 0)
-      file_fatal ("QWRITE: seek failed on ", file_name[iunit]); }
+      file_fatal ("CCP4_QWRITE: seek failed on ", file_name[iunit]);
+  }
+
   file_last_op[iunit] = WRITE_OP;
-  i = (int) fwrite (buffer, (size_t) file_bytes_per_item[iunit],
+
+  result = fwrite (buffer, (size_t) file_bytes_per_item[iunit],
                     (size_t) nitems, file_stream[iunit]);
 /* We don't (necessarily?)\ get a useful system error message from          */
-/* [[fatal]] if the write fails (e.g.\ in \idx{Irix}), hance the hint       */
+/* [[ccp4_fatal]] if the write fails (e.g.\ in \idx{Irix}), hance the hint       */
 /* about disc space.                                                        */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-  if (i != nitems)
-    file_fatal ("QWRITE: i/o error (may be out of disc space): ",
+  if (result != nitems)
+    file_fatal ("CCP4_QWRITE: i/o error (may be out of disc space): ",
            file_name[iunit]);
+  
+  return (result);
 }
-/* \subsection{{\tt subroutine qwritc (\meta{iunit}, \meta{buffer})}}       */
+/* \subsection{{\tt int ccp4_qwritc (\meta{iunit}, \meta{buffer})}}          */
 /*                                                                          */
 /* Writes [[CHARACTER*(*)]] \meta{buffer} to [[qopen]]ed                    */
 /* stream \meta{iunit} in byte mode.                                        */
+/* Returns the number of characters written.  Otherwise exits.              */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-void ccp4_qwritc (int iunit, char *buffer, size_t nchars)
+int ccp4_qwritc (int iunit, char *buffer, size_t nchars)
 {
-  size_t i;
+  size_t result;
 
   if (! initialised) 
-    fatal ("QWRITC: qopen/qqopen not yet called");
+    ccp4_fatal ("CCP4_QWRITC: qopen not yet called");
   if (file_last_op[iunit] == READ_OP) {
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
-/* place in files.  Try flushing the output buffer before messing around    */
-/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!   */
-/*                                                                          */
-/* <OpenVMS seek fudge>=                                                    */
+/* place in files.  Try flushing the output buffer before messing around     */
+/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!     */
+/*                                                                           */
+/* <OpenVMS seek fudge>=                                                     */
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[iunit]);
 #endif
     if (fseek (file_stream[iunit], 0L, SEEK_CUR) != 0)
-      file_fatal ("QWRITC: seek failed on", file_name[iunit]); }
+      file_fatal ("CCP4_QWRITC: seek failed on", file_name[iunit]);
+  }
+
   file_last_op[iunit] = WRITE_OP;
 
-  i = fwrite (buffer, (size_t) item_sizes[BYTE],
+  result = fwrite (buffer, (size_t) item_sizes[BYTE],
                     nchars, file_stream[iunit]);
-  if (i != nchars) file_fatal ("QWRITC: i/o error (may be out of disc space): ",
+  if (result != nchars) 
+    file_fatal("CCP4_QWRITC: i/o error (may be out of disc space): ",
                            file_name[iunit]);
+  return (result);
 }
-/* \subsection{{\tt subroutine qseek (\meta{iunit}, \meta{irec},            */
+/* \subsection{{\tt long ccp4_qseek (\meta{iunit}, \meta{irec},             */
 /*     \meta{iel}, \meta{lrecl})}}                                          */
 /* Seeks to element \meta{iel} in record \meta{irec} in diskio stream       */
 /* \meta{iunit} whose record length is \meta{lrecl}.                        */
+/* Note: C convention, starts at 0                                          */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-void ccp4_qseek (int iunit, int irec, int iel, int lrecl)
+long ccp4_qseek (int iunit, int irec, int iel, int lrecl)
 {
   long int position;
 
   if (! initialised) 
-    fatal ("QSEEK: qopen/qqopen not yet called");
-  position = (long) ((lrecl)*(irec - 1) + (iel - 1));
+    ccp4_fatal ("CCP4_QSEEK: qopen not yet called");
+  position = (long) (lrecl*irec + iel);
   position *= (long) file_bytes_per_item[iunit];
   file_last_op[iunit] = IRRELEVANT_OP;
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
@@ -1224,19 +1111,18 @@ void ccp4_qseek (int iunit, int irec, int iel, int lrecl)
 (void) fflush (file_stream[iunit]);
 #endif
   if (fseek (file_stream[iunit],position,SEEK_SET) != 0)
-    file_fatal ("QSEEK failed -- maybe corrupt file: ",file_name[iunit]);
+    file_fatal ("CCP4_QSEEK failed -- maybe corrupt file: ",file_name[iunit]);
+/* follow lseek return convention                                           */
+  return (position);
 }
-/* \subsection{{\tt subroutine qback (\meta{iunit}, \meta{lrecl})}}         */
-/* Backspaces one record, of length \meta{lrecl} on diskio stream \meta{iunit}. */
+/* \subsection{{\tt void ccp4_rewind (\meta{iunit})}}                       */
+/* Rewinds \meta{iunit}.                                                    */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-void ccp4_qback (int iunit, int lrecl)
+void ccp4_qrewind (int iunit)
 {
-  long int position;
-
   if (! initialised) 
-    fatal ("QBACK: qopen/qqopen not yet called");
-  position = ftell (file_stream[iunit]) - (lrecl)*file_bytes_per_item[iunit];
+    ccp4_fatal ("CCP4_REWIND: qopen not yet called");
   file_last_op[iunit] = IRRELEVANT_OP;
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
@@ -1246,19 +1132,47 @@ void ccp4_qback (int iunit, int lrecl)
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[iunit]);
 #endif
-  if (fseek (file_stream[iunit], position, SEEK_SET) != 0)
-    file_fatal ("QBACK failed on ", file_name[iunit]);
+  if (fseek (file_stream[iunit],0L,SEEK_SET) != 0)
+    file_fatal ("CCP4_REWIND failed -- maybe corrupt file: ",file_name[iunit]);
+  errno = 0;
 }
-/* \subsection{{\tt subroutine qskip (\meta{iunit}, \meta{lrecl})}}         */
-/* Skip forward 1 record of length \meta{lrecl} on diskio stream \meta{iunit}. */
+/* \subsection{{\tt long ccp4_qback (\meta{iunit}, \meta{lrecl})}}         */
+/* Backspaces one record, of length \meta{lrecl} on diskio stream \meta{iunit}. */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-void ccp4_qskip (int iunit, int lrecl)
+long ccp4_qback (int iunit, int lrecl)
 {
   long int position;
 
   if (! initialised) 
-    fatal ("QSKIP: qopen/qqopen not yet called");
+    ccp4_fatal ("CCP4_QBACK: qopen not yet called");
+  position = ftell (file_stream[iunit]) 
+    - (lrecl)*file_bytes_per_item[iunit];
+  file_last_op[iunit] = IRRELEVANT_OP;
+/* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
+/* place in files.  Try flushing the output buffer before messing around    */
+/* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!    */
+/* Return the new position                                                  */
+/*                                                                          */
+/* <OpenVMS seek fudge>=                                                    */
+#if defined (__alpha) && defined (vms)
+(void) fflush (file_stream[iunit]);
+#endif
+  if (fseek (file_stream[iunit], position, SEEK_SET) != 0)
+    file_fatal ("CCP4_QBACK failed on ", file_name[iunit]);
+  return (position);
+}
+/* \subsection{{\tt long ccp4_qskip (\meta{iunit}, \meta{lrecl})}}          */
+/* Skip forward 1 record of length \meta{lrecl} on diskio stream \meta{iunit}. */
+/* Return new position.                                                     */
+/*                                                                          */
+/* <diskio routines>=                                                       */
+long ccp4_qskip (int iunit, int lrecl)
+{
+  long int position;
+
+  if (! initialised) 
+    ccp4_fatal ("CCP4_QSKIP: qopen not yet called");
   position = ftell (file_stream[iunit]) +
     (lrecl)*file_bytes_per_item[iunit];
   file_last_op[iunit] = IRRELEVANT_OP;
@@ -1271,287 +1185,67 @@ void ccp4_qskip (int iunit, int lrecl)
 (void) fflush (file_stream[iunit]);
 #endif
   if (fseek (file_stream[iunit],position,SEEK_SET) != 0)
-    file_fatal ("QSKIP failed on ", file_name[iunit]);
+    file_fatal ("CCP4_QSKIP failed on ", file_name[iunit]);
+  return (position);
 }
-/* \subsection{{\tt subroutine cqinq (\meta{istrm}, \meta{filnam},          */
-/*     \meta{length})}}                                                     */
-/* Returns the name \meta{filnam} and \meta{length} of the file (if any)    */
-/* open on diskio stream \meta{istrm}.                                      */
+/* \subsection{{\tt long qinq (\meta{istrm}, \meta{filnam})}}               */
+/* Returns \meta{length} of the file (if any) open on diskio stream         */
+/* \meta{istrm}.                                                            */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-void ccp4_cqinq (int istrm, char *filnam, int *length)
+long ccp4_qinq (int iunit, char *filnam)
 {
-  int iunit, i;
-  long position;
+  long position, length;
 
   if (! initialised) 
-    fatal ("QQINQ: qopen/qqopen not yet called");
-  *length = -1;                                    /* default return value */
-  iunit = istrm;
+    ccp4_fatal ("CCP4_QINQ: qopen not yet called");
+  length = -1;                                    /* default return value */
   if (file_stream[iunit] == NULL) { 
     /* no unit open -- try file name */
-    for (i = 1; i < MAXFILES; i++)
-      if (! strcmp (filnam, file_name[i])) break;
-    iunit = i % MAXFILES;
+    for (iunit = 1; iunit < MAXFILES; iunit++)
+      if (! strcmp (filnam, file_name[iunit])) break;
   }
-  if (file_stream[iunit] != NULL) {
-    file_last_op[iunit] = IRRELEVANT_OP;
-    (void) fflush (file_stream[iunit]); /* flush the output stream */
+
+  if (iunit == MAXFILES || file_stream[iunit] == NULL) 
+    return (length);                              /* return (-1) */
+
+  file_last_op[iunit] = IRRELEVANT_OP;
+  (void) fflush (file_stream[iunit]); /* flush the output stream */
 #if 0
     /* checking the return value reportedly causes problems in ultrix
        under unknown circumstances... */
-    if (fflush (file_stream[iunit]) != 0)
-      file_fatal ("QQINQ: flush failed on ", file_name[iunit]);
+  if (fflush (file_stream[iunit]) != 0)
+    file_fatal ("CCP4_QINQ: flush failed on ", file_name[iunit]);
 #endif
-    position = ftell (file_stream[iunit]);   /* remember current position */
+  position = ftell (file_stream[iunit]);   /* remember current position */
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
 /* place in files.  Try flushing the output buffer before messing around    */
 /* with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[iunit]]!   */
 /*                                                                          */
 /* <OpenVMS seek fudge>=                                                    */
 #if defined (__alpha) && defined (vms)
-(void) fflush (file_stream[iunit]);
+  (void) fflush (file_stream[iunit]);
 #endif
-    (void) fseek (file_stream[iunit],0L,SEEK_END); /* seek EOF */
-    *length = (int) ftell (file_stream[iunit]); /* get file size */
-    if (fseek (file_stream[iunit],position,SEEK_SET) != 0) /* seek position */
-      file_fatal ("QQINQ: seek failed on ", file_name[iunit]);
-  }
+  (void) fseek (file_stream[iunit],0L,SEEK_END); /* seek EOF */
+  length = (long) ftell (file_stream[iunit]); /* get file size */
+  if (fseek (file_stream[iunit],position,SEEK_SET) != 0) /* seek position */
+    file_fatal ("CCP4_QINQ: seek failed on ", file_name[iunit]);
+
+  return (length);
 }
-/* \subsection{{\tt subroutine qlocate (\meta{iunit}, \meta{locate})}}      */
+/* \subsection{{\tt long qlocate (\meta{iunit})}}                           */
 /* Returns the current position \meta{locate} in the diskio stream \meta{iunit}. */
 /*                                                                          */
 /* <diskio routines>=                                                       */
-void ccp4_qlocate (int iunit, int *locate)
+long ccp4_qlocate (int iunit)
 {
   if (! initialised) 
-    fatal ("QLOCATE: qopen/qqopen not yet called");
-  *locate = -1;
-  if (file_stream[iunit] != NULL)
-    *locate = (int) ftell (file_stream[iunit]) / file_bytes_per_item[iunit];
+    ccp4_fatal ("CCP4_QLOCATE: qopen not yet called");
+  if (file_stream[iunit] == NULL)
+    return (-1);
+
+  return ((long) ( ftell (file_stream[iunit]) / file_bytes_per_item[iunit]));
 }
-#ifdef _AIX
-/* \section{Missing system support}                                         */
-/*                                                                          */
-/* Routines often found in {\tt \idx{libU77}.a} or somesuch are missing     */
-/* on some systems.\index{HPUX}\index{AIX}                                  */
-/*                                                                          */
-/* <AIX support>=                                                           */
-void idate (iarray)
-     int iarray[3];
-{
-     struct tm *lt;
-     time_t tim;
-     tim = time(NULL);
-     lt = localtime(&tim);
-     iarray[0] = lt->tm_mday;
-     iarray[1] = lt->tm_mon+1;  /* need range 1-12 */
-     iarray[2] = lt->tm_year + 1900;
-}
-#endif
-#if defined (__hpux) || defined (_AIX)
-/* <AIX and HPUX support>=                                                  */
-void gerror (str, Lstr)
-char *str;
-int  Lstr;
-{
-  int i;
-
-  if (errno == 0) {             /* Avoid `Error 0' or some such message */
-    for (i=1; Lstr; i++)
-      str[i] = ' ';
-  } else {
-    (void) strncpy (str, strerror (errno), Lstr);
-    for (i = strlen (str); i < Lstr; i++) str[i] = ' ';  /* pad with spaces */
-  }
-} /* End of gerror (str, Lstr) */
-
-int ierrno () {
-  return errno;
-}
-
-void itime (array)
-     int array[3];
-{
-     struct tm *lt;
-     time_t tim;
-     tim = time(NULL);
-     lt = localtime(&tim);
-     array[0] = lt->tm_hour; array[1] = lt->tm_min; array[2] = lt->tm_sec;
-}
-
-static long clk_tck = 0;
-
-#if 0                           /* dtime isn't used at present */
-float dtime (tarray)
-     float tarray[2];
-{
-  struct tms buffer;
-  time_t utime, stime;
-  static time_t old_utime = 0, old_stime = 0;
-  if (! clk_tck) clk_tck = sysconf(_SC_CLK_TCK);
-  (void) times(&buffer);
-  utime = buffer.tms_utime; stime = buffer.tms_stime;
-  tarray[0] = ((float)(utime - old_utime)) / (float)clk_tck;
-  tarray[1] = ((float)(stime - old_stime)) / (float)clk_tck;
-  old_utime = utime; old_stime = stime;
-  return (tarray[0]+tarray[1]);
-}
-#endif                          /* dtime */
-
-float etime (tarray)
-     float tarray[2];
-{
-  struct tms buffer;
-  time_t utime, stime;
-  if (! clk_tck) clk_tck = sysconf(_SC_CLK_TCK);
-  (void) times(&buffer);
-  tarray[0] = (float) buffer.tms_utime / (float)clk_tck;
-  tarray[1] = (float) buffer.tms_stime / (float)clk_tck;
-  return (tarray[0]+tarray[1]);
-}
-
-#endif             /*  HPUX and AIX support */
-#if defined(F2C) || defined(G77)
-/* <f2c support>=                                                           */
-int exit_ (status)
-     int *status;
-{
-  f_exit ();                    /* may or may not be registered with
-                                   exit, depending on the C libraries
-                                   capabilities, but is idempotent */
-  exit (*status);
-}
-
-int time_ ()
-{
-  return (int) time (NULL);
-}
-
-int getpid_ ()
-{
-  return (int) getpid ();
-}
-
-/* following are from libI77/fio.h */
-#define MXUNIT 100
-typedef struct
-{       FILE *ufd;      /*0=unconnected*/
-        char *ufnm;
-        long uinode;
-        int udev;
-        int url;        /*0=sequential*/
-        flag useek;     /*true=can backspace, use dir, ...*/
-        flag ufmt;
-        flag uprnt;
-        flag ublnk;
-        flag uend;
-        flag uwrt;      /*last io was write*/
-        flag uscrtch;
-} unit;
-extern unit f__units[];
-#define TRUE_ (1)
-#define FALSE_ (0)
-#define err(f,m,s) {if(f) errno= m; else f__fatal(m,s); return(m);}
-/* end of fio.h extract */
-
-int isatty_ (lunit)
-     int *lunit;
-{
-  if (*lunit>=MXUNIT || *lunit<0)
-    err(1,101,"isatty");
-  /* f__units is a table of descriptions for the unit numbers (defined
-     in io.h) with file descriptors rather than streams */
-  return (isatty(fileno((f__units[*lunit]).ufd)) ? TRUE_ : FALSE_);
-}
-
-int idate_ (iarray)
-     int iarray[3];
-{
-     struct tm *lt;
-     time_t tim;
-     tim = time(NULL);
-     lt = localtime(&tim);
-     iarray[0] = lt->tm_mday;
-     iarray[1] = lt->tm_mon+1;  /* need range 1-12 */
-     iarray[2] = lt->tm_year + 1900;
-     return 0;
-}
-
-int gerror_ (str, Lstr)
-char *str;
-int  Lstr;
-{
-  int i;
-
-  if (errno == 0) {             /* Avoid `Error 0' or some such message */
-    for (i=1; Lstr; i++)
-      str[i] = ' ';
-  } else {
-    (void) strncpy (str, strerror (errno), Lstr);
-    for (i = strlen (str); i < Lstr; i++) str[i] = ' ';  /* pad with spaces */
-  }
-  return 0;
-}
-
-int ierrno_ () {
-  return errno;
-}
-
-int itime_ (array)
-     int array[3];
-{
-     struct tm *lt;
-     time_t tim;
-     tim = time(NULL);
-     lt = localtime(&tim);
-     array[0] = lt->tm_hour; array[1] = lt->tm_min; array[2] = lt->tm_sec;
-}
-
-static long clk_tck = 0;
-
-doublereal etime_ (tarray)      /* NB `doublereal' return for f2c. */
-     float tarray[2];
-{
-  struct tms buffer;
-  time_t utime, stime;
-  if (! clk_tck) clk_tck = sysconf(_SC_CLK_TCK);
-  (void) times(&buffer);
-  tarray[0] = (float) buffer.tms_utime / (float)clk_tck;
-  tarray[1] = (float) buffer.tms_stime / (float)clk_tck;
-  return (tarray[0]+tarray[1]);
-}
-/* These ought to be intrinsic, but they should only be applied to          */
-/* [[INTEGER]] arguments.  The types [[integer]] and [[logical]] are both   */
-/* assumed to be [[int]].                                                   */
-/*                                                                          */
-/* <f2c support>=                                                           */
-int /* integer */ ibset_ (a, b)
-     int /* integer */ *a, *b;
-{
-  return (*a) | 1<<(*b);
-}
-
-int /* integer */ ibclr_ (a, b)
-     int /* integer */ *a, *b;
-{
-  return (*a) & ~(1<<(*b));
-}
-
-int /* logical */ btest_ (a, b)
-     int /* integer */ *a, *b;
-{
-  return ((((unsigned long) *a)>>(*b)))&1 ? TRUE_ : FALSE_;
-}
-#endif              /* F2C support  */
-/* isatty doesnt seem to be in Mircrosoft Visual Studdio so this is a fudge */
-#if CALL_LIKE_MVS
-int __stdcall ISATTY (int *lunit)
-{
-  lunit = 0 ;
-  return lunit;
-}
-#endif
 
 /* \section{`Magic' numbers}                                                */
 /*                                                                          */
@@ -1594,9 +1288,10 @@ int __stdcall ISATTY (int *lunit)
 /* bit-level operations, hence their presence in the C code.                */
 /*                                                                          */
 /* The suite doesn't currently use these routines, but should do soon.      */
-/* \subsection{Setting a value: {\tt subroutine qnan(value)}}               */
+/* \subsection{Setting a value: {\tt union float_uint_uchar                 */ 
+/*  ccp4_nan()}}                                                            */
 /*                                                                          */
-/* [[qnan]] was originally a \ft{} [[real function]] returning the value    */
+/* [[nan]] was originally a \ft{} [[real function]] returning the value     */
 /* (and actually done in 2 stages) with a subroutine implementation like    */
 /* this called by the \ft{} function to avoid problems under \idx{VMS}      */
 /* and native \idx{Convex}.  However, the \idx{f2c} calling convention      */
@@ -1604,7 +1299,7 @@ int __stdcall ISATTY (int *lunit)
 /* returned which is cast to [[float]] with a SIGFPE, sigh.                 */
 /*                                                                          */
 /* <magic numbers>=                                                         */
-void ccp4_qnan (union float_uint_uchar *realnum)
+union float_uint_uchar ccp4_nan ()
 /* We have a choice of \idx{NaN} values in                                  */
 /* \ac{ieee}\index{IEEE@\ac{ieee}} arithmetic.                              */
 /* [[0xfffa5a5a]] is the one used by the \idx{MIPS} compilers as an         */
@@ -1627,19 +1322,22 @@ void ccp4_qnan (union float_uint_uchar *realnum)
 #  error "NAN isn't defined (needs NATIVEFT)"
 #endif
 {
-  realnum->i = NAN;
+  union float_uint_uchar realnum;
+
+  realnum.i = NAN;
+  return (realnum);
 }
-/* \subsection{Testing a value: {\tt int cisnan(\meta{real})}}              */
+/* \subsection{Testing a value: {\tt int ccp4_isnan(\meta{real})}}          */
 /*                                                                          */
-/* We want a \ft{} logical function [[qisnan]] to test whether its argument */
-/* is a \idx{NaN} or \idx{Rop}.  We have to do this by writing a C          */
+/* We want a \ft{} logical function [[ccp4_isnan]] to test whether its      */
+/* argument is a \idx{NaN} or \idx{Rop}.  We have to do this by writing a C */
 /* [[int]]-valued procedure and testing the returned value in the \ft{}     */
 /* so that we don't have to assume how it represents logical values.  The   */
 /* {\tt diskio}\index{diskio} library module provides the                   */
-/* trivial interface [[QISNAN]].                                            */
+/* trivial interface [[CCP4_ISNAN]].                                        */
 /*                                                                          */
 /* <magic numbers>=                                                         */
-int ccp4_cisnan (union float_uint_uchar *realnum)
+int ccp4_isnan (union float_uint_uchar *realnum)
 {
     /* In the \ac{ieee} case we actually return true both for \idx{NaN}s        */
     /* and for \idx{Infinity}; in either case the exponent is all ones---the    */
@@ -1662,29 +1360,29 @@ int ccp4_cisnan (union float_uint_uchar *realnum)
       case DFNTF_VAX :
         return ((realnum->i & 0x0000ff80) == 0x00008000);
       default :
-        fatal("CISNAN: bad nativeFT");
+        ccp4_fatal("CCP4_ISNAN: bad nativeFT");
         return 0;                   /* avoid compiler warning */
       }
 }
-/* \subsection{Absent data test for {\tt mtzlib}: {\tt subroutine           */
-/*     ccpbml (\meta{ncols}, \meta{cols})}}                                 */
+/* \subsection{Absent data test for {\tt mtzlib}: {\tt void ccp4_bml        */
+/*     (\meta{ncols}, \meta{cols})}}                                        */
 /* In {\tt mtzlib} there's a fudge for \idx{BIOMOL}-convention absence      */
 /* flags, which are re-written to zeroes.  To do the real number            */
-/* comparison, though, it's necessary to do a [[qnan]]-type test first.     */
-/* We don't want to call [[qnan]] (which calls [[cisnan]]) on every         */
+/* comparison, though, it's necessary to do a [[nan]]-type test first.      */
+/* We don't want to call [[nan]] (which calls [[isnan]]) on every           */
 /* number in the data file, so the tests are amortised in this routine      */
 /* which deals with a whole array \meta{cols} of length \meta{ncols}.       */
 /*                                                                          */
 /* <magic numbers>=                                                         */
 #define MDFBIG -1.0E10          /* BIOMOL absence flag value */
-void ccp4_ccpbml (int ncols, union float_uint_uchar cols[])
+void ccp4_bml (int ncols, union float_uint_uchar cols[])
 {
   int i;
   for (i=0; i<ncols; i++)
     if (cols[i].i != NAN)
       if (cols[i].f <= MDFBIG) cols[i].f = 0.0;
 }
-/* \subsection{Updating MTZ column ranges: {\tt subroutine ccpwrg           */
+/* \subsection{Updating MTZ column ranges: {\tt void ccp4_wrg               */
 /*     (\meta{ncols}, \meta{rcols}, \meta{wmin}, \meta{wmax})}}             */
 /* This is a similar fudge to [[ccpbml]] to avoid [[QISNAN]] calls in       */
 /* updating the MTZ column ranges in {\tt mtzlib}.  Note that [[wminmax]]   */
@@ -1692,7 +1390,7 @@ void ccp4_ccpbml (int ncols, union float_uint_uchar cols[])
 /* dimension range of 2, indicating minimum and maximum values respectively. */
 /*                                                                          */
 /* <magic numbers>=                                                         */
-void ccp4_ccpwrg (int ncols, union float_uint_uchar cols[], float wminmax[])
+void ccp4_wrg (int ncols, union float_uint_uchar cols[], float wminmax[])
 {
   int i;
   for (i=0; i<ncols; i++)
@@ -1713,26 +1411,35 @@ void ccp4_hgetlimits (int *IValueNotDet, float *ValueNotDet)
 /* Wrap-around for mkdir function. Returns 0 if successful, 1 if directory already exists,  */
 /* and -1 if other error.                                                                   */
 #ifndef _MVS
-void ccp4_cmkdir (const char *path, const char *cmode, int *result)
-{  mode_t mode;
+int ccp4_mkdir (const char *path, const char *cmode)
+{  
+  mode_t mode;
+  int result; 
 
 /* Possible modes (see stat.h)
   Currently pass 3-character string and interpret as octal.
   Try also S_IRWXU, S_IRWXG, etc. */
   sscanf(cmode,"%o",&mode);
    
-  *result = mkdir(path,mode); 
+  result = mkdir(path,mode); 
 
-  if (*result == -1) {
+  if (result == -1) {
 /* Distinguish directory-exists error from others, since usually not a problem. */
     if (errno == EEXIST) {
-      *result = 1;
+      result = 1;
     }
   }
-    
+  return (result); 
 }
+#else
+   {
+     printf("No harvesting on NT.");
+     return (-1);
+   }
+#endif
 
-void ccp4_cchmod (const char *path, const char *cmode, int *result)
+#ifndef _MVS
+int ccp4_chmod (const char *path, const char *cmode)
 { mode_t mode;
 
 /* Possible modes (see stat.h)
@@ -1740,24 +1447,12 @@ void ccp4_cchmod (const char *path, const char *cmode, int *result)
   Try also S_IRWXU, S_IRWXG, etc. */
   sscanf(cmode,"%o",&mode);
 
-  *result = chmod(path,mode); 
+  return (chmod(path,mode)); 
 }
 #else
-#  if CALL_LIKE_MVS
-   void __stdcall CMKDIR (const char *path, int Lpath, const char *cmode, int Lmode,
-         int *result)
-#  endif
    {
      printf("No harvesting on NT.");
-     *result = -1;
-   }
-#  if CALL_LIKE_MVS
-     void __stdcall CCHMOD (const char *path, int Lpath,const char *cmode, int Lmode,
-          int *result)
-#  endif
-   {
-     printf("No harvesting on NT.");
-     *result = -1;
+     return (-1);
    }
 #endif
 

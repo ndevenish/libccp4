@@ -693,12 +693,16 @@ typedef   char     *        pstr;
 #  define fill_char_struct(s,str)  \
     s  = str;                      \
     s##_len = strlen(str);
+#  define init_char_struct(s,str,size)  \
+    s  = str;                      \
+    s##_len = size;
 
 #  define FORTRAN_SUBR(NAME,name,p_sun,p_stardent,p_mvs) \
     void name##_ p_sun
 #  define FORTRAN_CALL(NAME,name,p_sun,p_stardent,p_mvs) \
     name##_ p_sun
-
+#  define FORTRAN_FUN(val,NAME,name,p_sun,p_stardent,p_mvs) \
+    val name##_ p_sun
 #elif defined(CALL_LIKE_HPUX)
 
   typedef pstr fpstr;
@@ -712,18 +716,22 @@ typedef   char     *        pstr;
 #  define fill_char_struct(s,str)  \
     s  = str;                      \
     s##_len = strlen(str);
+#  define init_char_struct(s,str,size)  \
+    s  = str;                      \
+    s##_len = size;
 
 #  define FORTRAN_SUBR(NAME,name,p_sun,p_stardent,p_mvs) \
     void name p_sun
 #  define FORTRAN_CALL(NAME,name,p_sun,p_stardent,p_mvs) \
     name p_sun
-
+#  define FORTRAN_FUN(val,NAME,name,p_sun,p_stardent,p_mvs) \
+    val name p_sun
 #elif defined(CALL_LIKE_STARDENT)
 
   typedef PStrPar fpstr;
 
-#  define FTN_STR(s)  s->S
-#  define FTN_LEN(s)  s->len
+#  define FTN_STR(s)  s->Str_pointer
+#  define FTN_LEN(s)  s->Str_length
 
 #  define char_struct(s)           \
     SStrPar s;
@@ -731,11 +739,17 @@ typedef   char     *        pstr;
     s.S   = str;                   \
     s.len = strlen(FName);         \
     s.id  = 0;
+#  define init_char_struct(s,str,size)  \
+    s.S   = str;                   \
+    s.len = size;         \
+    s.id  = 0;
 
 #  define FORTRAN_SUBR(NAME,name,p_send,p_sstruct,p_sflw) \
     void NAME p_stardent
 #  define FORTRAN_CALL(NAME,name,p_send,p_sstruct,p_sflw) \
     NAME p_stardent
+#  define FORTRAN_FUN(val,NAME,name,p_send,p_sstruct,p_sflw) \
+    val NAME p_stardent
 
 #elif defined(CALL_LIKE_VMS)
 
@@ -744,11 +758,16 @@ typedef   char     *        pstr;
 #  define FTN_STR(s)  s->dsc$a_pointer;
 #  define FTN_LEN(s)  s->dsc$w_length;
 
-#  define character(s)                \
+#  define char_struct(s)                \
     dsc$descriptor_s s;
 #  define fill_char_struct(s,str)     \
     s.dsc$a_pointer = str;            \
     s.dsc$w_length  = strlen(str);    \
+    s.dsc$b_dtype   = DSC$K_DTYPE_T;  \
+    s.dsc$b_class   = DSC$K_CLASS_S;
+#  define init_char_struct(s,str,size)     \
+    s.dsc$a_pointer = str;            \
+    s.dsc$w_length  = size;    \
     s.dsc$b_dtype   = DSC$K_DTYPE_T;  \
     s.dsc$b_class   = DSC$K_CLASS_S;
 
@@ -756,6 +775,8 @@ typedef   char     *        pstr;
     void NAME p_stardent
 #  define FORTRAN_CALL(NAME,name,p_sun,p_stardent,p_mvs) \
     NAME p_stardent
+#  define FORTRAN_FUN(val,NAME,name,p_sun,p_stardent,p_mvs) \
+    val NAME p_stardent
 
 #elif defined(CALL_LIKE_MVS)
 
@@ -770,11 +791,16 @@ typedef   char     *        pstr;
 #  define fill_char_struct(s,str)  \
     s  = str;                      \
     s##_len = strlen(str);
+#  define init_char_struct(s,str,size)  \
+    s  = str;                      \
+    s##_len = size;
 
 #  define FORTRAN_SUBR(NAME,name,p_sun,p_stardent,p_mvs) \
     void __stdcall NAME p_mvs
 #  define FORTRAN_CALL(NAME,name,p_sun,p_stardent,p_mvs) \
     NAME p_mvs
+#  define FORTRAN_FUN(val,NAME,name,p_sun,p_stardent,p_mvs) \
+    val __stdcall NAME p_mvs
 
 #else
 
@@ -791,11 +817,16 @@ typedef   char     *        pstr;
 #  define fill_char_struct(s,str)  \
     s  = str;                      \
     s##_len = strlen(str);
+#  define init_char_struct(s,str,size)  \
+    s  = str;                      \
+    s##_len = size;
 
 #  define FORTRAN_SUBR(NAME,name,p_sun,p_stardent,p_mvs) \
     void name##_ p_sun
 #  define FORTRAN_CALL(NAME,name,p_sun,p_stardent,p_mvs) \
     name##_ p_sun
+#  define FORTRAN_FUN(val,NAME,name,p_sun,p_stardent,p_mvs) \
+    val name##_ p_sun
 
 #endif
 
@@ -832,113 +863,73 @@ typedef struct { double r;             /* radial and */
  * Function prototypes                                                      *
  ****************************************************************************/
 
-static void fatal (char *message);
+size_t ccp4_flength (char *, int);
 
-static void cqprint (char *message);
+void ccp4_fatal (const char *);
 
-static void file_fatal (char *message, char *file);
+void qprint (const char *);
 
-static void vaxF2ieeeF (union float_uint_uchar *buffer, int size);
+void file_fatal (char *, char *);
 
-static void ieeeF2vaxF (union float_uint_uchar *buffer, int size);
+static void vaxF2ieeeF (union float_uint_uchar *, int);
 
-static void convexF2ieeeF (union float_uint_uchar *buffer, int size);
+static void ieeeF2vaxF (union float_uint_uchar *, int);
 
-static void ieeeF2convexF (union float_uint_uchar *buffer, int size);
+static void convexF2ieeeF (union float_uint_uchar *, int);
 
-void ccp4_ustenv (char *str, int *result);
+static void ieeeF2convexF (union float_uint_uchar *, int);
 
-void ccp4_cunlink (char *filename);
+int ccp4_ustenv (char *);
 
-void ccp4_ccpal1 (void (* routne) (), int *n, int type[], int length[]);
+int ccp4_qopen (const char *, int);
 
-void ccp4_copen (int *iunit, const char *filename, int istat);
+int ccp4_qrarch ( int, int);
 
-void ccp4_qrarch (int iunit, int ipos, int *ireslt);
+void ccp4_qwarch (int, int);
 
-void ccp4_qwarch (int iunit, int ipos);
+int ccp4_qclose (int);
 
-void ccp4_qclose (int iunit);
+int ccp4_qmode (int, int);
 
-void ccp4_qmode (int iunit, int mode, int *size);
+int ccp4_qread (int, uint8 *, int);
 
-void ccp4_qread (int iunit, uint8 *buffer, int nitems, int *result);
+int ccp4_qreadc (int, char *, size_t);
 
-void ccp4_qreadc (int iunit, char *buffer, size_t nchars, int *result);
+int ccp4_qwrite (int, uint8 *, int);
 
-void ccp4_qwrite (int iunit, uint8 *buffer, int nitems);
+int ccp4_qwritc (int, char *, size_t);
 
-void ccp4_qwritc (int iunit, char *buffer, size_t nchars);
+long ccp4_qseek (int, int, int, int);
 
-void ccp4_qseek (int iunit, int irec, int iel, int lrecl);
+void ccp4_qrewind (int);
 
-void ccp4_qback (int iunit, int lrecl);
+long ccp4_qback (int, int);
 
-void ccp4_qskip (int iunit, int lrecl);
+long ccp4_qskip (int, int);
 
-void ccp4_cqinq (int istrm, char *filnam, int *length);
+long ccp4_cqinq (int, char *);
 
-void ccp4_qlocate (int iunit, int *locate);
+long ccp4_qlocate (int);
 
-#ifdef _AIX
-void idate (int iarray);
-#endif
+union float_uint_uchar ccp4_nan ();
 
-#if defined (__hpux) || defined (_AIX)
-void gerror (char *str, int Lstr);
+int ccp4_isnan (union float_uint_uchar *);
 
-int ierrno ();
+void ccp4_bml (int, union float_uint_uchar *);
 
-void itime (int array);
+void ccp4_wrg (int, union float_uint_uchar *, float *);
 
-float etime (float tarray);
-#endif
+void ccp4_hgetlimits (int *, float *);
 
-#if defined(F2C) || defined(G77)
-int exit_ (int *status);
+int ccp4_mkdir (const char *, const char *);
 
-int time_ ();
+int ccp4_chmod (const char *, const char *);
 
-int getpid_ ();
+void *ccp4malloc(size_t);
 
-int isatty_ (int *lunit);
+void *ccp4realloc(void *, size_t);
 
-int idate_ (int *iarray);
-
-int gerror_ (char *str, int Lstr);
-
-int ierrno_ ();
-
-int itime_ (int *array);
-
-doublereal etime_ (float *tarray);
-
-int ibset_ (int *a, int *b);
-
-int ibclr_ (int *a, int *b);
-
-int btest_ (int *a, int *b);
-#endif
-
-void ccp4_qnan (union float_uint_uchar *realnum);
-
-int ccp4_cisnan (union float_uint_uchar *realnum);
-
-void ccp4_ccpbml (int ncols, union float_uint_uchar cols[]);
-
-void ccp4_ccpwrg (int ncols, union float_uint_uchar cols[], float wminmax[]);
-
-void ccp4_hgetlimits (int *IValueNotDet, float *ValueNotDet);
-
-void ccp4_cmkdir (const char *path, const char *cmode, int *result);
-
-void ccp4_cchmod (const char *path, const char *cmode, int *result);
-
-void *ccp4malloc(size_t size);
-
-void *ccp4realloc(void *ptr, size_t size);
-
-void *ccp4calloc(size_t nelem , size_t elsize);
+void *ccp4calloc(size_t, size_t);
 
 /****************************************************************************
 *  End of prototypes                                                        *
