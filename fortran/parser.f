@@ -1882,11 +1882,10 @@ C     ..
       SAVE
 C
 C
-      IF (NLINES.LT.1) NLINES = 1
       STROUT = ' '
 C
 C
-      DO 10 JDO10 = 1,NLINES
+      DO 10 JDO10 = 1,MAX(NLINES,1)
 C
 C            **************
         CALL PUTLIN(STROUT,OUTWIN)
