@@ -627,13 +627,14 @@ FORTRAN_SUBR ( LRASSN, lrassn,
 	       (const int *mindx, fpstr lsprgi, int lsprgi_len, int *nlprgi, 
                       int lookup[], fpstr ctprgi, int ctprgi_len))
 
-{ int i,j,k,l;
+{ int i,j,k,l,err;
   char *label;
   char *type;
   MTZCOL **colarray;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRASSN");)
 
+ err = 0;
  if (MtzCheckSubInput(*mindx,"LRASSN",1)) return;
 
   label = (char *) ccp4_utils_malloc((*nlprgi)*31*sizeof(char));
@@ -690,6 +691,7 @@ FORTRAN_SUBR ( LRASSN, lrassn,
    /* Have compulsory labels been found? */
    if (lookup[l] == -1) {
      printf("Error: label %s not found in file!\n",label+l*31);
+     err++;
    }
    lookup[l] = 0;
    next_label:
@@ -700,6 +702,12 @@ FORTRAN_SUBR ( LRASSN, lrassn,
   free(label);
   free(type);
 
+  /* Exit on error */
+  if (err != 0) {
+    ccperror(1,"Error in label assignments");
+  }
+
+  return;
 }
 
 /** Fortran wrapper for ccp4_lridx.
