@@ -5353,7 +5353,7 @@ C
 C---- handle unKnown non-Standard here
 C
             Nsymm = NumEquiv
-            CALL HSymTrn(Nsymm,RFsym,PosXyz)
+            CALL HSymTrn(Nsymm,RFsymm,PosXyz)
             SGname = SpaceGrpNam
         GO TO 80
 C
