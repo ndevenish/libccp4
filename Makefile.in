@@ -91,7 +91,7 @@ LIBTARGETS = $(CIFLIBTARGETS) ccplib fftlib maplib parser rwbrook modlib \
 .PHONY : all clean install $(LIBTARGETS) ranlib realclean distclean \
          test help test-lib uninstall tags
 
-all :  $L
+all : fsplit $L
 
 $L : $(CIFLIBOBJS) $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) \
