@@ -2285,7 +2285,7 @@ int MtzPut(MTZ *mtz, const char *logname)
 { char hdrrec[81],symline[81],spgname[MAXSPGNAMELENGTH+3];
  CCP4File *fileout;
  int i, j, k, l, hdrst, icol, numbat, isort[5], debug=0;
- int ind[3],ind_xtal,ind_set,ind_col[3],length;
+ int ind[3],ind_xtal,ind_set,ind_col[3],length,glob_cell_written=0;
  double coefhkl[6];
  float res,refldata[MCOLUMNS];
  int nwords=NBATCHWORDS,nintegers=NBATCHINTEGERS,nreals=NBATCHREALS;
@@ -2364,7 +2364,17 @@ int MtzPut(MTZ *mtz, const char *logname)
      if (xtl = MtzXtalLookup(mtz,"HKL_base"))
        for (j = 0; j < 6; ++j)
          xtl->cell[j] = mtz->xtal[i]->cell[j];
+     glob_cell_written=1;
      break;
+   }
+ }
+ /* if no suitable cell found, then try HKL_base cell */
+ if (!glob_cell_written) {
+   if (xtl = MtzXtalLookup(mtz,"HKL_base")) {
+     sprintf(hdrrec,"CELL  %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f",xtl->cell[0],
+           xtl->cell[1],xtl->cell[2],xtl->cell[3],xtl->cell[4],xtl->cell[5]);
+     MtzWhdrLine(fileout,65,hdrrec);
+     glob_cell_written=1;
    }
  }
  if (debug) printf(" MtzPut: CELL just written \n");
