@@ -69,8 +69,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   /* spacegroup variables */
   int sg_num, sg_ccp4_num, sg_nsymp, sg_num_cent;
   float cent_ops[4][4];
-  char sg_symbol_old[20],sg_symbol_Hall[20],sg_symbol_xHM[20],
-       sg_point_group[20],sg_patt_group[20];
+  char sg_symbol_old[20],sg_symbol_Hall[40],sg_symbol_xHM[20],
+       sg_point_group[20],sg_patt_group[40];
   char sg_basisop[80],sg_symop[192][80],sg_cenop[4][80];
   char sg_asu_descr[80], map_asu_x[12], map_asu_y[12], map_asu_z[12];    
   char map_asu_ccp4_x[12], map_asu_ccp4_y[12], map_asu_ccp4_z[12]; 
@@ -234,6 +234,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
         }
         sg_nsymp = 0;
         sg_num_cent = 0;
+        sg_symbol_xHM[0]='\0';
+        sg_symbol_old[0]='\0';
       }
     }
   }
@@ -266,7 +268,6 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   if (debug) 
     printf(" Change of basis %s \n",sg_basisop);
   symop_to_mat4(sg_basisop,sg_basisop+strlen(sg_basisop),sg_chb[0]);
-  /* this is wrong - check later */
   for (i = 0; i < 3; ++i) {
    for (j = 0; j < 3; ++j) {
     spacegroup->chb[i][j] = sg_chb[i][j];

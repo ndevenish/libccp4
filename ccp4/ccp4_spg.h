@@ -36,7 +36,7 @@ typedef struct ccp4_spacegroup_
 {
   int spg_num;            /* true spacegroup number */
   int spg_ccp4_num;       /* CCP4 spacegroup number */
-  char symbol_Hall[20];   /* Hall symbol */
+  char symbol_Hall[40];   /* Hall symbol */
   char symbol_xHM[20];    /* Extended Hermann Mauguin symbol  */
   char symbol_old[20];    /* old spacegroup name */
 
@@ -48,7 +48,7 @@ typedef struct ccp4_spacegroup_
   int laue_sampling[3];   /* sampling factors for FFT */
 
   int npatt;              /* Patterson spacegroup number, inferred from asu_descr */
-  char patt_name[20];     /* Patterson spacegroup name */
+  char patt_name[40];     /* Patterson spacegroup name */
 
   int nsymop;             /* total number of symmetry operations */
   int nsymop_prim;        /* number of primitive symmetry operations */
