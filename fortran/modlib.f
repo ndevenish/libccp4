@@ -464,6 +464,181 @@ C     ..
       DOT = A(1)*B(1) + A(2)*B(2) + A(3)*B(3)
       END
 C
+
+C     ******************************************************************
+      SUBROUTINE EIGEN_RS_ASC(A, R, N, MV)
+C     ******************************************************************
+C
+C---- SUBROUTINE TO COMPUTE EIGENVALUES & EIGENVECTORS OF A REAL
+C---- SYMMETRIC MATRIX, FROM IBM SSP MANUAL (SEE P165).
+C---- DESCRIPTION OF PARAMETERS -
+C---- A - ORIGINAL MATRIX STORED COLUMNWISE AS UPPER TRIANGLE ONLY,
+C---- I.E. "STORAGE MODE" = 1.  EIGENVALUES ARE WRITTEN INTO DIAGONAL
+C---- ELEMENTS OF A  I.E.  A(1)  A(3)  A(6)  FOR A 3*3 MATRIX.
+C---- R - RESULTANT MATRIX OF EIGENVECTORS STORED COLUMNWISE IN SAME
+C---- ORDER AS EIGENVALUES.
+C---- N - ORDER OF MATRICES A & R.
+C---- MV = 0 TO COMPUTE EIGENVALUES & EIGENVECTORS.
+C
+C
+c      IMPLICIT    NONE
+      REAL        A(*), R(*)
+      INTEGER     N, MV
+C
+      INTEGER     IQ, J, I, IJ, IA, IND, L, M, MQ, LQ, LM, LL, MM
+      INTEGER     ILQ, IMQ, IM, IL, ILR, IMR
+      REAL        ANORM, ANRMX, RANGE, THR, X, Y, SINX, SINX2,
+     &            COSX, COSX2, SINCS
+
+C Lapack variables
+      LOGICAL LAPACK
+      CHARACTER*1        JOBZ, RANGE, UPLO
+      INTEGER            INFO, NVECTORS
+      REAL               ABSTOL
+      INTEGER            ISUPPZ(2*N), IWORK(10*N)
+      REAL               WORK(26*N), EVALUES(N), AM(N,N)
+C
+C-- FOR REAL
+C      DATA RANGE/1D-12/
+      DATA RANGE/1E-6/
+
+C  Alternative lapack routine - only marginally tested
+      LAPACK = .FALSE.
+      IF (LAPACK) THEN
+       IF (MV.EQ.0) JOBZ = 'V'
+       RANGE = 'A'
+       UPLO = 'U'
+       ABSTOL = 0.0
+       IA = 0
+       DO I = 1,N
+         DO J = 1,I
+           IA = IA + 1
+           AM(J,I) = A(IA)
+         ENDDO
+       ENDDO
+       CALL SSYEVR(JOBZ, RANGE, UPLO, N, AM, N, 
+     +   1, N, 1, N, ABSTOL, NVECTORS, EVALUES, R, 
+     +   N, ISUPPZ, WORK, 26*N, IWORK, 10*N, INFO)
+       IA = 0
+       DO I = 1,NVECTORS
+         DO J = 1,I
+           IA = IA + 1
+           IF (J.EQ.I) A(IA) = EVALUES(I)
+         ENDDO
+       ENDDO
+       RETURN
+      ENDIF
+
+      IF (MV.EQ.0) THEN
+        IQ=-N
+        DO    J=1,N
+          IQ=IQ+N
+          DO     I=1,N
+            IJ=IQ+I
+            IF (I.EQ.J) THEN
+              R(IJ)=1.
+            ELSE
+              R(IJ)=0.
+            ENDIF
+          ENDDO
+        ENDDO
+      ENDIF
+C
+C---- INITIAL AND FINAL NORMS (ANORM & ANRMX)
+      IA=0
+      ANORM=0.
+      DO    I=1,N
+        DO    J=1,I
+          IA=IA+1
+          IF (J.NE.I) ANORM=ANORM+A(IA)**2
+        ENDDO
+      ENDDO
+C
+      IF (ANORM.LE.0.) GOTO 165
+      ANORM=SQRT(2.*ANORM)
+      ANRMX=ANORM*RANGE/N
+C
+C---- INITIALIZE INDICATORS AND COMPUTE THRESHOLD
+      IND=0
+      THR=ANORM
+45    THR=THR/N
+50    L=1
+55    LQ=L*(L-1)/2
+      LL=L+LQ
+      M=L+1
+      ILQ=N*(L-1)
+C
+C---- COMPUTE SIN & COS
+60    MQ=M*(M-1)/2
+      LM=L+MQ
+      IF (A(LM)*A(LM)-THR.LT.0.) GOTO 130
+      IND=1
+      MM=M+MQ
+      X=.5*(A(LL)-A(MM))
+      Y=-A(LM)/SQRT(A(LM)**2+X*X)
+      IF (X.LT.0.) Y=-Y
+      SINX=Y/SQRT(2.*(1.+(SQRT(1.-Y*Y))))
+      SINX2=SINX**2
+      COSX=SQRT(1.-SINX2)
+      COSX2=COSX**2
+      SINCS=SINX*COSX
+C
+C---- ROTATE L & M COLUMNS
+      IMQ=N*(M-1)
+      DO 125 I=1,N
+        IQ=I*(I-1)/2
+        IF (I.NE.L .AND. I.NE.M) THEN
+          IF (I.LT.M) THEN
+            IM=I+MQ
+          ELSE
+            IM=M+IQ
+          ENDIF
+          IF (I.LT.L) THEN
+            IL=I+LQ
+          ELSE
+            IL=L+IQ
+          ENDIF
+          X=A(IL)*COSX-A(IM)*SINX
+          A(IM)=A(IL)*SINX+A(IM)*COSX
+          A(IL)=X
+        ENDIF
+        IF (MV.EQ.0) THEN
+          ILR=ILQ+I
+          IMR=IMQ+I
+          X=R(ILR)*COSX-R(IMR)*SINX
+          R(IMR)=R(ILR)*SINX+R(IMR)*COSX
+          R(ILR)=X
+        ENDIF
+125   CONTINUE
+C
+      X=2.*A(LM)*SINCS
+      Y=A(LL)*COSX2+A(MM)*SINX2-X
+      X=A(LL)*SINX2+A(MM)*COSX2+X
+      A(LM)=(A(LL)-A(MM))*SINCS+A(LM)*(COSX2-SINX2)
+      A(LL)=Y
+      A(MM)=X
+C
+C---- TESTS FOR COMPLETION
+C---- TEST FOR M = LAST COLUMN
+130   IF (M.NE.N) THEN
+        M=M+1
+        GOTO 60
+      ENDIF
+C
+C---- TEST FOR L =PENULTIMATE COLUMN
+      IF (L.NE.N-1) THEN
+        L=L+1
+        GOTO55
+      ENDIF
+      IF (IND.EQ.1) THEN
+        IND=0
+        GOTO50
+      ENDIF
+C
+C---- COMPARE THRESHOLD WITH FINAL NORM
+      IF (THR.GT.ANRMX) GOTO 45
+165   RETURN
+      END
 C
 C_BEGIN_EA06C
 C
