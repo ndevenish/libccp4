@@ -287,7 +287,7 @@ C
  6000 FORMAT (//A,/)
  6002 FORMAT (A7,3X,A12,A)
  6004 FORMAT (A,I3)
- 6006 FORMAT (I2.2,2 ('/',I2.2))
+ 6006 FORMAT (I2.2,'/',I2.2,'/',I4)
  6008 FORMAT (A5,I3)
  6014 FORMAT (' Seek Record:',I5,'  Read:  ',F8.2,'  Status: ',I4)
  6015 FORMAT (' Seek Record:',I5,'  Write: ',F8.2)
