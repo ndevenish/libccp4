@@ -73,6 +73,7 @@ C                   AN UNFORMATTED FILE). NOT RELEVANT FOR A SEQUENTIAL
 C                   FILE
 C       IFAIL (I/O) ON INPUT:     =0, STOP ON OPEN FAILURE
 C                                 =1, CONTINUE AFTER OPEN FAILURE
+C                                 =2, CONTINUE SILENTLY AFTER OPEN FAILURE
 C                   ON OUTPUT:    UNCHANGED IF FILE OPEN OK
 C                                 =-1, ERROR IN OPENING FILE
 C
@@ -249,7 +250,7 @@ C         hard failure
           CALL CCPERR(-1, ERRSTR)
         else
 C         soft failure
-          WRITE (lunsto (1),FMT=6004) FRM, ST, IUN, 
+          IF (IFAIL.EQ.1) WRITE (lunsto (1),FMT=6004) FRM, ST, IUN, 
      +         LOGNAM(1:LENSTR(LOGNAM)), NAMFIL(1:LENSTR(NAMFIL)),
      +         ERRSTR(1:LENSTR(ERRSTR))
  6004     FORMAT (' **CCPOPN ERROR**  ',A,3X,A,
