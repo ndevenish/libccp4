@@ -167,7 +167,8 @@ int ccp4_utils_outbuf(void)
 #  if defined (_AIX)
   return -1;
 #  else
-  return setvbuf(stdout, NULL, _IOLBF, 0);
+  /* Windows requires size argument, though 0 works on unix */
+  return setvbuf(stdout, NULL, _IOLBF, 80);
 #  endif
 #endif
 }
