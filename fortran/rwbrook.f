@@ -733,10 +733,6 @@ C
         IF(MSG1.GT.0.AND.I.EQ.0)WRITE(MSG1,2001)ATNAM,RESNAM,RESNO
         IF(MSG1.GT.0.AND.I.EQ.7)WRITE(MSG1,2002)ATNAM,RESNAM,RESNO
 480     IZ=I
-C
-C---- Reset Formfactor for W to that of O - in proteins it is prob H2O
-C
-        IF(IZ.EQ.74) IZ = 8
         RETURN
 C
 C---- Write record to output file if required (unless atom/hetatm)
