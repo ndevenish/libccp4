@@ -1,3 +1,16 @@
+/*
+     This code is distributed under the terms and conditions of the
+     CCP4 licence agreement as `Part i)' software.  See the conditions
+     in the CCP4 manual for a copyright statement.
+*/
+
+/** @file cmap_open.c
+ *
+ *  @brief Opening CCP4-format map files.
+ *
+ *  @author Charles Ballard
+ */
+
 #include <string.h>
 #include <math.h>
 #include <stdarg.h>
@@ -49,7 +62,8 @@ int is_cmap(CCP4File *file)
 
 /*! The file is opened.
  \param filename (char *) the filename
- \param mode (int) the io mode 
+ \param mode (int) the i/o mode , possible values are O_RDONLY, O_WRONLY, 
+       O_RDWR, O_APPEND, O_TMP, O_CREAT, O_TRUNC - see ccp4_sysdep.h
  \return (void *) CMMFile structure */
 void *ccp4_cmap_open(const char *filename, int mode)
 {

@@ -1,3 +1,16 @@
+/*
+     This code is distributed under the terms and conditions of the
+     CCP4 licence agreement as `Part i)' software.  See the conditions
+     in the CCP4 manual for a copyright statement.
+*/
+
+/** @file ccp4_sysdep.h
+ *
+ *  @brief System-dependent definitions.
+ *
+ *  @author Charles Ballard, based in part on earlier versions
+ */
+
 #ifndef __CCP4_BITS
 #define __CCP4_BITS
 
@@ -158,9 +171,9 @@
 #  define EXT_SEPARATOR '.'
 #endif
 
-#define MAXFLEN       512       /* the maximum length of a filename in CCP4 */
-#define MAXFILES       16    /* maximum number of files open symultaneously */
-#define DEFMODE         2    /* default mode access for random access files */
+#define MAXFLEN       512    /**< the maximum length of a filename in CCP4 */
+#define MAXFILES       16    /**< maximum number of files open symultaneously */
+#define DEFMODE         2    /**< default mode access for random access files */
 
 #define IRRELEVANT_OP   0
 #define READ_OP         1
@@ -173,14 +186,14 @@
 #  define SEEK_END 2
 #endif /* ! SEEK_SET */
 #ifndef O_WRONLY
-#define O_RDONLY 0x0000
-#define O_WRONLY 0x0001
-#define O_RDWR   0x0002
-#define O_APPEND 0x0008
-#define O_CREAT  0x0200
-#define O_TRUNC  0x0400
+#define O_RDONLY 0x0000       /**< i/o mode: read-only */
+#define O_WRONLY 0x0001       /**< i/o mode: write-only  */
+#define O_RDWR   0x0002       /**< i/o mode: read and write  */
+#define O_APPEND 0x0008       /**< i/o mode: append to existing file  */
+#define O_CREAT  0x0200       /**< i/o mode: create file  */
+#define O_TRUNC  0x0400       /**< i/o mode: truncate existing file  */
 #endif
-#define O_TMP    0x0010
+#define O_TMP    0x0010       /**< i/o mode: scratch file */
 
 #define BYTE  0
 #define INT16 1   
@@ -189,13 +202,13 @@
 #define COMP32  3
 #define COMP64  4
 
-#define DFNTI_MBO       1       /* Motorola byte order 2's compl */
-#define DFNTI_IBO       4       /* Intel byte order 2's compl */
+#define DFNTI_MBO       1       /**< Motorola byte order 2's compl */
+#define DFNTI_IBO       4       /**< Intel byte order 2's compl */
 
-#define DFNTF_BEIEEE    1       /* big endian IEEE (canonical) */
-#define DFNTF_VAX       2       /* Vax format */
-#define DFNTF_CONVEXNATIVE 5    /* Convex native floats */
-#define DFNTF_LEIEEE    4       /* little-endian IEEE format */
+#define DFNTF_BEIEEE    1       /**< big endian IEEE (canonical) */
+#define DFNTF_VAX       2       /**< Vax format */
+#define DFNTF_CONVEXNATIVE 5    /**< Convex native floats */
+#define DFNTF_LEIEEE    4       /**< little-endian IEEE format */
 
 #if defined (VAX) || defined (vax) /* gcc seems to use vax */
 #  define NATIVEFT DFNTF_VAX
@@ -234,13 +247,13 @@
 #  error "Can't determine machine number format"
 #endif
 
-#define DFNT_UINT       0       /* unsigned int */
-#define DFNT_SINT       1       /* short int */
-#define DFNT_INT        2       /* int */
-#define DFNT_UCHAR      3       /* unsigned char */
-#define DFNT_CHAR       4       /* char */
-#define DFNT_FLOAT      5       /* float */
-#define DFNT_DOUBLE     6       /* double */
+#define DFNT_UINT       0       /**< unsigned int */
+#define DFNT_SINT       1       /**< short int */
+#define DFNT_INT        2       /**< int */
+#define DFNT_UCHAR      3       /**< unsigned char */
+#define DFNT_CHAR       4       /**< char */
+#define DFNT_FLOAT      5       /**< float */
+#define DFNT_DOUBLE     6       /**< double */
 
 #endif
 

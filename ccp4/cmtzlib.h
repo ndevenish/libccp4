@@ -52,6 +52,21 @@ from an input file) then use <tt>MtzMalloc</tt>, <tt>MtzOpenForWrite</tt>,
 <tt>ccp4_lwsymm</tt>, <tt>MtzAddXtal</tt>, <tt>MtzAddDataset</tt>, 
 <tt>MtzAddColumn</tt> and <tt>ccp4_lwrefl</tt>.
 
+ * @section cmtz_symmetry Symmetry Information
+
+All reflection data in an MTZ file is assumed to belong to the same
+spacegroup. The spacegroup is identified in the MTZ file by SYMINF
+and SYMM records in the file header. This information is copied 
+into the in-memory data structure. The list of symmetry operators
+(copied from the SYMM header records) is taken to be the definitive
+indicator of the spacegroup.
+<p>
+The functions <tt>ccp4_lrsymi</tt>, <tt>ccp4_lrsymm</tt> and 
+<tt>ccp4_lwsymm</tt> read from and write to the symmetry sections
+of the data structure. No symmetry manipulations are done within
+the CMTZ library itself. Within CCP4, the CSYM library provides 
+appropriate functions, but other symmetry libraries could be used.
+
  *  @section cmtz_examples Examples
 
 See examples on <a href="ftp://ftp.ccp4.ac.uk/pub/mdw/cmtz">ftp area</a>
@@ -76,7 +91,7 @@ See examples on <a href="ftp://ftp.ccp4.ac.uk/pub/mdw/cmtz">ftp area</a>
 #ifndef __CMTZLib__
 #define __CMTZLib__
 
-static char rcsidhm[] = "$Id$";
+static char rcsidhm[100] = "$Id$";
 
 /* defines CCP4::CCP4File */
 #include "ccp4_utils.h"
@@ -123,11 +138,11 @@ int MtzPut(MTZ *mtz, const char *logname);
 CCP4File *MtzOpenForWrite(const char *logname);
 
 /** Write header record to fileout. Record is filled from
- *   nitems to MTZRECORDLENGTH by blanks.
+ * buffer and padded by blanks to a total length of MTZRECORDLENGTH.
  * @param fileout Pointer to output file.
- * @param nitems
- * @param buffer
- * @return 
+ * @param nitems Number of characters in buffer.
+ * @param buffer Character buffer containing MTZ header line.
+ * @return Number of bytes written on success, EOF on failure.
  */
 int MtzWhdrLine(CCP4File *fileout, int nitems, char buffer[]);
 
@@ -164,7 +179,7 @@ MTZ *MtzMalloc(int nxtal, int nset[]);
 
 /** Frees the memory reserved for the MTZ header struct.
  * @param mtz pointer to MTZ header struct. 
- * @return void
+ * @return 1 on success
  */
 int MtzFree(MTZ *mtz);
 
@@ -178,30 +193,30 @@ MTZCOL *MtzMallocCol(MTZ *mtz, int nref);
 
 /** Frees the memory reserved for 'col'
  * @param col pointer to MTZ column.
- * @return void
+ * @return 1 on success
  */
 int MtzFreeCol(MTZCOL *col);
 
 /** Allocates memory for a single batch header.
- * @return 
+ * @return pointer to batch
  */
 MTZBAT *MtzMallocBatch(void);
 
 /** Frees the memory reserved for 'batch'.
  * @param batch
- * @return 
+ * @return 1 on success
  */
 int MtzFreeBatch(MTZBAT *batch);
   
 /** Allocates memory for the mtz history with 'nhist' lines.
  * @param nhist
- * @return 
+ * @return pointer to history
  */
 char *MtzCallocHist(int nhist);
 
 /** Frees the memory reserved for 'hist'.
  * @param hist
- * @return 
+ * @return 1 on success
  */
 int MtzFreeHist(char *hist);
 
@@ -279,7 +294,7 @@ char *MtzXtalPath(const MTZXTAL *xtal);
 /** Returns a pointer to the crystal of mtz with the given `label`, or NULL.
  * @param mtz pointer to MTZ struct
  * @param label
- * @return 
+ * @return pointer to crystal
  */
 MTZXTAL *MtzXtalLookup(const MTZ *mtz, const char *label);
 
@@ -429,6 +444,7 @@ MTZCOL *MtzAddColumn(MTZ *mtz, MTZSET *set, const char *label,
 
 /** Assigns HKL columns to the base dataset.
  * @param mtz pointer to MTZ struct
+ * @return 1 on success
  */
 int MtzAssignHKLtoBase(MTZ *mtz);
 
@@ -442,6 +458,7 @@ int MtzAssignHKLtoBase(MTZ *mtz);
  * @param col pointer to column
  * @param crystal_name name of crystal containing dataset
  * @param dataset_name name of dataset
+ * @return 1 on success
  */
 int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],  
 	     const char dataset_name[]);
@@ -599,30 +616,31 @@ int ccp4_lrtitl(const MTZ *mtz, char *title);
 
 /** Get history lines from MTZ structure.
  * @param mtz Pointer to MTZ struct.
- * @param history
- * @return 
+ * @param history Returned history lines.
+ * @param nlines Requested number of history lines.
+ * @return Actual number of history lines returned.
  */
 int ccp4_lrhist(const MTZ *mtz, char history[][MTZRECORDLENGTH], int nlines);
 
 /** Get sort order from MTZ structure.
  * @param mtz Pointer to MTZ struct.
- * @param isort
- * @return 
+ * @param isort Returned sort order.
+ * @return 1 on success
  */
 int ccp4_lrsort(const MTZ *mtz, int isort[5]);
 
 /** Get batch numbers from MTZ structure.
  * @param mtz Pointer to MTZ struct.
- * @param nbatx
- * @param batchx
- * @return 
+ * @param nbatx Number of batches in input file.
+ * @param batchx Returned array of batch numbers.
+ * @return Number of batches.
  */
 int ccp4_lrbats(const MTZ *mtz, int *nbatx, int batchx[]);
 
 /** Get cell dimensions for a particular crystal.
  * @param xtl Pointer to crystal.
  * @param cell Output cell dimensions.
- * @return 
+ * @return 1 on success.
  */
 int ccp4_lrcell(const MTZXTAL *xtl, float cell[]);
 
@@ -678,14 +696,14 @@ MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels,
  * collection of data held in one series of dataset records in the MTZ header.
  * It is mainly useful for supporting old Fortran calls.
  * @param mtz pointer to MTZ struct
- * @param set
- * @param crystal_name
- * @param dataset_name
- * @param project_name
- * @param isets
- * @param datcell
- * @param datwave
- * @return void
+ * @param set pointer to dataset
+ * @param crystal_name Crystal name
+ * @param dataset_name Dataset name
+ * @param project_name Project name
+ * @param isets Dataset ID.
+ * @param datcell Cell dimensions of crystal that dataset belongs to.
+ * @param datwave X-ray wavelength associated with dataset.
+ * @return 1 on success
  */
 int ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64], 
             char dataset_name[64], char project_name[64], int *isets, 
@@ -736,8 +754,19 @@ int ccp4_lrreff(const MTZ *mtz, float *resol, float adata[], int logmss[],
  */
 int ccp4_ismnf(const MTZ *mtz, const float datum);
 
+/** Function to print header information in traditional format.
+ * @param mtz Pointer to MTZ struct
+ * @param iprint Print level
+ * @return 1 on success 
+ */
 int ccp4_lhprt(const MTZ *mtz, int iprint);
 
+/** Function to print header information in format appropriate
+ * to data structure hierarchy.
+ * @param mtz Pointer to MTZ struct
+ * @param iprint Print level
+ * @return 1 on success 
+ */
 int ccp4_lhprt_adv(const MTZ *mtz, int iprint);
 
 /** Function to return batch header data for a specified batch.
@@ -755,6 +784,13 @@ int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint);
  */
 int MtzPrintBatchHeader(MTZBAT *batch);
 
+/** Write header title for later output to file.
+ * @param mtz Pointer to MTZ struct.
+ * @param ftitle Title string.
+ * @param flag If 0 overwrite existing title, else append to
+ * existing title.
+ * @return 1 on success 
+ */
 int ccp4_lwtitl(MTZ *mtz, const char *ftitle, int flag);
 
 /** Sets the sort order in the MTZ header. The sort order is
