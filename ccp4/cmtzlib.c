@@ -369,8 +369,8 @@ MTZ *MtzGet(const char *logname, int read_refs)
        }
 
     else if (strncmp (mkey, "CELL",4) == 0) {
-      sscanf(hdrrec+5,"%f%f%f%f%f%f",&totcell[0],&totcell[1],&totcell[2],
-                 &totcell[3],&totcell[4],&totcell[5]);
+      for (i = 0; i < 6; ++i) 
+        totcell[i] = (float) token[i+1].value;
       for (i = 0; i < mtz->nxtal; ++i) {
         if (mtz->xtal[i]->cell[0] < 0.01) {
           mtz->xtal[i]->cell[0] = totcell[0];
@@ -383,13 +383,16 @@ MTZ *MtzGet(const char *logname, int read_refs)
       } 
     }
     else if (strncmp (mkey, "SORT",4) == 0) {
-      sscanf(hdrrec+5,"%d%d%d%d%d",&isort[0],&isort[1],&isort[2],
-                 &isort[3],&isort[4]);
+      for (i = 0; i < 5; ++i) 
+        isort[i] = (int) token[i+1].value;
     }
     else if (strncmp (mkey, "SYMI",4) == 0) {
-      sscanf(hdrrec+7,"%d%d %c%d%s%s",&mtz->mtzsymm.nsym,&mtz->mtzsymm.nsymp,
-	     &mtz->mtzsymm.symtyp,&mtz->mtzsymm.spcgrp,mtz->mtzsymm.spcgrpname,
-             mtz->mtzsymm.pgname);
+      mtz->mtzsymm.nsym = (int) token[1].value;
+      mtz->mtzsymm.nsymp = (int) token[2].value;
+      mtz->mtzsymm.symtyp = token[3].fullstring[0];
+      mtz->mtzsymm.spcgrp = (int) token[4].value;
+      strcpy(mtz->mtzsymm.spcgrpname,token[5].fullstring);
+      strcpy(mtz->mtzsymm.pgname,token[6].fullstring);
        }
     else if (strncmp (mkey, "SYMM",4) == 0) {
       symop_to_mat4(hdrrec+4,hdrrec+MTZRECORDLENGTH,mtz->mtzsymm.sym[isym++][0]);
@@ -397,8 +400,11 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
     else if (strncmp (mkey, "COLU",4) == 0) {
       ++icolin;
-      sscanf(hdrrec+7,"%s",label);
-      sscanf(hdrrec+38,"%s%f%f%d",type,&min,&max,&icset);
+      strcpy(label,token[1].fullstring);
+      strcpy(type,token[2].fullstring);
+      min = (float) token[3].value;
+      max = (float) token[4].value;
+      icset = (int) token[5].value;
       /* Special trap for M/ISYM */
       if (type[0] == 'Y' && strncmp (label,"M/ISYM",6) == 0)
         strcpy(label,"M_ISYM");
@@ -423,16 +429,17 @@ MTZ *MtzGet(const char *logname, int read_refs)
     }
 
     else if (strncmp (mkey, "VALM",4) == 0) {
-      sscanf(hdrrec+5,"%s",keyarg);
+      strcpy(keyarg,token[1].fullstring);
       if (strncmp (keyarg, "NAN",3) == 0) {
         sprintf(mtz->mnf.amnf,"NAN");
       } else {
-        sscanf(hdrrec+5,"%f",&mtz->mnf.fmnf);
+	mtz->mnf.fmnf = (float) token[1].value;
       }
     }
 
     else if (strncmp (mkey, "RESO",4) == 0) {
-      sscanf(hdrrec+5,"%f %f",&minres,&maxres);
+      minres = (float) token[1].value;
+      maxres = (float) token[2].value;
       for (i = 0; i < mtz->nxtal; ++i) {
         if (mtz->xtal[i]->resmax == 0.0)
           mtz->xtal[i]->resmax = maxres;
