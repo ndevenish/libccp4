@@ -245,7 +245,7 @@ $(CORELIBOBJS) $(CGENERALOBJS) $(CMTZOBJS) $(CMAPOBJS) $(CUCOBJS) \
 
 $(FINTERFACEOBJS):
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/`basename $@ .o`.c
-	$(AR) $(LF) $?
+	$(AR) $(LF) $@
 
 $(CMTZPYOBJS) $(CMAPPYOBJS) $(CSYMPYOBJS): 
 	$(CC) $(CFLAGS) -I$(srcdir) -I$(PYTHON_INCLUDE) -c $(srcdir)/`basename $@ .o`.c
