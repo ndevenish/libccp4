@@ -74,7 +74,7 @@ C   ccp4h_init() - write initial comment to identify file
       save   /ccp4hdat/
       lpt=lunsto()
       write (lpt,10)
- 10   format('<!-- CCP4 HTML LOGFILE -->')
+ 10   format('<html> <!-- CCP4 HTML LOGFILE -->')
       call ugtenv('CBIN',cbin)
       call ugtenv('CHTML',chtml)
       call ugtenv('CCP_PROGRAM_ID',cpid)
@@ -202,7 +202,7 @@ C     dest= the link destination
  10    format('<a href="',a,a,'">',a,'</a>')
       else
        write (lpt,20)chtml(1:lenstr(chtml)),dest,text
- 20    format('<a href="',a,a,'">',a,'</a>')
+ 20    format('<a href="',a,'/',a,'">',a,'</a>')
       endif
       return
       end
