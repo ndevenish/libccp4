@@ -1139,8 +1139,15 @@ c      then BROOKA(13:13) can be a digit 0-9
 c      most other single char element symbols
 c      have BROOKA(13:13) = ' ', but NOT ALL!
 C
-C----- Need to deal with horrors like AC4*; NO etc where ID is ' C' or ' O'
+C----- Need to deal with various horrors: if no ID, or IZ, 
+C      then use ATNAM as it is
+        IF (ID(1:2) .EQ. '  ') THEN
+          BROOKA(13:16) = ATNAM(1:4)
+          GO TO 22
+        END IF
+C----- Now some weird H or D names
 C      Check if first character of atnam = 2nd character of ID.
+C
         IF (ID(1:1) .EQ. ' ' .AND.ATNAM(1:1).NE.ID(2:2)) THEN
           BROOKA(13:16) = ATNAM(1:4)
           GO TO 22
@@ -1155,7 +1162,7 @@ C
                  GO TO 22
                END IF
  21          CONTINUE
-           END IF
+          END IF
           BROOKA(13:13) = ' '
           BROOKA(14:16) = ATNAM(1:3)
         ELSE
