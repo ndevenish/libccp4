@@ -54,7 +54,7 @@
 
 #if defined (_AIX) || defined(___AIX)
 #  define KNOWN_MACHINE
-#  define CALL_LIKE_SUN 1
+#  define CALL_LIKE_HPUX 1
 #endif
 
 #if defined (__hpux) 
