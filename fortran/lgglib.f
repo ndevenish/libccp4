@@ -8,6 +8,8 @@ c calculate the angle between two vector v1, and v2
 c v1 v2 are the input 3*vector
 c angle is the output angle between them (in degree unit)
       real*4 v1(3),v2(3)
+c
+      external acosd
 c	write(7,*) 'v1,v2',v1,v2
 c	write(7,*) 'vem v1,v2',vem(3,v1),vem(3,v2)
 c	write(7,*) 'poimut',poimult(3,3,v1,v2)
@@ -167,6 +169,7 @@ c	real b1(3),b2(3)
       real b23(3),b32(3),b34(3),b21(3)
       real by(3),bdih(3),bd(2)
       real view(3,3),views(3,3)
+      external acosd, asind
 c
       call arrps(3,1,xyz3,xyz2,b23)
       call arrps(3,1,xyz1,xyz2,b21)
@@ -342,6 +345,7 @@ C
       DIMENSION CRST(3,3),CRIS(3,3),BUF1(3),BUF2(3),
      1IUF(3),CELL(6)
       INTEGER IUF
+      external cosd, sind
       AP=CELL(4)
       BA=CELL(5)
       GA=CELL(6)
@@ -396,6 +400,7 @@ c
       REAL DEORS(3,3),ORTHS(3,3),CELLS(6)
       REAL BUFF(3,3)
       DIMENSION B1(3),B2(3),IUF(3)
+      external cosd, sind
       AP=CELL(4)
       BA=CELL(5)
       GA=CELL(6)
@@ -546,12 +551,13 @@ c definatin [rot]=[rotx]*[roty]*[rotz]
 c 
       subroutine denmis(phi,rot)
       real phi(3),rot(3,3)
- 	sinx = sind(phi(1))
- 	cosx = cosd(phi(1))
- 	siny = sind(phi(2))
- 	cosy = cosd(phi(2))
- 	sinz = sind(phi(3))
- 	cosz = cosd(phi(3))
+      external cosd, sind
+      sinx = sind(phi(1))
+      cosx = cosd(phi(1))
+      siny = sind(phi(2))
+      cosy = cosd(phi(2))
+      sinz = sind(phi(3))
+      cosz = cosd(phi(3))
       rot(1,1) =  cosy*cosz
       rot(2,1) = -cosx*sinz+sinx*siny*cosz
       rot(3,1) =  sinx*sinz+cosx*siny*cosz
@@ -1014,6 +1020,7 @@ c
       real a(3,3),t(3),POL(3),xyz0(3),vpl(3)
       real B(3),BUF(3),vl(3),vl0(3)
       real b1(3),b2(3),x1(3),x2(3)
+      external sind
 c
       call arrvalue(3,xyz0,0.)
       call mtovec(a,vl,vkapa)
@@ -2203,12 +2210,13 @@ c this is subroutine to transfer misseting angle to matrix
 c  ROT = (phiz)*(phiy)*(phix)
       subroutine misseting(phi,rot)
       real phi(3),rot(3,3)
- 	sinx = sind(phi(1))
- 	cosx = cosd(phi(1))
- 	siny = sind(phi(2))
- 	cosy = cosd(phi(2))
- 	sinz = sind(phi(3))
- 	cosz = cosd(phi(3))
+      external cosd, sind
+      sinx = sind(phi(1))
+      cosx = cosd(phi(1))
+      siny = sind(phi(2))
+      cosy = cosd(phi(2))
+      sinz = sind(phi(3))
+      cosz = cosd(phi(3))
       rot(1,1) = cosz*cosy
       rot(2,1) = sinz*cosy
       rot(3,1) = -siny
@@ -2280,6 +2288,7 @@ c  GuoGuang 930706
       subroutine mtodenmis(rot0,phi)
       real rot0(3,3)
       real rot(3,3),phi(3)
+      external asind, atand, cosd
 c 	sinx = sind(phi(1))
 c 	cosx = cosd(phi(1))
 c 	siny = sind(phi(2))
@@ -2450,6 +2459,7 @@ c this is subroutine to transfer misseting angle to matrix
 c  ROT = (phiz)*(phiy)*(phix)
       subroutine mtomisset(rot,phi)
       real phi(3),rot(3,3)
+      external asind, atand, cosd
 c 	sinx = sind(phi(1))
 c 	cosx = cosd(phi(1))
 c 	siny = sind(phi(2))
@@ -2556,6 +2566,7 @@ C --- PB == PHI
       subroutine mtopolors(e,p1,p2)
       dimension e(3,3),p1(3),p2(3)
       dimension b1(3),b2(3)
+      external acosd
 
       call mtovec(e,b1,p1(3))
 C
@@ -2596,6 +2607,7 @@ c
 c 
       real e(3,3),p1(3),p2(3)
       real b1(3),b2(3)
+      external acosd
       call mtovec(e,b1,p1(3))
 c
       if (abs(p1(3)).lt.1e-3) then
@@ -2696,6 +2708,7 @@ c kapa is the output polor angle.
 c Guoguang 901001 bmc
       dimension a(3,3),vec(3),a1(3,3),a2(9),vec1(3)
       integer*2 sgn(3,8)
+      external acosd
       data sgn/ 1,1,1,  1,1,-1,  1,-1,1,  1,-1,-1,
      1 	 -1,1,1, -1,1,-1, -1,-1,1, -1,-1,-1/
 
@@ -2918,6 +2931,7 @@ C-----------APENIX PROGRAM FOR THE NEWGIN SYSTEM ANGLE
 C              WHEN INOPT1=8
       SUBROUTINE OXFORD(ROT,E)
       DIMENSION E(3,3),ROT(3)
+      external cosd, sind
 2000	A1=ROT(1)
         A2=ROT(2)
         A3=ROT(3)
@@ -3079,6 +3093,7 @@ c	kapa is rotating angle
 
       dimension e(3,3),pol(3)
       dimension b1(3)
+      external cosd, sind
       b1(2) = cosd(pol(1))	
       b1(1) = sind(pol(1))*cosd(pol(2))	
       b1(3) = - sind(pol(1))*sind(pol(2))
@@ -3093,6 +3108,7 @@ c	kapa is rotating angle
 
       real e(3,3),pol(3)
       real b1(3)
+      external cosd, sind
 c	b1(2) = cosd(pol(1))	
 c	b1(1) = sind(pol(1))*cosd(pol(2))	
 c	b1(3) = - sind(pol(1))*sind(pol(2))
@@ -3322,6 +3338,7 @@ c
       DIMENSION DEOR(3,3),ORTH(3,3),CELL(6)
       DIMENSION BUFF(3,3)
       DIMENSION B1(3),B2(3),IUF(3)
+      external acosd, cosd, sind
       AP=CELL(4)
       BA=CELL(5)
       GA=CELL(6)
@@ -3375,6 +3392,7 @@ c
       DIMENSION DEOR(3,3),ORTH(3,3),CELL(6)
       DIMENSION BUFF(3,3)
       DIMENSION B1(3),B2(3),IUF(3)
+      external acosd, cosd, sind
       AP=CELL(4)
       BA=CELL(5)
       GA=CELL(6)
@@ -4282,6 +4300,7 @@ c vkapa is the rotating angle
 c  a is the output 3*3 roating matrix.
 c
       real vec(3),a(3,3)
+      external sind
 c	WRITE(6,*)  'vec,vkapa'
 C	WRITE(6,*)  vec,vkapa
 c There is an strange bug on Alpha, ---- cosd(vkapa) has the wrong sign!!!!
@@ -4392,6 +4411,7 @@ c
       dimension b4(3),b5(3),cenp1(3),cenp2(3),xyzp(3)
       dimension vec(3)
       logical*1 zax
+      external tand
 c
       call arrmc(3,1,t,0.,xyz0)
       call mtopolorz(a,POL,b1)
@@ -4505,6 +4525,7 @@ c
       dimension b4(3)
       dimension vec(3)
       logical*1 zax
+      external acosd, cosd
 c
        call arrmc(3,1,t,0.,xyz0)
       call mtopolors(a,POL,b1)
@@ -4673,6 +4694,7 @@ c
       dimension b4(3)
       dimension vec(3)
       logical*1 zax
+      external acosd, cosd
 c
        call arrmc(3,1,t,0.,xyz0)
       call mtopolorz(a,POL,b1)
