@@ -125,9 +125,9 @@ $L(ccplib.o) : $(srcdir)/ccplib.f
 	echo '      SUBROUTINE CCPLIB' > ccplib.dir/ccplib.$F
 	echo '      END' >> ccplib.dir/ccplib.$F
 	cd ccplib.dir && fsplit $(srcdir)/ccplib.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
-            $(FC) -c $(FFLAGS) $$i; done \
-          && $(AR) ../$L *.o
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done \
+	    && $(AR) ../$L *.o
 	rm -f ccplib.dir/*.o
 ccplib : $L(ccplib.o)
 	$(RANLIB) $L
@@ -137,9 +137,9 @@ $L(fftlib.o) : $(srcdir)/fftlib.f
 	echo '      SUBROUTINE FFTLIB' > fftlib.dir/fftlib.$F
 	echo '      END' >> fftlib.dir/fftlib.$F
 	cd fftlib.dir && fsplit $(srcdir)/fftlib.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
-            $(FC) -c $(FFLAGS) $$i; done \
-          && $(AR) ../$L *.o
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done \
+	  && $(AR) ../$L *.o
 	rm -f fftlib.dir/*.o
 fftlib : $L(fftlib.o)
 	$(RANLIB) $L
@@ -149,9 +149,9 @@ $L(maplib.o) : $(srcdir)/maplib.f
 	echo '      SUBROUTINE MAPLIB' > maplib.dir/maplib.$F
 	echo '      END' >> maplib.dir/maplib.$F
 	cd maplib.dir && fsplit $(srcdir)/maplib.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
-            $(FC) -c $(FFLAGS) $$i; done\
-          && $(AR) ../$L *.o
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
 	rm -f maplib.dir/*.o
 maplib : $L(maplib.o)
 	$(RANLIB) $L
@@ -165,9 +165,9 @@ $L(parser.o) : $(srcdir)/parser.f
 	  echo '      END' >> parser.dir/parser.$F; \
 	fi
 	cd parser.dir && \
-          for i in `pwd`/*.$F; do \
-            $(FC) -c $(FFLAGS) $$i; done\
-          && $(AR) ../$L *.o
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
 	rm -f parser.dir/*.o
 parser : $L(parser.o)
 	$(RANLIB) $L
@@ -177,9 +177,9 @@ $L(rwbrook.o) : $(srcdir)/rwbrook.f
 	echo '      SUBROUTINE RWBROOK' > rwbrook.dir/rwbrook.$F
 	echo '      END' >> rwbrook.dir/rwbrook.$F
 	cd rwbrook.dir && fsplit $(srcdir)/rwbrook.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
+	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-          && $(AR) ../$L *.o
+	  && $(AR) ../$L *.o
 	rm -f rwbrook.dir/*.o
 rwbrook : $L(rwbrook.o)
 	$(RANLIB) $L
@@ -189,9 +189,9 @@ $L(modlib.o) : $(srcdir)/modlib.f
 	echo '      SUBROUTINE MODLIB' > modlib.dir/modlib.$F
 	echo '      END' >> modlib.dir/modlib.$F
 	cd modlib.dir && fsplit $(srcdir)/modlib.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
+	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-          && $(AR) ../$L *.o
+	  && $(AR) ../$L *.o
 	rm -f modlib.dir/*.o
 modlib : $L(modlib.o)
 	$(RANLIB) $L
@@ -201,9 +201,9 @@ $L(symlib.o) : $(srcdir)/symlib.f
 	echo '      SUBROUTINE SYMLIB' > symlib.dir/symlib.$F
 	echo '      END' >> symlib.dir/symlib.$F
 	cd symlib.dir && fsplit $(srcdir)/symlib.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
+	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-          && $(AR) ../$L *.o
+	  && $(AR) ../$L *.o
 	rm -f symlib.dir/*.o
 symlib : $L(symlib.o)
 	$(RANLIB) $L
@@ -213,9 +213,9 @@ $L(mtzlib.o) : $(srcdir)/mtzlib.f
 	echo '      SUBROUTINE MTZLIB' > mtzlib.dir/mtzlib.$F
 	echo '      END' >> mtzlib.dir/mtzlib.$F
 	cd mtzlib.dir && fsplit $(srcdir)/mtzlib.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
-            $(FC) -c $(FFLAGS) $$i; done\
-          && $(AR) ../$L *.o
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
 	rm -f mtzlib.dir/*.o
 mtzlib : $L(mtzlib.o)
 	$(RANLIB) $L
@@ -225,9 +225,9 @@ $L(diskio.o) : $(srcdir)/diskio.f
 	echo '      SUBROUTINE DISKIO' > diskio.dir/diskio.$F
 	echo '      END' >> diskio.dir/diskio.$F
 	cd diskio.dir && fsplit $(srcdir)/diskio.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
-            $(FC) -c $(FFLAGS) $$i; done\
-          && $(AR) ../$L *.o
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
 	rm -f diskio.dir/*.o
 diskio : $L(diskio.o)
 
@@ -236,9 +236,9 @@ $L(plot84lib.o) : $(srcdir)/plot84lib.f
 	echo '      SUBROUTINE PLOT84LIB' > plot84lib.dir/plot84lib.$F
 	echo '      END' >> plot84lib.dir/plot84lib.$F
 	cd plot84lib.dir && fsplit $(srcdir)/plot84lib.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
-            $(FC) -c $(FFLAGS) $$i; done\
-          && $(AR) ../$L *.o
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
 	rm -f plot84lib.dir/*.o
 plot84lib : $L(plot84lib.o)
 	$(RANLIB) $L
@@ -248,9 +248,9 @@ $L(plotsubs.o) : $(srcdir)/plotsubs.f
 	echo '      SUBROUTINE PLOTSUBS' > plotsubs.dir/plotsubs.$F
 	echo '      END' >> plotsubs.dir/plotsubs.$F
 	cd plotsubs.dir && fsplit $(srcdir)/plotsubs.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
-            $(FC) -c $(FFLAGS) $$i; done\
-          && $(AR) ../$L *.o
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
 	rm -f plotsubs.dir/*.o
 plotsubs : $L(plotsubs.o)
 	$(RANLIB) $L
@@ -268,9 +268,9 @@ $L(graflib.o) : $(srcdir)/graflib.f
 	echo '      SUBROUTINE GRAFLIB' > graflib.dir/graflib.$F
 	echo '      END' >> graflib.dir/graflib.$F
 	cd graflib.dir && fsplit $(srcdir)/graflib.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
-            $(FC) -c $(FFLAGS) $$i; done\
-          && $(AR) ../$L *.o
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
 	rm -f graflib.dir/*.o
 graflib : $L(graflib.o)
 	$(RANLIB) $L
@@ -325,9 +325,9 @@ $L(unix.o) : $(srcdir)/unix.m4
 	echo '      SUBROUTINE UNIX' > unix.dir/unix.f
 	echo '      END' >> unix.dir/unix.f
 	cd unix.dir && fsplit ../unix.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
-            $(FC) -c $(FFLAGS) $$i; done\
-          && $(AR) ../$L *.o
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
 	rm -f unix.dir/*.o unix.f
 unix : $L(unix.o)
 	$(RANLIB) $L
@@ -339,7 +339,7 @@ $L(pack_c.o):	$(srcdir)/pack_c.c $(srcdir)/pack_c.h
 	$(AR) $L pack_c.o && rm pack_c.o
 $L(pack_f.o):	$(srcdir)/pack_f.f
 	$(FC) -c $(FFLAGS) $(srcdir)/pack_f.$(F) && $(AR) $(L) pack_f.o \
-          && rm pack_f.o
+	  && rm pack_f.o
 pack:	$L(pack_c.o) $L(pack_f.o)
 	$(RANLIB) $(L) 
 
