@@ -149,7 +149,7 @@ void ccp4_CtoFString(fpstr str1, int str1_len, const char *cstring)
 FORTRAN_SUBR ( USTENV, ustenv,
          (fpstr str, int *result, int str_len),
          (fpstr str, int *result),
-         (fpstr str, int Lstr, int *result))
+         (fpstr str, int str_len, int *result))
 {
   size_t Length;
   char *temp_name;
