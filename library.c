@@ -1444,8 +1444,8 @@ void ccp4_hgetlimits (int *IValueNotDet, float *ValueNotDet)
 
 /* Wrap-around for mkdir function. Returns 0 if successful, 1 if directory already exists,  */
 /* and -1 if other error.                                                                   */
-#ifndef _MVS
 int ccp4_mkdir (const char *path, const char *cmode)
+#ifndef _MVS
 {  
   mode_t mode;
   int result; 
@@ -1472,8 +1472,8 @@ int ccp4_mkdir (const char *path, const char *cmode)
    }
 #endif
 
-#ifndef _MVS
 int ccp4_chmod (const char *path, const char *cmode)
+#ifndef _MVS
 { mode_t mode;
 
 /* Possible modes (see stat.h)
