@@ -807,11 +807,6 @@ C
 C     check for `logical name' referencing real file
       CALL UGTENV(LOGNAM,NAMFIL)
       IF (NAMFIL.EQ.' ') NAMFIL = LOGNAM
-C     Unix null device (defined as canonical if programs need it)
-      IF (NAMFIL.EQ.'/dev/null') NAMFIL = 'NL:'
-C     Opening /dev/null is necessary in Unix; not sure if this is needed
-C     but presumably does no harm.
-      IF (NAMFIL.EQ.'NL:') ISTAT = 1
 C       
       IF (ACCESS.EQ.'DIRECT') THEN
 C       Need to check is record length in words or bytes and set LLREC

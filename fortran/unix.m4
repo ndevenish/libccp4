@@ -218,8 +218,7 @@ C
 C     check for `logical name' referencing real file
       CALL UGTENV(LOGNAM,NAMFIL)
       IF (NAMFIL.EQ.' ') NAMFIL = LOGNAM
-C     VMS null device (VMS code canonicalises /dev/null)
-      IF (NAMFIL.EQ.'NL:' .OR. NAMFIL.EQ.'nl:') NAMFIL='/dev/null'
+C
 C     Special case:  /dev/null should be opened UNKNOWN
       IF ( NAMFIL.EQ.'/dev/null') ISTAT = 1
 C
