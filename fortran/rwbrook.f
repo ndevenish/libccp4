@@ -1,459 +1,1305 @@
+C**************************************************************************
+C
 C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
-C_BEGIN_RWBROOK
-C Title: STANDARD COORDINATE FILES AND THEIR USE (FORTRAN 77 IMPLEMENTATION)
-C Author: John W. Campbell
-C                         
-C CONTENTS
-C          
-C PART I  - THE STANDARD COORDINATE DATA FILE STRUCTURE
-C           1.   INTRODUCTION
-C           2.   FORMAT OF THE 'ATOM/HETATM'CARDS
-C           3.   FORMAT OF THE 'TER' CARDS
-C           4.   FORMAT OF THE 'CRYST1' CARD
-C           5.   FORMAT OF THE 'SCALE' CARDS
-C           6.   STANDARD RESIDUE NAMES
-C           7.   ATOM IDENTIFIERS FOR AMINO ACIDS
-C           8.   REFERENCES
-C                          
-C PART II - SUBROUTINES FOR HANDLING BROOKHAVEN FORMAT COORDINATE FILES
-C           1.  INTRODUCTION
-C           2.  THE SUBROUTINES
-C           3.  EXAMPLE OF READING A FILE
-C           4.  EXAMPLE OF READING A FILE AND WRITING A MODIFIED FILE
-C           5.  COMMON BLOCKS USED BY THE SUBROUTINES
-C           6.  AVAILABILITY OF THE SUBROUTINES
-C           7.  DESCRIPTION OF INDIVIDUAL SUBROUTINES:
-C    
-C  RBROOK     Read a coordinate record
-C  RBINIT     Initialisation call
-C  RBFROR     generates the various orthogonalising matrices     
-C  RBRINV     invert 4*4 matrices for conversion between fractional and orthogonal axe
-C  RBFRAC     calc transformation matrices bet orthogonal and fractional coordinates
-C  RBRORF     fill or return RF and Ro matrice
-C  RBFRO1     duplicate of rbfror with a different call
-C  WBROOK     Write a coordinate record.
-C  RWBFIN     Complete copy of input to output file
-C  CVFRAC     Convert between orthogonal and fractional coordinates
-C  RBRCEL     Returns Reciprocal cell dimensions, and reciprocal unit cell  volume
-C  RBCELL     Returns cell dimensions, and unit cell  volume
-C  RES3TO1    Find 3 character residue name from 1 character code and vice versa 
-C  RBRECIP    calculates 4SIN**2/L**2
+C**************************************************************************
 C
-C PART I  -  THE STANDARD COORDINATE DATA FILE STRUCTURE
-C                                                       
-C 1.   INTRODUCTION 
-C                   
-C      The standard coordinate data file format adopted for the  CCP  protein
-C crystallography program suite is that of the Brookhaven Protein  Data  Bank
-C (ref.  1).  The  programs  will  handle  either  complete  files  or  files
-C containing only a subset of the types of record which may be present  in  a
-C complete file. In particular, the records containing  the  coordinate  data
-C (ATOM or HETATM records) are of interest. Their structures and those of the
-C TER, CRYST1 and SCALE records, which are also used  by  the  file  handling
-C subroutines described in Part II, are outlined below. The Brookhaven format
-C defines  a  standard  setting  of  orthogonal  axes  with  respect  to  the
-C crystallographic axes and this has been adopted as  the  standard  for  the
-C CCP. The standard set of orthogonal axes  XO,  YO  and  ZO  is  defined  as
-C follows:
-C         
-C                                 XO // a
-C                                 YO // c* * a
-C                                 ZO // c*
-C                                          
-C Within a Brookhaven format file, however,  coordinates  may  be  held  with
-C respect to other sets of axes. When the  files  are  accessed  by  programs
-C using fractional coordinates, the CRYST1 or SCALE cards must be present  if
-C the coordinates are in the standard setting and the  SCALE  cards  must  be
-C present if another setting is used. A  complete  description  of  the  file
-C format is available from the Brookhaven Protein Data Bank but some selected
-C features, relevant to the handling of the  coordinate  data  are  described
-C below. In general terms it may be noted that the format is basically a card
-C image format with fixed length 80 byte records.
-C                                                
-C 2.   FORMAT OF THE 'ATOM/HETATM' CARDS
-C                                       
-C      The format of an 'ATOM' card or 'HETATM' card is as follows:
+C
 C
-C Cols.  1-4    ATOM (or cols. 1-6 HETATM)
-C        7-11   Atom serial number (see note i)
-C Cols. 13-14   Chemical symbol (right justified)  )
-C       15      Remoteness indicator                 Atom name (see note ii)
-C       16      Branch designator                  )
-C       17      Alternate location indicator (see note iii)
-C       18-20   Residue name (see note iv)
-C       21      Reserved                   )
-C       22      Chain identifier           )
-C                                           Sequence identifier (see note v)
-C       23-26   Residue sequence number    )
-C       27      Code for inserting residue )
-C       31-38   X   )
-C       39-46   Y    Orthogonal Angstrom coordinates
-C       47-54   Z   )
-C       55-60   Occupancy
-C       61-66   Temperature factor
-C       68-70   Footnote number
+      SUBROUTINE XYZINIT()
+C     ====================
 C
-C Typical format:  (6A1,I5,1X,A4,A1,A3,1X,A1,I4,A1,3X,3F8.3,2F6.2,1X,I3)
-C                                                                       
-C Notes:    (i)  Residues occur in order  of  their  sequence  numbers  which
-C                always increase starting from the N-terminal residue. Within
-C                each  residue,  the  atoms  are  ordered  as  indicated   in
-C                paragraph 7 below. If the residue sequence is known, certain
-C                serial numbers may be omitted to allow for the future inser-
-C                tion of any missing atoms. If the sequence is  not  reliably
-C                known these serial numbers are simply ordinals.
-C                                                               
-C          (ii)  The atom names are described in paragraph 7 below.
-C                                                                  
-C         (iii)  Alternate locations for atoms may be denoted by A, B, C etc.
-C                here.
-C                     
-C          (iv)  The standard residue names are given in paragraph 6 below.
-C                                                                          
-C           (v)  The sequence identifier is a  composite  field  made  up  as
-C                follows:
-C                Cols. 21      Reserved for future expansion
-C                      22      Chain identifier, e.g. A for Haemoglobin alpha
-C                              chain
-C                      23-26   Residue sequence number
-C                      27      Code for insertions of residues, e.g. 66A, 66B
-C                              etc.
-C                                  
-C 3.   FORMAT OF THE 'TER' CARDS
-C                               
-C      'TER' cards are used to indicate chain terminations. They  are  placed
-C at the appropriate positions within the atom cards. The format of  a  'TER'
-C card is as follows:
-C                    
-C Cols.  1-3    TER
-C        7-11   Serial number
-C       18-20   Residue name
-C       21-27   Sequence identifier (see description of 'ATOM' cards above)
-C                                                                          
-C Typical format:  (6A1,I5,6X,A3,1X,A1,I4,A1)
-C                                            
-C 4.   FORMAT OF THE 'CRYST1' CARD
-C                                 
-C      This card holds the cell parameters and has the following format
-C                                                                      
-C              Cols.  1-6    CRYST1
-C                     7-15   a (Angstroms)
-C                    16-24   b (Angstroms)
-C                    25-33   c (Angstroms)
-C                    34-40   alpha (degrees)
-C                    41-47   beta (degrees)
-C                    48-54   gamma (degrees)
-C                    56-66   Space group symbol (left justified)
-C                    67-70   Z
-C                             
-C Typical Format:  (6A1,3F9.3,3F7.2,1X,11A1,I4)
-C                                              
-C 5.   FORMAT OF THE 'SCALE' CARDS
-C                                 
-C      These cards hold the matrix for  transforming  the  stored  orthogonal
-C Angstrom coordinates  to  fractional  crystallographic  coordinates.  Three
-C cards are required. 'S' is the rotation matrix and 'U' is  the  translation
-C matrix. The format of the cards is as follows.
-C                                               
-C                 Cols.  1-6      SCALE1     SCALE2     SCALE3
-C                       11-20      S11        S21        S31
-C                       21-30      S12        S22        S32
-C                       31-40      S13        S23        S33
-C                       46-55      U1         U2         U3
-C                                                          
-C                  Typical Format:  (6A1,4X,3F10.5,5X,F10.5)
-C                                                           
-C 6.   STANDARD RESIDUE NAMES
-C                            
-C      The residue abbreviations for the amino acids conform to the IUPAC-IUB
-C rules  (ref.  2).  Non-standard  residues  are  given  a  three   character
-C abbreviation chosen by the user. The amino acids  and  their  abbreviations
-C are given in the table below.
-C                              
-C Residue                 Abb.              Residue                    Abb.
+C_BEGIN_XYZINIT
 C
-C Acidic unknown          ACD               Homoserine                    HSE
-C Acetyl                  ACE               Hydroxyproline                HYP
-C Alanine                 ALA               Hydroxylysine                 HYL
-C beta-Alanine            ALB               Isoleucine                    ILE
-C Aliphatic unknown       ALI               Leucine                       LEU
-C gamma-Aminobutyric acid ABU               Lysine                        LYS
-C Arginine                ARG               Methionine                    MET
-C Aromatic unknown        ARO               Ornithine                     ORN
-C Asparagine              ASN               Phenylalanine                 PHE
-C Aspartic acid           ASP               Proline                       PRO
-C ASP/ASN ambiguous       ASX               Pyrollidone carboxylic acid   PCA
-C Basic unknown           BAS               Sarcosine                     SAR
-C Betaine                 BET               Serine                        SER
-C Cysteine                CYS               Taurine                       TAU
-C Cystine                 CYS               Terminator                    TER
-C Formyl                  FOR               Threonine                     THR
-C Glutamic acid           GLU               Thyroxine                     THY
-C Glutamine               GLN               Tryptophan                    TRP
-C GLU/GLN ambiguous       GLX               Tyrosine                      TYR
-C Glycine                 GLY               Unknown                       UNK
-C Heterogen               HET               Valine                        VAL
-C Histidine               HIS               Water                         HOH
+C	This subroutine initialises the common block RBRKAA ready for reading
+C and writing coordinate files. Also, the common blocks associated with 
+C storing the header information are initialised. It should be called only 
+C once from the top of the program.
 C
-C 7.   ATOM IDENTIFIERS FOR AMINO ACIDS
-C                                      
-C      The atom names used follow the IUPAC-IUB rules (ref.  3) except that:
-C * The Greek letter remoteness codes are transliterated as follows:
-C                                                                  
-C        alpha - A       beta - B       gamma - G       delta - D
-C        epsilon - E     zeta - Z       eta - H
-C                                              
-C * Atoms for which soe ambiguity exists in the crystallographic
-C   results are designated A.  This will usually apply only to the
-C   terminal atoms of asparagine and glutamine and to the ring atoms
-C   of histidine.
+C Parameters:
 C
-C   The extra oxygen of the carboxyl terminal amino acid is designated OXT.
+C       NONE
 C
-C     Four characters are reserved for the atom names as follows:
-C                                                             
-C                   1-2   Chemical symbol - right justified
-C                   3     Remoteness indicator (alphabetic)
-C                   4     Branch designator (numeric)
-C                                                    
-C Within each  residue  the  atoms  occur  in  the  order  specified  by  the
-C superscripts in the table below. The "extra" oxygen of the carboxy terminal
-C amino acid is designated OXT.
-C                              
-C 8.   REFERENCES
-C                 
-C (1)  F.C. Bernstein, T.F. Koetzle, G.J.B. Williams, E.F. Meyer,  Jr.,  M.D.
-C      Brice, J.R. Rodgers, O. Kennard, T. Shimanouchi and M. Tasumi, J. Mol.
-C      Biol., 112 , 535-42 (1977).
-C                                  
-C (2)  J. Biol. Chem., 241 , 527, 2491 (1966).
-C                                              
-C (3)  IUPAC-IUB Commission on Biological  Nomenclature.  "Abbreviations  and
-C      Symbols for the Description of the Conformation of Polypeptide Chains.
-C      Tentative Rules (1969)", J. Biol. Chem., 245 , 6489 (1970).
-C                                                                  
-C PART II  -  SUBROUTINES FOR HANDLING BROOKHAVEN FORMAT COORDINATE FILES
-C                                                                        
-C                                                                        
-C 1.   INTRODUCTION 
-C                   
-C      Some subroutines have been written at  the  Daresbury  Laboratory  for
-C reading and writing coordinate records  for  Brookhaven  format  coordinate
-C files. The Brookhaven format defines a standard setting of orthogonal  axes
-C with respect to the crystallographic axes and this is used as the  standard
-C within the CCP protein crystallography program suite. The standard  set  of
-C orthogonal axes XO, YO, ZO is defined as follows:
-C                                                  
-C                                XO  //  a
-C                                YO  //  c* * a
-C                                ZO  //  c*
-C                                           
-C      Coordinates may be held in orthogonal Angstroms with respect to  other
-C axes if required. The subroutine RBROOK, which is used to  read  coordinate
-C data, will return the coordinates as stored. If the CRYST1 card is  present
-C in the file then the matrices for converting between fractional coordinates
-C and orthogonal coordinates in the standard setting will  be  calculated  on
-C the first call to RBROOK. This first call to RBROOK stores the matrices for
-C converting between orthogonal stored coordinates and fractional coordinates
-C if they can be determined. These will be the matrices calculated  from  the
-C CRYST1 card calculated for the standard setting  if  no  SCALE  cards  were
-C present or will be the matrices read and calculated from the SCALE cards if
-C these are present. Thus, when a program  requires  fractional  coordinates,
-C the CRYST1 and/or the SCALE cards must be present if the coordinates are in
-C the standard setting and the SCALE cards must be present if the coordinates
-C are in a non-standard setting.
-C                               
-C 2.   THE SUBROUTINES
-C                     
-C      The following subroutines are available for handling Brookhaven format
-C coordinate files:
-C                  
-C    Reading files
-C                 
-C        . RBINIT    Initialisation call.
-C        . RBROOK    Read a coordinate record.
-C                                             
-C    Writing files
-C                 
-C        . WBROOK    Write a coordinate record.
-C        . RWBFIN    Complete copy of input to output file.
-C                                                          
-C    Converting coordinates
-C                          
-C        . CVFRAC    Convert between orthogonal and fractional coordinates
-C                                                                         
-C      The subroutine RBROOK is used to read coordinates  from  a  Brookhaven
-C format coordinate file in a single pass through the  file.  The  subroutine
-C RBINIT is called  for  initialisation  prior  to  reading  coordinates  via
-C RBROOK.  The  subroutine  RBROOK  also  has  an   option   to   write   the
-C non-ATOM/HETATM records to an output file as they are read from  the  input
-C file. The subroutine WBROOK  is  used  to  write  the  updated  ATOM/HETATM
-C records. The subroutine RWBFIN may be used to copy  all  remaining  records
-C from the input file to the output file. The subroutine CVFRAC may  be  used
-C to convert between orthogonal and fractional coordinates providing that the
-C relevant matrices have been set up by the first call to RBROOK.
+C COMMONS:
 C
-C 3.   EXAMPLE OF READING A FILE
-C                               
-C      The example below outlines the way in which the subroutines RBINIT and
-C RBROOK are used to read coordinates from Brookhaven format coordinate  file
-C (on unit 1)
+C         /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),UNIT(MAXFILESOPEN),
+C                  TYPE(MAXFILESOPEN)
 C
-C C PROGRAM TO READ BROOKHAVEN FILE
-C C ===============================
-C C
-C       CHARACTER*4 ATNAM,RESNAM,RESNO
-C       CHARACTER*1 CHNNAM
-C C
-C C INITIALISATION CALL
-C C
-C       CALL  RBINIT(1)
-C C
-C C READ COORDINATE RECORDS
-C C
-C 10    CALL RBROOK(1,ISER,ATNAM,RESNAM,CHNNAM,IRS,RESNO,IS,X,Y,Z,
-C      *OCC,B,IZ,0,0,6,0,*10,*100)
-C       .
-C       .
-C       process data
-C       .
-C       .
-C       GO TO 10
-C C
-C C END OF FILE REACHED
-C C
-C 100   END
+C           FILESOPEN       no. of current coordinate files open.
+C           LOGUNIT          logical name of file
+C           UNIT            if the file is PDB then the unit is the physical
+C                           channel opened. If CIF then is related to blocks.
+C           TYPE            indicates whether PDB (1,-1) or CIF (2,-2). If
+C                           negative then file is output file.
+C
+C_END_XYZINIT
+C
+C     .. Parameters ..
+      INTEGER MAXFILESOPEN
+      PARAMETER (MAXFILESOPEN=10)
+C     ..
+C     .. Variables in Common ..
+      REAL CELL,CELLAS,RF,RO,RR,VOL
+      INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
+      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1
+      LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
+C     ..
+C     .. Local Scalars ..
+      INTEGER I
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
+     +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
+      COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+      COMMON /RBRKYY/ BROOK(80),WBROOK(80),WBROOK1(80)
+      COMMON /RBRKZZ/ CELL(6),RR(3,3,6),VOL,CELLAS(6)
+      COMMON /ORTHOG/ RO(4,4),RF(4,4),NCODE
+C     ..
+C     .. Save ..
+      SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/,/RBRKZZ/,/ORTHOG/
+C     ..
+
+      FILESOPEN = 0
+
+      DO 10 I=1,MAXFILESOPEN
+        LOGUNIT(I) = ' '
+        UNIT(I) = 0
+        TYPE(I) = 0
+   10 CONTINUE
+
+      DO 20 I=1,6
+        CELL(I) = 0.0
+        CELLAS(I) = 0.0
+   20 CONTINUE
+
+      IFCRYS=.FALSE.
+      IFSCAL=.FALSE.
+      MATRIX=.FALSE.
+      IFHDOUT=.FALSE.
+      NCODE=0
+      ITYP=0
+C
+C
+      DO 30 I=1,3
+        DO 40 J=I+1,4
+          RO(I,J)=0.0
+          RO(J,I)=0.0
+          RF(I,J)=0.0
+          RF(J,I)=0.0
+40      CONTINUE
+        RO(I,I)=1.0
+        RF(I,I)=1.0
+30    CONTINUE
+C
+C
+      RO(4,4)=1.0
+      RF(4,4)=1.0
+
+      DO 50 I=1,80
+        BROOK(I) = ' '
+        WBROOK(I) = ' '
+        WBROOK1(I) = ' '
+50    CONTINUE
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE RBINIT(IUNIT)
+C     ========================
+C
+C_BEGIN_RBINIT
+C
+C      This routine is obsolete and should be removed.
+C
+C_END_RBINIT
+C
+C     .. Parameters ..
+      INTEGER MAXFILESOPEN
+      PARAMETER (MAXFILESOPEN=10)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER IUNIT
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,J
+C     ..
+C     .. Scalars in Common ..
+      INTEGER FILESOPEN,NCODE,ITYP
+      LOGICAL IFHDOUT,IFCRYS,IFSCAL,MATRIX
+C     ..
+C     .. Arrays in Common ..
+      REAL RF,RO
+      INTEGER UNIT,TYPE
+      CHARACTER LOGUNIT*80
+C     ..
+C     .. External Routines ..
+      EXTERNAL XYZINIT,XYZREWD
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
+     +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
+      COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
+C     ..
+C     .. Save Statement ..
+      SAVE /RBRKAA/,/RBRKXX/,/ORTHOG/
+C     ..
+C
+C---- Make sure that XYZINIT is only called once. However, this is not
+C     fool proof
+C
+      DO 10 I=1,10
+        IF (IUNIT .EQ. UNIT(I)) GOTO 20
+   10 CONTINUE
+
+      CALL XYZINIT
+
+   20 CALL XYZREWD(IUNIT)
+      IFCRYS=.FALSE.
+      IFSCAL=.FALSE.
+      MATRIX=.FALSE.
+      NCODE=0
+      ITYP=0
+      IBRKFL=0
+C
+C
+      DO 30 I=1,3
+        DO 40 J=I+1,4
+          RO(I,J)=0.0
+          RO(J,I)=0.0
+          RF(I,J)=0.0
+          RF(J,I)=0.0
+   40   CONTINUE
+        RO(I,I)=1.0
+        RF(I,I)=1.0
+   30 CONTINUE
+      RO(4,4)=1.0
+      RF(4,4)=1.0
+
+
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE XYZOPEN(LOGNAM,RWSTAT,FILTYP,IUNIT,IFAIL)
+C     =====================================================
+C
+C_BEGIN_XYZOPEN
+C
+C      Opens a coordinate file for input or output. The channel number can
+C be determined automatically or set on input. The header info.
+C is also read: cell, orthog. matrix and symmetry.
+C
+C Parameters:
+C
+C         LOGNAM (I)   CHARACTER*(*) but maximum of eight? The logical unit 
+C                                    to which the file is assigned
+C         RWSTAT (I)   CHARACTER*(*) if 'INPUT' then file is readonly
+C                                    if 'OUTPUT' then file is an output file.
+C         FILTYP (I)   CHARACTER*(*) if 'CIF' then the file type is treated as
+C                                    CIF. If 'PDB' then the file type is 
+C                                    treated as PDB. If blank then file type is
+C                                    automatically determined for input files 
+C                                    and for output file the file type will be
+C                                    the same as the first file opened or 
+C                                    defaulted to PDB.
+C         IUNIT  (I/O) INTEGER       If zero then unit is decided else
+C		  	             file opened on that unit
+C                                    checked against previous data if 
+C                                    applicable. NOT used with output files.
+C         IFAIL  (I/O) INTEGER       On input    = 0 stop on failure 
+C                                                = 1 continue on failure
+C
+C                                    On output   unchanged if OK
+C                                                = -1  if error
+C
+C
+C_END_XYZOPEN
+C
+C   
+C     .. Parameters ..
+      INTEGER MAXFILESOPEN
+      PARAMETER (MAXFILESOPEN=10)
+C     ..
+C     .. Arguments ..
+      INTEGER IFAIL,IUNIT
+      CHARACTER*(*) FILTYP,LOGNAM,RWSTAT
+C     ..
+C     .. Variables in Common ..
+      REAL CELL,CELLAS,RF,RO,RR,VOL
+      INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
+      CHARACTER*80 LOGUNIT,BROOK*1,WBROOK*1,WBROOK1*1
+      LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
+C     ..
+C     .. Local Scalars ..
+      REAL ERROR,VOLCHK
+      INTEGER I,II,IORTH,IFILTYP,J,LL
+      CHARACTER BROOKA*80,CHAR*1,ERRLIN*600,FILNAM*255,IE*2,IRTYPE*4
+      CHARACTER*40 ORTH(5)
+C     ..
+C     .. Local Arrays ..
+      REAL P(4,4)
+      CHARACTER IEC(3)*2
+C     ..
+C     .. External Functions ..
+      INTEGER LENSTR
+      LOGICAL CCPEXS
+      EXTERNAL CCPEXS,LENSTR
+C     ..
+C     .. External Routines ..
+      EXTERNAL CCPDPN,CCPERR,CCPUPC,RBFROR,RBRINV,UGTENV
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC ABS
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
+     +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
+      COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+      COMMON /RBRKYY/BROOK(80),WBROOK(80),WBROOK1(80)
+      COMMON /RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
+      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
+C     ..
+C     .. Equivalences ..
+      EQUIVALENCE (IRTYPE,BROOK(1)),(IE,BROOK(5)),(BROOKA,BROOK(1))
+C     ..
+C     .. Save ..
+      SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/,/RBRKZZ/,/ORTHOG/
+C     ..
+C     .. Data Statement ..
+      DATA IEC /'E1','E2','E3'/
+      DATA ORTH/'A // XO, C* // ZO (STANDARD BROOKHAVEN)',
+     *          'B // XO, A* // ZO',
+     *          'C // XO, B* // ZO',
+     *          'HEX A+B // XO, C* // ZO',
+     *          'A* // XO, C // ZO (ROLLETT)'/
+C     ..
+      I = 0
+      II = 0
+      IFILTYP = 1
+      LL = 0
+      CALL CCPUPC(FILTYP)
+      CALL CCPUPC(RWSTAT)
+C
+C---- If too many files opened
+C
+      IF (FILESOPEN .EQ. MAXFILESOPEN) THEN
+        CALL CCPERR(1,' *** ERROR: too many coordinate files open. ***')
+      ENDIF
+C
+C==== If the file is an INPUT file
+C
+      IF (RWSTAT(1:5) .EQ. 'INPUT') THEN
+C
+C---- Check if file exists
+C
+        IF (.NOT.CCPEXS(LOGNAM)) THEN
+          CALL UGTENV(LOGNAM,FILNAM)
+          ERRLIN = ' ERROR: '//FILNAM(1:LENSTR(FILNAM))//
+     .                                        ' does not exist'
+          IF (IFAIL .EQ. 0) THEN
+            CALL CCPERR(1,ERRLIN)
+          ELSE
+            CALL CCPERR(2,ERRLIN)
+            IFAIL = -1
+            GOTO 1000
+          ENDIF
+        ENDIF
+C
+C---- Determine whether CIF or PDB
+C
+        IF (FILTYP(1:1) .EQ. ' ') THEN
+          CALL CCPDPN(IUNIT,LOGNAM,'READONLY','F',LL,IFAIL)
+c          IF (IFAIL .LT. 0) GOTO 1000
+c   10     READ (I,FMT='(A)',END=20) CHAR
+c          IF (CHAR .EQ. '_') THEN
+c            IFILTYP = 2
+c            CLOSE(UNIT=I,STATUS='KEEP')
+c            GOTO 30
+c          ENDIF
+c          GOTO 10
+          
+
+   20     FILESOPEN = FILESOPEN + 1
+          LOGUNIT(FILESOPEN) = LOGNAM
+          UNIT(FILESOPEN) = IUNIT
+          TYPE(FILESOPEN) = 1
+          REWIND IUNIT
+        ENDIF  
+C
+C---- If known as CIF
+C
+   30   IF (FILTYP(1:3).EQ.'CIF' .OR. IFILTYP.EQ.2) THEN
+C  Not yet ready
+          FILESOPEN = FILESOPEN + 1
+          LOGUNIT(FILESOPEN) = LOGNAM
+          TYPE(FILESOPEN) = 2
+        ENDIF
+C
+C---- If known as a PDB file
+C
+        IF (FILTYP(1:3).EQ.'PDB') THEN
+          CALL CCPDPN(IUNIT,LOGNAM,'READONLY','F',LL,IFAIL)
+          IF (IFAIL .LT. 0) GOTO 1000
+          FILESOPEN = FILESOPEN + 1
+          LOGUNIT(FILESOPEN) = LOGNAM
+          UNIT(FILESOPEN) = IUNIT
+          TYPE(FILESOPEN) = 1
+        ENDIF
+C
+C---- Read PDB header info.
+C
+        IF (TYPE(FILESOPEN) .EQ. 1) THEN
+
+   40     READ(UNIT(FILESOPEN),FMT='(80A1)',END=1000)BROOK
+C
+C---- Escape if ATOM card found
+C
+          IF (IRTYPE.EQ.'ATOM') THEN
+            GOTO 1000
+C
+C---- Cell card found - calculate standard orthogonalising matrix
+C     Check if you already have a cell which is inconsistent with 
+C     this one
+C
+          ELSE IF (IRTYPE.EQ.'CRYS') THEN
+            ITYP=1
+            IFCRYS=.TRUE.
+
+            READ(BROOKA,FMT='(6X,3F9.3,3F7.2)')CELL
+
+            CALL RBFROR
+            IF(NCODE.EQ.0)NCODE=1
+
+            DO 60 I=1,3
+              DO 60 J=1,3
+                RO(I,J)=RR(I,J,NCODE)
+   60       CONTINUE
+
+            RO(4,4)=1.0
+            CALL RBRINV(RO,RF)
+            MATRIX=.TRUE.
+
+            CALL CCPERR(4,
+     +          ' MATRICES DERIVED FROM CRYST1 CARD IN COORDINATE FILE')
+            CALL CCPERR(4,' ')
+            CALL CCPERR(4,' ')
+            CALL CCPERR(4,
+     +             '            RF                                  RO')
+            CALL CCPERR(4,' ')
+            DO 70 I=1,4
+              WRITE(ERRLIN,FMT='(1X,4F8.3,5X,4F8.3)')(RF(I,J),J=1,4),
+     +                                           (RO(I,K),K=1,4)
+              CALL CCPERR(4,ERRLIN)
+   70       CONTINUE
+            CALL CCPERR(4,' ')
+            GO TO 40
+C
+C---- Scale cards - extract and calculate rotation and trans matrices
+C
+          ELSE IF (IRTYPE.EQ.'SCAL') THEN
+            ITYP=2
+            MATRIX=.FALSE.
+            DO 80 I=1,3
+              IF(IE.NE.IEC(I))GO TO 80
+              READ(BROOKA,FMT='(10X,3F10.6,5X,F10.6)')
+     +                              P(I,1),P(I,2),P(I,3),P(I,4)
+              II = II + 1
+              GO TO 90
+   80       CONTINUE
+
+   90       IF(II.NE.3)GO TO 40
+            MATRIX=.TRUE.
+            DO 100 I=1,3
+              DO 100 J=1,4
+                RF(I,J)=P(I,J)
+  100       CONTINUE
+C
+C---- Find orthogonalisation type
+C
+            CALL RBRINV(RF,RO)
+            VOLCHK = RO(1,1)*(RO(2,2)*RO(3,3) - RO(2,3)*RO(3,2))
+     +             + RO(1,2)*(RO(2,3)*RO(3,1) - RO(2,1)*RO(3,3))
+     +             + RO(1,3)*(RO(2,1)*RO(3,2) - RO(2,2)*RO(3,1))
+
+            ERROR = ABS(VOLCHK - VOL) /VOL
+            IF (ERROR .GT. 0.02) then
+              WRITE (ERRLIN,'(A,F15.4)')
+     +        ' Unit cell volume generated from SCALEi cards', VOLCHK
+              CALL CCPERR(2,ERRLIN)
+              WRITE (ERRLIN,'(A,F15.4)')
+     +        ' Percentage error is                        ', ERROR
+              CALL CCPERR(2,ERRLIN)
+            END IF
+
+            IF (ERROR .GT. 0.1) call ccperr(1,
+     +  ' stop in rwbrook.for - disagreement between cell and PDB file')
+
+            DO 110 IORTH=1,6
+              DO 120 I=1,3
+                DO 120 J=1,3
+                  IF(ABS(RO(I,J)-RR(I,J,IORTH)).GT.0.001)GO TO 110
+  120         CONTINUE
+              GO TO 130
+  110       CONTINUE
+            IORTH=0
+  130       NCODE=IORTH
+C
+C---- Correct inaccuracy of SCALEi input due to FORMAT, replace RF,RO 
+C     with RR(...,NCODE) if possible.
+C
+            IF(NCODE.GT.0) THEN
+              DO 140 I = 1,3
+                DO 140 J = 1,3
+                  RO(I,J) = RR(I,J,NCODE)
+  140         CONTINUE
+              CALL RBRINV(RO,RF)
+            END IF
+
+            CALL CCPERR(4,' ')
+            CALL CCPERR(4,
+     +        ' MATRICES DERIVED FROM SCALE CARDS IN COORDINATE FILE')
+            CALL CCPERR(4,' ')
+            CALL CCPERR(4,' ')
+            CALL CCPERR(4,
+     +          '            RF                                   RO')
+            CALL CCPERR(4,' ')
+            DO 150 I=1,4
+              WRITE(ERRLIN,FMT='(1X,4F8.3,5X,4F8.3)')(RF(I,J),J=1,4),
+     +                                           (RO(I,K),K=1,4)
+              CALL CCPERR(4,ERRLIN)
+  150       CONTINUE
+            CALL CCPERR(4,' ')
+
+            IF (IORTH .GT. 0) THEN
+              CALL CCPERR(4,' ')
+              WRITE(ERRLIN,FMT='(A,A)')'  ORTHOGONALISATION CODE: ',
+     +                   ORTH(IORTH)
+              CALL CCPERR(4,ERRLIN)
+              CALL CCPERR(4,' ')
+            ENDIF
+
+            IF (P(1,4).NE.0 .OR. P(2,4).NE.0 .OR. P(3,4).NE.0) THEN
+              CALL CCPERR(4,' ')
+              CALL CCPERR(4,' TRANSLATIONS ALSO SPECIFIED')
+              CALL CCPERR(4,' ')
+            ENDIF
+            GO TO 1000
+          ELSE
+            GOTO 40
+          ENDIF
+        ENDIF
+C
+C==== If the file is an OUTPUT file
+C
+      ELSE
+
+        IFILTYP = 1
+        IF (FILTYP(1:1).EQ.' ' .AND. FILESOPEN.GT.1) THEN
+          IF (ABS(TYPE(1)).EQ.1 .OR. ABS(TYPE(1)).EQ.2) THEN
+            IFILTYP = ABS(TYPE(1))
+          ELSE
+            IFILTYP = 1
+          ENDIF
+        ENDIF
+
+        IF (FILTYP(1:3) .EQ. 'CIF') IFILTYP = 2 
+        IF (FILTYP(1:3) .EQ. 'PDB') IFILTYP = 1
+C
+C---- Open output PDB file
+C
+        IF (IFILTYP .EQ. 1) THEN
+          CALL CCPDPN(IUNIT,LOGNAM,'NEW','F',LL,IFAIL)
+          IF (IFAIL .LT. 0) GOTO 1000
+          FILESOPEN = FILESOPEN + 1
+          LOGUNIT(FILESOPEN) = LOGNAM
+          UNIT(FILESOPEN) = IUNIT
+          TYPE(FILESOPEN) = -1
+        ENDIF
+
+        IF (IFILTYP .EQ. 2) THEN
+C Not yet ready
+          FILESOPEN = FILESOPEN + 1
+          LOGUNIT(FILESOPEN) = LOGNAM
+          TYPE(FILESOPEN) = -2
+        ENDIF
+
+      ENDIF
+
+ 1000 IF (TYPE(FILESOPEN) .EQ. 1) REWIND UNIT(FILESOPEN)
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE XYZCLOSE(IUNIT)
+C     ==========================
+C
+C_BEGIN_XYZCLOSE
+C
+C	This subroutine closes a coordinate file. 
+C
+C Parameters:
+C
+C         IUNIT  (I)   INTEGER    Unit number for file
+C
+C_END_XYZCLOSE
+C
+C     .. Parameters ..
+      INTEGER MAXFILESOPEN
+      PARAMETER (MAXFILESOPEN=10)
+C     ..
+C     .. Arguments ..
+      INTEGER IUNIT
+C     ..
+C     .. Variables in Common ..
+      INTEGER FILESOPEN, UNIT, TYPE
+      CHARACTER*80 LOGUNIT
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,II
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
+     +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
+C     ..
+C     .. Save ..
+      SAVE /RBRKAA/
+C     ..
+C
+      II = 0
+
+      DO 10 I=1,FILESOPEN
+        IF (UNIT(I) .EQ. IUNIT) THEN
+          II = I
+          GOTO  20
+        ENDIF
+   10 CONTINUE
+
+   20 IF (II .NE. 0) THEN
+        IF (TYPE(II) .EQ. -1) CALL WREMARK(IUNIT,'END')
+        CLOSE(UNIT=IUNIT,STATUS='KEEP')
+
+        IF (FILESOPEN.NE.1 .AND. II.NE.FILESOPEN) THEN
+          LOGUNIT(II) = LOGUNIT(FILESOPEN)
+          UNIT(II) = UNIT(FILESOPEN)
+          TYPE(II) = TYPE(FILESOPEN)
+        ENDIF
+        FILESOPEN = FILESOPEN - 1
+      ENDIF
+
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE XYZADVANCE(IUNIT,IOUT,ITER,*,*)
+C     ==========================================
+C
+C_BEGIN_XYZADVANCE
+C
+C	This subrouitne reads recognised data lines into a buffer. Optionally, 
+C if the card is unrecognised (eg REMARK) then the line can be echoed to an 
+C output file.
+C
+C Parameters:
+C
+C       IUNIT  (I) Channel number of the input coordinate file
+C
+C      These arguments are not relevant for output files.
+C        IOUT (I) Logical unit number to which non-atom/hetatm/anisou records 
+C                 are to be be written (may be blank if reading only)
+C        ITER (I) FLAG =1, return if 'ter' card found (via return 1)
+C                      =0, do not return when 'ter' card found
+C      RETURN 1   Return on TER card if ITER=1
+C      RETURN 2   Return on end of file.
+C
+C_END_XYZADVANCE
+C
+C     .. Paramters ..
+      INTEGER MAXFILESOPEN
+      PARAMETER (MAXFILESOPEN=10)
+C     ..
+C     .. Arguments ..
+      INTEGER IOUT,ITER,IUNIT
+C     ..
+C     .. Variables in Common ..
+      REAL CELL,CELLAS,RF,RO,RR,VOL
+      INTEGER FILESOPEN,NCODE,TYPE,UNIT
+      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1
+      LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
+C     ..
+C     .. Local Variables ..
+      INTEGER I,II
+      CHARACTER*80 ERRLIN,BROOKA,BROOKB
+      CHARACTER*4 ITYPE(7)
+C     ..
+C     .. External Routines ..
+      EXTERNAL CCPERR,WREMARK
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
+     +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
+      COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+      COMMON /RBRKYY/ BROOK(80),WBROOK(80),WBROOK1(80)
+      COMMON /RBRKZZ/ CELL(6),RR(3,3,6),VOL,CELLAS(6)
+      COMMON /ORTHOG/ RO(4,4),RF(4,4),NCODE
+C     ..
+C     .. Equivalences ..
+      EQUIVALENCE (BROOKA,BROOK(1)),(BROOKB,WBROOK(1))
+C     ..
+C     .. Save Statement ..
+      SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/,/RBRKZZ/,/ORTHOG/
+C     ..
+C     .. Data Statements ..
+      DATA ITYPE/'CRYS','SCAL','TER ','ATOM','HETA','ANIS','END '/
+C     ..
+      II = 0
+      DO 10 I=1,FILESOPEN
+        IF (IUNIT .EQ. UNIT(I)) THEN
+          II = I
+          GOTO 15
+        ENDIF
+   10 CONTINUE
+
+      ERRLIN = ' ERROR: in XYZADVANCE file has not been opened'
+      CALL CCPERR(1,ERRLIN)
+C
+C==== If input PDB file
+C      
+   15 IF (TYPE(II) .EQ. 1) THEN
+   20   READ (UNIT(II),FMT='(80A1)',END=100) BROOK
+        DO 30 I=1,7
+          IF (ITYPE(I) .EQ. BROOKA(1:4)) THEN
+            ITYP = I
+            GOTO 40
+          ENDIF
+   30   CONTINUE
+        IF (IOUT.GT.0) CALL WREMARK(IOUT,BROOKA)
+        GOTO 20
+   40   IF (BROOKA(1:4) .EQ. 'CRYS') THEN
+          IF (IOUT .GT. 0) THEN
+            CALL WREMARK(IOUT,BROOKA)
+            IFHDOUT = .TRUE.
+          ENDIF
+          GOTO 20
+        ELSE IF (BROOKA(1:4) .EQ. 'SCAL') THEN
+          IF (IOUT .GT. 0) CALL WREMARK(IOUT,BROOKA)
+          GOTO 20
+        ELSE IF (BROOKA(1:3) .EQ. 'END') THEN
+          ITYP = 0
+          RETURN 2
+        ELSE IF (BROOKA(1:3) .EQ. 'TER') THEN
+          IF (ITER .EQ. 0) THEN
+            IF (IOUT .NE. 0) CALL WREMARK(IOUT,BROOKA)
+            GOTO 20
+          ELSE
+            RETURN 1
+          ENDIF
+        ENDIF
+C
+C---- Put input buffer into output buffer as some cards maybe just be 
+C     written out as is.
+C
+        IF (ITYP.EQ.4 .OR. ITYP.EQ.5) THEN
+          DO 50 I=1,80
+            WBROOK(I) = BROOK(I)
+   50     CONTINUE
+        ELSE IF (ITYP .EQ. 6) THEN
+          DO 60 I=1,80
+            WBROOK1(I) = BROOK(I)
+   60     CONTINUE
+        ENDIF
+C
+C==== If output PDB
+C
+      ELSE IF (TYPE(II) .EQ. -1) THEN
+        IF (.NOT.IFHDOUT .AND. IFCRYS) THEN
+          WRITE (UNIT(II),1000) CELL
+          WRITE (UNIT(II),2000) (I,(RF(I,J),J=1,3),I=1,3)
+          IFHDOUT = .TRUE.
+        ENDIF
+
+        IF (BROOKB .NE. ' ') THEN
+          IF (ITYP .EQ. 0) THEN
+            BROOKB(1:4) = 'ATOM'
+          ELSE
+            BROOKB(1:6) = ITYPE(ITYP)
+          ENDIF
+          WRITE(UNIT(II),FMT='(80A1)') WBROOK
+        ENDIF
+        IF (WBROOK1(1) .NE. ' ') THEN
+          DO 70 I=7,27
+            WBROOK1(I) = WBROOK(I)
+   70     CONTINUE
+          DO 80 I=73,80
+            WBROOK1(I) = WBROOK(I)
+   80     CONTINUE
+          WRITE(UNIT(II),FMT='(80A1)') WBROOK1
+        ENDIF
+        DO 90 I=1,80
+          WBROOK(I) = ' '
+          WBROOK1(I) = ' '
+   90   CONTINUE
+      ENDIF
+
+      RETURN
+C
+C---- End of file but without having END card
+C
+  100 RETURN 2
+ 1000 FORMAT('CRYST1',3F9.3,3F7.2)
+ 2000 FORMAT( 2('SCALE',I1,4X,3F10.5,5X,'   0.00000',/),
+     $          'SCALE',I1,4X,3F10.5,5X,'   0.00000')
+      END
+C
+C
+C
+      SUBROUTINE XYZATOM(IUNIT,ISER,ATNAM,RESNAM,CHNNAM,IRESN,
+     *RESNO,INSCOD,ALTCOD,SEGID,IZ,ID)
+C     ========================================================
+C
+C_BEGIN_XYZATOM
+C
+C	This subroutine reads or writes the atom name, residue name, 
+C chain name etc. into the buffer. XYZADVANCE actually advances a line 
+C or atom. The character strings have undefined length in order to make 
+C change easier. However, these data items will be strictly defined in 
+C the working format.
+C
+C Parameters:
+C
+C       IUNIT  (I)  Logical unit of the input coordinate file
+C        ISER (I/O) Atom serial number
+C       ATNAM (I/O) Atom name        (left justified)
+C      RESNAM (I/O) Residue name     
+C      CHNNAM (I/O) Chain name       
+C       IRESN (I/O) Residue number as an integer
+C       RESNO  (O)  Residue number as character, NOT used for output file
+C      INSCOD (I/O) The insertion code
+C      ALTCOD (I/O) The alternate conformation code.
+C       SEGID (I/O) Segid is here to complete PDB standard.
+C          IZ  (O)  Atomic number (returned as 7 from ambiguous atoms),
+C                   NOT used for output file
+C          ID (I/O) Atomic ID related to atomic number (element symbol
+C                   right justified), plus the ionic state +2, +3 etc..
+C
+C_END_XYZATOM
+C     
+C     .. Paramters ..
+      INTEGER MAXFILESOPEN
+      PARAMETER (MAXFILESOPEN=10)
+C     ..
+C     .. Arguments ..
+      INTEGER IRESN,ISER,IUNIT,IZ
+      CHARACTER*(*) RESNO,ATNAM,RESNAM,CHNNAM
+      CHARACTER*(*) ID,INSCOD,ALTCOD,SEGID
+C     ..
+C     .. Variables in Common ..
+      INTEGER FILESOPEN,ITYP,UNIT,TYPE
+      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1
+      LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
+C     ..
+C     .. Local Scalars ..
+      REAL B(6),OCC,X,Y,Z
+      INTEGER I,II
+      CHARACTER*100 ERRLIN
+      CHARACTER BROOKA*80,PDBATN*4,PDBRESN*4,PDBCHN*1,PDBID*4,
+     +          PDBRESNO*5,PDBSEGID*4
+
+C     ..
+C     .. External Routines/Functions ..
+      EXTERNAL CCPERR,PDBREAD
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
+     +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
+      COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+      COMMON /RBRKYY/ BROOK(80),WBROOK(80),WBROOK1(80)
+C     ..
+C     .. Equivalences ..
+      EQUIVALENCE (BROOKA,WBROOK(1))
+C     ..
+C     .. Save ..
+      SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/
+C     ..
+c
+      II = 0
+
+      DO 10 I=1,FILESOPEN
+        IF (IUNIT .EQ. UNIT(I)) THEN
+          II = I
+          GOTO 20
+        ENDIF
+   10 CONTINUE
+
+      ERRLIN = ' ERROR: in XYZATOM file has not been opened'
+      CALL CCPERR(1,ERRLIN)
+C
+C==== Input PDB file
+C
+   20 IF (TYPE(II) .EQ. 1) THEN
+        ATNAM = ' '
+        RESNAM = ' '
+        CHNNAM = ' '
+        RESNO = ' '
+        ID = ' '
+        INSCOD = ' '
+        ALTCOD = ' '
+        SEGID = ' '
+        CALL PDBREAD(ISER,PDBATN,PDBRESN,PDBCHN,IRESN,PDBRESNO,
+     +               X,Y,Z,OCC,B,IZ,PDBSEGID,PDBID)
+        ATNAM = PDBATN
+        RESNAM = PDBRESN
+        CHNNAM = PDBCHN
+        RESNO = PDBRESNO(1:4)
+        INSCOD = PDBRESNO(5:5)
+        ID = PDBID
+        SEGID = PDBSEGID
+C
+C==== Output PDB file
+C
+      ELSE IF (TYPE(II) .EQ. -1) THEN
+        IF (ITYP .EQ. 0) BROOKA(1:6) = 'ATOM  '
+        BROOKA(17:17) = ALTCOD(1:1)
+        IF (ID(1:1) .EQ. ' ') THEN
+          BROOKA(12:13) = '  '
+          BROOKA(14:17) = ATNAM(1:4)
+        ELSE
+          BROOKA(12:12) = ' '
+          BROOKA(13:16) = ATNAM(1:4)
+        ENDIF
+        WRITE(PDBRESNO,FMT='(I5)') ISER
+        BROOKA(7:11) = PDBRESNO
+        BROOKA(18:20) = RESNAM
+        BROOKA(21:21) = ' '
+        BROOKA(22:22) = CHNNAM
+        WRITE(BROOKA(23:26),FMT='(I4)') IRESN
+        BROOKA(27:27) = INSCOD
+        BROOKA(28:30) = '   '
+        BROOKA(67:72) = '     '
+        BROOKA(73:76) = SEGID
+        BROOKA(77:80) = ID
+
+      ELSE
+C Not yet ready
+      ENDIF
+
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE XYZCOORD(IUNIT,XFLAG,BFLAG,X,Y,Z,OCC,BISO,B)
+C     =======================================================
+C
+C_BEGIN_XYZCOORD
+C
+C	This subroutine reads or writes x, y, z, occupancy and b from/to 
+C the internal buffer. The buffer is updated from the file by 
+C XYZADVANCE. The coordinates can be input/output (to the subroutine) 
+C as orthogonal or fractional. The anisotropic temperature factors can be 
+C input/output as orthogonal Us or as crystallographic bs. These are 
+C defined below;
+C T(aniso) = U(11)*H**2 + U(22)*K**2 + 2*U(12)*H*K + ...
+C where H,K,L are orthogonal reciprocal lattice indecies.
+C T(aniso) = b(11)*h**2 + b(22)*k**2 + b(33)*k**2 + b(12)*h*k ...    and
+C Biso     = 8*PI**2 (U(11) + U(22) + U(33)) / 3.0
+C
+C Parameters:
+C
+C       IUNIT  (I)  Channel number of the input coordinate file
+C       XFLAG  (I)  For input file
+C                     ='F' will get fractional coords. 
+C                     ='O' will get orthogonal coords.
+C                   For output file
+C                     ='F' passed coordinates are fractional
+C                     ='O' passed coordinates are orthogonal
+C       BFLAG  (I)  For input file
+C                     ='B' will get crystallographic bs
+C                     ='U' will get orthogonal Us.
+C                   For output file
+C                     ='B' have crystallographic bs
+C                     ='U' have othogonal Us
+C           X (I/O) Coordinates (orthogonal angstrom coordinates as
+C           Y (I/O)     "        stored)
+C           Z (I/O)     "
+C         OCC (I/O) Occupancy
+C        BISO  (O)  Isotropic temperature factor, NOT used for output file.
+C        B(6) (I/O) Anisotropic temperature factor, unless only B(1) defined.
+C
+C_END_XYZCOORD
+C     
+C     .. Paramters ..
+      INTEGER MAXFILESOPEN
+      PARAMETER (MAXFILESOPEN=10)
+C     ..
+C     .. Arguments ..
+      REAL B(6),BISO,X,Y,Z
+      INTEGER IUNIT
+      CHARACTER*1 BFLAG,XFLAG
+C     ..
+C     .. Variables in Common ..
+      INTEGER FILESOPEN,ITYP,UNIT,TYPE
+      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1
+      LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
+C     ..
+C     .. Local Scalars ..
+      REAL EIGHTPI2,XX,YY,ZZ
+      INTEGER I,II
+      INTEGER IRESN,ISER,IZ
+      CHARACTER*100 ERRLIN
+      CHARACTER ATNAM*4,RESNAM*4,RESNO*4,ID*4,CHNNAM*1,SEGID*4
+      CHARACTER*80 BROOKA,BROOKB
+C     ..
+C     .. External Routines/Functions ..
+      EXTERNAL CCPERR,CCPUPC,CVANISOB,CVFRAC2,PDBREAD
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC ABS,NINT
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
+     +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
+      COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+      COMMON /RBRKYY/ BROOK(80),WBROOK(80),WBROOK1(80)
+C     ..
+C     .. Equivalences ..
+      EQUIVALENCE (BROOKA,WBROOK(1)),(BROOKB,WBROOK1(1))
+C     ..
+C     .. Save ..
+      SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/
+C     ..
+C     .. Data Statement ..
+      DATA EIGHTPI2 /78.956835/
+C     ..
+      CALL CCPUPC(XFLAG)
+      CALL CCPUPC(BFLAG)
+
+      II = 0
+      DO 10 I=1,FILESOPEN
+        IF (IUNIT .EQ. UNIT(I)) THEN
+          II = I
+          GOTO 20
+        ENDIF
+   10 CONTINUE
+
+      ERRLIN = ' ERROR: in XYZCOORD has not been opened'
+      CALL CCPERR(1,ERRLIN)
+C
+C==== Input PDB file
 C  
-C 4.   EXAMPLE OF READING A FILE AND WRITING A MODIFIED FILE
-C                                                           
-C      The following example reads in a set of coordinates and processes them
-C (e.g. in a refinement). The input file is then re-read and an  output  file
-C is created with the updated coordinate data.
-C                                             
-C C PROGRAM TO READ AND UPDATE A BROOKHAVEN COORDINATE FILE
-C C =======================================================
-C C
-C C SPECIFICATION STATEMENTS
-C C
-C       CHARACTER*4 ATNAM(1000),RESNAM(1000),RESNO
-C       CHARACTER*1 CHNNAM
-C       DIMENSION X(1000),Y(1000),Z(1000)
-C C
-C C READ COORDINATES FROM UNIT 1 AND STORE THEM
-C C
-C       N=0
-C       CALL RBINIT(1)
-C 10    N=N+1
-C       CALL RBROOK(1,ISER,ATNAM(N),RESNAM(N),CHNNAM,IRESN,RESNO,IS,
-C      *X(N),Y(N),Z(N),OCC,B,IZ,0,0,6,0,*10,*100)
-C       GO TO 10
-C C
-C C REFINE COORDINATES
-C C
-C 100   NMAX=N-1
-C       .
-C       .
-C       refine coordinate values
-C       .
-C       .
-C C
-C C WRITE UPDATED COORDINATE FILE (UNIT 2)
-C C
-C       CALL RBINIT(1)
-C       DO 150 N=1, NMAX
-C       CALL RBROOK(1,ISER,ATNAM(N),RESNAM(N),CHNNAM,IRES,RESNO,IS,X,Y,Z,
-C      *OCC,B,IZ,2,0,6,0,*200,*200)
-C       CALL WBROOK(2,ISER,ATNAM(N),RESNAM(N),CHNNAM,IRES,IS,X(N),Y(N),Z(N),
-C      *OCC,B,IZ)
-C 150   CONTINUE
-C C
-C C COPY ANY REMAINING RECORDS TO OUTPUT FILE
-C C
-C 200   CALL RWBFIN(1,2)
-C       END
+   20 IF (TYPE(II) .EQ. 1) THEN
+        CALL PDBREAD(ISER,ATNAM,RESNAM,CHNNAM,IRESN,RESNO,
+     +               X,Y,Z,OCC,B,IZ,SEGID,ID)
 C
-C  
-C 5.   COMMON BLOCKS USED BY THE SUBROUTINES
-C                                            
-C       The following common blocks are used to pass information between  the
-C subroutines and to hold the contents of the last record read from an  input
-C file via RBROOK:
+C---- Convert x,y,z to fractional if necessary
 C
-C   LOGICAL IFCRYS,IFSCAL,IFEND,MATRIX
-C   COMMON /RBRKXX/ IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
+        IF (XFLAG .EQ. 'F') THEN
+          IF (MATRIX) THEN
+            CALL CVFRAC2(X,Y,Z,XX,YY,ZZ,1)
+            X = XX
+            Y = YY
+            Z = ZZ
+          ELSE
+            CALL CCPERR(1,'*** Cannot convert to fractional coord. ***')
+          ENDIF
+        ENDIF
 C
-C   Arguments:    IFCRYS  Flag set to .TRUE. if CRYST1 card read, otherwise
-C                           .FALSE.
-C                   IFSCAL  Flag set to .TRUE. if SCALE cards read, otherwise
-C                           .FALSE.
-C                    IFEND  Flag set  to  .TRUE.  if  end  of  file  reached,
-C                           otherwise .FALSE.
-C                     ITYP  Type of last card read.
-C                           =0, No card read.
-C                           =1, 'CRYST1'
-C                           =2, 'SCALE'
-C                           =3, 'TER'
-C                           =4, 'ATOM'
-C                           =5, 'HETATM'
-C                   MATRIX  Flag  set  to  .TRUE.  if   orthogonalising   and
-C                           fractionalising matrices set, otherwise .FALSE.
+C---- Calulate isotropic B from Us, if necessary convert.
 C
-C   CHARACTER*1 BROOK
-C   COMMON /RBRKYY/ BROOK(72)
+        IF (B(2).NE.0.0 .AND. B(3).NE.0.0) THEN
+          BISO = EIGHTPI2 * (B(1)+B(2)+B(3))/3.0
+          IF (BFLAG.EQ.'B') CALL CVANISOB(B,1)
 C
-C   Arguments:     BROOK  Character array  holding  the  last  record  read
-C                           (columns 1-72)
-C                                         
-C   COMMON /RBRKZZ/ CELL(6),RR(3,3,5)
-C                                    
-C   Arguments:      CELL  Array holding cell dimensions  read  from  CRYST1
-C                           card if read (check IFCRYS)
-C                       RR  Array  holding  some   common   orthogonalisation
-C                           matrices calculated if  CRYST1  cards  was  read.
-C                           (See description of NCODE in common ORTHOG)
-C                                                                      
-C   COMMON /ORTHOG/ RO(4,4),RF(4,4),NCODE,IBRKFL
-C                                               
-C   Arguments:        RO  Orthogonalising matrix (only  set  if  CRYST1  or
-C                           SCALE cards read (check the flag MATRIX)
-C                       RF  Fractionalising matrix (only  set  if  CRYST1  or
-C                           SCALE cards read (check the flag MATRIX)
-C                    NCODE  Flag  indicating  setting  found,   =0   if   not
-C                           recognised.
-C                           =1, a // XO,  c* // ZO (Standard Brookhaven)
-C                           =2, b // XO,  a* // ZO
-C                           =3, c // XO,  b* // ZO
-C                           =4, Hexagonal a + b // XO, c* // ZO
-C                           =5, a* // XO, c // ZO (Rollett)
-C                   IBRKFL  Flag = 0, Brookhaven file, non-zero reserved  for
-C                           some other type.
+C---- Go here if no anisotropic B
 C
-C 7. Subroutines in RWBROOK:
+        ELSE
+          BISO = B(1)
+        ENDIF
 C
-C_END_RWBROOK
+C==== Output PDB file
+C
+      ELSE IF (TYPE(II) .EQ. -1) THEN
+        IF (XFLAG .EQ. 'F') THEN
+          IF (MATRIX) THEN
+            CALL CVFRAC2(X,Y,Z,XX,YY,ZZ,0)
+          ELSE
+            CALL CCPERR(1,
+     .      '*** Cannot convert from fract. to ortho. coordinates ***')
+          ENDIF
+        ELSE
+          XX = X
+          YY = Y
+          ZZ = Z
+        ENDIF
+C
+C---- Check for anisotropic temperature factors
+C
+        IF (B(2).NE.0.0 .OR. B(3).NE.0.0) THEN
+          IF (BFLAG .EQ. 'B') CALL CVANISOB(B,0)
+          BISO = EIGHTPI2 * (B(1)+B(2)+B(3))/3.0
+
+          BROOKB(1:6) = 'ANISOU'
+          WRITE(BROOKB(29:70),FMT='(6I7)') (NINT(B(I)*1.0E+04),I=1,6)
+        ELSE
+          BISO = B(1)
+        ENDIF
+
+        WRITE(BROOKA(31:66),FMT='(3F8.3,2F6.2)') XX,YY,ZZ,OCC,BISO
+          
+      ELSE
+C Not yet ready
+      ENDIF
+
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE XYZREWD(IUNIT)
+C     =========================
+C
+C_BEGIN_XYZREWD
+C
+C	This routine is resets pointer to the begining of the file ie.
+C rewind the file.
+C
+C Parameters:
+C
+C      IUNIT  (I) INTEGER  Channel number for file.
+C
+C_END_XYZREWD
+C
+C     .. Parameters ..
+      INTEGER MAXFILESOPEN
+      PARAMETER (MAXFILESOPEN=10)
+C     ..
+C     .. Arguments ..
+      INTEGER IUNIT
+C     ..
+C     .. Variables in Common ..
+      INTEGER FILESOPEN,TYPE,UNIT
+      CHARACTER*80 LOGUNIT
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,II
+      CHARACTER*100 ERRLIN
+C     ..
+C     .. External Functions/Routines ..
+      EXTERNAL CCPERR
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC ABS
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
+     +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
+C     ..
+C     .. Save ..
+      SAVE /RBRKAA/
+C     ..
+      II = 0
+      DO 10 I=1,FILESOPEN
+        IF (IUNIT .EQ. UNIT(I)) THEN
+          II = I
+          GOTO 20
+        ENDIF
+   10 CONTINUE
+
+      ERRLIN = ' ERROR: in XYZREWD file has not been opened'
+      CALL CCPERR(1,ERRLIN)
+
+   20 IF (ABS(TYPE(II)) .EQ. 1) THEN
+        REWIND UNIT(II)
+        IF (TYPE(II) .EQ. -1) CALL CCPERR(2,
+     +    ' WARNING: you are rewinding an output file!!')
+      ENDIF
+
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE XYZBKSP(IUNIT)
+C     =========================
+C
+C_BEGIN_XYZBKSP
+C
+C	This routine is the opposite to XYZADVANCE in that it retreats 
+C one atom ie. backspacing.
+C
+C Parameters:
+C
+C      IUNIT  (I) INTEGER  Channel number for file.
+C
+C_END_XYZBKSP
+C
+C     .. Parameters ..
+      INTEGER MAXFILESOPEN
+      PARAMETER (MAXFILESOPEN=10)
+C     ..
+C     .. Arguments ..
+      INTEGER IUNIT
+C     ..
+C     .. Variables in Common ..
+      INTEGER FILESOPEN,TYPE,UNIT
+      CHARACTER*80 LOGUNIT
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,II
+      CHARACTER*100 ERRLIN
+C     ..
+C     .. External Functions/Routines ..
+      EXTERNAL CCPERR
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC ABS
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
+     +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
+C     ..
+C     .. Save ..
+      SAVE /RBRKAA/
+C     ..
+      II = 0
+      DO 10 I=1,FILESOPEN
+        IF (IUNIT .EQ. UNIT(I)) THEN
+          II = I
+          GOTO 20
+        ENDIF
+   10 CONTINUE
+
+      ERRLIN = ' ERROR: in XYZBKSP file has not been opened'
+      CALL CCPERR(1,ERRLIN)
+
+   20 IF (ABS(TYPE(II)) .EQ. 1) THEN
+        BACKSPACE UNIT(II)
+        IF (TYPE(II) .EQ. -1) CALL CCPERR(2,
+     +    ' WARNING: you are backspacing an output file!!')
+      ENDIF
+
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE RBROOK(IUNIT,ISER,ATNAM,RESNAM,CHNNAM,IRESN,RESNO,IS,
+     *X,Y,Z,OCC,B,IZ,IOUT,MSG1,MSG2,ITER,*,*)
+C     ================================================================
+C
 C_BEGIN_RBROOK
 C
-      SUBROUTINE RBROOK(IUN,ISER,ATNAM,RESNAM,CHNNAM,IRESN,RESNO,IS,
-     *X,Y,Z,OCC,B,IZ,IOUT,MSG1,MSG2,ITER,*,*)
-C     ==============================================================
+C      This subroutine is obsolete and should be removed. May be 
+C PROBLEM in that routine returns orthogonal coordinates and not fractional
+C ones.
 C
+C_END_RBROOK
 C
-C      The subroutine RBROOK is used to read coordinates  from  a  Brookhaven
-C format coordinate file. The subroutine RBINIT must be called prior to read-
-C ing or re-reading a  file  via  RBROOK.  If  required  the  non-ATOM/HETATM
-C records may be written to an output file as they are read. The  first  call
-C sets up the matrices from the  CRYST1  or  SCALE  cards,  if  present,  for
-C converting between stored orthogonal and fractional coordinates.
+C     .. Scalar Arguments ..
+      REAL X,Y,Z,OCC,B
+      INTEGER IUNIT,ISER,IRESN,IS,IOUT,IZ,MSG1,MSG2,ITER
+      CHARACTER*(*) RESNO
+      CHARACTER ATNAM*4,RESNAM*4,CHNNAM*1
+C     ..
+C     .. Local Scalars ..
+      CHARACTER*4 ID,SEGID
+      CHARACTER*1 INSCOD,ALTCOD
+C     ..
+C     .. Local Arrays ..
+      REAL U(6)
+C     ..
+C     .. External Routines ..
+      EXTERNAL XYZADVANCE,XYZATOM,XYZCOORD
+C     ..
+      IS = 0
+
+   10 CALL XYZADVANCE(IUNIT,IOUT,ITER,*1000,*2000)
+      CALL XYZCOORD(IUNIT,'O','U',X,Y,Z,OCC,B,U)
+C
+C---- Skip ANISOU card in PDB. Test on X, Y and Z are not strictly necessary
+C     as routines can only read PDB currently.
+C
+      IF (U(2).NE.0.0 .AND. U(3).NE.0.0) THEN
+        IF (X.EQ.0.0 .AND. Y.EQ.0.0 .AND. Z.EQ.0.0) GOTO 10
+      ENDIF
+      CALL XYZATOM(IUNIT,ISER,ATNAM,RESNAM,CHNNAM,IRESN,RESNO,INSCOD,
+     +             ALTCOD,SEGID,IZ,ID)
+
+
+      RETURN
+ 1000 RETURN 1
+ 2000 RETURN 2
+      END
+C
+C
+C
+      SUBROUTINE WBROOK(IUNIT,ISER,ATNAM,RESNAM,CHNNAM,IRESN,IS,
+     *X,Y,Z,OCC,B,IZ)
+C     ================================================================
+C
+C_BEGIN_RBROOK
+C
+C      This subroutine is obsolete and should be removed. May be 
+C PROBLEM in that routine does not cater for IS.
+C
+C_END_RBROOK
+C
+C     .. Scalar Arguments ..
+      REAL X,Y,Z,OCC,B
+      INTEGER IUNIT,ISER,IRESN,IS,IZ
+      CHARACTER ATNAM*4,RESNAM*4,CHNNAM*1
+C     ..
+C     .. Local Scalars ..
+      CHARACTER*4 ID,SEGID,RESNO
+      CHARACTER*1 INSCOD,ALTCOD
+C     ..
+C     .. Local Arrays ..
+      REAL U(6)
+C     ..
+C     .. External Routines ..
+      EXTERNAL XYZADVANCE,XYZATOM,XYZCOORD
+C     ..
+      SEGID = ' '
+      ID = ' '
+      INSCOD = ' '
+      ALTCOD = ' '
+      RESNO = ' '
+      DO 10 I=1,6
+        U(I) = 0.0
+   10 CONTINUE
+
+
+      CALL XYZADVANCE(IUNIT,0,0,*1000,*1000)
+      CALL XYZCOORD(IUNIT,'O','U',X,Y,Z,OCC,B,U)
+      CALL XYZATOM(IUNIT,ISER,ATNAM,RESNAM,CHNNAM,IRESN,RESNO,INSCOD
+     +             ALTCOD,SEGID,IZ,ID)
+C
+C---- This label is here for completeness but is not used (see XYZADVANCE).
+C
+ 1000 CONTINUE
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE PDBREAD(ISER,ATNAM,RESNAM,CHNNAM,IRESN,RESNO,
+     *X,Y,Z,OCC,B,IZ,SEGID,ID)
+C     ========================================================
+C
+C_BEGIN_PDBREAD
+C
+C      The subroutine PDBREAD is used to read coordinates from a Brookhaven
+C format coordinate file. This routine should not be used stand alone 
+C but through XYZADVANCE.
 C 
-C Call:  CALL RBROOK(IUN,ISER,ATNAM,RESNAM,CHNNAM,IRESN,RESNO,IS,X,Y,Z,OCC,B,
-C       *IZ,IOUT,MSG1,MSG2,ITER,*label1,*label2)
-C
 C Parameters
 C
-C         IUN (I) Unit no. of the input coordinate file
 C        ISER (O) Atom serial number
 C       ATNAM (O) Atom name        (character*4 left justified)
 C      RESNAM (O) Residue name     (character*4)
@@ -462,32 +1308,21 @@ C       IRESN (O) Residue number as an integer
 C       RESNO (O) Residue number   (character*4 or character*5)
 C                 If character*5 then the 5th character will be the
 C                 insertion code.
-C          IS (O) Reserved flag (ejd). not part of brookhaven defn.
 C           X (O) Coordinates (orthogonal angstrom coordinates as
 C           Y (O)     "        stored)
 C           Z (O)     "
 C         OCC (O) Occupancy
-C           B (O) Temperature factor
+C        B(6) (O) Temperature factor
 C          IZ (O) Atomic number (returned as 7 from ambiguous atoms)
-C        IOUT (I) Unit number to which non-atom/hetatm records are to
-C                 be be written (may be 0 if reading only)
-C        MSG1 (I) unit number for flagging ambiguous/unknown atom types
-C                 (may be 0 if messages are not required)
-C        MSG2 (I) unit no. for listing matrix (if calculated)
-C                 (may be 0 if no listing required)
-C        ITER (I) FLAG =1, return if 'ter' card found (via return 1)
-C                      =0, do not return when 'ter' card found
-C
-C  RETURN 1   RETURN ON 'TER' CARD FOUND (ONLY IF ITER=1)
-C  RETURN 2   RETURN ON END OF FILE FOUND
+C          ID (O) Atomic ID related to atomic number + ionic state. 
+C                 (character*4)
 C
 C  COMMON BLOCKS
 C
-C  COMMON /RBRKXX/IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
+C  COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX
 C
 C      IFCRYS   .TRUE. IF 'CRYST1' CARD READ,  OTHERWISE .FALSE.
 C      IFSCAL   .TRUE. IF 'SCALE' CARDS READ, OTHERWISE .FALSE.
-C      IFEND    .TRUE. IF END OF FILE REACHED, OTHERWISE .FALSE.
 C       ITYP    TYPE OF LAST CARD READ =1, 'CRYST1'
 C                                      =2, 'SCALE'
 C                                      =3, 'TER'
@@ -498,16 +1333,16 @@ C               .FALSE. IF NOT
 C
 C  COMMON /RBRKYY/BROOK(80)
 C
-C      BROOK    CHARACTER*1 ARRAY HOLDING LAST RECORD READ (COLS 1-72)
+C      BROOK    CHARACTER*1 ARRAY WHICH IS THE BUFFER FOR PDB FILES
 C
-c      COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
+C      COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
 C
 C       CELL    CELL DIMENSIONS FROM 'CRYST1' CARD IF READ
 C               (CHECK IFCRYS)
 C         RR    STANDARD ORTHOGONALISING MATRICES CALCULATED IF THE
 C               'CRYST1' CARD WAS READ (CHECK IFCRYS)
 C
-C  COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE,IBRKFL
+C  COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
 C
 C        RO    ORTHOGONALISING MATRIX (ONLY SET IF 'CRYST1' OR 'SCALE'
 C              CARDS PRESENT - CHECK 'MATRIX' FLAG)
@@ -515,27 +1350,59 @@ C        RF    FRACTIONALISING MATRIX (ONLY SET IF 'CRYST1' OR 'SCALE'
 C              CARDS PRESENT - CHECK 'MATRIX' FLAG)
 C     NCODE    FLAG INDICATING SETTING FOUND, 0 IF NOT ONE THAT WAS
 C              RECOGNISED
-C    IBRKFL    =0, BROOKHAVEN FILE, NON-ZERO FOR SOME OTHER TYPE
 C
-C_END_RBROOK
+C_END_PDBREAD
 C
 C
-      LOGICAL IFCRYS,IFSCAL,IFEND,IFTER,MATRIX
-      INTEGER ICELLCK
-      CHARACTER*72 BROOKA
-      CHARACTER*40 ORTH(5)
-      CHARACTER*4 ATNAM,RESNAM,ITYPE(5),IRTYPE
+C     .. Parameters ..
+      INTEGER MAXIATM
+      PARAMETER (MAXIATM=102)
+C     ..
+C     .. Arguments ..
+      REAL B(6),OCC,X,Y,Z
+      INTEGER IRESN,ISER,IZ
       CHARACTER*(*) RESNO
-      CHARACTER*2 IATM(101),IEC(3),IE,IAA,IAT,IHATM(10)
-      CHARACTER*1 ISP,CHNNAM
-      DIMENSION P(4,4),celchk(6)
-      COMMON /RBRKXX/IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
-      CHARACTER*1 BROOK
-      COMMON /RBRKYY/BROOK(80)
+      CHARACTER ATNAM*4,CHNNAM*1,ID*4,RESNAM*4,SEGID*4
+C     ..
+C     .. Variables in Common ..
+      REAL CELL,CELLAS,RF,RO,RR,VOL
+      INTEGER ITYP,NCODE
+      CHARACTER BROOK*1,WBROOK*1,WBROOK1*1
+      LOGICAL IFCRYS,IFSCAL,IFTER,MATRIX,IFHDOUT
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,II,J
+      CHARACTER*100 ERRLIN
+      CHARACTER*80 BROOKA
+      CHARACTER*4 IRTYPE
+      CHARACTER*2 IAA,IAT,IE
+      CHARACTER*1 ISP
+C     ..
+C     .. Local Arrays ..
+      INTEGER IB(6)
+      CHARACTER*40 ORTH(5)
+      CHARACTER*2 IATM(MAXIATM),IHATM(10)
+C     ..
+C     .. External Routines/Functions ..
+      INTEGER LENSTR
+      EXTERNAL CCPERR,CCPUPC,LENSTR
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC ABS
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+      COMMON /RBRKYY/BROOK(80),WBROOK(80),WBROOK1(80)
       COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
-      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE,IBRKFL
+      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
+C     ..
+C     .. Equivalences ..
       EQUIVALENCE (IRTYPE,BROOK(1)),(IE,BROOK(5)),(BROOKA,BROOK(1))
+C     ..
+C     .. Save ..
       SAVE /RBRKXX/,/RBRKYY/,/RBRKZZ/,/ORTHOG/
+C     ..
+C     .. Data Statement ..
       DATA IATM/' H','HE','LI','BE',' B',' C',' N',' O',' F','NE',
      *          'NA','MG','AL','SI',' P',' S','CL','AR',' K','CA',
      *          'SC','TI',' V','CR','MN','FE','CO','NI','CU','ZN',
@@ -546,149 +1413,22 @@ C
      *          'LU','HF','TA',' W','RE','OS','IR','PT','AU','HG',
      *          'TL','PB','BI','PO','AT','RN','FR','RA','AC','TH',
      *          'PA',' U','NP','PU','AM','CM','BK','CF','ES','FM',
-     *          ' D'/
+     *          ' D','AN'/
       DATA IHATM/'0H','1H','2H','3H','4H','5H','6H','7H','8H','9H'/
-      DATA ITYPE/'CRYS','SCAL','TER ','ATOM','HETA'/
-      DATA IEC/'E1','E2','E3'/
       DATA IAA/' A'/,ISP/' '/
       DATA ORTH/'A // XO, C* // ZO (STANDARD BROOKHAVEN)',
      *          'B // XO, A* // ZO',
      *          'C // XO, B* // ZO',
      *          'HEX A+B // XO, C* // ZO',
      *          'A* // XO, C // ZO (ROLLETT)'/
+C      DATA ITYPE/'CRYS','SCAL','TER ','ATOM','HETA','ANIS','END'/
 C
 C
       IFTER=.FALSE.
-      IS=0
-C
-C---- Read next record and branch on record type
-C
-10    READ(IUN,1001,END=600)BROOK
-C
-C---- Cell card found - calculate standard orthogonalising matrix
-C     Check if you already have a cell which is inconsistent with 
-C     this one
-C
-      IF (IRTYPE.EQ.'CRYS') THEN
-        ITYP=1
-        IFCRYS=.TRUE.
-        ICHK=1
-        CELCHK(1)=CELL(1)
-        CELCHK(2)=CELL(2)
-        CELCHK(3)=CELL(3)
-        CELCHK(4)=CELL(4)
-        CELCHK(5)=CELL(5)
-        CELCHK(6)=CELL(6)
-        IF(CELCHK(1).EQ.0.0 .OR. CELCHK(2).EQ.0.0 .OR. CELCHK(3).EQ.0.)
-     +    ICHK=0
-C
-        READ(BROOKA,1003)CELL
-C
-        IF (ICHK.EQ.1) THEN
-          ICELLCK = 0
-          DO 111 I=1,6
-            CELDEL = ABS(CELCHK(I)-CELL(I))/CELCHK(I)
-            IF(CELDEL.GT.0.01)THEN
-              ICELLCK = ICELLCK + 1
-            ENDIF
-111       CONTINUE
-          IF(ICELLCK.GT.0)WRITE(6,987)CELCHK,CELL
- 987      FORMAT(' Inconsistency in cell dimensions (may not matter)',
-     +         2(/,3X,6F10.5))
-        ENDIF
-C
-        CALL RBFROR
-        IF(NCODE.EQ.0)NCODE=1
-C
-        DO 1101 I=1,3
-          DO 110 J=1,3
-            RO(I,J)=RR(I,J,NCODE)
-110       CONTINUE
-1101    CONTINUE
-C
-        RO(4,4)=1.0
-        CALL RBRINV(RO,RF)
-        MATRIX=.TRUE.
-        IF(MSG2.LE.0)GO TO 500
-C
-        WRITE(MSG2,1009)(RF(1,J),J=1,4),(RO(1,K),K=1,4),
-     +                  (RF(2,J),J=1,4),(RO(2,K),K=1,4),
-     +                  (RF(3,J),J=1,4),(RO(3,K),K=1,4),
-     +                  (RF(4,J),J=1,4),(RO(4,K),K=1,4)
-        GO TO 500
-C
-C---- Scale cards - extract and calculate rotation and trans matrices
-C
-      ELSE IF (IRTYPE.EQ.'SCAL') THEN
-        ITYP=2
-        MATRIX=.FALSE.
-        DO 210 I=1,3
-          IF(IE.NE.IEC(I))GO TO 210
-          READ(BROOKA,1004)P(I,1),P(I,2),P(I,3),P(I,4)
-          GO TO 220
-210     CONTINUE
-C
-C
-        GO TO 500
-220     IF(I.NE.3)GO TO 500
-        MATRIX=.TRUE.
-        DO 2351 I=1,3
-          DO 235 J=1,4
-            RF(I,J)=P(I,J)
-235       CONTINUE
-2351    CONTINUE
-C
-C---- Find orthogonalisation type
-C
-        CALL RBRINV(RF,RO)
-        VOLCHK = RO(1,1)*(RO(2,2)*RO(3,3) - RO(2,3)*RO(3,2))
-     +         + RO(1,2)*(RO(2,3)*RO(3,1) - RO(2,1)*RO(3,3))
-     +         + RO(1,3)*(RO(2,1)*RO(3,2) - RO(2,2)*RO(3,1))
-C
-        ERROR = ABS(VOLCHK - VOL) /VOL
-         IF(error.gt.0.02) then
-        WRITE (6,'(//,A,F15.4)')
-     +     ' Unit cell volume generated from SCALEi cards', VOLCHK
-        WRITE (6,'(//,A,F15.4)')
-     +     ' Percentage error is                        ', ERROR
-         END IF
-C
-        IF (ERROR.GT.0.1) call ccperr(1,
-     +  ' stop in rwbrook.for - disagreement between cell and PDB file')
-C
-        DO 250 IORTH=1,6
-          DO 245 I=1,3
-            DO 240 J=1,3
-              IF(ABS(RO(I,J)-RR(I,J,IORTH)).GT.0.001)GO TO 250
-240         CONTINUE
-245       CONTINUE
-          GO TO 255
-250     CONTINUE
-        IORTH=0
-255     NCODE=IORTH
-C   Correct inaccuracy of SCALEi input due to FORMAT, replace RF,RO 
-C    with RR(...,NCODE) if possible.
-        IF(NCODE.GT.0) THEN
-          DO 256 I = 1,3
-          DO 256 J = 1,3
-           RO(I,J) = RR(I,J,NCODE)
-256       CONTINUE
-        CALL RBRINV(RO,RF)
-        END IF
-
-        IF(MSG2.LE.0)GO TO 500
-C
-        WRITE(MSG2,1002)(RF(1,J),J=1,4),(RO(1,K),K=1,4),
-     +                  (RF(2,J),J=1,4),(RO(2,K),K=1,4),
-     +                  (RF(3,J),J=1,4),(RO(3,K),K=1,4),
-     +                  (RF(4,J),J=1,4),(RO(4,K),K=1,4)
-        IF(IORTH.GT.0)WRITE(MSG2,1007)ORTH(IORTH)
-        IF(P(1,4).NE.0.OR.P(2,4).NE.0.OR.P(3,4).NE.0)WRITE(MSG2,1008)
-        GO TO 500
 C
 C---- Atom/hetatm card processing
 C
-      ELSE IF (IRTYPE.EQ.'ATOM' .OR. IRTYPE.EQ.'HETA' .OR.
+      IF (IRTYPE.EQ.'ATOM' .OR. IRTYPE.EQ.'HETA' .OR.
      +       IRTYPE.EQ.'TER ') THEN
         IF (IRTYPE.EQ.'TER ') THEN
 C
@@ -698,9 +1438,12 @@ C
           IFTER=.TRUE.
           GO TO 450
         ENDIF
+        DO 40 I=1,6
+          B(I) = 0.0
+   40   CONTINUE
         IF (IRTYPE.EQ.'ATOM') ITYP=4
         IF (IRTYPE.EQ.'HETA') ITYP=5
-400     READ(BROOKA,1005)IS,X,Y,Z,OCC,B,I
+        READ(BROOKA,1005)X,Y,Z,OCC,B(1)
         IF(BROOK(13).EQ.ISP)GO TO 410
         ATNAM=BROOK(13)//BROOK(14)//BROOK(15)//BROOK(16)
         GO TO 450
@@ -708,166 +1451,180 @@ C
 450     READ(BROOKA,1006)ISER,IRESN
         RESNAM=BROOK(18)//BROOK(19)//BROOK(20)//ISP
         RESNO=BROOK(23)//BROOK(24)//BROOK(25)//BROOK(26)
-        IF(LEN(RESNO).GT.4)RESNO(5:5)=BROOK(27)
+        IF(LENSTR(RESNO).GT.4)RESNO(5:5)=BROOK(27)
         CHNNAM=BROOK(22)
         IF(IFTER)GO TO 500
-C       The commented-out test used to implement this, which caused
-C       confusion with footnotes...
-C [An EJD modification to standard Brookhaven is to check whether the
-C formfactor number is written as an integer in columns 67-70.
-C Keeping the formfactor as an integer saves an appreciable amount of
-C time when reading this clumsy file...]
-C        IF(I.GT.0)GO TO 480
+        SEGID = BROOK(73)//BROOK(74)//BROOK(75)//BROOK(76)
+C
+C---- Find atomic number and ID, ID can be kept in columns 77-80
+C
+        ID = BROOK(77)//BROOK(78)//BROOK(79)//BROOK(80)
+        CALL CCPUPC(ID)
         IAT=BROOK(13)//BROOK(14)
         CALL CCPUPC(IAT)
 C
-        DO 452 I=6,8
-          IF(IAT.EQ.IATM(I))GO TO 480
+        IF (ID(1:2) .EQ. IATM(6)) THEN
+          II = 6
+          GOTO 480
+        ENDIF
+        IF (ID(1:2) .EQ. IATM(7)) THEN
+          II = 7
+          GOTO 480
+        ENDIF
+        IF (ID(1:2) .EQ. IATM(8)) THEN
+          II = 8
+          GOTO 480
+        ENDIF
+        IF (ID(1:2) .EQ. IATM(1)) THEN
+          II = 1
+          GOTO 480
+        ENDIF
+
+        DO 452 I=1,MAXIATM
+          IF (ID(1:2) .EQ. IATM(I)) THEN
+            II = I
+            GOTO 480
+          ENDIF
 452     CONTINUE
 C
-        I=1
+        IF (IAT.EQ.IATM(6)) THEN
+          II = 6
+          GO TO 480
+        ENDIF
+        IF (IAT.EQ.IATM(7)) THEN
+          II = 7
+          GO TO 480
+        ENDIF
+        IF (IAT.EQ.IATM(8)) THEN
+          II = 8
+          GO TO 480
+        ENDIF
+        IF (IAT.EQ.IATM(1)) THEN
+          II = 1
+          GO TO 480
+        ENDIF
 C
+        II=1
         DO 454 J=1,10
-          IF(IAT.EQ.IHATM(J))GO TO 480
+          IF (IAT.EQ.IHATM(J)) GO TO 480
 454     CONTINUE
 C
-        DO 456 I=1,101
-          IF(IAT.EQ.IATM(I))GO TO 480
+        DO 456 I=1,MAXIATM
+          IF (IAT.EQ.IATM(I)) THEN
+            II = I
+            GO TO 480
+          ENDIF
 456     CONTINUE
 C
-        I=0
-        IF(IAT.EQ.IAA)I=7
-        IF(MSG1.GT.0.AND.I.EQ.0)WRITE(MSG1,2001)ATNAM,RESNAM,RESNO(1:4)
-        IF(MSG1.GT.0.AND.I.EQ.7)WRITE(MSG1,2002)ATNAM,RESNAM,RESNO(1:4)
-480     IZ=I
+        II=0
+        IF(IAT.EQ.IAA)II=7
+        IF (I .EQ. 0) THEN
+          WRITE(ERRLIN,2001)ATNAM,RESNAM,RESNO(1:4)
+          CALL CCPERR(4,' ')
+          CALL CCPERR(4,ERRLIN)
+          CALL CCPERR(4,' ')
+        ENDIF
+        IF (I .EQ. 7) THEN
+          WRITE(ERRLIN,2002)ATNAM,RESNAM,RESNO(1:4)
+          CALL CCPERR(4,' ')
+          CALL CCPERR(4,ERRLIN)
+          CALL CCPERR(4,' ')
+        ENDIF
+480     IZ=II
+        IF (IZ .EQ. 0) THEN
+          ID = ' '
+        ELSE
+          ID = IATM(IZ)
+        ENDIF
         RETURN
 C
-C---- Write record to output file if required (unless atom/hetatm)
+C---- AnisoU cards
 C
-      ELSE
-501     IF(IOUT.GT.0)WRITE(IOUT,1001)BROOK
-        IF(ITER.EQ.1.AND.IFTER)RETURN 1
-        IFTER=.FALSE.
+      ELSE IF (IRTYPE .EQ. 'ANIS') THEN
+
+        READ(BROOKA,1010)IB(1),IB(2),IB(3),IB(4),IB(5),IB(6)
+        DO 510 I=1,6
+          B(I) = IB(I)/1.0E+04
+510     CONTINUE
+        IF(BROOK(13).NE.ISP) THEN
+          ATNAM=BROOK(13)//BROOK(14)//BROOK(15)//BROOK(16)
+        ELSE
+          ATNAM=BROOK(14)//BROOK(15)//BROOK(16)//BROOK(17)
+        ENDIF
+        READ(BROOKA,1006)ISER,IRESN
+        RESNAM=BROOK(18)//BROOK(19)//BROOK(20)//ISP
+        RESNO=BROOK(23)//BROOK(24)//BROOK(25)//BROOK(26)
+        IF(LENSTR(RESNO).GT.4)RESNO(5:5)=BROOK(27)
+        CHNNAM=BROOK(22)
+        SEGID = BROOK(73)//BROOK(74)//BROOK(75)//BROOK(76)
+C
+C---- Find atomic number and ID, ID can be kept in columns 77-80
+C
+        ID = BROOK(77)//BROOK(78)//BROOK(79)//BROOK(80)
+        CALL CCPUPC(ID)
+        X = 0.0
+        Y = 0.0
+        Z = 0.0
+C
+        RETURN        
       ENDIF
-      GO TO 10
-500     IF(IOUT.GT.0)WRITE(IOUT,1001)BROOK
-        IF(ITER.EQ.1.AND.IFTER)RETURN 1
-        IFTER=.FALSE.
-      GO TO 10
-C
-C---- End of file found
-C
-600   IFEND=.TRUE.
-      RETURN 2
+
+500   RETURN
 C
 C---- Format statements
 C
-1001  FORMAT(80A1)
-1002  FORMAT(/,' MATRICES DERIVED FROM SCALE CARDS IN COORDINATE FILE',
-     *//,'            RF                                   RO',/,
-     *4(/,1X,4F8.3,5X,4F8.3),//)
-1003  FORMAT(6X,3F9.3,3F7.2)
-1004  FORMAT(10X,3F10.6,5X,F10.6)
-1005  FORMAT(27X,I2,1X,3F8.3,2F6.2,I4)
+1005  FORMAT(30X,3F8.3,2F6.2)
 1006  FORMAT(6X,I5,11X,I4)
-1007  FORMAT(/,' ORTHOGONALISATION CODE: ',A40,/)
-1008  FORMAT(/,' TRANSLATIONS ALSO SPECIFIED',/)
-1009  FORMAT(/,' MATRICES DERIVED FROM CRYST1 CARD IN COORDINATE FILE',
-     *//,'            RF                                  RO',/,
-     *4(/,1X,4F8.3,5X,4F8.3),//)
-2001  FORMAT(/,' *UNKNOWN ATOMIC FORMFACTOR ',A4,' IN ',A4,1X,A4,'*',/)
-2002  FORMAT(/,' *AMBIGUOUS ATOMIC FORMFACTOR ',A4,' IN ',A4,1X,A4,'*',
-     *   /)
+1010  FORMAT(28X,6I7)
+2001  FORMAT(' *UNKNOWN ATOMIC FORMFACTOR ',A4,' IN ',A4,1X,A4,'*')
+2002  FORMAT(' *AMBIGUOUS ATOMIC FORMFACTOR ',A4,' IN ',A4,1X,A4,'*')
       END
 C
 C
 C
-      SUBROUTINE RBINIT(IUN)
-C     ======================
+      SUBROUTINE RBFRAC2(A,B,C,AL,BE,GA,ARGNCODE)
+C     ===========================================
 C
-C_BEGIN_RBINIT
-C
-C   call  RBINIT(IUN)
-C
-C
-C This subroutine is used to rewind a coordinate file and to
-C initialise values in the common /rbrkxx/ before calling RBROOK
-C
-C
-C PARAMETERS
-C
-C      
-C         IUN (I) (INTEGER)  UNIT NO. OF THE COORDINATE FILE
-C
-C_END_RBINIT
-C
-C
-      LOGICAL IFCRYS,IFSCAL,IFEND,MATRIX
-      COMMON /RBRKXX/IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
-      CHARACTER*1 BROOK
-      COMMON /RBRKYY/BROOK(80)
-      COMMON /RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
-      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE,IBRKFL
-      SAVE /RBRKXX/,/RBRKYY/,/RBRKZZ/,/ORTHOG/
-C
-C---- Rewind file, set flags and default matrix
-C
-      REWIND IUN
-      IFCRYS=.FALSE.
-      IFSCAL=.FALSE.
-      IFEND=.FALSE.
-      MATRIX=.FALSE.
-      NCODE=0
-      ITYP=0
-      IBRKFL=0
-C
-C
-      DO 20 I=1,3
-      DO 21 J=I+1,4
-      RO(I,J)=0.0
-      RO(J,I)=0.0
-      RF(I,J)=0.0
-      RF(J,I)=0.0
-21    CONTINUE
-      RO(I,I)=1.0
-      RF(I,I)=1.0
-20    CONTINUE
-C
-C
-      RO(4,4)=1.0
-      RF(4,4)=1.0
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE RBFRAC(A,B,C,AL,BE,GA,MSG)
-C     =====================================
-C
-C_BEGIN_RBFRAC
-C
-C      SUBROUTINE RBFRAC(A,B,C,AL,BE,GA,MSG)
+C_BEGIN_RBFRAC2
 C
 C
 C This subroutine is used to calculate the default transformation
 C matrices between orthogonal angstrom and fractional coordinates
+C The sensible name is for Phil, as RBFRAC2 was changed from the original.
 C
 C
 C PARAMETERS
 C
 C    A,B,C,AL,BE,GA (I) (REAL)     CELL PARAMETERS IN ANGSTROMS AND DEGREES
-C               MSG (I) (INTEGER)  UNIT NO. FOR PRINTING MESSAGE (0 IF NOT REQUIRED)
+C    ARGNCODE       (I) (INTEGER)  ORTHOGONALISATION CODE 1-6
 C
-C_END_RBFRAC
+C_END_RBFRAC2
 C
-      LOGICAL IFCRYS,IFSCAL,IFEND,MATRIX
-      COMMON /RBRKXX/IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
-      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE,IBRKFL
-      COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
+C     .. Arguments ..
+      REAL A,B,C,AL,BE,GA
+      INTEGER ARGNCODE
+C     ..
+C     .. Variables in Common ..
+      REAL CELL,CELLAS,RF,RO,RR,VOL
+      INTEGER ITYP,NCODE
+      LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
+C     ..
+C     .. External Routines ..
+      EXTERNAL CCPERR,RBRINV
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
+      COMMON /RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
+C     ..
+C     .. Save Statement ..
       SAVE /RBRKXX/,/ORTHOG/,/RBRKZZ/
+C     ..
+      IF (ARGNCODE.NE.0) NCODE = ARGNCODE
 C
 C---- Calculate matrices
 C
+
       DO 10 I=1,4
       DO 10 J=1,4
       RO(I,J)=0
@@ -894,26 +1651,50 @@ C
 C
       CALL RBRINV(RO,RF)
       MATRIX=.TRUE.
-      IF(MSG.GT.0)WRITE(MSG,1001)
+      CALL CCPERR(4,' ')
+      CALL CCPERR(4,
+     +     ' STANDARD BROOKHAVEN COORDINATE SETTING WILL BE ASSUMED')
+      CALL CCPERR(4,
+     +     ' IF NO SCALE CARDS PRESENT  IN  INPUT  COORDINATE  FILE')
+      CALL CCPERR(4,' ')
+
       RETURN
+      END
 C
-C---- Format statements
+C
 C
-1001  FORMAT(/,' STANDARD BROOKHAVEN COORDINATE SETTING WILL BE ASSUMED'
-     * ,/, ' IF NO SCALE CARDS PRESENT  IN  INPUT  COORDINATE  FILE',/)
+      SUBROUTINE RBFRAC(A,B,C,AL,BE,GA,MSG)
+C     =====================================
+C
+C_BEGIN_RBFRAC
+C
+C	This routine is obsolete and should be removed.
+C
+C_END_RBFRAC
+C
+C     .. Scalar Arguments ..
+      REAL A,B,C,AL,BE,GA
+      INTEGER MSG
+C     ..
+C     .. External Routines ..
+      EXTERNAL RBFRAC2
+C     ..
+      CALL RBFRAC2(A,B,C,AL,BE,GA,1)
+
+      RETURN
       END
 C
 C
 C
       SUBROUTINE RBRORF(ROO,RFF)
-C     =======================
+C     ==========================
 C
 C_BEGIN_RBRORF
 C
 C      SUBROUTINE RBRORF(ROO,RFF)
 C
 C     Subroutine to  fill or return RF (fractionalising) and Ro
-C     (orthogonalising) matrices. This subroutine is called by RBROOK.
+C     (orthogonalising) matrices. 
 C
 C PARAMETERS
 C
@@ -922,14 +1703,14 @@ C          RFF (O) (REAL(4,4))  INVERSE MATRIX
 C
 C common blocks
 C
-C      COMMON /RBRKXX/IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
-C      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE,IBRKFL
+C      COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX
+C      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
 C
 C_END_RBRORF
 
-      LOGICAL IFCRYS,IFSCAL,IFEND,MATRIX
-      COMMON /RBRKXX/IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
-      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE,IBRKFL
+      LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
+      COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
       SAVE /ORTHOG/, /RBRKXX/
 C
 C
@@ -970,8 +1751,7 @@ C      SUBROUTINE RBRINV(A,AI)
 C
 C
 C Subroutine to invert 4*4 matrices for conversion between
-C fractional and orthogonal axes. This subroutine is called from 
-C RBROOK.
+C fractional and orthogonal axes. 
 C
 C
 C PARAMETERS
@@ -981,7 +1761,7 @@ C          AI (O) (REAL(4,4))  INVERSE MATRIX
 C
 C_END_RBRINV
 C
-      DIMENSION A(4,4),AI(4,4),C(4,4),X(3,3)
+      REAL A(4,4),AI(4,4),C(4,4),X(3,3)
 C
 C---- Get cofactors of 'a' in array 'c'
 C
@@ -1122,7 +1902,7 @@ C---- Calculate matrices
 C
 C   XO along a  Zo along c*
 C
-10    NCODE=1
+      NCODE=1
       RR(1,1,NCODE)=A
       RR(1,2,NCODE)=B*COSG
       RR(1,3,NCODE)=C*COSB
@@ -1132,7 +1912,7 @@ C
 C
 C---- XO along b  Zo along a*
 C
-20    NCODE=2
+      NCODE=2
       RR(3,1,NCODE)=A*SING*SINBS
       RR(1,1,NCODE)=A*COSG
       RR(1,2,NCODE)=B
@@ -1142,7 +1922,7 @@ C
 C
 C---- XO along c  Zo along b*
 C
-30    NCODE=3
+      NCODE=3
       RR(1,1,NCODE)=A*COSB
       RR(1,2,NCODE)=B*COSA
       RR(1,3,NCODE)=C
@@ -1152,7 +1932,7 @@ C
 C
 C---- trigonal only - XO along a+b  YO along a-b  Zo along c*
 C
-40    NCODE=4
+      NCODE=4
       RR(3,3,NCODE)=C
       RR(1,1,NCODE)=A/2.
       RR(1,2,NCODE)=A/2.
@@ -1161,7 +1941,7 @@ C
 C
 C---- XO along a*   ZO along c
 C
-50    NCODE=5
+      NCODE=5
       RR(1,1,NCODE)=A*SINB*SINGS
       RR(3,1,NCODE)=A*COSB
       RR(3,2,NCODE)=B*COSA
@@ -1172,7 +1952,7 @@ C
 C---- Grr*! to  Gerard Bricogne - his setting for P1 in SKEW.
 C   XO along a  Yo along b*
 C
-60    NCODE=6
+      NCODE=6
       RR(1,1,NCODE)=A
       RR(1,2,NCODE)=B*COSG
       RR(1,3,NCODE)=C*COSB
@@ -1251,7 +2031,6 @@ C
      +  ' **** No Cell Input ?? **** from rwbrook.for')
 C
 C
-CC      WRITE (6,FMT=6000) CELL
       CONV = 3.14159/180.0
       FCT = 8.0*3.14159*3.14159
       ALPH = CELL(4)*CONV
@@ -1386,190 +2165,22 @@ C
       VOLL = VOL
       IF (CELDEL.GT.0.01) VOLL = -VOL
 C
-C---- Format statements
-C
- 6000 FORMAT (' IN RBFROR ',6F8.3)
-C
 C
       END
 C
 C
 C
-      SUBROUTINE WBROOK(IOUT,ISER,ATNAM,RESNAM,CHNNAM,IRESN,IS,
-     *X,Y,Z,OCC,B,IZ)
-C     =========================================================
+      SUBROUTINE CVFRAC2(X,Y,Z,XX,YY,ZZ,IFLAG)
+C     ============================================
 C
-C_BEGIN_WBROOK
-C
-C    THE_SUBROUTINE_'WBROOK'
-C                             
-C      The subroutine  WBROOK  is  used  to  write  a  coordinate  record  in
-C Brookhaven format. It is  intended  to  be  paired  with  the  use  of  the
-C subroutine RBROOK as some information  from  the  input  record  (e.g.  the
-C footnote number and the alternate location identifier)  is  passed  between
-C the routines via the common block /RBRKYY/ and cannot be passed  to  WBROOK
-C in the parameter list. If WBROOK is to be used without a record being  read
-C via RBROOK, then ITYP in the common  /RBRKXX/  must  be  set  to  0  before
-C calling the subroutine.
-C                        
-C Call:  CALL WBROOK(IOUT,ISER,ATNAM,RESNAM,CHNNAM,IRESN,IS,X,Y,Z,OCC,B,IZ)
-C                                                                          
-C
-C PARAMETERS
-C
-C        IOUT (I) UNIT NO. OF THE OUTPUT COORDINATE FILE
-C        ISER (I) ATOM SERIAL NUMBER
-C       ATNAM (I) ATOM NAME (CHARACTER*4 LEFT JUSTIFIED)
-C      RESNAM (I) RESIDUE NAME  (CHARACTER*4)
-C      CHNNAM (I) CHAIN CODE (CHARACTER*1)
-C       IRESN (I) RESIDUE NUMBER AS AN INTEGER (MAX. OF 4 DIGITS)
-C                  (IF 0 THEN RESIDUE NUMBER TOGETHER WITH INSERTION
-C                  CODE, IF PRESENT, WILL BE COPIED FROM LAST RECORD
-C                  READ VIA 'RBROOK')
-C          IS (I) RESERVED FLAG (EJD) NOT PART OF BROOKHAVEN DEFN.
-C           X (I) COORDINATES (STANDARD ORTHOGONAL)
-C           Y (I)     "
-C           Z (I)     "
-C         OCC (I) OCCUPANCY
-C           B (I) TEMPERATURE FACTOR
-C          IZ (I) ATOMIC NUMBER (MAY BE 0 IF THE ATOMIC SYMBOL IS A
-C                                SINGLE CHARACTER E.G. C,N,O,H,S)
-C
-C COMMON AREAS: /RBRKXX/,/RBRKYY/
-C
-C      COMMON /RBRKXX/IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
-C      COMMON /RBRKYY/BROOK(80)
-C
-C_END_WBROOK
-C
-C
-      LOGICAL IFCRYS,IFSCAL,IFEND,MATRIX
-      CHARACTER*1 ALTLOC,CHNNAM
-      CHARACTER*3 FOOTN,FTNOT
-      DIMENSION IAT(15)
-      CHARACTER*4 ATNAM,RESNAM
-      COMMON /RBRKXX/IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
-      CHARACTER*1 BROOK
-      COMMON /RBRKYY/BROOK(80)
-      EQUIVALENCE (FTNOT,BROOK(68))
-      CHARACTER*6 ITYPE(5)
-      SAVE /RBRKXX/,/RBRKYY/
-      DATA IAT/0,1,5,6,7,8,9,15,16,19,23,39,53,74,92/
-      DATA ITYPE/'CRYST1','SCALE ','TER   ','ATOM  ','HETATM'/
-C
-C---- Choose output format to give correct position for atom name
-C     and option for residue number treatment
-C
-      JTYP=ITYP
-C      ALTLOC=BROOK(17)
-C  ejd - This is a MESS! There are atoms like CO+2 where ATNAM(4:4) is NOT
-C an ALTLOC indicator! At least check OCC - if this = 1.0 ; there is no
-C  second conformation..
-      ALTLOC=ATNAM(4:4)
-      IF( OCC.GE.0.99) ALTLOC=' '
-C     Dropped the feature of writing out atomic number where footnote
-C     should be
-CCC      FOOTN=FTNOT
-CCC      IF(IZ.EQ.0)FTNOT='   '
-CCC      IF(IZ.GT.0)WRITE(FOOTN,9876)IZ
-CCC9876  FORMAT(1X,I2)
-      FOOTN=' '
-      IF(ITYP.EQ.0)THEN
-      JTYP=4
-      ALTLOC=' '
-      FOOTN='   '
-      ENDIF
-      II=0
-      IF(IZ.EQ.0)GO TO 50
-      II=1
-      IF(IZ.NE.1)GO TO 35
-      IF(ATNAM(1:1).EQ.'H')II=0
-      GO TO 50
-35    DO 40 I=1,15
-      IF(IZ.EQ.IAT(I))II=0
-40    CONTINUE
-50    IF(IRESN.NE.0)GO TO 60
-      IF(II.EQ.0)WRITE(IOUT,1001)ITYPE(JTYP),ISER,ATNAM,ALTLOC,RESNAM,
-     *CHNNAM,(BROOK(I),I=23,27),IS,X,Y,Z,OCC,B,FOOTN
-      IF(II.EQ.1)WRITE(IOUT,1002)ITYPE(JTYP),ISER,ATNAM,ALTLOC,RESNAM,
-     *CHNNAM,(BROOK(I),I=23,27),IS,X,Y,Z,OCC,B,FOOTN
-      RETURN
-60    IF(II.EQ.0)WRITE(IOUT,1003)ITYPE(JTYP),ISER,ATNAM,ALTLOC,RESNAM,
-     *CHNNAM,IRESN,IS,X,Y,Z,OCC,B,FOOTN
-      IF(II.EQ.1)WRITE(IOUT,1004)ITYPE(JTYP),ISER,ATNAM,ALTLOC,RESNAM,
-     *CHNNAM,IRESN,IS,X,Y,Z,OCC,B,FOOTN
-      RETURN
-C
-C---- Format statements
-C
-1001  FORMAT(A6,I5,1X,1X,A3,A1,A3,1X,A1,4A1,A1,I2,1X,3F8.3,2F6.2,1X,A3)
-1002  FORMAT(A6,I5,1X,A4,A1,A3,1X,A1,4A1,A1,I2,1X,3F8.3,2F6.2,1X,A3)
-1003  FORMAT(A6,I5,1X,1X,A3,A1,A3,1X,A1,I4,1X,I2,1X,3F8.3,2F6.2,1X,A3)
-1004  FORMAT(A6,I5,1X,A4,A1,A3,1X,A1,I4,1X,I2,1X,3F8.3,2F6.2,1X,A3)
-      END
-C
-C
-C
-      SUBROUTINE RWBFIN(IUN,IOUT)
-C     ==========================
-C
-C_BEGIN_RWBFIN
-C
-C      SUBROUTINE RWBFIN(IUN,IOUT)
-C
-C
-C This subroutine is used to copy the remaining records of a brookhaven
-C coordinate file from an input to an output file. It will normally
-C be used after part of the file has been copied via RBROOK and
-C WBROOK  but may be used to copy a complete file after calling RBINIT.
-C
-C
-C PARAMETERS
-C
-C         IUN (I) (INTEGER) UNIT NO. OF INPUT COORDINATE FILE
-C        IOUT (I) (INTEGER) UNIT NO. OF OUTPUT COORDINATE FILE
-C
-C Common blocks
-C
-C      COMMON /RBRKYY/BROOK(80)
-C
-C_END_RWBFIN
-C
-      LOGICAL IFCRYS,IFSCAL,IFEND,MATRIX
-      COMMON /RBRKXX/IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
-      CHARACTER*1 BROOK
-      COMMON /RBRKYY/BROOK(80)
-      SAVE /RBRKXX/,/RBRKYY/
-C
-C---- Copy records unless end of file already reached (via 'rbrook')
-C
-      IF(IFEND)RETURN
-10    READ(IUN,1001,END=100)BROOK
-      WRITE(IOUT,1001)BROOK
-      GO TO 10
-100   IFEND=.TRUE.
-      RETURN
-C
-C---- Format statements
-C
-1001  FORMAT(80A1)
-      END
-C
-C
-C
-      SUBROUTINE CVFRAC(X,Y,Z,XX,YY,ZZ,IFLAG,MSG)
-C     ===========================================
-C
-C_BEGIN_CVFRAC
-C
-C      SUBROUTINE CVFRAC(X,Y,Z,XX,YY,ZZ,IFLAG,MSG)
+C_BEGIN_CVFRAC2
 C
 C      This subroutine is used to convert between the stored  orthogonal  and
 C fractional coordinates using the  matrices  set  up  in  the  common  block
-C /ORTHOG/ by the subroutine RBROOK. If no matrices have been set up then the
+C /ORTHOG/ by the subroutine XYZOPEN. If no matrices have been set up then the
 C program will stop with an error message.
 C                                         
-C Call:  CALL CVFRAC(X,Y,Z,XX,YY,ZZ,IFLAG,MSG)
+C Call:  CALL CVFRAC2(X,Y,Z,XX,YY,ZZ,IFLAG)
 C                                             
 C Arguments:
 C            
@@ -1581,13 +2192,12 @@ C      YY (O)   (REAL)       "
 C      ZZ (O)   (REAL)       "
 C   IFLAG (I) (INTEGER)  Flag =0, Convert coordinates from fractional to orthogonal
 C                             =1, Convert coordinates from orthogonal to fractional
-C     MSG (I) (INTEGER)  Unit number for printing error message.
 C
-C_END_CVFRAC
+C_END_CVFRAC2
 C
-      LOGICAL IFCRYS,IFSCAL,IFEND,MATRIX
-      COMMON /RBRKXX/IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
-      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE,IBRKFL
+      LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
+      COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
       SAVE /RBRKXX/,/ORTHOG/
 C
 C---- Check that matrices set up
@@ -1608,12 +2218,152 @@ C
 C
 C---- Error condition
 C
-800   IF(MSG.GT.0)WRITE(MSG,2001)
+800   CALL CCPERR(4,' **FRACTIONAL/ORTHOGONAL MATRICES NOT SET UP**')
       call ccperr(1,' No knowledge of input orthogonalisation')
 C
 C---- Format statements
 C
-2001  FORMAT(' **FRACTIONAL/ORTHOGONAL MATRICES NOT SET UP**')
+      END
+C
+C
+C
+      SUBROUTINE CVFRAC(X,Y,Z,XX,YY,ZZ,IFLAG,MSG)
+C     ===========================================
+C
+C_BEGIN_CVFRAC
+C
+C	Another silly obsolete routine that really should be deleted.
+C MSG value is in fact useless. Library output controlled by CCPERR.
+C
+C_END_CVFRAC
+C
+C     .. Scalar Arguments ..
+      REAL X,Y,Z,XX,YY,ZZ
+      INTEGER IFLAG,MSG
+C     ..
+C     .. External Routines ..
+      EXTERNAL CVFRAC2
+C     ..
+      CALL CVFRAC2(X,Y,Z,XX,YY,ZZ,IFLAG)
+
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE CVANISOB(B,IFLAG)
+C     ============================
+C
+C_BEGIN_CVANISOB
+C
+C      This subroutine is used to convert between crystallographic bs and 
+C orthogonal Us or the other way round. The orthogonal matrices are 
+C required, if no matrices have been set up then the program will stop 
+C with an error message. The temperature factors are defined below;
+C T(anisoU) = U(1,1)*H**2 + U(2,2)*K**2 + U(1,2)*H*K + ... 
+C where H,K,L represent the orthogonal representation of the Miller indices
+C T(anisob) = b(1,1)*h**2 + b(2,2)*k**2 + b(1,2)*h*k + ...
+C thus  U = A * B * AT / (2 * pi**2)  where A is the orthogonalisation matrix
+C
+C Arguments:
+C            
+C    B(6) (I/O  (REAL)  Input coordinates.
+C   IFLAG (I) (INTEGER)  Flag =0, Convert coordinates from fract. to orthog.
+C                             =1, Convert coordinates from orthog. to fract.
+C
+C_END_CVANISOB
+C
+C     .. Arguments ..
+      REAL B(6)
+      INTEGER IFLAG
+C     ..
+C     .. Variables in Common ..
+      REAL RF,RO
+      INTEGER NCODE
+      LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
+C     ..
+C     .. Local Variables ..
+      INTEGER I,J
+      REAL TWOPI2
+      REAL A(3,3),AT(3,3),TMP(3,3),TMPMAT(3,3)
+C     ..
+C     .. External Routines ..
+      EXTERNAL CCPERR,MATMUL
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
+C     ..
+C     .. Save Statement ..
+      SAVE /RBRKXX/,/ORTHOG/
+C     ..
+C     .. Data Statements ...
+      DATA TWOPI2 /19.739209/
+C     ..
+C
+C---- Check that matrices set up
+C
+      IF(.NOT.MATRIX)GO TO 800
+C
+C---- Perform transformation
+C
+      IF (IFLAG .EQ. 0) THEN
+        TMP(1,1)=B(1)
+        TMP(2,2)=B(2)
+        TMP(3,3)=B(3)
+        TMP(1,2)=B(4)
+        TMP(2,1)=B(4)
+        TMP(1,3)=B(5)
+        TMP(3,1)=B(5)
+        TMP(2,3)=B(6)
+        TMP(3,2)=B(6)
+        DO 10 I=1,3
+          DO 10 J=1,3
+            A(J,I)=RO(J,I)
+            AT(I,J)=RO(J,I)
+   10   CONTINUE
+        CALL MATMUL(TMPMAT,TMP,AT)
+        CALL MATMUL(TMP,A,TMPMAT)
+        B(1)=TMP(1,1)/TWOPI2
+        B(2)=TMP(2,2)/TWOPI2
+        B(3)=TMP(3,3)/TWOPI2
+        B(4)=TMP(1,2)/TWOPI2
+        B(5)=TMP(1,3)/TWOPI2
+        B(6)=TMP(2,3)/TWOPI2
+      ELSE
+        TMP(1,1) = B(1)
+        TMP(2,2) = B(2)
+        TMP(3,3) = B(3)
+        TMP(1,2) = B(4)
+        TMP(2,1) = B(4)
+        TMP(1,3) = B(5)
+        TMP(3,1) = B(5)
+        TMP(2,3) = B(6)
+        TMP(3,2) = B(6)
+        DO 20 I=1,3
+          DO 20 J=1,3
+            A(J,I) = RF(J,I)
+            AT(I,J) = RF(J,I)
+   20   CONTINUE
+        CALL MATMUL(TMPMAT,TMP,AT)
+        CALL MATMUL(TMP,A,TMPMAT)
+        B(1) = TWOPI2*TMP(1,1)
+        B(2) = TWOPI2*TMP(2,2)
+        B(3) = TWOPI2*TMP(3,3)
+        B(4) = TWOPI2*TMP(1,2)
+        B(5) = TWOPI2*TMP(1,3)
+        B(6) = TWOPI2*TMP(2,3)
+      ENDIF
+
+      RETURN
+C
+C---- Error condition
+C
+800   CALL CCPERR(4,' **FRACTIONAL/ORTHOGONAL MATRICES NOT SET UP**')
+      call ccperr(1,' No knowledge of input orthogonalisation')
+C
+C---- Format statements
+C
       END
 C
 C
@@ -1644,7 +2394,7 @@ C
 C
       CVOL = VOL
       DO 1 I=1,6
-1     CELLD(I) = CELL(I) 
+1       CELLD(I) = CELL(I) 
       END
 C
 C
@@ -1670,12 +2420,17 @@ C
 C_END_RBRCEL
 C
       COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
-      DIMENSION RCEL(6)
+      REAL RCEL(6),RVOL
+      REAL CELL,CELLAS,RR,VOL
       SAVE /RBRKZZ/
 C
-      RVOL = 1.0/VOL
+      IF (VOL.EQ.0.0) THEN
+        RVOL = 0.0
+      ELSE
+        RVOL = 1.0/VOL
+      ENDIF
       DO 1 I=1,6
-1     RCEL(I) = CELLAS(I) 
+1       RCEL(I) = CELLAS(I) 
       RETURN
       END
 C
@@ -1763,9 +2518,8 @@ C
       END
 
 
-C     ====================================================
-      SUBROUTINE SFREAD(ID,NG,A,B,C,IWT,IELEC,CU,MO,
-     +                  Ifail,IFILFF)
+C     =====================================================
+      SUBROUTINE SFREAD2(ID,NG,A,B,C,IWT,IELEC,CU,MO,Ifail)
 C     =====================================================
 C
 C  Inputs: ID     atom identifier
@@ -1790,26 +2544,22 @@ C          MO(2)  delta F' and delta F'' for Mo
 C          Ifail  = -1 if atom not found at all
 C                 =  0 OK
 C                 =  1 for two gaussian case that does not exist
-C          IFILFF  set to .FALSE. to prevent re-opening the file
 C
 C     .. Scalar Arguments ..
       REAL C
       INTEGER IELEC,Ifail,IWT,NG
-      LOGICAL IFILFF
       CHARACTER ID*4,IDCHK*4
 C     ..
 C     .. Array Arguments ..
       REAL A(4),B(4),CU(2),MO(2)
 C     ..
 C     .. Local Scalars ..
-      INTEGER NGauss
+      INTEGER NGauss,IOS
       CHARACTER ID2*6,IDIN*6
+      LOGICAL OP
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPDPN,CCPERR
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC CHAR,ICHAR,LGE,LLE
 C     ..
       Ifail  = -1
        IDCHK = ID
@@ -1825,11 +2575,13 @@ C
 C
 C---- Check to open file
 C
-      IF (IFILFF) THEN
-        IFILFF = .FALSE.
+      INQUIRE (UNIT=45, OPENED=OP, IOSTAT=IOS)
+      IF (IOS .NE. 0) CALL CCPERR(1,'Error opening ATOMSF file')
+
+      IF (.NOT.OP) THEN
         Ifail  = 1
         CALL CCPDPN(45,'ATOMSF','READONLY','F',0,Ifail)
-        IF (Ifail.LT.0)  GO TO 30
+        IF (Ifail.LT.0) CALL CCPERR(1,'Error opening library file')
       ELSE
         REWIND 45
       END IF
@@ -1851,10 +2603,6 @@ C
       END IF
 C
       GO TO 10
-C
-C---- Error opening library file
-C
-   30 CALL CCPERR(1,'Error opening library file')
 C
 C---- Error reading library file
 C
@@ -1883,8 +2631,225 @@ C
 C---- Format statements
 C
  6002 FORMAT (A6)
- 6004 FORMAT (1X)
  6006 FORMAT (2X,I8,2X,I8,2X,F14.6)
  6008 FORMAT (4 (2X,F14.6))
       END
 C
+C
+C
+      SUBROUTINE SFREAD(ID,NG,A,B,C,IWT,IELEC,CU,MO,IFAIL,IFILFF)
+C     ===========================================================
+C
+C_BEGIN_SFREAD
+C
+C	Obsolete routine should be deleted. IFILFF not used.
+C
+C_END_SFREAD
+C
+C     .. Scalar Arguments ..
+      REAL C
+      INTEGER IELEC,Ifail,IWT,NG
+      LOGICAL IFILFF
+      CHARACTER ID*4
+C     ..
+C     .. Array Arguments ..
+      REAL A(4),B(4),CU(2),MO(2)
+C     ..
+C     .. External Routines ..
+      EXTERNAL SFREAD2
+C     ..
+      CALL SFREAD2(ID,NG,A,B,C,IWT,IELEC,CU,MO,IFAIL)
+ 
+      RETURN
+      END
+C
+C
+C
+        SUBROUTINE WBCELL(IUNIT,ARGCELL,ARGNCODE)
+C       =========================================
+C
+C_BEGIN_WBCELL
+C
+C   This subroutine writes out the cell and orthogonalisation matrices, to 
+C the output file. If the input parameters are null then the cell etc. are
+C taken from the COMMON blocks.
+C
+C PARAMETERS
+C
+C            IUNIT (I) (INTEGER)   Channel number for output file.
+C
+C       ARGCELL(6) (I) (REAL)      crystallographic cell taken from COMMON
+C                                  if cell = 0
+C         ARGNCODE (I) (INTEGER)   NCODE number taken from COMMON if NCODE=0
+C
+C_END_WBCELL
+C
+C     .. Parameters ..
+      INTEGER MAXFILESOPEN
+      PARAMETER (MAXFILESOPEN=10)
+C     ..
+C     .. Agruments ..
+      REAL ARGCELL(6)
+      INTEGER ARGNCODE,IUNIT
+C     ..
+C     .. Variables in Common ..
+      REAL CELL, RO, RF, RR
+      INTEGER FILESOPEN, NCODE, TYPE, UNIT
+      CHARACTER*80 LOGUNIT
+      LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
+C     ..
+C     .. Local Scalars ..
+      INTEGER I, II, J
+      CHARACTER*80 ERRLIN
+C     ..
+C     .. External Routines/Functions ..
+      EXTERNAL CCPERR,RBFROR,RBRINV
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
+     +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
+      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
+      COMMON /RBRKZZ/ CELL(6),RR(3,3,6)
+      COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+C     ..
+      SAVE /ORTHOG/,/RBRKAA/,/RBRKXX/,/RBRKZZ/
+
+      II = 0
+      DO 10 I=1,FILESOPEN
+        IF (IUNIT .EQ. UNIT(I)) THEN
+          II = I
+          GOTO 20
+        ENDIF
+   10 CONTINUE
+
+      ERRLIN = ' ERROR: in WBCELL file has not been opened'
+      CALL CCPERR(1,ERRLIN)
+
+   20 IF (TYPE(II) .GT. 0) THEN
+        ERRLIN = ' ERROR: in WBCELL file is of type input'
+        CALL CCPERR(1,ERRLIN)
+      ENDIF
+      IF (ARGCELL(1) .EQ. 0.0) THEN
+        IF (IFCRYS) WRITE (UNIT(II),100) CELL
+      ELSE
+        WRITE(UNIT(II),100) ARGCELL
+      ENDIF
+
+      IF (ARGNCODE .EQ. 0) THEN
+        IF (IFCRYS) WRITE (UNIT(II),200) (I,(RF(I,J),J=1,3),I=1,3)
+      ELSE
+        DO 30 I = 1,6
+          CELL(I) = ARGCELL(I)
+   30   CONTINUE
+
+        CALL RBFROR
+        DO 40 I = 1,3
+          DO 40 J = 1,3
+            RO(J,I) = RR(J,I,ARGNCODE)
+   40   CONTINUE
+
+        RO(4,4) = 1.0     
+        DO 50 I=1,3
+          RO(I,4) = 0.0
+   50   CONTINUE
+
+        CALL RBRINV(RO,RF)
+        WRITE (UNIT(II),200) (I,(RF(I,J),J=1,3),I=1,3)
+      ENDIF
+
+      IFHDOUT = .TRUE.
+      RETURN
+C
+C---- Format Statements
+C
+ 100  FORMAT('CRYST1',3F9.3,3F7.2)
+ 200  FORMAT( 2('SCALE',I1,4X,3F10.5,5X,'   0.00000',/),
+     $          'SCALE',I1,4X,3F10.5,5X,'   0.00000')
+      END
+C
+C
+C
+        SUBROUTINE WREMARK(IUNIT,LINE)
+C       ==============================
+C
+C_BEGIN_WREMARK
+C
+C	This subroutine writes a line to the output file. Its main use is for 
+C REMARK statements in PDB.
+C
+C Parameters:
+C
+C            IUNIT (I) (CHARACTER*(*))  Channel number
+C             LINE (I) (CHARACTER*(*))  line to be written, best
+C                                       if declared as *80
+C
+C_END_WREMARK
+C
+C     .. Parameters ..
+      INTEGER MAXFILESOPEN
+      PARAMETER (MAXFILESOPEN=10)
+C     ..
+C     .. Arguments ..
+      INTEGER IUNIT
+      CHARACTER*(*) LINE
+C     ..
+C     .. Variables in Common ..
+      INTEGER FILESOPEN,TYPE,UNIT
+      CHARACTER*80 LOGUNIT
+C     ..
+C     .. Locals ..
+      INTEGER II
+      CHARACTER OUTLIN*80,ERRLIN*80
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
+     +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
+C     ..
+C     .. Save Statement ..
+      SAVE /RBRKAA/
+C     ..
+C
+C---- The remark line will be truncated if it > 80 characters
+C     this fits with PDB and CIF syntax.
+C
+      II = 0
+      DO 10 I=1,FILESOPEN
+        IF (IUNIT .EQ. UNIT(I)) THEN
+          II = I
+          GOTO 20
+        ENDIF
+   10 CONTINUE
+
+      ERRLIN = ' ERROR: in WREMARK file has not been opened'
+      CALL CCPERR(1,ERRLIN)
+
+   20 OUTLIN = LINE
+      WRITE (UNIT(II),FMT='(A)') OUTLIN
+
+      RETURN
+      END
+C
+C<FF>
+C
+      SUBROUTINE RWBFIN(IUN,IOUT)
+C     ===========================
+C
+C_BEGIN_RWBFIN
+C
+C	This subroutine copies remaining lines straight from input to 
+C output. 
+C
+C_END_RWBFIN
+C
+C     .. Scalar Arguments ..
+      INTEGER IUN,IOUT
+C     ..
+C     .. External Routines ..
+      EXTERNAL XYZADVANCE
+
+   10 CALL XYZADVANCE(IUN,IOUT,0,*1000,*1000)
+      CALL XYZADVANCE(IOUT,0,0,*1000,*1000)
+      GOTO 10
+
+ 1000 RETURN
+      END
