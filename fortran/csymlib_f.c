@@ -31,7 +31,14 @@ static char rcsid[] = "$Id$";
 
 #define MAXSYM 192
 
-static CCP4SPG *spacegroup;          /* allow more than one spacegroup ?? */
+static CCP4SPG *spacegroup = NULL;          /* allow more than one spacegroup ?? */
+
+void ccp4spg_mem_tidy(void) {
+
+  /* free any existing spacegroup */
+  if ( spacegroup ) ccp4spg_free(spacegroup);
+
+}
 
 FORTRAN_SUBR ( INVSYM, invsym,
                (const float a[4][4], float ai[4][4]),

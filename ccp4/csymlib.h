@@ -56,6 +56,12 @@ CCP4SPG * ccp4_spgrp_reverse_lookup(const int nsym1, const ccp4_symop *op1);
 CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
         const char *spgname, const int nsym1, const ccp4_symop *op1); 
 
+/** Free all memory malloc'd from static pointers.
+ * To be called before program exit. The function can be
+ * registered with atexit.
+ */
+void ccp4spg_mem_tidy(void);
+
 /** Free memory associated with spacegroup.
  * @param sp pointer to spacegroup
  */
