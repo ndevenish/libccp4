@@ -89,8 +89,6 @@ as published in:
 
 #    ifndef NOUNISTD		/* ESV, for instance, doesn't have it */
 #      include <unistd.h>
-#    else
-#      include <malloc.h>
 #    endif
 #    ifndef  SEEK_SET
 #      if defined(ESV) && defined(SYSTYPE_BSD43)

@@ -34,7 +34,8 @@ For information about key type values see binsortkey.h
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
-#ifndef NOUNISTD		/* ESV, for instance doesn'r have it */
+#include <stdlib.h>
+#ifndef NOUNISTD		/* ESV, for instance doesn't have it */
 #  include <unistd.h>
 #endif
 #include <stddef.h>
