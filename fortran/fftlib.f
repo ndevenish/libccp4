@@ -98,7 +98,7 @@ C     .. Scalar Arguments ..
       LOGICAL         ERROR
 C     ..
 C     .. Array Arguments ..
-      INTEGER         FACTOR(10),SYM(10),UNSYM(10)
+      INTEGER         FACTOR(15),SYM(15),UNSYM(15)
 C     ..
 C     .. Local Scalars ..
       INTEGER         F,J,JJ,N,NEST,P,PTWO,Q,R
@@ -217,7 +217,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       REAL              X(*),Y(*)
-      INTEGER           DIM(5),FACTOR(10)
+      INTEGER           DIM(5),FACTOR(15)
 C     ..
 C     .. Local Scalars ..
       INTEGER           F,M,P,R,S
@@ -291,11 +291,11 @@ C     .. Scalar Arguments ..
       INTEGER           M,N
 C     ..
 C     .. Array Arguments ..
-      REAL              X0(10),X1(10),Y0(10),Y1(10)
+      REAL              X0(*),X1(*),Y0(*),Y1(*)
       INTEGER           DIM(5)
 C     ..
 C     .. Local Scalars ..
-      REAL              ANGLE,C,FJM1,FM2,IS,IU,RS,RU,S,TWOPI
+      REAL              ANGLE,C,FM2,IS,IU,RS,RU,S,TWOPI
       INTEGER           J,K,K0,K1,K2,KK,L,L1,M2,MM2,MOVER2,NS,NT,SEP,
      +                  SIZE
       LOGICAL           FOLD,ZERO
@@ -318,14 +318,12 @@ C
       MOVER2 = M/2 + 1
       MM2 = SEP*M2
 C
-      FJM1 = -1.0
       DO 50 J = 1,MOVER2
           FOLD = J .GT. 1 .AND. 2*J .LT. M + 2
           K0 = (J-1)*SEP + 1
-          FJM1 = FJM1 + 1.0
-          ANGLE = TWOPI*FJM1/FM2
-          ZERO = ANGLE .EQ. 0.0
+          ZERO = j. eq. 1
           IF (.NOT.ZERO) THEN
+              ANGLE = TWOPI*REAL(j-1)/FM2
               C = COS(ANGLE)
               S = SIN(ANGLE)
           END IF
@@ -372,11 +370,11 @@ C     .. Scalar Arguments ..
       INTEGER           M,N
 C     ..
 C     .. Array Arguments ..
-      REAL              X0(10),X1(10),X2(10),Y0(10),Y1(10),Y2(10)
+      REAL              X0(*),X1(*),X2(*),Y0(*),Y1(*),Y2(*)
       INTEGER           DIM(5)
 C     ..
 C     .. Local Scalars ..
-      REAL              A,ANGLE,B,C1,C2,FJM1,FM3,I0,I1,I2,IA,IB,IS,R0,
+      REAL              A,ANGLE,B,C1,C2,FM3,I0,I1,I2,IA,IB,IS,R0,
      +                  R1,R2,RA,RB,RS,S1,S2,T,TWOPI
       INTEGER           J,K,K0,K1,K2,KK,L,L1,M3,MM3,MOVER2,NS,NT,SEP,
      +                  SIZE
@@ -400,14 +398,12 @@ C
       MM3 = SEP*M3
       MOVER2 = M/2 + 1
 C
-      FJM1 = -1.0
       DO 50 J = 1,MOVER2
           FOLD = J .GT. 1 .AND. 2*J .LT. M + 2
           K0 = (J-1)*SEP + 1
-          FJM1 = FJM1 + 1.0
-          ANGLE = TWOPI*FJM1/FM3
-          ZERO = ANGLE .EQ. 0.0
+          ZERO = j .eq. 1
           IF (.NOT.ZERO) THEN
+              ANGLE = TWOPI*REAL(j-1)/FM3
               C1 = COS(ANGLE)
               S1 = SIN(ANGLE)
               C2 = C1*C1 - S1*S1
@@ -473,12 +469,12 @@ C     .. Scalar Arguments ..
       INTEGER           M,N
 C     ..
 C     .. Array Arguments ..
-      REAL              X0(10),X1(10),X2(10),X3(10),Y0(10),Y1(10),
-     +                  Y2(10),Y3(10)
+      REAL              X0(*),X1(*),X2(*),X3(*),Y0(*),Y1(*),
+     +                  Y2(*),Y3(*)
       INTEGER           DIM(5)
 C     ..
 C     .. Local Scalars ..
-      REAL              ANGLE,C1,C2,C3,FJM1,FM4,I1,I2,I3,IS0,IS1,IU0,
+      REAL              ANGLE,C1,C2,C3,FM4,I1,I2,I3,IS0,IS1,IU0,
      +                  IU1,R1,R2,R3,RS0,RS1,RU0,RU1,S1,S2,S3,T,TWOPI
       INTEGER           J,K,K0,K1,K2,KK,L,L1,M4,MM4,MOVER2,NS,NT,SEP,
      +                  SIZE
@@ -502,14 +498,12 @@ C
       MM4 = SEP*M4
       MOVER2 = M/2 + 1
 C
-      FJM1 = -1.0
       DO 50 J = 1,MOVER2
           FOLD = J .GT. 1 .AND. 2*J .LT. M + 2
           K0 = (J-1)*SEP + 1
-          FJM1 = FJM1 + 1.0
-          ANGLE = TWOPI*FJM1/FM4
-          ZERO = ANGLE .EQ. 0.0
+          ZERO = j .eq. 1
           IF (.NOT.ZERO) THEN
+              ANGLE = TWOPI*REAL(j-1)/FM4
               C1 = COS(ANGLE)
               S1 = SIN(ANGLE)
               C2 = C1*C1 - S1*S1
@@ -584,12 +578,12 @@ C     .. Scalar Arguments ..
       INTEGER           M,N
 C     ..
 C     .. Array Arguments ..
-      REAL              X0(10),X1(10),X2(10),X3(10),X4(10),Y0(10),
-     +                  Y1(10),Y2(10),Y3(10),Y4(10)
+      REAL              X0(*),X1(*),X2(*),X3(*),X4(*),Y0(*),
+     +                  Y1(*),Y2(*),Y3(*),Y4(*)
       INTEGER           DIM(5)
 C     ..
 C     .. Local Scalars ..
-      REAL              A1,A2,ANGLE,B1,B2,C1,C2,C3,C4,FJM1,FM5,I0,I1,I2,
+      REAL              A1,A2,ANGLE,B1,B2,C1,C2,C3,C4,FM5,I0,I1,I2,
      +                  I3,I4,IA1,IA2,IB1,IB2,IS1,IS2,IU1,IU2,R0,R1,R2,
      +                  R3,R4,RA1,RA2,RB1,RB2,RS1,RS2,RU1,RU2,S1,S2,S3,
      +                  S4,T,TWOPI
@@ -616,14 +610,12 @@ C
       MM5 = SEP*M5
       MOVER2 = M/2 + 1
 C
-      FJM1 = -1.0
       DO 50 J = 1,MOVER2
           FOLD = J .GT. 1 .AND. 2*J .LT. M + 2
           K0 = (J-1)*SEP + 1
-          FJM1 = FJM1 + 1.0
-          ANGLE = TWOPI*FJM1/FM5
-          ZERO = ANGLE .EQ. 0.0
+          ZERO = j .eq. 1
           IF (.NOT.ZERO) THEN
+              ANGLE = TWOPI*REAL(j-1)/FM5
               C1 = COS(ANGLE)
               S1 = SIN(ANGLE)
               C2 = C1*C1 - S1*S1
@@ -722,13 +714,13 @@ C     .. Scalar Arguments ..
       INTEGER           M,N
 C     ..
 C     .. Array Arguments ..
-      REAL              X0(10),X1(10),X2(10),X3(10),X4(10),X5(10),
-     +                  X6(10),X7(10),Y0(10),Y1(10),Y2(10),Y3(10),
-     +                  Y4(10),Y5(10),Y6(10),Y7(10)
+      REAL              X0(*),X1(*),X2(*),X3(*),X4(*),X5(*),
+     +                  X6(*),X7(*),Y0(*),Y1(*),Y2(*),Y3(*),
+     +                  Y4(*),Y5(*),Y6(*),Y7(*)
       INTEGER           DIM(5)
 C     ..
 C     .. Local Scalars ..
-      REAL              ANGLE,C1,C2,C3,C4,C5,C6,C7,E,FJM1,FM8,I1,I2,I3,
+      REAL              ANGLE,C1,C2,C3,C4,C5,C6,C7,E,FM8,I1,I2,I3,
      +                  I4,I5,I6,I7,IS0,IS1,IS2,IS3,ISS0,ISS1,ISU0,ISU1,
      +                  IU0,IU1,IU2,IU3,IUS0,IUS1,IUU0,IUU1,R1,R2,R3,R4,
      +                  R5,R6,R7,RS0,RS1,RS2,RS3,RSS0,RSS1,RSU0,RSU1,
@@ -756,14 +748,12 @@ C
       MM8 = SEP*M8
       MOVER2 = M/2 + 1
 C
-      FJM1 = -1.0
       DO 50 J = 1,MOVER2
           FOLD = J .GT. 1 .AND. 2*J .LT. M + 2
           K0 = (J-1)*SEP + 1
-          FJM1 = FJM1 + 1.0
-          ANGLE = TWOPI*FJM1/FM8
-          ZERO = ANGLE .EQ. 0.0
+          ZERO = j .eq. 1
           IF (.NOT.ZERO) THEN
+              ANGLE = TWOPI*REAL(j-1)/FM8
               C1 = COS(ANGLE)
               S1 = SIN(ANGLE)
               C2 = C1*C1 - S1*S1
@@ -916,7 +906,7 @@ C     .. Array Arguments ..
       INTEGER           DIM(5)
 C     ..
 C     .. Local Scalars ..
-      REAL              ANGLE,FJM1,FMP,FP,FU,IS,IU,RS,RU,T,TWOPI,XT,YT
+      REAL              ANGLE,FMP,FP,FU,IS,IU,RS,RU,T,TWOPI,XT,YT
       INTEGER           J,JJ,K,K0,K1,K2,KK,L,L1,MMP,MOVER2,MP,NS,NT,PM,
      +                  PP,SEP,SIZE,U,V
       LOGICAL           FOLD,ZERO
@@ -964,14 +954,12 @@ C
    20         CONTINUE
    30     CONTINUE
 C
-      FJM1 = -1.0
       DO 140 J = 1,MOVER2
           FOLD = J .GT. 1 .AND. 2*J .LT. M + 2
           K0 = (J-1)*SEP + 1
-          FJM1 = FJM1 + 1.0
-          ANGLE = TWOPI*FJM1/FMP
-          ZERO = ANGLE .EQ. 0.0
+          ZERO = j .eq. 1
           IF (.NOT.ZERO) THEN
+              ANGLE = TWOPI*REAL(j-1)/FMP
               C(1) = COS(ANGLE)
               S(1) = SIN(ANGLE)
               DO 40 U = 2,PM
@@ -1751,8 +1739,8 @@ C     .. Scalar Arguments ..
       INTEGER          PSYM,PTS
 C     ..
 C     .. Array Arguments ..
-      REAL             X(10),Y(10)
-      INTEGER          DIM(5),SYM(10),UNSYM(10)
+      REAL             X(*),Y(*)
+      INTEGER          DIM(5),SYM(15),UNSYM(15)
 C     ..
 C     .. Local Scalars ..
       REAL             T
