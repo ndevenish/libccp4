@@ -285,6 +285,7 @@ C       comment line
           WRITE (STROUT,FMT=6002) 'Comment', LINE(1:LENSTR(LINE))
  6002     FORMAT (A,' line--- ',A)
           CALL PUTLIN(STROUT,'HLPWIN')
+          NINCHR = 0
         ENDIF
         FIRST = .TRUE.
         GO TO 20
