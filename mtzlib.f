@@ -6273,15 +6273,15 @@ C                **************
             CALL CCPUPC(CWORK2)
 C                **************
 C
+C           first try to match file label to left of assignment
+C           (canonical order) after capitalisation
             DO 10 JDO = 1,NLPRGI
-              IF (CWORK.EQ.LSPRGI(JDO)) THEN
-                GO TO 30
-              ELSE IF (CWORK2.EQ.LSPRGI(JDO)) THEN
-                GO TO 20
-              END IF
-C
+              IF (CWORK.EQ.LSPRGI(JDO)) GO TO 30
    10       CONTINUE
-C
+C           else, try to match file label on rhs as an option
+            DO 11 JDO = 1,NLPRGI
+              IF (CWORK2.EQ.LSPRGI(JDO)) GO TO 20
+   11       CONTINUE
             STROUT = ' **** Error input assignment does not match'//
      +               ' program labels'
 C
@@ -6604,13 +6604,14 @@ C                **************
             CALL CCPUPC(CWORK2)
 C                **************
 C
-            IF (CWORK.EQ.LSPRGI(JDO)) GO TO 30
-   10       CONTINUE
+            DO 10 JDO = 1,NLPRGI
+              IF (CWORK.EQ.LSPRGI(JDO)) THEN
+                GO TO 30
+              ELSE IF (CWORK2.EQ.LSPRGI(JDO)) THEN
+                GO TO 20
+              END IF
 C
-            DO 11 JDO = 1,NLPRGI
-              JLENG = LENSTR(LSPRGI(JDO))
-              IF (CWORK2.EQ.LSPRGI(JDO)) GO TO 20
-   11       CONTINUE
+   10       CONTINUE
 C
             STROUT = ' **** Error input assignment does not match'//
      +               ' program labels'
