@@ -96,7 +96,8 @@ FINTERFACEOBJS = cmtzlib_f.o csymlib_f.o ccp4_parser_f.o library_f.o \
                 ccp4_diskio_f.o ccp4_general_f.o ccp4_unitcell_f.o cmaplib_f.o
 FORTRANOBJS =  $L(parser.o) $L(fftlib.o) $L(lgglib.o) $L(libhtml.o) $L(modlib.o) \
                $L(plotsubs.o) $L(plot84lib.o) $L(pxxml.o) $L(ccplib.o) $L(unix.o) \
-               $L(sorting_main.o) $L(rwbrook.o) $(CIFLIBOBJS) $L(harvlib.o) $L(keyparse.o)
+               $L(sorting_main.o) $L(rwbrook.o) $(CIFLIBOBJS) $L(harvlib.o) \
+               $L(keyparse.o) $L(pack_f.o) $L(pack_c.o)
 CMTZPYOBJS = cmtzlib_python_wrap.o
 CMAPPYOBJS = cmaplib_python_wrap.o
 CSYMPYOBJS = csymlib_python_wrap.o
@@ -386,6 +387,17 @@ $L(keyparse.o) : $(srcdir)/keyparse.f
 	rm -f keyparse.dir/*.o
 keyparse : keyparse.o
 	$(RANLIB) $L
+
+#  The image (un)packing routines which were needed for mosflm and are needed
+#  for ipdisp. May be useful but could be moved. 
+$L(pack_c.o):   $(srcdir)/pack_c.c $(srcdir)/pack_c.h
+	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/pack_c.c
+	$(AR) $L pack_c.o && rm pack_c.o
+$L(pack_f.o):   $(srcdir)/pack_f.f
+	$(FC) -c $(FFLAGS) $(srcdir)/pack_f.$(F) && $(AR) $(L) pack_f.o \
+          && rm pack_f.o
+pack:   $L(pack_c.o) $L(pack_f.o)
+	$(RANLIB) $(L) 
 
 $L(sorting_main.o) : $(srcdir)/sorting_main.f
 	-rm -rf sorting_main.dir; mkdir sorting_main.dir
