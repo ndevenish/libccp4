@@ -2070,6 +2070,11 @@ C         actually create <ccp4_scr>/<prognm>_.<pid>
             WRITE (SCRFIL,'(Z8.8)') GETPID()
           ELSE
             PROCID = MOD(GETPID(),100000)
+C     Windows98 does not return a pid so make a number up
+            IF (PROCID.GT.99999 .OR. PROCID.LE.0) THEN
+              CALL USTIME(PROCID)
+              PROCID = MOD(PROCID,100000)
+            ENDIF
             WRITE (SCRFIL,'(I5.5)') PROCID
           ENDIF
           FILNAM = TMPNAM(1:LENSTR(TMPNAM))//SCRFIL
