@@ -1860,7 +1860,7 @@ C     .. Parameters ..
       INTEGER MINCOL
       PARAMETER (MINCOL=3)
       INTEGER NTYP,LTYP
-      PARAMETER (NTYP=16,LTYP=9)
+      PARAMETER (NTYP=17,LTYP=9)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER SIZE1
@@ -1937,7 +1937,7 @@ C  Adding column types to indicate pairs associated with hkl and -h-k-l
 C  Need new indicator for F Q; using G L
 C                         J Q; using K M
       DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R',
-     +            'G','K','L','M'/
+     +            'G','K','L','M','E'/
       DATA LTYPES/'P','A','B','C','I','F','R','H','?'/
 C     ..
 C
@@ -3952,7 +3952,7 @@ C     .. Parameters ..
       INTEGER MINCOL
       PARAMETER (MINCOL=3)
       INTEGER NTYP
-      PARAMETER (NTYP=16)
+      PARAMETER (NTYP=17)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
@@ -4022,7 +4022,7 @@ C     .. Save statement ..
 C     ..
 C     .. Data statements ..
       DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R',
-     +            'G','K','L','M'/
+     +            'G','K','L','M','E'/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -5578,7 +5578,7 @@ C     .. Parameters ..
       INTEGER MINCOL
       PARAMETER (MINCOL=3)
       INTEGER NTYP
-      PARAMETER (NTYP=16)
+      PARAMETER (NTYP=17)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER MAXSYM
@@ -5639,7 +5639,7 @@ C     .. Save statement ..
 C     ..
 C     .. Data statements ..
       DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R',
-     +            'G','K','L','M'/
+     +            'G','K','L','M','E'/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -6148,7 +6148,7 @@ C
          IF (QISNAN(WRANGE(1,JDO20,MINDX))) WRANGE(1,JDO20,MINDX)=0
          IF( QISNAN(WRANGE(2,JDO20,MINDX))) WRANGE(2,JDO20,MINDX)=999
          IF (CSET_ID(JDO20,MINDX).GT.0) THEN
-           WRITE (LINE,FMT='(A6,1X,A,1X,A,1X,2F17.4,1X,I4)') 
+           WRITE (LINE,FMT='(A6,1X,A,1X,A,1X,1P,2E17.9,0P,1X,I4)') 
      +      'COLUMN',
      +      CLABEL(JDO20,MINDX),CTYPE(JDO20,MINDX),
      +      WRANGE(1,JDO20,MINDX),WRANGE(2,JDO20,MINDX),
