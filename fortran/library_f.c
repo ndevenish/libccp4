@@ -674,16 +674,12 @@ int /* logical */ btest_ (a, b)
 /* <AIX and HPUX support>=                                                  */
 
 #ifdef _AIX
-int isatty_ (FILE *fd) {
-  return(isatty(fd));
+int isatty_ (int *fd) {
+  return(isatty(*fd));
 }
 #endif
 
-#if defined (_AIX)
-void gerror_ (str, Lstr)
-#else
 void gerror  (str, Lstr)
-#endif
 char *str;
 int  Lstr;      
 {
