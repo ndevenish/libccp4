@@ -24,6 +24,9 @@
 
 static char rcsidhl[] = "$Id$";
 
+/* note order: this must be outside CCP4 namespace */
+#include "ccp4_parser.h"
+
 #ifdef  __cplusplus
 namespace CCP4 {
 extern "C" {
