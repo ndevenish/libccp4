@@ -809,15 +809,20 @@ int ccp4_lrtitl(const MTZ *mtz, char *title) {
   return(length);
 }
 
-int ccp4_lrhist(const MTZ *mtz, char history[][MTZRECORDLENGTH]) {
+int ccp4_lrhist(const MTZ *mtz, char history[][MTZRECORDLENGTH], int nlines) {
 
-  int i;
+  int i,nhist;
 
-  for (i = 0; i < mtz->histlines; ++i) {
+  if (nlines < mtz->histlines)
+    nhist = nlines;
+  else
+    nhist = mtz->histlines;
+
+  for (i = 0; i < nhist; ++i) {
     strncpy(history[i],mtz->hist + MTZRECORDLENGTH*i,MTZRECORDLENGTH);
   }
 
-  return mtz->histlines;
+  return nhist;
 }
 
 int ccp4_lrsort(const MTZ *mtz, int isort[5]) {
