@@ -190,7 +190,7 @@ C     ================================================================
 C
 C
 C---- Put map header into common block /MOHDR/ and open map file on unit
-C     IUNIT with logical name 'MAPOUT'
+C     IUNIT with logical name MAPNAM
 C 
 C  Call:  CALL MWRHDL(IUNIT,MAPNAM,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
 C        +            NV1,NV2,CELL,LSPGRP,LMODE)
