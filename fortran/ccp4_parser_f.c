@@ -411,20 +411,16 @@ FORTRAN_SUBR(PARSE,parse,
 	      int *ityp, float *fvalue, fpstr cvalue, int cvalue_len, int *idec,
 	      int *n))
 {
-  int  max_line_len;
+  char *temp_line;
   static int maxtok = 0;
   CCP4PARSERARRAY *parser = NULL;
 
+  temp_line = ccp4_FtoCString(FTN_STR(line), FTN_LEN(line));
+
   PARSER_DEBUG({
     puts("PARSE: starting");
-    printf("PARSE: line is initially \"%s\"\n",line);
+    printf("PARSE: line is initially \"%s\"\n",temp_line);
   })
-
-  /* Get the maximum line length
-     Use the FTN_LEN macro for this since we can't rely on
-     getting the line_len argument on all systems */
-  max_line_len = FTN_LEN(line);
-  PARSER_DEBUG(printf("PARSE: line length is %d\n",max_line_len);)
 
   /* Set a value for the maximum number of tokens
 
@@ -458,10 +454,8 @@ FORTRAN_SUBR(PARSE,parse,
   fparse_delimiters(parser,NULL,NULL);
   PARSER_DEBUG(puts("PARSER: delimiters set");)
   
-  /* Call ccp4_parse to do the work
-     NB: probably need to "cap" the line with a null character
-     first */
-  *n = ccp4_parse(line,parser);
+  /* Call ccp4_parse to do the work */
+  *n = ccp4_parse(temp_line,parser);
 
   PARSER_DEBUG(printf("PARSE: returned %d tokens from ccp4_parse\n",*n);)
 
@@ -473,6 +467,8 @@ FORTRAN_SUBR(PARSE,parse,
   /* Free the parser array */
   ccp4_parse_end(parser);
   PARSER_DEBUG(puts("PARSE: freed the memory, returning");)
+
+  free(temp_line);
 
   return;
 }
