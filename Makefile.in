@@ -118,7 +118,7 @@ $L(ccplib.o) : $(srcdir)/ccplib.f
 	-rm -rf ccplib.dir; mkdir ccplib.dir
 	echo '      SUBROUTINE CCPLIB' > ccplib.dir/ccplib.$F
 	echo '      END' >> ccplib.dir/ccplib.$F
-	cd ccplib.dir && fsplit $(srcdir)/ccplib.f >/dev/null && $(RMEMPTY) && \
+	cd ccplib.dir && $(bindir)/fsplit $(srcdir)/ccplib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done \
 	    && $(AR) ../$L *.o
@@ -130,7 +130,7 @@ $L(fftlib.o) : $(srcdir)/fftlib.f
 	-rm -rf fftlib.dir; mkdir fftlib.dir
 	echo '      SUBROUTINE FFTLIB' > fftlib.dir/fftlib.$F
 	echo '      END' >> fftlib.dir/fftlib.$F
-	cd fftlib.dir && fsplit $(srcdir)/fftlib.f >/dev/null && $(RMEMPTY) && \
+	cd fftlib.dir && $(bindir)/fsplit $(srcdir)/fftlib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done \
 	  && $(AR) ../$L *.o
@@ -142,7 +142,7 @@ $L(maplib.o) : $(srcdir)/maplib.f
 	-rm -rf maplib.dir; mkdir maplib.dir
 	echo '      SUBROUTINE MAPLIB' > maplib.dir/maplib.$F
 	echo '      END' >> maplib.dir/maplib.$F
-	cd maplib.dir && fsplit $(srcdir)/maplib.f >/dev/null && $(RMEMPTY) && \
+	cd maplib.dir && $(bindir)/fsplit $(srcdir)/maplib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
@@ -152,7 +152,7 @@ maplib : $L(maplib.o)
 
 $L(parser.o) : $(srcdir)/parser.f
 	-rm -rf parser.dir; mkdir parser.dir
-	cd parser.dir && fsplit $(srcdir)/parser.f && $(RMEMPTY);
+	cd parser.dir && $(bindir)/fsplit $(srcdir)/parser.f && $(RMEMPTY);
 # `-' for convex, sigh
 	-if test ! -f parser.dir/parser.$F; then \
 	  echo '      SUBROUTINE PRSER' > parser.dir/parser.$F; \
@@ -170,7 +170,7 @@ $L(rwbrook.o) : $(srcdir)/rwbrook.f
 	-rm -rf rwbrook.dir; mkdir rwbrook.dir
 	echo '      SUBROUTINE RWBROOK' > rwbrook.dir/rwbrook.$F
 	echo '      END' >> rwbrook.dir/rwbrook.$F
-	cd rwbrook.dir && fsplit $(srcdir)/rwbrook.f >/dev/null && $(RMEMPTY) && \
+	cd rwbrook.dir && $(bindir)/fsplit $(srcdir)/rwbrook.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
@@ -182,7 +182,7 @@ $L(modlib.o) : $(srcdir)/modlib.f
 	-rm -rf modlib.dir; mkdir modlib.dir
 	echo '      SUBROUTINE MODLIB' > modlib.dir/modlib.$F
 	echo '      END' >> modlib.dir/modlib.$F
-	cd modlib.dir && fsplit $(srcdir)/modlib.f >/dev/null && $(RMEMPTY) && \
+	cd modlib.dir && $(bindir)/fsplit $(srcdir)/modlib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
@@ -194,7 +194,7 @@ $L(symlib.o) : $(srcdir)/symlib.f
 	-rm -rf symlib.dir; mkdir symlib.dir
 	echo '      SUBROUTINE SYMLIB' > symlib.dir/symlib.$F
 	echo '      END' >> symlib.dir/symlib.$F
-	cd symlib.dir && fsplit $(srcdir)/symlib.f >/dev/null && $(RMEMPTY) && \
+	cd symlib.dir && $(bindir)/fsplit $(srcdir)/symlib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
@@ -206,7 +206,7 @@ $L(mtzlib.o) : $(srcdir)/mtzlib.f $(srcdir)/mtzlib.fh
 	-rm -rf mtzlib.dir; mkdir mtzlib.dir
 	echo '      SUBROUTINE MTZLIB' > mtzlib.dir/mtzlib.$F
 	echo '      END' >> mtzlib.dir/mtzlib.$F
-	cd mtzlib.dir && fsplit $(srcdir)/mtzlib.f >/dev/null && $(RMEMPTY) && \
+	cd mtzlib.dir && $(bindir)/fsplit $(srcdir)/mtzlib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
 	  && $(AR) ../$L *.o
@@ -218,7 +218,7 @@ $L(lgglib.o) : $(srcdir)/lgglib.f
 	-rm -rf lgglib.dir; mkdir lgglib.dir
 	echo '      SUBROUTINE LGGLIB' > lgglib.dir/lgglib.$F
 	echo '      END' >> lgglib.dir/lgglib.$F
-	cd lgglib.dir && fsplit $(srcdir)/lgglib.f >/dev/null && $(RMEMPTY) && \
+	cd lgglib.dir && $(bindir)/fsplit $(srcdir)/lgglib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
@@ -230,7 +230,7 @@ $L(harvlib.o) : $(srcdir)/harvlib.f $(srcdir)/harvest.inc $(srcdir)/harderiv.inc
 	-rm -rf harvlib.dir; mkdir harvlib.dir
 	echo '      SUBROUTINE HARVLIB' > harvlib.dir/harvlib.$F
 	echo '      END' >> harvlib.dir/harvlib.$F
-	cd harvlib.dir && fsplit $(srcdir)/harvlib.f >/dev/null && $(RMEMPTY) && \
+	cd harvlib.dir && $(bindir)/fsplit $(srcdir)/harvlib.f >/dev/null && $(RMEMPTY) && \
           for i in `pwd`/*.$F; do \
             $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
           && $(AR) ../$L *.o
@@ -242,7 +242,7 @@ $L(cciflib.o) : $(srcdir)/cciflib.f $(srcdir)/cciflib.fh
 	-rm -rf cciflib.dir; mkdir cciflib.dir
 	echo '      SUBROUTINE CCIFLIB' > cciflib.dir/cciflib.$F
 	echo '      END' >> cciflib.dir/cciflib.$F
-	cd cciflib.dir && fsplit $(srcdir)/cciflib.f >/dev/null && $(RMEMPTY) && \
+	cd cciflib.dir && $(bindir)/fsplit $(srcdir)/cciflib.f >/dev/null && $(RMEMPTY) && \
           for i in `pwd`/*.$F; do \
             $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
           && $(AR) ../$L *.o
@@ -254,7 +254,7 @@ $L(diskio.o) : $(srcdir)/diskio.f
 	-rm -rf diskio.dir; mkdir diskio.dir
 	echo '      SUBROUTINE DISKIO' > diskio.dir/diskio.$F
 	echo '      END' >> diskio.dir/diskio.$F
-	cd diskio.dir && fsplit $(srcdir)/diskio.f >/dev/null && $(RMEMPTY) && \
+	cd diskio.dir && $(bindir)/fsplit $(srcdir)/diskio.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
@@ -265,7 +265,7 @@ $L(plot84lib.o) : $(srcdir)/plot84lib.f
 	-rm -rf plot84lib.dir; mkdir plot84lib.dir
 	echo '      SUBROUTINE PLOT84LIB' > plot84lib.dir/plot84lib.$F
 	echo '      END' >> plot84lib.dir/plot84lib.$F
-	cd plot84lib.dir && fsplit $(srcdir)/plot84lib.f >/dev/null && $(RMEMPTY) && \
+	cd plot84lib.dir && $(bindir)/fsplit $(srcdir)/plot84lib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
@@ -277,7 +277,7 @@ $L(libhtml.o) : $(srcdir)/libhtml.f
 	-rm -rf libhtml.dir; mkdir libhtml.dir
 	echo '      SUBROUTINE LIBHTML' > libhtml.dir/libhtml.$F
 	echo '      END' >> libhtml.dir/libhtml.$F
-	cd libhtml.dir && fsplit $(srcdir)/libhtml.f >/dev/null && $(RMEMPTY) && \
+	cd libhtml.dir && $(bindir)/fsplit $(srcdir)/libhtml.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
@@ -289,7 +289,7 @@ $L(plotsubs.o) : $(srcdir)/plotsubs.f
 	-rm -rf plotsubs.dir; mkdir plotsubs.dir
 	echo '      SUBROUTINE PLOTSUBS' > plotsubs.dir/plotsubs.$F
 	echo '      END' >> plotsubs.dir/plotsubs.$F
-	cd plotsubs.dir && fsplit $(srcdir)/plotsubs.f >/dev/null && $(RMEMPTY) && \
+	cd plotsubs.dir && $(bindir)/fsplit $(srcdir)/plotsubs.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
@@ -334,7 +334,7 @@ $L(unix.o) : $(srcdir)/unix.m4
 	-rm -rf unix.dir; mkdir unix.dir
 	echo '      SUBROUTINE UNIX' > unix.dir/unix.f
 	echo '      END' >> unix.dir/unix.f
-	cd unix.dir && fsplit ../unix.f >/dev/null && $(RMEMPTY) && \
+	cd unix.dir && $(bindir)/fsplit ../unix.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
