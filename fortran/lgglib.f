@@ -3176,7 +3176,7 @@ c
       real xyz(3,natm)
       real b1(3),b2(3)
 c
-      radii = 0.
+      lgg_radii = 0.
       call averg(3,natm,xyz,b1)
       do i = 1, natm
        call arrps(3,1,xyz(1,i),b1,b2)
@@ -4901,7 +4901,7 @@ c	if (isp.ne.nsp) goto 10
         str(1:iend-ist) = key(ist:iend-1)
         NSYM=NSYM+1
         IF (MATSYM(SYM(1,1,nsym),%REF(STR),ICOL).EQ.0) GOTO 502
-        WRITE(6,*) 'Error in symop after colunm ',ICOLER
+        WRITE(6,*) 'Error in symop after colunm ',ICOL
         write(6,*) key
         write(6,*) str
         stop 'Check you file SYMOP'
@@ -5473,7 +5473,7 @@ c	call spstrunct(latnam)
         str(1:iend-ist) = key(ist:iend-1)
         NSYM=NSYM+1
         IF (MATSYM(SYM(1,1,nsym),%REF(STR),ICOL).EQ.0) GOTO 502
-        WRITE(6,*) 'Error in symop after colunm ',ICOLER
+        WRITE(6,*) 'Error in symop after colunm ',ICOL
         write(6,*) key
         write(6,*) str
         stop 'Check you file SYMOP'
