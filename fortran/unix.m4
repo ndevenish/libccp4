@@ -576,6 +576,8 @@ ifelse(_sgi,1,
 [C     Updating 3 array elements separately would be illegal aliasing,
 C     of course
       CALL IDATE(IDAY,IMONTH,IARRAY(3))],dnl VMS-style
+_esv,1,
+[      CALL IDATE(IDAY,IMONTH,IARRAY(3))],
 [      CALL IDATE (IARRAY)
       IDAY = IARRAY(1)
       IMONTH = IARRAY(2)])
