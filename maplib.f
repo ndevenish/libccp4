@@ -2506,7 +2506,7 @@ C---- Map header common
 C
 C     .. Parameters ..
       INTEGER LUNOUT, MAXSYM
-      PARAMETER (LUNOUT=6, MAXSYM=96)
+      PARAMETER (LUNOUT=6, MAXSYM=192)
 C     ..
 C     .. Arguments ..
       INTEGER IUNIT,NSYM
