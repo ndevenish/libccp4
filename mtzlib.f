@@ -9075,12 +9075,18 @@ C
 C
 C
 C
-C     =========================================================
-      SUBROUTINE RESET_MAGIC(MINDX,ADATA,BDATA,NCOL,VAL_MAGICB)
-C     =========================================================
+C     =============================================================
+      SUBROUTINE RESET_MAGIC(MINDX,ADATA,BDATA,NCOL,VAL_MAGICA,
+     +                                                  VAL_MAGICB)
+C     =============================================================
 C
 C     Resets an array containing Missing value flags VAL_MAGICA  to
 C                one  containing Missing value flags VAL_MAGICB
+C     If MINDX > 0 then VAL_MAGICA is taken to be the value of the MNF
+C                stored in the MTZ header, for MTZ file MINDX. Else the 
+C                passed value is taken. The MNF pertaining to the data 
+C                need not necessarily be the same as that stored in the
+C                header.
 C     This allows you to list arrays containing Nan entries.
 C     
 C
@@ -9100,6 +9106,10 @@ C     					"missing" values reset  to VAL_MAGIC
 C
 C     NCOL       (I)	INTEGER         Array size of ADATA
 C
+C     VAL_MAGICA (I)    REAL            If MINDX = 0 then this value will be
+C                                       treated as the MNF pertaining to the
+C                                       data. Otherwise 
+C
 C     VAL_MAGICB (I)	REAL            "Missing value" flag to reset in BDATA
 C                                        to allow record to be printed.
 C
@@ -9114,7 +9124,7 @@ C     .. Parameters ..
       PARAMETER (MAXSYM=192)
 C     ..
 C     .. Arguments ..
-      REAL ADATA(*),BDATA(*),VAL_MAGICB
+      REAL ADATA(*),BDATA(*),VAL_MAGICA,VAL_MAGICB
       INTEGER MINDX,NCOL
 C     ..
 C     .. Arrays in Common ..
@@ -9124,7 +9134,6 @@ C     .. Arrays in Common ..
       LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
-      REAL VAL_MAGICA
       INTEGER JDO10
       LOGICAL LVALMS
 C     ..
@@ -9147,12 +9156,14 @@ C     .. Save statement ..
 C     ..
 C
 C  If file only opened for Reading .
-      VAL_MAGICA = VAL_MISS(1,MINDX)
+      IF (MINDX .GT. 0) VAL_MAGICA = VAL_MISS(1,MINDX)
 C
 C   If the file has been opened for Writing VAL_SET(2,MINDX) will be set
 C      and VAL_MISS(2,MINDX) too 
 C
-      IF (VAL_SET(2,MINDX)) VAL_MAGICA = VAL_MISS(2,MINDX)
+      IF (MINDX .GT. 0) THEN
+        IF (VAL_SET(2,MINDX)) VAL_MAGICA = VAL_MISS(2,MINDX)
+      ENDIF
 C
       BDATA(1) = ADATA(1)
       BDATA(2) = ADATA(2)
