@@ -198,6 +198,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
         for (ixtal = 0; ixtal < nxtal; ++ixtal) {
           if (strcmp(crysin[ixtal],crystal) == 0) {
             jxtal = ixtal;
+            jxtalin[iiset] = jxtal;
           }
         }
         if (jxtal == -1) {
@@ -266,12 +267,17 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
   /* Allocate memory for input MTZ file */
   if (! (mtz = MtzMalloc(nxtal, nset))) return NULL;
+  if (debug) 
+    printf(" MtzGet: created mtz \n");
   mtz->filein = filein;
   mtz->nref = nref;
   mtz->ncol_read = ntotcol;
   mtz->nbat = nbat;
   mtz->batch = NULL;
   mtz->refs_in_memory = read_refs;
+
+  if (debug) 
+    printf(" MtzGet: starting 2nd pass \n");
 
   /* 2nd Pass: Copy dataset information to MTZ structure.
      Position at top of header */
@@ -391,7 +397,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
              mtz->mtzsymm.pgname);
        }
     else if (strncmp (mkey, "SYMM",4) == 0) {
-      symop_to_mat4(hdrrec+4,hdrrec+80,mtz->mtzsymm.sym[isym++][0]);
+      symop_to_mat4(hdrrec+4,hdrrec+strlen(hdrrec),mtz->mtzsymm.sym[isym++][0]);
        }
 
     else if (strncmp (mkey, "COLU",4) == 0) {
