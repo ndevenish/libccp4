@@ -12,7 +12,7 @@ C     fixme: the bit-twiddling should be in library.c, not here.
 C     amalgamate ccppsf and fdir/fext/froot.  also add tests of these
 C     routines to testlib.
 C
-C     ccplib.for,v 1.7 1992/09/14 18:47:13 fx Exp
+C     $Id$
 C
 C      CCFILL    Set specified number of elements of byte array
 C      CCPASZ    set array size suitable for current working set
@@ -115,8 +115,9 @@ C     ==========================================
 C
 C     Arrange to call subroutine ROUTNE with N array arguments each of
 C     length LENGTH (i) and type indicated by TYPE (i): 'i' == integer,
-C     'r' == real, 'd' == double precision, 'c'==complex.  TYPE elements
-C     may have either case.
+C     'r' == real, 'd' == double precision, 'c' == complex, 'b' ==
+C     "byte" (logical*1 or integer*1, unportable and deprecated) .  TYPE
+C     elements may have either case.
 C     Consider `call ccpalc (fred, 3, types, lens)' with types = (/'i',
 C     'r', 'c'/)  and lens = (/1000, 2000, 3000/).  This effectively does
 C        call fred (1000, arr1, 2000, arr2, 3000, arr3)
@@ -135,10 +136,10 @@ C Arguments:
 C ==========
 C
 C      ROUTNE (I)   EXTERNAL: routine to call
-C           N (I)   INTEGER: number of arguments to ROUTNE (<=9)
+C           N (I)   INTEGER: number of arguments to ROUTNE (<=12)
 C        TYPE (I)   CHARACTER*1 (*): type of arguments to ROUTNE:
 C                      'I': INTEGER; 'R': REAL; 'D': DOUBLE PRECISION;
-C                      'C': COMPLEX
+C                      'C': COMPLEX; 'B': LOGICAL*1 or INTEGER*1
 C      LENGTH (I)   INTEGER*(*): number of elements in each (array)
 C                       argument of ROUTNE
 C_END_CCPALC
@@ -151,15 +152,15 @@ C     .. Array Arguments ..
       INTEGER LENGTH (*)
 C     ..
       EXTERNAL ROUTNE, CCPAL1, CCPUPC
-      INTEGER I, ITYPE (9)
-      CHARACTER TTYPE (9)
+      INTEGER I, ITYPE (12)
+      CHARACTER TTYPE (12)
 C     ..
-      IF (N.LT.1 .OR. N.GT.9)
+      IF (N.LT.1 .OR. N.GT.12)
      +     CALL CCPERR (1, 'CCPALC: bad number of arguments')
       DO 10 I=1,N
         TTYPE (I) = TYPE (I)
         CALL CCPUPC (TTYPE (I))
-        ITYPE (I) = INDEX ('IRDC', TTYPE (I))
+        ITYPE (I) = INDEX ('IRDCB', TTYPE (I))
         IF (ITYPE (I) .EQ. 0) CALL CCPERR (1, 'CCPALC: bad TYPE: '//
      +       TYPE (I))
         IF (LENGTH (I).LE.0) CALL CCPERR (1, 'CCPALC: length <=0')
@@ -174,10 +175,10 @@ C     =================================================
 C
 C     Arrange to call subroutine ROUTNE with N array arguments each of
 C     length LENGTH (i) and type indicated by TYPE (i): 'i' == integer,
-C     'r' == real, 'd' == double precision, 'c'==complex.  TYPE elements
-C     may have either case.  LENGTH points to an array of environment
-C     variable (logical) names from which integer values are read.  The
-C     lengths default to values from LENDEF.
+C     'r' == real, 'd' == double precision, 'c' == complex, 'b' == byte.
+C     TYPE elements may have either case.  LENGTH points to an array of
+C     environment variable (logical) names from which integer values are
+C     read.  The lengths default to values from LENDEF.
 C     This is a convenient interface to CCPALC to allow configuring of
 C     the memory requirements on the command line where appropriate.
 C     This may be useful if the memory requirements can't be determined
@@ -187,10 +188,10 @@ C Arguments:
 C ==========
 C
 C      ROUTNE (I)   EXTERNAL: routine to call
-C           N (I)   INTEGER: number of arguments to ROUTNE (<=9)
+C           N (I)   INTEGER: number of arguments to ROUTNE (<=12)
 C        TYPE (I)   CHARACTER*1 (*): type of arguments to ROUTNE:
 C                      'I': INTEGER; 'R': REAL; 'D': DOUBLE PRECISION;
-C                      'C': COMPLEX
+C                      'C': COMPLEX; 'B': LOGICAL*1 or INTEGER*1
 C     LENGTH (I)   CHARACTER *(*): logical names representing the number
 C                       of elements in each (array) argument of ROUTNE
 C     LENDEF (I)   INTEGER (*): default lengths for the argument arrays
@@ -209,7 +210,7 @@ C     .. Array Arguments ..
       INTEGER LENDEF (*)
 C     ..
       EXTERNAL ROUTNE, CCPE2I, CCPALC, LUNSTO
-      INTEGER I, LENG (9), CCPE2I, LUNSTO
+      INTEGER I, LENG (12), CCPE2I, LUNSTO
 C     ..
       DO 10 I=1,N
         LENG (I) = CCPE2I (LENGTH (I), LENDEF (I))
@@ -2370,12 +2371,13 @@ C     .. Scalar Arguments ..
       CHARACTER PROG* (*),VDATE* (*), PNM*(*)
 C     ..
 C     .. Local Scalars ..
-      CHARACTER CTIME*8,DT2*8,DT*10,PR*10,UID*20
+      CHARACTER CTIME*8,DT2*8,DT*10,PR*20,UID*20,TMPPRG*20
       SAVE PR
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
-      EXTERNAL LENSTR
+      CHARACTER FROOT*20
+      EXTERNAL LENSTR, FROOT
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPDAT,UGTUID,UTIME
@@ -2390,7 +2392,7 @@ C
       CALL UGTUID(UID)
       CALL UTIME(CTIME)
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
- 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.8: ',
+ 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.10: ',
      +       A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
      +       /)
 C
@@ -2401,13 +2403,16 @@ C_BEGIN_CCPPNM
 C     SUBROUTINE CCPPNM (PNM)
 C     =======================
 C
-C     Returns the program name previously set by CCPVRS (/CCPRCS).
-C     Aborts if it hasn't been set.
+C     Returns the program name previously set by CCPVRS (/CCPRCS); if
+C     that isn't set, use arg(0).
 C
 C     Argument:
 C         PNM (O)   CHARACTER*(*)  Program name
 C_END_CCPPNM
-      IF (PR.EQ.' ') CALL CCPERR (1, 'CCPPNM: name not set by CCPVRS')
+      IF (PR.EQ.' ') THEN
+        CALL UGTARG(0,TMPPRG)
+        PR = FROOT(TMPPRG)
+      END IF
       PNM = PR
       END
 C
