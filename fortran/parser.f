@@ -1930,7 +1930,7 @@ C   NSYM  (I/O)  INTEGER        Number of symmetry operations already read,
 C                               including non-primitive.
 C                               (should be cleared to 0 at beginning)
 C
-C   SPGNAM  (O) CHARACTER*(*)   Space group name
+C   SPGNAM  (I/O) CHARACTER*(*)   Space group name
 C
 C   NUMSGP  (O) INTEGER         Space group number
 C
@@ -2006,7 +2006,8 @@ C
 C     
          END IF
       END IF
-      END
+      SPGNAM = SPGNAMS(1:LENSTR(SPGNAMS))
+      END     
 C     
 C_BEGIN_RDHEAD
 C     ======================================================
