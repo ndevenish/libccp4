@@ -177,12 +177,9 @@ FORTRAN_SUBR ( LROPEN, lropen,
  /* Make sure HKL are in base dataset */
  MtzAssignHKLtoBase(mtzdata[*mindx-1]);
 
- if (*iprint > 0) {
-   printf("\n HEADER INFORMATION FROM INPUT MTZ FILE \n");
-   printf(" Logical Name: %s   Filename: %s \n\n",
-     temp_name,fullfilename);
-   ccp4_lhprt(mtzdata[*mindx-1], *iprint);
- }
+ printf("\n OPENED INPUT MTZ FILE \n");
+ printf(" Logical Name: %s   Filename: %s \n\n",temp_name,fullfilename);
+ if (*iprint > 0) ccp4_lhprt(mtzdata[*mindx-1], *iprint);
 
  /* set some control variables for Fortran calls */
  irref[*mindx-1] = 0;
@@ -2593,12 +2590,9 @@ FORTRAN_SUBR ( LWCLOS, lwclos,
  } else {
    fullfilename = strdup(fileout[*mindx-1]);
  }
- if (*iprint > 0) {
-   printf("\n HEADER INFORMATION FROM OUTPUT MTZ FILE \n");
-   printf(" Logical Name: %s   Filename: %s \n\n",
-     fileout[*mindx-1],fullfilename);
-   ccp4_lhprt(mtzdata[*mindx-1], *iprint);
- }
+ printf("\n WRITTEN OUTPUT MTZ FILE \n");
+ printf(" Logical Name: %s   Filename: %s \n\n",fileout[*mindx-1],fullfilename);
+ if (*iprint > 0) ccp4_lhprt(mtzdata[*mindx-1], *iprint);
 
  wlun[*mindx-1] = 0;
  if (rlun[*mindx-1] == 0) {
