@@ -60,6 +60,7 @@ static char rcsid[] = "$Id$";
 
 #define MSPAC 4
 #define MAXSYM 192
+#define MAXSYMOPS 20
 
 static CCP4SPG *spacegroup = NULL;          /* allow more than one spacegroup ?? */
 static CCP4SPG *spacegrp[MSPAC] = {NULL};   /* cf. Eugene's channel for rwbrook */
@@ -83,35 +84,113 @@ FORTRAN_SUBR ( INVSYM, invsym,
   invert4matrix(a,ai);
 }
 
+/* symfr_driver
+
+   Convert one or more symop description strings into 4x4 matrix
+   representations via multiple calls to symop_to_mat4.
+
+   "line" is a string containing one or more symop description
+   strings to be translated into matrix representations.
+   "rot" is an array of 4x4 matrices in which the symops are
+   returned.
+
+   On success, symfr returns the number of symops translated and
+   stored; on failure -1 is returned.
+
+   See comments for SYMFR2 for description of the symop formats.
+*/
+int symfr_driver (const char *line, float rot[MAXSYMOPS][4][4])
+{
+  CCP4PARSERARRAY *symops=NULL;
+  int i,j,k;
+  int ns=0,nsym=0,maxsymops=MAXSYMOPS;
+  char *symop=NULL;
+  float tmp_rot[4][4];
+
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: symfr_driver");)
+
+  /* Set up a parser structure to break the line up into
+     individual symop strings */
+  if ((symops = ccp4_parse_start(maxsymops)) == NULL) {
+    /* Couldn't set up a parser structure - abort */
+    printf(" symfr_driver: failed to set up parser structure for reading symops.\n");
+    return -1;
+  }
+
+  /* Scan the line for multiple symop strings separated by
+     spaces */
+  ccp4_parse_delimiters(symops," ","");
+  if ((ns = ccp4_parse(line,symops)) > 0) {
+
+    /* Loop over symop stings and process */
+    for (i=0; i<ns; ++i) {
+      symop = symops->token[i].fullstring;
+
+      /* Ignore any floating asterisks and go to the next token */
+      if (strlen(symop) == 1 && symop[0] == '*') continue;
+
+      /* Translate */
+      if (!symop_to_mat4(symop,symop+strlen(symop),tmp_rot[0])) {
+	/* Error from symop_to_mat4 */
+	if (symops) ccp4_parse_end(symops);
+	return -1;
+      } else {
+	/* Load result into the appropriate array location */
+	for (j = 0; j < 4; ++j) 
+	  for (k = 0; k < 4; ++k) 
+	    rot[nsym][j][k] = tmp_rot[j][k];
+	nsym++;
+      }
+    }
+  }
+
+  /* Tidy up and return the number of symops */
+  if (symops) ccp4_parse_end(symops);
+  return (nsym+1);
+}
+
 /* Now same as symfr2 */
 FORTRAN_SUBR ( SYMFR3, symfr3,
-               (const fpstr icol, const int *i1, int *ns, float rot[MAXSYM][4][4],
+               (const fpstr icol, const int *i1, int *nsym, float rot[MAXSYM][4][4],
                      int *eflag, int icol_len),
-               (const fpstr icol, const int *i1, int *ns, float rot[MAXSYM][4][4],
+               (const fpstr icol, const int *i1, int *nsym, float rot[MAXSYM][4][4],
                      int *eflag),
-               (const fpstr icol, int icol_len, const int *i1, int *ns, 
+               (const fpstr icol, int icol_len, const int *i1, int *nsym, 
                      float rot[MAXSYM][4][4], int *eflag))
+/* symfr3   ---- Read and interpret symmetry operations
 
+   This is the same as symfr2 except that it doesn't abort on error
+   Instead the error status is returned in eflag (0=success, otherwise
+   indicates an error occured).
+*/
 { 
   char *temp_name;
-  int i,j,k,nsym;
-  float tmp_rot[4][4];
+  int i,j,k,ns;
+  float tmp_rot[MAXSYMOPS][4][4];
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: SYMFR3");)
 
+  /* Get the input string to interpret */
   temp_name = ccp4_FtoCString(FTN_STR(icol)+(*i1-1), FTN_LEN(icol)-(*i1-1));
-  nsym = symop_to_mat4( temp_name, temp_name+strlen(temp_name), tmp_rot[0]);
-  for (i = 0; i < nsym; ++i)
-    for (j = 0; j < 4; ++j) 
-      for (k = 0; k < 4; ++k) 
-        rot[*ns+i-1][j][k] = tmp_rot[k][j];
-  *ns += nsym - 1;
-  *eflag = 0;
-
-  free(temp_name);
+  /* Fetch the matrices */
+  if ((ns = symfr_driver(temp_name,tmp_rot)) >= 0) {
+    /* Store the matrices in Fortran ordering
+       i.e. reverse of that normally used in C */
+    for (i = 0; i < ns; ++i)
+      for (j = 0; j < 4; ++j) 
+	for (k = 0; k < 4; ++k) 
+	  rot[*nsym+i][j][k] = tmp_rot[i][k][j];
+    *nsym = *nsym + ns - 1;
+    *eflag = 0;
+  } else {
+    /* Error occured in symfr_driver - return error*/
+    *eflag = 1;
+  }
+  /* Tidy up */
+  if (temp_name) free(temp_name);
+  return;
 }
 
-/* This is Charles' version */
 FORTRAN_SUBR( SYMFR2, symfr2,
 	      (fpstr symchs, int *icol, int *nsym, float rot[MAXSYM][4][4], int symchs_len),
 	      (fpstr symchs, int *icol, int *nsym, float rot[MAXSYM][4][4]),
@@ -119,14 +198,18 @@ FORTRAN_SUBR( SYMFR2, symfr2,
 /* symfr2   ---- Read and interpret symmetry operations
 
    SYMFR2 recognises the following types of input:
-      real space symmetry operatoions, e.g. X+1/2, Y-X, Z
+      real space symmetry operatoions, e.g. X+1/2,Y-X,Z
       reciprocal space operations,     e.g. h,l-h,-k
-      reciprocal axis vectors,         e.g. a*+c*,c*, -b*
+      reciprocal axis vectors,         e.g. a*+c*,c*,-b*
       real space axis vectors,         e.g. a,c-a,-b
 
    The subroutine returns the appropriate 4x4 transformation
    matrix for each operation.  The calling program must 
    interpret the resutling matrix(ces) correctly.
+
+   Multiple symmetry operations can be specified in a single
+   input line, and must be separated by spaces or by * (with
+   spaces either side).
 
    On entry, icol is the first character to look at 
              nsym is the number of the first symmetry
@@ -137,19 +220,29 @@ FORTRAN_SUBR( SYMFR2, symfr2,
 {
   char *temp_name;
   int i,j,k,ns;
-  float tmp_rot[4][4];
+  float tmp_rot[MAXSYMOPS][4][4];
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: SYMFR2");)
 
+  /* Get the input string to interpret */
   temp_name = ccp4_FtoCString(FTN_STR(symchs)+(*icol-1), FTN_LEN(symchs)-(*icol-1));
-  ns = symop_to_mat4( temp_name, temp_name+strlen(temp_name), tmp_rot[0]);
-  for (i = 0; i < ns; ++i)
-    for (j = 0; j < 4; ++j) 
-      for (k = 0; k < 4; ++k) 
-        rot[*nsym+i-1][j][k] = tmp_rot[k][j];
-  *nsym += ns - 1;
-
-  free(temp_name);
+  /* Fetch the matrices */
+  if ((ns = symfr_driver(temp_name,tmp_rot)) >= 0) {
+    /* Store the matrices in Fortran ordering
+       i.e. reverse of that normally used in C */
+    for (i = 0; i < ns; ++i)
+      for (j = 0; j < 4; ++j) 
+	for (k = 0; k < 4; ++k) 
+	  rot[*nsym+i][j][k] = tmp_rot[i][k][j];
+    *nsym = *nsym + ns - 1;
+  } else {
+    /* Error occured in symfr_driver - abort */
+    ccperror(1," **SYMMETRY OPERATOR ERROR**");
+    return;
+  }
+  /* Tidy up */
+  if (temp_name) free(temp_name);
+  return;
 }
 
 /** Fortran wrapper for mat4_to_symop.
