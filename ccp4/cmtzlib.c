@@ -97,10 +97,10 @@ MTZ *MtzGet(const char *logname, int read_refs)
   int jxtalin[MSETS];
   char mkey[4], keyarg[76], hdrrec[MTZRECORDLENGTH+1], label[30], type[3];
   int i, j, hdrst, ntotcol, nref, ntotset=0, nbat, nhist=0, icolin;
-  int ixtal, jxtal, iset, iiset, icset, nxtal=0, nset[MCOLUMNS]={0}, isym=0;
+  int ixtal, jxtal, iset, iiset, icset, nxtal=0, nset[MXTALS]={0}, isym=0;
   int indhigh[3],indlow[3],isort[5],ind_xtal,ind_set,ind_col[3],debug=0;
   float min,max,totcell[6],minres,maxres;
-  float refldata[MCOLUMNS];
+  float *refldata;
   double coefhkl[6];
 
   /* For cparser */
@@ -232,6 +232,10 @@ MTZ *MtzGet(const char *logname, int read_refs)
        may imply new crystal in hierarchy. */
     else if (ccp4_keymatch(key, "PROJ")) {
       ++iiset;
+      if (iiset >= MSETS) {
+        printf("MtzGet: Maximum number of datasets exceeded! \n");
+        return NULL;
+      }
       strcpy(project,"dummy");
       if (ntok > 2) strcpy(project,token[2].fullstring);
       strcpy(crystal,project);
@@ -246,6 +250,10 @@ MTZ *MtzGet(const char *logname, int read_refs)
       newproj=0;
       if (jxtal == -1) {
         ++nxtal;
+        if (nxtal > MXTALS) {
+          printf("MtzGet: Maximum number of crystals exceeded! \n");
+          return NULL;
+        }
         jxtalin[iiset]=nxtal-1;
         strcpy(projin[nxtal-1],project);
         strcpy(crysin[nxtal-1],crystal);
@@ -270,6 +278,10 @@ MTZ *MtzGet(const char *logname, int read_refs)
         }
         if (jxtal == -1) {
           ++nxtal;
+          if (nxtal > MXTALS) {
+            printf("MtzGet: Maximum number of crystals exceeded! \n");
+            return NULL;
+          }
           jxtalin[iiset]=nxtal-1;
           strcpy(projin[nxtal-1],project);
           strcpy(crysin[nxtal-1],crystal);
@@ -303,6 +315,10 @@ MTZ *MtzGet(const char *logname, int read_refs)
             printf(" %f %f \n",cellin[jxtal][i],cell[i]);
 	}
         ++nxtal;
+        if (nxtal > MXTALS) {
+          printf("MtzGet: Maximum number of crystals exceeded! \n");
+          return NULL;
+        }
         jxtalin[iiset]=nxtal-1;
         strcpy(projin[nxtal-1],project);
         strcpy(crysin[nxtal-1],crystal);
@@ -493,6 +509,10 @@ MTZ *MtzGet(const char *logname, int read_refs)
 	return(NULL);
       }
       ++icolin;
+      if (icolin >= MCOLUMNS) {
+        printf("MtzGet: Maximum number of columns exceeded! \n");
+        return NULL;
+      }
       strcpy(label,token[1].fullstring);
       strcpy(type,token[2].fullstring);
       min = (float) token[3].value;
@@ -654,6 +674,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
   if (read_refs) {
 
+    refldata = (float *) ccp4_utils_malloc(ntotcol*sizeof(float));
     /* Read all reflections into memory - make this optional? */
     for (i = 0; i < mtz->nref_filein; ++i) {
       MtzRrefl(filein, ntotcol, refldata);
@@ -1253,7 +1274,7 @@ int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int i
   int i,j,k;
   int ind[3],ixtal;
   unsigned int colin;
-  float refldata[MCOLUMNS];
+  float *refldata;
   double coefhkl[6];
 
   /* If we are past the last reflection, indicate this with return value. */
@@ -1262,6 +1283,7 @@ int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int i
 
   /* If reflections not in memory, read next record from file. */
   if (!mtz->refs_in_memory) {
+    refldata = (float *) ccp4_utils_malloc(mtz->ncol_read*sizeof(float));
     if (MtzRrefl( mtz->filein, mtz->ncol_read, refldata) == EOF) return 1;
   }
 
@@ -1312,7 +1334,7 @@ int ccp4_lrreff(const MTZ *mtz, float *resol, float adata[], int logmss[],
   int icol,l;
   int ind[3],ixtal,ind_xtal,ind_set,ind_col[3];
   unsigned int colin;
-  float refldata[MCOLUMNS];
+  float *refldata;
   double coefhkl[6];
   union float_uint_uchar uf;
 
@@ -1322,6 +1344,7 @@ int ccp4_lrreff(const MTZ *mtz, float *resol, float adata[], int logmss[],
 
   /* If reflections not in memory, read next record from file. */
   if (!mtz->refs_in_memory) {
+    refldata = (float *) ccp4_utils_malloc(mtz->ncol_read*sizeof(float));
     if (MtzRrefl( mtz->filein, mtz->ncol_read, refldata) == EOF) return 1;
   }
 
@@ -2263,7 +2286,7 @@ int MtzPut(MTZ *mtz, const char *logname)
  int i, j, k, l, hdrst, icol, numbat, isort[5], debug=0;
  int ind[3],ind_xtal,ind_set,ind_col[3],length;
  double coefhkl[6];
- float res,refldata[200];
+ float res,refldata[MCOLUMNS];
  int nwords=NBATCHWORDS,nintegers=NBATCHINTEGERS,nreals=NBATCHREALS;
  float buf[NBATCHWORDS];
  int *intbuf = (int *) buf;
@@ -3096,7 +3119,7 @@ MTZCOL *MtzAddColumn(MTZ *mtz, MTZSET *set, const char *label,
   union float_uint_uchar uf;
   MTZCOL *col;
 
-  if (set->ncol == 200) { 
+  if (set->ncol == MCOLUMNS) { 
     printf("MtzAddColumn: No more columns! \n");
     return NULL;
   }
