@@ -531,12 +531,14 @@ C
 C       IFAIL (I/O) INTEGER: ON INPUT     =0, STOP ON OPEN FAILURE
 C                                         =1, CONTINUE AFTER OPEN FAILURE
 C                                             (only on file not found)
+C                                         =-1, As 0, but silent on success
+C                                             (equivalent to negative IUN)
 C                            ON OUTPUT    UNCHANGED IF FILE OPEN OK
 C                                         =-1, ERROR IN OPENING FILE
 C_END_CCPDPN
 C
 C     .. Scalar Arguments ..
-      INTEGER IFAIL,IUN,LREC
+      INTEGER IFAIL,IUN,IUN1,LREC
       CHARACTER LOGNAM* (*),STATUS* (*),TYPE* (*)
 C     ..
 C     .. Local Scalars ..
@@ -577,7 +579,14 @@ C
       ERRSTR(LENSTR(ERRSTR)+2:) = TYPE
       CALL CCPERR(1,ERRSTR)
 C
-   40 CALL CCPOPN(IUN,LOGNAM,ISTAT,ITYPE,LREC,IFAIL)
+ 40   CONTINUE
+      IUN1 = IUN
+C  If IFAIL lt 0 No open message from CCPOPN
+      IF(IFAIL.LT.0 .AND. IUN.GT.0) THEN
+        IUN1 = -IUN
+        IFAIL = 0
+      ENDIF
+      CALL CCPOPN(IUN1,LOGNAM,ISTAT,ITYPE,LREC,IFAIL)
 C
       END
 C
