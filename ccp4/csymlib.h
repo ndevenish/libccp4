@@ -245,6 +245,15 @@ int ccp4spg_name_equal(const char *spgname1, const char *spgname2);
 */
 char *ccp4spg_to_shortname(char *shortname, const char *longname);
 
+/** Compare two point group names. Blanks are removed when
+ * making the comparison. Strings are converted to upper
+ * case before making the comparison. Any initial "PG" is ignored.
+ * @param pgname1 First point group name.
+ * @param pgname2 Second point group name.
+ * @return 1 if they are equal else 0.
+*/
+int ccp4spg_pgname_equal(const char *pgname1, const char *pgname2);
+
 /** Function to normalise translations of a symmetry operator,
  * i.e. to ensure 0.0 <= op.trn[i] < 1.0.
  * @param op pointer to symmetry operator.

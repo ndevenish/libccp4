@@ -728,6 +728,33 @@ char *ccp4spg_to_shortname(char *shortname, const char *longname) {
   return ch2;
 }
 
+int ccp4spg_pgname_equal(const char *pgname1, const char *pgname2) {
+
+  char *ch1, *ch2, *pgname1_upper, *pgname2_upper;
+
+  pgname1_upper = strdup(pgname1);
+  strtoupper(pgname1_upper,pgname1);
+  pgname2_upper = strdup(pgname2);
+  strtoupper(pgname2_upper,pgname2);
+
+  ch1 = pgname1_upper;
+  if (pgname1_upper[0] == 'P' && pgname1_upper[1] == 'G') ch1 += 2;
+  ch2 = pgname2_upper;
+  if (pgname2_upper[0] == 'P' && pgname2_upper[1] == 'G') ch2 += 2;
+  while (*ch1 == *ch2) {
+    if (*ch1 == '\0' && *ch2 == '\0') {
+      free(pgname1_upper);
+      free(pgname2_upper);
+      return 1;
+    }
+    while (*(++ch1) == ' ') ;
+    while (*(++ch2) == ' ') ;
+  }
+  free(pgname1_upper);
+  free(pgname2_upper);
+  return 0;
+}
+
 ccp4_symop *ccp4spg_norm_trans(ccp4_symop *op) {
 
   int i;
@@ -1090,7 +1117,10 @@ void ccp4spg_set_epsilon_zones(CCP4SPG* sp) {
   ihkl[11][0] = 1; ihkl[11][1] = 1; ihkl[11][2] = 1; 
   ihkl[12][0] = 1; ihkl[12][1] = 2; ihkl[12][2] = 3; 
 
-  /* loop over all possible epsilon zones */
+  /* Loop over all possible epsilon zones, except the catch-all 13th. For each 
+     zone, "neps" counts the number of symmetry operators that map a representative
+     reflection "ihkl" to itself. At least the identity will do this. If any
+     more do, then this is a relevant epsilon zone. */
   for (i = 0; i < 12; ++i) {
    sp->epsilon[i] = 0;
    neps = 0;
