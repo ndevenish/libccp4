@@ -1818,7 +1818,7 @@ int MtzSetSortOrder(MTZ *mtz, MTZCOL *colsort[5]) {
   int i;
 
   for (i = 0; i < 5; ++i) 
-    if (colsort[i]) mtz->order[i] = colsort[i];
+    mtz->order[i] = colsort[i];
 
   return 1;
 }

@@ -846,10 +846,11 @@ int ccp4_lwtitl(MTZ *mtz, const char *ftitle, int flag);
 /** Sets the sort order in the MTZ header. The sort order is
  * a list of columns to be used for sorting, to be applied in
  * the order they appear in the list, i.e. sort first on
- * colsort[0], then on colsort[1], etc.
+ * colsort[0], then on colsort[1], etc. If there are less than
+ * 5 columns to be used for sorting, some of colsort[] may be NULL.
  * @param mtz Pointer to MTZ struct
  * @param colsort Array of pointers to columns.
- * @return void
+ * @return 1 on success
  */
 int MtzSetSortOrder(MTZ *mtz, MTZCOL *colsort[5]);
 
