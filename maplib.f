@@ -330,13 +330,16 @@ C     .. Common blocks ..
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
      +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
+
+      COMMON /MOHSUM/  SUMRHO, SUMRH2, OFFSTR
+      DOUBLE PRECISION SUMRHO, SUMRH2, OFFSTR
       COMMON /MSTRM/LSTRM(12)
 C     ..
 C     .. Equivalences ..
       EQUIVALENCE (NC,HEADER(1))
 C     ..
 C     .. Save statement ..
-      SAVE /MSTRM/,/MOHDR/,FILE
+      SAVE /MSTRM/,/MOHDR/,/MOHSUM/,FILE
 C     ..
 C     .. Data statements ..
 C
@@ -369,6 +372,9 @@ C
         AMAX = -99999999.0
         AMEAN = 0.0
         ARMS  = 0.0
+        SUMRHO = 0.0
+        SUMRH2 = 0.0
+        OFFSTR = 2.0*QOFFSET
         DO 30 I = 1,20
           DO 20 J = 1,10
             READ (BLANK,FMT=6002) LABELS(I,J)
