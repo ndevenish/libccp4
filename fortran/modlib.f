@@ -511,6 +511,7 @@ C      DATA RANGE/1D-12/
 C  Alternative lapack routine - only marginally tested
       LAPACK = .FALSE.
       IF (LAPACK) THEN
+       NVECTORS = 0
        IF (N.GT.NMAX) 
      +    CALL CCPERR(1,'s/r EIGEN_RS_ASC: redimension NMAX!')
        IF (MV.EQ.0) JOBZ = 'V'
