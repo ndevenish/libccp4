@@ -719,6 +719,7 @@ C Keeping the formfactor as an integer saves an appreciable amount of
 C time when reading this clumsy file...]
 C        IF(I.GT.0)GO TO 480
         IAT=BROOK(13)//BROOK(14)
+        CALL CCPUPC(IAT)
 C
         DO 452 I=6,8
           IF(IAT.EQ.IATM(I))GO TO 480
@@ -1760,3 +1761,130 @@ C
      .+AC(4)*IK*IL+AC(5)*IL*IH+AC(6)*IH*IK)
       RETURN
       END
+
+
+C     ====================================================
+      SUBROUTINE SFREAD(ID,NG,A,B,C,IWT,IELEC,CU,MO,
+     +                  Ifail,IFILFF)
+C     =====================================================
+C
+C  Inputs: ID     atom identifier
+C          This should match an atom type in the atomsf.lib
+C          If an atom is identified as NE2+ say, characters are 
+C          subtracted from the ID till a match is found, or there are 
+C          no characters left. 
+C          EG: Routine tests first NE2+, then NE2, then NE, then N.
+C            All matching checks UPPER CASE strings.
+C
+C          NG     num. of gaussian approximations (2 or 5 (default))
+C          IFILFF  .TRUE. if want to open the library file assigned
+C                 to ATOMSF (default `atomsf.lib')
+C
+C  Output: A(4)   coefficient for structure factor calculation
+C          B(4)   coefficient for structure factor calculation
+C          C      coefficient for structure factor calculation
+C          IWT    atomic weight
+C          IELEC  number of electrons
+C          CU(2)  delta F' and delta F'' for Cu
+C          MO(2)  delta F' and delta F'' for Mo
+C          Ifail  = -1 if atom not found at all
+C                 =  0 OK
+C                 =  1 for two gaussian case that does not exist
+C          IFILFF  set to .FALSE. to prevent re-opening the file
+C
+C     .. Scalar Arguments ..
+      REAL C
+      INTEGER IELEC,Ifail,IWT,NG
+      LOGICAL IFILFF
+      CHARACTER ID*4,IDCHK*4
+C     ..
+C     .. Array Arguments ..
+      REAL A(4),B(4),CU(2),MO(2)
+C     ..
+C     .. Local Scalars ..
+      INTEGER NGauss
+      CHARACTER ID2*6,IDIN*6
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL CCPDPN,CCPERR
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC CHAR,ICHAR,LGE,LLE
+C     ..
+      Ifail  = -1
+       IDCHK = ID
+       CALL CCPUPC(IDCHK)
+      ID2    = IDCHK//'  '
+      NGauss = NG
+C
+      IF (NGauss.EQ.2) THEN
+        ID2(6:6) = '2'
+      ELSE
+        NGauss = 5
+      END IF
+C
+C---- Check to open file
+C
+      IF (IFILFF) THEN
+        IFILFF = .FALSE.
+        Ifail  = 1
+        CALL CCPDPN(45,'ATOMSF','READONLY','F',0,Ifail)
+        IF (Ifail.LT.0)  GO TO 30
+      ELSE
+        REWIND 45
+      END IF
+C
+C
+C---- Search for identifier
+        IFAIL = -1
+        LID = LENSTR(ID)
+       DO 25 NID = LID,1,-1
+       REWIND 45
+C
+   10 CONTINUE
+      READ (45,FMT=6002,END=50,ERR=40) IDIN
+C
+      CALL CCPUPC(IDIN)
+      IF (ID2(1:4).EQ.IDIN(1:4)) THEN
+        Ifail = 1
+        IF (NGauss.NE.2 .OR. IDIN(6:6).NE.' ') GO TO 60
+      END IF
+C
+      GO TO 10
+C
+C---- Error opening library file
+C
+   30 CALL CCPERR(1,'Error opening library file')
+C
+C---- Error reading library file
+C
+   40 CALL CCPERR(1,'Error reading library file')
+C
+C---- No match
+C
+C---- No match
+C
+   50 CONTINUE
+      CALL CCPERR
+     +  (0,' No match for full atom ID - subtract one character ')
+        IF(NID.GT.1)ID2 = ID2(1:NID-1)//' '//ID2(NID+1:6)
+        IF(NID.GT.1)ID  = ID (1:NID-1)//' '
+  25  CONTINUE
+      CALL CCPERR(1,'No match for atom ID')
+C
+C---- Matched atom
+C
+   60 READ (45,FMT=6006) IWT,IELEC,C
+      READ (45,FMT=6008) A(1),A(2),A(3),A(4)
+      READ (45,FMT=6008) B(1),B(2),B(3),B(4)
+      READ (45,FMT=6008) CU(1),CU(2),MO(1),MO(2)
+      Ifail = 0
+C
+C---- Format statements
+C
+ 6002 FORMAT (A6)
+ 6004 FORMAT (1X)
+ 6006 FORMAT (2X,I8,2X,I8,2X,F14.6)
+ 6008 FORMAT (4 (2X,F14.6))
+      END
+C
