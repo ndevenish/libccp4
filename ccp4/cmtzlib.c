@@ -326,7 +326,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
        don't increment as we already have it. */
     else if (ccp4_keymatch(key, "DATA")) {
       if ( ntok <= 2 || (ntok > 2 && strcmp(token[2].fullstring,"HKL_base")) )
-        ++nset[nxtal-1];
+        ++nset[jxtalin[iiset]];
     }
 
     /* DCELL line. */
@@ -353,17 +353,17 @@ MTZ *MtzGet(const char *logname, int read_refs)
           free(filename);
           return NULL;
         }
-        jxtalin[iiset]=nxtal-1;
         strcpy(projin[nxtal-1],project);
         strcpy(crysin[nxtal-1],crystal);
 	/* Try to make crystal name unique */
         sprintf(crysin[nxtal-1]+strlen(crystal),"%d",nxtal);
 	/* correct DATASET increment */
-        --nset[nxtal-2];
-        ++nset[nxtal-1];
+        --nset[jxtalin[iiset]];
+        jxtalin[iiset]=nxtal-1;
+        ++nset[jxtalin[iiset]];
       }
       for (i = 0; i < 6; ++i) 
-        cellin[nxtal-1][i] = cell[i];
+        cellin[jxtalin[iiset]][i] = cell[i];
     }
 
     istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
