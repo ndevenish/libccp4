@@ -86,9 +86,16 @@ MMDBOBJS = bfgs_min.o mmdb_chain.o    mmdb_manager.o  mmdb_symop.o \
            mmdb_graph.o  mmdb_selmngr.o  mmdb_align.o \
            mmdb_tables.o math_.o mmdb_sbase.o mmdb_uddata.o \
            mmdb_xml.o   mmdb_bondmngr.o mmdb_ficif.o random_n.o
+CORELIBFILES = $(srcdir)/library_err.c $(srcdir)/ccp4_errno.h $(srcdir)/library_file.c \
+               $(srcdir)/library_file.h $(srcdir)/ccp4_file_err.h $(srcdir)/library_utils.c \
+               $(srcdir)/ccp4_sysdep.h $(srcdir)/ccp4_utils.h $(srcdir)/ccp4_array.h \
+               $(srcdir)/ccp4_parser.h $(srcdir)/cvecmat.h $(srcdir)/ccp4_types.h \
+               $(srcdir)/ccp4_vars.h  $(srcdir)/ccp4_spg.h $(srcdir)/ccp4_array.c \
+               $(srcdir)/ccp4_parser.c $(srcdir)/cvecmat.c
 CORELIBOBJS = library_err.o library_file.o  library_utils.o \
               ccp4_array.o ccp4_parser.o cvecmat.o
 CGENERALOBJS = ccp4_program.o ccp4_general.o
+CMTZFILES = $(srcdir)/cmtzlib.c $(srcdir)/cmtzlib.h $(srcdir)/mtzdata.h
 CMTZOBJS = cmtzlib.o
 UMTZOBJS = umtzlib.o
 MMTZOBJS = mmtzlib.o
@@ -664,6 +671,14 @@ distclean : realclean
 
 test : testlib
 	./testlib 
+
+libdistdir = $(srcdir)/libdist
+libdist : 
+	-rm -rf $(libdistdir); mkdir $(libdistdir)
+	$(INSTALL_DATA) $(CMTZFILES) $(libdistdir)
+	$(INSTALL_DATA) $(CORELIBFILES) $(libdistdir)
+	$(INSTALL_DATA) $(srcdir)/libdist-configure.in $(libdistdir)/configure.in
+	$(INSTALL_DATA) $(srcdir)/libdist-Makefile.in $(libdistdir)/Makefile.in
 
 # Local Variables:
 # mode:makefile
