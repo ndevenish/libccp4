@@ -386,7 +386,6 @@ C_END_CCPCPI
 C
 C====== Specification statements
 C
-      LOGICAL SIGNED, SWAPB
       INTEGER IA(*)
       BYTE IB(*)
       INTEGER*2 J2(2)
@@ -771,7 +770,7 @@ C     .. Parameters ..
       PARAMETER (ILIMIT=150,ISTRLN=200,IENV=20)
 C     ..
 C     .. Local Scalars ..
-      INTEGER EXEC,HELP,IARG,ICOUNT,IEND,IERR,II,ILOOP,IOSTAT,ISKIP,
+      INTEGER HELP,IARG,ICOUNT,IEND,IERR,II,ILOOP,ISKIP,
      +        ISTART,IUNIT,LOOP,RDENVF,RDLOGF,IHELP,LREC,IFAIL
       LOGICAL DINIT,EINIT,VAX
       CHARACTER FILNAM* (ISTRLN), LINE* (ISTRLN),
@@ -1827,10 +1826,10 @@ C     .. Local Scalars ..
      +          TMPNAM* (ISTRLN),LINE* (ISTRLN),SCRFIL* (ISTRLN)
 C     ..
 C     .. External Functions ..
-      INTEGER ACCESS,GETPID,LENSTR
+      INTEGER GETPID,LENSTR
       LOGICAL VAXVMS
       CHARACTER FDIR* (ISTRLN),FEXTN* (ISTRLN),FROOT* (ISTRLN)
-      EXTERNAL ACCESS,GETPID,LENSTR,VAXVMS,FDIR,FEXTN,FROOT
+      EXTERNAL GETPID,LENSTR,VAXVMS,FDIR,FEXTN,FROOT
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPERR,UGTARG,QPRINT,UGTENV,USTENV
@@ -2196,7 +2195,7 @@ C     .. External Subroutines ..
       EXTERNAL UCPUTM,USTIME
 C     ..
 C     .. Save statement ..
-      SAVE TIM0, CPUX
+      SAVE TIM0
 C     ..
       IF (IFLAG.EQ.0) THEN
         ELAPS = 0.0

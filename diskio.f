@@ -145,8 +145,8 @@ C     .. External Subroutines ..
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
-      EXTERNAL CCPEXS, LENSTR, VAXVMS
-      LOGICAL CCPEXS, VAXVMS
+      EXTERNAL CCPEXS, LENSTR
+      LOGICAL CCPEXS
 C     ..
 C     .. Data statements ..
       DATA MODES/'UNKNOWN','SCRATCH','OLD','NEW','READONLY'/
