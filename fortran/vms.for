@@ -94,7 +94,8 @@ C Arguments: INTEGER       STATUS
 C            CHARACTER*(*) ERRSTR
 C
 C Usage:     CALL UGERR(STATUS, ERRSTR)
-C                                                    
+C
+      INCLUDE       '($SSDEF)'
       INTEGER       STATUS,IPRINT,ISTAT
       CHARACTER*(*) ERRSTR
       INTEGER       ISTART,IEND,COND,IFLAGS,IRET
@@ -104,22 +105,22 @@ C---- IFLAGS masks out irrelevant parts if the error message
 C
       IFLAGS = 13
 C
-C---- Set up print option
-C
-      IPRINT = 0                                  
-      IF (STATUS .LT. 0) THEN
-        IPRINT = 1
-        STATUS = -STATUS
-      ENDIF
-C
 C---- Remember STATUS because a call to ERRSNS destroys it !
 C
       ISTAT = STATUS
 C
+C---- Set up print option
+C
+      IPRINT = 0                                  
+      IF (ISTAT .LT. 0) THEN
+        IPRINT = 1
+        ISTAT = -ISTAT
+      ENDIF
+C
 C---- Get error message from system
 C
-      IF (STATUS.NE.0) THEN
-        CALL ERRSNS (STATUS,,,,COND)
+      IF (ISTAT.NE.0) THEN
+        CALL ERRSNS (ISTAT,,,,COND)
       ELSE
         CALL ERRSNS (,,,,COND)
       ENDIF
@@ -132,16 +133,14 @@ C---- If not a fortran error then get system error instead
 C
       IF (IRET .EQ. SS$_MSGNOTFND) 
      +    IRET = LIB$SYS_GETMSG(ISTAT,ILEN,ERRSTR,IFLAGS)
+C      WRITE (6,*) 'UGERR: ',ERRSTR(:LENSTR(ERRSTR))
 C
 C---- Remove rubbish
 C
-      IF (IRET .EQ. SS$_NORMAL) THEN
-        ISTART = INDEX(ERRSTR,' ') + 1
-        IEND   = INDEX(ERRSTR,'!') + 1
-        ERRSTR = ERRSTR(ISTART:IEND)
-      ELSE
-        ERRSTR = ' '
-      ENDIF
+      ISTART = INDEX(ERRSTR,' ') + 1
+      IEND   = ISTART + INDEX(ERRSTR(ISTART:),'!') - 2
+      IF (IEND.LT.ISTART) IEND = LEN(ERRSTR) 
+      ERRSTR = ERRSTR(ISTART:IEND)
 C
 C---- Print result if appropriate
 C
