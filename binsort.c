@@ -1,6 +1,6 @@
 /****************************************************************************
   binsort.c
-  Z090792
+  Z270792
 
 HOW TO USE
 
@@ -69,7 +69,12 @@ ANSI & old-fasioned C
 #    include <sys/times.h>        /* for statistics */
 
 #    ifndef  SEEK_SET
+#      if defined(ESV) && defined(SYSTYPE_BSD43)
+#       include <sys/file.h>
+#       define SEEK_SET L_SET
+#      else
 #       include <unistd.h>
+#      endif
 #    endif /* SEEK_SET */
 #endif     /* VAX_VMS - UNIX */
 
@@ -421,7 +426,7 @@ Notes:\n\
 	Current work area size %dB,\n\
 	Current scratch file path %s.\n\
 \n\
-Version Z090792                            Good Luck\n\
+Version Z270792                            Good Luck\n\
                                               J. Zelinka\n\
 ", workasz, scrpath);
 }
