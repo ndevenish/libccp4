@@ -6593,12 +6593,15 @@ C     .. Local Scalars ..
       INTEGER JDO,JLOOP,JSTART,JTOK
       CHARACTER CWORK*30,CWORK2*30,LC1*30,LC2*30,STROUT*400
 C     ..
+C     .. Local Arrays ..
+      LOGICAL SetPrgLab(MCOLS)
+C     ..
 C     .. External Functions ..
       INTEGER LENSTR
       EXTERNAL LENSTR
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPUPC,PUTLIN
+      EXTERNAL CCPUPC,PUTLIN,CCPERR
 C     ..
 C     .. Common blocks ..
       COMMON /MTZLAB/NLUSRI(MFILEX),NLUSRO(MFILEX)
@@ -6610,6 +6613,9 @@ C     ..
 C
       JTOK = NTOK
       JSTART = 2
+      DO 5 JDO = 1,NLPRGI
+        SetPrgLab(JDO) = .FALSE.
+    5 CONTINUE
 C
 C---- Keyword  LABIN  item1=name1 item2=name2 ...
 C
@@ -6656,11 +6662,33 @@ C
 C           first try to match file label to left of assignment
 C           (canonical order) after capitalisation
             DO 10 JDO = 1,NLPRGI
-              IF (CWORK.EQ.LSPRGI(JDO)) GO TO 30
+              IF (CWORK.EQ.LSPRGI(JDO)) THEN
+                IF (SetPrgLab(JDO)) THEN
+C
+C                      ************************************************
+                  CALL PUTLIN(' Maybe MTZ column label clashing with'//
+     .                  ' program label','ERRWIN')
+                  CALL CCPERR(1,' ERROR Program label assigned twice')
+C                      ************************************************
+C
+                ENDIF
+                GO TO 30
+              ENDIF
    10       CONTINUE
 C           else, try to match file label on rhs as an option
             DO 11 JDO = 1,NLPRGI
-              IF (CWORK2.EQ.LSPRGI(JDO)) GO TO 20
+              IF (CWORK2.EQ.LSPRGI(JDO)) THEN
+                IF (SetPrgLab(JDO)) THEN
+C
+C                      ************************************************
+                  CALL PUTLIN(' Maybe MTZ column label clashing with'//
+     .                  ' program label','ERRWIN')
+                  CALL CCPERR(1,' ERROR Program label assigned twice')
+C                      ************************************************
+C
+                ENDIF
+                GO TO 20
+              ENDIF
    11       CONTINUE
 C
 C                ***********************
@@ -6679,9 +6707,11 @@ C
             GO TO 40
    20       NLUSRI(MINDX) = NLUSRI(MINDX) + 1
             LSUSRI(MINDX,JDO) = LC1
+            SetPrgLab(JDO) = .TRUE.
             GO TO 40
    30       NLUSRI(MINDX) = NLUSRI(MINDX) + 1
             LSUSRI(MINDX,JDO) = LC2
+            SetPrgLab(JDO) = .TRUE.
           END IF
    40   CONTINUE
         RETURN
@@ -6912,16 +6942,22 @@ C     .. Local Scalars ..
       INTEGER           JDO,JLOOP,JSTART,JTOK
       CHARACTER         CWORK*30,CWORK2*30,LC1*30,LC2*30,STROUT*400
 C     ..
+C     .. Local Arrays ..
+      LOGICAL SetPrgLab(MCOLS)
+C     ..
 C     .. External Functions ..
       INTEGER           LENSTR
       EXTERNAL          LENSTR
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL          CCPUPC,PUTLIN
+      EXTERNAL          CCPUPC,PUTLIN,CCPERR
 C     ..
 C
       JSTART = ITOK
       JTOK = NTOK
+      DO 10 JDO = 1,NLPRGI
+        SetPrgLab(JDO) = .FALSE.
+   10 CONTINUE
 C
 C---- Keyword  LABIN - ASSIGN_HKL_LABELS  item1=name1 item2=name2 ...
 C
@@ -6946,10 +6982,10 @@ C
 C
 C---- Find input label assignments
 C
-        DO 40 JLOOP = JSTART,NTOK,2
+        DO 60 JLOOP = JSTART,NTOK,2
 C
           IF ((JLOOP+1).GT.JTOK) THEN
-            GO TO 50
+            GO TO 70
           ELSE
             CWORK = LINE(IBEG(JLOOP) :IEND(JLOOP))
             LC1 = CWORK
@@ -6965,14 +7001,35 @@ C                **************
             CALL CCPUPC(CWORK2)
 C                **************
 C
-            DO 10 JDO = 1,NLPRGI
+            DO 20 JDO = 1,NLPRGI
               IF (CWORK.EQ.LSPRGI(JDO)) THEN
-                GO TO 30
-              ELSE IF (CWORK2.EQ.LSPRGI(JDO)) THEN
-                GO TO 20
-              END IF
+                IF (SetPrgLab(JDO)) THEN
 C
-   10       CONTINUE
+C                      ************************************************
+                  CALL PUTLIN(' Maybe MTZ column label clashing with'//
+     .                  ' program label','ERRWIN')
+                  CALL CCPERR(1,' ERROR Program label assigned twice')
+C                      ************************************************
+C
+                ENDIF
+                GO TO 50
+              ENDIF
+   20       CONTINUE
+
+            DO 30 JDO = 1,NLPRGI
+              IF (CWORK2.EQ.LSPRGI(JDO)) THEN
+                IF (SetPrgLab(JDO)) THEN
+C
+C                      ************************************************
+                  CALL PUTLIN(' Maybe MTZ column label clashing with'//
+     .                  ' program label','ERRWIN')
+                  CALL CCPERR(1,' ERROR Program label assigned twice')
+C                      ************************************************
+C
+                ENDIF
+                GO TO 40
+              END IF
+   30       CONTINUE
 C
 C                ***********************
             CALL PUTLIN('**** Error input assignment does not match'//
@@ -6987,18 +7044,20 @@ C                ***********************
             CALL PUTLIN(STROUT,'ERRWIN')
 C                ***********************
 C
-            GO TO 40
-   20       CONTINUE
+            GO TO 60
+   40       CONTINUE
             KPOINT(JDO) = -1
             LSUSRJ(JDO) = LC1
-            GO TO 40
-   30       CONTINUE
+            SetPrgLab(JDO) = .TRUE.
+            GO TO 60
+   50       CONTINUE
             KPOINT(JDO) = -1
             LSUSRJ(JDO) = LC2
+            SetPrgLab(JDO) = .TRUE.
           END IF
-   40   CONTINUE
+   60   CONTINUE
         RETURN
-   50   CONTINUE
+   70   CONTINUE
 C
 C            ***********************
         CALL PUTLIN(' **** Error !!!! for LABIN ****','ERRWIN')
