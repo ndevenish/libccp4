@@ -845,7 +845,7 @@ C
      +  THEN
 C...  MMDB error information
         CALL RBERRSTOP(1,IRET,IUNIT,0)
-        IF (AND(IRET,RWBWAR_MASK).EQ.0) THEN
+        IF (IAND(IRET,RWBWAR_MASK).EQ.0) THEN
           ERRLIN = ' ERROR: XYZATOM'
           CALL CCPERR(1,ERRLIN) 
         ENDIF
@@ -967,7 +967,7 @@ C     .. Data Statement ..
       IF (IRET.NE.RWBERR_Ok) THEN
 C...  MMDB error information
         CALL RBERRSTOP(1,IRET,IUNIT,0)
-        IF (OR(IRET,RWBWAR_MASK).EQ.0) THEN
+        IF (IOR(IRET,RWBWAR_MASK).EQ.0) THEN
           ERRLIN = ' ERROR: XYZATOM'
           CALL CCPERR(1,ERRLIN)
         ENDIF
