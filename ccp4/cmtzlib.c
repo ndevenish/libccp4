@@ -397,7 +397,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
              mtz->mtzsymm.pgname);
        }
     else if (strncmp (mkey, "SYMM",4) == 0) {
-      symop_to_mat4(hdrrec+4,hdrrec+strlen(hdrrec),mtz->mtzsymm.sym[isym++][0]);
+      symop_to_mat4(hdrrec+4,hdrrec+MTZRECORDLENGTH,mtz->mtzsymm.sym[isym++][0]);
        }
 
     else if (strncmp (mkey, "COLU",4) == 0) {
@@ -793,6 +793,10 @@ void MtzDebugHierarchy(const MTZ *mtz) {
 
   printf("MtzDebugHierarchy: nxtal = %d \n",mtz->nxtal);
   for (i = 0; i < mtz->nxtal; ++i) {
+   printf("MtzDebugHierarchy: xtal = %s, cell = %f %f %f %f %f %f \n",
+          mtz->xtal[i]->xname,
+	  mtz->xtal[i]->cell[0],mtz->xtal[i]->cell[1],mtz->xtal[i]->cell[2],
+	  mtz->xtal[i]->cell[3],mtz->xtal[i]->cell[4],mtz->xtal[i]->cell[5]);
    printf("MtzDebugHierarchy: xtal = %s, nset = %d \n",mtz->xtal[i]->xname,
               mtz->xtal[i]->nset);
    for (j = 0; j < mtz->xtal[i]->nset; ++j) {
@@ -864,7 +868,8 @@ void ccp4_lrsymi(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx,
 
   *nsympx = mtz->mtzsymm.nsymp;
   *nspgrx = mtz->mtzsymm.spcgrp;
-  strcpy(ltypex,&mtz->mtzsymm.symtyp);
+  ltypex[0] = mtz->mtzsymm.symtyp;
+  ltypex[1] = '\0';
   strcpy(spgrnx,mtz->mtzsymm.spcgrpname);
   strcpy(pgnamx,mtz->mtzsymm.pgname);
 
