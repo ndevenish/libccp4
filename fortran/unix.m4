@@ -230,6 +230,15 @@ C
 C     check for `logical name' referencing real file
       CALL UGTENV(LOGNAM,NAMFIL)
       IF (NAMFIL.EQ.' ') NAMFIL = LOGNAM
+
+C     check for blank filename
+      IF (NAMFIL.EQ.' ') THEN
+        WRITE (ERRSTR,FMT=6001) IUN
+ 6001   FORMAT (' Open failed on unit ',I4,
+     +          ': CCPOPN has received a blank filename.')
+        CALL CCPERR(1, ERRSTR)
+      ENDIF
+
 C     VMS null device (VMS code canonicalises /dev/null)
       IF (NAMFIL.EQ.'NL:' .OR. NAMFIL.EQ.'nl:') NAMFIL='/dev/null'
 C     Special case:  /dev/null should be opened UNKNOWN
