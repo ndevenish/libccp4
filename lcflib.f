@@ -1,4 +1,13 @@
 C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part i)' software.  See the conditions
+C     in the CCP4 manual for a copyright statement.
+C
+C
+C     Note that *writing* of LCF files is now disabled.  This was done
+C     with a quick hack.  Quite a bit of the code should be commented
+C     out (even if, for instance, the `exchange' program isn't touched).
+C     
 C SUBROUTINE 'CELCF1'
 C ===================
 C
@@ -1197,6 +1206,7 @@ C
       COMMON /LCF1WK/RD,IN,IOUT,LBUF,IUNIN,NCIN,IUNOUT,NCOUT,
      *               IPOINT(100),NLOOK,KDATA(100)
       SAVE /LCF1/,/LCF1AR/,/LCF1WK/
+      CALL BADLCF
 C
 C INITIALISATIONS
 C
@@ -1300,6 +1310,7 @@ C
       COMMON /LCF2WK/RD,IN,IOUT,LBUF,IUNIN,NCIN,IUNOUT,NCOUT,
      *               IPOINT(100),NLOOK,KDATA(100)
       SAVE /LCF2/,/LCF2AR/,/LCF2WK/
+      CALL BADLCF
 C
 C INITIALISATIONS
 C
@@ -1603,6 +1614,7 @@ C
       INTEGER ISTATB(12),STAT
       SAVE /LCF1/,/LCF1AR/,/LCF1WK/,/LCF1FN/,ISTAT,NFILSZ
       DATA ISTAT/4/
+      CALL BADLCF
 C
 C Open file with specified status, default NEW
       CALL QQOPEN(IUNOUT,FILOUT,ISTAT)
@@ -1767,6 +1779,7 @@ C
       INTEGER ISTATB(12),STAT
       SAVE /LCF2/,/LCF2AR/,/LCF2WK/,/LCF2FN/,ISTAT,NFILSZ
       DATA ISTAT/4/
+      CALL BADLCF
 C
 C Open file with specified status, default NEW
       CALL QQOPEN(IUNOUT,FILOUT,ISTAT)
@@ -4186,6 +4199,7 @@ C
       COMMON /LCF1WK/RD,IN,IOUT,LBUF,IUNIN,NCIN,IUNOUT,NCOUT,
      *               IPOINT(100),NLOOK,KDATA(100)
       SAVE /LCF1/,/LCF1AR/,/LCF1WK/
+      CALL BADLCF
 C
 C GET NUMBER OF COLUMNS FROM THE NUMBER OF LABELS
 C
@@ -4281,6 +4295,7 @@ C
       COMMON /LCF2WK/RD,IN,IOUT,LBUF,IUNIN,NCIN,IUNOUT,NCOUT,
      *               IPOINT(100),NLOOK,KDATA(100)
       SAVE /LCF2/,/LCF2AR/,/LCF2WK/
+      CALL BADLCF
 C
 C GET NUMBER OF COLUMNS FROM THE NUMBER OF LABELS
 C
@@ -4366,6 +4381,7 @@ C
       COMMON /LCF1RW/LDATA(100)
       DIMENSION IDATA(NCOUT)
       SAVE /LCF1WK/,/LCF1RW/
+      CALL BADLCF
       DO 10 I=1,NCOUT
       LDATA(I)=IDATA(I)
 10    CONTINUE
@@ -4395,6 +4411,7 @@ C
       COMMON /LCF2RW/LDATA(100)
       DIMENSION IDATA(NCOUT)
       SAVE /LCF2WK/,/LCF2RW/
+      CALL BADLCF
       DO 10 I=1,NCOUT
       LDATA(I)=IDATA(I)
 10    CONTINUE
@@ -4424,6 +4441,7 @@ C
       COMMON /LCF1WK/RD,IN,IOUT,LBUF,IUNIN,NCIN,IUNOUT,NCOUT,
      *               IPOINT(100),NLOOK,KDATA(100)
       SAVE /LCF1/,/LCF1WK/
+      CALL BADLCF
 C
 C---- Write batch header records
 C
@@ -4477,6 +4495,7 @@ C
       COMMON /LCF2WK/RD,IN,IOUT,LBUF,IUNIN,NCIN,IUNOUT,NCOUT,
      *               IPOINT(100),NLOOK,KDATA(100)
       SAVE /LCF2/,/LCF2WK/
+      CALL BADLCF
 C
 C WRITE BATCH HEADER RECORDS
 C
@@ -4530,6 +4549,7 @@ C
       COMMON /LCF1WK/RD,IN,IOUT,LBUF,IUNIN,NCIN,IUNOUT,NCOUT,
      *               IPOINT(100),NLOOK,KDATA(100)
       SAVE /ORIENT/,/LCF1WK/
+      CALL BADLCF
 C
 C---- Write orientation block
 C
@@ -4568,6 +4588,7 @@ C
       COMMON /LCF2WK/RD,IN,IOUT,LBUF,IUNIN,NCIN,IUNOUT,NCOUT,
      *               IPOINT(100),NLOOK,KDATA(100)
       SAVE /ORIENT/,/LCF2WK/
+      CALL BADLCF
 C
 C WRITE ORIENTATION BLOCK
 C
@@ -4640,10 +4661,18 @@ C
       INTEGER*2 IDATA(NCOUT)
       SAVE /LCF2WK/
 C
+      CALL BADLCF
       CALL QWRITE(IUNOUT,IDATA,NCOUT)
       RETURN
 C
 C FORMAT STATEMENTS
 C
 1000  FORMAT(100A2)
+      END
+
+      SUBROUTINE BADLCF
+C     stop on attempts to write LCF 
+      EXTERNAL CCPERR
+      CALL CCPERR(1,
+     +     'Ideologially unsound attempt to WRITE an LCF file')
       END
