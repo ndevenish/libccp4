@@ -134,6 +134,9 @@ static const LONG setbits[33] =
 
 /* Some fortran compilers require c-functions to end with an underscore. */
 
+#if defined(_AIX) || defined(__hpux)
+/* no underscore by default */
+#else
 #define pack_wordimage_f pack_wordimage_f_
 #define pack_longimage_f pack_longimage_f_
 #define readpack_word_f readpack_word_f_
@@ -141,8 +144,7 @@ static const LONG setbits[33] =
 #define mirror_wordimage mirror_wordimage_
 #define mirror_longimage mirror_longimage_
 #define imsiz_f imsiz_f_
-
-
+#endif
 
 /******************************************************************************/
 
