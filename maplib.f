@@ -92,6 +92,7 @@ C      SUBROUTINE MTTCPY(TITLE)
 C      SUBROUTINE MTTREP(TITLE,NT)
 C      SUBROUTINE MSKPUT(ASKWMT,ASKWTN)
 C      SUBROUTINE MODECV(X,BLINE,N,MODE,JB)
+C      SUBROUTINE MSYWRT(IUNIT,NSYM,ROT)
 C
 C      INTEGER FUNCTION MSKGET(ASKWMT,ASKWTN)
 C      INTEGER FUNCTION NBYTXX(NWORD)
@@ -2525,4 +2526,94 @@ C
       BYT = CCPBYT(NITM)
       NBYTXX = NWORD*NITM
 C
+      END
+C
+C
+C_BEGIN_MSYWRT
+C
+      SUBROUTINE MSYWRT(IUNIT,NSYM,ROT)
+C     ==================================
+C
+C     Write symmetry operators to map stream IUNIT
+C     Note that the symmetry operators are written to the file one per line
+C     and may have a different format to those in the SYMOP file
+C
+C     IUNIT    (I)     Map stream number
+C     NSYM     (I)     Number of symmetry operators
+C     ROT(4,4,NSYM)  (I)  rotation/translation matrices
+C
+C_END_MSYWRT
+C
+C---- Map header common
+C
+C     .. Parameters ..
+      INTEGER LUNOUT, MAXSYM
+      PARAMETER (LUNOUT=6, MAXSYM=96)
+C     ..
+C     .. Arguments ..
+      INTEGER IUNIT,NSYM
+      REAL ROT(4,4,NSYM)
+C     ..
+C     .. Scalars in Common ..
+      REAL AMAX,AMEAN,AMIN,ARMS
+      INTEGER ISPG,ITMHDR,ITMSC1,LSKFLG,MODE,NC,NC1,NCHITM,NLAB,NR,NR1,
+     +        NS,NS1,NSYMBT
+C     ..
+C     .. Arrays in Common ..
+      REAL CEL,SKWMAT,SKWTRN
+      INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,IPRINT,NBLIN,NCLIN,NLIN
+C     ..
+C     .. Local Arrays ..
+      CHARACTER*80   SYMOPS(MAXSYM)
+C     ..
+C     .. External Functions ..
+      INTEGER NBYTXX
+      EXTERNAL NBYTXX
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL CCPOPN,QSEEK,QWRITC, CCPERR
+C     ..
+C     .. Common blocks ..
+      COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
+     +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
+     +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
+      COMMON /MSTRM/LSTRM(12)
+C     ..
+C     .. Save statement ..
+      SAVE /MSTRM/,/MOHDR/
+C     ..
+C
+      IF (NSYM .LE. 0 .OR. NSYM .GT. MAXSYM) THEN
+         WRITE (LUNOUT, '(/A,I8/)')
+     $      ' *** Too many or too few symmetry operations: ', NSYM
+         CALL CCPERR(1, '*** Illegal number of symmetry operations ***')
+      ENDIF
+C
+C---- Convert symmetry to character strings, one per line (array element)
+      IPRINT = 0
+      CALL SYMTR3(NSYM, ROT, SYMOPS, IPRINT)
+C     
+C---- Position map file to before symmetry operators
+C     
+      CALL QSEEK(LSTRM(IUNIT),2,1,ITMHDR)
+C     
+C---- Copy NLIN lines of symmetry
+C     operators (80 characters / line) to output file
+C     
+      NLIN = NSYM
+      DO 50 I = 1,NLIN
+        CALL QWRITC(LSTRM(IUNIT),SYMOPS(I))
+ 50   CONTINUE
+C     
+C---- Number of characters of symmetry information
+C     
+      NSYMBT = NLIN*80
+C     
+C---- Position of first section
+C     
+      ITMSC1 = NSYMBT/NCHITM + ITMHDR + 1
+C     
       END
