@@ -1,6 +1,6 @@
 /****************************************************************************
   binsort.c
-  Z130891
+  Z300692
 
 HOW TO USE
 
@@ -44,17 +44,14 @@ NOTE
 
 Do you use the new binsortint version, which allows usage of binsort
 from fortran programs?
+
+Do not critisize the programing style. This is a compromise between
+ANSI & old-fasioned C
 *****************************************************************************/
 
 #ifndef __convex__
-#ifndef __STDC__
-#  define __STDC__X
-#endif /* __STDC__ */
+#define __STDC__
 #endif /* __convex__ */
-
-#ifdef  POSIX
-#  define __EXTENSIONS__
-#endif /* POSIX */
 
 #ifdef VAX_VMS
 #    include    stdio
@@ -63,21 +60,21 @@ from fortran programs?
 #    include    processes
 #    include    time
 #else      /* UNIX */
-#include <stdio.h>
-#include <string.h>           /* string operations */
+#    include <stdio.h>
+#    include <string.h>           /* string operations */
 
-#include <fcntl.h>            /* for i/o */
-#include <sys/types.h>        /* for statistics & io */
-#include <sys/stat.h>         /* for i/o */
-#include <errno.h>
-#include <sys/param.h>        /* for statistics */
-#include <sys/times.h>        /* for statistics */
+#    include <fcntl.h>            /* for i/o */
+#    include <sys/types.h>        /* for statistics & io */
+#    include <sys/stat.h>         /* for i/o */
+#    include <errno.h>
+#    include <sys/param.h>        /* for statistics */
+#    include <sys/times.h>        /* for statistics */
 #endif     /* VAX_VMS - UNIX */
 
-#include "binsort.h"          /* key data types definition */
+#include "binsort.h"              /* key data types definition */
 
 #ifdef POSIX
-#  include <stdlib.h>           /* for qsort, getenv prototypes */
+#  include <stdlib.h>             /* for qsort, getenv prototypes */
 #  include <unistd.h>
 #endif /* POSIX */
 
@@ -121,24 +118,22 @@ from fortran programs?
 
 /*** Site dependent, please modify if necessary***/
 
-#define SCRPATH            "/usr/tmp"           /* default scratch file path */
-#define	WORKASZ            4096000                 /* default work area size */
+#define SCRPATH            "/usr/tmp"          /* default scratch file path */
+#define	WORKASZ            2048000             /* Default work area size */
 
 /*** Low level compare function ("prototype")                            ***
  *** Returns 1 if rec1 > rec2    0 if rec1 == rec2     -1 if rec1 < rec2 ***/
 
-typedef int   (*CMPFUN)(
-#ifdef FUNCPROTO
+/*** Internal key structure ***/
+
+typedef struct key_dsc {          /* internal key description */
+  int        (*cmp_function)(     /* -> compare function */
+#      ifdef FUNCPROTO
 			char             *rec1,
 			char             *rec2,
 			struct key_dsc   *key
-#endif /* FUNCPROTO */
+#      endif /* FUNCPROTO */
 			);
-
-/*** Internal key structure ***/
-
-struct key_dsc {                  /* internal key description */
-  CMPFUN       cmp_function;      /* -> compare function */
   short        key_type,          /* data type of key */
                asc_desc_order;    /* asc/desc sort order */
   int          key_pos,           /* 1st key byte position in record
@@ -149,9 +144,25 @@ struct key_dsc {                  /* internal key description */
   unsigned short m_short;         /* mask for short data types */
   unsigned long  m_long;          /* mask for long data types */
   }            mask;              /* mask used BEFORE comparison */
-};
+} *KEYDSC;
 
-typedef struct key_dsc *          KEYDSC;
+typedef int   (*CMPFUN)(
+#ifdef FUNCPROTO
+			char             *rec1,
+			char             *rec2,
+			struct key_dsc   *key
+#endif /* FUNCPROTO */
+			);
+
+/*** Scratch tape structure ***/
+
+struct scratch_tape {
+  int        fd;          /* tape file descriptor */
+  int        truns;       /* actual runs written into tape */
+  int        runlng;      /* current run length */
+  char      *buf;         /* i/o buffer */
+  char      *pbuf;        /* pointer to buffer */
+};
 
 
 /*** routines used int this module ***/
@@ -239,8 +250,14 @@ static int              cmp_ushort_mask(
 			       );
 static int              cmproutine(
 #ifdef FUNCPROTO
-			       char            *e1,
-			       char            *e2
+			       const void      *e1,
+			       const void      *e2
+#endif /* FUNCPROTO */
+			       );
+static int              pointer_cmproutine(
+#ifdef FUNCPROTO
+			       const void      *pe1,
+			       const void      *pe2
 #endif /* FUNCPROTO */
 			       );
 static int              fillworka(
@@ -349,6 +366,11 @@ static void             sort(
 			       int               recsize
 #endif /* FUNCPROTO */
 			       );
+static void             pointer_sort(
+#ifdef FUNCPROTO
+			       int               nrecords,
+#endif /* FUNCPROTO */
+			       );
 static void             testprint(
 #ifdef FUNCPROTO
 			       void
@@ -370,13 +392,18 @@ static void             my_exit(
 static char     *scrpath = SCRPATH;
 
 /*** Work area ***/
-static char    *workarea;            /* work area */
+static void    *workarea;            /* work area */
+static void    *pointer_area;
 static int      workasz = WORKASZ,   /* default work area maximal size */
                 actworkasz = 0,      /* work area actual rounded size */
                 workainrec = 0;      /*         - || -                in
 				        records */
 static int      scrbufsize;          /* scratch file buffer size (bytes) */
 static int      scrbufinrec;         /* scratch file buffer size (records) */
+
+static int      sortmode;
+#define     RECORD_MODE    0
+#define     POINTER_MODE   1
 
 /**** The routine manual gives you some information about the interface ***/
 static void
@@ -414,6 +441,7 @@ Keys:\n\
 Environment variables:\n\
      BINSORT_SCR    - scratch path\n\
      BINSORT_MEM    - work area in bytes\n\
+     BINSORT_VERB   - (if set) program becomes talkative\n\
 \n\
 Bugs/Features:\n\
 	Data types other then short, char were not tested well.\n\
@@ -426,7 +454,7 @@ Notes:\n\
 	Current work area size %dB,\n\
 	Current scratch file path %s.\n\
 \n\
-Version Z130891                            Good Luck\n\
+Version Z300692                            Good Luck\n\
                                               J. Zelinka\n\
 ", workasz, scrpath);
 }
@@ -473,8 +501,8 @@ int      argc;
 char    *argv[];
 {
   time_t        oldrealtime, newrealtime;
-  char         *charvalue;       
-
+  char         *charvalue;
+  int           n_pointers;
 
   /*** real time init. ***/
   oldrealtime = time(&oldrealtime);
@@ -484,13 +512,17 @@ char    *argv[];
     workasz = atoi(charvalue);
   if (charvalue = (char *) getenv ("BINSORT_SCR"))
     scrpath = charvalue;
+  if (charvalue = (char *) getenv ("BINSORT_VERB"))
+    f_verbose = charvalue ? TRUE : FALSE;
 
   /*** Input parameters processing ***/
   linecmd(argc, argv);	 /* comands from command line */
   if (f_verbose)
     printkeys();
 
-  /*** Work area initialization ***/
+  /*** Work area initialization - make a decision about record/pointer
+       sort procedure NOW                                              ***/
+
   actrecl = lrecl + ((sizeof(int)-(lrecl%sizeof(int))) % sizeof(int));
                           /* record allignment */
   actworkasz = workasz - (workasz % (actrecl * 4)); /* rounded on 4 records
@@ -498,9 +530,27 @@ char    *argv[];
   scrbufsize = actworkasz / 4;                      /* scratch file buffer */
   workainrec = actworkasz / actrecl;                /* lengths in records */
   scrbufinrec = scrbufsize / actrecl;
-  if (workainrec <= 20 || !(workarea = (char *)malloc(actworkasz)))
+  if (workainrec <= 50 || !(workarea = (char *)malloc(actworkasz)))
     memoryerr();
 
+  if (actrecl < (3 * sizeof(void *))) {              /* record sort */
+    sortmode = RECORD_MODE;
+    if (f_verbose)
+      fprintf(stderr, "binsort -- record mode choosen\n");
+  }
+  else {
+    sortmode = POINTER_MODE;
+    if (f_verbose)
+      fprintf(stderr, "binsort -- pointer mode choosen\n");
+
+    /*** workarea must be devided into record & pointer parts ***/
+    
+    n_pointers = actworkasz / (actrecl + sizeof(void *));
+
+    /*** n_pointers == n records (of course) ***/
+
+    pointer_area = (char *)workarea + actrecl * n_pointers;
+  }
 
   /*** Sort processing ***/
   if (f_verbose)
@@ -654,73 +704,129 @@ char		*argv[];
 static int
 readrun()             /*** Returns number of read (and sorted) records ***/
 {
-    static int          firsttimecalled = TRUE;  /* just a flag */
-
-    register char      *prec;
-    register int	numrec,         /* # of records read */
-                        i,              /* cycle paremater */
-                        fillsize;       /* # butes occupied by data */
-
-    fillsize = fillworka();             /* fill (read into) area */
-    if (numrec = fillsize/actrecl)	/* there are some records */
-	sort(numrec, actrecl);
-    if (fillsize < actworkasz && firsttimecalled) { /* merge necessary ? */
-	for (i = numrec, prec = workarea; i; --i, prec += actrecl)
+  static int          firsttimecalled = TRUE;  /* just a flag */
+  
+  register char  *prec, **pprec;
+  register int	 numrec,         /* # of records read */
+                 i,              /* cycle paremater */
+                 fillsize;       /* # butes occupied by data */
+  
+  fillsize = fillworka();             /* fill (read into) area */
+  if (numrec = fillsize/actrecl) {	/* there are some records */
+    if (sortmode == RECORD_MODE)
+      sort(numrec, actrecl);
+    else
+      pointer_sort(numrec);
+  }
+  if (firsttimecalled) {
+    if (sortmode == RECORD_MODE) {
+      if (fillsize < actworkasz) {              /* merge necessary ? */
+	if (numrec = fillsize/actrecl) {	/* there are some records */
+	  for (i = numrec, prec = workarea; i; --i, prec += actrecl)
 	    if (fwrite(prec, sizeof(char), lrecl, stdout) != lrecl)
-		ioerr();
-	return(0);                      /* indicate end of data */
+	      ioerr();
+	  return(0);                            /* indicate end of data */
 	}
-    firsttimecalled = FALSE;
-    return(numrec);
+      }
+    }
+    else {
+      if (((char *)workarea + fillsize) < (char *)pointer_area) { /* merge ? */
+	if (numrec = fillsize/actrecl) {	/* there are some records */
+	  for (i = numrec, pprec = pointer_area; i; --i, ++pprec)
+	    if (fwrite(*pprec, sizeof(char), lrecl, stdout) != lrecl)
+	      ioerr();
+	  return(0);                            /* indicate end of data */
+	}
+      }
+    }
+  }
+  firsttimecalled = FALSE;
+  return(numrec);
 }
 
 
 /*=====================================================================*/
 static int
-fillworka()	/* returns atual number of bytes occupated in workarea */
+fillworka()	/* returns actual number of bytes occupated in workarea */
 {
-    register int	lng;
-    register char      *pw,             /* -> work area */
-                       *pwe;            /* -> byte after work area */
-
-    pw = workarea;
+  register int	lng;
+  register char      *pw,             /* -> work area */
+  *pwe;            /* -> byte after work area */
+  register void     **ppointer;
+  
+  pw = (char *)workarea;
+  if (sortmode == RECORD_MODE)
     pwe = pw + actworkasz;
-
-    while (pw < pwe && (lng = fread(pw, sizeof(char), lrecl, stdin)) == lrecl){
-	++nrecs;
-	pw += actrecl;
-	}
-    if (pw < pwe && !feof(stdin)) /* still free space and wrong input */
-	proterr();
-    return(pw - workarea);
+  else {
+    pwe = pointer_area;
+    ppointer = (void **)pointer_area;
+  }
+  
+  while (pw < pwe &&
+	 (lng = fread((void *)pw, sizeof(char), lrecl, stdin)) == lrecl){
+    ++nrecs;
+    if (sortmode == POINTER_MODE)
+      *ppointer++ = (void *)pw;
+    pw += actrecl;
+  }
+  if (lng != lrecl && lng != 0)
+    proterr();
+  if (pw < pwe && !feof(stdin)) /* still free space and wrong input */
+    proterr();
+  return(pw - (char *)workarea);
 }
 
 
 /*================================================================*/
 static void
 sort(nrecords, recsize)
-int              nrecords;
-int              recsize;
+int          nrecords;
+int          recsize;
 {
-  qsort(workarea, nrecords, recsize, cmproutine); /* oh, U N I X */
+  qsort((void *)workarea, nrecords, recsize, cmproutine);
 }
 
+
+/*================================================================*/
+static void
+pointer_sort(nrecords)
+int          nrecords;
+{
+  qsort(pointer_area, nrecords, sizeof(void *), pointer_cmproutine);
+}
 
 /*=================================================================*/
 static int
 cmproutine(e1, e2)
-char       *e1, *e2;           /* basics elements - records */
+const void    *e1, *e2;           /* basics elements - records */
 {
   register struct key_dsc      *pkey;
   register int                  i, j;
 
   for (pkey = keys, i = nkeys; i; --i, ++pkey)
-    if (j = (*pkey->cmp_function)(e1, e2, pkey))
+    if (j = (*pkey->cmp_function)((char *)e1, (char *)e2, pkey))
       return(pkey->asc_desc_order == ASC ? j : -j);
   return(0);
 }
 
 
+/*=================================================================*/
+static int
+pointer_cmproutine(pe1, pe2)
+const void      *pe1;
+const void      *pe2;
+{
+  register struct key_dsc      *pkey;
+  register int                  i, j;
+
+  for (pkey = keys, i = nkeys; i; --i, ++pkey)
+    if (j = (*pkey->cmp_function)(*((char **)pe1), *((char **)pe2), pkey))
+      return(pkey->asc_desc_order == ASC ? j : -j);
+  return(0);
+}
+
+
+/*=================================================================*/
 static int
 cmp_char(e1, e2, key)
 char            *e1, *e2;
@@ -1096,14 +1202,10 @@ static int     j,         /* logical tape unit 1 <= j <= T */
 			     striving for */
                D [T+1];   /* Number of dummy runs assumed to be present at
 			     the beginning of logical tape unit number j */
-static struct scratch_tape {
-  int        fd;          /* tape file descriptor */
-  int        truns;       /* actual runs written into tape */
-  int        runlng;      /* current run length */
-  char      *buf;         /* i/o buffer */
-  char      *pbuf;        /* pointer to buffer */
-}            TAPE [T+1];  /* Number of the physical tape unit corresponding
-			     to logical tape unit number j */
+
+static struct scratch_tape TAPE [T+1]; /* Number of the physical tape unit
+					  corresponding to logical tape unit
+					  number j */
 
 
 static void
@@ -1412,16 +1514,47 @@ writerun(num, nrec)
 int          num;
 int          nrec;
 {
+  register int          *pb, *pd;
+  register int           j;
+  register char        **pprec;
+  register int           i;
+  int                    lng_in_int;
   struct scratch_tape   *ctape;
   unsigned               bytelength;
+# define            DSKBLK      2048
+  char                   iob [DSKBLK];
 
   ctape = TAPE + num;
   if (write(ctape->fd, &nrec, sizeof(nrec)) == -1)   /* run length */
     ioerr();
-  bytelength = actrecl * nrec;
-  if (write(ctape->fd, workarea, bytelength) == -1)  /* run */
-    ioerr();
+  if (sortmode == RECORD_MODE) {
+    bytelength = actrecl * nrec;
+    if (write(ctape->fd, workarea, bytelength) == -1)  /* run */
+      ioerr();
+  }
+  else {
+    lng_in_int = actrecl / sizeof(int);
+    pb = (int *)iob;
+    for (i = nrec, pprec = pointer_area; i; --i, ++pprec) {
+      for (pd = (int *)(*pprec), j = lng_in_int; j; --j) {
+	if (pb == (int *)(iob + DSKBLK)) {                /* full disk block */
+	  if (write(ctape->fd, (void *)iob, DSKBLK) == -1)
+	    ioerr();
+	  pb = (int *)iob;
+	}
+	*pb++ = *pd++;
+      }
+    }
+    if ((char *)pb != iob)           /* last piece of indormation in buffer */
+      if (write(ctape->fd, (void *)iob, ((char *)pb - iob)) == -1)
+	    ioerr();
+  }
 }
+/*
+      if (write(ctape->fd, *pprec, actrecl) == -1)
+	ioerr();
+*/
+
 
 static void
 advancerunrec(ctape)
@@ -1493,3 +1626,4 @@ testprint()
   }
 }
 ************************/
+

@@ -5,7 +5,7 @@
 IMPORTANT
 
 This version is compatible with binsort version Z130891.
-Against version Z080389 arguments of SRTBEG have been changed.
+Agains version Z080389 arguments of SRTBEG have been changed.
 Modify and recompile your programs.
 
 WHAT IS binsortint
@@ -75,9 +75,11 @@ KEYBUF consist of NKEYS entries, each of the form:
   int SRTBEG (nkeys, keybuf, lrecl, memsize)
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi) || \
-    defined (ESV)        || defined (alliant) || defined (sun) || \
-    defined (solbourne)
+#if defined (__convex__) || defined (ultrix) || defined (sgi) || defined (ESV)
+  int srtbeg_ (nkeys, keybuf, lrecl, memsize)
+#endif
+
+#if defined (alliant) || defined (sun) || defined (solbourne)
   int srtbeg_ (nkeys, keybuf, lrecl, memsize)
 #endif
 
@@ -197,9 +199,11 @@ SRTRLS:	Release one record into Sort
   int SRTRLS (record)
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi) || \
-    defined (ESV)        || defined (alliant) || defined (sun) || \
-    defined (solbourne)
+#if defined (__convex__) || defined (ultrix) || defined (sgi) || defined (ESV) 
+  int srtrls_ (record)
+#endif
+
+#if defined (alliant) || defined (sun) || defined (solbourne)
   int srtrls_ (record)
 #endif
 
@@ -231,21 +235,25 @@ SRTMRG:	Merge - finish release phase
   int SRTMRG ()
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi) || \
-    defined (ESV)        || defined (alliant) || defined (sun) || \
-    defined (solbourne)
+#if defined (__convex__) || defined (ultrix) || defined (sgi) || defined (ESV) 
+  int srtmrg_ ()
+#endif
+
+#if defined (alliant) || defined (sun) || defined (solbourne)
   int srtmrg_ ()
 #endif
 
 #if defined (iris)
   fortran srtmrg_ ()
 #endif
+
 {
     fclose(filout);
     if (!(filin = fdopen(fildesin[0], "r")))
       return(errno);
     return(0);
 }
+
 
 /*=======================================================
 SRTRET:	Return 1 record from sort
@@ -265,9 +273,11 @@ SRTRET:	Return 1 record from sort
   int SRTRET (record)
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi) || \
-    defined (ESV)        || defined (alliant) || defined (sun) || \
-    defined (solbourne)
+#if defined (__convex__) || defined (ultrix) || defined (sgi)  || defined (ESV)
+  int srtret_ (record)
+#endif
+
+#if defined (alliant) || defined (sun) || defined (solbourne)
   int srtret_ (record)
 #endif
 
