@@ -210,11 +210,12 @@ c A subroutine to change the case of amino acid e.g. PHE to Phe
 c res1 input residue name
 c res2 output residue name
 c
-      character*3 res1,res2
-      character*3 nam1(20)/
+      character*3 res1,res2,nam1(20),nam2(20)
+c...  data statements.  Seperate declaration and init required for f2c
+      data nam1 /
      1 'ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE',
      2 'LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL'/
-      character*3 nam2(20)/
+      data nam2 /
      1 'Ala','Arg','Asn','Asp','Cys','Gln','Glu','Gly','His','Ile',
      2 'Leu','Lys','Met','Phe','Pro','Ser','Thr','Trp','Tyr','Val'/
 c
@@ -2232,9 +2233,11 @@ c
       subroutine morert(rt1,rt2,rt)
       real rt(3,4),rt2(3,4),rt1(3,4)
       real gt(4,4),gt2(4,4),gt1(4,4)
-      real extr(4)/0.,0.,0.,1./
+      real extr(4)
       real b1(3),b2(3)
       integer me(3)
+c...  data statements.  Seperate declaration and init required for f2c
+      data extr /0.,0.,0.,1./
 c
       do i = 1, 4
        gt1(i,4) = extr(i)
@@ -2942,6 +2945,8 @@ C              WHEN INOPT1=8
       real tmove0(3),ave(3)
       real b1(3),b2(3),b3(3),b4(3),b5(3)
       real tmove(3,27)
+c...  data statements.  Seperate declaration and init required for f2c
+      data tmove
      1 /-1.,-1.,-1.,   -1.,-1.,0.,   -1.,-1.,1.,
      2  -1., 0.,-1.,   -1., 0.,0.,   -1., 0.,1.,
      3  -1., 1.,-1.,   -1., 1.,0.,   -1., 1.,1.,
@@ -3195,15 +3200,19 @@ c
       real cell(6),cells(6)
       real deor(3,3),orth(3,3)
       real deors(3,3),orths(3,3)
-      real pdir(3,6)/1.,0.,0.,0.,1.,0.,0.,0.,1.,
-     1	-1.,0.,0.,0.,-1.,0.,0.,0.,-1./
-      INTEGER IC(6)/1,2,3,1,2,3/
-      real cof(6)/1.,1.,1.,-1.,-1.,-1./
-      character*3 pspin(6)/'+a*','+b*','+c*','-a*','-b*','-c*'/
-      character*2 pxray(6)/'+a','+b','+c','-a','-b','-c'/
-      character*3 aspin
-      character*2 axray
+      real pdir(3,6)
+      INTEGER IC(6)
+      real cof(6)
+      character*3 aspin,pspin(6)
+      character*2 axray,pxray(6)
       DIMENSION B1(3),B2(3),IUF(3)
+c...  data statements.  Seperate declaration and init required for f2c
+      data pdir /1.,0.,0.,0.,1.,0.,0.,0.,1.,
+     1	-1.,0.,0.,0.,-1.,0.,0.,0.,-1./
+      data ic /1,2,3,1,2,3/
+      data cof /1.,1.,1.,-1.,-1.,-1./
+      data pspin /'+a*','+b*','+c*','-a*','-b*','-c*'/
+      data pxray /'+a','+b','+c','-a','-b','-c'/
 c
 c standard orthongonization matrix
 c
@@ -3266,12 +3275,14 @@ c
       subroutine raxumat(aspin,axray,umat)
       real umat(3,3)
       real rmat(3,3)
-      real pdir(3,6)/1.,0.,0.,0.,1.,0.,0.,0.,1.,
+      real pdir(3,6)
+      character*3 aspin,pspin(6)
+      character*2 axray,pxray(6)
+c...  data statements.  Seperate declaration and init required for f2c
+      data pdir /1.,0.,0.,0.,1.,0.,0.,0.,1.,
      1	-1.,0.,0.,0.,-1.,0.,0.,0.,-1./
-      character*3 pspin(6)/'+a*','+b*','+c*','-a*','-b*','-c*'/
-      character*2 pxray(6)/'+a','+b','+c','-a','-b','-c'/
-      character*3 aspin
-      character*2 axray
+      data pspin /'+a*','+b*','+c*','-a*','-b*','-c*'/
+      data pxray /'+a','+b','+c','-a','-b','-c'/
 c
       do i = 1, 6
        if (aspin.eq.pspin(i)) then
@@ -3511,7 +3522,6 @@ C          VT(3*6*NATM)   is a 6*NATM-dimensional buffer array
 C          DIS(3*NATM)  is a 3*NATM-dimensional buffer array
 c
 C	COMMON/SHIFS/ SCALR,SCALT
- 	DATA SCALR/1./,SCALT/1./
 C Note: There should be a scale of the shifts. i.e. Shift= scale * shifts
 c Here SCALR is the rotation shiftscale
 c Here SCALT is the translation shiftscale
@@ -3546,6 +3556,8 @@ c   NATM0 is the largest number of atoms.
 C
       DIMENSION DA(3,3,3),VVV(3,3)
       DIMENSION B1(3),B2(3),ROHOLD(3),ROH(3),DETAROH(3),TOLD(3)
+c...  data statements.  Seperate declaration and init required for f2c
+      DATA SCALR/1./,SCALT/1./
 C
       DEG=180./3.14159265359
       NREF=0
@@ -3797,9 +3809,10 @@ C
 C
       DIMENSION DA(3,3,3),DROH(3),DT(3),DETA(6)
       DIMENSION B1(3),B2(3),ROHOLD(3),ROH(3),TOLD(3)
-        REAL EMT(3,3)/1.,0.,0.,0.,1.,0.,0.,0.,1./
+      REAL EMT(3,3)
       EQUIVALENCE (DETA,DROH)
       EQUIVALENCE (DETA(4),DT)
+      data emt /1.,0.,0.,0.,1.,0.,0.,0.,1./
 C
       DEG=180./3.14159265359
       SCALR = 1.
@@ -3936,7 +3949,6 @@ C                                               27/01/1989
 C
       COMMON/RMS/ RMS,SMEAN,NREF1,NREF
 c	COMMON/SHIFS/ SCALR,SCALT
-      DATA SCALR/1./,SCALT/1./,IAT/0/
 C
       DIMENSION X1(3,NATM), X2(3,NATM), A(3,3), T(3)
       DIMENSION VT(NATM*3,6),DIS(3,NATM)
@@ -3946,6 +3958,8 @@ C
       DIMENSION B1(3),B2(3),ROHOLD(3),ROH(3),TOLD(3)
       EQUIVALENCE (DETA,DROH)
       EQUIVALENCE (DETA(4),DT)
+c...  data statements.  Seperate declaration and init required for f2c
+      DATA SCALR/1./,SCALT/1./,IAT/0/
 C
       DEG=180./3.14159265359
       NREF=0
@@ -4218,10 +4232,12 @@ c
       END
       function gg_res3to1(rin)
       character gg_res3to1*1,rin*3
-      CHARACTER*3 RES(20)/'ALA','GLU','GLN','ASP','ASN','LEU','GLY'
+      character*3 res(20),abr(20)
+c...  data statements.  Seperate declaration and init required for f2c
+      data RES /'ALA','GLU','GLN','ASP','ASN','LEU','GLY'
      1 ,'LYS','SER','VAL','ARG','THR'
      2 ,'PRO','ILE','MET','PHE','TYR','CYS','TRP','HIS'/
-      CHARACTER*3 ABR(20)/'A  ','E  ','Q  ','D  ','N  ','L  ','G  '
+      data ABR /'A  ','E  ','Q  ','D  ','N  ','L  ','G  '
      1 ,'K  ','S  ','V  ','R  ','T  '
      2 ,'P  ','I  ','M  ','F  ','Y  ','C  ','W  ','H  '/
 c
@@ -4840,10 +4856,12 @@ c Y+2/3,X+1/3,-Z+1/3 * -X+2/3,Y-X+1/3,-Z+1/3 * X-Y+2/3,-Y+1/3,-Z+1/3
       character file*80,latnam*14
       real sym(3,4,maxop)
       integer*4 nunit,nsp,nsym,nrot
-      logical*1 dump/.false./
+      logical*1 dump
 c	COMMON/SYMDUMP/ DUMP
 c
       character*80 key,str*40
+c...  data statements.  Seperate declaration and init required for f2c
+      data dump /.false./
 c
 c	WRITE(6,*)  'nsp',nsp
       nsym=0
@@ -5405,10 +5423,13 @@ c Y+2/3,X+1/3,-Z+1/3 * -X+2/3,Y-X+1/3,-Z+1/3 * X-Y+2/3,-Y+1/3,-Z+1/3
       character file*80,latnam*14
       real sym(3,4,maxop)
       integer*4 nunit,nsp,nsym,nrot
-      logical*1 dump/.false./
+      logical*1 dump
 c	COMMON/SYMDUMP/ DUMP
 c
       character*80 key,str*40
+c
+c...  data statements.  Seperate declaration and init required for f2c
+      data dump /.false./
 c
 c	WRITE(6,*)  'nsp',nsp
       nsym=0
