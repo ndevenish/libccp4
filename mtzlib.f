@@ -605,10 +605,11 @@ C              ****************
           CALL BLANK('CURWIN',1)
           CALL LABPRT(CLABEL(1,MINDX),NCOLS(MINDX))
           CALL BLANK('CURWIN',1)
-          STROUT = '* Lookup Table :'
+          STROUT = 
+     +     '* Lookup Table : the number indicates the input column no.'
           CALL PUTLIN(STROUT,'CURWIN')
           STROUT = 
-     +      '  (This maps Input program Labels to Input File Labels)'
+     +     '* Array element n corresponds to the nth program label'
           CALL PUTLIN(STROUT,'CURWIN')
           CALL BLANK('CURWIN',1)
 C              *****************
