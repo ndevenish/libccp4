@@ -162,6 +162,7 @@ FORTRAN_SUBR ( QPRINT, qprint,
   free((char *) tmp_msg);
 }
 
+/* switched back to ccplib.f 
 FORTRAN_FUN ( int, LENSTR, lenstr,
                (fpstr string, int string_len),
                (fpstr string),
@@ -169,6 +170,7 @@ FORTRAN_FUN ( int, LENSTR, lenstr,
 {
   return ( (int) ccp4_utils_flength (FTN_STR(string), FTN_LEN(string)) );
 }
+*/
 
 /** Fortran wrapper to integer data function.
  * @param imonth Month (1-12).
