@@ -166,10 +166,11 @@ C     Negative unit number means don't give messages for successful open
 C     Check args:
       IF (ISTAT.LT.1 .OR. ISTAT.GT.6 .OR. ITYPE.LT.1 .OR. ITYPE.GT.4)
      +     THEN 
-        WRITE (6,'('' **CCPOPN ERROR** Invalid parameters in call'',/)')
         IF (IFAIL.EQ.0) THEN
-          CALL CCPERR(1,'**CCPOPN ERROR** IN CCPLIB 6006')
+          CALL CCPERR(1, '**CCPOPN ERROR** Invalid parameters in call')
         ELSE
+          WRITE (6,
+     +         '('' **CCPOPN ERROR** Invalid parameters in call'',/)')
           IFAIL = -1
         END IF
         RETURN
