@@ -537,6 +537,8 @@ mmdb_rwbrook.o:   $(mmdbsrcdir)/mmdb_rwbrook.cpp
 mmdb_atom.o:      $(mmdbsrcdir)/mmdb_atom.cpp
 mmdb_graph.o:     $(mmdbsrcdir)/mmdb_graph.cpp
 mmdb_selmngr.o:   $(mmdbsrcdir)/mmdb_selmngr.cpp
+mmdb_align.o:     $(mmdbsrcdir)/mmdb_align.cpp
+mmdb_tables.o:    $(mmdbsrcdir)/mmdb_tables.cpp
 mmdb_sbase.o:     $(mmdbsrcdir)/mmdb_sbase.cpp
 math_.o:          $(mmdbsrcdir)/math_.cpp
 mmdb_bondmngr.o:  $(mmdbsrcdir)/mmdb_bondmngr.cpp
