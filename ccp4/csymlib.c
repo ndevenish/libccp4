@@ -1490,6 +1490,8 @@ int range_to_limits(const char *range, float limits[2])
   float value1,value2;
   float delta=0.00001;
   char ch;
+  char buf[2];
+  buf[1] = 0;
 
   for (i = 0 ; i < strlen(range) ; ++i) {
     ch = range[i];
@@ -1522,10 +1524,11 @@ int range_to_limits(const char *range, float limits[2])
       ;
     } else {
       if (in_value) {
+	buf[0] = ch;
         if (frac) {
-          value2 = (float) atoi(&ch);
+          value2 = (float) atoi(buf);
         } else {
-          value1 = (float) atoi(&ch);
+          value1 = (float) atoi(buf);
         }
       }
     }
