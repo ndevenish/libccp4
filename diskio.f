@@ -144,12 +144,7 @@ C
 C
 C---- Open the file as requested
 C
-      IF (VAXVMS() .AND. JSTAT.EQ.2) THEN
-C       we have to specify the version so that the delete will work...
-        CALL COPEN(IUNIT,FNAME(:LENSTR(FNAME))//';',JSTAT)
-      ELSE
-        CALL COPEN(IUNIT,FNAME,JSTAT)
-      ENDIF
+      CALL COPEN(IUNIT,FNAME,JSTAT)
 C
 C---- Error conditions
 C
@@ -183,7 +178,7 @@ CCCC
 CCCC Input:  IUNIT        unit number assigned to file
 CCCC
 CCCC Output: None.
-CCCC See linrary.c
+CCCC See library.c
 CCCC======================================================================
 CCCC
 CCCC QMODE - Set mode for file access
@@ -197,7 +192,7 @@ CCCC                                          2 (WORDS), 3 (SHORT COMPLEX),
 CCCC                                          4 (COMPLEX) 6 (INTEGER)
 CCCC
 CCCC Output: NMCITM      number of bytes per item on this machine.
-CCCC See linrary.c
+CCCC See library.c
 CCCC======================================================================
 CCCC
 CCCC QREAD - Read from IUNIT into BUFFER, NITEMS items
@@ -211,7 +206,7 @@ CCCC         NITEMS      number of items (item size set by QMODE)
 CCCC
 CCCC Output: RESULT      0 (no error), -1 (EOF) or number of items read
 CCCC         BUFFER      holds the items read
-CCCC See linrary.c
+CCCC See library.c
 CCCC======================================================================
 CCCC
 CCCC QWRITE - Write to IUNIT from BUFFER, NITEMS items
@@ -225,7 +220,7 @@ CCCC         NITEMS       number of items (item size set by QMODE)
 CCCC         BUFFER       holds the items to write
 CCCC
 CCCC Output: None.
-CCCC See linrary.c
+CCCC See library.c
 CCCC======================================================================
 CCCC
 CCCC QSEEK - Position a file pointer in a IUNIT
@@ -239,7 +234,7 @@ CCCC         IEL         element number to seek
 CCCC         LRECL       length of a record
 CCCC
 CCCC Output: None
-CCCC See linrary.c
+CCCC See library.c
 CCCC======================================================================
 CCCC
 CCCC QBACK - skip back 1 record of length LRECL
@@ -251,7 +246,7 @@ CCCC Input:  IUNIT       unit number assigned to file
 CCCC         LRECL       length of a record in items
 CCCC
 CCCC Output: None
-CCCC See linrary.c
+CCCC See library.c
 CCCC======================================================================
 CCCC
 CCCC QSKIP - skip forward 1 record of length LRECL
@@ -263,7 +258,7 @@ CCCC Input:  IUNIT       unit number assigned to file
 CCCC         LRECL       length of a record in items
 CCCC
 CCCC Output: None
-CCCC See linrary.c
+CCCC See library.c
 C
 C
 C======================================================================
