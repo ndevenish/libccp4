@@ -24,22 +24,18 @@ C             vector)
 C     TRANSFRM variant of MATVC4, same except that the input vector is
 C              overwritten by the output vector
 C
+C Routines added by mdw (April 2003)
 C
-C     The routines ea06c, ea08c, ea09c, fa01as, fa01bs, fa01cs, fa01ds,
-C     fm02ad, mc04b, (and possibly others) are from the
-C     Harwell Subroutine library.  The conditions on their external use,
-C     reproduced from the Harwell manual are:
-C     * due acknowledgement is made of the use of subroutines in any
-C     research publications resulting from their use.
-C     * the subroutines may be modified for use in research applications
-C     by external users.  The nature of such modifiactions should be
-C     indicated in writing for information to the liaison officer.  At
-C     no time however, shall the subroutines or modifications thereof
-C     become the property of the external user.
-C       The liaison officer for the library's external affairs is listed
-C     as: Mr. S. Marlow, Building 8.9, Harwell Laboratory, Didcot, 
-C     Oxon OX11 0RA, UK.
-C
+C     ZJVX    Compute zero of Bessel function of 1st kind Jv(x)
+C     JDVX    Compute Bessel functions of 1st kind Jv(x) and their derivatives
+C     JVX     Compute Bessel functions of 1st kind Jv(x)
+C     GAMMA   Compute gamma function GA(x)
+C     MSTA1   Determine the starting point for backward
+C             recurrence such that the magnitude of
+C             Jn(x) at that point is about 10^(-MP)
+C     MSTA2   Determine the starting point for backward
+C             recurrence such that all Jn(x) has MP
+C             significant digits
 C
 C_BEGIN_GMPRD
 C
@@ -648,6 +644,21 @@ C---- COMPARE THRESHOLD WITH FINAL NORM
       IF (THR.GT.ANRMX) GOTO 45
 165   RETURN
       END
+C
+C     The routines ea06c, ea08c, ea09c, fa01as, fa01bs, fa01cs, fa01ds,
+C     fm02ad, mc04b, (and possibly others) are from the
+C     Harwell Subroutine library.  The conditions on their external use,
+C     reproduced from the Harwell manual are:
+C     * due acknowledgement is made of the use of subroutines in any
+C     research publications resulting from their use.
+C     * the subroutines may be modified for use in research applications
+C     by external users.  The nature of such modifiactions should be
+C     indicated in writing for information to the liaison officer.  At
+C     no time however, shall the subroutines or modifications thereof
+C     become the property of the external user.
+C       The liaison officer for the library's external affairs is listed
+C     as: Mr. S. Marlow, Building 8.9, Harwell Laboratory, Didcot, 
+C     Oxon OX11 0RA, UK.
 C
 C_BEGIN_EA06C
 C
@@ -2015,3 +2026,444 @@ C_END_ZIPOUT
 C     ..
       WRITE (ID) BUF
       END
+C
+C The following routines calculate Bessel functions of
+C the first kind, their derivatives, and their zeros.
+C Subroutine ZJVX is from Ian Tickle.
+C Subroutines JDVX, JVX, GAMMA and functions MSTA1, MSTA2
+C are from MJYV at http://iris-lee3.ece.uiuc.edu/~jjin/routines/routines.html
+C These routines are copyrighted, but permission is given to incorporate these
+C routines into programs provided that the copyright is acknowledged. 
+
+      SUBROUTINE ZJVX(V,IZ,BJ,DJ,X)
+C
+C     =======================================================
+C     Purpose: Compute zero of Bessel function Jv(x)
+C     Input :  V     --- Order of Jv(x)
+C              IZ    --- Index of previous zero of Jv(x)
+C              X     --- Value of previous zero of Jv(x)
+C     Output:  BJ(N) --- Jv(x) for N = 0...INT(V)
+C              DJ(N) --- J'v(x) for N = 0...INT(V)
+C              X     --- Value of next zero of Jv(x)
+C
+      IMPLICIT NONE
+      INTEGER IZ,N
+      REAL*8 V,VM,X,X0
+      REAL*8 BJ(0:*),DJ(0:*)
+C
+C#### Initial guess at zero: needs previous value if not first.
+      N=V
+      IF (IZ.EQ.0) THEN
+        X=1.99535+.8333883*SQRT(V)+.984584*V
+      ELSEIF (N.LE.10) THEN
+        X=X+3.11+.0138*V+(.04832+.2804*V)/(IZ+1)**2
+      ELSE
+        X=X+3.001+.0105*V+(11.52+.48525*V)/(IZ+3)**2
+      ENDIF
+C
+C#### Polish zero by Newton-Cotes iteration.
+1     CALL JDVX(V,X,VM,BJ,DJ)
+      IF (INT(VM).NE.N) CALL CCPERR(1,'VM != N in ZJVX.')
+      X0=X
+      X=X-BJ(N)/DJ(N)
+      IF (ABS(X-X0).GT.1D-10) GOTO 1
+      END
+C
+C
+      SUBROUTINE JDVX(V,X,VM,BJ,DJ)
+C
+C     =======================================================
+C     Purpose: Compute Bessel functions Jv(x) and their derivatives
+C     Input :  x --- Argument of Jv(x)
+C              v --- Order of Jv(x)
+C                    ( v = n+v0, 0 <= v0 < 1, n = 0,1,2,... )
+C     Output:  BJ(n) --- Jn+v0(x)
+C              DJ(n) --- Jn+v0'(x)
+C              VM --- Highest order computed
+C     Routines called:
+C          (1) GAMMA for computing gamma function
+C          (2) MSTA1 and MSTA2 for computing the starting
+C              point for backward recurrence
+C     =======================================================
+C
+      IMPLICIT NONE
+      INTEGER J,K,K0,L,M,N
+      REAL*8 A,A0,BJV0,BJV1,BJVL,CK,CS,F,F0,F1,F2,GA,PI,PX,QX,R,RP,RP2,
+     &RQ,SK,V,V0,VG,VL,VM,VV,X,X2,XK
+      PARAMETER(PI=3.141592653589793D0, RP2=.63661977236758D0)
+      REAL*8 BJ(0:*),DJ(0:*)
+      INTEGER MSTA1,MSTA2
+C
+      X2=X*X
+      N=INT(V)
+      V0=V-N
+      IF (X.LT.1D-100) THEN
+        DO K=0,N
+          BJ(K)=0D0
+          DJ(K)=0D0
+        ENDDO
+        IF (V0.EQ.0D0) THEN
+          BJ(0)=1D0
+          DJ(1)=.5D0
+        ELSE
+          DJ(0)=1D300
+        ENDIF
+        VM=V
+      ELSE
+        IF (X.LE.12D0) THEN
+          DO L=0,1
+            VL=V0+L
+            BJVL=1D0
+            R=1D0
+            DO K=1,40
+              R=-.25D0*R*X2/(K*(K+VL))
+              BJVL=BJVL+R
+              IF (ABS(R).LT.ABS(BJVL)*1D-15) GOTO 20
+            ENDDO
+20          VG=1D0+VL
+            CALL GAMMA(VG,GA)
+            A=(.5D0*X)**VL/GA
+            IF (L.EQ.0) THEN
+              BJV0=BJVL*A
+            ELSEIF (L.EQ.1) THEN
+              BJV1=BJVL*A
+            ENDIF
+          ENDDO
+        ELSE
+          K0=11
+          IF (X.GE.35D0) K0=10
+          IF (X.GE.50D0) K0=8
+          DO J=0,1
+            VV=4D0*(J+V0)*(J+V0)
+            PX=1D0
+            RP=1D0
+            DO K=1,K0
+              RP=-.78125D-2*RP*(VV-(4*K-3)**2)*(VV-(4*K-1)**2)/
+     &        (K*(2*K-1)*X2)
+              PX=PX+RP
+            ENDDO
+            QX=1D0
+            RQ=1D0
+            DO K=1,K0
+              RQ=-.78125D-2*RQ*(VV-(4*K-1)**2)*(VV-(4*K+1)**2)/
+     &        (K*(2*K+1)*X2)
+              QX=QX+RQ
+            ENDDO
+            QX=.125D0*(VV-1D0)*QX/X
+            XK=X-(.5D0*(J+V0)+.25D0)*PI
+            A0=SQRT(RP2/X)
+            CK=COS(XK)
+            SK=SIN(XK)
+            IF (J.EQ.0) THEN
+              BJV0=A0*(PX*CK-QX*SK)
+            ELSEIF (J.EQ.1) THEN
+              BJV1=A0*(PX*CK-QX*SK)
+            ENDIF
+          ENDDO
+        ENDIF
+        BJ(0)=BJV0
+        BJ(1)=BJV1
+        DJ(0)=V0/X*BJ(0)-BJ(1)
+        DJ(1)=BJ(0)-(1D0+V0)/X*BJ(1)
+        IF (N.GE.2 .AND. N.LE.INT(.9*X)) THEN
+          F0=BJV0
+          F1=BJV1
+          DO K=2,N
+            F=2D0*(K+V0-1D0)/X*F1-F0
+            BJ(K)=F
+            F0=F1
+            F1=F
+          ENDDO
+        ELSEIF (N.GE.2) THEN
+          M=MSTA1(X,200)
+          IF (M.LT.N) THEN
+            N=M
+          ELSE
+            M=MSTA2(X,N,15)
+          ENDIF
+          F2=0D0
+          F1=1D-100
+          DO K=M,0,-1
+            F=2D0*(V0+K+1D0)/X*F1-F2
+            IF (K.LE.N) BJ(K)=F
+            F2=F1
+            F1=F
+          ENDDO
+          IF (ABS(BJV0).GT.ABS(BJV1)) THEN
+            CS=BJV0/F
+          ELSE
+            CS=BJV1/F2
+          ENDIF
+          DO K=0,N
+            BJ(K)=CS*BJ(K)
+          ENDDO
+        ENDIF
+        DO K=2,N
+          DJ(K)=BJ(K-1)-(K+V0)/X*BJ(K)
+        ENDDO
+        VM=N+V0
+      ENDIF
+      END
+C
+C
+      SUBROUTINE JVX(V,X,VM,BJ)
+C
+C     =======================================================
+C     Purpose: Compute Bessel functions Jv(x)
+C     Input :  x --- Argument of Jv(x)
+C              v --- Order of Jv(x)
+C                    ( v = n+v0, 0 <= v0 < 1, n = 0,1,2,... )
+C     Output:  BJ(n) --- Jn+v0(x)
+C              VM --- Highest order computed
+C     Routines called:
+C          (1) GAMMA for computing gamma function
+C          (2) MSTA1 and MSTA2 for computing the starting
+C              point for backward recurrence
+C     =======================================================
+C
+      IMPLICIT NONE
+      INTEGER J,K,K0,L,M,N
+      REAL*8 A,A0,BJV0,BJV1,BJVL,CK,CS,F,F0,F1,F2,GA,PI,PX,QX,R,RP,RP2,
+     &RQ,SK,V,V0,VG,VL,VM,VV,X,X2,XK
+      PARAMETER(PI=3.141592653589793D0, RP2=.63661977236758D0)
+      REAL*8 BJ(0:*)
+      INTEGER MSTA1,MSTA2
+C
+      X2=X*X
+      N=INT(V)
+      V0=V-N
+      IF (X.LT.1D-100) THEN
+        DO K=0,N
+          BJ(K)=0D0
+        ENDDO
+        IF (V0.EQ.0D0) BJ(0)=1D0
+        VM=V
+      ELSE
+        IF (X.LE.12D0) THEN
+          DO L=0,1
+            VL=V0+L
+            BJVL=1D0
+            R=1D0
+            DO K=1,40
+              R=-.25D0*R*X2/(K*(K+VL))
+              BJVL=BJVL+R
+              IF (ABS(R).LT.ABS(BJVL)*1D-15) GOTO 20
+            ENDDO
+20          VG=1D0+VL
+            CALL GAMMA(VG,GA)
+            A=(.5D0*X)**VL/GA
+            IF (L.EQ.0) THEN
+              BJV0=BJVL*A
+            ELSEIF (L.EQ.1) THEN
+              BJV1=BJVL*A
+            ENDIF
+          ENDDO
+        ELSE
+          K0=11
+          IF (X.GE.35D0) K0=10
+          IF (X.GE.50D0) K0=8
+          DO J=0,1
+            VV=4D0*(J+V0)*(J+V0)
+            PX=1D0
+            RP=1D0
+            DO K=1,K0
+              RP=-.78125D-2*RP*(VV-(4*K-3)**2)*(VV-(4*K-1)**2)/
+     &        (K*(2*K-1)*X2)
+              PX=PX+RP
+            ENDDO
+            QX=1D0
+            RQ=1D0
+            DO K=1,K0
+              RQ=-.78125D-2*RQ*(VV-(4*K-1)**2)*(VV-(4*K+1)**2)/
+     &        (K*(2*K+1)*X2)
+              QX=QX+RQ
+            ENDDO
+            QX=.125D0*(VV-1D0)*QX/X
+            XK=X-(.5D0*(J+V0)+.25D0)*PI
+            A0=SQRT(RP2/X)
+            CK=COS(XK)
+            SK=SIN(XK)
+            IF (J.EQ.0) THEN
+              BJV0=A0*(PX*CK-QX*SK)
+            ELSEIF (J.EQ.1) THEN
+              BJV1=A0*(PX*CK-QX*SK)
+            ENDIF
+          ENDDO
+        ENDIF
+        BJ(0)=BJV0
+        BJ(1)=BJV1
+        IF (N.GE.2 .AND. N.LE.INT(.9*X)) THEN
+          F0=BJV0
+          F1=BJV1
+          DO K=2,N
+            F=2D0*(K+V0-1D0)/X*F1-F0
+            BJ(K)=F
+            F0=F1
+            F1=F
+          ENDDO
+        ELSEIF (N.GE.2) THEN
+          M=MSTA1(X,200)
+          IF (M.LT.N) THEN
+            N=M
+          ELSE
+            M=MSTA2(X,N,15)
+          ENDIF
+          F2=0D0
+          F1=1D-100
+          DO K=M,0,-1
+            F=2D0*(V0+K+1D0)/X*F1-F2
+            IF (K.LE.N) BJ(K)=F
+            F2=F1
+            F1=F
+          ENDDO
+          IF (ABS(BJV0).GT.ABS(BJV1)) THEN
+            CS=BJV0/F
+          ELSE
+            CS=BJV1/F2
+          ENDIF
+          DO K=0,N
+            BJ(K)=CS*BJ(K)
+          ENDDO
+        ENDIF
+        VM=N+V0
+      ENDIF
+      END
+C
+      SUBROUTINE GAMMA(X,GA)
+C
+C     ==================================================
+C     Purpose: Compute gamma function GA(x)
+C     Input :  x  --- Argument of GA(x)
+C                     ( x is not equal to 0,-1,-2,... )
+C     Output:  GA --- GA(x)
+C     ==================================================
+C
+      IMPLICIT NONE
+      INTEGER K,M,M1
+      REAL*8 GA,GR,PI,R,X,Z
+      PARAMETER(PI=3.141592653589793D0)
+      REAL*8 G(26)
+      DATA G/1D0, .5772156649015329D0,
+     &-.6558780715202538D0, -.420026350340952D-1,
+     &.1665386113822915D0, -.421977345555443D-1,
+     &-.96219715278770D-2, .72189432466630D-2,
+     &-.11651675918591D-2, -.2152416741149D-3,
+     &.1280502823882D-3, -.201348547807D-4,
+     &-.12504934821D-5, .11330272320D-5,
+     &-.2056338417D-6, .61160950D-8,
+     &.50020075D-8, -.11812746D-8,
+     &.1043427D-9, .77823D-11,
+     &-.36968D-11, .51D-12,
+     &-.206D-13, -.54D-14, .14D-14, .1D-15/
+C
+      IF (X.EQ.INT(X)) THEN
+        IF (X.GT.0D0) THEN
+          GA=1D0
+          M1=X-1
+          DO K=2,M1
+            GA=GA*K
+          ENDDO
+        ELSE
+          GA=1D300
+        ENDIF
+      ELSE
+        IF (ABS(X).GT.1D0) THEN
+          Z=ABS(X)
+          M=INT(Z)
+          R=1D0
+          DO K=1,M
+            R=R*(Z-K)
+          ENDDO
+          Z=Z-M
+        ELSE
+          Z=X
+        ENDIF
+        GR=G(26)
+        DO K=25,1,-1
+          GR=GR*Z+G(K)
+        ENDDO
+        GA=1D0/(GR*Z)
+        IF (ABS(X).GT.1D0) THEN
+          GA=GA*R
+          IF (X.LT.0D0) GA=-PI/(X*GA*DSIN(PI*X))
+        ENDIF
+      ENDIF
+      END
+C
+      INTEGER FUNCTION MSTA1(X,MP)
+C
+C     ===================================================
+C     Purpose: Determine the starting point for backward
+C              recurrence such that the magnitude of
+C              Jn(x) at that point is about 10^(-MP)
+C     Input :  x     --- Argument of Jn(x)
+C              MP    --- Value of magnitude
+C     Output:  MSTA1 --- Starting point
+C     ===================================================
+C
+      IMPLICIT NONE
+      INTEGER IT,MP,N,N0,N1,NN
+      REAL*8 A0,F,F0,F1,X
+      REAL*8 ENVJ
+      ENVJ(N,X)=.5D0*LOG10(6.28D0*N)-N*LOG10(1.36D0*X/N)
+C
+      A0=ABS(X)
+      N0=INT(1.1D0*A0)+1
+      F0=ENVJ(N0,A0)-MP
+      N1=N0+5
+      F1=ENVJ(N1,A0)-MP
+      DO IT=1,20
+        NN=N1-(N1-N0)/(1D0-F0/F1)
+        F=ENVJ(NN,A0)-MP
+        IF(ABS(NN-N1).LT.1) GOTO 20
+        N0=N1
+        F0=F1
+        N1=NN
+        F1=F
+      ENDDO
+20    MSTA1=NN
+      END
+C
+      INTEGER FUNCTION MSTA2(X,N,MP)
+C
+C     ===================================================
+C     Purpose: Determine the starting point for backward
+C              recurrence such that all Jn(x) has MP
+C              significant digits
+C     Input :  x  --- Argument of Jn(x)
+C              n  --- Order of Jn(x)
+C              MP --- Significant digit
+C     Output:  MSTA2 --- Starting point
+C     ===================================================
+C
+      IMPLICIT NONE
+      INTEGER IT,MP,N,N0,N1,NN
+      REAL*8 A0,F,F0,F1,EJN,HMP,OBJ,X
+      REAL*8 ENVJ
+      ENVJ(N,X)=.5D0*LOG10(6.28D0*N)-N*LOG10(1.36D0*X/N)
+C
+      A0=ABS(X)
+      HMP=.5D0*MP
+      EJN=ENVJ(N,A0)
+      IF (EJN.LE.HMP) THEN
+        OBJ=MP
+        N0=INT(1.1D0*A0)
+      ELSE
+        OBJ=HMP+EJN
+        N0=N
+      ENDIF
+      F0=ENVJ(N0,A0)-OBJ
+      N1=N0+5
+      F1=ENVJ(N1,A0)-OBJ
+      DO IT=1,20
+        NN=N1-(N1-N0)/(1D0-F0/F1)
+        F=ENVJ(NN,A0)-OBJ
+        IF (ABS(NN-N1).LT.1) GOTO 20
+        N0=N1
+        F0=F1
+        N1=NN
+        F1=F
+      ENDDO
+20    MSTA2=NN+10
+      END
+C
