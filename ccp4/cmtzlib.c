@@ -364,6 +364,9 @@ MTZ *MtzGet(const char *logname, int read_refs)
   ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   while (strncmp((strncpy(mkey,hdrrec,4)),"END",3) != 0) {
 
+    if (debug) 
+      printf(" MtzGet: header line %s \n",hdrrec);
+
     if (strncmp (mkey, "VERS",4) == 0) {
       if (strncmp (hdrrec+5,"MTZ:V1.1",8) != 0) {
          printf("Input MTZ file is not correct version !!\n");
@@ -394,6 +397,11 @@ MTZ *MtzGet(const char *logname, int read_refs)
         isort[i] = (int) token[i+1].value;
     }
     else if (strncmp (mkey, "SYMI",4) == 0) {
+      /* Check that there are enough tokens in the header record */
+      if (ntok < 7) {
+	printf("MTZ header is corrupted: missing tokens in SYMINF record\n");
+	return(NULL);
+      }
       mtz->mtzsymm.nsym = (int) token[1].value;
       mtz->mtzsymm.nsymp = (int) token[2].value;
       mtz->mtzsymm.symtyp = token[3].fullstring[0];
@@ -2024,8 +2032,7 @@ int MtzPut(MTZ *mtz, const char *logname)
 
  if (!mtz->fileout) {
 
-   hdrst = mtz->nref * MtzNumActiveCol(mtz) + SIZE1 + 1;
-   fileout = MtzOpenForWrite(logname, &hdrst);
+   fileout = MtzOpenForWrite(logname);
 
    if (debug) 
      printf(" MtzPut: file opened \n");
@@ -2293,13 +2300,11 @@ int MtzPut(MTZ *mtz, const char *logname)
  MtzWhdrLine(fileout,16,hdrrec);
 
  /* go back and correct hdrst */
- if (!mtz->refs_in_memory) {
-   ccp4_file_setmode(fileout,0);
-   ccp4_file_seek(fileout, 4, SEEK_SET); 
-   hdrst = mtz->nref * MtzNumActiveCol(mtz) + SIZE1 + 1;
-   ccp4_file_setmode(fileout,2);
-   ccp4_file_write(fileout,(uint8 *) &hdrst,1);
- }
+ ccp4_file_setmode(fileout,0);
+ ccp4_file_seek(fileout, 4, SEEK_SET); 
+ hdrst = mtz->nref * MtzNumActiveCol(mtz) + SIZE1 + 1;
+ ccp4_file_setmode(fileout,2);
+ ccp4_file_write(fileout,(uint8 *) &hdrst,1);
 
  /* And close the mtz file: */
  if (!mtz->fileout) 
@@ -2311,10 +2316,11 @@ int MtzPut(MTZ *mtz, const char *logname)
  return 1;
 }
 
-CCP4File *MtzOpenForWrite(const char *logname, int *hdrst)
+CCP4File *MtzOpenForWrite(const char *logname)
 
 { CCP4File *fileout;
  int debug=0;
+ int hdrst;
  char *filename;
 
  if (debug) printf(" MtzOpenForWrite: entering \n");
@@ -2331,7 +2337,8 @@ CCP4File *MtzOpenForWrite(const char *logname, int *hdrst)
  ccp4_file_setmode(fileout,0);
  ccp4_file_writechar(fileout,"MTZ ",4);
  ccp4_file_setmode(fileout,2);
- ccp4_file_write(fileout,(uint8 *) hdrst,1);
+ hdrst = SIZE1 + 1;
+ ccp4_file_write(fileout,(uint8 *) &hdrst,1);
 
  ccp4_file_setstamp(fileout,2);
 /* Write architecture */

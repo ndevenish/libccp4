@@ -60,10 +60,9 @@ int MtzPut(MTZ *mtz, const char *logname);
 
 /** Opens a new MTZ file for writing.
  * @param logname logical name for output file.
- * @param hdrst position of header
  * @return pointer to file
  */
-CCP4File *MtzOpenForWrite(const char *logname, int *hdrst);
+CCP4File *MtzOpenForWrite(const char *logname);
 
 int MtzWhdrLine(CCP4File *fileout, int nitems, char buffer[]);
 /* write header record to fileout. Record is filled from
@@ -538,7 +537,7 @@ int ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
  * @param adata array of values.
  * @param lookup array of pointers to columns.
  * @param ncol number of columns.
- * @param iref index of reflection.
+ * @param iref Reflection number such that 1st reflection is iref=1.
  * @return void
  */
 int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[], 

@@ -1384,7 +1384,7 @@ FORTRAN_SUBR ( LWOPEN, lwopen,
 
 { 
   char *temp_name;
-  int hdrst, nxtal=1, nset[1]={1};
+  int nxtal=1, nset[1]={1};
   int i,j,k,icol=-1;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWOPEN");)
@@ -1412,8 +1412,7 @@ FORTRAN_SUBR ( LWOPEN, lwopen,
  iwref[*mindx-1] = 0;
 
  if (!cmtz_in_memory) {
-   hdrst = SIZE1 + 1;
-   mtzdata[*mindx-1]->fileout = MtzOpenForWrite(temp_name, &hdrst);
+   mtzdata[*mindx-1]->fileout = MtzOpenForWrite(temp_name);
 
    /* assign existing columns for output */
    /* if lwclab/lwassn are called with iappnd=0 then these are overwritten */
