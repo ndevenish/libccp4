@@ -12309,7 +12309,7 @@ C
       IF (INIT.NE.1) THEN
         IUNIT = ISTREAM
         INIT = 1
-        IF (IFLAG.EQ.1 .AND. CCPONL()) THEN
+        IF (IFLAG.EQ.1 .AND. CCPONL(IDUM)) THEN
 C
 C---- Open if in batch
 C
