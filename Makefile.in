@@ -38,8 +38,12 @@
 #   file doesn't work in AIX because it isn't in object format ;
 # * ar *.o into ../libccp4.a;
 # * rm *.o from foo.dir (we want to leave *.f there so you can do
-#   symbolic debug, and also include the absolute path for this, but
-#   see comments at definition of WD below.
+#   symbolic debug, see below).
+# The individual files are actually compiled with a separate $(FC)
+# invocation for each, rather than using *.f.)  This may slow things
+# down significantly, but means we can and also include the absolute
+# path for symbolic debugging without risking an overly-long command
+# line that may break sh.
 
 # The following variables are expected to be set by configure:
 # top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
@@ -49,15 +53,6 @@ SHELL       = /bin/sh
 srcdir	    = $(top_srcdir)/lib/src
 L           = libccp4.a#        convenient abbreviation only
 LIB_DIR     = .
-
-# This should, ideally, be set to "`pwd`/" to get the full path into
-# the modules for symbolic debugging, but that tends to make lines too
-# long for sh sometimes,  sigh.  Fixme: at least make this
-# configurable -- it's probably possible to hack it so that if the
-# command fails with pwd in there, make tries again recursively
-# without it...
-# WD          = `pwd`/
-WD          =
 
 # The following is for the benefit of Alliant, which is the only
 # system I know where you can't use -L to specify the load path.
@@ -83,7 +78,7 @@ LIBTARGETS = ccplib fftlib maplib parser rwatom rwbrook modlib \
            symlib lcflib mtzlib diskio unix plot84lib \
            binsortint library plotsubs 
 
-.PRECIOUS : $L                 # don't zap the library if a component fails
+.PRECIOUS : $(srcdir)/library.c-dist $L # don't zap the library if a component fails
 
 # probably only recognised by GNU make:
 .PHONY : all clean install $(LIBTARGETS) ranlib realclean distclean \
@@ -112,8 +107,10 @@ $L(ccplib.o) : $(srcdir)/ccplib.f
 	-rm -rf ccplib.dir; mkdir ccplib.dir
 	echo '      SUBROUTINE CCPLIB' > ccplib.dir/ccplib.$F
 	echo '      END' >> ccplib.dir/ccplib.$F
-	cd ccplib.dir && fsplit $(srcdir)/ccplib.f && $(RMEMPTY) && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd ccplib.dir && fsplit $(srcdir)/ccplib.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+            $(FC) -c $(FFLAGS) $$i; done \
+          && $(AR) ../$L *.o
 	rm -f ccplib.dir/*.o
 ccplib : $L(ccplib.o)
 	$(RANLIB) $L
@@ -122,8 +119,10 @@ $L(fftlib.o) : $(srcdir)/fftlib.f
 	-rm -rf fftlib.dir; mkdir fftlib.dir
 	echo '      SUBROUTINE FFTLIB' > fftlib.dir/fftlib.$F
 	echo '      END' >> fftlib.dir/fftlib.$F
-	cd fftlib.dir && fsplit $(srcdir)/fftlib.f && $(RMEMPTY) && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd fftlib.dir && fsplit $(srcdir)/fftlib.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+            $(FC) -c $(FFLAGS) $$i; done \
+          && $(AR) ../$L *.o
 	rm -f fftlib.dir/*.o
 fftlib : $L(fftlib.o)
 	$(RANLIB) $L
@@ -132,8 +131,10 @@ $L(maplib.o) : $(srcdir)/maplib.f
 	-rm -rf maplib.dir; mkdir maplib.dir
 	echo '      SUBROUTINE MAPLIB' > maplib.dir/maplib.$F
 	echo '      END' >> maplib.dir/maplib.$F
-	cd maplib.dir && fsplit $(srcdir)/maplib.f && $(RMEMPTY) && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd maplib.dir && fsplit $(srcdir)/maplib.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+            $(FC) -c $(FFLAGS) $$i; done\
+          && $(AR) ../$L *.o
 	rm -f maplib.dir/*.o
 maplib : $L(maplib.o)
 	$(RANLIB) $L
@@ -146,7 +147,10 @@ $L(parser.o) : $(srcdir)/parser.f
 	  echo '      SUBROUTINE PRSER' > parser.dir/parser.$F; \
 	  echo '      END' >> parser.dir/parser.$F; \
 	fi
-	cd parser.dir && $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd parser.dir && \
+          for i in `pwd`/*.$F; do \
+            $(FC) -c $(FFLAGS) $$i; done\
+          && $(AR) ../$L *.o
 	rm -f parser.dir/*.o
 parser : $L(parser.o)
 	$(RANLIB) $L
@@ -155,18 +159,23 @@ $L(rwbrook.o) : $(srcdir)/rwbrook.f
 	-rm -rf rwbrook.dir; mkdir rwbrook.dir
 	echo '      SUBROUTINE RWBROOK' > rwbrook.dir/rwbrook.$F
 	echo '      END' >> rwbrook.dir/rwbrook.$F
-	cd rwbrook.dir && fsplit $(srcdir)/rwbrook.f && $(RMEMPTY) && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd rwbrook.dir && fsplit $(srcdir)/rwbrook.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+          && $(AR) ../$L *.o
 	rm -f rwbrook.dir/*.o
 rwbrook : $L(rwbrook.o)
 	$(RANLIB) $L
+
 
 $L(rwatom.o) : $(srcdir)/rwatom.f
 	-rm -rf rwatom.dir; mkdir rwatom.dir
 	echo '      SUBROUTINE RWATOM' > rwatom.dir/rwatom.$F
 	echo '      END' >> rwatom.dir/rwatom.$F
-	cd rwatom.dir && fsplit $(srcdir)/rwatom.f && $(RMEMPTY) && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd rwatom.dir && fsplit $(srcdir)/rwatom.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+          && $(AR) ../$L *.o
 	rm -f rwatom.dir/*.o
 rwatom : $L(rwatom.o)
 	$(RANLIB) $L
@@ -175,8 +184,10 @@ $L(modlib.o) : $(srcdir)/modlib.f
 	-rm -rf modlib.dir; mkdir modlib.dir
 	echo '      SUBROUTINE MODLIB' > modlib.dir/modlib.$F
 	echo '      END' >> modlib.dir/modlib.$F
-	cd modlib.dir && fsplit $(srcdir)/modlib.f && $(RMEMPTY) && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd modlib.dir && fsplit $(srcdir)/modlib.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+          && $(AR) ../$L *.o
 	rm -f modlib.dir/*.o
 modlib : $L(modlib.o)
 	$(RANLIB) $L
@@ -185,8 +196,10 @@ $L(symlib.o) : $(srcdir)/symlib.f
 	-rm -rf symlib.dir; mkdir symlib.dir
 	echo '      SUBROUTINE SYMLIB' > symlib.dir/symlib.$F
 	echo '      END' >> symlib.dir/symlib.$F
-	cd symlib.dir && fsplit $(srcdir)/symlib.f && $(RMEMPTY) && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd symlib.dir && fsplit $(srcdir)/symlib.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+          && $(AR) ../$L *.o
 	rm -f symlib.dir/*.o
 symlib : $L(symlib.o)
 	$(RANLIB) $L
@@ -195,8 +208,10 @@ $L(lcflib.o) : $(srcdir)/lcflib.f
 	-rm -rf lcflib.dir; mkdir lcflib.dir
 	echo '      SUBROUTINE LCFLIB' > lcflib.dir/lcflib.$F
 	echo '      END' >> lcflib.dir/lcflib.$F
-	cd lcflib.dir && fsplit $(srcdir)/lcflib.f && $(RMEMPTY) && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd lcflib.dir && fsplit $(srcdir)/lcflib.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+          && $(AR) ../$L *.o
 	rm -f lcflib.dir/*.o
 lcflib : $L(lcflib.o)
 	$(RANLIB) $L
@@ -205,8 +220,10 @@ $L(mtzlib.o) : $(srcdir)/mtzlib.f
 	-rm -rf mtzlib.dir; mkdir mtzlib.dir
 	echo '      SUBROUTINE MTZLIB' > mtzlib.dir/mtzlib.$F
 	echo '      END' >> mtzlib.dir/mtzlib.$F
-	cd mtzlib.dir && fsplit $(srcdir)/mtzlib.f && $(RMEMPTY) && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd mtzlib.dir && fsplit $(srcdir)/mtzlib.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+            $(FC) -c $(FFLAGS) $$i; done\
+          && $(AR) ../$L *.o
 	rm -f mtzlib.dir/*.o
 mtzlib : $L(mtzlib.o)
 	$(RANLIB) $L
@@ -215,8 +232,10 @@ $L(diskio.o) : $(srcdir)/diskio.f
 	-rm -rf diskio.dir; mkdir diskio.dir
 	echo '      SUBROUTINE DISKIO' > diskio.dir/diskio.$F
 	echo '      END' >> diskio.dir/diskio.$F
-	cd diskio.dir && fsplit $(srcdir)/diskio.f && $(RMEMPTY) && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd diskio.dir && fsplit $(srcdir)/diskio.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+            $(FC) -c $(FFLAGS) $$i; done\
+          && $(AR) ../$L *.o
 	rm -f diskio.dir/*.o
 diskio : $L(diskio.o)
 
@@ -224,8 +243,10 @@ $L(plot84lib.o) : $(srcdir)/plot84lib.f
 	-rm -rf plot84lib.dir; mkdir plot84lib.dir
 	echo '      SUBROUTINE PLOT84LIB' > plot84lib.dir/plot84lib.$F
 	echo '      END' >> plot84lib.dir/plot84lib.$F
-	cd plot84lib.dir && fsplit $(srcdir)/plot84lib.f && $(RMEMPTY) && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd plot84lib.dir && fsplit $(srcdir)/plot84lib.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+            $(FC) -c $(FFLAGS) $$i; done\
+          && $(AR) ../$L *.o
 	rm -f plot84lib.dir/*.o
 plot84lib : $L(plot84lib.o)
 	$(RANLIB) $L
@@ -234,8 +255,10 @@ $L(plotsubs.o) : $(srcdir)/plotsubs.f
 	-rm -rf plotsubs.dir; mkdir plotsubs.dir
 	echo '      SUBROUTINE PLOTSUBS' > plotsubs.dir/plotsubs.$F
 	echo '      END' >> plotsubs.dir/plotsubs.$F
-	cd plotsubs.dir && fsplit $(srcdir)/plotsubs.f && $(RMEMPTY) && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd plotsubs.dir && fsplit $(srcdir)/plotsubs.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+            $(FC) -c $(FFLAGS) $$i; done\
+          && $(AR) ../$L *.o
 	rm -f plotsubs.dir/*.o
 plotsubs : $L(plotsubs.o)
 	$(RANLIB) $L
@@ -244,10 +267,10 @@ $L(graflib.o) : $(srcdir)/graflib.f
 	-rm -rf graflib.dir; mkdir graflib.dir
 	echo '      SUBROUTINE GRAFLIB' > graflib.dir/graflib.$F
 	echo '      END' >> graflib.dir/graflib.$F
-# split this into two because the list of sources is too long in HP-SUX 
-	cd graflib.dir && fsplit $(srcdir)/graflib.f && $(RMEMPTY) && \
-        $(FC) -c $(FFLAGS) $(WD)[gA-Pa-p]*.$F && $(AR) ../$L *.o && \
-          $(FC) -c $(FFLAGS) $(WD)[Q-Zq-z]*.$F && $(AR) ../$L *.o
+	cd graflib.dir && fsplit $(srcdir)/graflib.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+            $(FC) -c $(FFLAGS) $$i; done\
+          && $(AR) ../$L *.o
 	rm -f graflib.dir/*.o
 graflib : $L(graflib.o)
 	$(RANLIB) $L
@@ -259,6 +282,20 @@ $L(library.o) : $(srcdir)/library.c
 	$(AR) $L library.o && rm library.o
 library : $L(library.o)
 	$(RANLIB) $L
+
+# These next targets are only any use if you have the noweb system
+# The following shouldn't run unless you're actually modifying
+$(srcdir)/library.c : $(srcdir)/library.nw
+# first save the distributed one in case of disasters
+	test -f $@-dist || mv $@ $@-dist
+	-notangle -L $? > $@ || mv $@-dist $@
+library.tex: $(srcdir)/library.nw
+	noweave -index -delay $? >library.tex
+library.dvi: library.tex
+	latex library
+	latex library
+	makeindex library
+	latex library
 
 $L(binsortint.o) : $(srcdir)/binsortint.c $(srcdir)/binsort.h
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/binsortint.c
@@ -292,8 +329,10 @@ $L(unix.o) : unix.f
 	-rm -rf unix.dir; mkdir unix.dir
 	echo '      SUBROUTINE UNIX' > unix.dir/unix.f
 	echo '      END' >> unix.dir/unix.f
-	cd unix.dir && fsplit ../unix.f && $(RMEMPTY) && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	cd unix.dir && fsplit ../unix.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+            $(FC) -c $(FFLAGS) $$i; done\
+          && $(AR) ../$L *.o
 	rm -f unix.dir/*.o
 unix : $L(unix.o)
 	$(RANLIB) $L
