@@ -2073,7 +2073,7 @@ systems with the capability and insufficient VM\@.
 #if CALL_LIKE_IRIS
   fortran ccpal1_ (routne, n, type, length)
 #endif
-  void * routne ();
+  void (* routne) ();
   int *n, type[], length[];
 {
   int i, size, *leng[10];
