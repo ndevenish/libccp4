@@ -2,7 +2,7 @@
 C
       IMPLICIT NONE
       INTEGER NMAX_MEM
-      PARAMETER (NMAX_MEM = 8000000)
+      PARAMETER (NMAX_MEM = 16000000)
       INTEGER NKEYS,NRECL,KEYBUF(*),ISS
 C
 C----Common block for records to be sorted. At the moment
@@ -81,7 +81,7 @@ C
       INTEGER FUNCTION SRTRLS(ADATA)
       IMPLICIT NONE
       INTEGER NMAX_MEM
-      PARAMETER (NMAX_MEM = 8000000)
+      PARAMETER (NMAX_MEM = 16000000)
 C
 C----Recieve one record and save it in the list.
 C----For large number of records if number of current records
@@ -145,7 +145,7 @@ C
 C
       IMPLICIT NONE
       INTEGER NMAX_MEM
-      PARAMETER (NMAX_MEM = 8000000)
+      PARAMETER (NMAX_MEM = 16000000)
 C
 C---This function should do merging. But here we use only sorting
 C---It will have to be expanded for merging for large number of records
@@ -181,7 +181,7 @@ C
       INTEGER FUNCTION SRTRET(ADATA)
       IMPLICIT NONE
       INTEGER NMAX_MEM
-      PARAMETER (NMAX_MEM = 8000000)
+      PARAMETER (NMAX_MEM = 16000000)
 C
 C----Retrieve next record from the sorted list of the records.
       REAL ADATA(*)
