@@ -277,7 +277,7 @@ SRTRLS:	Release one record into Sort
   int srtrls_ (record)
 #endif
 
-char            *record
+char            *record;
 #endif
 
 {
