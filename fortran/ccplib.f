@@ -42,6 +42,7 @@ C      CCPMVB    Move bytes from one non-character array to another if
 C                byte handling is available
 C      CCPMVI    Move words from one integer array to another
 C      CCPMVR    Move words from one real array to another
+C      CCPNUN    Return an unconnected i/o unit number
 C      CCPONL    See if program is being run interactively
 C      CCPPSF    Parse file name into components
 C      CCPRCS    Like CCPVRS but use RCS-format date string
@@ -1535,6 +1536,30 @@ C
       DO 10 J=1,NUM
    10 ARR1(J)=ARR2(J)
       END
+C
+C_BEGIN_CCPNUN
+      INTEGER FUNCTION CCPNUN ()
+C     ==========================
+C
+C     Return (the next) unused (not connected) i/o unit number.
+C     Use this to select an arbitrary unit for i/o to avoid clashes with
+C     other code.  (The value returned will be the same until the unit in
+C     question is opened or a lower-numbered one is closed.)
+C
+C_END_CCPNUN
+      LOGICAL OD
+      EXTERNAL CCPERR
+C     The `standard' unit 5 and 6 may or may not be reported as open,
+C     normally depending on whether an appropriate read or write has
+C     happened, so we'll start at 7.  Lower-numbered ones might be used
+C     for other things such as standard error.  99 seems a reasonable
+C     place to stop.
+      DO 10 CCPNUN=7,99
+        INQUIRE (UNIT=CCPNUN, OPENED=OD)
+        IF (.NOT. OD) RETURN
+ 10   CONTINUE
+      CALL CCPERR (1, 'CCPNUN: Can''t find an unused unit')
+      END
 C
 C
 C
@@ -2359,7 +2384,7 @@ C
       CALL UGTUID(UID)
       CALL UTIME(CTIME)
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
- 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.4: ',
+ 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.5: ',
      +       A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
      +       /)
 C
