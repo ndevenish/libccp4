@@ -152,7 +152,7 @@ C---- Print result if appropriate
 C
       IF (IPRINT.EQ.1) THEN
         WRITE (OUTLIN,100) ISTAT
-        OUTLIN(LENSTR(OUTLIN)+1:) = ERRSTR
+        OUTLIN(LENSTR(OUTLIN)+2:) = ERRSTR
         WRITE(6,FMT='(A)') OUTLIN(1:LENSTR(OUTLIN))
 100     FORMAT (' OS error: ',I5,' Message: ')
       ENDIF
@@ -877,11 +877,11 @@ C     don't report UNKNOWN if actually SCRATCH
         IF (IFAIL.EQ.0) THEN
 C         hard failure
           WRITE (ERRSTR,FMT=6002) IUN
-          ERRSTR(LENSTR(ERRSTR)+1:) = NAMFIL(1:LENSTR(NAMFIL))
+          ERRSTR(LENSTR(ERRSTR)+2:) = NAMFIL(1:LENSTR(NAMFIL))
           IF (LENSTR(ERRSTR) .LE. 130) THEN
             ERRSTR(LENSTR(ERRSTR)+1:) = ' logical: '
-            IF (LENSTR(ERRSTR) .LE. 130)
-     +         ERRSTR(LENSTR(ERRSTR)+1:) = LOGNAM(1:LENSTR(LOGNAM))
+            IF (LENSTR(ERRSTR) .LE. 129)
+     +         ERRSTR(LENSTR(ERRSTR)+2:) = LOGNAM(1:LENSTR(LOGNAM))
           ENDIF
  6002     FORMAT ('Open failed: Unit:',I4,', File: ')
           CALL CCPERR(1, ERRSTR)
@@ -889,11 +889,11 @@ C         hard failure
 C         soft failure
           WRITE (6,FMT=6004) FRM, ST, IUN
           OUTLIN = ' Logical name: '
-          OUTLIN(LENSTR(OUTLIN)+1:) = LOGNAM(1:LENSTR(LOGNAM))
+          OUTLIN(LENSTR(OUTLIN)+2:) = LOGNAM(1:LENSTR(LOGNAM))
           IF (LENSTR(OUTLIN) .LT. 100) THEN
             OUTLIN(LENSTR(OUTLIN)+1:) = ' File name: '
-            IF (LENSTR(OUTLIN) .LT. 100)
-     +         OUTLIN(LENSTR(OUTLIN)+1:) = NAMFIL(1:LENSTR(NAMFIL))
+            IF (LENSTR(OUTLIN) .LT. 99)
+     +         OUTLIN(LENSTR(OUTLIN)+2:) = NAMFIL(1:LENSTR(NAMFIL))
           ENDIF
           WRITE(6,FMT='(A)') OUTLIN(1:LENSTR(OUTLIN))
           WRITE(6,FMT='(A)') ERRSTR(1:MIN(130,LENSTR(ERRSTR)))
