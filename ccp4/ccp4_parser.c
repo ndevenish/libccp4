@@ -1383,8 +1383,8 @@ ccp4_symop symop_to_rotandtrn(const char *symchs_begin, const char *symchs_end) 
    reciprocal axis vectors,        e.g. a*+c*,c*,-b*
    real space axis vectors,        e.g. a,c-a,-b
 
-   The strings should not contain spaces, and the coordinate and
-   translation parts may be in either order.
+   The strings can contain spaces, and the coordinate and translation
+   parts may be in either order.
 
    The function returns 1 on success, 0 if there was a failure to
    generate a matrix representation.
@@ -1412,10 +1412,11 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
 
     /* Parse symop */
     if (isspace(ch)) {
-      /* Symop strings cannot contain spaces and only one
-	 symop is allowed per line */
-      symop_to_mat4_err(symchs_begin);
-      return 0 ;
+      /* Have to allow symop strings to contain spaces for
+	 compatibility with older MTZ files
+	 Ignore and step on to next character */
+      ++ptr_symchs;
+      continue;
     } else if (ch == '*') {
       /* Ignore * as it will be part of e.g. a*+c*,c*,-b* */
       ++ptr_symchs;
