@@ -104,7 +104,7 @@ static const char *const csym_errlist[] =
 struct error_system {
   char system[32];
   int system_nerr;
-  const char **error_list;
+  const char * const *error_list;
 };
 
 static const struct error_system ccp4_errlist[] = {
