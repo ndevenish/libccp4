@@ -111,8 +111,10 @@ C       matched key
           enddo
           rest = line (ibeg(2):iend(ntok))
         else
-          argerr = .true.
-          call lerror (1, 0, 'Argument expected')
+          rest = ' '
+          success(1) = .true.
+C          argerr = .true.
+C          call lerror (1, 0, 'Argument expected')
         end if
       end if
       return
