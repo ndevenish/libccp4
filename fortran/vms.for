@@ -356,7 +356,7 @@ C     .. Local Scalars ..
       CHARACTER CLIARG*700,NAME*200
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LIB$GET_FOREIGN,VAXC$CRTL_INIT
+      EXTERNAL LIB$GET_FOREIGN
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC INDEX
@@ -374,7 +374,7 @@ C     ..
       INCLUDE '($SSDEF)'
       INCLUDE '($JPIDEF)'
 C
-      CALL VAXC$CRTL_INIT
+      INCLUDE 'CRTLINIT'
 C
 C---- Get command line
 C
