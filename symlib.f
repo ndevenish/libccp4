@@ -504,7 +504,33 @@ C     .. Local Scalars ..
       CHARACTER STROUT*400
 C     ..
 C     .. Local Arrays ..
-      REAL CPROJ(3,20),CPRJ(3,12)
+      REAL CPROJ(3,20),CPRJ(3,12),CONV,PI2
+      ENTRY CENTPHS(HKL,NSM,RSM,CENPHS,IPRINT)
+c     ============================
+      PI2 = 8*ATAN2(1.0,1.0)
+      CONV = 360.0/PI2
+       Xtest= sqrt(2.0)
+       Ytest= sqrt(3.0)
+       Ztest= sqrt(5.0)
+       Asf = 0.0
+       Bsf = 0.0
+        DO 25 J = 1,NSM
+          Xs = RSM(1,1,J)*Xtest + RSM(1,2,J)*Ytest 
+     +       + RSM(1,3,J)*Ztest + RSM(1,4,J)
+          Ys = RSM(2,1,J)*Xtest + RSM(2,2,J)*Ytest
+     +       + RSM(2,3,J)*Ztest + RSM(2,4,J)
+          Zs = RSM(3,1,J)*Xtest + RSM(3,2,J)*Ytest
+     +       + RSM(3,3,J)*Ztest + RSM(3,4,J)
+       Asf = Asf + cos(PI2*(HKL(1)*Xs +HKL(2)*Ys +HKL(3)*Zs))
+       Bsf = Bsf + sin(PI2*(HKL(1)*Xs +HKL(2)*Ys +HKL(3)*Zs))
+   25   CONTINUE
+      CENPHS = MOD( (ATAN2(Bsf,Asf)*CONV  + 360.0),180.0)
+      IF(IPRINT.NE.0) THEN
+        WRITE(6,'(A,3I4,F8.1,A,F8.1)')
+     +  ' Centric phase possibilities',HKL,CENPHS,
+     +  '    or ',CENPHS-180.0
+      END IF
+      RETURN          
       INTEGER IHKL(3,12),IN(3)
       CHARACTER REFTYP(12)*7
 C     ..
