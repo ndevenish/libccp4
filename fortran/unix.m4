@@ -215,6 +215,13 @@ C     with status UNKNOWN rather than new if they exist
         IF (OPNVAR.EQ.'UNKNOWN') ISTAT = 1
       END IF
 C
+C     check for `logical name' referencing real file
+      CALL UGTENV(LOGNAM,NAMFIL)
+      IF (NAMFIL.EQ.' ') NAMFIL = LOGNAM
+C
+C     Special case:  /dev/null should be opened UNKNOWN
+      IF ( NAMFIL.EQ.'/dev/null') ISTAT = 1
+C
 C     type of open
       ST = STAT(ISTAT)
       IF (ITYPE.EQ.2 .OR. ITYPE.EQ.4) THEN
@@ -227,13 +234,6 @@ C     type of open
       ELSE
         ACCESS='DIRECT'
       ENDIF
-C
-C     check for `logical name' referencing real file
-      CALL UGTENV(LOGNAM,NAMFIL)
-      IF (NAMFIL.EQ.' ') NAMFIL = LOGNAM
-C       
-C     Special case:  /dev/null should be opened UNKNOWN
-      IF ( NAMFIL.EQ.'/dev/null') ISTAT = 1
 C
       IF (ISTAT.EQ.SCRTCH) THEN
         DISP = 'DELETE'
