@@ -6,7 +6,7 @@ C
 C     ***** NOTE ON DOCUMENTATION *****
 C     Lines beginning "CDOC" will be extracted to form cciflib.html
 C
-      subroutine ccp4ccif_init
+      subroutine ccp4ccif_init ()
 
 CDOC  This subroutine initialises things and loads the CIF dictionary.
 CDOC  This subroutine must be called before any other in cciflib.f !!
