@@ -312,7 +312,7 @@ C         hard failure
      +         LOGNAM(1:LENSTR(LOGNAM))
  6002     FORMAT ('Open failed: Unit:',I4,', File: ',A, ' (logical: ', A
      +         , ')')
-          CALL CCPERR(1, ERRSTR)
+          CALL CCPERR(-1, ERRSTR)
         else
 C         soft failure
           WRITE (6,FMT=6004) FRM, ST, IUN, 

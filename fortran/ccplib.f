@@ -501,7 +501,7 @@ C_BEGIN_CCPERR
 C     ===============================
 C
 C     Report error or normal termination and stop.  Also reports latest
-C     system error.
+C     system error iff ISTAT<0.
 C
 C     Arguments:
 C     ==========
@@ -517,12 +517,13 @@ C
       LOGICAL VAXVMS
 C
 C
-      IF (ISTAT.NE.0) THEN
+      IF (ISTAT.LT.0) THEN
         CALL UGERR(0,ERRBUF)
 C     (avoid VMS `Message number 00000000')
         IF (ERRBUF .NE. ' ' .AND.
      +       ERRBUF.NE.'Message number 00000000') THEN
-          CALL QPRINT(0,'Last system error message:')
+          CALL QPRINT(0,
+     +         'Last system error message (not necessarily relevant):')
           CALL QPRINT(0,ERRBUF)
         ENDIF
       ENDIF
@@ -537,7 +538,7 @@ C         FOR$_NOTFORSPE, "Not a FORTRAN-specific error"
           CALL EXIT(1605644)
         ENDIF
       ELSE
-        CALL EXIT(ISTAT)
+        CALL EXIT(ABS(ISTAT))
       ENDIF
       STOP
       END
@@ -873,7 +874,7 @@ C
       CALL QPRINT(2,'End of pre-processing stage')
       RETURN
 C
- 80   CALL CCPERR(1,'Error reading environ or default file')
+ 80   CALL CCPERR (-1,'Error reading environ or default file')
 C
  6000 FORMAT (A)
       END
@@ -1775,7 +1776,7 @@ C
         IF (.NOT.EXIST) THEN
           ERRSTR = 'Cannot find file '
           ERRSTR(18:) = FILNAM
-          CALL CCPERR(1,ERRSTR)
+          CALL CCPERR (-1,ERRSTR)
         END IF
       END IF
       II = LENSTR(LNAME) + 1
@@ -1793,7 +1794,7 @@ C     =======================================
           ERRSTR = 'Cannot create logical name '
         ENDIF
         ERRSTR(36:) = LNAME
-        CALL CCPERR(1,ERRSTR)
+        CALL CCPERR (-1,ERRSTR)
       END IF
       CALL QPRINT(3,LINE)
       END

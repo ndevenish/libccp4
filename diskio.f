@@ -199,7 +199,7 @@ C
       ELSE IF (IUNIT.EQ.-2) THEN
         WRITE (ERRSTR,FMT=6001) '(Q)QOPEN failed - File name:',
      +       LOGNAM (:MIN(100,LENSTR(LOGNAM)))
-        CALL CCPERR(1,ERRSTR)
+        CALL CCPERR (-1,ERRSTR)
       END IF
 
       CALL UGTUID(USRNAM)
