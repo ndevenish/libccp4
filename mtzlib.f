@@ -1729,7 +1729,7 @@ C     .. Local Scalars ..
       INTEGER BATFLG,EFLAG,ENDLOP,IER,ISTAT,ITEND,IUNIN,IWORD,JDO10,
      +        JDO100,JDO110,JDO120,JDO130,JDO140,JDO150,JDO190,JDO20,
      +        JDO200,JDO30,JDO40,JDO50,JDO60,JDO80,JDO90,NBATRF,NCOLR,
-     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG
+     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT
       LOGICAL LEND
       CHARACTER KEY*4,MKEY*4,LINE*80,LINE2*400,STROUT*400
 C     ..
@@ -1846,7 +1846,10 @@ C
 C            ************************
         CALL QOPEN(IUNIN,FILNAM,'RO')
 C       set up transparent numbers if necessary:
-        CALL QRARCH (IUNIN,2)
+        CALL QRARCH (IUNIN, 2, IRESLT)
+        IF (IRESLT.EQ.0) CALL QPRINT(1,
+     +       ' WARNING: no architecture information in file --'//
+     +       ' assuming native.')
         CALL QMODE(IUNIN,0,NITEM)
 C            ************************
 C

@@ -1275,7 +1275,7 @@ C     .. Arrays in Common ..
      +        NCHITM,NCS,NR1S,NRS,NS1S,NSS,NXYZ
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IER,J,KMODE,NBHDR,NITHDR,NCHHDR,NFILSZ,NW2
+      INTEGER I,IER,IRESLT,J,KMODE,NBHDR,NITHDR,NCHHDR,NFILSZ,NW2
       CHARACTER FILE*255
 
 C     ..
@@ -1357,7 +1357,10 @@ C---- Open file
 C
         CALL QOPEN(LSTRM(IUNIT),MAPNAM,'RO')
 C       set up transparent numbers if necessary:
-        CALL QRARCH (LSTRM (IUNIT), 53)
+        CALL QRARCH (LSTRM (IUNIT), 53, IRESLT)
+        IF (IRESLT.EQ.0) CALL QPRINT(1,
+     +       ' WARNING: no architecture information in file --'//
+     +       ' assuming native.')
         CALL QSEEK (LSTRM (IUNIT), 1, 1, 1)
 C
 C---- Get and print file name
