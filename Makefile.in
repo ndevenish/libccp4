@@ -43,7 +43,7 @@
 
 # The following variables are expected to be set by configure:
 # top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
-# INSTALL_PROGRAM INSTALL_DATA
+# INSTALL_PROGRAM INSTALL_DATA MAYBEMOSFLM
 
 SHELL       = /bin/sh
 srcdir	    = $(top_srcdir)/lib/src
@@ -73,10 +73,8 @@ AR          = ar r
 
 # modules to go in libccp4.a:
 LIBTARGETS = ccplib fftlib maplib parser rwatom rwbrook modlib \
-           symlib lcflib mtzlib diskio unix frodo_maplib plot84lib graflib \
-           binsortint library ucurse hlplib gdummy
-
-all :  $L binsort
+           symlib lcflib mtzlib diskio unix plot84lib \
+           binsortint library plotsubs 
 
 .PRECIOUS : $L                 # don't zap the library if a component fails
 
@@ -84,16 +82,34 @@ all :  $L binsort
 .PHONY : all clean install $(LIBTARGETS) ranlib realclean distclean \
          test help
 
+all :  $L binsort rspslib.a $(MAYBEMOSFLM)   # NB rspslib.a isn't installed
+
 $L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) $L(rwatom.o) \
 	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) $L(lcflib.o) \
-	  $L(mtzlib.o) $L(diskio.o) $L(unix.o) $L(frodo_maplib.o) \
-	  $L(binsortint.o) $L(library.o) $L(ucurse.o) $L(hlplib.o) \
-	  $L(plot84lib.o) $L(graflib.o) $L(gdummy.o)
+	  $L(mtzlib.o) $L(diskio.o) $L(unix.o) \
+	  $L(binsortint.o) $L(library.o) \
+	  $L(plot84lib.o) $L(plotsubs.o)
+	$(RANLIB) $@
+
+# This stuff is used for RSPS.  Some of it could go in libccp4 at some
+# stage, authors permitting, if it was useful.  There doesn't seem much
+# point in splitting up this target.
+rspslib.a : $(srcdir)/errlib.for $(srcdir)/forlib.for $(srcdir)/veclib.for \
+            $(srcdir)/../../src/rsps_/rspsfil.inc
+	-rm -rf rspslib.dir; mkdir rspslib.dir
+	cd rspslib.dir && \
+          rm -f rspsfil.inc && $(LNS) $(srcdir)/../../src/rsps_/rspsfil.inc . && \
+          for i in errlib veclib forlib; do fsplit $(srcdir)/$$i.for; done && \
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$@ *.o
+	rm -f rspslib.dir/*.o
 	$(RANLIB) $@
 
 test-lib : $(srcdir)/testlib.for $L(library.o) $L(unix.o) $L(ccplib.o) \
           $L(diskio.o)
 	$(RANLIB) $L
+
+# mosflm stuff, some of which we'd like to disown:
+mosflm-stuff : $L(graflib.o) $L(chelp.o) $L(pack_c.o) $L(pack_f.o)
 
 # explicit building of the real targets, sigh...
 # include the pwd info for ease of symbolic debugging
@@ -171,16 +187,6 @@ $L(modlib.o) : $(srcdir)/modlib.for
 modlib : $L(modlib.o)
 	$(RANLIB) $L
 
-$L(mthlib.o) : $(srcdir)/mthlib.for
-	-rm -rf mthlib.dir; mkdir mthlib.dir
-	echo '      SUBROUTINE MTHLIB' > mthlib.dir/mthlib.$F
-	echo '      END' >> mthlib.dir/mthlib.$F
-	cd mthlib.dir && fsplit $(srcdir)/mthlib.for && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
-	rm -f mthlib.dir/*.o
-mthlib : $L(mthlib.o)
-	$(RANLIB) $L
-
 $L(symlib.o) : $(srcdir)/symlib.for
 	-rm -rf symlib.dir; mkdir symlib.dir
 	echo '      SUBROUTINE SYMLIB' > symlib.dir/symlib.$F
@@ -220,27 +226,6 @@ $L(diskio.o) : $(srcdir)/diskio.for
 	rm -f diskio.dir/*.o
 diskio : $L(diskio.o)
 
-$L(hlplib.o) : $(srcdir)/hlplib.for
-	-rm -rf hlplib.dir; mkdir hlplib.dir
-	echo '      SUBROUTINE HLPLIB' > hlplib.dir/hlplib.$F
-	echo '      END' >> hlplib.dir/hlplib.$F
-	cd hlplib.dir && fsplit $(srcdir)/hlplib.for && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
-	rm -f hlplib.dir/*.o
-hlplib : $L(hlplib.o)
-	$(RANLIB) $L
-
-# fixme: change >14 characters name!
-$L(frodo_maplib.o) : $(srcdir)/frodo_maplib.for
-	-rm -rf frodo_maplib.dir; mkdir frodo_maplib.dir
-	echo '      SUBROUTINE frodo_MAPLIB' > frodo_maplib.dir/frodo_maplib.$F
-	echo '      END' >> frodo_maplib.dir/frodo_maplib.$F
-	cd frodo_maplib.dir && fsplit $(srcdir)/frodo_maplib.for && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
-	rm -f frodo_maplib.dir/*.o
-frodo_maplib : $L(frodo_maplib.o)
-	$(RANLIB) $L
-
 $L(plot84lib.o) : $(srcdir)/plot84lib.for
 	-rm -rf plot84lib.dir; mkdir plot84lib.dir
 	echo '      SUBROUTINE PLOT84LIB' > plot84lib.dir/plot84lib.$F
@@ -251,23 +236,36 @@ $L(plot84lib.o) : $(srcdir)/plot84lib.for
 plot84lib : $L(plot84lib.o)
 	$(RANLIB) $L
 
+$L(plotsubs.o) : $(srcdir)/plotsubs.for
+	-rm -rf plotsubs.dir; mkdir plotsubs.dir
+	echo '      SUBROUTINE PLOTSUBS' > plotsubs.dir/plotsubs.$F
+	echo '      END' >> plotsubs.dir/plotsubs.$F
+	cd plotsubs.dir && fsplit $(srcdir)/plotsubs.for && \
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	rm -f plotsubs.dir/*.o
+plotsubs : $L(plotsubs.o)
+	$(RANLIB) $L
+
 $L(graflib.o) : $(srcdir)/graflib.for
 	-rm -rf graflib.dir; mkdir graflib.dir
 	echo '      SUBROUTINE GRAFLIB' > graflib.dir/graflib.$F
 	echo '      END' >> graflib.dir/graflib.$F
+# split this into two because the list of sources is too long in HP-SUX 
 	cd graflib.dir && fsplit $(srcdir)/graflib.for && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+        $(FC) -c $(FFLAGS) $(WD)[gA-Pa-p]*.$F && $(AR) ../$L *.o && \
+          $(FC) -c $(FFLAGS) $(WD)[Q-Zq-z]*.$F && $(AR) ../$L *.o
 	rm -f graflib.dir/*.o
 graflib : $L(graflib.o)
 	$(RANLIB) $L
 
-$L(gdummy.o) : $(srcdir)/gdummy.for
-	-rm -rf gdummy.dir; mkdir gdummy.dir
-	cd gdummy.dir && fsplit $(srcdir)/gdummy.for && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F  && \
-	  $(AR) ../$L *.o
-	rm -f gdummy.dir/*.o
-gdummy : $L(gdummy.o)
+$L(lauesym.o) : $(srcdir)/lauesym.for
+	-rm -rf lauesym.dir; mkdir lauesym.dir
+	echo '      SUBROUTINE LAUESYM' > lauesym.dir/lauesym.$F
+	echo '      END' >> lauesym.dir/lauesym.$F
+	cd lauesym.dir && fsplit $(srcdir)/lauesym.for && \
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
+	rm -f lauesym.dir/*.o
+lauesym : $L(lauesym.o)
 	$(RANLIB) $L
 
 # C stuff: (these are kept as whole modules)
@@ -285,10 +283,10 @@ $L(binsortint.o) : $(srcdir)/binsortint.c $(srcdir)/binsort.h
 binsortint : $L(binsortint.o)
 	$(RANLIB) $L
 
-$L(ucurse.o) : $(srcdir)/ucurse.c
-	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/ucurse.c
-	$(AR) $L ucurse.o && rm ucurse.o
-ucurse : $L(ucurse.o)
+$L(chelp.o) : $(srcdir)/chelp.c
+	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/chelp.c
+	$(AR) $L chelp.o && rm chelp.o
+chelp : $L(chelp.o)
 	$(RANLIB) $L
 
 #
@@ -303,9 +301,11 @@ binsort : $(srcdir)/binsort.c $(srcdir)/binsort.h
 	$(LNS) binsort ../../src/binsort
 
 # the unix-specific bits need preprocessing for different unix variants
-unix.$F : $(srcdir)/unix.m4
+unix.$F : $(srcdir)/unix.m4 gdummy.$F
 	$(M4) $(srcdir)/unix.m4 >unix.$F
-$L(unix.o) : unix.$F
+gdummy.$F : $(srcdir)/gdummy.for
+	$(LNS) $(srcdir)/gdummy.for gdummy.f
+$L(unix.o) : unix.$F gdummy.$F
 	-rm -rf unix.dir; mkdir unix.dir
 	echo '      SUBROUTINE UNIX' > unix.dir/unix.$F
 	echo '      END' >> unix.dir/unix.$F
@@ -314,6 +314,19 @@ $L(unix.o) : unix.$F
 	rm -f unix.dir/*.o
 unix : $L(unix.o)
 	$(RANLIB) $L
+
+#  The image (un)packing routines which are needed for mosflm and may be 
+#  generally useful, but not built by default
+$L(pack_c.o):	$(srcdir)/pack_c.c
+	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/pack_c.c
+	$(AR) $L pack_c.o && rm pack_c.o
+$L(pack_f.o):	$(srcdir)/pack_f.for
+	-rm -f pack_f.$(F) 2>/dev/null
+	$(LNS) $(srcdir)/pack_f.for pack_f.$(F)
+	$(FC) -c $(FFLAGS) $(WD)pack_f.$(F) && $(AR) $(L) pack_f.o \
+          && rm pack_f.o
+pack:	$L(pack_c.o) $L(pack_f.o)
+	$(RANLIB) $(L) 
 
 # testbed for library.c and some other modules:
 testlib : test-lib
@@ -324,9 +337,10 @@ testlib : test-lib
 # standard targets
 #
 
-install :
+install : all
 	$(INSTALL_PROGRAM) binsort $(bindir)
 	$(INSTALL_DATA) $L $(libdir)/$L
+	$(RANLIB) $(libdir)/$L
 
 unintstall :
 	-rm -f $(bindir)/binsort $(libdir)/$L
