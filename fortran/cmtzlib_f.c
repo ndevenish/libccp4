@@ -157,7 +157,10 @@ int MtzCheckSubInput(const int mindx, const char *subname, const int rwmode) {
  return 0;
 }
 
-/* Dummy call for backwards compatibility */
+/** Mainly for backwards compatibility. The only thing it does now is
+ * initialise the html/summary stuff, which is usually done by CCPFYP
+ * anyway.
+ */
 FORTRAN_SUBR ( MTZINI, mtzini,
                ( ),
                ( ),
@@ -171,7 +174,12 @@ FORTRAN_SUBR ( MTZINI, mtzini,
   return;
 }
 
-/* Fortran wrapper for MtzGet */
+/** Open an MTZ file for reading. This is a wrapper to MtzGet.
+ * @param mindx (I) MTZ file index
+ * @param filename (I) Filename to open (real or logical)
+ * @param iprint (I) Specifies how much header information to print out.
+ * @param ifail (O) Returns 0 if successful, non-zero otherwise.
+ */
 FORTRAN_SUBR ( LROPEN, lropen,
                (int *mindx, fpstr filename, int *iprint, int *ifail, int filename_len),
                (int *mindx, fpstr filename, int *iprint, int *ifail),
@@ -247,7 +255,11 @@ FORTRAN_SUBR ( LROPEN, lropen,
 
 }
 
-/* Fortran wrapper for ccp4_lrtitl */
+/** Get title from MTZ file opened for read.
+ * @param mindx (I) MTZ file index
+ * @param ftitle (O) Title.
+ * @param len (O) Length of returned title.
+ */
 FORTRAN_SUBR ( LRTITL, lrtitl,
 	       (int *mindx, fpstr ftitle, int *len, int ftitle_len),
 	       (int *mindx, fpstr ftitle, int *len),
@@ -263,7 +275,11 @@ FORTRAN_SUBR ( LRTITL, lrtitl,
 
 }
 
-/* Fortran wrapper for ccp4_lrhist */
+/** Get history lines from MTZ file opened for read.
+ * @param mindx (I) MTZ file index
+ * @param hstrng (O) History lines.
+ * @param nlines (O) Number of history lines returned.
+ */
 FORTRAN_SUBR ( LRHIST, lrhist,
 	       (int *mindx, fpstr hstrng, int *nlines, int hstrng_len),
 	       (int *mindx, fpstr hstrng, int *nlines),
@@ -453,7 +469,13 @@ FORTRAN_SUBR ( LRCLID, lrclid,
   *ncol = MtzListInputColumn(mtzdata[*mindx-1], cclabs, cctyps, csetid);
 }
 
-/* Fortran wrapper for ccp4_lrcell */
+/** Return the nominal cell dimensions of the MTZ structure. In
+ * fact, these are the cell dimensions of the 1st crystal in the
+ * MTZ structure. It is better to use the cell dimensions of the
+ * correct crystal, as obtained from LRIDX.
+ * @param mindx (I) MTZ file index
+ * @param cell (O) Cell dimensions.
+ */
 FORTRAN_SUBR ( LRCELL, lrcell,
 	       (int *mindx, float cell[]),
 	       (int *mindx, float cell[]),
@@ -468,7 +490,12 @@ FORTRAN_SUBR ( LRCELL, lrcell,
 
 }
 
-/* Fortran wrapper for ccp4_lrrsol */
+/** Return the overall resolution limits of the MTZ structure.
+ * These are the widest limits over all crystals present.
+ * @param mindx (I) MTZ file index
+ * @param minres (O) minimum resolution
+ * @param maxres (O) maximum resolution
+ */
 FORTRAN_SUBR ( LRRSOL, lrrsol,
 	       (int *mindx, float *minres, float *maxres),
 	       (int *mindx, float *minres, float *maxres),
