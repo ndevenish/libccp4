@@ -13264,7 +13264,6 @@ C     .. Scalars in Common ..
 C     ..
 C     .. Arrays in Common ..
       REAL CHRMAT,CUMAT,USRMAT
-      REAL IREC
       INTEGER*2 IFHT,IFSTRT,IFWID,IFX0,IFY0,LENGF
       CHARACTER*1 NFONTS
 C     ..
@@ -13327,10 +13326,6 @@ C     .. Equivalences ..
       EQUIVALENCE (NSTRAN(1),USRMAT(1,1))
       EQUIVALENCE (CHORGX,CHRMAT(1,3)), (CHORGY,CHRMAT(2,3))
       EQUIVALENCE (NCTRAN(1),CHRMAT(1,1))
-C
-C---- Equivalences
-C
-cc      EQUIVALENCE (IREC(1),AREC(1))
 C
       AA = SCALEX*A
       BB = SCALEY*B
