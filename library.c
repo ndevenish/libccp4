@@ -1581,7 +1581,6 @@ int itime_ (array)
      tim = time(NULL);
      lt = localtime(&tim);
      array[0] = lt->tm_hour; array[1] = lt->tm_min; array[2] = lt->tm_sec;
-     return 0;
 }
 
 static long clk_tck = 0;
