@@ -607,6 +607,9 @@ C              ****************
           CALL BLANK('CURWIN',1)
           STROUT = '* Lookup Table :'
           CALL PUTLIN(STROUT,'CURWIN')
+          STROUT = 
+     +      '  (This maps Input program Labels to Input File Labels)'
+          CALL PUTLIN(STROUT,'CURWIN')
           CALL BLANK('CURWIN',1)
 C              *****************
 C
