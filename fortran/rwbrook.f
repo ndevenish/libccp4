@@ -326,7 +326,7 @@ C---- Check if file exists
 C
         IF (.NOT.CCPEXS(LOGNAM)) THEN
           CALL UGTENV(LOGNAM,FILNAM)
-          ERRLIN = ' ERROR: '//FILNAM(1:LENSTR(FILNAM))//
+          ERRLIN = ' ERROR: '//LOGNAM//':'//FILNAM(1:LENSTR(FILNAM))//
      .                                        ' does not exist'
           IF (IFAIL .EQ. 0) THEN
             CALL CCPERR(1,ERRLIN)
