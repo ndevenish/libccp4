@@ -701,10 +701,11 @@ FORTRAN_SUBR( MRDHDS, mrdhds,
   ioArray[ii] = (IOConvMap *) malloc(sizeof(IOConvMap));
 
   if ((ioArray[ii]->mapfile = ccp4_cmap_open(file, O_RDONLY)) == NULL) 
-    if (!(*ifail))
-      ccp4_signal(CCP4_ERRLEVEL(4) | CMAP_ERRNO(CMERR_CantOpenFile),
+    if (!(*ifail)) {
+      ccp4_signal(CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_CantOpenFile),
 		  "MRDHDS", NULL);
-    else {
+      ccperror(1,"Error in opening input map file.");
+    } else {
       ccp4_signal(CMAP_ERRNO(CMERR_CantOpenFile),
 		  "MRDHDS", NULL);
       *ifail = -1; 
@@ -764,10 +765,11 @@ FORTRAN_SUBR( CCP4_MAP_READ_OPEN_HEADER_CHECK,
   ioArray[ii] = (IOConvMap *) malloc(sizeof(IOConvMap));
 
   if ((ioArray[ii]->mapfile = ccp4_cmap_open(file, O_RDONLY)) == NULL) 
-    if (!(*ifail))
-      ccp4_signal(CCP4_ERRLEVEL(4) | CMAP_ERRNO(CMERR_CantOpenFile),
+    if (!(*ifail)) {
+      ccp4_signal(CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_CantOpenFile),
 		  "MRDHDS", NULL);
-    else {
+      ccperror(1,"Error in opening input map file.");
+    } else {
       ccp4_signal(CMAP_ERRNO(CMERR_CantOpenFile),
 		  "MRDHDS", NULL);
     *ifail = -1; 
@@ -846,8 +848,9 @@ FORTRAN_SUBR( MRDHDR, mrdhdr,
   ioArray[ii] = (IOConvMap *) malloc(sizeof(IOConvMap));
 
   if ((ioArray[ii]->mapfile = ccp4_cmap_open(file, O_RDONLY)) == NULL) {
-       ccp4_signal(CCP4_ERRLEVEL(4) | CMAP_ERRNO(CMERR_CantOpenFile),
+       ccp4_signal(CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_CantOpenFile),
 		  "MRDHDR", NULL);
+       ccperror(1,"Error in opening input map file.");
   }
   
   ioArray[ii]->ipc = *iunit;
@@ -899,8 +902,9 @@ FORTRAN_SUBR( CCP4_MAP_READ_OPEN_HEADER,
   ioArray[ii] = (IOConvMap *) malloc(sizeof(IOConvMap));
 
   if ((ioArray[ii]->mapfile = ccp4_cmap_open(file, O_RDONLY)) == NULL) {
-       ccp4_signal(CCP4_ERRLEVEL(4) | CMAP_ERRNO(CMERR_CantOpenFile),
+       ccp4_signal(CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_CantOpenFile),
 		  "MRDHDR", NULL);
+      ccperror(1,"Error in opening input map file.");
   }
   
   ioArray[ii]->ipc = *iunit;
