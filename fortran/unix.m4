@@ -171,10 +171,10 @@ C     .. Local Arrays ..
       CHARACTER STAT(6)*7, DISP*6
 C     ..
 C     .. External Functions ..
-      INTEGER LENSTR
+      INTEGER LENSTR, LUNSTO
 ifdef(_ioinit,[
       LOGICAL IOINIT])dnl
-      EXTERNAL LENSTR
+      EXTERNAL LENSTR, LUNSTO
 C     ..
 C     .. External Subroutines ..
       EXTERNAL UGERR,UGTENV
@@ -193,9 +193,10 @@ C     Check args:
       IF (ISTAT.LT.1 .OR. ISTAT.GT.6 .OR. ITYPE.LT.1 .OR. ITYPE.GT.4)
      +     THEN 
         IF (IFAIL.EQ.0) THEN
-          CALL CCPERR(1, '**CCPOPN ERROR** Invalid parameters in call')
+          CALL CCPERR(LUNSTO (1),
+     +         '**CCPOPN ERROR** Invalid parameters in call')
         ELSE
-          WRITE (6,
+          WRITE (LUNSTO(1),
      +         '('' **CCPOPN ERROR** Invalid parameters in call'',/)')
           IFAIL = -1
         END IF
@@ -319,14 +320,15 @@ C     don't report UNKNOWN if actually SCRATCH
         CALL UGERR(IOS,ERRSTR)
         IF (IFAIL.EQ.0) THEN
 C         hard failure
-          WRITE (ERRSTR,FMT=6002) IUN, NAMFIL(1:LENSTR(NAMFIL)),
+          WRITE (LUNSTO (1),FMT=6002) IUN, NAMFIL(1:LENSTR(NAMFIL)),
      +         LOGNAM(1:LENSTR(LOGNAM))
- 6002     FORMAT ('Open failed: Unit:',I4,', File: ',A, ' (logical: ', A
-     +         , ')')
+ 6002     FORMAT (' Open failed: Unit:',I4,', File: ',A, ' (logical: ',
+     +         A, ')')
+          ERRSTR = ' Open failed: File: ' // NAMFIL
           CALL CCPERR(-1, ERRSTR)
         else
 C         soft failure
-          WRITE (6,FMT=6004) FRM, ST, IUN, 
+          WRITE (lunsto (1),FMT=6004) FRM, ST, IUN, 
      +         LOGNAM(1:LENSTR(LOGNAM)), NAMFIL(1:LENSTR(NAMFIL)),
      +         ERRSTR(1:LENSTR(ERRSTR))
  6004     FORMAT (' **CCPOPN ERROR**  ',A,3X,A,
