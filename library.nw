@@ -739,6 +739,11 @@ the caller can issue a warning.  [[Iconvert]] and [[Fconvert]] are
 used by [[qread]] to determine the type of conversion (if any) to be
 applied to integers and reals.
 
+Fudge: Ian Tickle reports old VAX files which have a machine stamp
+which is byte-flipped from the correct VAX value, although it should
+always have been zero as far as I can see.  To accommodate this, set
+the logical \idx{NATIVEMTZ} and the machine stamp won't be read.
+
 N.B.: leaves the stream positioned just after the machine stamp.
 <<diskio routines>>=
 #if CALL_LIKE_HPUX
@@ -760,7 +765,9 @@ N.B.: leaves the stream positioned just after the machine stamp.
 {
   uint16 fileFT, fileIT;        /* float and integer machine types of file */
   unsigned char mtstring[4];    /* machine stamp */
-  
+  char *native = getenv ("NATIVEMTZ");
+
+  if (native != NULL) { *ireslt = 0; return; }
 <<OpenVMS seek fudge>>
   if ((fseek (file_stream[*iunit], (size_t) ((*ipos)*item_sizes[2]),
               SEEK_SET) != 0))
@@ -810,7 +817,6 @@ N.B.: leaves the stream positioned just after the machine stamp.
   int *ipos, *iunit;
 {
   unsigned char mtstring[4];    /* machine stamp */
-  
 <<OpenVMS seek fudge>>
   if (fseek (file_stream[*iunit], (size_t) ((*ipos)*item_sizes[2]),
              SEEK_SET) != 0)
