@@ -39,9 +39,14 @@ For information about key type values see binsortkey.h
 #  include <unistd.h>
 #endif
 #include <stddef.h>
+#include <errno.h>
 #include <sys/wait.h>
 #include <sys/types.h>		/* necessary on Titan, at least, and
 				   for POSIX wait */
+
+#ifndef EIO
+#  define EIO 5
+#endif
 
 static int	fildesout[2],	/* file descriptors for "r" & "w" access */
 		fildesin[2];
@@ -123,7 +128,7 @@ int	        *memsize;       /* size of memory (BYTES) used by sort */
 	(close(fildesout[1]) != 0) ||
 	(close(fildesin[0]) != 0)) {
       perror("Binsort streams");
-      _exit(255);
+      _exit(1);
     }
 
     /* prepare binsort command line */
@@ -134,7 +139,7 @@ int	        *memsize;       /* size of memory (BYTES) used by sort */
     argv = (char **)malloc(argc * sizeof(char *));
     if (argv == NULL) {
       fprintf(stderr,"malloc failed in SRTBEG\n");
-      _exit(255);
+      _exit(1);
     }
     argv [argc-1] = (char *)NULL;
     pargv = argv;
@@ -152,7 +157,7 @@ int	        *memsize;       /* size of memory (BYTES) used by sort */
       *pargv = (char *)malloc(256);
       if (*pargv == NULL) {
 	fprintf(stderr,"malloc failed in SRTBEG\n");
-	_exit(255);
+	_exit(1);
       }
       switch (keybuf [0]) {
 	case CHAR:     keydatatype = 'c';
@@ -197,7 +202,7 @@ int	        *memsize;       /* size of memory (BYTES) used by sort */
     close(fildesout[0]);
     close(fildesin[1]);
     if (!(filout = fdopen(fildesout[1], "w")))
-      return(255);
+      return(EIO);
   }
   return(0);
 }
@@ -264,7 +269,7 @@ SRTMRG:	Merge - finish release phase
 {
     fclose(filout);
     if (!(filin = fdopen(fildesin[0], "r")))
-      return(255);
+      return(EIO);
     return(0);
 }
 
@@ -311,7 +316,7 @@ char		*record;
     /* else EOF or read error */
     if ((int) wait (&status) < 0) { /* some error with sub-process */
       fclose(filin);
-      return (255);
+      return (EIO);
     }
     if (feof(filin) && status == 0
 	&& ret == 0) {		/* ensure record not truncated */
@@ -325,5 +330,5 @@ char		*record;
     if (ret != 0) {
       return (ret);
     } else			/* e.g. premature EOF */
-      return (255);
+      return (EIO);
 }
