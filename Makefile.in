@@ -75,7 +75,7 @@ RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
 # modules to go in libccp4.a:
 LIBTARGETS = ccplib fftlib maplib parser rwbrook modlib \
            symlib lcflib mtzlib diskio unix plot84lib \
-           binsortint library plotsubs 
+           binsortint library plotsubs keyparse
 
 .PRECIOUS : $L # don't zap the library if a component fails
 
@@ -95,7 +95,7 @@ $L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) $L(lcflib.o) \
 	  $L(mtzlib.o) $L(diskio.o) $L(unix.o) \
 	  $L(binsortint.o) $L(library.o) \
-	  $L(plot84lib.o) $L(plotsubs.o)
+	  $L(plot84lib.o) $L(plotsubs.o) $L(keyparse.o)
 # titan special:
 	-(test -f /usr/lib/fortran/time.o && make '$L(time.o)') || true
 # we could presumably avoid the next two steps if we haven't changed anything
@@ -267,6 +267,14 @@ $L(plotsubs.o) : $(srcdir)/plotsubs.f
 plotsubs : $L(plotsubs.o)
 	$(RANLIB) $L
 
+# This is (currently) a single routine, so don't fsplit
+$L(keyparse.o) : $(srcdir)/keyparse.f
+	$(FC) -c -o keyparse.o $(FFLAGS) $(srcdir)/keyparse.f && \
+		$(AR) $L keyparse.o && rm -f keyparse.o
+	$(RANLIB) $L
+keyparse : $L(keyparse.o)
+	$(RANLIB) $L
+
 $L(graflib.o) : $(srcdir)/graflib.f
 	-rm -rf graflib.dir; mkdir graflib.dir
 	echo '      SUBROUTINE GRAFLIB' > graflib.dir/graflib.$F
@@ -291,7 +299,7 @@ library : $L(library.o)
 # The following shouldn't run unless you're actually modifying
 $(srcdir)/library.c : $(srcdir)/library.nw
 # first save the distributed one in case of disasters
-	test -f $@-dist || mv $@ $@-dist
+	-test -f $@-dist || mv $@ $@-dist
 	-notangle -L $? > $@ || mv $@-dist $@
 library.tex: $(srcdir)/library.nw
 	noweave -index -delay $? >library.tex
