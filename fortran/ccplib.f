@@ -814,7 +814,7 @@ C     .. Local Scalars ..
       LOGICAL DINIT,EINIT,VAX, MVS
       CHARACTER FILNAM* (ISTRLN), LINE* (ISTRLN),
      +     ENVFIL* (ISTRLN), LOGFIL* (ISTRLN), LOGNAM* (ISTRLN),
-     +     TEMP* (ISTRLN), BKS*1
+     +     TEMP* (ISTRLN), BKS*1, VERSION*20, PVERSION*20, PROGNAME*20
 C     ..
 C     .. Local Arrays ..
       CHARACTER ENAME(ILIMIT)* (IENV),ETYPE(ILIMIT)* (5),
@@ -897,6 +897,22 @@ C
               CALL UGTARG(RDENVF,ENVFIL)
               EINIT = .TRUE.
               ISKIP = ISKIP + 1
+            ELSE IF (LINE(II:II).EQ.'I') THEN
+              CALL CCP4_VERSION(VERSION)
+              CALL CCP4_PROG_VERSION(PVERSION,1)
+              CALL CCPPNM (PROGNAME)
+              WRITE(TEMP,'(''CCP4 software suite: library version '',
+     +                      A20)') VERSION
+              WRITE(6,'(A)') TEMP(1:LENSTR(TEMP)) 
+              WRITE(TEMP,'(''Program:  '',A20)') PROGNAME
+              IF (PVERSION.NE.' ') TEMP = 
+     +          TEMP(1:LENSTR(TEMP))//' version '//PVERSION
+              WRITE(6,'(A)') TEMP(1:LENSTR(TEMP))
+              IF (VAXVMS()) THEN
+                CALL CEXIT(1)
+              ELSE
+                CALL CEXIT(0)
+              ENDIF
             ELSE
               CALL QPRINT(1,'Ignoring switch '//LINE(II:II))
             END IF
@@ -2498,6 +2514,45 @@ C     .. Scalar Arguments ..
 C
 C
 C
+C_BEGIN_CCP4_PROG_VERSION
+      SUBROUTINE CCP4_PROG_VERSION(VERSION,IFLAG)
+C     ===========================================
+C
+C---- Set or return program version as quoted by calling
+C     program. This is different from the library version
+C     set in CCP4_VERSION
+C
+C Arguments:
+C ==========
+C
+C       VERSION (I/O)   CHARACTER*(*): program version 
+C
+C       IFLAG   (I)     INTEGER        = 0  use VERSION to set version string
+C                                      = 1  retrieve VERSION
+C_END_CCP4_PROG_VERSION
+C
+C     .. Scalar Arguments ..
+      CHARACTER*(*) VERSION
+      INTEGER IFLAG
+
+      INTEGER LENGTH
+      CHARACTER PVERSION*20
+      SAVE PVERSION
+
+      DATA PVERSION /' '/
+
+      IF (IFLAG.EQ.0) THEN
+        LENGTH = LENSTR(VERSION)
+        IF (LENGTH.GT.20) LENGTH = 20
+        PVERSION = VERSION(1:LENGTH)
+      ELSEIF (IFLAG.EQ.1) THEN
+        VERSION = PVERSION
+      ENDIF
+
+      END
+C
+C
+C
 C_BEGIN_CCPVRS
       SUBROUTINE CCPVRS(ILP,PROG,VDATE)
 C     =================================
@@ -2520,7 +2575,8 @@ C     .. Scalar Arguments ..
       CHARACTER PROG* (*),VDATE* (*), PNM*(*)
 C     ..
 C     .. Local Scalars ..
-      CHARACTER CTIME*8,DT2*8,DT*10,PR*20,UID*20,TMPPRG*100,VERSION*10
+      CHARACTER CTIME*8,DT2*8,DT*10,PR*20,UID*20,TMPPRG*100,VERSION*10,
+     +          PVERSION*20
       SAVE PR
 C     ..
 C     .. External Functions ..
@@ -2543,7 +2599,9 @@ C
       CALL UGTUID(UID)
       CALL UTIME(CTIME)
       CALL CCP4_VERSION(VERSION)
-      WRITE (ILP,FMT=6000) PR,VERSION(1:LENSTR(VERSION)),
+      CALL CCP4_PROG_VERSION(PVERSION,1)
+      IF (PVERSION.EQ.' ') PVERSION = VERSION
+      WRITE (ILP,FMT=6000) VERSION(1:3),PR,PVERSION(1:10),
      +  DT,UID(1:LENSTR(UID)),DT2,CTIME
  6000 FORMAT (/,/,/,/,
      + '1##########################################################',
@@ -2552,7 +2610,7 @@ C
      + '#####',/,
      + ' ##########################################################',
      + '#####',/,
-     + ' ### CCP PROGRAM SUITE: ',A15,2X,'VERSION ',A,': ',A8,'##',/,
+     + ' ### CCP4 ',A3,': ',A17,2X,'version ',A,': ',A8,'##',/,
      + ' ##########################################################',
      + '#####',/,
      + ' User: ',A,'  Run date: ',A8,'  Run time:',A,
