@@ -143,6 +143,21 @@ const char *ccp4_strerror( int);
  */
 void ccp4_fatal(const char *);
 
+/** Function to set verbosity level for messages from
+ *  ccp4_signal. Currently just off (0) and on (1).
+ *  It should be generalised to be able to switch
+ *  individual components on and off, i.e. replace 1 by
+ *  a mask.
+ *  cf. ccp4VerbosityLevel which sets the verbosity level
+ *  for ccp4printf  These are separate as they may be used
+ *  differently.
+ * @param iverb If >= 0 then set the verbosity level to the
+ *  value of iverb. If < 0 (by convention -1) then report
+ *  current level. 
+ * @return current verbosity level
+ */
+int ccp4_liberr_verbosity(int iverb);
+
 /** Routine to set ccp4_errno and print out message for
  *  error tracing. This should be the only way in
  *  which ccp4_errno is set.
@@ -150,6 +165,8 @@ void ccp4_fatal(const char *);
  *  A callback with prototype void function(void)
  *  may also be passed to the routine.
  *  Note: FATAL calls exit(1). 
+ *  If ccp4_liberr_verbosity returns 0, then ccp4_signal sets
+ *  ccp4_errno and returns without doing anything else.
  * @param error code (int)
  * @param message (const char * const) 
  * @param callback (point to routine void (*)(void) )

@@ -271,6 +271,15 @@ int CFile_Perror(const char *msg)
   return -1;
 }
 
+int ccp4_liberr_verbosity(int iverb) {
+  static int verbosity_level=1;
+
+  if (iverb >= 0)
+    verbosity_level = iverb;
+
+  return verbosity_level;
+}
+
 /* Routine to set ccp4_errno and print out message for
     error tracing. This should be the only way in
     which ccp4_errno is set.
@@ -292,6 +301,9 @@ void ccp4_signal(const int code, const char * const msg,
   static const char msg_fmt[] = ">>>>>> CCP4 library signal %s:%s (%s)\n\t raised in %s <<<<<<\n";
    static const char sys_fmt[] = ">>>>>> System signal %d:%s (%s)\n\t raised in %s <<<<<<\n";
   ccp4_errno = code;
+
+  /* use this function to control whether error messages are printed */
+  if (!ccp4_liberr_verbosity(-1)) return;
 
   if (system == 0) {
     if (msg) 
