@@ -4737,6 +4737,11 @@
  -X,1/2+Y,-Z
  1/2+X,1/2+Y,Z 
   1/2-X, Y,-Z
+4005 4 2 I2 PG2 MONOCLINIC 'I 1 2 1' 'I 2' !!! GJK @ 2003-06-02
+ X,Y,Z
+ -X,Y,-Z
+ X+1/2,Y+1/2,Z+1/2
+ -X+1/2,Y+1/2,-Z+1/2
 1006 2 2 P11m       PG2C MONOCLINIC 'P 1 1 m'
  X,Y,Z 
  X,Y,-Z

@@ -231,10 +231,10 @@ end_spacegroup
 begin_spacegroup
 number  5
 basisop x,y,-x+z
-symbol ccp4 0
+symbol ccp4 4005
 symbol Hall ' C 2y (x,y,-x+z)'
 symbol xHM  'I 1 2 1'
-symbol old  ''
+symbol old  'I 1 2 1' 'I 2'
 symbol laue '-P 2y' '2/m'
 symbol patt '-I 2y' '2/m'
 symbol pgrp ' P 2y' '2'
