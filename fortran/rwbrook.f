@@ -303,7 +303,7 @@ C     .. Save ..
 C     ..
 C     .. Data Statement ..
       DATA IEC /'E1','E2','E3'/
-      DATA ORTH/'A // XO, C* // ZO (STANDARD BROOKHAVEN)',
+      DATA ORTH/'A // XO, C* // ZO (STANDARD PDB)',
      *          'B // XO, A* // ZO',
      *          'C // XO, B* // ZO',
      *          'HEX A+B // XO, C* // ZO',
@@ -1498,7 +1498,7 @@ C     ========================================================
 C
 C_BEGIN_PDBREAD
 C
-C      The subroutine PDBREAD is used to read coordinates from a Brookhaven
+C      The subroutine PDBREAD is used to read coordinates from a PDB
 C format coordinate file. This routine should not be used stand alone 
 C but through XYZADVANCE.
 C 
@@ -1621,7 +1621,7 @@ C     .. Data Statement ..
      *          ' D','AN'/
       DATA IHATM/'0H','1H','2H','3H','4H','5H','6H','7H','8H','HH'/
       DATA IAA/' A'/,ISP/' '/
-      DATA ORTH/'A // XO, C* // ZO (STANDARD BROOKHAVEN)',
+      DATA ORTH/'A // XO, C* // ZO (STANDARD PDB)',
      *          'B // XO, A* // ZO',
      *          'C // XO, B* // ZO',
      *          'HEX A+B // XO, C* // ZO',
@@ -1875,7 +1875,7 @@ C
       MATRIX=.TRUE.
       CALL CCPERR(4,' ')
       CALL CCPERR(4,
-     +     ' STANDARD BROOKHAVEN COORDINATE SETTING WILL BE ASSUMED')
+     +     ' STANDARD PDB COORDINATE SETTING WILL BE ASSUMED')
       CALL CCPERR(4,
      +     ' IF NO SCALE CARDS PRESENT  IN  INPUT  COORDINATE  FILE')
       CALL CCPERR(4,' ')
