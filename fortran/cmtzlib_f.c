@@ -944,7 +944,7 @@ FORTRAN_SUBR ( LRREFL, lrrefl,
 {
  int ieof,biomol,mindex;
 
- /*  CMTZLIB_DEBUG(puts("CMTZLIB_F: LRREFL");) */
+ CMTZLIB_DEBUG(puts("CMTZLIB_F: LRREFL");)
 
  /* BIOMOL compatibility */
  if (*mindx > 1000) {
@@ -961,6 +961,7 @@ FORTRAN_SUBR ( LRREFL, lrrefl,
 
  ++irref[mindex-1];
  ieof = ccp4_lrrefl(mtzdata[mindex-1], resol, adata, logmss[mindex-1], irref[mindex-1]);
+
  if (ieof) {
    *eof = FORTRAN_LOGICAL_TRUE;
  } else {
@@ -1424,6 +1425,11 @@ FORTRAN_SUBR ( LWOPEN, lwopen,
   mtzdata[*mindx-1] = MtzMalloc(nxtal,nset);
   mtzdata[*mindx-1]->xtal[0]->set[0]->setid = 0;
   mtzdata[*mindx-1]->refs_in_memory = cmtz_in_memory;
+  /* Change the names to be blank for xtal/dataset zero,
+     so default names supplied later e.g. by calls to lwid(x)
+     don't match up erroneously */
+  mtzdata[*mindx-1]->xtal[0]->xname[0] = '\0';
+  mtzdata[*mindx-1]->xtal[0]->set[0]->dname[0] = '\0';
  }
 
  wlun[*mindx-1] = 1;
@@ -1565,7 +1571,7 @@ FORTRAN_SUBR ( LWHSTL, lwhstl,
  free(temp_hstrng);
 }
 
-/* Fortran wrapper for ccp4_lwidx */
+/* Fortran wrapper for ccp4_lwid */
 FORTRAN_SUBR ( LWID, lwid,
 	       (const int *mindx, const fpstr project_name, const fpstr dataset_name, 
                   int project_name_len, int dataset_name_len),
@@ -1602,7 +1608,7 @@ FORTRAN_SUBR ( LWID, lwid,
   free(temp_dname); 
 }
 
-/* Fortran wrapper for ccp4_lwidx */
+/* Fortran wrapper for ccp4_lwidc */
 FORTRAN_SUBR ( LWIDC, lwidc,
 	       (const int *mindx, const fpstr project_name, const fpstr dataset_name,
 		  float datcell[6], float *datwave,
