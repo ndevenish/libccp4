@@ -1035,28 +1035,29 @@ MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels,
    return lookup;
 }
 
-void ccp4_lridx(const MTZ *mtz, char crystal_name[][64], char dataset_name[][64],
-	    char project_name[][64], int isets[], float datcell[][6], 
-            float datwave[], int *ndatasets) {
+void ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64], 
+            char dataset_name[64], char project_name[64], int *isets, 
+            float datcell[6], float *datwave)
+{
+  int i;
+  MTZXTAL *xtl;
 
-  int iset,i,j,k;
+  /* find which crystal this dataset  belongs to */
+  xtl = MtzSetXtal(mtz, set);
 
- /* Loop over crystals */
-   for (iset = 0, i = 0; i < mtz->nxtal; ++i) {
- /* Loop over datasets for each crystal */
-    for (j = 0; j < mtz->xtal[i]->nset; ++j ) {
-      strcpy(crystal_name[iset],mtz->xtal[i]->xname);
-      strcpy(dataset_name[iset],mtz->xtal[i]->set[j]->dname);
-      strcpy(project_name[iset],mtz->xtal[i]->pname);
-      isets[iset] = mtz->xtal[i]->set[j]->setid;
-      for (k = 0; k < 6; ++k) {
-        datcell[iset][k] = mtz->xtal[i]->cell[k];
-      }
-      datwave[iset] = mtz->xtal[i]->set[j]->wavelength;
-      ++iset;
-    }
-   }
-   *ndatasets = iset;
+  /* copy crystal and dataset information */
+  strncpy(crystal_name,xtl->xname,63);
+  crystal_name[63] = '\0';
+  strncpy(dataset_name,set->dname,63);
+  dataset_name[63] = '\0';
+  strncpy(project_name,xtl->pname,63);
+  project_name[63] = '\0';
+  *isets = set->setid;
+  for (i = 0; i < 6; ++i)
+     datcell[i] = xtl->cell[i];
+  *datwave = set->wavelength;
+
+  return;
 }
 
 int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int iref) {

@@ -427,9 +427,22 @@ MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels,
 		const char types[][3]);
 /* Assigns labels in lsprgi to file mtz, and returns pointers to columns */
 
-void ccp4_lridx(const MTZ *mtz, char crystal_name[][64], char dataset_name[][64],
-	    char project_name[][64], int isets[], float datcell[][6], 
-            float datwave[], int *ndatasets);
+/** Report information on a particular dataset. This represents the
+ * collection of data held in one series of dataset records in the MTZ header.
+ * It is mainly useful for supporting old Fortran calls.
+ * @param mtz pointer to MTZ struct
+ * @param set
+ * @param crystal_name
+ * @param dataset_name
+ * @param project_name
+ * @param isets
+ * @param datcell
+ * @param datwave
+ * @return void
+ */
+void ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64], 
+            char dataset_name[64], char project_name[64], int *isets, 
+            float datcell[6], float *datwave);
 
 /** Returns iref'th reflection from file held in MTZ struct mtz. Returns
  * data for all columns held in input file, but in the order that they are 
