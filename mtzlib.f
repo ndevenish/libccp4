@@ -4796,7 +4796,7 @@ C     Use a largeish buffer and truncate it later if necessary
  10   FORMAT ('From ',A,', ',A,' ',A,' ',A)
       CALL LWHIST (MINDX, HIST, 1)
       RETURN
- 20   CALL CCPERR ('LWHSTL: history string too long for buffer')
+ 20   CALL CCPERR (1, 'LWHSTL: history string too long for buffer')
       END
 C
 C
