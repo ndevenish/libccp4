@@ -26,9 +26,10 @@ C The environment variable $CCP_SUPPRESS_HTML if set suppresses the output
 C of most HTML tags. This is useful for devotees of plain text, and
 C especially for the command input section.
 C
-C   ccp4h_init() - write initial comment to identify file
+C   ccp4h_init_lib(int ihtml, int isumm) - initialise the routines for
+C     writing tags (html and summary)
 C
-C   ccp4h_init_lib() - initialise without html output called by libs
+C   ccp4h_init() - write initial comment to identify file
 C
 C   ccp4h_html_close() - write html close tag
 C
@@ -86,17 +87,11 @@ C
 C   ccp4h_init() - write initial comment to identify file
       integer lpt, htmlinit
       logical html,logsumm,summopen
-      character cbin*160,chtml*160,cpid*160,dummy*160
+      character cbin*160,chtml*160,cpid*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
      .                 summopen
       save   /ccp4hdat/
-      call ccp4h_init_lib()
-      call ugtenv('CBIN',cbin)
-      call ugtenv('CHTML',chtml)
-      call ugtenv('CCP_PROGRAM_ID',cpid)
-      call ugtenv('CCP_SUPPRESS_HTML',dummy)
-      html=(dummy.eq.' ')
-      htmlinit=1
+      call ccp4h_init_lib(0,0)
       if (html) then
         call ccp4h_summary_beg()
         write (lpt,10)
@@ -107,8 +102,15 @@ C   ccp4h_init() - write initial comment to identify file
       return
       end
 C
-      subroutine ccp4h_init_lib()
-C   ccp4h_init_lib() - initialise variables in common block
+      subroutine ccp4h_init_lib(ihtml,isumm)
+C   ccp4h_init_lib(ihtml,isum) - initialise variables in common block
+C
+C   Arguments: ihtml = 0 (use default settings for html tags)
+C                     -1 (switch off html tags)
+C              isumm = 0 (use default settings for summary tags)
+C                     -1 (switch off summary tags)
+C
+      integer ihtml,isumm
       integer lpt, idum, htmlinit
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160,dummy*160
@@ -118,9 +120,21 @@ C   ccp4h_init_lib() - initialise variables in common block
       data htmlinit/-1/
       if (htmlinit.lt.0) then
         lpt=lunsto(idum)
-        html=.false.
+        call ugtenv('CBIN',cbin)
+        call ugtenv('CHTML',chtml)
+        call ugtenv('CCP_PROGRAM_ID',cpid)
+        call ugtenv('CCP_SUPPRESS_HTML',dummy)
+        if (ihtml.lt.0) then
+          html=.false.
+        else
+          html=(dummy.eq.' ')
+        end if
         call ugtenv('CCP_SUPPRESS_SUMMARY',dummy)
-        logsumm=(dummy.eq.' ')
+        if (isumm.lt.0) then
+          logsumm=.false.
+        else
+          logsumm=(dummy.eq.' ')
+        end if
         htmlinit=0
         summopen=.false.
       endif
@@ -241,7 +255,7 @@ C   ccp4h_summary_beg() - begin summary section
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
      .                 summopen
       save   /ccp4hdat/
-      call ccp4h_init_lib()
+      call ccp4h_init_lib(0,0)
 C   logsumm should be true unless CCP_SUPPRESS_SUMMARY set
       if (.not.logsumm) return
 C   if summopen is true then there is already an "unclosed" BEGIN tag
