@@ -246,7 +246,8 @@ that [[__OSF1__]] is defined, but it's reported that you need
 @ \idx{VMS} is a law unto itself, of course.  Help for VAX C doesn't
 actually say [[VMS]] is defined (as opposed to [[vms]]), although it
 seems to be.  The other possibilities are for DEC C in strict
-ANSI mode.
+ANSI mode.  NB: we now don't use the C code under VMS due to the
+apparent bugs in the DEC C RTL\@.
 <<identifying the platform>>=
 #ifndef VMS
 #  if defined (vms) || defined (__vms) || defined (__VMS)
@@ -1173,7 +1174,7 @@ int *iunit;
   n = buffer->Str_length;
   i = (int) fwrite (buffer->Str_pointer, (size_t) item_sizes[BYTE],
                     (size_t) n, file_stream[*iunit]);
-#  else				/* normal */
+#  else                         /* normal */
   n = Lbuffer;
 #  endif
 #endif
@@ -2055,6 +2056,9 @@ the obvious way.
 
 There's a \idx{VMS} Fortran version of this, although the code here
 does work fine in VMS\@.
+
+NB: there's a possibility of a hook here to use memory-mapped files on
+systems with the capability and insufficient VM\@.
 <<miscellaneous routines>>=
 #ifndef VMS                     /* we'll use the Fortran version in VMS*/
 #if CALL_LIKE_HPUX
@@ -2088,7 +2092,7 @@ does work fine in VMS\@.
     }
     pointer[i+1] = malloc (size*length[i]);
     if (pointer[i+1] == NULL) fatal ("CCPALC: can't allocate memory");
-    leng[i+1] = &(length[i]);	/* convenience */
+    leng[i+1] = &(length[i]);   /* convenience */
   }
   switch (*n) {
   case 1:
