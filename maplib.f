@@ -1477,6 +1477,14 @@ C
       NU2 = NU1 + NC - 1
       NV2 = NV1 + NR - 1
       NW2 = NW1 + NSEC - 1
+C
+C---- Interpret spacegroup 0 as spacegroup 1 for benefit of maps from EM
+C     NSYMBT still zero since presumably no symmetry ops provided
+C
+      IF (ISPG.EQ.0) THEN
+        ISPG = 1
+        NSYMBT = 0
+      ENDIF
 C     
 C---- Write out header information
 C     
@@ -1511,7 +1519,6 @@ C
       NC1S(IUNIT) = NC1
       NR1S(IUNIT) = NR1
       NS1S(IUNIT) = NS1
-      IF (ISPG.EQ.0) NSYMBT = 0
       JSYMBT(IUNIT) = NSYMBT
       RHMIN = AMIN
       RHMAX = AMAX
@@ -2085,7 +2092,22 @@ C
 C
 C---- Exit if no symmetry
 C
-      IF (JSYMBT(IUNIT).LE.0) RETURN
+      IF (JSYMBT(IUNIT).LE.0) THEN
+        CALL CCPERR(4,
+     +    'Warning *** MSYMOP: no symmetry operators in map file')
+        IF (ISPG.EQ.1) THEN
+          CALL CCPERR(4,
+     +    'Warning *** MSYMOP: recreating operators for P1')
+          NSYM = 1
+          DO I = 1,4
+            DO J = 1,4
+              ROT(I,J,1) = 0.0
+              IF (I.EQ.J) ROT(I,J,1) = 1.0
+            ENDDO
+          ENDDO
+        ENDIF
+        RETURN
+      ENDIF
 C
 C---- Position to start of symmetry block
 C
@@ -2194,9 +2216,25 @@ C     ..
 C
       NBLIN = NBYTXX(20)
 C
-C---- Exit if no symmetry
+C---- If no symmetry info in input file, then recreate it for spg=1
+C     or do nothing.
 C
-      IF (NBTI.NE.0) THEN
+      IF (NBTI.LE.0) THEN
+
+        CALL CCPERR(4,
+     +   'Warning *** MSYCPY: no symmetry operators in input map file')
+        IF (ISGI.EQ.1) THEN
+          CALL CCPERR(4,
+     +    'Warning *** MSYCPY: recreating operators for P1')
+          CALL QSEEK(LSTRM(IOUT),2,1,ITMHDO)
+          LINE = ' X,Y,Z'
+          CALL QWRITC(LSTRM(IOUT),LINE(1:NBLIN))
+          NBTO = NBLIN
+        ELSE 
+          NBTO = NBTI
+        ENDIF
+
+      ELSE
 C
 C---- Position both files
 C
@@ -2221,11 +2259,12 @@ CCC        KMODE = MODEI(IN)
 CCC        IF (MODEI(IN).EQ.10) KMODE = 0
 CCC        IF (MODEI(IN).EQ.11 .OR. MODEI(IN).EQ.12) KMODE = 2
 CCC        CALL QMODE(LSTRM(IN),KMODE,NCHITI(IN))
-      END IF
 C
 C---- Item count
 C
-      NBTO = NBTI
+        NBTO = NBTI
+
+      END IF
 C
 C---- Position of first section
 C
