@@ -310,7 +310,10 @@ FORTRAN_FUN ( ftn_logical, CCPEXS, ccpexs,
 
   string = ccp4_FtoCString(FTN_STR(name), FTN_LEN(name));
   string1 = (char *) getenv(string);
-  if (string1) strcpy(string,string1);
+  if (string1) {
+    string = (char *) ccp4_utils_realloc(string,strlen(string1)+1);
+    strcpy(string,string1);
+  }
 
   return ( ccpexists(string) ? FORTRAN_LOGICAL_TRUE : FORTRAN_LOGICAL_FALSE );
 }
