@@ -435,12 +435,7 @@ available.  Note the \idx{machine dependencies} in here.  The
 <<global variables>>=
 static int item_sizes[] = {
   (int) sizeof (char),                                          /* 0: bytes */
-#if defined (sgi)
-  (int) sizeof (short),         /* silicon graphics bodge (This is fixed in
-                                   IRIX4, at least) */
-#else
   (int) sizeof (short int),                      /* 1: (integer) half words */
-#endif
   (int) sizeof (float),                                   /* 2: reals/words */
   (int) sizeof (int),           /* 3: `short complex' (pairs of half words).
                                    NB int rather than 2*short since must fit
