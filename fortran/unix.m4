@@ -220,7 +220,11 @@ C     with status UNKNOWN rather than new if they exist
 C
 C     check for `logical name' referencing real file
       CALL UGTENV(LOGNAM,NAMFIL)
-      IF (NAMFIL.EQ.' ') NAMFIL = LOGNAM
+      IF (NAMFIL.EQ.' ') THEN
+        ERRSTR = 'CCPOPN Logical name '//LOGNAM
+        ERRSTR(LENSTR(ERRSTR)+2:) = 'has not been assigned to a file'
+        CALL CCPERR(2,ERRSTR)
+        NAMFIL = LOGNAM
       END IF
 C     VMS null device (VMS code canonicalises /dev/null)
       IF (NAMFIL.EQ.'NL:' .OR. NAMFIL.EQ.'nl:') NAMFIL='/dev/null'
