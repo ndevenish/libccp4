@@ -2064,6 +2064,7 @@ C
         DO 55 JDO55 = 1,MSETS
           SET_ID(JDO55,MINDX) = 0
           ENTRY_ID(JDO55,MINDX) = ' '
+          CRYSTAL_ID(JDO55,MINDX) = ' '
           DIFFRN_ID(JDO55,MINDX) = ' '
           DO I = 1,6
             DCELL(1,JDO55,MINDX) = 0.0
@@ -2382,6 +2383,11 @@ C     and the first such record is PROJECT
               NSETD = NSETD + 1
               CALL GTPINT(2,SET_ID(NSETD,MINDX),NTOK,ITYP,FVALUE)
               ENTRY_ID(NSETD,MINDX) = LINE(IBEG(3) :IEND(3))
+              GO TO 70
+
+            ELSEIF (KEY.EQ.'CRYS') THEN
+              CALL GTPINT(2,SET_ID(NSETD,MINDX),NTOK,ITYP,FVALUE)
+              CRYSTAL_ID(NSETD,MINDX) = LINE(IBEG(3) :IEND(3))
               GO TO 70
 
             ELSEIF (KEY.EQ.'DATA') THEN
@@ -5017,9 +5023,11 @@ C     .. Arguments ..
       CHARACTER*(*) PNAME(*),DNAME(*)
 C     ..
 C     .. Local  ..
+      CHARACTER*64 XNAME(MSETS)
       REAL DATCELL(6,MSETS),DATWAVE(MSETS)
 
-      CALL LRIDC(MINDX,PNAME,DNAME,ISETS,DATCELL,DATWAVE,NDATASETS)
+      CALL LRIDX(MINDX,PNAME,XNAME,DNAME,ISETS,DATCELL,
+     +             DATWAVE,NDATASETS)
 C
       END
 C
@@ -5069,6 +5077,61 @@ C     .. Scalar Arguments ..
       CHARACTER*(*) PNAME(*),DNAME(*)
 C     ..
 C     .. Local Scalars ..
+      CHARACTER*64 XNAME(MSETS)
+
+      CALL LRIDX(MINDX,PNAME,XNAME,DNAME,ISETS,DATCELL,
+     +             DATWAVE,NDATASETS)
+
+      END
+C
+C
+C     ====================================================
+      SUBROUTINE LRIDX(MINDX,PNAME,XNAME,DNAME,ISETS,DATCELL,DATWAVE,
+     +                  NDATASETS)
+C     ====================================================
+C
+C---- Subroutine to return information for all datasets from the MTZ file
+C     header.
+C
+C---- Arguments :
+C
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
+C
+C     PNAME     (O)     CHARACTER       array of dimension at least NDATASETS
+C                               	containing the project name on exit
+C
+C     XNAME     (O)     CHARACTER       array of dimension at least NDATASETS
+C                               	containing the crystal name on exit
+C
+C     DNAME     (O)     CHARACTER       array of dimension at least NDATASETS
+C                               	containing the dataset name on exit
+C
+C     ISETS     (O)     INTEGER         array of dimension at least NDATASETS
+C                               	containing the dataset id on exit
+C
+C     DATCELL   (O)     REAL            array of dimension at least NDATASETS
+C                               	containing the dataset cell dimensions
+C
+C     DATWAVE   (O)     REAL            array of dimension at least NDATASETS
+C                               	containing the dataset wavelength
+C
+C     NDATASETS (O)     INTEGER         number of datasets in MTZ header
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS
+      PARAMETER (MFILES=4,MCOLS=500)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
+
+      INCLUDE 'mtzlib.fh'
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER NDATASETS,MINDX,ISETS(*)
+      REAL DATCELL(6,*),DATWAVE(*)
+      CHARACTER*(*) PNAME(*),XNAME(*),DNAME(*)
+C     ..
+C     .. Local Scalars ..
       INTEGER ISET,ISTAT,IFAIL
       CHARACTER LINE*400
 C
@@ -5091,6 +5154,7 @@ C     New dataset to be added to header
       NDATASETS = NSETW(MINDX)
       DO 10 ISET = 1,NDATASETS
         PNAME(ISET) = ENTRY_ID(ISET,MINDX)
+        XNAME(ISET) = CRYSTAL_ID(ISET,MINDX)
         DNAME(ISET) = DIFFRN_ID(ISET,MINDX)
         ISETS(ISET) = SET_ID(ISET,MINDX)
         DO I = 1,6
@@ -5135,13 +5199,16 @@ C     .. Arguments ..
       CHARACTER PROJECT_NAME*(*),DATASET_NAME*(*)
 C     ..
 C     .. Local  ..
+      CHARACTER*64 CRYSTAL_NAME
       REAL DATCELL(6),DATWAVE
 
+      CRYSTAL_NAME = ' '
       DO I=1,6
         DATCELL(I) = 0.0
       ENDDO
       DATWAVE = 0.0
-      CALL LWIDC(MINDX,PROJECT_NAME,DATASET_NAME,DATCELL,DATWAVE)
+      CALL LWIDX(MINDX,PROJECT_NAME,CRYSTAL_NAME,DATASET_NAME,
+     +  DATCELL,DATWAVE)
 
       END
 C
@@ -5185,6 +5252,60 @@ C     .. Scalar Arguments ..
       INTEGER MINDX
       REAL DATCELL(6),DATWAVE
       CHARACTER PROJECT_NAME*(*),DATASET_NAME*(*)
+
+C     .. Local  ..
+      CHARACTER*64 CRYSTAL_NAME
+
+      CRYSTAL_NAME = ' '
+C
+      CALL LWIDX(MINDX,PROJECT_NAME,CRYSTAL_NAME,DATASET_NAME,
+     +  DATCELL,DATWAVE)
+
+      END
+C
+C     ====================================================
+      SUBROUTINE LWIDX(MINDX,PROJECT_NAME,CRYSTAL_NAME,DATASET_NAME,
+     +                   DATCELL,DATWAVE)
+C     ====================================================
+C
+C---- Subroutine to add dataset information to the output MTZ file header.
+C     Datasets identified by the PROJECT_NAME/DATASET_NAME pair are 
+C     appended to the MTZ header one at a time.
+C     Checks to see if the PROJECT_NAME/DATASET_NAME pair is already
+C     included; if so, the dataset is updated with the cell and
+C     wavelength information.
+C     Redundant datasets are removed in LWCLOS.
+C
+C---- Arguments :
+C
+C     MINDX         (I)	    INTEGER        indicates which MTZ file - 1 index
+C                                          points to both input and output files
+C
+C     PROJECT_NAME  (I)     CHARACTER      project name of dataset to be added
+C                                          (strings longer than 64 will be truncated)
+C
+C     CRYSTAL_NAME  (I)     CHARACTER      crystal name of dataset to be added
+C                                          (strings longer than 64 will be truncated)
+C
+C     DATASET_NAME  (I)     CHARACTER      dataset name of dataset to be added
+C                                          (strings longer than 64 will be truncated)
+C
+C     DATCELL       (I)     REAL           cell dimensions of dataset to be added
+C
+C     DATWAVE       (I)     REAL           wavelength of dataset to be added
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS
+      PARAMETER (MFILES=4,MCOLS=500)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
+
+      INCLUDE 'mtzlib.fh'
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER MINDX
+      REAL DATCELL(6),DATWAVE
+      CHARACTER PROJECT_NAME*(*),CRYSTAL_NAME*(*),DATASET_NAME*(*)
 C     ..
 C     .. Local Scalars ..
       INTEGER ISET,ISTAT,IFAIL,JDO50,MAXSETID
@@ -5205,14 +5326,18 @@ C            ************************
 C
       ENDIF
 
-C     Check if PROJECT_NAME / DATASET_NAME are too long.
+C     Check if PROJECT_NAME / CRYSTAL_NAME / DATASET_NAME are too long.
       IF (LENSTR(PROJECT_NAME).GT.64)
      +  PROJECT_NAME = PROJECT_NAME(1:64)
+      IF (LENSTR(CRYSTAL_NAME).GT.64)
+     +  CRYSTAL_NAME = CRYSTAL_NAME(1:64)
       IF (LENSTR(DATASET_NAME).GT.64)
      +  DATASET_NAME = DATASET_NAME(1:64)
 
       MAXSETID = 0
 C     Check whether this project/dataset already exists.
+C     N.B. datasets indentified by project/dataset pair only at this stage,
+C       so don't check crystal. 
       DO 50 JDO50 = 1,NSETW(MINDX)
         IF (PROJECT_NAME(1:LENSTR(PROJECT_NAME)).EQ.
      +      ENTRY_ID(JDO50,MINDX) .AND. 
@@ -5234,6 +5359,7 @@ C     New dataset to be added to header
 
  60   CONTINUE
 
+      CRYSTAL_ID(ISET,MINDX) = CRYSTAL_NAME(1:LENSTR(PROJECT_NAME))
       IF (DATCELL(1).GT.0.0) THEN
         DO I=1,6
           DCELL(I,ISET,MINDX) = DATCELL(I)
@@ -5893,6 +6019,7 @@ C---- No batches, i.e. merged file, so check columns
                 ISET = ISET + 1
                 SET_ID(ISET,MINDX) = SET_ID(JDO22,MINDX)
                 ENTRY_ID(ISET,MINDX) = ENTRY_ID(JDO22,MINDX)
+                CRYSTAL_ID(ISET,MINDX) = CRYSTAL_ID(JDO22,MINDX)
                 DIFFRN_ID(ISET,MINDX) = DIFFRN_ID(JDO22,MINDX)
                 DO I=1,6
                   DCELL(I,ISET,MINDX) = DCELL(I,JDO22,MINDX)
@@ -5925,6 +6052,7 @@ C     should not have been set yet).
                 ISET = ISET + 1
                 SET_ID(ISET,MINDX) = SET_ID(JDO22,MINDX)
                 ENTRY_ID(ISET,MINDX) = ENTRY_ID(JDO22,MINDX)
+                CRYSTAL_ID(ISET,MINDX) = CRYSTAL_ID(JDO22,MINDX)
                 DIFFRN_ID(ISET,MINDX) = DIFFRN_ID(JDO22,MINDX)
                 DO I=1,6
                   DCELL(I,ISET,MINDX) = DCELL(I,JDO22,MINDX)
@@ -5951,6 +6079,10 @@ C            ******************************
             WRITE (LINE,FMT='(A7,1X,I7,1X,A)') 
      +        'PROJECT',SET_ID(JDO25,MINDX),
      +        ENTRY_ID(JDO25,MINDX)
+            CALL QWRITC(WLUN(MINDX),LINE(1:80))
+            WRITE (LINE,FMT='(A7,1X,I7,1X,A)') 
+     +        'CRYSTAL',SET_ID(JDO25,MINDX),
+     +        CRYSTAL_ID(JDO25,MINDX)
             CALL QWRITC(WLUN(MINDX),LINE(1:80))
             WRITE (LINE,FMT='(A7,1X,I7,1X,A)') 
      +        'DATASET',SET_ID(JDO25,MINDX),
@@ -6463,6 +6595,7 @@ C
           DO 55 JDO55 = 1,MSETS
             SET_ID(JDO55,MINDX) = 0
             ENTRY_ID(JDO55,MINDX) = ' '
+            CRYSTAL_ID(JDO55,MINDX) = ' '
             DIFFRN_ID(JDO55,MINDX) = ' '
             DO I = 1,6
               DCELL(1,JDO55,MINDX) = 0.0
@@ -8665,14 +8798,16 @@ C              ***********************
             CALL PUTLIN(STROUT,'CURWIN')
             CALL BLANK('CURWIN',1)
             WRITE (STROUT,FMT='(A,A)') 
-     +    '* Dataset ID, project name, dataset name, ',
+     +    '* Dataset ID, project/crystal name, dataset name, ',
      +    'cell dimensions, wavelength:'
             CALL PUTLIN(STROUT,'CURWIN')
             CALL BLANK('CURWIN',1)
             DO 30 JDO30 = 1,NSETW(MINDX)
 
-              WRITE (STROUT,FMT='(I8,1X,A)') 
-     +          SET_ID(JDO30,MINDX),ENTRY_ID(JDO30,MINDX)
+              WRITE (STROUT,FMT='(I8,1X,A,'' / '',A)') 
+     +          SET_ID(JDO30,MINDX),
+     +          ENTRY_ID(JDO30,MINDX)(1:LENSTR(ENTRY_ID(JDO30,MINDX))),
+     +          CRYSTAL_ID(JDO30,MINDX)
               CALL PUTLIN(STROUT,'CURWIN')
               WRITE (STROUT,FMT='(9X,A)') 
      +          DIFFRN_ID(JDO30,MINDX)
