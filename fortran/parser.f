@@ -2291,7 +2291,7 @@ C  FVALUE (I) REAL(*)       Array of numbers. (from PARSER)
 C
 C  NTOK   (I) INTEGER       The number of fields parsed. (from PARSER)
 C
-C  LSPRGI (I) CHARACTER(MCOLS)*30  Program label strings.
+C  LSPRGI (I) CHARACTER(*)*30  Program label strings.
 C                                  L(abel) S(tring) PRG(ram) I(nput)
 C
 C  NLPRGI (I) INTEGER        Number of label strings in LSPRGI
@@ -2304,13 +2304,11 @@ C  BB     (O) REAL           Temperature factor, default = 0.0
 C
 C_END_RDSCAL
 C     
-      INTEGER MCOLS
-      PARAMETER (MCOLS=200)
       INTEGER ITOK,NTOK,ILPRGI,NLPRGI,JDO
       INTEGER IBEG(*),IEND(*),ITYP(*)
       REAL FVALUE(*)
       CHARACTER*(*) LINE
-      CHARACTER LSPRGI(MCOLS)*30,CWORK*30
+      CHARACTER*30 LSPRGI(*),CWORK
       REAL SCAL,BB
 C     
       CWORK = LINE(IBEG(ITOK) :IEND(ITOK))
