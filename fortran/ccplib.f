@@ -76,40 +76,6 @@ C                integer value
 C      CCPLIC    Check that license conditions have been agreed
 C_END_CCPLIB
 C
-C
-C
-C_BEGIN_CCFILL
-      SUBROUTINE CCFILL(ARR1,SCAL,NTIMES)
-C     ===================================
-C
-C      CCFILL    Set NTIMES bytes array ARR1 to value SCAL
-C
-C Arguments:
-C ==========
-C
-C        ARR1 (O)   BYTE ARRAY (*): WHERE BYTES ARE TO BE COPIED
-C        SCAL (I)   BYTE: value to be copied into ARR1
-C      NTIMES (I)   INTEGER: NUMBER OF BYTES TO BE COPIED
-C_END_CCFILL
-C
-C     .. Scalar Arguments ..
-      INTEGER NTIMES
-      BYTE SCAL
-C     ..
-C     .. Array Arguments ..
-      BYTE ARR1(*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER N
-C     ..
-      DO 10 N = 1,NTIMES
-        ARR1(N) = SCAL
-   10 CONTINUE
-C
-      END
-C
-C
-C_BEGIN_CCPALC
       SUBROUTINE CCPALC(ROUTNE, N, TYPE, LENGTH)
 C     ==========================================
 C
@@ -168,7 +134,6 @@ C     ..
  10   CONTINUE
       CALL CCPAL1 (ROUTNE, N, ITYPE, LENGTH)
       END
-C
 C
 C_BEGIN_CCPALE
       SUBROUTINE CCPALE(ROUTNE, N, TYPE, LENGTH, LENDEF, PRINT)
@@ -225,278 +190,6 @@ C     ..
       CALL CCPALC (ROUTNE, N, TYPE, LENG)
       END
 C
-C
-C
-C SUBROUTINE 'CCPBYI'
-C ===================
-C
-C_BEGIN_CCPBYI
-      SUBROUTINE CCPBYI(IA,IBYT,NB)
-C     =============================
-C
-C COPY AN ARRAY OF UNSIGNED (OR SIGNED) BYTES INTO AN INTEGER ARRAY
-C
-C (MUST BE IMPLEMENTED IF CCPBYT FUNCTION RETURNS .TRUE.)
-C [added for LAUE]
-C
-C Arguments:
-C ==========
-C
-C      IA (O)   INTEGER ARRAY(*): TO RETURN INTEGER VALUES
-C    IBYT (I)   BYTE ARRAY(*): DATA (MAY BE AN INTEGER ARRAY FOR EXAMPLE
-C               WITH DATA PACKED INTO ADJACENT BYTES
-C      NB (I)   INTEGER: IF >0, THE NUMBER OF UNSIGNED BYTES TO BE COPIED
-C                        IF <0, -THE NUMBER OF SIGNED BYTES TO BE COPIED
-C_END_CCPBYI
-C
-C SPECIFICATION STATEMENTS
-C ------------------------
-C
-      INTEGER IA(*)
-      BYTE IBYT(*)
-      BYTE JBYT(4)
-      EQUIVALENCE (JA,JBYT(1))
-      LOGICAL CALLED, LITEND
-      INTEGER IND
-      EXTERNAL LITEND
-      SAVE CALLED, IND
-      DATA CALLED/.FALSE./
-C
-      IF (.NOT.CALLED) THEN
-        CALLED=.TRUE.
-        IF (LITEND(1)) THEN
-          IND = 1
-        ELSE
-          IND = 4
-        ENDIF
-      ENDIF
-C
-C COPY DATA
-C ---------
-C
-      NE = NB
-      IF (NE.GT.0) THEN
-         JA=0
-         DO 10 I=1,NE
-           JBYT(IND)=IBYT(I)
-           IA(I)=JA
- 10      CONTINUE
-      ELSE
-         NE = -NE
-         DO 20 I=1,NE
-         IA(I) = IBYT(I)
-20       CONTINUE
-      END IF
-      END
-C
-C
-C
-C_BEGIN_CCPBYT
-      LOGICAL FUNCTION CCPBYT(NBW)
-C     ============================
-C
-C---- This function indicates whether byte handling is available or not.
-C      if a value of .true. is returned then the subroutines ccpmde and
-C      ccpmvb must be fully implemented.
-C
-C Arguments:
-C ==========
-C
-C         NBW (O)   INTEGER: RETURNS THE NUMBER OF BYTES PER WORD OR A VALUE
-C                   OF 1 IF NO BYTE HANDLING IS AVAILABLE.
-C
-C  RETURNS   CCPBYT  = .TRUE.  BYTE HANDLING AND ASSOCIATED CCPLIB
-C                              ROUTINES AVAILABLE.
-C                    = .FALSE. NO BYTE HANDLING AVAILABLE.
-C_END_CCPBYT
-C
-C     .. Scalar Arguments ..
-      INTEGER NBW
-C     ..
-      CCPBYT = .TRUE.
-      NBW = 4
-      END
-C
-C
-C SUBROUTINE 'CCPCPI'
-C ===================
-C_BEGIN_CCPCPI
-      SUBROUTINE CCPCPI(IA,IB,MINEL,MAXEL,ITYP)
-C     =========================================
-C
-C Copy an array of BYTE or INTEGER*2 elements into an integer array
-C
-C (Must be implemented if ccpbyt function returns .TRUE.)
-C [for LAUE]
-C
-C Arguments:
-C ==========
-C
-C      IA (O)   INTEGER Array(*): to return values
-C      IB (I)   INTEGER Array(*): holding data with data packed into adjacant 
-C                                 BYTE or INTEGER*2 elements
-C   MINEL (I)   INTEGER: Minimum element to copy
-C   MAXEL (I)   INTEGER: Maximum element to copy
-C    ITYP (I)   INTEGER: Type =1 unsigned byte
-C                             =2 signed byte
-C                             =3 unsigned two byte integer
-C                             =4 signed two byte integer
-C
-C               Note: if MINEL>MAXEL elements will be copied in reverse order
-C_END_CCPCPI
-C
-C====== Specification statements
-C
-      INTEGER IA(*)
-      BYTE IB(*)
-      INTEGER*2 J2(2)
-      BYTE JBYT(4)
-      EQUIVALENCE (JA,J2(1),JBYT(1))
-      LOGICAL CALLED, LITEND
-      EXTERNAL LITEND
-      INTEGER IND1, IND2, INDB
-      SAVE CALLED, IND1, IND2, INDB
-      DATA CALLED/.FALSE./
-C
-      IF (.NOT.CALLED) THEN
-        IF (LITEND(1)) THEN
-          IND1 = 1
-          IND2 = 2
-          INDB = 1
-        ELSE
-          IND1 = 3
-          IND2 = 4
-          INDB = 4
-        ENDIF
-        CALLED=.TRUE.
-      ENDIF
-C
-C====== Copy data
-C
-      ISTEP = 1
-      IF (MINEL.GT.MAXEL) ISTEP=-1
-      IF (ITYP.EQ.1) THEN
-         JA=0
-         J=0
-         DO 10 I=MINEL,MAXEL,ISTEP
-            J=J+1
-            JBYT(INDB)=IB(I)
-            IA(J)=JA
-10       CONTINUE
-      ELSE IF (ITYP.EQ.2) THEN
-         J=0
-         DO 20 I=MINEL,MAXEL,ISTEP
-            J=J+1
-            IA(J)=IB(I)
-20       CONTINUE
-      ELSE IF (ITYP.EQ.3) THEN
-         JA=0
-         J=0
-         DO 30 I=MINEL,MAXEL,ISTEP
-            J=J+1
-            JBYT(IND1)=IB(2*I-1)
-            JBYT(IND2)=IB(2*I)
-            IA(J)=JA
-30       CONTINUE
-      ELSE IF (ITYP.EQ.4) THEN
-         J=0
-         DO 40 I=MINEL,MAXEL,ISTEP
-            J=J+1
-            JBYT(1)=IB(2*I-1)
-            JBYT(2)=IB(2*I)
-            IA(J)=J2(1)
-40       CONTINUE
-      END IF
-      RETURN
-      END
-C
-C
-C
-C_BEGIN_CCPDAT
-      SUBROUTINE CCPDAT(CALDAT)
-C     =========================
-C
-C---- This subroutine returns the date if available
-C
-C Arguments:
-C ==========
-C
-C      CALDAT (O)   CHARACTER*8: DATE AS DD/MM/YY
-C                   (RETURNED AS A BLANK STRING IF NOT AVAILABLE)
-C_END_CCPDAT
-C
-C SPECIFICATION STATEMENTS
-C ------------------------
-C
-C---- Get date
-C
-C     .. Scalar Arguments ..
-      CHARACTER CALDAT*8
-C     ..
-C     .. Local Scalars ..
-      INTEGER ID,IM,IY
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL UIDATE
-C     ..
-C
-      CALL UIDATE(IM,ID,IY)
-      IY = MOD (IY, 100)      
-      WRITE (CALDAT,FMT=6000) ID,IM,IY
-C
-C---- Format statements
-C
- 6000 FORMAT (I2,'/',I2,'/',I2)
-C
-      IF (CALDAT(7:7) .EQ. ' ') CALDAT(7:7) = '0'
-      END
-C
-C
-C
-C_BEGIN_CCPDEX
-      SUBROUTINE CCPDEX(INDX,N)
-C     =========================
-C
-C---- This subroutine performs a periodicity reduction for a period
-C     of 1024 for the elements of an array. written particularly for
-C     'prolsq' to allow for use of the 'and' function on the cray or
-C     'moveb' on the m28oh(iap).
-C      These are much faster than the mod function used in
-C      the standard fortran77 version.
-C
-C Arguments:
-C ==========
-C
-C        INDX (I/O) INTEGER ARRAY(*): NUMBERS FOR PERIODICITY REDUCTION
-C           N (I)   INTEGER: NO. OF ELEMENTS IN INDX
-C
-C EXAMPLE OF FUNCTIONS:
-C
-C FORTRAN77     INDX(I)=MOD(INDX(I),1024)+1
-C CRAY-1S       INDX(I)=AND(INDX(I),1023)+1
-C M280H(IAP)    CALL MOVEB(INDX(I),1,0,1,22)
-C               INDX(I)=INDX(I)+1
-C_END_CCPDEX
-C
-C SPECIFICATION STATEMENTS AND CODE
-C
-C     .. Scalar Arguments ..
-      INTEGER N
-C     ..
-C     .. Array Arguments ..
-      INTEGER INDX(N)
-C     ..
-C     .. Local Scalars ..
-      INTEGER I
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC MOD
-C     ..
-      DO 10 I = 1,N
-        INDX(I) = MOD(INDX(I),1024) + 1
-   10 CONTINUE
-      END
-C
 C_BEGIN_CCPDPN
       SUBROUTINE CCPDPN(IUN,LOGNAM,STATUS,TYPE,LREC,IFAIL)
 C     ====================================================
@@ -592,1069 +285,6 @@ C  If IFAIL lt 0 No open message from CCPOPN
 C
       END
 C
-C
-C_BEGIN_CCPE2I
-      INTEGER FUNCTION CCPE2I (NAME, DEFVAL)
-C     ======================================
-C
-C     Return an integer extracted from enviroment variable NAME.  If
-C     NAME isn't defined, use DEFVAL as the default.  If the value of
-C     NAME isn't a representation of an integer, abort.
-C
-C     Arguments
-C     =========
-C
-C     NAME (I)    CHARACTER *(*)
-C     DEFVAL (I)  INTEGER
-C_END_CCPE2I
-      CHARACTER *(*) NAME
-      CHARACTER BUFFER*80, EMESS*100
-      INTEGER DEFVAL, LENSTR
-      EXTERNAL UGTENV, LENSTR
-      CALL UGTENV (NAME, BUFFER)
-      IF (BUFFER.EQ.' ') THEN
-        CCPE2I = DEFVAL
-        RETURN
-      ENDIF
-      READ (BUFFER, '(BN,I80)', ERR=99) CCPE2I
-      RETURN 
- 99   EMESS = ' Logical name '
-      EMESS(LENSTR(EMESS)+2:) = NAME(1:LENSTR(NAME))
-      IF(LENSTR(EMESS) .LE. 99) THEN
-        EMESS(LENSTR(EMESS)+1:) =' should represent an integer and is: '
-        IF(LENSTR(EMESS) .LE. 98) 
-     .           EMESS(LENSTR(EMESS)+2:) = BUFFER(1:LENSTR(BUFFER))
-      ENDIF
-      CALL CCPERR (1, EMESS)
-      END
-C
-C
-C     ===============================
-C_BEGIN_CCPERR
-      SUBROUTINE CCPERR(ISTAT,ERRSTR)
-C     ===============================
-C
-C     Arguments:
-C     ==========
-C
-C     ISTAT (I)   INTEGER: error/warning level
-C
-C         ISTAT=0  Normal termination and stop.
-C         ISTAT=1  Fatal error and stop.
-C         ISTAT=2  Report severe warning.
-C         ISTAT=3  Report information.
-C         ISTAT=4  Report from library
-C            (ISTAT=-1 also report latest system error
-C             and terminate)
-C
-C     ERRST (I)   CHARACTER*(*): message
-C
-C_END_CCPERR
-C
-C     .. Arguments ..
-      INTEGER ISTAT
-      CHARACTER ERRSTR*(*)
-C     ..
-C     .. Locals ..
-      CHARACTER ERRBUF*256
-C     ..
-C     .. External Functions ..
-      INTEGER LENSTR
-      LOGICAL VAXVMS
-      EXTERNAL LENSTR, VAXVMS
-C     ..
-C     .. External Routines ..
-      EXTERNAL CCPPNM, QPRINT, CEXIT, GETELAPSED, UGERR
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC ABS
-C
-C
-      IF (ABS(ISTAT).LE.2) THEN
-        call ccp4h_summary_beg()
-      ENDIF
-      IF (ISTAT.LT.0) THEN
-        CALL UGERR(0,ERRBUF)
-C     (avoid VMS `Message number 00000000')
-        IF (ERRBUF .NE. ' ' .AND.
-     +       ERRBUF.NE.'Message number 00000000') THEN
-          CALL QPRINT(0,
-     +         'Last system error message:')
-          CALL QPRINT(0,ERRBUF)
-        ENDIF
-      ENDIF
-
-C     construct appropriate ERRBUF
-      IF (ABS(ISTAT).LE.1) THEN
-C        report program name
-         CALL CCPPNM (ERRBUF)
-         IF (LENSTR(ERRBUF) .LT. 251) THEN
-            ERRBUF (LENSTR(ERRBUF)+1:) = ': '
-            ERRBUF (LENSTR(ERRBUF)+3:) = ERRSTR
-         ENDIF
-      ELSEIF (ISTAT.EQ.2) THEN
-         ERRBUF = ' WARNING: '//ERRSTR
-      ELSE
-         ERRBUF = ERRSTR
-      ENDIF
-
-C     report messages and exit if appropriate
-      IF (ABS(ISTAT).LE.1) THEN
-        CALL QPRINT(0,ERRBUF)
-        IF (VAXVMS()) THEN
-          IF (ISTAT.EQ.0) THEN
-            CALL GETELAPSED
-C           success
-            call ccp4h_pre_end()
-            call ccp4h_summary_end()
-            call ccp4h_html_close()
-            CALL CEXIT(1)
-          ELSE
-C           FOR$_NOTFORSPE, "Not a FORTRAN-specific error"
-            call ccp4h_pre_end()
-            call ccp4h_summary_end()
-            call ccp4h_html_close()
-            CALL CEXIT(1605644)
-          ENDIF
-        ELSE
-C         duplicate message to stderr, assumed to be connected to unit 0
-          IF (ISTAT.EQ.1) WRITE (0,*) ERRBUF(1:LENSTR(ERRBUF))
-          CALL GETELAPSED
-          call ccp4h_pre_end()
-          call ccp4h_summary_end()
-          call ccp4h_html_close()
-          CALL CEXIT(ISTAT)
-        ENDIF
-      ELSEIF (ISTAT.EQ.2) THEN
-        CALL QPRINT(0,' ')
-        CALL QPRINT(0,' $TEXT:Warning: $$ comment $$ ')
-        CALL QPRINT(0,ERRBUF)
-        CALL QPRINT(0,' $$')
-        call ccp4h_summary_end()
-      ELSE
-        CALL QPRINT(0,ERRBUF)
-      END IF
-C
-      RETURN
-      END
-C
-C
-C
-C_BEGIN_CCPEXS
-      LOGICAL FUNCTION CCPEXS(NAME)
-C     =============================
-C
-C---- Tests if file assigned to logical name NAME exists
-C
-C Returns CCPEXS  .true.  if file exists
-C                 .false. if file does not exist
-C
-C Arguments:
-C ==========
-C
-C    NAME (I)   CHARACTER*(*): Logical name
-C_END_CCPEXS
-C
-C     .. Scalar Arguments ..
-      CHARACTER NAME* (*)
-C     ..
-C     .. Local Scalars ..
-      CHARACTER*255 NAMFIL
-C     ..
-      NAMFIL = ' '
-      CALL UGTENV(NAME,NAMFIL)
-      IF (NAMFIL.EQ.' ') NAMFIL = NAME
-C
-      INQUIRE (FILE=NAMFIL,EXIST=CCPEXS)
-C
-      END
-C
-C
-C     =================
-C_BEGIN_CCPFYP
-      SUBROUTINE CCPFYP
-C     =================
-C
-C---- Used to set up the environment in which the program runs
-C     and then parse the command line arguments.
-C
-C
-C---- The logic for locating the "environ.def" and "default.def" files
-C     is as follows:
-C
-C     If the file is defined on the command line then
-C       If a directory is specified then
-C         Use the filename as is.
-C       Else if the SYS$LOGIN or HOME variable is defined then
-C         Use "SYS$LOGIN:filename", "$HOME/filename" or "%HOME%\filename".
-C       Else
-C         Use the filename as is (in current directory).
-C     Else
-C       If the CINCL variable is defined then
-C         Use "CINCL:filename", "$CINCL/filename" or "%CINCL%\filename".
-C       Else if the SYS$LOGIN or HOME variable is defined then
-C         Use "SYS$LOGIN:filename", "$HOME/filename" or "%HOME%\filename".
-C       Else
-C         Use the filename as is (in current directory).
-C
-C Arguments:  NONE
-C ==========
-C_END_CCPFYP
-C
-C==============================================================================
-C
-C     .. Parameters ..
-      INTEGER ILIMIT,ISTRLN,IENV
-      PARAMETER (ILIMIT=150,ISTRLN=200,IENV=20)
-C     ..
-C     .. Local Scalars ..
-      INTEGER HELP,IARG,ICOUNT,IEND,IERR,II,ILOOP,ISKIP,
-     +        ISTART,IUNIT,LOOP,RDENVF,RDLOGF,IHELP,LREC,IFAIL,
-     +        IHTML,ISUMM
-      LOGICAL DINIT,EINIT,VAX, MVS
-      CHARACTER FILNAM* (ISTRLN), LINE* (ISTRLN),
-     +     ENVFIL* (ISTRLN), LOGFIL* (ISTRLN), LOGNAM* (ISTRLN),
-     +     TEMP* (ISTRLN), BKS*1, VERSION*20, PVERSION*20, 
-     +     PATCH_LEVEL*20, PROGNAME*20
-C     ..
-C     .. Local Arrays ..
-      CHARACTER ENAME(ILIMIT)* (IENV),ETYPE(ILIMIT)* (5),
-     +          EXTN(ILIMIT)* (4)
-C     ..
-C     .. External Functions ..
-      INTEGER LENSTR
-C     don't declare iargc
-      LOGICAL VAXVMS, WINMVS
-      CHARACTER FEXTN* (ISTRLN), FDIR*(ISTRLN), RTNBKS*1
-      EXTERNAL LENSTR,VAXVMS,FEXTN,WINMVS, RTNBKS
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CCPERR,CCPUPC,UGTARG,INITFYP,QPRINT,CSETNV,UGTENV
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC ICHAR,INDEX
-C     ..
-C     .. Save statement ..
-      SAVE
-C     .. Data statements ..
-      DATA ICOUNT/0/,IHELP/1/,DINIT/.TRUE./,EINIT/.TRUE./,
-     +     RDLOGF/0/,RDENVF/0/,ILOOP/1/,IUNIT/31/,
-     +     LOGFIL/'default.def'/,ENVFIL/'environ.def'/
-C     ..
-      VAX = VAXVMS()
-      MVS = WINMVS()
-      BKS = RTNBKS()
-      IHTML = 0
-      ISUMM = 0
-C
-      CALL INITFYP
-C
-C
-      IARG = IARGC()
-C
-C---- Process command line option switches first
-C
-   10 CONTINUE
-      ISKIP = 1
-      IF (ILOOP.LE.IARG) THEN
-        CALL UGTARG(ILOOP,LINE)
-        CALL CCPUPC(LINE)
-C
-        IF (LINE(1:1).EQ.'-') THEN
-          DO 20 II = 2,LENSTR(LINE)
-            IF (LINE(II:II).EQ.'V' .OR. LINE(II:II).EQ.'H') THEN
-              HELP = ILOOP + ISKIP
-              IF (HELP.GT.IARG) THEN
-                IHELP = 1
-              ELSE
-                CALL UGTARG(HELP,TEMP)
-                IHELP = ICHAR(TEMP(1:1)) - ICHAR('0')
-                IF (IHELP.LT.0 .OR. IHELP.GT.9) IHELP = 1
-              END IF
-              ISKIP = ISKIP + 1
-            ELSE IF (LINE(II:II).EQ.'N') THEN
-              IF (LENSTR(LINE).GE.6) THEN
-                IF (LINE(II:II+5).EQ.'NOHTML') THEN
-                  IHTML = -1
-                  ILOOP = ILOOP + 1
-                  GO TO 10
-                ELSE IF (LINE(II:II+5).EQ.'NOSUMM') THEN
-                  ISUMM = -1
-                  ILOOP = ILOOP + 1
-                  GO TO 10
-                END IF
-              END IF
-              DINIT = .FALSE.
-              EINIT = .FALSE.
-            ELSE IF (LINE(II:II).EQ.'D') THEN
-              RDLOGF = ILOOP + ISKIP
-              IF (RDLOGF.GT.IARG) CALL CCPERR(1,'Use: -d filename')
-              CALL UGTARG(RDLOGF,LOGFIL)
-              DINIT = .TRUE.
-              ISKIP = ISKIP + 1
-            ELSE IF (LINE(II:II).EQ.'E') THEN
-              RDENVF = ILOOP + ISKIP
-              IF (RDENVF.GT.IARG) CALL CCPERR(1,'Use: -e filename')
-              CALL UGTARG(RDENVF,ENVFIL)
-              EINIT = .TRUE.
-              ISKIP = ISKIP + 1
-            ELSE IF (LINE(II:II).EQ.'I') THEN
-              CALL CCP4_VERSION(VERSION)
-              CALL CCP4_PATCH_LEVEL(PATCH_LEVEL)
-              CALL CCP4_PROG_VERSION(PVERSION,1)
-              CALL CCPPNM (PROGNAME)
-              WRITE(TEMP,'(''CCP4 software suite: library version '',
-     +                  A)') VERSION(1:LENSTR(VERSION))
-              WRITE(6,'(A)') TEMP(1:LENSTR(TEMP)) 
-              WRITE(TEMP,'(''CCP4 software suite: patch level     '',
-     +                  A)') PATCH_LEVEL(1:LENSTR(PATCH_LEVEL))
-              WRITE(6,'(A)') TEMP(1:LENSTR(TEMP)) 
-              WRITE(TEMP,'(''Program:             '',
-     +                  A)') PROGNAME(1:LENSTR(PROGNAME))
-              IF (PVERSION.NE.' ') TEMP = 
-     +          TEMP(1:LENSTR(TEMP))//'; version '//PVERSION
-              WRITE(6,'(A)') TEMP(1:LENSTR(TEMP))
-              IF (VAXVMS()) THEN
-                CALL CEXIT(1)
-              ELSE
-                CALL CEXIT(0)
-              ENDIF
-            ELSE
-              CALL QPRINT(1,'Ignoring switch '//LINE(II:II))
-            END IF
-   20     CONTINUE
-          ILOOP = ILOOP + ISKIP
-          GO TO 10
-        END IF
-      END IF
-C
-C---- Initialise html and summary tag variables
-C
-      CALL CCP4H_INIT_LIB(IHTML,ISUMM)
-C
-C---- Set up debug level
-C
-      CALL QPRINT(IHELP,' ')
-C
-C---- Update argument list
-C
-      IF (EINIT) THEN
-        II = -1
-        IF (RDENVF.GT.0) THEN
-          IF (FDIR(ENVFIL).NE.' ') II=0
-        ELSE
-          CALL UGTENV('CINCL',FILNAM)
-          IF (FILNAM.NE.' ') THEN
-            IF (VAX) THEN
-              FILNAM = 'CINCL:'
-              II = LENSTR(FILNAM)
-            ELSEIF (MVS) THEN
-            	II = LENSTR(FILNAM)
-              IF (FILNAM(II:II).NE.BKS) THEN
-                II = II + 1
-                IF (II.GT.ISTRLN) CALL CCPERR(1,
-     +               'environ path name too long')
-                FILNAM(II:II)=BKS
-              ENDIF
-            ELSE
-              II = LENSTR(FILNAM)
-              IF (FILNAM(II:II).NE.'/') THEN
-                II = II + 1
-                IF (II.GT.ISTRLN) CALL CCPERR(1,
-     +               'environ path name too long')
-                FILNAM(II:II)='/'
-              ENDIF
-            ENDIF
-          ENDIF
-        ENDIF
-C
-        IF (II.LT.0) THEN
-          IF (VAX) THEN
-            CALL UGTENV('SYS$LOGIN',FILNAM)
-          ELSE
-            CALL UGTENV('HOME',FILNAM)
-          ENDIF
-          IF (FILNAM.NE.' ') THEN
-            IF (VAX) THEN
-              FILNAM = 'SYS$LOGIN:'
-              II = LENSTR(FILNAM)
-            ELSEIF (MVS) THEN
-              II = LENSTR(FILNAM)
-              IF (FILNAM(II:II).NE.BKS) THEN
-                II = II + 1
-                IF (II.GT.ISTRLN) CALL CCPERR(1,
-     +               'environ path name too long')
-                FILNAM(II:II)=BKS
-              ENDIF
-            ELSE
-              II = LENSTR(FILNAM)
-              IF (FILNAM(II:II).NE.'/') THEN
-                II = II + 1
-                IF (II.GT.ISTRLN) CALL CCPERR(1,
-     +               'environ path name too long')
-                FILNAM(II:II)='/'
-              ENDIF
-            ENDIF
-          ELSE
-            II = 0
-          ENDIF
-        ENDIF
-        FILNAM(II+1:) = ENVFIL
-        IF (II.GT.ISTRLN) CALL CCPERR(1, 'environ path name too long')
-        CALL QPRINT(2,'Opening file '//FILNAM)
-        IFAIL=0
-        IXUNIT = IUNIT
-        IF (IHELP.LT.2) IXUNIT = -IUNIT
-        CALL CCPDPN (IXUNIT,FILNAM,'READONLY','F',LREC,IFAIL)
-   30   CONTINUE
-        READ (UNIT=IUNIT,FMT=6000,END=40,ERR=80,IOSTAT=IERR) LINE
-        TEMP = LINE
-C       comments from `!' or `#' to end-of-line
-        II = INDEX(LINE,'#')
-        IF (II.NE.0) LINE(II:) = ' '
-        II = INDEX(LINE,'!')
-        IF (II.NE.0) LINE(II:) = ' '
-        IF (LINE.NE.' ') THEN
-          ICOUNT = ICOUNT + 1
-          IF (ICOUNT.GT.ILIMIT) CALL CCPERR(1,
-     +         'Too many logical names in environ file: '//TEMP)
-          ISTART = INDEX(LINE,'=')
-          IF (ISTART.EQ.0)
-     +         CALL CCPERR(1,'Missing = in environ file: '//TEMP)
-          ENAME(ICOUNT) = LINE(1:ISTART-1)
-          EXTN(ICOUNT) = '.'//FEXTN(LINE)
-          IF (EXTN(ICOUNT).EQ.'.')
-     +         CALL CCPERR(1, 'Bad extension in environ file: '//TEMP)
-          IEND = INDEX(LINE,EXTN(ICOUNT))
-          ETYPE(ICOUNT) = LINE(ISTART+1:IEND-1)
-        END IF
-        GO TO 30
-   40   CLOSE (UNIT=IUNIT)
-      END IF
-C
-C---- Now get defaults file
-C
-      IF (DINIT) THEN
-        II = -1
-        IF (RDLOGF.GT.0) THEN
-          IF (FDIR(LOGFIL).NE.' ') II=0
-        ELSE
-          CALL UGTENV('CINCL',FILNAM)
-          IF (FILNAM.NE.' ') THEN
-            IF (VAX) THEN
-              FILNAM = 'CINCL:'
-              II = LENSTR(FILNAM)
-            ELSEIF (MVS) THEN
-              II = LENSTR(FILNAM)
-              IF (FILNAM(II:II).NE.BKS) THEN
-                II = II + 1
-                IF (II.GT.ISTRLN) CALL CCPERR(1,
-     +               'default.def path name too long')
-                FILNAM(II:II)=BKS
-              ENDIF
-            ELSE
-              II = LENSTR(FILNAM)
-              IF (FILNAM(II:II).NE.'/') THEN
-                II = II + 1
-                IF (II.GT.ISTRLN) CALL CCPERR(1,
-     +               'default.def path name too long')
-                FILNAM(II:II)='/'
-              ENDIF
-            ENDIF
-          ENDIF
-        ENDIF
-C
-        IF (II.LT.0) THEN
-          IF (VAX) THEN
-            CALL UGTENV('SYS$LOGIN',FILNAM)
-          ELSE
-            CALL UGTENV('HOME',FILNAM)
-          ENDIF
-          IF (FILNAM.NE.' ') THEN
-            IF (VAX) THEN
-              FILNAM = 'SYS$LOGIN:'
-              II = LENSTR(FILNAM)
-            ELSEIF (MVS) THEN
-            	II = LENSTR(FILNAM)
-              IF (FILNAM(II:II).NE.BKS) THEN
-                II = II + 1
-                IF (II.GT.ISTRLN) CALL CCPERR(1,
-     +               'default.def path name too long')
-                FILNAM(II:II)=BKS
-              ENDIF
-            ELSE
-              II = LENSTR(FILNAM)
-              IF (FILNAM(II:II).NE.'/') THEN
-                II = II + 1
-                IF (II.GT.ISTRLN) CALL CCPERR(1,
-     +               'default.def path name too long')
-                FILNAM(II:II)='/'
-              ENDIF
-            ENDIF
-          ELSE
-            II = 0
-          ENDIF
-        ENDIF
-        IF (II.GT.ISTRLN) CALL CCPERR(1,
-     +       'default.def path name too long')
-        FILNAM(II+1:) = LOGFIL
-        CALL QPRINT(2,'Opening file '//FILNAM)
-        IFAIL=0
-        IXUNIT = IUNIT
-        IF (IHELP.LT.2) IXUNIT = -IUNIT
-        CALL CCPDPN (IXUNIT,FILNAM,'READONLY','F',LREC,IFAIL)
-   50   CONTINUE
-        READ (UNIT=IUNIT,FMT=6000,END=60,ERR=80,IOSTAT=IERR) LINE
-        TEMP = LINE
-C       comments from `!' or `#' to end-of-line
-        II = INDEX(LINE,'#')
-        IF (II.NE.0) LINE(II:) = ' '
-        II = INDEX(LINE,'!')
-        IF (II.NE.0) LINE(II:) = ' '
-        IF (LINE.NE.' ') THEN
-          II = INDEX(LINE,'=')
-          IF (II.EQ.0)
-     +         CALL CCPERR(1,'Missing = in defaults file: '//TEMP)
-          LOGNAM = LINE(1:II-1)
-          FILNAM = LINE(II+1:)
-C
-C---- here skip = .true. in csetnv means don't override existing logical
-C         name (defined in environment)
-C
-          CALL CSETNV(LOGNAM,FILNAM,ENAME,ETYPE,EXTN,ICOUNT,.TRUE.)
-        END IF
-        GO TO 50
-   60   CLOSE (UNIT=IUNIT)
-      END IF
-C
-C---- Loop through command line arguments
-C
-      CALL QPRINT(2,'Processing Command Line Arguments')
-      DO 70 LOOP = ILOOP,IARG,2
-        CALL UGTARG(LOOP,LOGNAM)
-         CALL CCPUPC(LOGNAM)
-        CALL UGTARG(LOOP+1,FILNAM)
-        IF (FILNAM.EQ.' ') CALL CCPERR(1,
-     +       'Use: <logical name> <filename> ...')
-C
-C---- here skip = .false. in csetnv means override logical name
-C       defined in the environment
-C
-        CALL CSETNV(LOGNAM,FILNAM,ENAME,ETYPE,EXTN,ICOUNT,.FALSE.)
-   70 CONTINUE
-      CALL QPRINT(2,'End of pre-processing stage')
-      RETURN
-C
- 80   CALL CCPERR (-1,'Error reading environ or default file')
-C
- 6000 FORMAT (A)
-      END
-C
-C
-C SUBROUTINE 'CCPGI2'
-C ===================
-C
-C_BEGIN_CCPGI2
-      SUBROUTINE CCPGI2(IVAL,IA,N)
-C     ============================
-C
-C GET AN UNSIGNED INTEGER*2 VALUE FROM 0 TO 65535 FROM THE N'TH unsigned
-C INTEGER*2 ELEMENT OF AN INTEGER (OR OTHER) ARRAY.
-C
-C (MUST BE IMPLEMENTED IF CCPBYT FUNCTION RETURNS .TRUE.)
-C [added for LAUE]
-C
-C Arguments:
-C ==========
-C
-C    IVAL (O)   INTEGER: THE RETURNED VALUE FROM 0 TO 65535
-C      IA (I/O) INTEGER*2 ARRAY(*): FROM WHICH THE UNSIGNED INTEGER*2 VALUE
-C               IS TO BE RETRIEVED
-C       N (I)   INTEGER: POSITION IN 'IA' WHERE THE UNSIGNED INTEGER*2 VALUE
-C               IS TO BE RETRIEVED
-C_END_CCPGI2
-C
-C SPECIFICATION STATEMENTS
-C ------------------------
-C
-      INTEGER*2 IA(*)
-      INTEGER*2 JBYT(2)
-      EQUIVALENCE (JA,JBYT(1))
-      LOGICAL CALLED, LITEND
-      EXTERNAL LITEND
-      INTEGER IND
-      SAVE CALLED, IND
-      DATA CALLED/.FALSE./
-C
-      IF (.NOT.CALLED) THEN
-        IF (LITEND(1)) THEN
-          IND = 1
-        ELSE
-          IND = 2
-        ENDIF
-        CALLED=.TRUE.
-      ENDIF
-C
-C GET UNSIGNED INTEGER*2
-C ----------------------
-C
-      JA=0
-      JBYT(IND)=IA(N)
-      IVAL=JA
-      END
-C
-C
-C SUBROUTINE 'CCPGTB'
-C ===================
-C
-C_BEGIN_CCPGTB
-      SUBROUTINE CCPGTB(IVAL,IA,N)
-C     ============================
-C
-C GET AN UNSIGNED BYTE VALUE FROM 0 TO 255 FROM THE N'TH BYTE OF AN INTEGER
-C (OR OTHER) ARRAY.
-C
-C (MUST BE IMPLEMENTED IF CCPBYT FUNCTION RETURNS .TRUE.)
-C [for LAUE]
-C
-C Arguments:
-C ==========
-C
-C    IVAL (O)   INTEGER: THE RETURNED VALUE FROM 0 TO 255
-C      IA (I/O) BYTE ARRAY(*): FROM WHICH THE BYTE VALUE IS TO BE RETRIEVED
-C       N (I)   INTEGER: THE POSITION IN 'IA' WHERE THE BYTE VALUE IS
-C               TO BE RETRIEVED
-C_END_CCPGTB
-C
-C SPECIFICATION STATEMENTS
-C ------------------------
-C
-      BYTE IA(*)
-      BYTE JBYT(4)
-      EQUIVALENCE (JA,JBYT(1))
-      LOGICAL CALLED, LITEND
-      EXTERNAL LITEND
-      INTEGER IND
-      SAVE CALLED, IND
-      DATA CALLED/.FALSE./
-C
-      IF (.NOT.CALLED) THEN
-        IF (LITEND(1)) THEN
-          IND = 1
-        ELSE
-          IND = 4
-        ENDIF
-        CALLED=.TRUE.
-      ENDIF
-C
-C GET BYTE
-C --------
-C
-      JA=0
-      JBYT(IND)=IA(N)
-      IVAL=JA
-      END
-C
-C
-C SUBROUTINE 'CCPI2I'
-C ===================
-C_BEGIN_CCPI2I
-      SUBROUTINE CCPI2I(IA,I2,NE,SIGNED,SWAPB)
-C     ========================================
-C
-C Copy an array of INTEGER*2 elements into an integer array
-C
-C (Must be implemented if ccpbyt function returns .TRUE.)
-C [for LAUE]
-C
-C Arguments:
-C ==========
-C
-C      IA (O)   INTEGER Array(*): to return values
-C      I2 (I)   INTEGER*2 Array(*): holding data (may be an INTEGER array for
-C               example with data packed into adjacant INTEGER*2 elements
-C      NE (I)   INTEGER: The number of elements to be copied
-C  SIGNED (I)   LOGICAL: =.TRUE.  Copy as signed integer*2 values
-C                        =.FALSE. Copy as unsigned integer*2 values
-C   SWAPB (I)   LOGICAL: =.TRUE.  Swap bytes in the integer*2 elements
-C                        =.FALSE. Do not swap bytes
-C_END_CCPI2I
-C
-C====== Specification statements
-C
-      LOGICAL SIGNED, SWAPB
-      INTEGER IA(*)
-      INTEGER*2 I2(*)
-      INTEGER*2 J2(2)
-      INTEGER*2 IEIGHT, I255
-      PARAMETER (I255=255)
-      EQUIVALENCE (JA,J2(1))
-      LOGICAL CALLED, LITEND
-      EXTERNAL LITEND
-      INTEGER IND
-      SAVE CALLED, IND
-      DATA CALLED/.FALSE./
-C
-      IF (.NOT.CALLED) THEN
-        IF (LITEND(1)) THEN
-          IND = 1
-        ELSE
-          IND = 2
-        ENDIF
-        CALLED=.TRUE.
-      ENDIF
-C
-C====== Swap bytes if required
-C
-      IEIGHT = 8
-      IF (SWAPB) THEN
-         DO 10 I = 1,NE
-            I2(I) = IOR(IAND(ISHFT(I2(I),-IEIGHT),I255),
-     +              ISHFT(I2(I),IEIGHT))
-10       CONTINUE
-      END IF
-C
-C====== Copy data
-C
-      IF (SIGNED) THEN
-         DO 20 I=1,NE
-            IA(I) = I2(I)
-20       CONTINUE
-      ELSE
-         JA=0
-         DO 30 I=1,NE
-         J2(IND)=I2(I)
-         IA(I)=JA
-30       CONTINUE
-      END IF
-      END
-C
-C
-C
-C SUBROUTINE 'CCPIBY'
-C ===================
-C
-C_BEGIN_CCPIBY
-      SUBROUTINE CCPIBY(IBYT,IA,NB)
-C     =============================
-C
-C COPY AN ARRAY OF INTEGERS INTO AN ARRAY OF UNSIGNED (OR UNSIGNED) BYTES.
-C NOTE: NO OVERFLOW CHECKING IS DONE.
-C
-C (MUST BE IMPLEMENTED IF CCPBYT FUNCTION RETURNS .TRUE.)
-C [for LAUE]
-C
-C Arguments:
-C ==========
-C
-C    IBYT (O)   BYTE ARRAY(*) RETURNING DATA (MAY BE AN INTEGER ARRAY
-C               FOR EXAMPLE WITH DATA PACKED INTO ADJACENT BYTES)
-C      IA (I)   INTEGER ARRAY(*): Input values
-C      NB (I)   INTEGER: IF >0, THE NUMBER OF ELEMENTS TO BE COPIED TO
-C                        UNSIGNED BYTES
-C                        IF <0, -THE NUMBER OF ELEMENTS TO BE COPIED TO
-C                        SIGNED BYTES
-C_END_CCPIBY
-C
-C SPECIFICATION STATEMENTS
-C ------------------------
-C
-      INTEGER IA(*)
-      BYTE IBYT(*)
-      BYTE JBYT(4)
-      EQUIVALENCE (JA,JBYT(1))
-      LOGICAL CALLED, LITEND
-      EXTERNAL LITEND
-      INTEGER IND
-      SAVE CALLED, IND
-      DATA CALLED/.FALSE./
-C
-      IF (.NOT.CALLED) THEN
-        IF (LITEND(1)) THEN
-          IND = 1
-        ELSE
-          IND = 4
-        ENDIF
-        CALLED=.TRUE.
-      ENDIF
-C
-C COPY DATA
-C ---------
-C
-      NE = NB
-      IF (NE.GT.0) THEN
-         DO 10 I=1,NE
-         JA=IA(I)
-         IBYT(I)=JBYT(IND)
-10       CONTINUE
-      ELSE
-         NE = -NE
-         DO 20 I=1,NE
-         IBYT(I) = IA(I)
-20       CONTINUE
-      END IF
-      END
-C
-C
-C
-C SUBROUTINE 'CCPII2'
-C ===================
-C
-C_BEGIN_CCPII2
-      SUBROUTINE CCPII2(I2,IA,NE,SIGNED,SWAPB)
-C     ========================================
-C
-C Copy an array of integers into an array of INTEGER*2 elements.
-C NOTE: No overflow checking is done.
-C
-C (Must be implemented if ccpbyt function returns .TRUE.)
-C [for LAUE]
-C
-C Arguments:
-C ==========
-C
-C      I2 (O)   INTEGER*2 ARRAY(*): returning data (may be an INTEGER array for
-C               example with data packed into adjacent INTEGER*2 elements)
-C      IA (I)   INTEGER ARRAY(*): holding input values
-C      NE (I)   INTEGER: The number of elements to be copied
-C  SIGNED (I)   LOGICAL: =.TRUE.  Copy as signed integer*2 values
-C                        =.FALSE. Copy as unsigned integer*2 values
-C   SWAPB (I)   LOGICAL: =.TRUE.  Swap bytes in the integer*2 elements
-C                        =.FALSE. Do not swap bytes
-C_END_CCPII2
-C
-C====== Specification statements
-C
-      LOGICAL SIGNED, SWAPB
-      INTEGER IA(*)
-      INTEGER*2 I2(*)
-      INTEGER*2 J2(2)
-      INTEGER*2 IEIGHT, I255
-      PARAMETER (I255=255)
-      EQUIVALENCE (JA,J2(1))
-      LOGICAL CALLED, LITEND
-      EXTERNAL LITEND
-      INTEGER IND
-      SAVE CALLED, IND
-      DATA CALLED/.FALSE./
-C
-      IF (.NOT.CALLED) THEN
-        IF (LITEND(1)) THEN
-          IND = 1
-        ELSE
-          IND = 2
-        ENDIF
-        CALLED=.TRUE.
-      ENDIF
-C
-C====== Copy data
-C
-      IEIGHT = 8
-      IF (SIGNED) THEN
-         DO 10 I=1,NE
-            I2(I) = IA(I)
-10       CONTINUE
-      ELSE
-         DO 20 I=1,NE
-            JA=IA(I)
-            I2(I)=J2(IND)
-20       CONTINUE
-      ENDIF
-C
-C====== Swap bytes if required
-C
-      IF (SWAPB) THEN
-         DO 30 I = 1,NE
-            I2(I) = IOR(IAND(ISHFT(I2(I),-IEIGHT),I255),
-     +              ISHFT(I2(I),IEIGHT))
-30       CONTINUE
-      END IF
-      END
-C
-C
-C
-C_BEGIN_CCPLWC
-      SUBROUTINE CCPLWC(STRING)
-C     =========================
-C
-C---- convert a text string to lower case in situ
-C
-C Arguments:
-C ==========
-C
-C  STRING (I/O) CHARACTER*(*): string to convert
-C_END_CCPLWC
-C
-C     .. Scalar Arguments ..
-      CHARACTER STRING* (*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER K,L,LL
-      CHARACTER LC*26,UC*26
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC INDEX,LEN
-C     ..
-C     .. Data statements ..
-      DATA LC/'abcdefghijklmnopqrstuvwxyz'/
-      DATA UC/'ABCDEFGHIJKLMNOPQRSTUVWXYZ'/
-C     ..
-C
-      LL = LEN(STRING)
-      IF (LL.GT.0) THEN
-        DO 10 L = 1,LL
-          K = INDEX(UC,STRING(L:L))
-          IF (K.NE.0) STRING(L:L) = LC(K:K)
-   10   CONTINUE
-      END IF
-C
-      END
-C
-C
-C
-C_BEGIN_CCPMDE
-      SUBROUTINE CCPMDE(MODE,NBYT)
-C     ============================
-C
-C---- If byte handling is available (see ccpbyt) then this subroutine
-C     returns the number of bytes per data item for the different modes
-C     used, in particular, in the map handling subroutines.
-C
-C---- If byte handling is not available, then the number of words per
-C     item is returned with zeros for the undefined items
-C
-C Arguments:
-C ==========
-C
-C        MODE (I)   INTEGER:
-C                   MODE = 0,   BYTES
-C                        = 1,   SHORT (2 BYTE) INTEGERS
-C                        = 2,   REAL/INTEGER (SINGLE WORD)
-C                        = 3,   SHORT COMPLEX (2 * 2 BYTE INTEGERS)
-C                        = 4,   COMPLEX (TWO WORDS)
-C
-C        NBYT (O)   INTEGER:
-C                        > 0,   THE NUMBER OF BYTES FOR THE ITEM  IF
-C                               CCPBYT RETURNS .TRUE. OR THE  NUMBER
-C                               OF WORDS IF CCPBYT RETURNS .FALSE.
-C                        = 0,   NO VALUE AVAILABLE FOR THIS MODE
-C                        = -1,  INVALID MODE
-C
-C  TYPICAL VALUES:  1  2  4  4  8    IF BYTE HANDLING AVAILABLE WITH 4
-C                                    BYTES/WORD
-C                   0  0  1  0  2    IF BYTE HANDLING UNAVAILABLE
-C_END_CCPMDE
-C
-C SPECIFICATION STATEMENTS
-C ------------------------
-C
-C     .. Scalar Arguments ..
-      INTEGER MODE,NBYT
-C     ..
-C     .. Local Arrays ..
-      INTEGER MODES(0:4)
-C     ..
-C     .. Data statements ..
-      DATA MODES/1,2,4,4,8/
-C     ..
-C
-C---- Get number of bytes or words
-C
-      NBYT = -1
-      IF (MODE.GE.0 .AND. MODE.LE.4) NBYT = MODES(MODE)
-      END
-C
-C
-C
-C_BEGIN_CCPMVB
-      SUBROUTINE CCPMVB(ARR1,I1,ARR2,I2,NTOMOV)
-C     =========================================
-C
-C---- This subroutine moves bytes from one non-character array
-C     to another. I must be implemented if ccpbyt returns .true.
-C     but will otherwise be a dummy routine.
-C
-C Arguments:
-C ==========
-C
-C        ARR1 (I/O) BYTE ARRAY(*): TO WHICH BYTES ARE TO BE COPIED
-C          I1 (I)   INTEGER: THE START BYTE NUMBER IN ARR1 WHERE THE BYTES ARE
-C                   TO BE COPIED
-C        ARR2 (I)   BYTE ARRAY(*): FROM WHICH BYTES ARE TO BE COPIED
-C          I2 (I)   THE START BYTE NUMBER IN ARR2 FROM WHICH THE BYTES
-C                   ARE TO BE COPIED
-C      NTOMOV (I)   INTEGER: THE NUMBER OF BYTES TO BE COPIED
-C_END_CCPMVB
-C
-C     .. Scalar Arguments ..
-      INTEGER I1,I2,NTOMOV
-C     ..
-C     .. Array Arguments ..
-      BYTE ARR1(*),ARR2(*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER I,J,N
-C     ..
-      I = I1 - 1
-      J = I2 - 1
-      DO 10 N = 1,NTOMOV
-        I = I + 1
-        J = J + 1
-        ARR1(I) = ARR2(J)
-   10 CONTINUE
-C
-      END
-C
-C
-C_BEGIN_CCPMVI
-      SUBROUTINE CCPMVI (IARR1,IARR2,NUM)
-C     =================================
-C
-C  This routine assigns the first NUM words of IARR2 to IARR1
-C
-C Arguments:
-C ==========
-C
-C    IARR1 (O)   INTEGER ARRAY(*)
-C    IARR2 (O)   INTEGER ARRAY(*)
-C     NUM (I)   Number of words to copy
-C_END_CCPMVI
-C
-C  Arguments
-      INTEGER NUM
-      REAL IARR1(*),IARR2(*)
-C
-      INTEGER J
-C
-      DO 10 J=1,NUM
-   10 IARR1(J)=IARR2(J)
-      END
-C
-C
-C_BEGIN_CCPMVR
-      SUBROUTINE CCPMVR (ARR1,ARR2,NUM)
-C     =================================
-C
-C  This routine assigns the first NUM elements of ARR2 to ARR1
-C
-C Arguments:
-C ==========
-C
-C    ARR1 (O)   REAL ARRAY(*)
-C    ARR2 (O)   REAL ARRAY(*)
-C     NUM (I)   Number of words to copy
-C_END_CCPMVR
-C
-C  Arguments
-      INTEGER NUM
-      REAL ARR1(*),ARR2(*)
-C
-      INTEGER J
-C
-      DO 10 J=1,NUM
-   10 ARR1(J)=ARR2(J)
-      END
-C
 C_BEGIN_CCPNUN
       INTEGER FUNCTION CCPNUN ()
 C     ==========================
@@ -1679,8 +309,6 @@ C     place to stop.
  10   CONTINUE
       CALL CCPERR (1, 'CCPNUN: Can''t find an unused unit')
       END
-C
-C
 C
 C_BEGIN_CCPONL
       LOGICAL FUNCTION CCPONL(IDUM)
@@ -1715,11 +343,6 @@ C
       CALL UISATT(ITERM,IYES)
       CCPONL = IYES.EQ.1
       END
-C
-C
-C
-C SUBROUTINE 'CCPPSF'
-C ===================
 C
 C_BEGIN_CCPPSF
       SUBROUTINE CCPPSF(FILNAM,PATH,NAME,TYPE,VERS)
@@ -1852,277 +475,92 @@ C
       ENDIF
       END
 C
-C
+C     ===================================
+C_BEGIN_FDIR
+      FUNCTION FDIR(FILNAM)
+      CHARACTER*(*) FDIR
+C     ===================================
 C
-C_BEGIN_CCPRCS
-      SUBROUTINE CCPRCS(ILP,PROG,RCSDAT)
-C     ==================================
+C---- Returns the path (directory) of a file name or ' '
 C
-C     Interface to CCPVRS using RCS-format date e.g.,
-C     '1992/09/14 18:47:13' or its form expanded with RCS
-C     option `-kv' as for a CVS export, in which case it will have the
-C     `1992/09/14 18:47:13' stripped.
+C Arguments:
+C
+C  FILNAM (I)   CHARACTER*(*): File name
+C_END_FDIR
+      CHARACTER FILNAM* (*)
+      CHARACTER*1 NAME, TYPE, VERS
+      EXTERNAL CCPPSF
+C
+      CALL CCPPSF(FILNAM, FDIR, NAME, TYPE, VERS)
+      END
+C
+C     ====================================
+C_BEGIN_FEXTN
+      FUNCTION FEXTN(FILNAM)
+      CHARACTER*(*) FEXTN
+C     ====================================
+C
+C---- Returns the extension of a file name or ' '
+C
+C Arguments:
+C
+C  FILNAM (I)   CHARACTER*(*): File name
+C_END_FEXTN
+      CHARACTER FILNAM* (*)
+      CHARACTER*1 PATH, NAME, VERS
+      EXTERNAL CCPPSF
+C
+      CALL CCPPSF(FILNAM, PATH, NAME, FEXTN, VERS)
+      END
+C
+C_BEGIN_FROOT
+      FUNCTION FROOT(FILNAM)
+      CHARACTER*(*) FROOT
+C     ====================================
+C
+C---- Returns a file name minus an extension.
+C
+C Arguments:
+C
+C  FILNAM (I)   CHARACTER*(*): File name
+C_END_FROOT
+C
+      CHARACTER FILNAM* (*)
+      CHARACTER*1 PATH, TYPE, VERS
+      EXTERNAL CCPPSF
+C
+      CALL CCPPSF(FILNAM, PATH, FROOT, TYPE, VERS)
+      END
+
+C  Tried to get rid of these, but some programs call it
+C
+C_BEGIN_LUNSTI
+      FUNCTION LUNSTI(IDUM)
+C     =====================
+C
+C Returns the fortran standard input unit number
 C
 C Arguments:
 C ==========
 C
-C         ILP (I)   INTEGER: UNIT NUMBER FOR PRINTER OUTPUT
-C        PROG (I)   CHARACTER*(*): VARIABLE HOLDING PROGRAM NAME (MAX
-C                   OF 10 CHARACTERS)
-C      RCSDAT (I)   CHARACTER*(*): VARIABLE HOLDING DATE IN RCS FORMAT
-C_END_CCPRCS
+C       IDUM (D)   Dummy
+C_END_LUNSTI
 C
-      CHARACTER*(*) RCSDAT, PROG
-      CHARACTER*8 DATE
-      INTEGER ILP
-      EXTERNAL CCPVRS
-C
-      IF (RCSDAT(:7) .EQ. '$Date: ') THEN
-C       raw form (not exported)
-        DATE = '  /  /'
-        DATE(1:2) = RCSDAT(16:17)
-        DATE(4:5) = RCSDAT(13:14)
-        DATE(7:8) = RCSDAT(10:11)
-      ELSE IF (LEN(RCSDAT).GE.10 .AND. (RCSDAT(:2).EQ.'19'
-     $                             .OR. RCSDAT(:2).EQ.'20')) THEN
-C       after export
-        DATE = '  /  /'
-        DATE(1:2) = RCSDAT(9:10)
-        DATE(4:5) = RCSDAT(6:7)
-        DATE(7:8) = RCSDAT(3:4)
-      ELSE
-C       fallback
-        DATE = ' '
-      ENDIF
-      CALL CCPVRS(ILP,PROG,DATE)
+      LUNSTI = 5
       END
 C
+      FUNCTION LUNSTO(IDUM)
 C
-C
-C_BEGIN_CSETNV
-      SUBROUTINE CSETNV(LNAME,FILNAM,ENAME,ETYPE,EXTN,ICOUNT,LSKIP)
-C     =============================================================
-C
-C     Associate `logical name' LNAME with value FILNAM.  It is passed
-C     arrays of (name, type, extension) for ICOUNT number of name lines
-C     read from environ.def.  Doesn't re-define existing name if LSKIP is true.
+C Returns the fortran standard output unit number
 C
 C Arguments:
 C ==========
 C
-C   LNAME (I)   CHARACTER*(*): Logical name (environment variable).
+C       IDUM (I)   Dummy argument
 C
-C  FILNAM (I/O) CHARACTER*(*): File name, if extension is omitted it is appended
-C
-C   ENAME (I/O) CHARACTER(150)*20 ARRAY: containing list of environment
-C               variables; if LNAME is not in list it is appended
-C               (also to ETYPE & EXTN arrays).
-C
-C   ETYPE (I,O) CHARACTER(150)*5 ARRAY: containing list of in/out types.
-C
-C    EXTN (I/O) CHARACTER(150)*4 ARRAY: containing list of extensions.
-C
-C  ICOUNT (I/O) INTEGER: Length of arrays ENAME, ETYPE & EXTN.
-C
-C   LSKIP (I)   LOGICAL: If .TRUE. existing name not re-defined.
-C
-C_END_CSETNV
-C
-C     .. Parameters ..
-      INTEGER ILIMIT,ISTRLN,IENV
-      PARAMETER (ILIMIT=150,ISTRLN=200,IENV=20)
-C     ..
-C     .. Scalar Arguments ..
-      INTEGER ICOUNT
-      CHARACTER LNAME* (*),FILNAM* (*)
-      LOGICAL LSKIP
-C     ..
-C     .. Array Arguments ..
-      CHARACTER ENAME(ILIMIT)* (IENV),ETYPE(ILIMIT)* (5),
-     +          EXTN(ILIMIT)* (4)
-C     ..
-C     .. Local Scalars ..
-      INTEGER I,II,ISTAT,JJ,PROCID
-      LOGICAL VAX,MVS,EXIST
-      CHARACTER ERRSTR* (ISTRLN),LIBFIL* (ISTRLN),PROGNM* (ISTRLN),
-     +          TMPNAM* (ISTRLN),LINE* (ISTRLN),SCRFIL* (ISTRLN),
-     +          BKS*(1)
-C     ..
-C     .. External Functions ..
-      INTEGER GETPID,LENSTR
-      LOGICAL VAXVMS, WINMVS
-      CHARACTER FDIR* (ISTRLN),FEXTN* (ISTRLN),FROOT* (ISTRLN), RTNBKS
-      EXTERNAL GETPID,LENSTR,VAXVMS,FDIR,FEXTN,FROOT
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CCPERR,UGTARG,QPRINT,UGTENV,USTENV
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC INDEX
-C     ..
-      SAVE
-      DATA PROGNM/' '/
-C
-C---- Check Logical Name does not already exist (unless processing
-C     command line, in which case LSKIP will be true to override
-C     environment)
-C
-      CALL UGTENV(LNAME,TMPNAM)
-      IF (TMPNAM.NE.' ' .AND. LSKIP ) RETURN
-      VAX = VAXVMS()
-      MVS = WINMVS()
-      BKS = RTNBKS()
-C
-C---- Get program name (argv[0]), but check if we have it already
-C
-      IF (PROGNM.EQ.' ') THEN
-        CALL UGTARG(0,TMPNAM)
-        PROGNM = FROOT(TMPNAM)
-      ENDIF
-C
-C---- look through list for a match (possibly abbreviated) [is this
-C     abbreviation possibility documented?]
-C
-      DO 10 JJ = 1,ICOUNT
-        IF (ENAME(JJ).EQ.LNAME(1:LENSTR(ENAME(JJ)))) GO TO 20
-   10 CONTINUE
-C
-C---- Unknown logical name add it to the list.
-C
-      TMPNAM = 'Non standard logical name '
-      TMPNAM(27:) = LNAME
-      CALL QPRINT(2,TMPNAM)
-      ICOUNT = ICOUNT + 1
-      IF (ICOUNT.GT.ILIMIT)
-     +     CALL CCPERR(1,'Too many logical names')
-      ENAME(ICOUNT) = LNAME
-      ETYPE(ICOUNT) = 'undef'
-      EXTN(ICOUNT) = FEXTN(FILNAM)
-      JJ = ICOUNT
-C
-C---- Known logical name processing
-C
-   20 IF (FEXTN(FILNAM).EQ.' ') THEN
-C
-C---- Add extension
-C
-        IF (FILNAM.EQ.'/dev/null' .OR. FILNAM.EQ.'NL:') THEN
-C          but not if FILNAM is /dev/null or NL:
-          GOTO 333
-        ELSE
-          II = LENSTR(FILNAM) + 1
-          FILNAM(II:) = EXTN(JJ)
-        ENDIF
-      ENDIF
-      IF (FDIR(FILNAM).EQ.' ') THEN
-CCC       this didn't agree with documentation:
-CCC        IF (EXTN(JJ).EQ.'.lib' .OR. EXTN(JJ).EQ.'.prt' .OR.
-CCC     +      EXTN(JJ).EQ.'.bes' .OR. EXTN(JJ).EQ.'.dic') THEN
-        TMPNAM = FEXTN(FILNAM)
-        IF (VAX) CALL CCPLWC(TMPNAM)
-        IF (TMPNAM.EQ.'lib' .OR. TMPNAM.EQ.'prt' .OR.
-     +      TMPNAM.EQ.'bes' .OR. TMPNAM.EQ.'dic') THEN
-C         look for files without path but with standard extension in the
-C         standard place
-          CALL UGTENV('CLIBD',LIBFIL)
-C         add the standard directory qualifier
-          IF (VAX) THEN
-C           fixme: should we insist that VMS defines CLIBD as well as un*x?
-            IF (LIBFIL.NE.' ') THEN
-              TMPNAM = 'CLIBD:'
-              TMPNAM(7:) = FILNAM
-            ELSE
-              TMPNAM = FILNAM
-            ENDIF
-          ELSEIF (MVS) THEN
-            IF (LIBFIL.EQ.' ') CALL CCPERR(1,'CLIBD not defined')
-            II = LENSTR(LIBFIL)
-            TMPNAM = LIBFIL(:II)//BKS
-            II = II + 2
-            TMPNAM(II:) = FILNAM
-          ELSE
-            IF (LIBFIL.EQ.' ') CALL CCPERR(1,'CLIBD not defined')
-            II = LENSTR(LIBFIL)
-            TMPNAM = LIBFIL(:II)//'/'
-            II = II + 2
-            TMPNAM(II:) = FILNAM
-          END IF
-          FILNAM = TMPNAM
-        ELSE IF (EXTN(JJ).EQ.'.scr' .OR. FEXTN(FILNAM).EQ.'scr') THEN
-C         scratch files in a special place
-C         actually create <ccp4_scr>/<prognm>_.<pid>
-          CALL UGTENV('CCP4_SCR',TMPNAM)
-          IF (VAX) THEN
-            IF (TMPNAM.EQ.' ') THEN
-              TMPNAM = PROGNM
-            ELSE
-              TMPNAM = 'CCP4_SCR:' // PROGNM
-            ENDIF
-          ELSEIF (MVS) THEN
-            IF (TMPNAM.EQ.' ') CALL CCPERR(1,'CCP4_SCR not defined')
-            II = LENSTR(TMPNAM) + 1
-            TMPNAM(II:) = BKS//PROGNM
-          ELSE
-            IF (TMPNAM.EQ.' ') CALL CCPERR(1,'CCP4_SCR not defined')
-            II = LENSTR(TMPNAM) + 1
-            TMPNAM(II:) = '/'//PROGNM
-          END IF
-          II = LENSTR(TMPNAM) + 1
-          TMPNAM(II:II) = '_'
-          II = II + 1
-          I = INDEX(FILNAM,'.')
-          TMPNAM(II:) = FILNAM(:I)
-          IF (VAX) THEN
-            WRITE (SCRFIL,'(Z8.8)') GETPID()
-          ELSE
-            PROCID = MOD(GETPID(),100000)
-C     Windows98 does not return a pid so make a number up
-            IF (PROCID.GT.99999 .OR. PROCID.LE.0) THEN
-              CALL USTIME(PROCID)
-              PROCID = MOD(PROCID,100000)
-            ENDIF
-            WRITE (SCRFIL,'(I5.5)') PROCID
-          ENDIF
-          FILNAM = TMPNAM(1:LENSTR(TMPNAM))//SCRFIL
-        END IF
-      END IF
-333   CONTINUE
-C
-C---- Now test input files do exist (but not for defaults, to avoid
-C     checking 40 or 50 files listed in default.def which the setup
-C     should guarantee)
-C
-      IF (ETYPE(JJ).EQ.'in' .AND. .NOT.LSKIP) THEN
-        INQUIRE(FILE=FILNAM,EXIST=EXIST)
-        IF (.NOT.EXIST) THEN
-          ERRSTR = 'Cannot find file '
-          ERRSTR(18:) = FILNAM
-          CALL CCPERR (-1,ERRSTR)
-        END IF
-      END IF
-      II = LENSTR(LNAME) + 1
-      LINE = LNAME
-      LINE(II:II) = '='
-      II = II + 1
-      LINE(II:) = FILNAM
-C     =======================================
-      CALL USTENV(LINE(1:LENSTR(LINE)),ISTAT)
-C     =======================================
-      IF (ISTAT.NE.0) THEN
-        IF (VAX) THEN
-          ERRSTR = 'Cannot create environment variable '
-        ELSE
-          ERRSTR = 'Cannot create logical name '
-        ENDIF
-        ERRSTR(36:) = LNAME
-        CALL CCPERR (-1,ERRSTR)
-      END IF
-      CALL QPRINT(3,LINE)
+      LUNSTO = 6
       END
-C
-C
-C
-C_BEGIN_CCPPAG
+
       SUBROUTINE CCPPAG(IUN,NCOL,NLIN)
 C     ================================
 C
@@ -2158,11 +596,89 @@ C     ..
         NCOL = 132
       END IF
       END
+
+      INTEGER FUNCTION CCPE2I (NAME, DEFVAL)
+C     ======================================
 C
-C
+C     Return an integer extracted from enviroment variable NAME.  If
+C     NAME isn't defined, use DEFVAL as the default.  If the value of
+C     NAME isn't a representation of an integer, abort.
 C
-C SUBROUTINE 'CCPSI2'
-C ===================
+C     Arguments
+C     =========
+C
+C     NAME (I)    CHARACTER *(*)
+C     DEFVAL (I)  INTEGER
+C_END_CCPE2I
+      CHARACTER *(*) NAME
+      CHARACTER BUFFER*80, EMESS*100
+      INTEGER DEFVAL, LENSTR
+      EXTERNAL UGTENV, LENSTR
+      CALL UGTENV (NAME, BUFFER)
+      IF (BUFFER.EQ.' ') THEN
+        CCPE2I = DEFVAL
+        RETURN
+      ENDIF
+      READ (BUFFER, '(BN,I80)', ERR=99) CCPE2I
+      RETURN 
+ 99   EMESS = ' Logical name '
+      EMESS(LENSTR(EMESS)+2:) = NAME(1:LENSTR(NAME))
+      IF(LENSTR(EMESS) .LE. 99) THEN
+        EMESS(LENSTR(EMESS)+1:) =' should represent an integer and is: '
+        IF(LENSTR(EMESS) .LE. 98) 
+     .           EMESS(LENSTR(EMESS)+2:) = BUFFER(1:LENSTR(BUFFER))
+      ENDIF
+      CALL CCPERR (1, EMESS)
+      END
+C
+C_BEGIN_CCPGI2
+      SUBROUTINE CCPGI2(IVAL,IA,N)
+C     ============================
+C
+C GET AN UNSIGNED INTEGER*2 VALUE FROM 0 TO 65535 FROM THE N'TH unsigned
+C INTEGER*2 ELEMENT OF AN INTEGER (OR OTHER) ARRAY.
+C
+C (MUST BE IMPLEMENTED IF CCPBYT FUNCTION RETURNS .TRUE.)
+C [added for LAUE]
+C
+C Arguments:
+C ==========
+C
+C    IVAL (O)   INTEGER: THE RETURNED VALUE FROM 0 TO 65535
+C      IA (I/O) INTEGER*2 ARRAY(*): FROM WHICH THE UNSIGNED INTEGER*2 VALUE
+C               IS TO BE RETRIEVED
+C       N (I)   INTEGER: POSITION IN 'IA' WHERE THE UNSIGNED INTEGER*2 VALUE
+C               IS TO BE RETRIEVED
+C_END_CCPGI2
+C
+C SPECIFICATION STATEMENTS
+C ------------------------
+C
+      INTEGER*2 IA(*)
+      INTEGER*2 JBYT(2)
+      EQUIVALENCE (JA,JBYT(1))
+      LOGICAL CALLED, LITEND
+      EXTERNAL LITEND
+      INTEGER IND
+      SAVE CALLED, IND
+      DATA CALLED/.FALSE./
+C
+      IF (.NOT.CALLED) THEN
+        IF (LITEND(1)) THEN
+          IND = 1
+        ELSE
+          IND = 2
+        ENDIF
+        CALLED=.TRUE.
+      ENDIF
+C
+C GET UNSIGNED INTEGER*2
+C ----------------------
+C
+      JA=0
+      JBYT(IND)=IA(N)
+      IVAL=JA
+      END
 C
 C_BEGIN_CCPSI2
       SUBROUTINE CCPSI2(IVAL,IA,N)
@@ -2215,12 +731,6 @@ C
       IA(N)=JBYT(IND)
       END
 C
-C
-C
-C SUBROUTINE 'CCPSTB'
-C ===================
-C
-C_BEGIN_CCPSTB
       SUBROUTINE CCPSTB(IVAL,IA,N)
 C     ============================
 C
@@ -2268,436 +778,133 @@ C
       JA=IVAL
       IA(N)=JBYT(IND)
       END
+
+      LOGICAL FUNCTION LITEND(IDUM)
+C        =============================
 C
-C
-C
-C_BEGIN_CCPSUM
-      REAL FUNCTION CCPSUM(A,N,L)
-C     ===========================
-C
-C---- This function sums the elements of an array. (for the cray this
-C     function will call the cray 'ssum' function)
+C---- Check endedness, Returns TRUE if little endian (VAX, FX2800,
+C                                                   Ultrix)
+C                              FALSE if big endian (IBM,IRIS,ESV)
 C
 C Arguments:
 C ==========
 C
-C           A (I)   REAL ARRAY(N): ARRAY TO BE SUMMED
-C           N (I)   INTEGER: NO. OF ELEMENTS IN THE ARRAY
-C           L (I)   INTEGER: SUM EVERY L'TH ELEMENT
+C    IDUM (D)   DUMMY
+C_END_LITEND
 C
-C  CCPSUM RETURNS THE SUM
-C_END_CCPSUM
+      INTEGER I, IDUM
+      BYTE B(4)
+      EQUIVALENCE (I,B(1))
 C
-C SPECIFICATION STATEMENTS AND CODE
+C---- Initialise B
 C
-C     .. Scalar Arguments ..
-      INTEGER L,N
-C     ..
-C     .. Array Arguments ..
-      REAL A(N)
-C     ..
-C     .. Local Scalars ..
-      INTEGER I
-C     ..
-      CCPSUM = 0.0
-      DO 10 I = 1,N,L
-        CCPSUM = A(I) + CCPSUM
-   10 CONTINUE
-      END
+      DO 10 JDO=1,4
+         B(JDO) = 0
+ 10   CONTINUE
 C
-C
+      I = 1
 C
-C_BEGIN_CCPTIM
-      SUBROUTINE CCPTIM(IFLAG,CPU,ELAPS)
-C     ==================================
-C
-C---- Return cpu time and elapsed time in seconds as
-C     intervals from the initial call with iflag=0.  Note that there is
-C     only one timer!
-C
-C Arguments:
-C ==========
-C
-C       IFLAG (I/O) INTEGER: =0, initialise, =1, return times, =-1 dummy call
-C                   returns -1 if time not available, in which case CPU
-C                   and ELAPS are zero
-C         CPU (O)   REAL: cpu time in seconds
-C       ELAPS (O)   REAL: elapsed time in seconds
-C_END_CCPTIM
-C
-C     .. Scalar Arguments ..
-      REAL CPU,ELAPS
-      INTEGER IFLAG
-C     ..
-C     .. Local Scalars ..
-      INTEGER STIME, TIM0
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL UCPUTM,USTIME
-C     ..
-C     .. Save statement ..
-      SAVE TIM0
-C     ..
-      IF (IFLAG.EQ.0) THEN
-        ELAPS = 0.0
-        CPU = 0.0
-        CALL USTIME(TIM0)
-        CALL UCPUTM(CPU)
+      IF (B(1) .NE. 0) THEN
+         LITEND = .TRUE.
       ELSE
-        CALL USTIME(STIME)
-        ELAPS = STIME - TIM0
-        CPU = 1.0
-        CALL UCPUTM(CPU)
+         LITEND = .FALSE.
       END IF
+C
       END
+
+      SUBROUTINE CCPGTB(IVAL,IA,N)
+C     ============================
 C
-C_BEGIN_CCPTOI
-      SUBROUTINE CCPTOI(ARRAY,N,II,ITYP,IFAIL)
-C     ========================================
+C GET AN UNSIGNED BYTE VALUE FROM 0 TO 255 FROM THE N'TH BYTE OF AN INTEGER
+C (OR OTHER) ARRAY.
 C
-C---- This subroutine converts the n'th byte or integer*2 element in a
-C     non-character array to an integer value. it is used by the
-C     map file handling routines and must be implemented if map modes
-C     0,1,3 or 5 are to be used.
+C (MUST BE IMPLEMENTED IF CCPBYT FUNCTION RETURNS .TRUE.)
+C [for LAUE]
 C
 C Arguments:
 C ==========
 C
-C       ARRAY (I)   REAL ARRAY(*): CONTAINING THE ELEMENTS TO BE CONVERTED
+C    IVAL (O)   INTEGER: THE RETURNED VALUE FROM 0 TO 255
+C      IA (I/O) BYTE ARRAY(*): FROM WHICH THE BYTE VALUE IS TO BE RETRIEVED
+C       N (I)   INTEGER: THE POSITION IN 'IA' WHERE THE BYTE VALUE IS
+C               TO BE RETRIEVED
+C_END_CCPGTB
 C
-C           N (I)   INTEGER: THE NUMBER OF THE ELEMENT TO BE CONVERTED
+C SPECIFICATION STATEMENTS
+C ------------------------
 C
-C          II (O)   INTEGER: THE CALCULATED INTEGER VALUE (FOR BYTES THIS WILL
-C                   BE IN THE RANGE 0-255)
-C
-C        ITYP (I)   INTEGER: THE CONVERSION TYPE =1, BYTE TO INTEGER
-C                                                =2, INTEGER*2 TO INTEGER
-C
-C       IFAIL (I/O) INTEGER: ON INPUT   =0, STOP IF CONVERSION NOT AVAILABLE
-C                                       =1, RETURN FROM SUBROUTINE ALWAYS
-C                            ON OUTPUT  UNCHANGED IF CONVERSION CARRIED OUT
-C                                       =-1 IF CONVERSION NOT AVAILABLE
-C_END_CCPTOI
-C
-C     .. Scalar Arguments ..
-      INTEGER IFAIL,II,ITYP,N
-C     ..
-C     .. Array Arguments ..
-      REAL ARRAY(*)
-C     ..
-C     .. Local Scalars ..
-      REAL RR
-      INTEGER IA,NB,NIH,NW
-C     ..
-C     .. Local Arrays ..
-      BYTE IBYT(4),JBYT(4)
-      INTEGER*2 JHALF(2)
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC MOD
-C     ..
-C     .. Equivalences ..
-      EQUIVALENCE (IA,IBYT(1))
-      EQUIVALENCE (RR,JHALF(1),JBYT(1))
-C     ..
+      BYTE IA(*)
+      BYTE JBYT(4)
+      EQUIVALENCE (JA,JBYT(1))
       LOGICAL CALLED, LITEND
+      EXTERNAL LITEND
       INTEGER IND
-      EXTERNAL LITEND, CCPERR
       SAVE CALLED, IND
       DATA CALLED/.FALSE./
 C
       IF (.NOT.CALLED) THEN
-        CALLED=.TRUE.
         IF (LITEND(1)) THEN
           IND = 1
         ELSE
           IND = 4
         ENDIF
+        CALLED=.TRUE.
       ENDIF
 C
-      GO TO (10,20) ITYP
+C GET BYTE
+C --------
 C
-C---- Byte to integer value
-C
-   10 NW = (N-1)/4 + 1
-      NB = MOD(N-1,4) + 1
-      IA = 0
-      RR = ARRAY(NW)
-      IBYT(IND) = JBYT(NB)
-      II = IA
-      IF (II.LT.0 .OR. II.GT.255) THEN
-        IF (IFAIL .EQ. 0) THEN
-          CALL CCPERR(1,' *** Error in CCPTOI, bad convertion ***') 
-        ELSE
-          IFAIL = -1
-        ENDIF
-      ENDIF
-      RETURN
-C
-C---- Integer*2 to integer value
-C
-   20 NW = (N-1)/2 + 1
-      NIH = MOD(N-1,2) + 1
-      RR = ARRAY(NW)
-      II = JHALF(NIH)
-      IF (II.LT.0 .OR. II.GT.65535) THEN
-        IF (IFAIL .EQ. 0) THEN
-          CALL CCPERR(1,' *** Error in CCPTOI, bad convertion ***')
-        ELSE
-          IFAIL = -1
-        ENDIF
-      ENDIF
+      JA=0
+      JBYT(IND)=IA(N)
+      IVAL=JA
       END
 C
-C
-C
-C_BEGIN_CCPUFL
-      SUBROUTINE CCPUFL
-C     =================
-C
-C---- This subroutine is called to suppress underflow error messages
-C     if required and if the facility is available.
-C
-C Arguments:  NONE
-C ==========
-C
-C----  Not implemented.
-C_END_CCPUFL
-      END
-C
-C
-C
-C_BEGIN_CCPUPC
-      SUBROUTINE CCPUPC(STRING)
-C     =========================
-C
-C---- Convert a text string to upper case in situ
-C
-C Arguments:
-C ==========
-C
-C      STRING (I/O) CHARACTER*(*): STRING TO BE CONVERTED
-C_END_CCPUPC
-C
-C     .. Scalar Arguments ..
-      CHARACTER STRING* (*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER K,L,LL
-      CHARACTER LC*26,UC*26
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC INDEX,LEN
-C     ..
-C     .. Data statements ..
-      DATA LC/'abcdefghijklmnopqrstuvwxyz'/
-      DATA UC/'ABCDEFGHIJKLMNOPQRSTUVWXYZ'/
-C     ..
-      LL = LEN(STRING)
-      IF (LL.GT.0) THEN
-        DO 10 L = 1,LL
-          K = INDEX(LC,STRING(L:L))
-          IF (K.NE.0) STRING(L:L) = UC(K:K)
-   10   CONTINUE
-      END IF
-      END
-C
-C
-C
-C_BEGIN_CCP4_VERSION
-      SUBROUTINE CCP4_VERSION(VERSION)
+      SUBROUTINE CCPMVI (IARR1,IARR2,NUM)
 C     =================================
 C
-C---- Return current CCP4 version as string
+C  This routine assigns the first NUM words of IARR2 to IARR1
 C
 C Arguments:
 C ==========
 C
-C       VERSION (O)   CHARACTER*(*): current version of CCP4 suite
-C_END_CCP4_VERSION
+C    IARR1 (O)   INTEGER ARRAY(*)
+C    IARR2 (O)   INTEGER ARRAY(*)
+C     NUM (I)   Number of words to copy
+C_END_CCPMVI
 C
-C     .. Scalar Arguments ..
-      CHARACTER*(*) VERSION
-
-      VERSION = '4.2'
-
-      END
-C
-C_BEGIN_CCP4_PATCH_LEVEL
-      SUBROUTINE CCP4_PATCH_LEVEL(PATCH_LEVEL)
-C     =================================
-C
-C---- Return current CCP4 patch level as string
-C
-C Arguments:
-C ==========
-C
-C      PATCH_LEVEL  (O)   CHARACTER*(*): current patch level of CCP4 suite
-C_END_CCP4_PATCH_LEVEL
-C
-C     .. Scalar Arguments ..
-      CHARACTER*(*) PATCH_LEVEL
-
-      PATCH_LEVEL = '4.2.2'
-
-      END
-C
-C
-C
-C_BEGIN_CCP4_PROG_VERSION
-      SUBROUTINE CCP4_PROG_VERSION(VERSION,IFLAG)
-C     ===========================================
-C
-C---- Set or return program version as quoted by calling
-C     program. This is different from the library version
-C     set in CCP4_VERSION
-C
-C Arguments:
-C ==========
-C
-C       VERSION (I/O)   CHARACTER*(*): program version 
-C
-C       IFLAG   (I)     INTEGER        = 0  use VERSION to set version string
-C                                      = 1  retrieve VERSION
-C_END_CCP4_PROG_VERSION
-C
-C     .. Scalar Arguments ..
-      CHARACTER*(*) VERSION
-      INTEGER IFLAG
-
-      INTEGER LENGTH
-      CHARACTER PVERSION*20
-      SAVE PVERSION
-
-      DATA PVERSION /' '/
-
-      IF (IFLAG.EQ.0) THEN
-        LENGTH = LENSTR(VERSION)
-        IF (LENGTH.GT.20) LENGTH = 20
-        PVERSION = VERSION(1:LENGTH)
-      ELSEIF (IFLAG.EQ.1) THEN
-        VERSION = PVERSION
-      ENDIF
-
-      END
-C
-C
-C
-C_BEGIN_CCPVRS
-      SUBROUTINE CCPVRS(ILP,PROG,VDATE)
-C     =================================
-C
-C---- Print program name and date of current version (also prints run
-C     date if available)
-C
-C Arguments:
-C ==========
-C
-C         ILP (I)   INTEGER: UNIT NUMBER FOR PRINTER OUTPUT
-C        PROG (I)   CHARACTER*(*): VARIABLE HOLDING PROGRAM NAME (MAX
-C                   OF 10 CHARACTERS)
-C       VDATE (I)   CHARACTER*(*): VARIABLE HOLDING DATE OF THE CURRENT
-C                   VERSION AS DD/MM/YY
-C_END_CCPVRS
-C     .. Scalar Arguments ..
-
-      INTEGER ILP
-      CHARACTER PROG* (*),VDATE* (*), PNM*(*)
-C     ..
-C     .. Local Scalars ..
-      CHARACTER CTIME*8,DT2*8,DT*10,PR*20,UID*20,TMPPRG*100,VERSION*10,
-     +          PVERSION*20
-      SAVE PR
-C     ..
-C     .. External Functions ..
-      INTEGER LENSTR
-      CHARACTER FROOT*20
-      EXTERNAL LENSTR, FROOT
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CCPDAT,UGTUID,UTIME,ccp4h_summary_beg,ccp4h_summary_end
-C     ..
-      DATA PR /' '/
-C
-C---- Output heading
-C
-      call ccp4h_summary_beg()
-      call ccp4h_pre_beg()
-      PR = PROG
-      DT = VDATE
-      CALL CCPDAT(DT2)
-      CALL UGTUID(UID)
-      CALL UTIME(CTIME)
-      CALL CCP4_VERSION(VERSION)
-      CALL CCP4_PROG_VERSION(PVERSION,1)
-      IF (PVERSION.EQ.' ') PVERSION = VERSION
-      WRITE (ILP,FMT=6000) VERSION(1:3),PR,PVERSION(1:10),
-     +  DT,UID(1:LENSTR(UID)),DT2,CTIME
- 6000 FORMAT (/,/,/,/,
-     + '1##########################################################',
-     + '#####',/,
-     + ' ##########################################################',
-     + '#####',/,
-     + ' ##########################################################',
-     + '#####',/,
-     + ' ### CCP4 ',A3,': ',A17,2X,'version ',A,': ',A8,'##',/,
-     + ' ##########################################################',
-     + '#####',/,
-     + ' User: ',A,'  Run date: ',A8,'  Run time:',A,
-     + /,/,/,
-     + ' Please reference: Collaborative Computational Project,',
-     + ' Number 4. 1994.',/,' "The CCP4 Suite: Programs for Protein',
-     + ' Crystallography". Acta Cryst. D50, 760-763.',/,/,
-     + ' as well as any specific reference in the program write-up.',
-     + /,/)
-      call ccp4h_summary_end()
-C
-      RETURN
-C
-      ENTRY CCPPNM (PNM)
-C_BEGIN_CCPPNM
-C     SUBROUTINE CCPPNM (PNM)
-C     =======================
-C
-C     Returns the program name previously set by CCPVRS (/CCPRCS); if
-C     that isn't set, use arg(0).
-C
-C     Argument:
-C         PNM (O)   CHARACTER*(*)  Program name
-C_END_CCPPNM
-      IF (PR.EQ.' ') THEN
-        CALL UGTARG(0,TMPPRG)
-        PR = FROOT(TMPPRG)
-      END IF
-      PNM = PR
-      END
-C
-C
-C
-C_BEGIN_CCPZBI
-      SUBROUTINE CCPZBI (ARR1,NUM)
-C     ============================
-C
-C  This routine zeros NUM bytes of the array ARR1
-C
-C Arguments:
-C
-C    ARR1 (O)   BYTE ARRAY(*): array to be zeroed
-C     NUM (I)   INTEGER: Number of bytes
-C_END_CCPZBI
-C
-C  Arguments ......
+C  Arguments
       INTEGER NUM
-      BYTE ARR1(*)
+      REAL IARR1(*),IARR2(*)
 C
       INTEGER J
 C
       DO 10 J=1,NUM
-   10 ARR1(J)=0
+   10 IARR1(J)=IARR2(J)
       END
+
+      SUBROUTINE CCPMVR (ARR1,ARR2,NUM)
+C     =================================
 C
-C
-C_BEGIN_CCPZI
+C  This routine assigns the first NUM elements of ARR2 to ARR1
+C
+C Arguments:
+C ==========
+C
+C    ARR1 (O)   REAL ARRAY(*)
+C    ARR2 (O)   REAL ARRAY(*)
+C     NUM (I)   Number of words to copy
+C_END_CCPMVR
+C
+C  Arguments
+      INTEGER NUM
+      REAL ARR1(*),ARR2(*)
+C
+      INTEGER J
+C
+      DO 10 J=1,NUM
+   10 ARR1(J)=ARR2(J)
+      END
+
       SUBROUTINE CCPZI (IARR1,NUM)
 C     ===========================
 C
@@ -2718,8 +925,6 @@ C
    10 IARR1(J)=0
       END
 C
-C
-C_BEGIN_CCPZR
       SUBROUTINE CCPZR (ARR1,NUM)
 C     ===========================
 C
@@ -2740,393 +945,167 @@ C
       DO 10 J=1,NUM
    10 ARR1(J)=0.0
       END
+
+C  Trivial function from symlib.g
+C     ============================
+      LOGICAL FUNCTION HKLEQ(IH,KH)
+C     =============================
 C
-C
-C     ===================================
-C_BEGIN_FDIR
-      FUNCTION FDIR(FILNAM)
-      CHARACTER*(*) FDIR
-C     ===================================
+C---- Returns true if indices ih = kh
 C
-C---- Returns the path (directory) of a file name or ' '
+C     .. Array Arguments ..
+      INTEGER IH(3),KH(3)
+C     ..
 C
-C Arguments:
+      HKLEQ = .FALSE.
 C
-C  FILNAM (I)   CHARACTER*(*): File name
-C_END_FDIR
-      CHARACTER FILNAM* (*)
-      CHARACTER*1 NAME, TYPE, VERS
-      EXTERNAL CCPPSF
+      IF (IH(1).EQ.KH(1) .AND. IH(2).EQ.KH(2) .AND.
+     +    IH(3).EQ.KH(3)) HKLEQ = .TRUE.
 C
-      CALL CCPPSF(FILNAM, FDIR, NAME, TYPE, VERS)
       END
 C
-C
-C     ====================================
-C_BEGIN_FEXTN
-      FUNCTION FEXTN(FILNAM)
-      CHARACTER*(*) FEXTN
-C     ====================================
+C  General hashing routines. Moved here from symlib.f
 C
-C---- Returns the extension of a file name or ' '
+C     =======================================
+      INTEGER FUNCTION CCP4_HASH_LOOKUP(NSER)
+C     =======================================
 C
-C Arguments:
+C---- The function ccp4_hash_lookup returns the value nfind (which was
+C     input when setting up the function in the subroutine ccp4_hash_setup)
+C     for the large range variable nser.  Uses hashing. (see comments for
+C     CCP4_HASH_SETUP for description of hashing method).
 C
-C  FILNAM (I)   CHARACTER*(*): File name
-C_END_FEXTN
-      CHARACTER FILNAM* (*)
-      CHARACTER*1 PATH, NAME, VERS
-      EXTERNAL CCPPSF
-C
-      CALL CCPPSF(FILNAM, PATH, NAME, FEXTN, VERS)
-      END
-C
-C
-C     ====================================
-C_BEGIN_FROOT
-      FUNCTION FROOT(FILNAM)
-      CHARACTER*(*) FROOT
-C     ====================================
-C
-C---- Returns a file name minus an extension.
-C
-C Arguments:
-C
-C  FILNAM (I)   CHARACTER*(*): File name
-C_END_FROOT
-C
-      CHARACTER FILNAM* (*)
-      CHARACTER*1 PATH, TYPE, VERS
-      EXTERNAL CCPPSF
-C
-      CALL CCPPSF(FILNAM, PATH, FROOT, TYPE, VERS)
-      END
-C
-C
-C
-C_BEGIN_LITEND
-         LOGICAL FUNCTION LITEND(IDUM)
-C        =============================
-C
-C---- Check endedness, Returns TRUE if little endian (VAX, FX2800,
-C                                                   Ultrix)
-C                              FALSE if big endian (IBM,IRIS,ESV)
-C
-C Arguments:
-C ==========
-C
-C    IDUM (D)   DUMMY
-C_END_LITEND
-C
-         INTEGER I, IDUM
-         BYTE B(4)
-         EQUIVALENCE (I,B(1))
-C
-C---- Initialise B
-C
-          DO 10 JDO=1,4
-            B(JDO) = 0
- 10       CONTINUE
-C
-          I = 1
-C
-          IF (B(1) .NE. 0) THEN
-              LITEND = .TRUE.
-          ELSE
-              LITEND = .FALSE.
-          END IF
-C
-        END
-C
-C
-C======================================================================
-C
-C_BEGIN_LENSTR
-      INTEGER FUNCTION LENSTR(STRING)
-C     ===============================
-C
-C---- Returns significant string length excluding trailing spaces
-C
-C     NB: LENSTR removes trailing spaces, plus trailing "null"
-C     characters (ascii code 0) and carriage-returns (ascii code 13).
-C     Carriage-returns may be inserted by editing on non-unix
-C     systems? (PJX)
-C
-C Arguments:
-C ==========
-C
-C  STRING (I)   CHARACTER*(*): Input string
-C_END_LENSTR
+      IMPLICIT NONE
+C     .. Parameter (table size: MUST BE A PRIME NUMBER)
+      INTEGER KPRI
+      PARAMETER (KPRI=1999)
 C
 C     .. Scalar Arguments ..
-      CHARACTER STRING* (*)
+      INTEGER NSER
+C     ..
+C     .. Arrays in Common ..
+      INTEGER IT
+C     ..
+C     .. Local Scalars ..
+      INTEGER NDX,NSER4
 C     ..
 C     .. Intrinsic Functions ..
-      INTRINSIC LEN
+      INTRINSIC MOD
 C     ..
-      LENSTR = LEN(STRING)
- 10   CONTINUE
-      IF (LENSTR.NE.0) THEN
-        IF(STRING(LENSTR:LENSTR).EQ.' ' .OR.
-     .       ICHAR(STRING(LENSTR:LENSTR)).EQ.0 .OR.
-     .       ICHAR(STRING(LENSTR:LENSTR)).EQ.13) THEN
-          LENSTR = LENSTR - 1
+C     .. Common blocks ..
+      COMMON /LOOK/IT(2,KPRI)
+      SAVE /LOOK/
+C     ..
+C
+      NSER4 = NSER
+C
+   10 CONTINUE
+C
+      NDX = MOD(NSER4,KPRI) + 1
+      IF (NSER.NE.IT(1,NDX)) THEN
+        IF (IT(1,NDX).NE.0) THEN
+          NSER4 = NSER4 + 3
           GO TO 10
         END IF
       END IF
 C
+      CCP4_HASH_LOOKUP = IT(2,NDX)
+C
       END
 C
 C
-C FUNCTION 'LUNSTI'
-C =================
+C     ======================================
+      SUBROUTINE CCP4_HASH_SETUP(NSER,NFIND)
+C     ======================================
 C
-C_BEGIN_LUNSTI
-      FUNCTION LUNSTI(IDUM)
-C     =====================
+C---- This subroutine sets up a value for the function ccp4_hash_lookup
+C     when ccp4_hash_lookup(nser) is later evaluated it will return nfind
+C     this function will allow the efficient retrieval of an identifier
+C     for a large range variable (such as a crystal number).  the values
+C     of the function ccp4_hash_lookup(nser) are stored in the array
+C     it(2, kpri) where kpri is the prime number used to generate the
+C     function
+C     The array it  lives in the common look which is shared by
+C     ccp4_hash_setup and the function ccp4_hash_lookup
 C
-C Returns the fortran standard input unit number
+C     NOTES: A hash table is a way of storing information so that it
+C     easily be retrieved without the need for indexing or long searches.
+C     NSER is referred to as the "key", which is "hashed" (computer-
+C     science speak for "messed up") by the hashing function (in this
+C     case MOD(NSER4,KPRI) + 1) to determine where the value pair will
+C     be stored. The function LOOKUP can then search on the same basis
+C     when supplied with the key, to retreive the pair in (at most) 3
+C     calculations. Note that KPRI (the table size) MUST BE A PRIME in
+C     order for this method to work.
 C
-C Arguments:
-C ==========
+C     IT(1, NDX) = NSER,  IT(2, NDX) = NFIND
 C
-C       IDUM (D)   Dummy
-C_END_LUNSTI
+      IMPLICIT NONE
+C     .. Parameter (table size: MUST BE A PRIME NUMBER)
+      INTEGER KPRI
+      PARAMETER (KPRI=1999)
 C
-      LUNSTI = 5
-      END
+C     .. Scalar Arguments ..
+      INTEGER NFIND,NSER
+C     ..
+C     .. Arrays in Common ..
+      INTEGER IT
+C     ..
+C     .. Local Scalars ..
+      INTEGER NDX,NSER4
+      CHARACTER STROUT*140
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC MOD
+C     ..
+C     .. Common blocks ..
+      COMMON /LOOK/IT(2,KPRI)
+      SAVE /LOOK/
+C     ..
 C
-C
-C FUNCTION 'LUNSTO'
-C =================
-C
-C_BEGIN_LUNSTO
-      FUNCTION LUNSTO(IDUM)
-C     =====================
-C
-C Returns the fortran standard output unit number
-C
-C Arguments:
-C ==========
-C
-C       IDUM (I)   Dummy argument
-C_END_LUNSTO
-C
-      LUNSTO = 6
-      END
-C
-C
-C FUNCTION 'NBITST'
-C =================
-C
-C_BEGIN_NBITST
-      FUNCTION NBITST(IWORD,LSB,NBITS)
-C     ================================
-C
-C Return the (unsigned) integer value held within a bit field in a word
-C [for LAUE]
-C
-C Arguments:
-C ==========
-C
-C      IWORD (I)    INTEGER: The word containing the bits to be examined
-C
-C        LSB (I)    INTEGER: The least significant bit offset for the bit field
-C
-C      NBITS (I)    INTEGER: The number of bits in the bit field (Must be less
-C                   than the word length)
-C_END_NBITST
-C
-C====== Get the bit value
-C
-      KMSK = 2**NBITS - 1
-      NBITST = IAND(ISHFT(IWORD,-LSB),KMSK)
-      END
-C
-C
-C     =======================
-C_BEGIN_NOCRLF
-      SUBROUTINE NOCRLF(LINE)
-C     =======================
-C
-C---- Output a line supressing cr/lf.
-C
-C Arguments:
-C ==========
-C
-C    LINE (I)   CHARACTER*(*): Line to output.
-C_END_NOCRLF
-C
-      EXTERNAL LUNSTO,TTSEND
-      INTEGER LUNSTO
-      CHARACTER*(*) LINE
-      CALL TTSEND(LUNSTO(1),LINE,0)
-      END
-C
-C
-C======================================================================
-C
-C_BEGIN_QPRINT
-      SUBROUTINE QPRINT(IFLAG,MSG)
-C     ============================
-C
-C     QPRINT - Conditionally print information.
-C
-C     Normally, MSG is printed iff IFLAG is not greater than the
-C     `reference' level for messages.  This reference level is set to
-C     the value of IFLAG on the first call (which won't print anything).
-C     The first call is typically from CCPFYP.
-C
-C Usage:  CALL QPRINT   (IFLAG,MSG)
-C         INTEGER       IFLAG
-C         CHARACTER*(*) MSG
-C
-C Input:  IFLAG         debug level (0-9)
-C         MSG           the output message itself
-C
-C Output: None.
-C_END_QPRINT
-C======================================================================
-C
-      INTEGER IFLAG, LEVEL
-      CHARACTER MSG* (*)
-      EXTERNAL LUNSTO, LENSTR
-      INTEGER PFLAG, LUNSTO, LENSTR, LL, LX, LS
-      SAVE PFLAG
-      DATA PFLAG /-1/
-C
-C     external functions
-C
-      LOGICAL VAXVMS
-      EXTERNAL VAXVMS
-C
-      IF (PFLAG.EQ.-1) THEN
-        PFLAG = IFLAG
-        RETURN
+      NSER4 = NSER
+   10 CONTINUE
+      NDX = MOD(NSER4,KPRI) + 1
+      IF ((NSER4-NSER) .GE. 3*KPRI) THEN
+         WRITE (STROUT, '(A,I8)')
+     $     ' **** Error in SETUP: overflowed hash table, size ', KPRI
+         CALL PUTLIN(STROUT,'CURWIN')
+         CALL CCPERR(1,'*** Filled hash table in SETUP ***')
+      ENDIF
+      IF (IT(1,NDX).NE.0) THEN
+        NSER4 = NSER4 + 3
+        GO TO 10
       END IF
 C
-C     way to retrieve current value of PFLAG
-C
-      IF (IFLAG.EQ.-999) THEN
-        IFLAG = PFLAG
-        RETURN
-      END IF
-C
-      IF (IFLAG.LE.PFLAG) THEN
-        LL = LENSTR (MSG)
-        IF (VAXVMS() .AND. (LL.GE.132)) THEN
-C         break lines longer than 132 characters for VMS
-          LX = 1
-          LS = 131
- 10       CONTINUE
-          WRITE (LUNSTO(1),'(1X, A)') MSG(LX:LS)
-          IF (LS.EQ.LL) GOTO 20
-          LX = LS  + 1
-          LS = LS + 130
-          IF (LS.GT.LL) LS = LL
-          GO TO 10
-        ELSE
-          IF (LL.EQ.0) THEN
-            WRITE(LUNSTO(1),'()')
-          ELSE
-            WRITE (LUNSTO(1),'(1X, A)') MSG(1:LL)
-          END IF
-        END IF
- 20     CONTINUE
-      END IF
+      IT(1,NDX) = NSER
+      IT(2,NDX) = NFIND
       RETURN
-      
-      ENTRY QPRLVL (LEVEL)
-C_BEGIN_QPRLVL
-C     SUBROUTINE QPRLVL(LEVEL)
-C
-C     Returns the current `debug level' used by QPRINT in the integer
-C     output variable LEVEL.
-C_END_QPRLVL
-      LEVEL = PFLAG
       END
 C
-C
-C SUBROUTINE 'STBITS'
-C ===================
+C     =============================
+      SUBROUTINE CCP4_HASH_ZEROIT()
+C     =============================
 C
-C_BEGIN_STBITS
-      SUBROUTINE STBITS (IWORD,LSB,NBITS,IVAL)
-C     ========================================
-C Set a bit field within a word to a given (unsigned) integer value
-C [for LAUE]
+      IMPLICIT NONE
+C     .. Parameter (table size: MUST BE A PRIME NUMBER)
+      INTEGER KPRI
+      PARAMETER (KPRI=1999)
 C
-C Arguments:
-C ==========
+C     .. Arrays in Common ..
+      INTEGER IT
+C     ..
+C     .. Local Scalars ..
+      INTEGER I
+C     ..
+C     ..
+C     .. Common blocks ..
+      COMMON /LOOK/IT(2,KPRI)
+      SAVE /LOOK/
 C
-C      IWORD (I/O)  INTEGER: The word in which the bits are to be set
+      DO 20 I = 1,KPRI
+        IT(1,I) = 0
+        IT(2,I) = 0
+   20 CONTINUE
 C
-C        LSB (I)    INTEGER: The least significant bit offset for the bit field
-C
-C      NBITS (I)    INTEGER: The number of bits in the bit field (must be less
-C                   than the word length)
-C
-C       IVAL (I)    INTEGER: The unsigned integer value to be set in the bit
-C                   field (The user should ensure that this value will
-C                   fit within the requested bit field)
-C_END_STBITS
-C
-C====== Set the bits
-C
-      KMSK = 2**NBITS - 1
-      KVAL = IVAL
-      KMSK = ISHFT(KMSK,LSB)
-      KMSK = NOT(KMSK)
-      KVAL = ISHFT(KVAL,LSB)
-      IWORD = IOR(IAND(IWORD,KMSK),KVAL)
       END
 C
-C
-C FUNCTION 'CCPLIC'
-C ===================
-C
-C_BEGIN_CCPLIC
-C 
-C Arguments:
-C ==========
-C
-C      NAME (I)  CHARACTER: Which license to test for. Only CCP4 currently works.
-C
-C_END_CCPLIC
-C
-C====== 
-C
-      LOGICAL FUNCTION CCPLIC(NAME)
-
-      CHARACTER NAME* (*)
-C     The name defines the kind of license.
-C     Theoretically one day more than one licenses could be added.
-      PARAMETER (ISTRLN=200)
-      LOGICAL VAXVMS, WINMVS, CCPEXS
-      CHARACTER LINE* (ISTRLN)
-      INTEGER SUE
-
-      CALL CCPUPC(NAME)
-      SUE = 0
-      IF (.NOT.VAXVMS() .AND. .NOT.WINMVS() .AND. NAME.EQ.'CCP4') THEN
-C first off check for global agreement
-        CALL UGTENV (NAME, LINE)
-        LINE =  LINE(1:LENSTR(LINE))//'/.agree2ccp4'
-        IF (.NOT. CCPEXS(LINE(1:LENSTR(LINE)))) THEN
-          SUE = 1
-        ENDIF
-C secondly check for local only if global is not there.
-        IF (SUE.EQ.1) THEN
-          CALL UGTENV ("HOME", LINE)
-          LINE =  LINE(1:LENSTR(LINE))//'/.agree2ccp4'
-          IF (.NOT. CCPEXS(LINE(1:LENSTR(LINE)))) THEN
-            SUE = SUE + 1
-          ENDIF
-        ENDIF
-      ENDIF
-c if SUE is greater than 1 then fail.
-      IF (SUE.GT.1) THEN
-        CALL CCPERR (1,'Can''t find required license agreements.')
-      ENDIF
-      CCPLIC = .TRUE.
-      END

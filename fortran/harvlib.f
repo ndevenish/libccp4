@@ -5289,11 +5289,11 @@ C
 C---- see if Standard
 C
       Buffer = ' '
-      CALL ugtenv('SYMOP',Buffer)
+      CALL ugtenv('SYMINFO',Buffer)
       IF (Buffer(1:1) .eq. ' ') THEN
         WRITE (6,FMT=6000)
- 6000   FORMAT (
-     +' Harvest: NO SYMOP environment given - no deposit file created')
+ 6000   FORMAT (' Harvest: NO SYMINFO environment given - ',
+     +    'no deposit file created')
         Harvest = .false.
         RETURN
       END IF
@@ -5340,90 +5340,19 @@ C
 C
 C
    20 CONTINUE
-      IST = 45
-      Ifail = 0
-      CALL CCPDPN(IST,'SYMOP','READONLY','F',0,IFAIL)
-      Nsymm = 0
-C
-C---- Find correct space-group in file.
-C     Each space-group has header line of space-group number,
-C     number of line of Symmetry operations for non-primitive
-C     and primitive Cells.
-C
-   30 READ (IST,FMT=6004,ERR=100,END=100) line
- 6004 FORMAT (a)
-      CALL CCPUPC(line)
-      Ntok = -MaxTokens
-      CALL Hparse(line,Ibeg,Iend,Ityp,Fvalue,Cvalue,Idec,Ntok)
-C
-C---- Fields are space group number,
-C                number of lines,
-C                number of lines in primitive Cell Symmetry,
-C                spacegroup name
-ccx       NAMPG = line(Ibeg(5) :Iend(5))
-C
-      IF (Ityp(1) .ne. 2 .or. 
-     +     Ityp(2) .ne. 2 .or. 
-     +      Ityp(3) .ne. 2) THEN
-        WRITE (6,FMT=6006)
- 6006   FORMAT ('Harvest: Error in format of SYMOP file: ')
-        Harvest = .false.
-        Close (IST)
-        RETURN
-      END IF
-C
-C
-      ISG = nint(Fvalue(1))
-      Nline = nint(Fvalue(2))
-      NlineP = nint(Fvalue(3))
-C
-C---- Check for spacegroup number given
-C
-      IF (IntTabNum .eq. ISG) GO TO 50
-C
-C---- Not this one, skip Nline lines
-C
-      DO 40 Jdo = 1,Nline
-        READ (IST,FMT=*)
-   40 CONTINUE
-C
-C----     try again
-C
-      GO TO 30
-   50 CONTINUE
-C
-C---- Space-group found, convert Nline lines of
-C     Symmetry operators to matrices
-C
+
       IF (KNO .gt. 0) THEN
         SGname = NonStnd(KNO)
       ELSE
         SGname = SGstndName(IntTabNum)
       END IF
-C
-C
-      DO 60 I = 1,NlineP
-        READ (IST,FMT=6004) line
-C
-C--- test for case where two positions per line
-C     as in     X, Y, Z *  -X,1/2+Y,-Z
-C     REMOVED FROM THIS symop.lib !!!!
-C
-        Nsymm = Nsymm + 1
-        EquivPos(Nsymm) = line(1:Lenstr(line))
-   60 CONTINUE
-C
-      NsymmP = Nsymm
-      IF (Nline .gt. NlineP) THEN
-        DO 70 I = NlineP + 1,Nline
-          READ (IST,FMT=6004) line
-          Nsymm = Nsymm + 1
-          EquivPos(Nsymm) = line(1:Lenstr(line))
-   70   CONTINUE
-      END IF
-C
-C
-      Close (IST)
+
+C  From SYMINFO, get Nsymm EquivPos
+
+      CALL MSYGET(24,IntTabNum,Nsymm,RFsymm)
+
+      CALL SYMTR4(Nsymm,RFsymm,EquivPos)
+
    80 CONTINUE
 C
 C---- do  _Symmetry.Int_Tables_number
@@ -5470,7 +5399,7 @@ C
       WRITE (6,FMT=6010) IntTabNum
  6010 FORMAT (
      +'Harvest: No Symmetry information for space group number',
-     +       i6,' in SYMOP file')
+     +       i6,' in SYMINFO file')
       Harvest = .false.
       RETURN
       END

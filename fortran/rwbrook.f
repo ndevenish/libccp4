@@ -45,26 +45,27 @@ C     .. Parameters ..
       PARAMETER (MAXFILESOPEN=90)
 C     ..
 C     .. Variables in Common ..
-      REAL CELL,CELLAS,RF,RO,RR,VOL,ROU,RFU
+      REAL CELL,CELLAS,RF,RO,RR,VOL
       INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
-      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*15
+      CHARACTER LOGUNIT*80,BRKSPGRP*15
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,J
+      INTEGER I
+C     ..
+      EXTERNAL MMDB_F_INIT,SIMRWBROOK
 C     ..
 C     .. Common Blocks ..
       COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
      +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
       COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
-      COMMON /RBRKYY/ BROOK(80),WBROOK(80),WBROOK1(80)
       COMMON /RBRKZZ/ CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /ORTHOG/ RO(4,4),RF(4,4),NCODE
       COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
       COMMON /RBRKSPGRP/BRKSPGRP
 C     ..
 C     .. Save ..
-      SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/,/RBRKZZ/,/ORTHOG/,/ORTHOGU/
+      SAVE /RBRKAA/,/RBRKXX/,/RBRKZZ/,/ORTHOG/,/ORTHOGU/
 C     ..
 
       FILESOPEN = 0
@@ -111,12 +112,12 @@ C
       ROU(4,4)=1.0
       RFU(4,4)=1.0
 
-      DO 50 I=1,80
-        BROOK(I) = ' '
-        WBROOK(I) = ' '
-        WBROOK1(I) = ' '
-50    CONTINUE
       BRKSPGRP = ' '
+
+C... mmdb fortran call to initialise
+      CALL MMDB_F_INIT
+C... mmdb mimic rwbrook
+      CALL SIMRWBROOK(1)
 
       RETURN
       END
@@ -140,19 +141,19 @@ C     .. Scalar Arguments ..
       INTEGER IUNIT
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,J,IBRKFL
+      INTEGER I,J
 C     ..
 C     .. Scalars in Common ..
       INTEGER FILESOPEN,NCODE,ITYP
       LOGICAL IFHDOUT,IFCRYS,IFSCAL,MATRIX
 C     ..
 C     .. Arrays in Common ..
-      REAL RF,RO,ROU,RFU
+      REAL RF,RO
       INTEGER UNIT,TYPE
       CHARACTER LOGUNIT*80
 C     ..
 C     .. External Routines ..
-      EXTERNAL XYZINIT,XYZREWD
+      EXTERNAL MMDB_F_INIT,MMDB_F_REWD,SIMRWBROOK
 C     ..
 C     .. Common Blocks ..
       COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
@@ -165,16 +166,19 @@ C     .. Save Statement ..
       SAVE /RBRKAA/,/RBRKXX/,/ORTHOG/
 C     ..
 C
-C---- Make sure that XYZINIT is only called once. However, this is not
-C     fool proof
+C---- Make sure that MMDB_F_INIT is only called once. However,
+C     this is not fool proof
 C
       DO 10 I=1,10
         IF (IUNIT .EQ. UNIT(I)) GOTO 20
    10 CONTINUE
 
-      CALL XYZINIT
+C...  mmdb, initialise and simulate rwbrook
+      CALL MMDB_F_INIT 
+      CALL SIMRWBROOK(1)
 
-   20 CALL XYZREWD(IUNIT)
+C...  mmdb, rewind channel
+   20 CALL MMDB_F_REWD(IUNIT)
       IFCRYS=.FALSE.
       IFSCAL=.FALSE.
       MATRIX=.FALSE.
@@ -306,6 +310,8 @@ C
 C     .. Parameters ..
       INTEGER MAXFILESOPEN,MAXSYM
       PARAMETER (MAXFILESOPEN=90,MAXSYM=96)
+      INTEGER RWBERR_Ok,RWBERR_NoMatrices
+      PARAMETER (RWBERR_Ok=0,RWBERR_NoMatrices=-16)
 C     ..
 C     .. Arguments ..
       INTEGER IFAIL,IUNIT,ICRYST,II,III,JJ,K,ISYM
@@ -315,7 +321,7 @@ C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL,ROU,RFU
       INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
-      CHARACTER*80 LOGUNIT,BROOK*1,WBROOK*1,WBROOK1*1, BRKSPGRP*15
+      CHARACTER*80 LOGUNIT,BRKSPGRP*15
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 c  Check symmetry stuff
 C
@@ -325,8 +331,9 @@ C
 C     ..
 C     .. Local Scalars ..
       REAL ERROR,VOLCHK
+      INTEGER IRET
       INTEGER I,IORTH,IFILTYP,J,LL,ILEN,KLEN
-      CHARACTER BROOKA*80,ERRLIN*600,FILNAM*255,IE*2,IRTYPE*4
+      CHARACTER ERRLIN*600,FILNAM*255
       CHARACTER LFILTYP*3,LRWSTAT*5, SPGCHK*30
       CHARACTER*40 ORTH(6)
 C     ..
@@ -340,7 +347,10 @@ C     .. External Functions ..
       EXTERNAL CCPEXS,LENSTR,CCPNUN
 C     ..
 C     .. External Routines ..
-      EXTERNAL CCPDPN,CCPERR,CCPUPC,RBFROR,RBRINV,UGTENV
+      EXTERNAL CCPDPN,CCPERR,CCPUPC,RBFROR,RBRINV,UGTENV,
+     *          MMDB_F_OPENL,MMDB_F_RBSPGRP,RBERRSTOP,
+     *          MMDB_F_RBCELL,MMDB_F_WBSPGRP,MMDB_F_RBORF
+
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC ABS
@@ -349,17 +359,13 @@ C     .. Common Blocks ..
       COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
      +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
       COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
-      COMMON /RBRKYY/BROOK(80),WBROOK(80),WBROOK1(80)
       COMMON /RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
       COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
       COMMON /RBRKSPGRP/BRKSPGRP
 C     ..
-C     .. Equivalences ..
-      EQUIVALENCE (IRTYPE,BROOK(1)),(IE,BROOK(5)),(BROOKA,BROOK(1))
-C     ..
 C     .. Save ..
-      SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/,/RBRKZZ/,/ORTHOG/
+      SAVE /RBRKAA/,/RBRKXX/,/RBRKZZ/,/ORTHOG/
 C     ..
 C     .. Data Statement ..
       DATA IEC /'E1','E2','E3'/
@@ -384,153 +390,75 @@ C
       IF (FILESOPEN .EQ. MAXFILESOPEN) THEN
         CALL CCPERR(1,' *** ERROR: too many coordinate files open. ***')
       ENDIF
+C...
+C...  MMDB open channel (need to test for failures)
+      CALL MMDB_F_OPENL(LOGNAM,LRWSTAT,LFILTYP,IUNIT,IRET)
+      IF (IRET.NE.RWBERR_Ok) THEN
+        IF (IRET.NE.RWBERR_NoMatrices) THEN
+C...  MMDB error information
+        CALL RBERRSTOP(1,IRET,IUNIT,0)
+        ERRLIN = ' ERROR: XYZOPEN'
+        CALL CCPERR(1,ERRLIN)
+        ENDIF
+        ELSE
+        CALL RBERRSTOP(1,IRET,IUNIT,0)
+      ENDIF
 C
 C==== If the file is an INPUT file
 C
       IF (LRWSTAT(1:5) .EQ. 'INPUT') THEN
 C
-C---- Check if file exists
-C
-        IF (.NOT.CCPEXS(LOGNAM)) THEN
-          CALL UGTENV(LOGNAM,FILNAM)
-          ERRLIN = ' ERROR: '//LOGNAM//':'//FILNAM(1:LENSTR(FILNAM))//
-     .                                        ' does not exist'
-          IF (IFAIL .EQ. 0) THEN
-            CALL CCPERR(1,ERRLIN)
-          ELSE
-            CALL CCPERR(2,ERRLIN)
-            IFAIL = -1
-            GOTO 1000
-          ENDIF
-        ENDIF
-C
 C---- Determine whether CIF or PDB
 C
         IF (LFILTYP(1:1) .EQ. ' ') THEN
-          CALL CCPDPN(IUNIT,LOGNAM,'READONLY','F',LL,IFAIL)
-c          IF (IFAIL .LT. 0) GOTO 1000
-c   10     READ (I,FMT='(A)',END=20) CHAR
-c          IF (CHAR .EQ. '_') THEN
-c            IFILTYP = 2
-c            CLOSE(UNIT=I,STATUS='KEEP')
-c            GOTO 30
-c          ENDIF
-c          GOTO 10
-          
-
-   20     FILESOPEN = FILESOPEN + 1
+          FILESOPEN = FILESOPEN + 1
           LOGUNIT(FILESOPEN) = LOGNAM
           UNIT(FILESOPEN) = IUNIT
           TYPE(FILESOPEN) = 1
-          REWIND IUNIT
         ENDIF  
 C
 C---- If known as CIF
 C
-   30   IF (LFILTYP(1:3).EQ.'CIF' .OR. IFILTYP.EQ.2) THEN
-C  Not yet ready
+       IF (LFILTYP(1:3).EQ.'CIF' .OR. IFILTYP.EQ.2) THEN
           FILESOPEN = FILESOPEN + 1
           LOGUNIT(FILESOPEN) = LOGNAM
+          UNIT(FILESOPEN) = IUNIT
           TYPE(FILESOPEN) = 2
         ENDIF
 C
 C---- If known as a PDB file
 C
         IF (LFILTYP(1:3).EQ.'PDB') THEN
-          CALL CCPDPN(IUNIT,LOGNAM,'READONLY','F',LL,IFAIL)
-          IF (IFAIL .LT. 0) GOTO 1000
           FILESOPEN = FILESOPEN + 1
           LOGUNIT(FILESOPEN) = LOGNAM
           UNIT(FILESOPEN) = IUNIT
           TYPE(FILESOPEN) = 1
         ENDIF
 C
-C---- Read PDB header info.
-C
-        IF (TYPE(FILESOPEN) .EQ. 1) THEN
-          NSYMCHK=0
-   40     READ(UNIT(FILESOPEN),FMT='(80A1)',END=1000)BROOK
-C
-C---- Read symmetry operators from REMARK 290 lines:
-C---123456789012345678901234567890
-C---REMARK 290      SYMOP   SYMMETRY
-C---REMARK 290     NNNMMM   OPERATOR
-C---REMARK 290       1555   X,Y,Z
-C---REMARK 290       2555   1/2-X,-Y,1/2+Z
-C---REMARK 290       3555   -X,1/2+Y,1/2-Z
-C---REMARK 290       4555   1/2+X,1/2-Y,-Z
-          IF(BROOKA(1:10) .EQ.'REMARK 290') then
-           IF(BROOKA(19:21).EQ.'555')THEN 
-             READ(BROOKA(11:18),'(I8)')NSYMCHK
-             CALL  symfr2 (BROOKA,22,nsymchk,rsymchk)
-              write(6,'(a,i3,4(/,4f10.3))')' remark 290',nsymchk,
-     + ((rsymchk(iii,jj,nsymchk),iii=1,4),jj=1,4)
-           ENDIF
-          ENDIF
-C
-C
-C---- Escape if ATOM card found
-C
-          IF (IRTYPE.EQ.'ATOM') THEN
-C   Check possible symmetry first..
-         if(nsymchk.gt.0 .and.nsympdbs .gt.0) then
-           DO isym = 1,nsympdbs
-           AM=
-     *      Rsymchk(1,1,isym)*(Rsymchk(2,2,isym)*Rsymchk(3,3,isym)
-     *                        -Rsymchk(2,3,isym)*Rsymchk(3,2,isym))
-     *     +Rsymchk(1,2,isym)*(Rsymchk(2,3,isym)*Rsymchk(3,1,isym)
-     *                        -Rsymchk(2,1,isym)*Rsymchk(3,3,isym))
-     *     +Rsymchk(1,3,isym)*(Rsymchk(2,1,isym)*Rsymchk(3,2,isym)
-     *                        -Rsymchk(2,2,isym)*Rsymchk(3,1,isym))
-             IF( abs(AM).GT.0.05) then
-               BM = 0
-                do i = 1, 4
-                  do j = 1,4
-                   BM = BM + abs(Rsymchk(i,j,isym) - rsympdbs(i,j,isym))
-                  enddo
-                enddo
-                if (BM .gt.0.1) then
-                  WRITE(6,'(a,i4,a,2(/a,4(/,4f10.3)))')
-     +            ' Symmetry operators',isym,
-     +            ' from symop.lib and remark 290 inputdo not match:',
-     +            ' Remark 290',
-     +            ((Rsymchk(i,j,isym),i=1,4),j=1,4) ,
-     +            ' symop.lib',
-     +            ((Rsympdbs(i,j,isym),i=1,4),j=1,4)
-                  call ccperr(1,' Problem with symmetry match')
-                endif
-             endIF
-           ENDDO
-         endif
-            GOTO 1000
-C
 C---- Cell card found - calculate standard orthogonalising matrix
 C     Check if you already have a cell which is inconsistent with 
 C     this one
 C
-          ELSE IF (IRTYPE.EQ.'CRYS' .AND. ICRYST.EQ.0) THEN
+        IF (ICRYST.EQ.0) THEN
             ITYP=1
-            IFCRYS=.TRUE.
             BRKSPGRP = ' '
-            READ(BROOKA,FMT='(6X,3F9.3,3F7.2,1x,a15)')CELL,BRKSPGRP
-C
-C Make sure that BRKSPGRP, the Space group name is left-justified
-C
-            SPGCHK =BROOKA(55:80)
+C...  MMDB get spacegroup and cell (cache)
+            CALL MMDB_F_RBSPGRP(IUNIT,SPGCHK,IRET)
             ILEN = LENSTR(SPGCHK)
-             IF (ILEN.LE.1) THEN
+            IF (ILEN.LE.1) THEN 
                CALL CCPERR(2,' No Space group given on PDB CRYST1 line')
-             ELSE
-               KLEN = ILEN
-               DO J = 1,ILEN-1
-                 IF (SPGCHK(1:1) .EQ. ' ') THEN
-                   SPGCHK = SPGCHK(2:KLEN)
-                   KLEN  = KLEN - 1
-                 END IF
-               END DO
-               BRKSPGRP = SPGCHK(1:15)
-             END IF 
-
+            ELSE
+               BRKSPGRP = SPGCHK
+            ENDIF
+C...
+C...  MMDB get CELL and VOL for cache
+            CALL MMDB_F_RBCELL(IUNIT,CELL,VOL,IRET)
+            IF (IRET.EQ.0) IFCRYS=.TRUE.
+C...  MMDB get the orthogonalisation and fractional matrices
+            RO(1,1) = 0.0
+            CALL MMDB_F_RBORF(IUNIT,RO,RF,NCODE,IRET)
+            IF (IRET.EQ.0) IFSCAL=.TRUE.
+C
 C If BRKSPGRP contains "/" it is probably a Patterson group and may
 C occupy the full 15 characters. Else it may be from the PDB and
 C may contain Z value which must be removed.
@@ -549,6 +477,7 @@ C---- H name associated with a=b; Gamma = 120
                       BRKSPGRP(1:1)='H'
                       CALL CCPERR(2,
      +                     ' Changing "rhombhedral" to "hexagonal"')
+                      CALL MMDB_F_WBSPGRP(IUNIT,BRKSPGRP,IRET)
                    END IF
 C---- R name associated with a=b=c; Alpha=Beta=Gamma 
                 ELSE IF( BRKSPGRP(1:1) .EQ. 'H' ) THEN
@@ -558,148 +487,15 @@ C---- R name associated with a=b=c; Alpha=Beta=Gamma
                       BRKSPGRP(1:1)='R'
                       CALL CCPERR(2,
      +                     ' Changing "hexagonal" to "rhombhedral"')
+                      CALL MMDB_F_WBSPGRP(IUNIT,BRKSPGRP,IRET)
                    END IF
                 END IF
 C
-               IST = CCPNUN()
-               call MSYMLB3(IST,LSPGRP,BRKSPGRP,NAMSPG_CIFS,
-     +                   NAMPG,NSYMPpdbs,NSYMpdbs,RSYMpdbs)
              END IF
+C...   set up standard orth matrices (cache)
             CALL RBFROR
-            IF(NCODE.EQ.0)NCODE=1
-
-            DO 60 I=1,3
-              DO 60 J=1,3
-                RO(I,J)=RR(I,J,NCODE)
-   60       CONTINUE
-
-            RO(4,4)=1.0
-            CALL RBRINV(RO,RF)
-            MATRIX=.TRUE.
-
-            CALL CCPERR(4,
-     +          ' MATRICES DERIVED FROM CRYST1 CARD IN COORDINATE FILE')
-            CALL CCPERR(4,' ')
-            CALL CCPERR(4,' ')
-            CALL CCPERR(4,
-     +             '            RF                                  RO')
-            CALL CCPERR(4,' ')
-            DO 70 I=1,4
-              WRITE(ERRLIN,FMT='(1X,4F8.3,5X,4F8.3)')(RF(I,J),J=1,4),
-     +                                           (RO(I,K),K=1,4)
-              CALL CCPERR(4,ERRLIN)
-   70       CONTINUE
-            CALL CCPERR(4,' ')
-            GO TO 40
-C
-C---- Scale cards - extract and calculate rotation and trans matrices
-C
-          ELSE IF (IRTYPE.EQ.'SCAL' .AND. ICRYST.EQ.0) THEN
-            ITYP=2
-            IFSCAL = .TRUE.
-            MATRIX=.FALSE.
-            DO 80 I=1,3
-              IF(IE.NE.IEC(I))GO TO 80
-              READ(BROOKA,FMT='(10X,3F10.6,5X,F10.6)')
-     +                              P(I,1),P(I,2),P(I,3),P(I,4)
-              II = II + 1
-              GO TO 90
-   80       CONTINUE
-
-   90       IF(II.NE.3)GO TO 40
-            MATRIX=.TRUE.
-            DO 100 I=1,3
-              DO 100 J=1,4
-                RF(I,J)=P(I,J)
-  100       CONTINUE
-C
-C---- Find orthogonalisation type
-C
-            CALL RBRINV(RF,RO)
-            VOLCHK = RO(1,1)*(RO(2,2)*RO(3,3) - RO(2,3)*RO(3,2))
-     +             + RO(1,2)*(RO(2,3)*RO(3,1) - RO(2,1)*RO(3,3))
-     +             + RO(1,3)*(RO(2,1)*RO(3,2) - RO(2,2)*RO(3,1))
-
-            IF (VOL.GT.0.0) THEN
-              ERROR = ABS(VOLCHK - VOL) /VOL
-              IF (ERROR .GT. 0.02) then
-                WRITE (ERRLIN,'(A,F15.4)')
-     +          ' Unit cell volume generated from SCALEi cards', VOLCHK
-                CALL CCPERR(2,ERRLIN)
-                WRITE (ERRLIN,'(A,F15.4)')
-     +          ' Percentage error is                        ', ERROR
-                CALL CCPERR(2,ERRLIN)
-              END IF
-
-              IF (ERROR .GT. 0.1.AND.IFAIL.EQ.0) call ccperr(1,
-     +    'Error in rwbrook.f - disagreement between cell and PDB file')
-            ELSE
-              WRITE (ERRLIN,'(A)')
-     +        ' No unit cell volume currently stored'
-              CALL CCPERR(2,ERRLIN)
-            END IF
-
-            DO 110 IORTH=1,6
-              DO 120 I=1,3
-                DO 120 J=1,3
-                RCHK1 = (RO(I,J)+RR(I,J,IORTH))
-                RCHK2 = (RO(I,J)-RR(I,J,IORTH))
-                IF(ABS(RCHK1).LT.0.1) GO TO 120
-                IF(ABS(RCHK2/RCHK1) .GT.0.01)GO TO 110
-  120         CONTINUE
-              GO TO 130
-  110       CONTINUE
-            IORTH=0
-  130       NCODE=IORTH
-C
-C---- Correct inaccuracy of SCALEi input due to FORMAT, replace RF,RO 
-C     with RR(...,NCODE) if possible.
-C
-            IF(NCODE.GT.0) THEN
-              DO 140 I = 1,3
-                DO 140 J = 1,3
-                  RO(I,J) = RR(I,J,NCODE)
-  140         CONTINUE
-              CALL RBRINV(RO,RF)
-            END IF
-
-            CALL CCPERR(4,' ')
-            CALL CCPERR(4,
-     +        ' MATRICES DERIVED FROM SCALE CARDS IN COORDINATE FILE')
-            CALL CCPERR(4,' ')
-            CALL CCPERR(4,' ')
-            CALL CCPERR(4,
-     +          '            RF                                   RO')
-            CALL CCPERR(4,' ')
-            DO 150 I=1,4
-              WRITE(ERRLIN,FMT='(1X,4F8.3,5X,4F8.3)')(RF(I,J),J=1,4),
-     +                                           (RO(I,K),K=1,4)
-              CALL CCPERR(4,ERRLIN)
-  150       CONTINUE
-            CALL CCPERR(4,' ')
-
-            IF(NCODE.EQ.0) THEN
-              Write(ERRLIN,'(A,I3)') ' Warning - No ORTH code',NCODE
-              CALL CCPERR(2,ERRLIN)
-            ENDIF
-            IF (NCODE .GT. 0) THEN
-              CALL CCPERR(4,' ')
-              WRITE(ERRLIN,FMT='(A,I3,A)')'  ORTHOGONALISATION CODE: ',
-     +            NCODE,  ORTH(NCODE)
-              CALL CCPERR(4,ERRLIN)
-              CALL CCPERR(4,' ')
-            ENDIF
-
-            IF (P(1,4).NE.0 .OR. P(2,4).NE.0 .OR. P(3,4).NE.0) THEN
-              CALL CCPERR(4,' ')
-              CALL CCPERR(4,' TRANSLATIONS ALSO SPECIFIED')
-              CALL CCPERR(4,' ')
-            ENDIF
-            GO TO 1000
-          ELSE
-            GOTO 40
+            IF(IFSCAL) MATRIX=.TRUE.
           ENDIF
-        ENDIF
 C
 C==== If the file is an OUTPUT file
 C
@@ -720,8 +516,6 @@ C
 C---- Open output PDB file
 C
         IF (IFILTYP .EQ. 1) THEN
-          CALL CCPDPN(IUNIT,LOGNAM,'NEW','F',LL,IFAIL)
-          IF (IFAIL .LT. 0) GOTO 1000
           FILESOPEN = FILESOPEN + 1
           LOGUNIT(FILESOPEN) = LOGNAM
           UNIT(FILESOPEN) = IUNIT
@@ -729,15 +523,13 @@ C
         ENDIF
 
         IF (IFILTYP .EQ. 2) THEN
-C Not yet ready
           FILESOPEN = FILESOPEN + 1
           LOGUNIT(FILESOPEN) = LOGNAM
+          UNIT(FILESOPEN) = IUNIT
           TYPE(FILESOPEN) = -2
         ENDIF
-
       ENDIF
 
- 1000 IF (TYPE(FILESOPEN) .EQ. 1) REWIND UNIT(FILESOPEN)
 C     Generate ROU and RFU for AnisoU stuff
        IF (MATRIX) THEN
          RFU(4,4) = 1.0
@@ -794,7 +586,9 @@ C     .. Variables in Common ..
       CHARACTER*80 LOGUNIT
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,II
+      INTEGER I,II,IRET
+C     ..
+      EXTERNAL MMDB_F_CLOSE
 C     ..
 C     .. Common Blocks ..
       COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
@@ -814,9 +608,6 @@ C
    10 CONTINUE
 
    20 IF (II .NE. 0) THEN
-        IF (TYPE(II) .EQ. -1) CALL WREMARK(IUNIT,'END')
-        CLOSE(UNIT=IUNIT,STATUS='KEEP')
-
         IF (FILESOPEN.NE.1 .AND. II.NE.FILESOPEN) THEN
           LOGUNIT(II) = LOGUNIT(FILESOPEN)
           UNIT(II) = UNIT(FILESOPEN)
@@ -824,6 +615,9 @@ C
         ENDIF
         FILESOPEN = FILESOPEN - 1
       ENDIF
+
+C... MMDB, close the channel (some info in cache)
+      CALL MMDB_F_CLOSE(IUNIT,IRET)
 
       RETURN
       END
@@ -861,45 +655,39 @@ C
 C     .. Paramters ..
       INTEGER MAXFILESOPEN
       PARAMETER (MAXFILESOPEN=90)
+      INTEGER RWBERR_Ok     
+      PARAMETER (RWBERR_Ok=0)
 C     ..
 C     .. Arguments ..
       INTEGER IOUT,ITER,IUNIT
 C     ..
 C     .. Variables in Common ..
-      REAL CELL,CELLAS,RF,RO,RR,VOL,ROU,RFU
-      INTEGER FILESOPEN,NCODE,TYPE,UNIT,ITYP
-      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*15
+      REAL CELL,CELLAS,RF,RO,RR,VOL
+      INTEGER FILESOPEN,NCODE,TYPE,UNIT
+      CHARACTER LOGUNIT*80,BRKSPGRP*15
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Variables ..
-      INTEGER I,II,J
-      CHARACTER*80 ERRLIN,BROOKA,BROOKB,BROOKC
+      INTEGER I,II,IRET,IRE,ITE
+      CHARACTER*80 ERRLIN
       CHARACTER*6 ITYPE(7)
 C     ..
 C     .. External Routines ..
-      EXTERNAL CCPERR,WREMARK
+      EXTERNAL CCPERR,MMDB_F_COPY,MMDB_F_ADVANCE,
+     *         MMDB_F_SETHET,MMDB_F_SETTER
 C     ..
 C     .. Common Blocks ..
       COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
      +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
       COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
-      COMMON /RBRKYY/ BROOK(80),WBROOK(80),WBROOK1(80)
       COMMON /RBRKZZ/ CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /ORTHOG/ RO(4,4),RF(4,4),NCODE
       COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
       COMMON /RBRKSPGRP/BRKSPGRP
 C     ..
-C     .. Equivalences ..
-      EQUIVALENCE (BROOKA,BROOK(1)),(BROOKB,WBROOK1(1)),
-     +            (BROOKC,WBROOK(1))
-C     ..
 C     .. Save Statement ..
-      SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/,/RBRKZZ/,/ORTHOG/
-C     ..
-C     .. Data Statements ..
-      DATA ITYPE/'CRYST1','SCALE ','TER   ','ATOM  ','HETATM',
-     +           'ANISOU','END   '/
-C     ..
+      SAVE /RBRKAA/,/RBRKXX/,/RBRKZZ/,/ORTHOG/
+
       II = 0
       DO 10 I=1,FILESOPEN
         IF (IUNIT .EQ. UNIT(I)) THEN
@@ -911,97 +699,38 @@ C     ..
       ERRLIN = ' ERROR: in XYZADVANCE file has not been opened'
       CALL CCPERR(1,ERRLIN)
 C
-C==== If input PDB file
-C      
-   15 IF (TYPE(II) .EQ. 1) THEN
-   20   READ (UNIT(II),FMT='(80A1)',END=100) BROOK
-        DO 30 I=1,7
-          IF (ITYPE(I)(1:4) .EQ. BROOKA(1:4)) THEN
-            ITYP = I
-            GOTO 40
-          ENDIF
-   30   CONTINUE
-        IF (IOUT.GT.0) CALL WREMARK(IOUT,BROOKA)
-        GOTO 20
-   40   IF (BROOKA(1:4).EQ.'CRYS' .OR. BROOKA(1:4).EQ.'SCAL') THEN
-          GOTO 20
-        ELSE IF (BROOKA(1:3) .EQ. 'END') THEN
-          ITYP = 0
-          RETURN 2
-        ELSE IF (BROOKA(1:3) .EQ. 'TER') THEN
-          IF (ITER .EQ. 0) THEN
-            IF (IOUT .NE. 0) CALL WREMARK(IOUT,BROOKA)
-            GOTO 20
-          ELSE
-            RETURN 1
-          ENDIF
+C...  opened read
+ 15   IF (TYPE(II).GT.0) THEN
+C...    copying across
+        IF (IOUT.NE.0) THEN
+          IF(.NOT.IFHDOUT)THEN
+            IF(IFCRYS) THEN
+C..   MMDB, copy header information
+              CALL MMDB_F_COPY(IOUT,IUNIT,2,IRE)
+              IFHDOUT=.TRUE.
+            ELSE 
+C...  MMDB, copy header less CRYST1 cards
+              CALL MMDB_F_COPY(IOUT,IUNIT,3,IRE)
+            ENDIF
+          ENDIF 
+C...  MMDB, advance pointer allowing for TER cards
+          CALL MMDB_F_ADVANCE(IUNIT,IOUT,ITER,IRET)
+        ELSE
+C...   MMDB, standard advance pointer
+          CALL MMDB_F_ADVANCE(IUNIT,IOUT,ITER,IRET)
         ENDIF
-C
-C---- Put input buffer into output buffer as some cards maybe just be 
-C     written out as is.
-C
-        IF (ITYP.EQ.4 .OR. ITYP.EQ.5) THEN
-          DO 50 I=1,80
-            WBROOK(I) = BROOK(I)
-            WBROOK1(I) = ' '
-   50     CONTINUE
-        ELSE IF (ITYP .EQ. 6) THEN
-          DO 60 I=1,80
-            WBROOK(I) = ' '
-            WBROOK1(I) = BROOK(I)
-   60     CONTINUE
+      ELSE
+        IF(.NOT.IFHDOUT .AND. IFCRYS) THEN
+          CALL MMDB_F_WBSPGRP(IOUT,BRKSPGRP,IRE)
+          CALL MMDB_F_WBCELL(IOUT,CELL,NCODE,IRE)
+          IFHDOUT=.TRUE.
         ENDIF
-C
-C==== If output PDB
-C
-      ELSE IF (TYPE(II) .EQ. -1) THEN
-        IF (.NOT.IFHDOUT .AND. IFCRYS) THEN
-          WRITE (UNIT(II),1000) CELL,BRKSPGRP
-          WRITE (UNIT(II),2000) (I,(RF(I,J),J=1,3),I=1,3)
-          IFHDOUT = .TRUE.
-        ENDIF
-
-        IF (BROOKC .NE. ' ') THEN
-          IF (ITYP .EQ. 0) THEN
-            BROOKC(1:6) = 'ATOM  '
-          ELSE
-            BROOKC(1:6) = ITYPE(ITYP)
-          ENDIF
-          IF(ITYP.NE.6)WRITE(UNIT(II),FMT='(80A1)') WBROOK
-        ENDIF
-        IF (WBROOK1(1) .NE. ' ') THEN
-          IF (BROOKB .NE. ' ') THEN
-cpjx      Why do this?
-cpjx          IF (ITYP .EQ. 0) THEN
-cpjx            BROOKB(1:6) = 'ATOM  '
-C          ELSE
-C            BROOKB(1:6) = ITYPE(ITYP)
-cpjx          ENDIF
-            DO 70 I=7,27
-              WBROOK1(I) = WBROOK(I)
-   70       CONTINUE
-            DO 80 I=73,80
-              WBROOK1(I) = WBROOK(I)
-   80       CONTINUE
-          ENDIF
-          WRITE(UNIT(II),FMT='(80A1)') WBROOK1
-        ENDIF
-        DO 90 I=1,80
-          WBROOK(I) = ' '
-          WBROOK1(I) = ' '
-   90   CONTINUE
+        CALL MMDB_F_ADVANCE(IUNIT,IOUT,ITER,IRET)
       ENDIF
 
-      RETURN
+      IF (IRET.EQ.1) RETURN 1
+      IF (IRET.EQ.2) RETURN 2
 C
-C---- End of file but without having END card
-C
-  100 CONTINUE
-      ITYP = 0
-      RETURN 2
- 1000 FORMAT('CRYST1',3F9.3,3F7.2,1x,a15)
- 2000 FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
-     $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
       END
 C
 C
@@ -1040,6 +769,10 @@ C
 C     .. Paramters ..
       INTEGER MAXFILESOPEN
       PARAMETER (MAXFILESOPEN=90)
+      INTEGER RWBERR_Ok,RWBWAR_MASK 
+      PARAMETER (RWBERR_Ok=0,RWBWAR_MASK=16384)
+      INTEGER RWBWAR_WrongSerial
+      PARAMETER (RWBWAR_WrongSerial=16448)
 C     ..
 C     .. Arguments ..
       INTEGER IRESN,ISER,IUNIT,IZ
@@ -1049,37 +782,24 @@ C     .. Arguments ..
 C     ..
 C     .. Variables in Common ..
       INTEGER FILESOPEN,ITYP,UNIT,TYPE
-      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1
+      CHARACTER LOGUNIT*80
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Scalars ..
       REAL U(6),OCC,X,Y,Z
-      INTEGER I,II,LLx
+      INTEGER I,II,IRET
       CHARACTER*100 ERRLIN
-      CHARACTER BROOKA*80,PDBATN*4,PDBRESN*4,PDBCHN*1,PDBID*4,
-     +          PDBRESNO*5,PDBSEGID*4,Cnums(13)*1
-
 C     ..
 C     .. External Routines/Functions ..
-      EXTERNAL CCPERR,PDBREAD
+      EXTERNAL CCPERR,MMDB_F_ATOM,RBERRSTOP
 C     ..
 C     .. Common Blocks ..
       COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
      +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
       COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
-      COMMON /RBRKYY/ BROOK(80),WBROOK(80),WBROOK1(80)
-C     ..
-C     .. Equivalences ..
-      EQUIVALENCE (BROOKA,WBROOK(1))
 C
-C     .. Data Statements ..
-      DATA ITYPE/'CRYST1','SCALE','TER   ','ATOM  ','HETATM',
-     +           'ANISOU','END   '/
-      DATA Cnums /'0','1','2','3','4','5','6','7','8','9',
-     +           '*',"'",'"'/
-C     ..
 C     .. Save ..
-      SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/
+      SAVE /RBRKAA/,/RBRKXX/
 C     ..
 c
       II = 0
@@ -1094,97 +814,16 @@ c
       ERRLIN = ' ERROR: in XYZATOM file has not been opened'
       CALL CCPERR(1,ERRLIN)
 C
-C==== Input PDB file
-C
-   20 IF (TYPE(II) .EQ. 1) THEN
-        ATNAM = ' '
-        RESNAM = ' '
-        CHNNAM = ' '
-        RESNO = ' '
-        ID = ' '
-        INSCOD = ' '
-        ALTCOD = ' '
-        SEGID = ' '
-        CALL PDBREAD(ISER,PDBATN,PDBRESN,PDBCHN,IRESN,PDBRESNO,
-     +               X,Y,Z,OCC,U,IZ,PDBSEGID,PDBID)
-        ALTCOD = BROOK(17)
-        ATNAM = PDBATN
-        RESNAM = PDBRESN
-        CHNNAM = PDBCHN
-        RESNO = PDBRESNO(1:4)
-        INSCOD = PDBRESNO(5:5)
-        ID = PDBID
-        SEGID = PDBSEGID
-C
-C==== Output PDB file
-C
-      ELSE IF (TYPE(II) .EQ. -1) THEN
-        IF (ITYP .EQ. 0) THEN
-          BROOKA(1:6) = 'ATOM  '
-        ELSE
-          BROOKA(1:6) = ITYPE(ITYP)
+   20 CALL MMDB_F_ATOM(IUNIT,ISER,ATNAM,RESNAM,CHNNAM,IRESN,
+     +    RESNO,INSCOD,ALTCOD,SEGID,IZ,ID,IRET)
+      IF (IRET.NE.RWBERR_Ok.AND.IRET.NE.RWBWAR_WrongSerial) 
+     +  THEN
+C...  MMDB error information
+        CALL RBERRSTOP(1,IRET,IUNIT,0)
+        IF (AND(IRET,RWBWAR_MASK).EQ.0) THEN
+          ERRLIN = ' ERROR: XYZATOM'
+          CALL CCPERR(1,ERRLIN) 
         ENDIF
-        IF(BROOKA(1:6) .EQ. '      ')BROOKA(1:6) = 'ATOM  '
-        BROOKA(17:17) = ALTCOD(1:1)
-c
-c---- BROOKA(12:12) is ALWAYS ' '
-c
-        BROOKA(12:12) = ' '
-c
-c
-c Some old files may have things like AC4* and NO7*
-C
-c----- PDB rule is that if it is a Hydrogen or Deuterium
-c      then BROOKA(13:13) can be a digit 0-9
-c      most other single char element symbols
-c      have BROOKA(13:13) = ' ', but NOT ALL!
-C
-C----- Need to deal with various horrors: if no ID, or IZ, 
-C      then use ATNAM as it is
-        IF (ID(1:2) .EQ. '  ') THEN
-          BROOKA(13:16) = ATNAM(1:4)
-          GO TO 22
-        END IF
-C----- Now some weird H or D names
-C      Check if first character of atnam = 2nd character of ID.
-C
-        IF (ID(1:1) .EQ. ' ' .AND.ATNAM(1:1).NE.ID(2:2)) THEN
-          BROOKA(13:16) = ATNAM(1:4)
-          GO TO 22
-        END IF
-C
-        IF (ID(1:1) .EQ. ' ') THEN
-          IF (ATNAM(2:2).eq.'H' .or. 
-     +          (ATNAM(2:2).eq.'D' .and. ID(1:2).eq.' D') ) then
-             DO 21 LLx=1,13
-               IF (ATNAM(1:1).eq.Cnums(LLx))then
-                 BROOKA(13:16) = ATNAM(1:4)
-                 GO TO 22
-               END IF
- 21          CONTINUE
-          END IF
-          BROOKA(13:13) = ' '
-          BROOKA(14:16) = ATNAM(1:3)
-        ELSE
-          BROOKA(13:16) = ATNAM(1:4)
-        ENDIF
- 22     CONTINUE
-c
-c
-        WRITE(PDBRESNO,FMT='(I5)') ISER
-        BROOKA(7:11) = PDBRESNO
-        BROOKA(18:20) = RESNAM
-        BROOKA(21:21) = ' '
-        BROOKA(22:22) = CHNNAM
-        WRITE(BROOKA(23:26),FMT='(I4)') IRESN
-        BROOKA(27:27) = INSCOD
-        BROOKA(28:30) = '   '
-        BROOKA(67:72) = '     '
-        BROOKA(73:76) = SEGID
-        BROOKA(77:80) = ID
-
-      ELSE
-C Not yet ready
       ENDIF
 
       RETURN
@@ -1251,27 +890,28 @@ C
 C     .. Paramters ..
       INTEGER MAXFILESOPEN
       PARAMETER (MAXFILESOPEN=90)
+      INTEGER RWBERR_Ok,RWBWAR_MASK
+      PARAMETER (RWBERR_Ok=0,RWBWAR_MASK=16384)
 C     ..
 C     .. Arguments ..
-      REAL U(6),BISO,X,Y,Z,OCC
+      REAL U(6),BISO,X,Y,Z
       INTEGER IUNIT
       CHARACTER*1 BFLAG,XFLAG
 C     ..
 C     .. Variables in Common ..
       INTEGER FILESOPEN,ITYP,UNIT,TYPE
-      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1
+      CHARACTER LOGUNIT*80
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Scalars ..
       REAL EIGHTPI2,XX,YY,ZZ
-      INTEGER I,II
+      INTEGER I,II,IRET
       INTEGER IRESN,ISER,IZ
       CHARACTER*100 ERRLIN
       CHARACTER ATNAM*4,RESNAM*4,RESNO*4,ID*4,CHNNAM*1,SEGID*4
-      CHARACTER*80 BROOKA,BROOKB
 C     ..
 C     .. External Routines/Functions ..
-      EXTERNAL CCPERR,CCPUPC,CVANISOU,CVFRAC2,PDBREAD
+      EXTERNAL CCPERR,MMDB_F_COORD,RBERRSTOP
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC ABS,NINT
@@ -1280,13 +920,9 @@ C     .. Common Blocks ..
       COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
      +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
       COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
-      COMMON /RBRKYY/ BROOK(80),WBROOK(80),WBROOK1(80)
-C     ..
-C     .. Equivalences ..
-      EQUIVALENCE (BROOKA,WBROOK(1)),(BROOKB,WBROOK1(1))
 C     ..
 C     .. Save ..
-      SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/
+      SAVE /RBRKAA/,/RBRKXX/
 C     ..
 C     .. Data Statement ..
       DATA EIGHTPI2 /78.956835/
@@ -1301,70 +937,15 @@ C     .. Data Statement ..
 
       ERRLIN = ' ERROR: in XYZCOORD has not been opened'
       CALL CCPERR(1,ERRLIN)
-C
-C==== Input PDB file
-C  
-   20 IF (TYPE(II) .EQ. 1) THEN
-        CALL PDBREAD(ISER,ATNAM,RESNAM,CHNNAM,IRESN,RESNO,
-     +               X,Y,Z,OCC,U,IZ,SEGID,ID)
-C
-C---- Convert x,y,z to fractional if necessary
-C
-        IF (XFLAG .EQ. 'F' .OR. XFLAG .EQ. 'f') THEN
-          IF (MATRIX) THEN
-            CALL CVFRAC2(X,Y,Z,XX,YY,ZZ,1)
-            X = XX
-            Y = YY
-            Z = ZZ
-          ELSE
-            CALL CCPERR(1,'*** Cannot convert to fractional coord. ***')
-          ENDIF
-        ENDIF
-C
-C---- Calulate isotropic Uf from Uo, if necessary convert.
-C
-        IF (U(2).NE.0.0 .AND. U(3).NE.0.0) THEN
-          BISO = EIGHTPI2 * (U(1)+U(2)+U(3))/3.0
-          IF (BFLAG.EQ.'F' .OR. BFLAG.EQ.'f') CALL CVANISOU(U,1)
-C
-C---- Go here if no anisotropic B
-C
-        ELSE
-          BISO = U(1)
-        ENDIF
-C
-C==== Output PDB file
-C
-      ELSE IF (TYPE(II) .EQ. -1) THEN
-        IF (XFLAG .EQ. 'F' .OR. XFLAG .EQ. 'f') THEN
-          IF (MATRIX) THEN
-            CALL CVFRAC2(X,Y,Z,XX,YY,ZZ,0)
-          ELSE
-            CALL CCPERR(1,
-     .      '*** Cannot convert from fract. to ortho. coordinates ***')
-          ENDIF
-        ELSE
-          XX = X
-          YY = Y
-          ZZ = Z
-        ENDIF
-C
-C---- Check for anisotropic temperature factors
-C
-        IF (U(2).NE.0.0 .OR. U(3).NE.0.0) THEN
-          IF (BFLAG .EQ. 'F' .OR. BFLAG .EQ. 'f') CALL CVANISOU(U,0)
-          BISO = EIGHTPI2 * (U(1)+U(2)+U(3))/3.0
 
-          BROOKB(1:6) = 'ANISOU'
-          WRITE(BROOKB(29:70),FMT='(6I7)') (NINT(U(I)*1.0E+04),I=1,6)
-        ELSE
-          BISO = U(1)
+  20  CALL MMDB_F_COORD(IUNIT,XFLAG,BFLAG,X,Y,Z,OCC,BISO,U,IRET)
+      IF (IRET.NE.RWBERR_Ok) THEN
+C...  MMDB error information
+        CALL RBERRSTOP(1,IRET,IUNIT,0)
+        IF (OR(IRET,RWBWAR_MASK).EQ.0) THEN
+          ERRLIN = ' ERROR: XYZATOM'
+          CALL CCPERR(1,ERRLIN)
         ENDIF
-
-        WRITE(BROOKA(31:66),FMT='(3F8.3,2F6.2)') XX,YY,ZZ,OCC,BISO
-          
-      ELSE
-C Not yet ready
       ENDIF
 
       RETURN
@@ -1389,6 +970,8 @@ C
 C     .. Parameters ..
       INTEGER MAXFILESOPEN
       PARAMETER (MAXFILESOPEN=90)
+      INTEGER RWBWAR_RewOutput
+      PARAMETER (RWBWAR_RewOutput=34)
 C     ..
 C     .. Arguments ..
       INTEGER IUNIT
@@ -1402,7 +985,7 @@ C     .. Local Scalars ..
       CHARACTER*100 ERRLIN
 C     ..
 C     .. External Functions/Routines ..
-      EXTERNAL CCPERR
+      EXTERNAL CCPERR,MMDB_F_REWD
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC ABS
@@ -1425,9 +1008,9 @@ C     ..
       ERRLIN = ' ERROR: in XYZREWD file has not been opened'
       CALL CCPERR(1,ERRLIN)
 
-   20 IF (ABS(TYPE(II)) .EQ. 1) THEN
-        REWIND UNIT(II)
-        IF (TYPE(II) .EQ. -1) CALL CCPERR(2,
+   20 CALL MMDB_F_REWD(IUNIT,IRET)
+      IF (IRET.EQ. RWBWAR_RewOutput) THEN
+        CALL CCPERR(2,
      +    ' WARNING: you are rewinding an output file!!')
       ENDIF
 
@@ -1453,6 +1036,8 @@ C
 C     .. Parameters ..
       INTEGER MAXFILESOPEN
       PARAMETER (MAXFILESOPEN=90)
+      INTEGER RWBWAR_RewOutput 
+      PARAMETER (RWBWAR_RewOutput=34)
 C     ..
 C     .. Arguments ..
       INTEGER IUNIT
@@ -1462,11 +1047,11 @@ C     .. Variables in Common ..
       CHARACTER*80 LOGUNIT
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,II
+      INTEGER I,II,IRET
       CHARACTER*100 ERRLIN
 C     ..
 C     .. External Functions/Routines ..
-      EXTERNAL CCPERR
+      EXTERNAL CCPERR,MMDB_F_BKSP
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC ABS
@@ -1489,9 +1074,9 @@ C     ..
       ERRLIN = ' ERROR: in XYZBKSP file has not been opened'
       CALL CCPERR(1,ERRLIN)
 
-   20 IF (ABS(TYPE(II)) .EQ. 1) THEN
-        BACKSPACE UNIT(II)
-        IF (TYPE(II) .EQ. -1) CALL CCPERR(2,
+   20 CALL MMDB_F_BKSP(IUNIT,IRET) 
+      IF (IRET .EQ. RWBWAR_RewOutput) THEN
+        CALL CCPERR(2,
      +    ' WARNING: you are backspacing an output file!!')
       ENDIF
 
@@ -1569,7 +1154,6 @@ C     ..
 C     .. Local Scalars ..
       CHARACTER*4 ID,SEGID,RESNO
       CHARACTER*1 INSCOD,ALTCOD
-      INTEGER I
 C     ..
 C     .. Local Arrays ..
       REAL U(6)
@@ -1600,8 +1184,8 @@ C
 C
 C
 C
-      SUBROUTINE PDBREAD(ISER,ATNAM,RESNAM,CHNNAM,IRESN,RESNO,
-     *X,Y,Z,OCC,U,IZ,SEGID,ID)
+C     SUBROUTINE PDBREAD(ISER,ATNAM,RESNAM,CHNNAM,IRESN,RESNO,
+C    *X,Y,Z,OCC,U,IZ,SEGID,ID)
 C     ========================================================
 C
 C_BEGIN_PDBREAD
@@ -1643,7 +1227,6 @@ C                                      =5, 'HETATM'
 C     MATRIX    .TRUE. IF FRACT/ORTHOG MATRICES CALCULATED
 C               .FALSE. IF NOT
 C
-C  COMMON /RBRKYY/BROOK(80)
 C
 C      BROOK    CHARACTER*1 ARRAY WHICH IS THE BUFFER FOR PDB FILES
 C
@@ -1667,192 +1250,191 @@ C_END_PDBREAD
 C
 C
 C     .. Parameters ..
-      INTEGER MAXIATM, MAXIHATM
-      PARAMETER (MAXIATM=102,MAXIHATM=14)
+C     INTEGER MAXIATM, MAXIHATM
+C     PARAMETER (MAXIATM=102,MAXIHATM=14)
 C     ..
 C     .. Arguments ..
-      REAL U(6),OCC,X,Y,Z
-      INTEGER IRESN,ISER,IZ
-      CHARACTER*(*) RESNO
-      CHARACTER ATNAM*4,CHNNAM*1,ID*4,RESNAM*4,SEGID*4
+C     REAL U(6),OCC,X,Y,Z
+C     INTEGER IRESN,ISER,IZ
+C     CHARACTER*(*) RESNO
+C     CHARACTER ATNAM*4,CHNNAM*1,ID*4,RESNAM*4,SEGID*4
 C     ..
 C     .. Variables in Common ..
-      REAL CELL,CELLAS,RF,RO,RR,VOL,ROU,RFU
-      INTEGER ITYP,NCODE
-      CHARACTER BROOK*1,WBROOK*1,WBROOK1*1
-      LOGICAL IFCRYS,IFSCAL,IFTER,MATRIX,IFHDOUT
+C     REAL CELL,CELLAS,RF,RO,RR,VOL
+C     INTEGER ITYP,NCODE
+C     CHARACTER BROOK*1,WBROOK*1,WBROOK1*1
+C     LOGICAL IFCRYS,IFSCAL,IFTER,MATRIX,IFHDOUT
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,II,J
-      CHARACTER*100 ERRLIN
-      CHARACTER*80 BROOKA
-      CHARACTER*4 IRTYPE
-      CHARACTER*2 IAA,IAT,IE
-      CHARACTER*1 ISP
+C     INTEGER I,II,J
+C     CHARACTER*100 ERRLIN
+C     CHARACTER*80 BROOKA
+C     CHARACTER*4 IRTYPE
+C     CHARACTER*2 IAA,IAT,IE
+C     CHARACTER*1 ISP
 C     ..
 C     .. Local Arrays ..
-      INTEGER IU(6)
-      CHARACTER*40 ORTH(5)
-      CHARACTER*2 IATM(MAXIATM),IHATM(MAXIHATM)
+C     INTEGER IU(6)
+C     CHARACTER*40 ORTH(5)
+C     CHARACTER*2 IATM(MAXIATM),IHATM(MAXIHATM)
 C     ..
 C     .. External Routines/Functions ..
-      INTEGER LENSTR
-      EXTERNAL CCPERR,CCPUPC,LENSTR
+C     INTEGER LENSTR
+C     EXTERNAL CCPERR,CCPUPC,LENSTR
 C     ..
 C     .. Intrinsic Functions ..
-      INTRINSIC ABS
+C     INTRINSIC ABS
 C     ..
 C     .. Common Blocks ..
-      COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
-      COMMON /RBRKYY/BROOK(80),WBROOK(80),WBROOK1(80)
-      COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
-      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
-      COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
+C     COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+C     COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
+C     COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
+C     COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
 C     ..
 C     .. Equivalences ..
-      EQUIVALENCE (IRTYPE,BROOK(1)),(IE,BROOK(5)),(BROOKA,BROOK(1))
+C     EQUIVALENCE (IRTYPE,BROOK(1)),(IE,BROOK(5)),(BROOKA,BROOK(1))
 C     ..
 C     .. Save ..
-      SAVE /RBRKXX/,/RBRKYY/,/RBRKZZ/,/ORTHOG/
+C     SAVE /RBRKXX/,/RBRKZZ/,/ORTHOG/
 C     ..
 C     .. Data Statement ..
-      DATA IATM/' H','HE','LI','BE',' B',' C',' N',' O',' F','NE',
-     *          'NA','MG','AL','SI',' P',' S','CL','AR',' K','CA',
-     *          'SC','TI',' V','CR','MN','FE','CO','NI','CU','ZN',
-     *          'GA','GE','AS','SE','BR','KR','RB','SR',' Y','ZR',
-     *          'NB','MO','TC','RU','RH','PD','AG','CD','IN','SN',
-     *          'SB','TE',' I','XE','CS','BA','LA','CE','PR','ND',
-     *          'PM','SM','EU','GD','TB','DY','HO','ER','TM','YB',
-     *          'LU','HF','TA',' W','RE','OS','IR','PT','AU','HG',
-     *          'TL','PB','BI','PO','AT','RN','FR','RA','AC','TH',
-     *          'PA',' U','NP','PU','AM','CM','BK','CF','ES','FM',
-     *          ' D','AN'/
-      DATA IHATM/'0H','1H','2H','3H','4H','5H','6H','7H','8H','9H',
-     +           'HH','*H',"'H",'"H'/
-      DATA IAA/' A'/,ISP/' '/
-      DATA ORTH/'A // XO, C* // ZO (STANDARD PDB)',
-     *          'B // XO, A* // ZO',
-     *          'C // XO, B* // ZO',
-     *          'HEX A+B // XO, C* // ZO',
-     *          'A* // XO, C // ZO (ROLLETT)'/
+C     DATA IATM/' H','HE','LI','BE',' B',' C',' N',' O',' F','NE',
+C    *          'NA','MG','AL','SI',' P',' S','CL','AR',' K','CA',
+C    *          'SC','TI',' V','CR','MN','FE','CO','NI','CU','ZN',
+C    *          'GA','GE','AS','SE','BR','KR','RB','SR',' Y','ZR',
+C    *          'NB','MO','TC','RU','RH','PD','AG','CD','IN','SN',
+C    *          'SB','TE',' I','XE','CS','BA','LA','CE','PR','ND',
+C    *          'PM','SM','EU','GD','TB','DY','HO','ER','TM','YB',
+C    *          'LU','HF','TA',' W','RE','OS','IR','PT','AU','HG',
+C    *          'TL','PB','BI','PO','AT','RN','FR','RA','AC','TH',
+C    *          'PA',' U','NP','PU','AM','CM','BK','CF','ES','FM',
+C    *          ' D','AN'/
+C     DATA IHATM/'0H','1H','2H','3H','4H','5H','6H','7H','8H','9H',
+C    +           'HH','*H',"'H",'"H'/
+C     DATA IAA/' A'/,ISP/' '/
+C     DATA ORTH/'A // XO, C* // ZO (STANDARD PDB)',
+C    *          'B // XO, A* // ZO',
+C    *          'C // XO, B* // ZO',
+C    *          'HEX A+B // XO, C* // ZO',
+C    *          'A* // XO, C // ZO (ROLLETT)'/
 C      DATA ITYPE/'CRYS','SCAL','TER ','ATOM','HETA','ANIS','END'/
 C
 C
-      IFTER=.FALSE.
+C     IFTER=.FALSE.
 C
 C---- Atom/hetatm card processing
 C
-      IF (IRTYPE.EQ.'ATOM' .OR. IRTYPE.EQ.'HETA' .OR.
-     +    IRTYPE.EQ.'ANIS' .OR. IRTYPE.EQ.'TER ') THEN
-        IF (IRTYPE.EQ.'TER ') THEN
+C     IF (IRTYPE.EQ.'ATOM' .OR. IRTYPE.EQ.'HETA' .OR.
+C    +    IRTYPE.EQ.'ANIS' .OR. IRTYPE.EQ.'TER ') THEN
+C       IF (IRTYPE.EQ.'TER ') THEN
 C
 C---- 'ter' card found
 C
-          ITYP=3
-          IFTER=.TRUE.
-          GO TO 450
-        ENDIF
-        IF(BROOK(13).EQ.ISP) then
-c
+C         ITYP=3
+C         IFTER=.TRUE.
+C         GO TO 450
+C       ENDIF
+C       IF(BROOK(13).EQ.ISP) then
+C
 C----   ATNAM (O) Atom name  (character*4 left justified)
-c
-          ATNAM=BROOK(14)//BROOK(15)//BROOK(16)//' '
-c
-c---- atnam should never had ALTCODE added to it 
-c
-         else
-          ATNAM=BROOK(13)//BROOK(14)//BROOK(15)//BROOK(16)
-         end if
-c
-c
-450     READ(BROOKA,1006)ISER,IRESN
-        RESNAM=BROOK(18)//BROOK(19)//BROOK(20)//ISP
-        RESNO=BROOK(23)//BROOK(24)//BROOK(25)//BROOK(26)
-        IF(LEN(RESNO).GT.4)RESNO(5:5)=BROOK(27)
-        CHNNAM=BROOK(22)
-        IF(IFTER)GO TO 500
-        SEGID = BROOK(73)//BROOK(74)//BROOK(75)//BROOK(76)
+C
+C         ATNAM=BROOK(14)//BROOK(15)//BROOK(16)//' '
+C
+C---- atnam should never had ALTCODE added to it 
+C
+C        else
+C         ATNAM=BROOK(13)//BROOK(14)//BROOK(15)//BROOK(16)
+C        end if
+C
+C
+C450    READ(BROOKA,1006)ISER,IRESN
+C       RESNAM=BROOK(18)//BROOK(19)//BROOK(20)//ISP
+C       RESNO=BROOK(23)//BROOK(24)//BROOK(25)//BROOK(26)
+C       IF(LEN(RESNO).GT.4)RESNO(5:5)=BROOK(27)
+C       CHNNAM=BROOK(22)
+C       IF(IFTER)GO TO 500
+C       SEGID = BROOK(73)//BROOK(74)//BROOK(75)//BROOK(76)
 C
 C---- Find atomic number and ID, ID can be kept in columns 77-80
 C
-        ID = BROOK(77)//BROOK(78)//BROOK(79)//BROOK(80)
-        CALL CCPUPC(ID)
-        IAT=BROOK(13)//BROOK(14)
-        CALL CCPUPC(IAT)
+C       ID = BROOK(77)//BROOK(78)//BROOK(79)//BROOK(80)
+C       CALL CCPUPC(ID)
+C       IAT=BROOK(13)//BROOK(14)
+C       CALL CCPUPC(IAT)
 C
 C---- Fast initial check for C, O, N or H
-        II = 0
-        IF (ID(1:4) .NE. '    ') THEN
-          IF (ID(1:2) .EQ. IATM(6)) THEN
-            II = 6
-            GOTO 480
-          ENDIF
-          IF (ID(1:2) .EQ. IATM(7)) THEN
-            II = 7
-            GOTO 480
-          ENDIF
-          IF (ID(1:2) .EQ. IATM(8)) THEN
-            II = 8
-            GOTO 480
-          ENDIF
-          IF (ID(1:2) .EQ. IATM(1)) THEN
-            II = 1
-            GOTO 480
-          ENDIF
+C       II = 0
+C       IF (ID(1:4) .NE. '    ') THEN
+C         IF (ID(1:2) .EQ. IATM(6)) THEN
+C           II = 6
+C           GOTO 480
+C         ENDIF
+C         IF (ID(1:2) .EQ. IATM(7)) THEN
+C           II = 7
+C           GOTO 480
+C         ENDIF
+C         IF (ID(1:2) .EQ. IATM(8)) THEN
+C           II = 8
+C           GOTO 480
+C         ENDIF
+C         IF (ID(1:2) .EQ. IATM(1)) THEN
+C           II = 1
+C           GOTO 480
+C         ENDIF
 C
 C---- Must be a different element - check against all
 C     possibilities, which is slower
-          DO 452 I=1,MAXIATM
-            IF (ID(1:2) .EQ. IATM(I)) THEN
-              II = I
-              GOTO 480
-            ENDIF
- 452      CONTINUE
-        END IF 
+C         DO 452 I=1,MAXIATM
+C           IF (ID(1:2) .EQ. IATM(I)) THEN
+C             II = I
+C             GOTO 480
+C           ENDIF
+C452      CONTINUE
+C       END IF 
 C
 C     If no ID match then make sure it is reset to be empty
 C
-        ID = '    '
+C       ID = '    '
 C
 C     Check against first characters of atom name:
 C
 C---- Initial fast check against C, O, N or H
-        IF (IAT.EQ.IATM(6)) THEN
-          II = 6
-          GO TO 480
-        ENDIF
-        IF (IAT.EQ.IATM(7)) THEN
-          II = 7
-          GO TO 480
-        ENDIF
-        IF (IAT.EQ.IATM(8)) THEN
-          II = 8
-          GO TO 480
-        ENDIF
-        IF (IAT.EQ.IATM(1)) THEN
-          II = 1
-          GO TO 480
-        ENDIF
+C       IF (IAT.EQ.IATM(6)) THEN
+C         II = 6
+C         GO TO 480
+C       ENDIF
+C       IF (IAT.EQ.IATM(7)) THEN
+C         II = 7
+C         GO TO 480
+C       ENDIF
+C       IF (IAT.EQ.IATM(8)) THEN
+C         II = 8
+C         GO TO 480
+C       ENDIF
+C       IF (IAT.EQ.IATM(1)) THEN
+C         II = 1
+C         GO TO 480
+C       ENDIF
 C
 C---- Could be a hydrogen? Check for things like 0H, HH, etc
-        II=1
-        DO 454 J=1,MAXIHATM
-          IF (IAT.EQ.IHATM(J)) GO TO 480
-454     CONTINUE
+C       II=1
+C       DO 454 J=1,MAXIHATM
+C         IF (IAT.EQ.IHATM(J)) GO TO 480
+C454    CONTINUE
 C
 C---- Must be a different element - check everything else
-        DO 456 I=1,MAXIATM
-          IF (IAT.EQ.IATM(I)) THEN
-            II = I
+C       DO 456 I=1,MAXIATM
+C         IF (IAT.EQ.IATM(I)) THEN
+C           II = I
 C           Should issue a warning if AC or AN to the effect that this
 C           is based on ambigious input and should be checked
-            IF (II.EQ.89 .OR. II.EQ.102) THEN
-              WRITE(ERRLIN,2002)ATNAM,RESNAM,RESNO(1:4),IATM(II)
-              CALL CCPERR(2,ERRLIN)
-            END IF
-            GO TO 480
-          ENDIF
-456     CONTINUE
+C           IF (II.EQ.89 .OR. II.EQ.102) THEN
+C             WRITE(ERRLIN,2002)ATNAM,RESNAM,RESNO(1:4),IATM(II)
+C             CALL CCPERR(2,ERRLIN)
+C           END IF
+C           GO TO 480
+C         ENDIF
+C456    CONTINUE
 C
 C---- No match for ID to anything using the first 2 characters
 C     of the atom name
@@ -1860,105 +1442,105 @@ C
 C  If the atom name begins with " A" set the atom_type to N
 C  " A" is an ambigious atom name so presumably using N is
 C  just a default?
-c  Otherwise it's completely unknown
+C  Otherwise it's completely unknown
 C
-        II=0
-        IF(IAT.EQ.IAA) II=7
+C       II=0
+C       IF(IAT.EQ.IAA) II=7
 C
 C  Ambigious name...
-        IF (II .EQ. 7) THEN
-          WRITE(ERRLIN,2002)ATNAM,RESNAM,RESNO(1:4),IATM(II)
-          CALL CCPERR(2,ERRLIN)
-        ELSE
+C       IF (II .EQ. 7) THEN
+C         WRITE(ERRLIN,2002)ATNAM,RESNAM,RESNO(1:4),IATM(II)
+C         CALL CCPERR(2,ERRLIN)
+C       ELSE
 C
 C---- II is zero so try some other tricks to get a match
 C
 C     Desperate measure: try to match second character only - 
 C     This will deal with the NO7* horrors..
-          IF (IAT(1:1).NE.' ') THEN
-            IAT = ' '//BROOK(14)
-            DO I=1,MAXIATM
-              IF (IAT.EQ.IATM(I)) THEN
-                II = I
+C         IF (IAT(1:1).NE.' ') THEN
+C           IAT = ' '//BROOK(14)
+C           DO I=1,MAXIATM
+C             IF (IAT.EQ.IATM(I)) THEN
+C               II = I
 C               Issue a warning about this match since it
 C               is based on incomplete data and assumptions
-                WRITE(ERRLIN,2002)ATNAM,RESNAM,RESNO(1:4),IATM(II)
-                CALL CCPERR(2,ERRLIN)
-                GO TO 480
-              ENDIF
-            END DO
-          ENDIF
-        END IF
+C               WRITE(ERRLIN,2002)ATNAM,RESNAM,RESNO(1:4),IATM(II)
+C               CALL CCPERR(2,ERRLIN)
+C               GO TO 480
+C             ENDIF
+C           END DO
+C         ENDIF
+C       END IF
 C
 C Still completely unrecognised... give up
 C
-        IF (II .EQ. 0) THEN
-          WRITE(ERRLIN,2001)ATNAM,RESNAM,RESNO(1:4)
-          CALL CCPERR(2,ERRLIN)
-        END IF
+C       IF (II .EQ. 0) THEN
+C         WRITE(ERRLIN,2001)ATNAM,RESNAM,RESNO(1:4)
+C         CALL CCPERR(2,ERRLIN)
+C       END IF
 C
 C---- Atom number decided
-480     IZ=II
+C480    IZ=II
 C
-        IF (IZ .EQ. 0) THEN
-          ID = ' '
-        ELSE
+C        IF (IZ .EQ. 0) THEN
+C          ID = ' '
+C       ELSE 
 C
 C---- Keep the ionic state if valid, OR from atom name.
 C
-          IF (ID(1:1) .EQ. ' ') THEN
-            IF (ATNAM(3:3).EQ.'+' .OR. ATNAM(3:3).EQ.'-') 
-     +                                       ID(3:4) = ATNAM(3:4)
-          ELSE
-            IF (ID(3:3).NE.'+' .AND. ID(3:3).NE.'-') ID(3:4) = '  '
-          ENDIF
-          ID(1:2) = IATM(IZ)
-        ENDIF
+C         IF (ID(1:1) .EQ. ' ') THEN
+C           IF (ATNAM(3:3).EQ.'+' .OR. ATNAM(3:3).EQ.'-') 
+C    +                                       ID(3:4) = ATNAM(3:4)
+C         ELSE
+C           IF (ID(3:3).NE.'+' .AND. ID(3:3).NE.'-') ID(3:4) = '  '
+C         ENDIF
+C         ID(1:2) = IATM(IZ)
+C       ENDIF
 C
 C---- Put elment ID into output buffer.
 C
-        DO 485 J=1,4
-          WBROOK(76+J) = ID(J:J)
-          WBROOK1(76+J) = ID(J:J)
-485     CONTINUE
-         IF (IRTYPE .EQ. 'ATOM'.or.IRTYPE.EQ.'HETA') THEN
+C       DO 485 J=1,4
+C         WBROOK(76+J) = ID(J:J)
+C         WBROOK1(76+J) = ID(J:J)
+C485    CONTINUE
+C        IF (IRTYPE .EQ. 'ATOM'.or.IRTYPE.EQ.'HETA') THEN
 C  This is the ONLY flag that you have read a ATOM or HETATOM card..
-          DO 40 I=1,6
-            U(I) = 0.0
-   40     CONTINUE
-            IF (IRTYPE.EQ.'ATOM') ITYP=4
-            IF (IRTYPE.EQ.'HETA') ITYP=5
-          READ(BROOKA,1005)X,Y,Z,OCC,U(1)
+C         DO 40 I=1,6
+C           U(I) = 0.0
+C  40     CONTINUE
+C           IF (IRTYPE.EQ.'ATOM') ITYP=4
+C           IF (IRTYPE.EQ.'HETA') ITYP=5
+C         READ(BROOKA,1005)X,Y,Z,OCC,U(1)
 C
 C---- AnisoU cards
 C
-        ELSE IF (IRTYPE .EQ. 'ANIS') THEN
+C       ELSE IF (IRTYPE .EQ. 'ANIS') THEN
 C
-        READ(BROOKA,1010)IU(1),IU(2),IU(3),IU(4),IU(5),IU(6)
-        DO 510 I=1,6
-          U(I) = IU(I)/1.0E+04
-510     CONTINUE
+C       READ(BROOKA,1010)IU(1),IU(2),IU(3),IU(4),IU(5),IU(6)
+C       DO 510 I=1,6
+C         U(I) = IU(I)/1.0E+04
+C510    CONTINUE
 C  Get rid of this, sometimes useful to know xyz 
 C   use values of U(i) to check for ANISOU 
-        X = 0.0
-        Y = 0.0
-        Z = 0.0
-        ENDIF
+C       X = 0.0
+C       Y = 0.0
+C       Z = 0.0
+C       ENDIF
 C
-        RETURN        
-      ENDIF
+C       RETURN        
+C     ENDIF
 
-500   RETURN
+C500  RETURN
 C
 C---- Format statements
 C
-1005  FORMAT(30X,3F8.3,2F6.2)
-1006  FORMAT(6X,I5,11X,I4)
-1010  FORMAT(28X,6I7)
-2001  FORMAT(' *UNKNOWN ATOMIC FORMFACTOR ',A4,' IN ',A4,1X,A4,'*')
-2002  FORMAT(' *AMBIGUOUS ATOMIC FORMFACTOR ',A4,' IN ',A4,1X,A4,
-     +     ' ASSIGNED AS ',A2,' *')
-      END
+C1005  FORMAT(30X,3F8.3,2F6.2)
+C1006  FORMAT(6X,I5,11X,I4)
+C1010  FORMAT(28X,6I7)
+C2001  FORMAT(' *UNKNOWN ATOMIC FORMFACTOR ',A4,' IN ',A4,1X,A4,'*')
+C2002  FORMAT(' *AMBIGUOUS ATOMIC FORMFACTOR ',A4,' IN ',A4,1X,A4,
+C    +     ' ASSIGNED AS ',A2,' *')
+C     END
 C
 C
 C
@@ -1996,8 +1578,6 @@ C     .. Common Blocks ..
       COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
       COMMON /RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
-C
-      INTEGER I,J
 C     ..
 C     .. Save Statement ..
       SAVE /RBRKXX/,/ORTHOG/,/RBRKZZ/
@@ -2089,8 +1669,6 @@ C common blocks
 C
 C
 C
-      INTEGER LCODE
-      REAL ROO,RFF
       DIMENSION ROO(4,4),RFF(4,4)
 C
       LCODE = 0
@@ -2120,16 +1698,13 @@ C      COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX
 C      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
 C
 C_END_RBRORF
-      REAL RO,RF
-      INTEGER LCODE,NCODE,ITYP
+
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
       COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
       SAVE /ORTHOG/, /RBRKXX/
 C
-      INTEGER II,JJ
 C
-      REAL ROO,RFF
       DIMENSION ROO(4,4),RFF(4,4)
 C
 C---- Get cofactors of 'a' in array 'c'
@@ -2178,8 +1753,7 @@ C          AI (O) (REAL(4,4))  INVERSE MATRIX
 C
 C_END_RBRINV
 C
-      INTEGER II,JJ,I,I1,J,J1
-      REAL A(4,4),AI(4,4),C(4,4),X(3,3),AM,D
+      REAL A(4,4),AI(4,4),C(4,4),X(3,3)
 C
 C---- Get cofactors of 'a' in array 'c'
 C
@@ -2261,9 +1835,6 @@ C      COMMON /RBREC/AC(6)
 C
 C_END_RBFROR
 C
-      INTEGER I
-      REAL CELL,VOL,RR,CELLAS,AC
-C
       COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /RBREC/AC(6)
       SAVE /RBRKZZ/, /RBREC/
@@ -2332,8 +1903,8 @@ C     ..
 C     .. Local Scalars ..
       REAL A,ALPH,ALPHAS,AS,B,BET,BETAS,BS,C,CONV,COSA,COSAS,COSB,COSBS,
      +     COSG,COSGS,CS,FCT,GAMM,GAMMAS,SINA,SINAS,SINB,SINBS,SING,
-     +     SINGS,SUM,V,CELDEL
-      INTEGER I,J,K,N,NCODE,IWARN
+     +     SINGS,SUM,V
+      INTEGER I,J,K,N,NCODE
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC ATAN2,COS,SIN,SQRT
@@ -2531,8 +2102,6 @@ C                             =1, Convert coordinates from orthogonal to fractio
 C
 C_END_CVFRAC2
 C
-      INTEGER ITYP,IFLAG,NCODE
-      REAL XX,YY,ZZ,RO,RF,X,Y,Z
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
       COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
@@ -2655,8 +2224,8 @@ C     .. Arguments ..
       INTEGER IFLAG
 C     ..
 C     .. Variables in Common ..
-      REAL RF,RO,ROU,RFU
-      INTEGER NCODE,ITYP
+      REAL RF,RO
+      INTEGER NCODE
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
 C     ..
 C     .. Local Variables ..
@@ -2753,7 +2322,6 @@ C      COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
 C
 C_END_RBCELL
 C
-      INTEGER I
       COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       REAL CELL,RR,VOL,CELLAS
       REAL CELLD(6), CVOL
@@ -2786,7 +2354,6 @@ C      COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
 C
 C_END_RBRCEL
 C
-      INTEGER I
       COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       REAL RCEL(6),RVOL
       REAL CELL,CELLAS,RR,VOL
@@ -2825,8 +2392,6 @@ C
       CHARACTER SPGRP*(*)
       CHARACTER BRKSPGRP*15
       INTEGER ILEN,KLEN,J
-      INTEGER LENSTR
-      EXTERNAL LENSTR
       COMMON /RBRKSPGRP/BRKSPGRP
       SPGRP = BRKSPGRP
 C
@@ -2864,10 +2429,13 @@ C      COMMON /RBRKSPGRP/BRKSPGRP
 C
 C_END_WBSPGRP
 C
+C...  Local scalars
       CHARACTER SPGRP*(*)
+C...  Common block
       CHARACTER BRKSPGRP*15
       COMMON /RBRKSPGRP/BRKSPGRP
       BRKSPGRP = SPGRP
+C
       END
 C
 C
@@ -2895,7 +2463,6 @@ C
       CHARACTER*1 RESNM1
       CHARACTER*4 MAACD3(26)
       CHARACTER*1 MAACD1(26)
-      INTEGER NAACID,I
       DATA NAACID/26/
       DATA MAACD3/'ALA ','ARG ','ASN ','ASP ','CYS ','CYH ','GLN ',
      1 'GLU ','GLY ','HIS ','ILE ','LEU ','LYS ','MET ','PHE ','PRO ',
@@ -2930,8 +2497,8 @@ C
 C
 C
 C
-      SUBROUTINE RBRECIP(IH,IK,IL,S)
-C     ==============================
+        SUBROUTINE RBRECIP(IH,IK,IL,S)
+C       ==============================
 C
 C_BEGIN_BRECIP
 C
@@ -2945,8 +2512,6 @@ C                S (O) (REAL)     4SIN**2/L**2
 C
 C_END_BRECIP
 C
-      REAL AC,S
-      INTEGER IH,IK,IL
       COMMON /RBREC/AC(6)
       SAVE /RBREC/
 C
@@ -2997,14 +2562,12 @@ C     .. Array Arguments ..
       REAL A(4),B(4),CU(2),MO(2)
 C     ..
 C     .. Local Scalars ..
-      INTEGER NGauss,IOS,LID,NID
+      INTEGER NGauss,IOS
       CHARACTER ID2*6,IDIN*6
       LOGICAL OP
-C
-      INTEGER LENSTR
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPDPN,CCPERR,LENSTR
+      EXTERNAL CCPDPN,CCPERR
 C     ..
       Ifail  = -1
        IDCHK = ID
@@ -3071,7 +2634,7 @@ C---- No match
 C
    50 CONTINUE
       CALL CCPERR
-     +  (0,' No match for full atom ID - subtract one character ')
+     +  (4,' No match for full atom ID - subtract one character ')
         IF(NID.GT.1)ID2 = ID2(1:NID-1)//' '//ID2(NID+1:6)
         IF(NID.GT.1)ID  = ID (1:NID-1)//'    '
   25  CONTINUE
@@ -3150,18 +2713,19 @@ C     .. Agruments ..
       INTEGER ARGNCODE,IUNIT
 C     ..
 C     .. Variables in Common ..
-      REAL CELL, RO, RF, RR, VOL, CELLAS
-      INTEGER FILESOPEN, NCODE, TYPE, UNIT, ITYP
+      REAL CELL, RO, RF, RR
+      INTEGER FILESOPEN, NCODE, TYPE, UNIT
       CHARACTER*80 LOGUNIT
       CHARACTER BRKSPGRP*15
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
 C     ..
 C     .. Local Scalars ..
-      INTEGER I, II, J
+      INTEGER I, II, J, IRET
       CHARACTER*80 ERRLIN
 C     ..
 C     .. External Routines/Functions ..
-      EXTERNAL CCPERR,RBFROR,RBRINV
+      EXTERNAL CCPERR,RBFROR,RBRINV,MMDB_F_WBSPGRP,
+     +         MMDB_F_WBCELL
 C     ..
 C     .. Common Blocks ..
       COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
@@ -3184,19 +2748,15 @@ C     ..
       ERRLIN = ' ERROR: in WBCELL file has not been opened'
       CALL CCPERR(1,ERRLIN)
 
-   20 IF (TYPE(II) .GT. 0) THEN
-        ERRLIN = ' ERROR: in WBCELL file is of type input'
-        CALL CCPERR(1,ERRLIN)
-      ENDIF
-      IF (ARGCELL(1) .EQ. 0.0) THEN
-        IF (IFCRYS) WRITE (UNIT(II),100) CELL,BRKSPGRP
+   20 IF (ARGCELL(1) .EQ. 0.0) THEN
+        IF (IFCRYS) CALL MMDB_F_WBCELL(IUNIT, CELL, ARGNCODE, IRET)
       ELSE
-        WRITE(UNIT(II),100) ARGCELL,BRKSPGRP
+        CALL MMDB_F_WBCELL(IUNIT, ARGCELL, ARGNCODE, IRET)
       ENDIF
+C...  update spacegroup information from cache
+      CALL MMDB_F_WBSPGRP(IUNIT,BRKSPGRP,IRET)
 
-      IF (ARGNCODE .EQ. 0) THEN
-        IF (IFCRYS) WRITE (UNIT(II),200) (I,(RF(I,J),J=1,3),I=1,3)
-      ELSE
+      IF (ARGNCODE .NE. 0) THEN
         DO 30 I = 1,6
           CELL(I) = ARGCELL(I)
    30   CONTINUE
@@ -3213,17 +2773,10 @@ C     ..
    50   CONTINUE
 
         CALL RBRINV(RO,RF)
-        WRITE (UNIT(II),200) (I,(RF(I,J),J=1,3),I=1,3)
       ENDIF
 
       IFHDOUT = .TRUE.
       RETURN
-C
-C---- Format Statements
-C
- 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a15)
- 200  FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
-     $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
       END
 C
 C
@@ -3257,7 +2810,7 @@ C     .. Variables in Common ..
       CHARACTER*80 LOGUNIT
 C     ..
 C     .. Locals ..
-      INTEGER II, I
+      INTEGER II, IRET
       CHARACTER OUTLIN*80,ERRLIN*80
 C     ..
 C     .. Common Blocks ..
@@ -3282,8 +2835,7 @@ C
       ERRLIN = ' ERROR: in WREMARK file has not been opened'
       CALL CCPERR(1,ERRLIN)
 
-   20 OUTLIN = LINE
-      WRITE (UNIT(II),FMT='(A)') OUTLIN
+   20 CALL MMDB_F_WREMARK(IUNIT, LINE, IRET)
 
       RETURN
       END
@@ -3415,18 +2967,19 @@ C     .. Agruments ..
       INTEGER ARGNCODE,IUNIT
 C     ..
 C     .. Variables in Common ..
-      REAL CELL, RO, RF, RR, VOL, CELLAS
-      INTEGER FILESOPEN, NCODE, TYPE, UNIT, ITYP
+      REAL CELL, RO, RF, RR
+      INTEGER FILESOPEN, NCODE, TYPE, UNIT
       CHARACTER*80 LOGUNIT
       CHARACTER BRKSPGRP*15,NAMSPG_CIF*(*)
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
 C     ..
 C     .. Local Scalars ..
-      INTEGER I, II, J, ILEN1, ILEN2, LENSTR
+      INTEGER I, II, J, IRET
       CHARACTER*80 ERRLIN
+      CHARACTER*15 SPGRP
 C     ..
 C     .. External Routines/Functions ..
-      EXTERNAL CCPERR,RBFROR,RBRINV,LENSTR
+      EXTERNAL CCPERR,RBFROR,RBRINV,MMDB_F_RBSPGRP
 C     ..
 C     .. Common Blocks ..
       COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
@@ -3437,19 +2990,6 @@ C     .. Common Blocks ..
       COMMON /RBRKSPGRP/BRKSPGRP
 C     ..
       SAVE /ORTHOG/,/RBRKAA/,/RBRKXX/,/RBRKZZ/
-
-C    Has the spacegroup name been set yet?
-      ILEN1 = LENSTR(BRKSPGRP)
-      ILEN2 = LENSTR(NAMSPG_CIF)
-      
-       IF(BRKSPGRP.NE.' '.AND.
-     +    BRKSPGRP(1:ILEN1).NE.NAMSPG_CIF(1:ILEN2)) then
-         WRITE(6,'(A,/,4(A,5x))') '*** Incompatible space group names:',
-     +   ' From PDB input:         ',BRKSPGRP, 
-     +   ' To be written to output:',NAMSPG_CIF
-         CALL CCPERR(2,' Incompatible space group names')
-      END IF
-      IF(BRKSPGRP.EQ.' ') BRKSPGRP = NAMSPG_CIF(1:ILEN2)
 C
       II = 0
       DO 10 I=1,FILESOPEN
@@ -3461,46 +3001,22 @@ C
 
       ERRLIN = ' ERROR: in WBCELL file has not been opened'
       CALL CCPERR(1,ERRLIN)
+ 
+   20 CALL MMDB_F_RBSPGRP(IUNIT,SPGRP,IRET)
+C    Has the spacegroup name been set yet?
+      ILEN1 = LENSTR(SPGRP)
+      ILEN2 = LENSTR(NAMSPG_CIF)
+ 
+       IF(SPGRP.NE.' '.AND.
+     +    SPGRP(1:ILEN1).NE.NAMSPG_CIF(1:ILEN2)) then
+         WRITE(6,'(A,/,4(A,5x))') '*** Incompatible space group names:',
+     +   ' From PDB input:         ',SPGRP,
+     +   ' To be written to output:',NAMSPG_CIF
+         CALL CCPERR(2,' Incompatible space group names')
+      END IF
+      BRKSPGRP = NAMSPG_CIF(1:ILEN2)
 
-   20 IF (TYPE(II) .GT. 0) THEN
-        ERRLIN = ' ERROR: in WBCELL file is of type input'
-        CALL CCPERR(1,ERRLIN)
-      ENDIF
-      IF (ARGCELL(1) .EQ. 0.0) THEN
-        IF (IFCRYS) WRITE (UNIT(II),100) CELL,BRKSPGRP
-      ELSE
-        WRITE(UNIT(II),100) ARGCELL,BRKSPGRP
-      ENDIF
-
-      IF (ARGNCODE .EQ. 0) THEN
-        IF (IFCRYS) WRITE (UNIT(II),200) (I,(RF(I,J),J=1,3),I=1,3)
-      ELSE
-        DO 30 I = 1,6
-          CELL(I) = ARGCELL(I)
-   30   CONTINUE
-
-        CALL RBFROR
-        DO 40 I = 1,3
-          DO 40 J = 1,3
-            RO(J,I) = RR(J,I,ARGNCODE)
-   40   CONTINUE
-
-        RO(4,4) = 1.0     
-        DO 50 I=1,3
-          RO(I,4) = 0.0
-   50   CONTINUE
-
-        CALL RBRINV(RO,RF)
-        WRITE (UNIT(II),200) (I,(RF(I,J),J=1,3),I=1,3)
-      ENDIF
-
-      IFHDOUT = .TRUE.
+      CALL WBCELL(IUNIT,ARGCELL,ARGNCODE)
       RETURN
-C
-C---- Format Statements
-C
- 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a15)
- 200  FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
-     $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
       END
 C

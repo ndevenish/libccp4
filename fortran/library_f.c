@@ -1,11 +1,25 @@
+/*
+     This code is distributed under the terms and conditions of the
+     CCP4 licence agreement as `Part i)' software.  See the conditions
+     in the CCP4 manual for a copyright statement.
+*/
+
+/** @file library_f.c
+ *  FORTRAN API for library.c.
+ *  Charles Ballard
+ */
+
 /* FORTRAN API for library.c                                                */
 /* also include missing routines and wrappers for C commands                */
 /*                                                                          */
 /* revisions:                                                               */
 /*           (4/5/01) C.Ballard                                             */
-
+/*                    respond to first steps to make library.c              */
+/*                    more "C" like.                                        */
+/*           (21/8/01) C.Ballard                                            */
+/*                     error catching from library.c                        */
 /*                                                                          */
-/* % Copyright Daresbury Laboratory 1992--1995                              */
+/* % Copyright Daresbury Laboratory 1992--2001                              */
 /* % This is a CCP4 `part (i)' file for the purposes of copyright.          */
 /* % See the CCP4 distribution conditions for explanation.                  */
 /*                                                                          */
@@ -23,7 +37,7 @@
 /*                                                                          */
 /* \title{FORTRAN wrapper library routines}                                 */
 /* \date{$ $Date$ $}                                  */
-/* \author{This version: Dave Love, Daresbury}                              */
+/* \author{This version: Martyn Winn, Charles Ballard @ Daresbury}          */
 /*                                                                          */
 /* \makeindex                                                               */
 /*                                                                          */
@@ -34,11 +48,8 @@
 /* \maketitle                                                               */
 /*                                                                          */
 /* \noindent                                                                */
-/* This file contains the lowest level routines for the CCP4 Program        */
-/* Suite, mainly for i/o (as required by the {\tt diskio} routines) and     */
-/* bit-twiddling.  It's been partly re-engineered from a non-literate C     */
-/* file and isn't properly documented yet.  \fixme{It should generate user  */
-/*   documentation eventually}                                              */
+/* This file contains the wrappers for calling library.c from FORTRAN and   */
+/* some "missing" routines.                                                 */
 /* \bigskip                                                                 */
 /*                                                                          */
 /* \tableofcontents                                                         */
@@ -55,83 +66,69 @@
 /* Routine and  arguments &                      Purpose \\                 */
 /* \hline                                                                   */
 /* [[ustenv(string, result)]]         & set an environment variable  \\     */
-/* [[copen(iunit,filnam,istat)]]      & open random access file using [[fopen]] \\ */
-/* [[qclose(iunit)]]                  & shut random access file using [[fclose]] \\ */
-/* [[qmode(iunit,mode,nmcitm)]]       & change size of item in file ops. \\ */
-/* [[qread(iunit,array,nitems,ier)]]  & [[fread]] from random access file \\ */
-/* [[qwrite(iunit,array,nitems)]]     & [[fwrite]] to random access file \\ */
-/* [[qrarch(iunit,ipos,ireslt)]] & set up diskio number translation \\      */
-/* [[qwarch(iunit,ipos)]] & write `machine stamp' to diskio file \\         */
-/* [[qseek(iunit,irec,iel,lrecl)]]    & [[fseek]] within random access file \\ */
-/* [[qback(iunit,lrecl)]]             & backspace within random access file \\ */
-/* [[qskip(iunit,lrecl)]]             & skip forward within random access file \\ */
-/* [[cqinq(iunit,lfilnm,filnam,length)]] & inquire file status on the given stream \\ */
-/* [[qlocate(iunit,locate)]]          & current position within random access file  */
+/* [[ccpal1(routine,number,type,length)]] & allocate arrays of type and     */
+/*                                    & call routine \\                     */
 /* \end{tabular}                                                            */
 /*                                                                          */
 /*                                                                          */
-/* \section{Portability}                                                    */
+/* \section{Portability and Code}                                           */
 /*                                                                          */
-/* We aim for compatibility with K\&R\index{K&R@K\&R C} and                 */
-/* \index{ANSI C@\ac{ansi} C} \ac{ansi}~C\@ as well as \idx{VAX             */
-/*   C}\index{C!VAX}.  One particularly annoying                            */
-/* consequence is that we can't rely on [[#elif]] preprocessor              */
-/* directives.  I don't know whether anything needs to be changed for the   */
-/* new \idx{DEC C}, which is apparently \ac{ansi}\dots{}                    */
-/*                                                                          */
-/*                                                                          */
-/* \section{Code}                                                           */
-/*                                                                          */
-/* These are the components of the code.  The \LA{}guarded code\RA{} is     */
-/* executed when we've identified the platform.                             */
-/*                                                                          */
-/* A literate program like this is designed for human consumption.  It      */
-/* comprises `chunks' of code interspersed in commentary.  Chunks,          */
-/* indicated by \LA{}\dots\RA{} in code, are macro-substituted by their     */
-/* definitions (starting with \LA{}\dots\endmoddef) to produce              */
-/* compilable code.  The definitions of chunks may be added to later, as    */
-/* inidcated by \LA{}\dots\plusendmoddef.  Chunks are cross-referenced      */
-/* by their trailing tag.                                                   */
+/* System dependent names are handled in the FORTRAN_SUBR,                  */
+/* FORTRAN_FUN, FORTRAN_CALL macros defined in the header file.             */
+/* fpstr is a typedef which masks the intricacies of FORTRAN string         */
+/* passing.                                                                 */
 /*                                                                          */
 /* <*>=                                                                     */
 
-#include "library.h"
+#include "ccp4_lib.h"
+#include "ccp4_errno.h"
+#include "ccp4_fortran.h"
+static char rcsid[] = "$Id$";
 
-/* This creates a null-terminated C string from an input
-   string obtained from a Fortran call. Memory assigned
-   by malloc, so can be freed. */
-
+/** Creates a null-terminated C string from an input
+ * string obtained from a Fortran call. Trailing blanks are
+ * removed. If input string is blank then return string "\0".
+ * Memory assigned by malloc, so can be freed. 
+ * @param str1 pointer to string
+ * @param str1_len Fortran length of string
+ */
 char *ccp4_FtoCString(fpstr str1, int str1_len)
 {
   char *str2;
 
-  size_t length = ccp4_flength(FTN_STR(str1),FTN_LEN(str1));
-  if(!length)
+  size_t length = ccp4_utils_flength(FTN_STR(str1),str1_len);
+  if (length < 0)
     return NULL;
-  str2 = (char *) ccp4malloc((length+1)*sizeof(char));
-  strncpy(str2, FTN_STR(str1), length); 
+  str2 = (char *) ccp4_utils_malloc((length+1)*sizeof(char));
+  if(length) strncpy(str2, FTN_STR(str1), length); 
   str2[length] = '\0';
 
   return str2;
 }
 
-/* Transfer C string to Fortran string for passing back to Fortran call.
-   Characters after null-terminator may be junk, so pad with spaces. */
-
+/** Creates a Fortran string from an input C string for passing back to 
+ * Fortran call. Characters after null-terminator may be junk, so pad 
+ * with spaces. If input cstring is NULL, return blank string.
+ * @param str1 pointer Fortran to string
+ * @param str1_len Fortran length of string
+ * @param cstring input C string
+ */
 void ccp4_CtoFString(fpstr str1, int str1_len, const char *cstring)
 {
   int i;
 
-  if (str1_len > strlen(cstring)) {
+  if (!cstring) {
+    for (i = 0; i < str1_len; ++i) 
+      str1[i] = ' ';
+  } else if (str1_len > strlen(cstring)) {
     strcpy(FTN_STR(str1),cstring);
-    for (i = strlen(cstring); i < FTN_LEN(str1); ++i) 
+    for (i = strlen(cstring); i < str1_len; ++i) 
       str1[i] = ' ';
   } else {
     strncpy(FTN_STR(str1),cstring,str1_len);
   }
 }
 
-#if ! defined (VMS)
 /* \section{Miscellaneous routines}                                         */
 /* \subsection{{\tt subroutine ustenv(\meta{string}, \meta{result})}}       */
 /*                                                                          */
@@ -142,37 +139,46 @@ void ccp4_CtoFString(fpstr str1, int str1_len, const char *cstring)
 /*   vms.for} and that there is no standard way of setting and              */
 /* environment variable.  In a minimal \ac{posix} system it might be        */
 /* necessary to twiddle the environment strings explicitly.                 */
+/* Upon exit result contains [[0]] on Success, [[-1]] on Failure.           */
 /*                                                                          */
 /*                                                                          */
 /* <miscellaneous routines>=                                                */
 /* <ustenv code>=                                                           */
+#if ! defined (VMS)
 FORTRAN_SUBR ( USTENV, ustenv,
          (fpstr str, int *result, int str_len),
          (fpstr str, int *result),
          (fpstr str, int str_len, int *result))
 {
-  size_t Length;
   char *temp_name;
 
-  Length = ccp4_flength (FTN_STR(str), FTN_LEN(str));
-  temp_name = (char *) malloc(Length+1);
-  strncpy (temp_name, FTN_STR(str), Length);
-  temp_name[Length] = '\0'; 
+  temp_name = ccp4_FtoCString(FTN_STR(str), FTN_LEN(str));
 
-  *result = ccp4_ustenv (temp_name);
+  if (*result = ccp4_utils_setenv (temp_name))  
+    ccp4_fatal("USTENV/CCP4_SETENV: Memory allocation failure"); 
   free(temp_name);
 }
 #endif
 
+FORTRAN_SUBR ( USTIME, ustime,
+         (int *isec),
+         (int *isec),
+         (int *isec))
+{
+  *isec = time(NULL);
+}
+
+/* \section{Miscellaneous routines}                                         */
 /* \subsection{{\tt outbuf()}}                                              */
 /*                                                                          */
-/* This sets stdout to line buffering                                       */
+/* This sets stdout to line buffering (error not fatal)                     */
 /*                                                                          */
 /* <miscellaneous routines>=                                                */
 /* <outbuf code>=                                                           */
 FORTRAN_SUBR ( OUTBUF, outbuf, (), (), ())
 {
-  ccp4_outbuf();
+  if(ccp4_utils_outbuf())
+    ccp4_utils_print("OUTBUF:Can't turn off buffering");
 }
 
 /* \subsection{{\tt subroutine cunlink (\meta{filename})}}                  */
@@ -188,22 +194,19 @@ FORTRAN_SUBR ( CUNLINK, cunlink,
       (fpstr filename),
       (fpstr filename, int filename_len))
 {
-  size_t Length;
-  char *tempfile;
-
 #ifdef VMS
   return;                       /* can't do it */
 #else
-  Length = ccp4_flength (FTN_STR(filename), FTN_LEN(filename));
-  tempfile = (char *) malloc(Length+1);
-  strncpy (tempfile, FTN_STR(filename), Length);
-  tempfile[Length] = '\0';
+  char *temp_name;
 
-  if( unlink(tempfile) != 0)
-    qprint("CUNLINK: Can't unlink");
-  free(tempfile);
+  temp_name = ccp4_FtoCString(FTN_STR(filename), FTN_LEN(filename));
+
+  if( unlink(temp_name) )
+    ccp4_utils_print("CUNLINK: Can't unlink");
+  free(temp_name);
 #endif /* VMS */
 }
+
 /* \section{Dynamic memory allocation}                                      */
 /* It's nice to be able to determine array sizes at run time to avoid       */
 /* messy recompilation.  The only way effectively to get dynamic            */
@@ -349,275 +352,6 @@ FORTRAN_SUBR ( CCPAL1, ccpal1,
 #endif /* VMS */
 #endif
 
-/* \section{Diskio routines}                                                */
-/*                                                                          */
-/* \subsection{{\tt subroutine copen(\meta{iunit}, \meta{filename},         */
-/*     \meta{istat})}}                                                      */
-/* Opens \meta{filename} on diskio stream \meta{iunit}.  \meta{istat}       */
-/* corresponds to the open mode given to [[qopen]], from which [[copen]]    */
-/* is always called---see diskio documentation.                             */
-/*                                                                          */
-/* <diskio routines>=                                                       */ 
-FORTRAN_SUBR ( COPEN, copen,
-    (int *iunit, fpstr filename, int *istat, int filename_len),
-    (int *iunit, fpstr filename, int *istat),
-    (int *iunit, fpstr filename, int filename_len, int *istat))
-{
-  size_t Length;
-  char *tempfile;
-
-  Length = ccp4_flength (FTN_STR(filename), FTN_LEN(filename));
-  tempfile = (char *) malloc(Length+1);
-  strncpy (tempfile, FTN_STR(filename), Length);
-  tempfile[Length] = '\0';
-
-  *iunit = ccp4_qopen (tempfile, *istat);
-  free(tempfile);
-}
-
-/* \subsection{{\tt subroutine qrarch (\meta{iunit},                        */
-/*     \meta{ipos}, \meta{ireslt})}}                                        */
-/*                                                                          */
-/* For binary files with a well-determined structure in terms of            */
-/* [[float]]s and [[int]]s we may want to set up the connected stream to    */
-/* do transparent reading of files written on a machine with a different    */
-/* architecture.  This is currently the case for map\index{map files} and   */
-/* \idx{MTZ files} and this routine is called from \idx{mtzlib} and         */
-/* \idx{maplib}.                                                            */
-/*                                                                          */
-/*                                                                          */
-/* [[qrarch]] reads the \idx{machine stamp} at {\em word\/} \meta{ipos}     */
-/* for the diskio file on stream \meta{iunit} and sets up the appropriate   */
-/* bit-twiddling for subsequent [[qread]]s on that stream.  The             */
-/* information read from the file is returned in \meta{ireslt} in the       */
-/* form $\mbox{[[fileFT]]}+16\mbox{[[fileIT]]}$.  If the stamp is zero      */
-/* (as it would be for files written with a previous version of the         */
-/* library) we assume the file is in native format and needs no             */
-/* conversion in [[qread]]; in this case \meta{ireslt} will be zero and     */
-/* the caller can issue a warning.  [[Iconvert]] and [[Fconvert]] are       */
-/* used by [[qread]] to determine the type of conversion (if any) to be     */
-/* applied to integers and reals.                                           */
-/*                                                                          */
-/* Fudge:\index{fudge} Ian Tickle reports old VAX files which have a machine */
-/* stamp which is byte-flipped from the correct VAX value,although it should */
-/* always have been zero as far as I can see.  To accommodate this, set the */
-/* logical \idx{NATIVEMTZ} and the machine stamp won't be read for any      */
-/* input files for which [[qrarch]] is called.                              */
-/*                                                                          */
-/* Extra feature: logical/environment variable [[CONVERT_FROM]] may be set  */ 
-/* to one of [[BEIEEE]], [[LEIEEE]], [[VAX]] or [[CONVEXNATIVE]] to avoid   */
-/* reading the machine stamp and assume the file is from the stipulated     */
-/* archictecture for all input MTZ and map files for which [[qrarch]] is    */
-/* called.                                                                  */
-/*                                                                          */
-/* N.B.: leaves the stream positioned just after the machine stamp.         */
-/*                                                                          */
-FORTRAN_SUBR ( QRARCH, qrarch,
-    (int *iunit, int *ipos, int *ireslt),
-    (int *iunit, int *ipos, int *ireslt),
-    (int *iunit, int *ipos, int *ireslt))
-{
-  *ireslt = ccp4_qrarch (*iunit, *ipos);
-}
-/* \subsection{{\tt subroutine qwarch(\meta{iunit}, \meta{ipos})}}          */
-/* This is the complement of [[qrarch]], writing the native machine         */
-/* architecture information (`\idx{machine stamp}') to diskio stream        */
-/* \meta{iunit} at {\em word\/} \meta{ipos}.  Currently called              */
-/* from \idx{mtzlib} and \idx{maplib}.                                      */
-/*                                                                          */
-/* The machine stamp in [[mtstring]] is four nibbles in order, indicating   */
-/* complex and real format (must both be the same), integer format and      */
-/* character format (currently irrelevant).  The last two bytes of          */
-/* [[mtstring]] are currently unused and always zero.                       */
-/*                                                                          */
-/* N.B.: leaves the stream positioned just after the machine stamp.         */
-/*                                                                          */
-/* <diskio routines>=                                                       */
-FORTRAN_SUBR ( QWARCH, qwarch,
-    (int *iunit, int *ipos),
-    (int *iunit, int *ipos),
-    (int *iunit, int *ipos))
-{
-  ccp4_qwarch (*iunit, *ipos);
-}
-
-/* \subsection{{\tt subroutine qclose (\meta{iunit})}}                      */
-/* Closes the file open on \idx{diskio} stream \meta{iunit}.                */
-/*                                                                          */
-/* <diskio routines>=                                                       */
-FORTRAN_SUBR ( QCLOSE, qclose,
-    (int *iunit),
-    (int *iunit),
-    (int *iunit))
-{
-  ccp4_qclose (*iunit);
-}
-
-/* \subsection{{\tt subroutine qmode (\meta{iunit}, \meta{mode},            */
-/*     \meta{size})}}                                                       */
-/* Changes the \idx{diskio} \idx{access mode} for stream \meta{iunit} to    */
-/* \meta{mode}.  The resulting size in bytes of items for transfer is       */
-/* returned as \meta{size}.                                                 */
-/*                                                                          */
-/* <diskio routines>=                                                       */
-FORTRAN_SUBR ( QMODE, qmode,
-    (int *iunit, int *mode, int *size),
-    (int *iunit, int *mode, int *size),
-    (int *iunit, int *mode, int *size))
-{
-  *size = ccp4_qmode (*iunit, *mode);
-}
-
-/* \subsection{{\tt subroutine qread(\meta{iunit}, \meta{buffer},           */
-/*     \meta{nitems}, \meta{result})}}                                      */
-/*                                                                          */
-/* Reads \meta{nitems} in the current mode (set by [[qmode]]) from diskio stream */
-/* \meta{iunit} previously opened by [[qopen]](/[[copen]]) and returns      */
-/* \meta{result} which is [[0]] on success or [[-1]] at EOF\@.              */
-/* It aborts on an i/o error.                                               */
-/* Numbers written in a foreign format will be translated if necessary if   */
-/* the stream is connected to an MTZ or map file.                           */
-/*                                                                          */
-/* <diskio routines>=                                                       */
-FORTRAN_SUBR ( QREAD, qread,
-    (int *iunit, uint8 *buffer, int *nitems, int *result),
-    (int *iunit, uint8 *buffer, int *nitems, int *result),
-    (int *iunit, uint8 *buffer, int *nitems, int *result))
-{
-  *result = ccp4_qread (*iunit, buffer, *nitems);
-  if (*result == *nitems)
-    *result = 0;
-}
-
-/* \subsection{{\tt subroutine qreadc(\meta{iunit}, \meta{buffer},          */
-/*     \meta{result})}}                                                     */
-/*                                                                          */
-/* Fills [[CHARACTER]] buffer in byte mode from diskio stream               */
-/* \meta{iunit} previously opened by [[qopen]](/[[copen]]) and returns      */
-/* \meta{result} which is the number of items read or [[0]] on failure.     */
-/* Call it with a character substring if necessary to control the number    */
-/* of bytes read.                                                           */
-/*                                                                          */
-/* <diskio routines>=                                                       */
-FORTRAN_SUBR ( QREADC, qreadc,
-    (int *iunit, fpstr buffer, int *result, int buffer_len),
-    (int *iunit, fpstr buffer, int *result),
-    (int *iunit, fpstr buffer, int buffer_len, int *result))
-{
-  int n;
-
-  n = FTN_LEN(buffer);
-
-  *result = ccp4_qreadc (*iunit, FTN_STR(buffer), (size_t) n);
-  if (*result == n)
-    *result = 0;
-}
-
-/* \subsection{{\tt subroutine qwrite (\meta{iunit}, \meta{buffer},         */
-/*     \meta{nitems})}}                                                     */
-/* This write \meta{nitems} items from \meta{buffer} to [[qopen]]ed         */
-/* stream \meta{iunit} using the current mode.                              */
-/*                                                                          */
-/* <diskio routines>=                                                       */
-FORTRAN_SUBR ( QWRITE, qwrite,
-    (int *iunit, uint8 * buffer, int *nitems),
-    (int *iunit, uint8 * buffer, int *nitems),
-    (int *iunit, uint8 * buffer, int *nitems))
-{
-  ccp4_qwrite (*iunit, buffer, *nitems);
-}
-
-/* \subsection{{\tt subroutine qwritc (\meta{iunit}, \meta{buffer})}}       */
-/*                                                                          */
-/* Writes [[CHARACTER*(*)]] \meta{buffer} to [[qopen]]ed                    */
-/* stream \meta{iunit} in byte mode.                                        */
-/*                                                                          */
-/* <diskio routines>=                                                       */
-FORTRAN_SUBR ( QWRITC, qwritc,
-    (int *iunit, fpstr buffer, int buffer_len),
-    (int *iunit, fpstr buffer),
-    (int *iunit, fpstr buffer, int buffer_len))
-{
-  int n;
-
-  n = FTN_LEN(buffer);
-
-  ccp4_qwritc (*iunit, FTN_STR(buffer), (size_t) n);
-}
-
-/* \subsection{{\tt subroutine qseek (\meta{iunit}, \meta{irec},            */
-/*     \meta{iel}, \meta{lrecl})}}                                          */
-/* Seeks to element \meta{iel} in record \meta{irec} in diskio stream       */
-/* \meta{iunit} whose record length is \meta{lrecl}.                        */
-/*                                                                          */
-/* <diskio routines>=                                                       */
-FORTRAN_SUBR ( QSEEK, qseek,
-    (int *iunit, int *irec, int *iel, int *lrecl),
-    (int *iunit, int *irec, int *iel, int *lrecl),
-    (int *iunit, int *irec, int *iel, int *lrecl))
-{
-  /*switch from FORTRAN offset to C offset */
-  ccp4_qseek (*iunit, *irec-1, *iel-1, *lrecl);
-}
-
-/* \subsection{{\tt subroutine qback (\meta{iunit}, \meta{lrecl})}}         */
-/* Backspaces one record, of length \meta{lrecl} on diskio stream \meta{iunit}. */
-/*                                                                          */
-/* <diskio routines>=                                                       */
-FORTRAN_SUBR ( QBACK, qback,
-    (int *iunit, int *lrecl),
-    (int *iunit, int *lrecl),
-    (int *iunit, int *lrecl))
-{
-  ccp4_qback (*iunit, *lrecl);
-}
-
-/* \subsection{{\tt subroutine qskip (\meta{iunit}, \meta{lrecl})}}         */
-/* Skip forward 1 record of length \meta{lrecl} on diskio stream \meta{iunit}.*/
-/*                                                                          */
-/* <diskio routines>=                                                       */
-FORTRAN_SUBR ( QSKIP, qskip,
-    (int *iunit, int *lrecl),
-    (int *iunit, int *lrecl),
-    (int *iunit, int *lrecl))
-{
-  ccp4_qskip (*iunit, *lrecl);
-}
-
-/* \subsection{{\tt subroutine cqinq (\meta{istrm}, \meta{filnam},          */
-/*     \meta{length})}}                                                     */
-/* Returns the name \meta{filnam} and \meta{length} of the file (if any)    */
-/* open on diskio stream \meta{istrm}.                                      */
-/*                                                                          */
-/* <diskio routines>=                                                       */
-FORTRAN_SUBR ( CQINQ, cqinq,
-    (int *istrm, fpstr filename, int *length, int filename_len),
-    (int *istrm, fpstr filename, int *length),
-    (int *istrm, fpstr filename, int filename_len, int *length))
-{
-  char *real_name;
-  size_t Length;
-
-  Length = ccp4_flength (FTN_STR(filename), FTN_LEN(filename));
-  real_name = (char *) malloc(Length+1);
-  strncpy (real_name, FTN_STR(filename), Length);
-  real_name[Length] = '\0';
-
-  *length = (int) ccp4_qinq (*istrm, real_name);
-  free(real_name);
-}
-
-/* \subsection{{\tt subroutine qlocate (\meta{iunit}, \meta{locate})}}      */
-/* Returns the current position \meta{locate} in the diskio stream \meta{iunit}. */
-/*                                                                          */
-/* <diskio routines>=                                                       */
-FORTRAN_SUBR ( QLOCATE, qlocate,
-    (int *iunit, int *locate),
-    (int *iunit, int *locate),
-    (int *iunit, int *locate))
-{
-  *locate = (int) ccp4_qlocate (*iunit);
-}
 /* \section{`Magic' numbers}                                                */
 /*                                                                          */
 /* When, for instance, an $F$ is unobserved in a derivative, we might       */
@@ -676,7 +410,7 @@ FORTRAN_SUBR ( QNAN, qnan,
 {
   *realnum = ccp4_nan ();
 }
-/* \subsection{Testing a value: {\tt int cisnan(\meta{real})}}              */
+/* \subsection{Testing a value: {\tt int qisnan(\meta{real})}}              */
 /*                                                                          */
 /* We want a \ft{} logical function [[qisnan]] to test whether its argument */
 /* is a \idx{NaN} or \idx{Rop}.  We have to do this by writing a C          */
@@ -686,12 +420,12 @@ FORTRAN_SUBR ( QNAN, qnan,
 /* trivial interface [[QISNAN]].                                            */
 /*                                                                          */
 /* <magic numbers>=                                                         */
-FORTRAN_FUN (int, CISNAN, cisnan,
+FORTRAN_FUN (int, QISNAN, qisnan,
 	     (union float_uint_uchar *realnum),
 	     (union float_uint_uchar *realnum),
 	     (union float_uint_uchar *realnum))
 {
-  return (ccp4_isnan (realnum));
+  return (_BTOLV(ccp4_utils_isnan (realnum)));
 }
 
 /* \subsection{Absent data test for {\tt mtzlib}: {\tt subroutine           */
@@ -709,7 +443,7 @@ FORTRAN_SUBR ( CCPBML, ccpbml,
     (int *ncols, union float_uint_uchar cols[]),
     (int *ncols, union float_uint_uchar cols[]))
 {
-  ccp4_bml (*ncols, cols) ;
+  ccp4_utils_bml (*ncols, cols) ;
 }
 
 /* \subsection{Updating MTZ column ranges: {\tt subroutine ccpwrg           */
@@ -725,7 +459,7 @@ FORTRAN_SUBR ( CCPWRG, ccpwrg,
     (int *ncols, union float_uint_uchar cols[], float wminmax[]),
     (int *ncols, union float_uint_uchar cols[], float wminmax[]))
 {
-  ccp4_wrg (*ncols, cols, wminmax) ;
+  ccp4_utils_wrg (*ncols, cols, wminmax) ;
 }
 
 /* \subsection{Routines for Data Harvesting: {\tt subroutine hgetlimits}}    */
@@ -736,7 +470,7 @@ FORTRAN_SUBR ( HGETLIMITS, hgetlimits,
     (int *IValueNotDet, float *ValueNotDet),
     (int *IValueNotDet, float *ValueNotDet))
 {
-  ccp4_hgetlimits (IValueNotDet, ValueNotDet);
+  ccp4_utils_hgetlimits (IValueNotDet, ValueNotDet);
 }
 
 /* Wrap-around for mkdir function. Returns 0 if successful, 1 if directory  */
@@ -751,7 +485,7 @@ FORTRAN_SUBR ( CMKDIR, cmkdir,
   temp_path = ccp4_FtoCString(FTN_STR(path), FTN_LEN(path));
   temp_cmode = ccp4_FtoCString(FTN_STR(cmode), FTN_LEN(cmode));
 
-  *result = ccp4_mkdir (temp_path, temp_cmode);
+  *result = ccp4_utils_mkdir (temp_path, temp_cmode);
   free(temp_path);
   free(temp_cmode);
 }
@@ -768,337 +502,10 @@ FORTRAN_SUBR ( CCHMOD, cchmod,
   temp_path = ccp4_FtoCString(FTN_STR(path), FTN_LEN(path));
   temp_cmode = ccp4_FtoCString(FTN_STR(cmode), FTN_LEN(cmode));
 
-  *result = ccp4_chmod (temp_path, temp_cmode);
+  *result = ccp4_utils_chmod (temp_path, temp_cmode);
   free(temp_path);
   free(temp_cmode);
 }
-
-#ifdef _AIX
-/* \section{Missing system support}                                         */
-/*                                                                          */
-/* Routines often found in {\tt \idx{libU77}.a} or somesuch are missing     */
-/* on some systems.\index{HPUX}\index{AIX}                                  */
-/*                                                                          */
-/* <AIX support>=                                                           */
-void idate (int iarray[3])
-{
-     struct tm *lt;
-     time_t tim;
-     tim = time(NULL);
-     lt = localtime(&tim);
-     iarray[0] = lt->tm_mday;
-     iarray[1] = lt->tm_mon+1;  /* need range 1-12 */
-     iarray[2] = lt->tm_year + 1900;
-}
-#endif
-#if defined (__hpux) || defined (_AIX)
-/* <AIX and HPUX support>=                                                  */
-void gerror (str, Lstr)
-char *str;
-int  Lstr;
-{
-  int i;
-
-  if (errno == 0) {             /* Avoid `Error 0' or some such message */
-    for (i=1; Lstr; i++)
-      str[i] = ' ';
-  } else {
-    (void) strncpy (str, strerror (errno), Lstr);
-    for (i = strlen (str); i < Lstr; i++) str[i] = ' ';  /* pad with spaces */
-  }
-} /* End of gerror (str, Lstr) */
-
-int ierrno () {
-  return errno;
-}
-
-void itime (array)
-     int array[3];
-{
-     struct tm *lt;
-     time_t tim;
-     tim = time(NULL);
-     lt = localtime(&tim);
-     array[0] = lt->tm_hour; array[1] = lt->tm_min; array[2] = lt->tm_sec;
-}
-
-static long clk_tck = 0;
-
-#if 0                           /* dtime isn't used at present */
-float dtime (tarray)
-     float tarray[2];
-{
-  struct tms buffer;
-  time_t utime, stime;
-  static time_t old_utime = 0, old_stime = 0;
-  if (! clk_tck) clk_tck = sysconf(_SC_CLK_TCK);
-  (void) times(&buffer);
-  utime = buffer.tms_utime; stime = buffer.tms_stime;
-  tarray[0] = ((float)(utime - old_utime)) / (float)clk_tck;
-  tarray[1] = ((float)(stime - old_stime)) / (float)clk_tck;
-  old_utime = utime; old_stime = stime;
-  return (tarray[0]+tarray[1]);
-}
-#endif                          /* dtime */
-
-float etime (tarray)
-     float tarray[2];
-{
-  struct tms buffer;
-  time_t utime, stime;
-  if (! clk_tck) clk_tck = sysconf(_SC_CLK_TCK);
-  (void) times(&buffer);
-  tarray[0] = (float) buffer.tms_utime / (float)clk_tck;
-  tarray[1] = (float) buffer.tms_stime / (float)clk_tck;
-  return (tarray[0]+tarray[1]);
-}
-
-#endif             /*  HPUX and AIX support */
-
-/** Lahey Express LF95 6.0 **/
-#ifdef LF95
-int gerror_ (str, Lstr)
-char *str;
-int  Lstr;
-{
-  int i;
-
-  if (errno == 0) {             /* Avoid `Error 0' or some such message */
-    for (i=1; Lstr; i++)
-      str[i] = ' ';
-  } else {
-    (void) strncpy (str, strerror (errno), Lstr);
-    for (i = strlen (str); i < Lstr; i++) str[i] = ' ';  /* pad with spaces */
-  }
-  return 0;
-}
-#endif
-
-#if defined(ABSOFT_F77) || defined(LAHEY)
-/*  int exit_ (status) */
-/*       int *status; */
-/*  { */
-/*    f_exit (); */
-/*    exit (*status); */
-/*  } */
-
-/*  int time_ () */
-/*  { */
-/*    return (int) time (NULL); */
-/*  } */
-
-/*  int time_ () */
-/*  { */
-/*    return (int) time (NULL); */
-/*  } */
-
-int getpid_ ()
-{
-  return (int) getpid ();
-}
-
-int idate_ (iarray)
-int iarray[3];
-{
-  struct tm *lt;
-  time_t tim;
-  tim = time(NULL);
-  lt = localtime(&tim);
-  iarray[0] = lt->tm_mday;
-  iarray[1] = lt->tm_mon+1;
-  iarray[2] = lt->tm_year + 1900;
-  return 0;
-}
-
-int gerror_ (str, Lstr)
-char *str;
-int  Lstr;
-{
-  int i;
-
-  if (errno == 0) {             /* Avoid `Error 0' or some such message */
-    for (i=1; Lstr; i++)
-      str[i] = ' ';
-  } else {
-    (void) strncpy (str, strerror (errno), Lstr);
-    for (i = strlen (str); i < Lstr; i++) str[i] = ' ';  /* pad with spaces */
-  }
-  return 0;
-}
-
-int ierrno_ () {
-  return errno;
-}
-
-/*  void itime (array) */
-/*       int array[3]; */
-/*  { */
-/*       struct tm *lt; */
-/*       time_t tim; */
-/*       tim = time(NULL); */
-/*       lt = localtime(&tim); */
-/*       array[0] = lt->tm_hour; array[1] = lt->tm_min; array[2] = lt->tm_sec; */
-/*  } */
-
-int itime_ (array)
-int array[3];
-{
-  struct tm *lt;
-  time_t tim;
-  tim = time(NULL);
-  lt = localtime(&tim);
-  array[0] = lt->tm_hour; array[1] = lt->tm_min; array[2] = lt->tm_sec;
-}
-
-static long clk_tck = 0;
-
-float etime_ (tarray)      /* NB `doublereal' return for f2c. */
-     float tarray[2];
-{
-  struct tms buffer;
-  time_t utime, stime;
-  if (! clk_tck) clk_tck = sysconf(_SC_CLK_TCK);
-  (void) times(&buffer);
-  tarray[0] = (float) buffer.tms_utime / (float)clk_tck;
-  tarray[1] = (float) buffer.tms_stime / (float)clk_tck;
-  return (tarray[0]+tarray[1]);
-}
-
-#endif              /* ABSOFT_F77 support  */
-
-
-#if defined(F2C) || defined(G77)
-/* <f2c support>=                                                           */
-int exit_ (status)
-     int *status;
-{
-  f_exit ();                    /* may or may not be registered with
-                                   exit, depending on the C libraries
-                                   capabilities, but is idempotent */
-  exit (*status);
-}
-
-int time_ ()
-{
-  return (int) time (NULL);
-}
-
-int getpid_ ()
-{
-  return (int) getpid ();
-}
-
-/* following are from libI77/fio.h */
-#define MXUNIT 100
-typedef struct
-{       FILE *ufd;      /*0=unconnected*/
-        char *ufnm;
-        long uinode;
-        int udev;
-        int url;        /*0=sequential*/
-        flag useek;     /*true=can backspace, use dir, ...*/
-        flag ufmt;
-        flag uprnt;
-        flag ublnk;
-        flag uend;
-        flag uwrt;      /*last io was write*/
-        flag uscrtch;
-} unit;
-extern unit f__units[];
-#define TRUE_ (1)
-#define FALSE_ (0)
-#define err(f,m,s) {if(f) errno= m; else f__fatal(m,s); return(m);}
-/* end of fio.h extract */
-
-int isatty_ (lunit)
-     int *lunit;
-{
-  if (*lunit>=MXUNIT || *lunit<0)
-    err(1,101,"isatty");
-  /* f__units is a table of descriptions for the unit numbers (defined
-     in io.h) with file descriptors rather than streams */
-  return (isatty(fileno((f__units[*lunit]).ufd)) ? TRUE_ : FALSE_);
-}
-
-int idate_ (iarray)
-     int iarray[3];
-{
-     struct tm *lt;
-     time_t tim;
-     tim = time(NULL);
-     lt = localtime(&tim);
-     iarray[0] = lt->tm_mday;
-     iarray[1] = lt->tm_mon+1;  /* need range 1-12 */
-     iarray[2] = lt->tm_year + 1900;
-     return 0;
-}
-
-int gerror_ (str, Lstr)
-char *str;
-int  Lstr;
-{
-  int i;
-
-  if (errno == 0) {             /* Avoid `Error 0' or some such message */
-    for (i=1; Lstr; i++)
-      str[i] = ' ';
-  } else {
-    (void) strncpy (str, strerror (errno), Lstr);
-    for (i = strlen (str); i < Lstr; i++) str[i] = ' ';  /* pad with spaces */
-  }
-  return 0;
-}
-
-int ierrno_ () {
-  return errno;
-}
-
-int itime_ (array)
-     int array[3];
-{
-     struct tm *lt;
-     time_t tim;
-     tim = time(NULL);
-     lt = localtime(&tim);
-     array[0] = lt->tm_hour; array[1] = lt->tm_min; array[2] = lt->tm_sec;
-}
-
-static long clk_tck = 0;
-
-doublereal etime_ (tarray)      /* NB `doublereal' return for f2c. */
-     float tarray[2];
-{
-  struct tms buffer;
-  time_t utime, stime;
-  if (! clk_tck) clk_tck = sysconf(_SC_CLK_TCK);
-  (void) times(&buffer);
-  tarray[0] = (float) buffer.tms_utime / (float)clk_tck;
-  tarray[1] = (float) buffer.tms_stime / (float)clk_tck;
-  return (tarray[0]+tarray[1]);
-}
-/* These ought to be intrinsic, but they should only be applied to          */
-/* [[INTEGER]] arguments.  The types [[integer]] and [[logical]] are both   */
-/* assumed to be [[int]].                                                   */
-/*                                                                          */
-/* <f2c support>=                                                           */
-int /* integer */ ibset_ (a, b)
-     int /* integer */ *a, *b;
-{
-  return (*a) | 1<<(*b);
-}
-
-int /* integer */ ibclr_ (a, b)
-     int /* integer */ *a, *b;
-{
-  return (*a) & ~(1<<(*b));
-}
-
-int /* logical */ btest_ (a, b)
-     int /* integer */ *a, *b;
-{
-  return ((((unsigned long) *a)>>(*b)))&1 ? TRUE_ : FALSE_;
-}
-#endif              /* F2C support  */
 
 /* isatty doesnt seem to be in Mircrosoft Visual Studdio so this is a fudge */
 #if CALL_LIKE_MVS
@@ -1115,11 +522,3 @@ float __stdcall ERFC(float *value)
 }
 #endif
 
-/* erfc isn't available for Intel compiler ? */
-#ifdef IFC
-float erfc_(float *value)
-{
-  return (float) ccp4_erfc( (double) *value);
-}
-#endif
- 

@@ -8,59 +8,37 @@
 #        make install         - to copy the results into binary directory
 #        make test            - to compile and run the library testbed
 
-# This is horrible in the hope of being able to cater for all makes
-# and still have the advantage of not re-making the library
-# un-necessarily without sentinel files.  A combination of makes not
-# understanding VPATH and not dealing with foo(bar) targets well and
-# the fact that the Fortran sources are stored as .for means that we
-# need to do everything explicitly -- ugh.  Note that we do assume
-# that the make recognises a target foo.a(bar.o) as a library member.
-# Life would be so much easier if we could rely on using GNU make; I
-# wonder whether we should distribute it...
-
-# The modules in the library are mostly individual Fortran routines
-# and the results of compiling whole C source files.  We don't put
-# whole fortran modules in as a monolithic .o file because that can
-# make the linked programs larger and also causes problems (at least
-# on Convex) with multiple symbol definitions where programs define a
-# routine of a name already in the library and other routines from
-# that module are called.  Thus most of the targets are built like
-# this; for module foo:
+# The following <module>'s are available:
 #
-# * rm any existing foo.dir and create a new one;
-# * cd into foo.dir and fsplit the source file into it;
-# * compile .o files from *.f;
-# * establish a dummy `sentinel' file foo.o in the library.  This
-#   seems perferable to me to leaving sentinel files around in the
-#   source directory.  (The sentinel is made last to avoid problems if
-#   the make is interrupted.)  My original tactic of using an empty
-#   file doesn't work in AIX because it isn't in object format ;
-# * ar *.o into ../libccp4.a;
-# * rm *.o from foo.dir (we want to leave *.f there so you can do
-#   symbolic debug, see below).
-# The individual files are actually compiled with a separate $(FC)
-# invocation for each, rather than using *.f.)  This may slow things
-# down significantly, but means we can and also include the absolute
-# path for symbolic debugging without risking an overly-long command
-# line that may break sh.
+# all      - (default) make entire CCP4 library
+# cmtz     - make C language library for MTZ i/o only
+# cmap     - make C language library for CCP4 map i/o only
+# csym     - make C language library for symmetry only
+# mmdb     - make Eugene's mmdb library for coordinates
+# cmtz_py  - make shared library for use as python module
+# cmap_py  - make shared library for use as python module
+# csym_py  - make shared library for use as python module
+# mmdb_py  - make shared library for use as python module
+# cmtz_tcl  - make shared library for use as python module
+# cmap_tcl  - make shared library for use as python module
+# csym_tcl  - make shared library for use as python module
+# cmtz_pl  - make shared library for use as python module
+# cmap_pl  - make shared library for use as python module
+# csym_pl  - make shared library for use as python module
+# umtz     - make micro C language library for MTZ
+# mmtz     - make milli C language library for MTZ
+
+##### variable definitions ######
 
 # The following variables are expected to be set by configure:
 # top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
 # INSTALL_PROGRAM INSTALL_DATA SHARE_LIB SHARE_INST
 
 SHELL       = /bin/sh
-srcdir	    = $(top_srcdir)/lib/src
+srcdir	    = $(top_srcdir)/lib/newsrc
+mmdbsrcdir  = $(top_srcdir)/lib/newsrc/mmdb
 LIB_DIR     = .
-L           = $(LIB_DIR)/libccp4.a#        convenient abbreviation only
 fsplit_dir  = $(srcdir)#directory where fsplit has been made/lives
-
-# The following is for the benefit of Alliant, which is the only
-# system I know where you can't use -L to specify the load path.
-# (This works since make variables are defined in the environment in
-# Alliant (GNU) make.)  We'd like to use $(LIB_DIR) instead of `.'
-# here, but can't since that would require `:=' instead of `=' and
-# confuse other makes.
-LD_PATH = . /lib /usr/lib /usr/local/lib
 
 # how to add a member to an archive (second and first args
 # respectively); this might need to be set by configure:
@@ -73,87 +51,203 @@ AR          = ar r
 # caveat naming routines!  Always use this after fsplit for safety...
 RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
 
-# modules to go in libccp4.a:
-LIBTARGETS = $(CIFLIBTARGETS) ccplib fftlib maplib parser rwbrook modlib \
-           symlib lgglib harvlib mtzlib diskio unix plot84lib libhtml \
-           binsortint library library_f plotsubs keyparse pack_f pack_c \
-           pxxml
+# define the final library files
 
-all : fsplit $L
+L           = $(LIB_DIR)/libnewccp4.a
+LCMTZ       = $(LIB_DIR)/libcmtz.a
+LCMAP       = $(LIB_DIR)/libcmap.a
+LCSYM       = $(LIB_DIR)/libcsym.a
+LMMDB       = $(LIB_DIR)/libmmdb.a
+CMTZPYMODULE = $(LIB_DIR)/cmtzmodule.so
+CMAPPYMODULE = $(LIB_DIR)/cmapmodule.so
+CSYMPYMODULE = $(LIB_DIR)/csymmodule.so
+MMDBPYMODULE = $(LIB_DIR)/MMDBc.so
+CMTZTCLPACKAGE = $(LIB_DIR)/cmtz_tcl.so
+CMAPTCLPACKAGE = $(LIB_DIR)/cmap_tcl.so
+CSYMTCLPACKAGE = $(LIB_DIR)/csym_tcl.so
+CMTZPLPACKAGE = $(LIB_DIR)/cmtz_pl.so
+CMAPPLPACKAGE = $(LIB_DIR)/cmap_pl.so
+CSYMPLPACKAGE = $(LIB_DIR)/csym_pl.so
+LUMTZ       = $(LIB_DIR)/libumtz.a
+LMMTZ       = $(LIB_DIR)/libmmtz.a
 
-.PRECIOUS : $L # don't zap the library if a component fails
+MMDBOBJS = bfgs_min.o mmdb_chain.o    mmdb_manager.o  mmdb_symop.o \
+           file_.o    mmdb_cifdefs.o  mmdb_mask.o     mmdb_title.o \
+           linalg_.o  mmdb_coormngr.o mmdb_mmcif.o    mmdb_utils.o \
+           machine_.o mmdb_cryst.o    mmdb_model.o    stream_.o \
+           mattype_.o mmdb_file.o     mmdb_rwbrook.o  mmdb_atom.o \
+           mmdb_graph.o  mmdb_selmngr.o  mmdb_align.o \
+           mmdb_tables.o math_.o mmdb_sbase.o mmdb_uddata.o \
+           mmdb_xml.o   mmdb_bondmngr.o
+CORELIBOBJS = library_err.o library_file.o  library_utils.o \
+              ccp4_array.o ccp4_parser.o cvecmat.o
+CGENERALOBJS = ccp4_program.o ccp4_general.o
+CMTZOBJS = cmtzlib.o
+UMTZOBJS = umtzlib.o
+MMTZOBJS = mmtzlib.o
+CMAPOBJS = cmap_accessor.o cmap_close.o cmap_data.o cmap_header.o \
+           cmap_labels.o cmap_open.o cmap_skew.o cmap_stats.o \
+           cmap_symop.o
+CSYMOBJS = csymlib.o 
+CUCOBJS = ccp4_unitcell.o
+FINTERFACEOBJS = cmtzlib_f.o csymlib_f.o ccp4_parser_f.o library_f.o \
+                ccp4_diskio_f.o ccp4_general_f.o ccp4_unitcell_f.o cmaplib_f.o
+FORTRANOBJS =  $L(parser.o) $L(fftlib.o) $L(lgglib.o) $L(libhtml.o) $L(modlib.o) \
+               $L(plotsubs.o) $L(plot84lib.o) $L(pxxml.o) $L(ccplib.o) $L(unix.o) \
+               $L(sortlib.o) $L(rwbrook.o) $(CIFLIBOBJS) $L(harvlib.o) $L(keyparse.o)
+CMTZPYOBJS = cmtzlib_python_wrap.o
+CMAPPYOBJS = cmaplib_python_wrap.o
+CSYMPYOBJS = csymlib_python_wrap.o
+MMDBPYOBJS = mmdb_python_wrap.o
+CMTZTCLOBJS = cmtzlib_tcl_wrap.o
+CMAPTCLOBJS = cmaplib_tcl_wrap.o
+CSYMTCLOBJS = csymlib_tcl_wrap.o
+CMTZPLOBJS = cmtzlib_pl_wrap.o
+CMAPPLOBJS = cmaplib_pl_wrap.o
+CSYMPLOBJS = csymlib_pl_wrap.o
 
-# for some reason the SysVile make insists on re-building the `unix' target
-# each time unless we zap the default suffixes -- gmake doesn't.  give it a
-# dummy one to avoid a `No suffixes.' message
-.SUFFIXES:
-.SUFFIXES:	.dummy
+##### Makefile targets ######
 
-# probably only recognised by GNU make:
-.PHONY : all clean install $(LIBTARGETS) ranlib realclean distclean \
-         test help test-lib uninstall tags
+all:  fsplit $L $(FORTRANOBJS)
 
-$L : $(CIFLIBOBJS) $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
-	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) \
-	  $L(mtzlib.o) $L(lgglib.o) $L(harvlib.o) $L(diskio.o) $L(unix.o) \
-	  $L(binsortint.o) $L(library.o) $L(library_f.o) $L(plot84lib.o) \
-	  $L(libhtml.o) $L(plotsubs.o) $L(keyparse.o) \
-	  $L(pack_c.o) $L(pack_f.o) $L(pxxml.o)
-# titan special:
-	-(test -f /usr/lib/fortran/time.o && $(MAKE) '$L(time.o)') || true
+$L : $(MMDBOBJS) $(CORELIBOBJS) $(CGENERALOBJS) $(CUCOBJS) \
+     $(CMTZOBJS) $(CMAPOBJS) $(CSYMOBJS) $(FINTERFACEOBJS)
+	$(AR) $L $?
 # we could presumably avoid the next two steps if we haven't changed anything
 	$(RANLIB) $@
 # maybe create shared library
 	$(SHARE_LIB)
 
-test-lib : $(srcdir)/testlib.f $L(library.o) $L(library_f.o) $L(unix.o) $L(ccplib.o) \
-	$L(diskio.o)
-# titan special:
-	-(test -f /usr/lib/fortran/time.o && $(MAKE) '$L(time.o)') || true
-	$(RANLIB) $L
+# cmtz library only
+
+cmtz: $(LCMTZ)
+
+$(LCMTZ): $(CMTZOBJS) $(CORELIBOBJS)
+	$(AR) $(LCMTZ) $?
+	$(RANLIB) $@
+# maybe create shared library - fixme!
+
+# umtz library only
+
+umtz: $(LUMTZ)
+
+$(LUMTZ): $(UMTZOBJS) $(CORELIBOBJS)
+	$(AR) $(LUMTZ) $?
+	$(RANLIB) $@
+
+# mmtz library only
+
+mmtz: $(LMMTZ)
+
+$(LMMTZ): $(MMTZOBJS) $(UMTZOBJS) $(CORELIBOBJS)
+	$(AR) $(LMMTZ) $?
+	$(RANLIB) $@
+
+# cmap library only
+
+cmap: $(LCMAP)
+
+$(LCMAP): $(CMAPOBJS) $(CORELIBOBJS)
+	$(AR) $(LCMAP) $?
+	$(RANLIB) $@
+
+# csym library only
+
+csym: $(LCSYM)
+
+$(LCSYM): $(CSYMOBJS) $(CORELIBOBJS)
+	$(AR) $(LCSYM) $?
+	$(RANLIB) $@
+# maybe create shared library - fixme!
+
+# Eugene's mmdb library for coordinates
+
+mmdb: $(LMMDB)
+
+$(LMMDB): $(MMDBOBJS)
+	$(AR) $(LMMDB) $?
+	$(RANLIB) $@
+# maybe create shared library - fixme!
+
+cmtz_py: $(CMTZPYMODULE)
+
+$(CMTZPYMODULE): $(LCMTZ) $(CMTZPYOBJS)
+	$(SHARE_MODULE) $(LCMTZ) $(CMTZPYOBJS) -o $(CMTZPYMODULE)
+
+cmap_py: $(CMAPPYMODULE)
+
+$(CMAPPYMODULE): $(LCMAP) $(CMAPPYOBJS)
+	$(SHARE_MODULE) $(LCMAP) $(CMAPPYOBJS) -o $(CMAPPYMODULE)
+
+csym_py: $(CSYMPYMODULE)
+
+$(CSYMPYMODULE): $(CSYMOBJS) $(CORELIBOBJS) $(CSYMPYOBJS)
+	$(SHARE_MODULE) $(CSYMOBJS) $(CORELIBOBJS) $(CSYMPYOBJS) -o $(CSYMPYMODULE)
+
+mmdb_py: $(MMDBPYMODULE)
+
+$(MMDBPYMODULE): $(LMMDB) $(MMDBPYOBJS)
+	$(SHARE_MODULE) $(LMMDB) $(MMDBPYOBJS) -o $(MMDBPYMODULE) -lC
+
+cmtz_tcl: $(CMTZTCLPACKAGE)
+
+$(CMTZTCLPACKAGE): $(LCMTZ) $(CMTZTCLOBJS)
+	$(SHARE_MODULE) $(LCMTZ) $(CMTZTCLOBJS) -o $(CMTZTCLPACKAGE)
+
+cmap_tcl: $(CMAPTCLPACKAGE)
+
+$(CMAPTCLPACKAGE): $(LCMAP) $(CMAPTCLOBJS)
+	$(SHARE_MODULE) $(LCMAP) $(CMAPTCLOBJS) -o $(CMAPTCLPACKAGE)
+
+csym_tcl: $(CSYMTCLPACKAGE)
+
+$(CSYMTCLPACKAGE): $(CSYMOBJS) $(CORELIBOBJS) $(CSYMTCLOBJS)
+	$(SHARE_MODULE) $(CSYMOBJS) $(CORELIBOBJS) $(CSYMTCLOBJS) -o $(CSYMTCLPACKAGE)
+
+cmtz_pl: $(CMTZPLPACKAGE)
+
+$(CMTZPLPACKAGE): $(LCMTZ) $(CMTZPLOBJS)
+	$(SHARE_MODULE) $(LCMTZ) $(CMTZPLOBJS) -o $(CMTZPLPACKAGE)
+
+cmap_pl: $(CMAPPLPACKAGE)
+
+$(CMAPPLPACKAGE): $(LCMAP) $(CMAPPLOBJS)
+	$(SHARE_MODULE) $(LCMAP) $(CMAPPLOBJS) -o $(CMAPPLPACKAGE)
+
+csym_pl: $(CSYMPLPACKAGE)
+
+$(CSYMPLPACKAGE): $(CSYMOBJS) $(CORELIBOBJS) $(CSYMPLOBJS)
+	$(SHARE_MODULE) $(CSYMOBJS) $(CORELIBOBJS) $(CSYMPLOBJS) -o $(CSYMPLPACKAGE)
+
+##### How to compile stuff #####
+
+# C library
+
+$(MMDBOBJS): 
+	$(CCPP) $(CPPFLAGS) -I$(mmdbsrcdir) -c $(mmdbsrcdir)/`basename $@ .o`.cpp
+
+$(CORELIBOBJS) $(CGENERALOBJS) $(CMTZOBJS) $(CMAPOBJS) $(CUCOBJS) \
+            $(CSYMOBJS) $(FINTERFACEOBJS) $(UMTZOBJS) $(MMTZOBJS): 
+	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/`basename $@ .o`.c
+
+$(CMTZPYOBJS) $(CMAPPYOBJS) $(CSYMPYOBJS): 
+	$(CC) $(CFLAGS) -I$(srcdir) -I$(PYTHON_INCLUDE) -c $(srcdir)/`basename $@ .o`.c
+
+$(MMDBPYOBJS): 
+	$(CCPP) $(CPPFLAGS) -I$(mmdbsrcdir) -I$(PYTHON_INCLUDE) \
+            -c $(mmdbsrcdir)/`basename $@ .o`.cpp
+
+$(CMTZTCLOBJS) $(CMAPTCLOBJS) $(CSYMTCLOBJS): 
+	$(CC) $(CFLAGS) -I$(srcdir) -I$(TCL_INCLUDE) -c $(srcdir)/`basename $@ .o`.c
+
+$(CMTZPLOBJS) $(CMAPPLOBJS) $(CSYMPLOBJS): 
+	$(CC) $(CFLAGS) -I$(srcdir) -I$(PERL_INCLUDE) -c $(srcdir)/`basename $@ .o`.c
+
+# Fortran code
 
 #test to see if fsplit is in fsplit_dir already otherwise make it if you can
 fsplit : $(srcdir)/fsplit.c
 	test ! -x $(fsplit_dir)/fsplit && $(CC) $(CFLAGS) -o $(fsplit_dir)/fsplit fsplit.c || true 
-
-# explicit building of the real targets, sigh...
-# include the pwd info for ease of symbolic debugging
-
-$L(ccplib.o) : $(srcdir)/ccplib.f
-	-rm -rf ccplib.dir; mkdir ccplib.dir
-	echo '      SUBROUTINE CCPLIB' > ccplib.dir/ccplib.$F
-	echo '      END' >> ccplib.dir/ccplib.$F
-	cd ccplib.dir && $(fsplit_dir)/fsplit $(srcdir)/ccplib.f >/dev/null && $(RMEMPTY) && \
-	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done \
-	    && $(AR) ../$L *.o
-	rm -f ccplib.dir/*.o
-ccplib : $L(ccplib.o)
-	$(RANLIB) $L
-
-$L(fftlib.o) : $(srcdir)/fftlib.f
-	-rm -rf fftlib.dir; mkdir fftlib.dir
-	echo '      SUBROUTINE FFTLIB' > fftlib.dir/fftlib.$F
-	echo '      END' >> fftlib.dir/fftlib.$F
-	cd fftlib.dir && $(fsplit_dir)/fsplit $(srcdir)/fftlib.f >/dev/null && $(RMEMPTY) && \
-	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done \
-	  && $(AR) ../$L *.o
-	rm -f fftlib.dir/*.o
-fftlib : $L(fftlib.o)
-	$(RANLIB) $L
-
-$L(maplib.o) : $(srcdir)/maplib.f
-	-rm -rf maplib.dir; mkdir maplib.dir
-	echo '      SUBROUTINE MAPLIB' > maplib.dir/maplib.$F
-	echo '      END' >> maplib.dir/maplib.$F
-	cd maplib.dir && $(fsplit_dir)/fsplit $(srcdir)/maplib.f >/dev/null && $(RMEMPTY) && \
-	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
-	rm -f maplib.dir/*.o
-maplib : $L(maplib.o)
-	$(RANLIB) $L
 
 $L(parser.o) : $(srcdir)/parser.f
 	-rm -rf parser.dir; mkdir parser.dir
@@ -168,55 +262,19 @@ $L(parser.o) : $(srcdir)/parser.f
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
 	rm -f parser.dir/*.o
-parser : $L(parser.o)
+parser : parser.o
 	$(RANLIB) $L
 
-$L(rwbrook.o) : $(srcdir)/rwbrook.f
-	-rm -rf rwbrook.dir; mkdir rwbrook.dir
-	echo '      SUBROUTINE RWBROOK' > rwbrook.dir/rwbrook.$F
-	echo '      END' >> rwbrook.dir/rwbrook.$F
-	cd rwbrook.dir && $(fsplit_dir)/fsplit $(srcdir)/rwbrook.f >/dev/null && $(RMEMPTY) && \
+$L(ccplib.o) : $(srcdir)/ccplib.f
+	-rm -rf ccplib.dir; mkdir ccplib.dir
+	echo '      SUBROUTINE CCPLIB' > ccplib.dir/ccplib.$F
+	echo '      END' >> ccplib.dir/ccplib.$F
+	cd ccplib.dir && $(fsplit_dir)/fsplit $(srcdir)/ccplib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
-	rm -f rwbrook.dir/*.o
-rwbrook : $L(rwbrook.o)
-	$(RANLIB) $L
-
-$L(modlib.o) : $(srcdir)/modlib.f
-	-rm -rf modlib.dir; mkdir modlib.dir
-	echo '      SUBROUTINE MODLIB' > modlib.dir/modlib.$F
-	echo '      END' >> modlib.dir/modlib.$F
-	cd modlib.dir && $(fsplit_dir)/fsplit $(srcdir)/modlib.f >/dev/null && $(RMEMPTY) && \
-	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
-	rm -f modlib.dir/*.o
-modlib : $L(modlib.o)
-	$(RANLIB) $L
-
-$L(symlib.o) : $(srcdir)/symlib.f
-	-rm -rf symlib.dir; mkdir symlib.dir
-	echo '      SUBROUTINE SYMLIB' > symlib.dir/symlib.$F
-	echo '      END' >> symlib.dir/symlib.$F
-	cd symlib.dir && $(fsplit_dir)/fsplit $(srcdir)/symlib.f >/dev/null && $(RMEMPTY) && \
-	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
-	rm -f symlib.dir/*.o
-symlib : $L(symlib.o)
-	$(RANLIB) $L
-
-$L(mtzlib.o) : $(srcdir)/mtzlib.f $(srcdir)/mtzlib.fh
-	-rm -rf mtzlib.dir; mkdir mtzlib.dir
-	echo '      SUBROUTINE MTZLIB' > mtzlib.dir/mtzlib.$F
-	echo '      END' >> mtzlib.dir/mtzlib.$F
-	cd mtzlib.dir && $(fsplit_dir)/fsplit $(srcdir)/mtzlib.f >/dev/null && $(RMEMPTY) && \
-	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
-	  && $(AR) ../$L *.o
-	rm -f mtzlib.dir/*.o
-mtzlib : $L(mtzlib.o)
+	rm -f ccplib.dir/*.o
+ccplib : ccplib.o
 	$(RANLIB) $L
 
 $L(lgglib.o) : $(srcdir)/lgglib.f
@@ -228,43 +286,8 @@ $L(lgglib.o) : $(srcdir)/lgglib.f
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
 	rm -f lgglib.dir/*.o
-lgglib : $L(lgglib.o)
+lgglib : lgglib.o
 	$(RANLIB) $L
-
-$L(harvlib.o) : $(srcdir)/harvlib.f $(srcdir)/harvest.inc $(srcdir)/harderiv.inc $(srcdir)/harshell.inc $(srcdir)/harsymm.inc
-	-rm -rf harvlib.dir; mkdir harvlib.dir
-	echo '      SUBROUTINE HARVLIB' > harvlib.dir/harvlib.$F
-	echo '      END' >> harvlib.dir/harvlib.$F
-	cd harvlib.dir && $(fsplit_dir)/fsplit $(srcdir)/harvlib.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
-            $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
-          && $(AR) ../$L *.o
-	rm -f harvlib.dir/*.o
-harvlib : $L(harvlib.o)
-	$(RANLIB) $L
-
-$L(cciflib.o) : $(srcdir)/cciflib.f $(srcdir)/cciflib.fh
-	-rm -rf cciflib.dir; mkdir cciflib.dir
-	echo '      SUBROUTINE CCIFLIB' > cciflib.dir/cciflib.$F
-	echo '      END' >> cciflib.dir/cciflib.$F
-	cd cciflib.dir && $(fsplit_dir)/fsplit $(srcdir)/cciflib.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
-            $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
-          && $(AR) ../$L *.o
-	rm -f cciflib.dir/*.o
-cciflib : $L(cciflib.o)
-	$(RANLIB) $L
-
-$L(diskio.o) : $(srcdir)/diskio.f
-	-rm -rf diskio.dir; mkdir diskio.dir
-	echo '      SUBROUTINE DISKIO' > diskio.dir/diskio.$F
-	echo '      END' >> diskio.dir/diskio.$F
-	cd diskio.dir && $(fsplit_dir)/fsplit $(srcdir)/diskio.f >/dev/null && $(RMEMPTY) && \
-	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
-	rm -f diskio.dir/*.o
-diskio : $L(diskio.o)
 
 $L(plot84lib.o) : $(srcdir)/plot84lib.f
 	-rm -rf plot84lib.dir; mkdir plot84lib.dir
@@ -275,7 +298,7 @@ $L(plot84lib.o) : $(srcdir)/plot84lib.f
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
 	rm -f plot84lib.dir/*.o
-plot84lib : $L(plot84lib.o)
+plot84lib : plot84lib.o
 	$(RANLIB) $L
 
 $L(libhtml.o) : $(srcdir)/libhtml.f
@@ -287,7 +310,7 @@ $L(libhtml.o) : $(srcdir)/libhtml.f
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
 	rm -f libhtml.dir/*.o
-libhtml : $L(libhtml.o)
+libhtml : libhtml.o
 	$(RANLIB) $L
 
 $L(pxxml.o) : $(srcdir)/pxxml.f
@@ -299,7 +322,67 @@ $L(pxxml.o) : $(srcdir)/pxxml.f
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
 	rm -f pxxml.dir/*.o
-pxxml : $L(pxxml.o)
+pxxml : pxxml.o
+	$(RANLIB) $L
+
+$L(rwbrook.o) : $(srcdir)/rwbrook.f
+	-rm -rf rwbrook.dir; mkdir rwbrook.dir
+	echo '      SUBROUTINE RWBROOK' > rwbrook.dir/rwbrook.$F
+	echo '      END' >> rwbrook.dir/rwbrook.$F
+	cd rwbrook.dir && $(fsplit_dir)/fsplit $(srcdir)/rwbrook.f >/dev/null && $(RMEMPTY) && \
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
+	rm -f rwbrook.dir/*.o
+rwbrook : rwbrook.o
+	$(RANLIB) $L
+
+$L(cciflib.o) : $(srcdir)/cciflib.f
+	-rm -rf cciflib.dir; mkdir cciflib.dir
+	echo '      SUBROUTINE CCIFLIB' > cciflib.dir/cciflib.$F
+	echo '      END' >> cciflib.dir/cciflib.$F
+	cd cciflib.dir && $(fsplit_dir)/fsplit $(srcdir)/cciflib.f >/dev/null && $(RMEMPTY) && \
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
+	  && $(AR) ../$L *.o
+	rm -f cciflib.dir/*.o
+cciflib : cciflib.o
+	$(RANLIB) $L
+
+$L(harvlib.o) : $(srcdir)/harvlib.f
+	-rm -rf harvlib.dir; mkdir harvlib.dir
+	echo '      SUBROUTINE HARVLIB' > harvlib.dir/harvlib.$F
+	echo '      END' >> harvlib.dir/harvlib.$F
+	cd harvlib.dir && $(fsplit_dir)/fsplit $(srcdir)/harvlib.f >/dev/null && $(RMEMPTY) && \
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
+	  && $(AR) ../$L *.o
+	rm -f harvlib.dir/*.o
+harvlib : harvlib.o
+	$(RANLIB) $L
+
+$L(keyparse.o) : $(srcdir)/keyparse.f
+	-rm -rf keyparse.dir; mkdir keyparse.dir
+	echo '      SUBROUTINE KEYPARSE' > keyparse.dir/keyparse.$F
+	echo '      END' >> keyparse.dir/keyparse.$F
+	cd keyparse.dir && $(fsplit_dir)/fsplit $(srcdir)/keyparse.f >/dev/null && $(RMEMPTY) && \
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
+	rm -f keyparse.dir/*.o
+keyparse : keyparse.o
+	$(RANLIB) $L
+
+$L(sortlib.o) : $(srcdir)/sortlib.f
+	-rm -rf sortlib.dir; mkdir sortlib.dir
+	echo '      SUBROUTINE SORTLIB' > sortlib.dir/sortlib.$F
+	echo '      END' >> sortlib.dir/sortlib.$F
+	cd sortlib.dir && $(fsplit_dir)/fsplit $(srcdir)/sortlib.f >/dev/null && $(RMEMPTY) && \
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
+	rm -f sortlib.dir/*.o
+sortlib : sortlib.o
 	$(RANLIB) $L
 
 $L(plotsubs.o) : $(srcdir)/plotsubs.f
@@ -311,42 +394,32 @@ $L(plotsubs.o) : $(srcdir)/plotsubs.f
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
 	rm -f plotsubs.dir/*.o
-plotsubs : $L(plotsubs.o)
+plotsubs : plotsubs.o
 	$(RANLIB) $L
 
-# This is (currently) a single routine, so don't fsplit
-$L(keyparse.o) : $(srcdir)/keyparse.f
-	$(FC) -c -o keyparse.o $(FFLAGS) $(srcdir)/keyparse.f && \
-		$(AR) $L keyparse.o && rm -f keyparse.o
-	$(RANLIB) $L
-keyparse : $L(keyparse.o)
-	$(RANLIB) $L
-
-# C stuff: (these are kept as whole modules)
-
-$L(library.o) : $(srcdir)/library.c $(srcdir)/library.h
-	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/library.c
-	$(AR) $L library.o && rm library.o
-library : $L(library.o)
+$L(modlib.o) : $(srcdir)/modlib.f
+	-rm -rf modlib.dir; mkdir modlib.dir
+	echo '      SUBROUTINE MODLIB' > modlib.dir/modlib.$F
+	echo '      END' >> modlib.dir/modlib.$F
+	cd modlib.dir && $(fsplit_dir)/fsplit $(srcdir)/modlib.f >/dev/null && $(RMEMPTY) && \
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
+	rm -f modlib.dir/*.o
+modlib : modlib.o
 	$(RANLIB) $L
 
-$L(library_f.o) : $(srcdir)/library_f.c $(srcdir)/library.h 
-	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/library_f.c
-	$(AR) $L library_f.o && rm library_f.o
-library_f : $L(library_f.o)
+$L(fftlib.o) : $(srcdir)/fftlib.f
+	-rm -rf fftlib.dir; mkdir fftlib.dir
+	echo '      SUBROUTINE FFTLIB' > fftlib.dir/fftlib.$F
+	echo '      END' >> fftlib.dir/fftlib.$F
+	cd fftlib.dir && $(fsplit_dir)/fsplit $(srcdir)/fftlib.f >/dev/null && $(RMEMPTY) && \
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done \
+	  && $(AR) ../$L *.o
+	rm -f fftlib.dir/*.o
+fftlib : fftlib.o
 	$(RANLIB) $L
-
-$L(binsortint.o) : $(srcdir)/binsortint.c $(srcdir)/binsort.h
-	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/binsortint.c
-	$(AR) $L binsortint.o && rm binsortint.o
-binsortint : $L(binsortint.o)
-	$(RANLIB) $L
-
-#
-# specials
-#
-
-#  a program:
 
 # the unix-specific bits need preprocessing for different unix variants
 unix.f : $(srcdir)/unix.m4
@@ -361,29 +434,142 @@ $L(unix.o) : $(srcdir)/unix.m4
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
-	rm -f unix.dir/*.o unix.f
-unix : $L(unix.o)
+	rm -f unix.dir/*.o 
+unix : unix.o
 	$(RANLIB) $L
 
-#  The image (un)packing routines which were needed for mosflm and are needed
-#  for ipdisp. May be useful but could be moved. 
-$L(pack_c.o):	$(srcdir)/pack_c.c $(srcdir)/pack_c.h
-	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/pack_c.c
-	$(AR) $L pack_c.o && rm pack_c.o
-$L(pack_f.o):	$(srcdir)/pack_f.f
-	$(FC) -c $(FFLAGS) $(srcdir)/pack_f.$(F) && $(AR) $(L) pack_f.o \
-	  && rm pack_f.o
-pack:	$L(pack_c.o) $L(pack_f.o)
-	$(RANLIB) $(L) 
+### SWIG stuff ###
 
-# Apparently titan needs to link /usr/lib/fortran/time.o.  It seems
-# easiest to stuff it in the library
-$L(time.o) : /usr/lib/fortran/time.o
-	$(AR) $(L) /usr/lib/fortran/time.o
+$(srcdir)/cmtzlib_python_wrap.c: $(srcdir)/cmtzlib.i $(srcdir)/cmtzlib.h
+	/ccpstaff/ccp4/mdw/cmtz/swig/swig -python -dhtml \
+           -o $(srcdir)/cmtzlib_python_wrap.c $(srcdir)/cmtzlib.i
 
-# testbed for library.c and some other modules:
-testlib : test-lib $(srcdir)/testlib.f
-	$(FC) -o testlib $(FFLAGS) $(srcdir)/testlib.f $(LDFLAGS)
+$(srcdir)/cmaplib_python_wrap.c: $(srcdir)/cmaplib.i $(srcdir)/cmaplib.h
+	/ccpstaff/ccp4/mdw/cmtz/swig/swig -v -python -dhtml \
+           -o $(srcdir)/cmaplib_python_wrap.c $(srcdir)/cmaplib.i
+
+$(srcdir)/csymlib_python_wrap.c: $(srcdir)/csymlib.i $(srcdir)/csymlib.h
+	/ccpstaff/ccp4/mdw/cmtz/swig/swig -v -python -dhtml \
+           -o $(srcdir)/csymlib_python_wrap.c $(srcdir)/csymlib.i
+
+# -shadow produces a file MMDB.py
+$(mmdbsrcdir)/mmdb_python_wrap.cpp: $(mmdbsrcdir)/mmdb_python.i
+	/ccpstaff/ccp4/mdw/cmtz/swig/swig -c++ -shadow -python \
+            -o $(mmdbsrcdir)/mmdb_python_wrap.cpp $(mmdbsrcdir)/mmdb_python.i
+
+$(srcdir)/cmtzlib_tcl_wrap.c: $(srcdir)/cmtzlib.i $(srcdir)/cmtzlib.h
+	/ccpstaff/ccp4/mdw/cmtz/swig/swig -tcl -dhtml \
+           -o $(srcdir)/cmtzlib_tcl_wrap.c $(srcdir)/cmtzlib.i
+
+$(srcdir)/cmaplib_tcl_wrap.c: $(srcdir)/cmaplib.i $(srcdir)/cmaplib.h
+	/ccpstaff/ccp4/mdw/cmtz/swig/swig -tcl -dhtml \
+           -o $(srcdir)/cmaplib_tcl_wrap.c $(srcdir)/cmaplib.i
+
+$(srcdir)/csymlib_tcl_wrap.c: $(srcdir)/csymlib.i $(srcdir)/csymlib.h
+	/ccpstaff/ccp4/mdw/cmtz/swig/swig -tcl -dhtml \
+           -o $(srcdir)/csymlib_tcl_wrap.c $(srcdir)/csymlib.i
+
+$(srcdir)/cmtzlib_pl_wrap.c: $(srcdir)/cmtzlib.i $(srcdir)/cmtzlib.h
+	/ccpstaff/ccp4/mdw/cmtz/swig/swig -perl5 -dhtml \
+           -o $(srcdir)/cmtzlib_pl_wrap.c $(srcdir)/cmtzlib.i
+
+$(srcdir)/cmaplib_pl_wrap.c: $(srcdir)/cmaplib.i $(srcdir)/cmaplib.h
+	/ccpstaff/ccp4/mdw/cmtz/swig/swig -perl5 -dhtml \
+           -o $(srcdir)/cmaplib_pl_wrap.c $(srcdir)/cmaplib.i
+
+$(srcdir)/csymlib_pl_wrap.c: $(srcdir)/csymlib.i $(srcdir)/csymlib.h
+	/ccpstaff/ccp4/mdw/cmtz/swig/swig -perl5 -dhtml \
+           -o $(srcdir)/csymlib_pl_wrap.c $(srcdir)/csymlib.i
+
+#
+# Dependencies
+#
+
+bfgs_min.o:       $(mmdbsrcdir)/bfgs_min.cpp
+mmdb_chain.o:     $(mmdbsrcdir)/mmdb_chain.cpp
+mmdb_manager.o:   $(mmdbsrcdir)/mmdb_manager.cpp
+mmdb_symop.o:     $(mmdbsrcdir)/mmdb_symop.cpp
+file_.o:          $(mmdbsrcdir)/file_.cpp
+mmdb_cifdefs.o:   $(mmdbsrcdir)/mmdb_cifdefs.cpp
+mmdb_mask.o:      $(mmdbsrcdir)/mmdb_mask.cpp
+mmdb_title.o:     $(mmdbsrcdir)/mmdb_title.cpp
+linalg_.o:        $(mmdbsrcdir)/linalg_.cpp
+mmdb_coormngr.o:  $(mmdbsrcdir)/mmdb_coormngr.cpp
+mmdb_mmcif.o:     $(mmdbsrcdir)/mmdb_mmcif.cpp
+mmdb_utils.o:     $(mmdbsrcdir)/mmdb_utils.cpp
+machine_.o:       $(mmdbsrcdir)/machine_.cpp
+mmdb_cryst.o:     $(mmdbsrcdir)/mmdb_cryst.cpp
+mmdb_model.o:     $(mmdbsrcdir)/mmdb_model.cpp
+stream_.o:        $(mmdbsrcdir)/stream_.cpp
+mattype_.o:       $(mmdbsrcdir)/mattype_.cpp
+mmdb_file.o:      $(mmdbsrcdir)/mmdb_file.cpp
+mmdb_rwbrook.o:   $(mmdbsrcdir)/mmdb_rwbrook.cpp
+mmdb_atom.o:      $(mmdbsrcdir)/mmdb_atom.cpp
+mmdb_graph.o:     $(mmdbsrcdir)/mmdb_graph.cpp
+mmdb_selmngr.o:   $(mmdbsrcdir)/mmdb_selmngr.cpp
+mmdb_sbase.o:     $(mmdbsrcdir)/mmdb_sbase.cpp
+math_.o:          $(mmdbsrcdir)/math_.cpp
+mmdb_bondmngr.o:  $(mmdbsrcdir)/mmdb_bondmngr.cpp
+mmdb_uddata.o:    $(mmdbsrcdir)/mmdb_uddata.cpp
+mmdb_xml.o:       $(mmdbsrcdir)/mmdb_xml.cpp
+
+library_err.o:    $(srcdir)/library_err.c
+library_f.o:      $(srcdir)/library_f.c
+library_file.o:   $(srcdir)/library_file.c
+library_utils.o:  $(srcdir)/library_utils.c
+ccp4_array.o:     $(srcdir)/ccp4_array.c $(srcdir)/ccp4_array.h
+ccp4_diskio_f.o:  $(srcdir)/ccp4_diskio_f.c
+ccp4_parser.o :   $(srcdir)/ccp4_parser.c $(srcdir)/ccp4_parser.h
+ccp4_parser_f.o:  $(srcdir)/ccp4_parser_f.c $(srcdir)/ccp4_parser.h
+ccp4_program.o:   $(srcdir)/ccp4_program.c $(srcdir)/ccp4_program.h
+ccp4_general.o:         $(srcdir)/ccp4_general.c
+ccp4_general_f.o:       $(srcdir)/ccp4_general_f.c
+cmtzlib.o:        $(srcdir)/cmtzlib.c $(srcdir)/cmtzlib.h \
+		  $(srcdir)/mtzdata.h $(srcdir)/ccp4_types.h
+cmtzlib_f.o:      $(srcdir)/cmtzlib_f.c $(srcdir)/cmtzlib.h
+umtzlib.o:        $(srcdir)/umtzlib.c $(srcdir)/umtzlib.h 
+mmtzlib.o:        $(srcdir)/mmtzlib.c $(srcdir)/mmtzlib.h 
+cmap_accessor.o:  $(srcdir)/cmap_accessor.c $(srcdir)/cmaplib.h \
+                  $(srcdir)/cmap_errno.h
+cmap_data.o:      $(srcdir)/cmap_data.c $(srcdir)/cmaplib.h \
+                  $(srcdir)/cmap_errno.h
+cmap_close.o:     $(srcdir)/cmap_close.c $(srcdir)/cmaplib.h \
+                  $(srcdir)/cmap_errno.h
+cmap_header.o:    $(srcdir)/cmap_header.c $(srcdir)/cmaplib.h \
+                  $(srcdir)/cmap_errno.h
+cmap_labels.o:    $(srcdir)/cmap_labels.c $(srcdir)/cmaplib.h \
+                  $(srcdir)/cmap_errno.h
+cmap_open.o:      $(srcdir)/cmap_open.c  $(srcdir)/cmaplib.h \
+                  $(srcdir)/cmap_errno.h
+cmap_skew.o:      $(srcdir)/cmap_skew.c $(srcdir)/cmaplib.h \
+                  $(srcdir)/cmap_errno.h
+cmap_stats.o:     $(srcdir)/cmap_stats.c $(srcdir)/cmaplib.h \
+                  $(srcdir)/cmap_errno.h
+cmap_symop.o:     $(srcdir)/cmap_symop.c $(srcdir)/cmaplib.h \
+                  $(srcdir)/cmap_errno.h
+cmaplib_f.o:      $(srcdir)/cmaplib_f.c $(srcdir)/cmaplib.h
+csymlib.o:        $(srcdir)/csymlib.c $(srcdir)/csymlib.h
+csymlib_f.o:      $(srcdir)/csymlib_f.c $(srcdir)/csymlib.h
+ccp4_unitcell.o:  $(srcdir)/ccp4_unitcell.c $(srcdir)/ccp4_unitcell.h
+ccp4_unitcell_f.o:  $(srcdir)/ccp4_unitcell_f.c $(srcdir)/ccp4_unitcell.h
+cvecmat.o:        $(srcdir)/cvecmat.c $(srcdir)/cvecmat.h
+cmtzlib_python_wrap.o: $(srcdir)/cmtzlib_python_wrap.c  $(srcdir)/mtzdata.h 
+cmaplib_python_wrap.o: $(srcdir)/cmaplib_python_wrap.c 
+csymlib_python_wrap.o: $(srcdir)/csymlib_python_wrap.c 
+mmdb_python_wrap.o: $(mmdbsrcdir)/mmdb_python_wrap.cpp 
+cmtzlib_tcl_wrap.o: $(srcdir)/cmtzlib_tcl_wrap.c  $(srcdir)/mtzdata.h 
+cmaplib_tcl_wrap.o: $(srcdir)/cmaplib_tcl_wrap.c 
+csymlib_tcl_wrap.o: $(srcdir)/csymlib_tcl_wrap.c 
+cmtzlib_pl_wrap.o: $(srcdir)/cmtzlib_pl_wrap.c  $(srcdir)/mtzdata.h 
+cmaplib_pl_wrap.o: $(srcdir)/cmaplib_pl_wrap.c 
+csymlib_pl_wrap.o: $(srcdir)/csymlib_pl_wrap.c 
+
+#
+# test program for libraries
+#
+
+testlib : $(srcdir)/testlib.c  $L
+	$(CC) -o testlib $(CFLAGS) $(srcdir)/testlib.c -all $(LDFLAGS)
 
 #
 # standard targets
@@ -409,13 +595,7 @@ distclean : realclean
 	-rm -f Makefile
 
 test : testlib
-	./testlib -v 3 testenv foo
-
-tags TAGS : unix.f
-	etags ${srcdir}/*.[fch] #${srcdir}/unix.m4
-	sed -e 's/unix.f/unix.m4/' TAGS > TAGS.x
-	mv TAGS.x TAGS
-	rm -f unix.f
+	./testlib 
 
 # Local Variables:
 # mode:makefile
