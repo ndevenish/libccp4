@@ -34,7 +34,7 @@ are just generally useful (platform independent date).
 #include "ccp4_utils.h"
 #include "ccp4_errno.h"
 
-#if defined (__APPLE__) && __GNUC__ > 2
+#if !defined (_MVS)
 #include <pwd.h>
 #endif
 
@@ -419,23 +419,21 @@ void *ccp4_utils_calloc(size_t nelem , size_t elsize)
 /** Return the user's login name.
  * (MVisualStudio version in w32mvs.c)
  * Note that getlogin only works for processes attached to
- * a terminal, and hence won't work from the GUI. 
+ * a terminal (and hence won't work from the GUI).
+ * In these instances use getpwuid instead.
  * @return pointer to character string containing login name.
  */
 #if ! defined (_MVS)
 char *ccp4_utils_username(void)
-#if defined (__APPLE__) && __GNUC__ > 2
-{
-  struct passwd *passwd_struct=NULL;
-  passwd_struct = getpwuid(getuid());
-  return passwd_struct->pw_name;
-}
-#else
 { 
+  struct passwd *passwd_struct=NULL;
   char *userid=NULL;
-  return(cuserid(userid)); 
+  if (!(userid = getlogin())) {
+    passwd_struct = getpwuid(getuid());
+    userid = passwd_struct->pw_name;
+  }
+  return(userid); 
 }
-#endif
 #endif
 
 /** Extracts the basename from a full file name.
