@@ -3924,6 +3924,8 @@ C Copy title
 C
 C Set dummy lengths (strictly illegal, setting BATCH)
       RBATCH(1) = MBLENG
+      RBATCH(2) = MBLENG
+      RBATCH(3) = 0
 C
 C Write batch header
       CALL LWBAT(MINDX,BATNO,BATCH,BTITLE)
