@@ -142,7 +142,7 @@ C     .. Local Scalars ..
       INTEGER IFAIL,J,K,KSTRM,LENLIN,LINLEN,LSTRM,MSTRM,N,
      +        NITEM,ISTERR,IFGERR
       LOGICAL FIRST
-      CHARACTER IAMP*1,IDASH*1,FLNAME*60,LINERR*600,LINEX*600
+      CHARACTER IAMP*1,IDASH*1,FLNAME*60,LINERR*800,LINEX*800
       CHARACTER ICOMM1*1,ICOMM2*1
 C     ..
 C     .. External Functions ..
@@ -156,7 +156,7 @@ C     .. Intrinsic Functions ..
       INTRINSIC LEN,MAX
 C     ..
 C     .. Scalars in Common ..
-      CHARACTER STROUT*600
+      CHARACTER STROUT*800
 C     ..
 C     .. Save statement ..
       SAVE
@@ -483,7 +483,7 @@ C     .. Local Scalars ..
      +        NITEM,NPLACE,NSPDLM,OPER,NDDELM,NDSDLM
       LOGICAL NULL,NUMBER,OPRATR,QUOTE,TOKEN,TQUOTE
       CHARACTER BLANK*1,LETQT*1,OLDQUT*1,DBLQT*1,TAB*1
-      CHARACTER LINERR*600,ICOMM1*1,ICOMM2*1
+      CHARACTER LINERR*800,ICOMM1*1,ICOMM2*1
 C     ..
 C     .. Local Arrays ..
       INTEGER ISGN(2)
@@ -1672,7 +1672,7 @@ C     .. External Subroutines ..
       EXTERNAL PUTLIN,LERROR
 C     ..
 C     .. Scalars in Common ..
-      CHARACTER STROUT*600
+      CHARACTER STROUT*800
 C     ..
       SAVE
 C
@@ -1871,7 +1871,7 @@ C     .. Scalar Arguments ..
       CHARACTER OUTWIN*6
 C     ..
 C     .. Scalars in Common ..
-      CHARACTER STROUT*600
+      CHARACTER STROUT*800
 C     ..
 C     .. Local Scalars ..
       INTEGER JDO10
@@ -1928,7 +1928,7 @@ C     .. Scalar Arguments ..
       CHARACTER ERRMSG* (*)
 C     ..
 C     .. Scalars in Common ..
-      CHARACTER STROUT*600
+      CHARACTER STROUT*800
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
