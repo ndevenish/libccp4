@@ -18,14 +18,13 @@ C     .. Local Arrays ..
       REAL BUFFER(LBUF)
 C     ..
 C     .. External Functions ..
-      CHARACTER RCSDAT*8
       LOGICAL LITEND,VAXVMS
-      EXTERNAL LITEND,RCSDAT,VAXVMS
+      EXTERNAL LITEND,VAXVMS
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPERR,CCPFYP,NOCRLF,QCLOSE,QMODE,QOPEN,QQINQ,QREAD,
      +         QSEEK,QWRITE,SRAND,UBYTES,UCPUTM,UGERR,UGTENV,UGTUID,
-     +         UIDATE,UISATT,URENAM,USTIME,UTIME,CCPVRS,CCPDPN,NOCRLF
+     +         UIDATE,UISATT,URENAM,USTIME,UTIME,CCPRCS,CCPDPN,NOCRLF
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC NINT,COS
@@ -47,7 +46,7 @@ C
       I = 0
       CALL CCPDPN(LUNOUT,'PRINTER','PRINTER','F',0,I)
       IF (I.NE.0) CALL CCPERR(1,'Can''t open printer stream')
-      CALL CCPVRS(6,'TESLIB',RCSDAT('$Date$'))
+      CALL CCPRCS(6,'TESLIB','$Date$')
 C
 C---- Other initialisations
 C
