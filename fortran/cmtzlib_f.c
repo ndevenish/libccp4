@@ -35,7 +35,7 @@ static char rcsid[] = "$Id$";
 static int cmtz_in_memory = 0;
 static int rlun[MFILES] = {0};
 static int wlun[MFILES] = {0};
-static MTZ *mtzdata[MFILES];         /* cf. Eugene's channel for rwbrook */
+static MTZ *mtzdata[MFILES] = {NULL};         /* cf. Eugene's channel for rwbrook */
 static char fileout[MFILES][MAXFLEN];
 static int irref[MFILES] = {0};
 static int iwref[MFILES] = {0};
@@ -49,6 +49,15 @@ static int ndatmss[MFILES];
 static MTZBAT *rbat[MFILES];
 static int nbatw[MFILES] = {0};
 static double coefhkl[MFILES][6] = {0};
+
+void MtzMemTidy(void) {
+
+  int i;
+
+  /* free any existing Mtz struct */
+  for (i = 0; i < MFILES; ++i) 
+    if (mtzdata[i]) MtzFree(mtzdata[i]);
+}
 
 /* Utility function for checking subroutine input 
    rwmode = 1 for read file, 2 for write file ... */
@@ -1348,6 +1357,7 @@ FORTRAN_SUBR ( LRCLOS, lrclos,
  rlun[*mindx-1] = 0;
  if (wlun[*mindx-1] == 0) {
    MtzFree(mtzdata[*mindx-1]);
+   mtzdata[*mindx-1] = NULL;
  }
 
 }
@@ -2311,6 +2321,7 @@ FORTRAN_SUBR ( LWCLOS, lwclos,
  wlun[*mindx-1] = 0;
  if (rlun[*mindx-1] == 0) {
    MtzFree(mtzdata[*mindx-1]);
+   mtzdata[*mindx-1] = NULL;
  }
 
  free(fullfilename); 

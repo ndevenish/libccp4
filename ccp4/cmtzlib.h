@@ -118,6 +118,12 @@ char *MtzCallocHist(int nhist);
 void MtzFreeHist(char *hist);
 /* Frees the memory reserved for 'hist' */
 
+/** Free all memory malloc'd from static pointers.
+ * To be called before program exit. The function can be
+ * registered with atexit.
+ */
+void MtzMemTidy(void);
+
 /**** Header operations ****/
   
 int MtzNbat(const MTZ *mtz);
