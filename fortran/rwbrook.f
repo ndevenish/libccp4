@@ -47,7 +47,7 @@ C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL
       INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
-      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*20
+      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*11
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Scalars ..
@@ -315,13 +315,13 @@ C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL,ROU,RFU
       INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
-      CHARACTER*80 LOGUNIT,BROOK*1,WBROOK*1,WBROOK1*1, BRKSPGRP*20
+      CHARACTER*80 LOGUNIT,BROOK*1,WBROOK*1,WBROOK1*1, BRKSPGRP*11
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 c  Check symmetry stuff
 C
       integer  nsymchk,lspgrp,nsymppdbs,nsympdbs,ist
       real rsymchk(4,4,maxsym), rsympdbs(4,4,maxsym)
-      character SPGRPpdb*20,NAMSPG_CIFS*20,nampg*10
+      character NAMSPG_CIFS*20,nampg*10
 C     ..
 C     .. Local Scalars ..
       REAL ERROR,VOLCHK
@@ -512,7 +512,7 @@ C
             ITYP=1
             IFCRYS=.TRUE.
             BRKSPGRP = ' '
-            READ(BROOKA,FMT='(6X,3F9.3,3F7.2,1x,a)')CELL,BRKSPGRP
+            READ(BROOKA,FMT='(6X,3F9.3,3F7.2,1x,a11)')CELL,BRKSPGRP
 C
 C Make sure that BRKSPGRP, the Space group name is left-justified
 C
@@ -862,7 +862,7 @@ C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL
       INTEGER FILESOPEN,NCODE,TYPE,UNIT
-      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*20
+      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*11
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Variables ..
@@ -993,7 +993,7 @@ C
   100 CONTINUE
       ITYP = 0
       RETURN 2
- 1000 FORMAT('CRYST1',3F9.3,3F7.2,1x,a)
+ 1000 FORMAT('CRYST1',3F9.3,3F7.2,1x,a11)
  2000 FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
      $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
       END
@@ -2785,7 +2785,7 @@ C
 C Returns spacegrpup from pdb
 C
 C PARAMETERS
-C     SPGRP (O) (CHARACTER*20) 
+C     SPGRP (O) (CHARACTER*11) 
 C
 C Common blocks
 C
@@ -2794,7 +2794,7 @@ C
 C_END_RBSPGRP
 C
       CHARACTER SPGRP*(*)
-      CHARACTER BRKSPGRP*20
+      CHARACTER BRKSPGRP*11
       INTEGER ILEN,KLEN,J
       COMMON /RBRKSPGRP/BRKSPGRP
       SPGRP = BRKSPGRP
@@ -2825,7 +2825,7 @@ C
 C Sets the internal spacegroup of a pdb file
 C
 C PARAMETERS
-C     SPGRP (I) (CHARACTER*20)
+C     SPGRP (I) (CHARACTER*11)
 C
 C Common Blocks
 C
@@ -2834,7 +2834,7 @@ C
 C_END_WBSPGRP
 C
       CHARACTER SPGRP*(*)
-      CHARACTER BRKSPGRP*20
+      CHARACTER BRKSPGRP*11
       COMMON /RBRKSPGRP/BRKSPGRP
       BRKSPGRP = SPGRP
       END
@@ -3117,7 +3117,7 @@ C     .. Variables in Common ..
       REAL CELL, RO, RF, RR
       INTEGER FILESOPEN, NCODE, TYPE, UNIT
       CHARACTER*80 LOGUNIT
-      CHARACTER BRKSPGRP*20
+      CHARACTER BRKSPGRP*11
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
 C     ..
 C     .. Local Scalars ..
@@ -3185,7 +3185,7 @@ C     ..
 C
 C---- Format Statements
 C
- 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a)
+ 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a11)
  200  FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
      $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
       END
@@ -3382,7 +3382,7 @@ C     .. Variables in Common ..
       REAL CELL, RO, RF, RR
       INTEGER FILESOPEN, NCODE, TYPE, UNIT
       CHARACTER*80 LOGUNIT
-      CHARACTER BRKSPGRP*20,NAMSPG_CIF*(*)
+      CHARACTER BRKSPGRP*11,NAMSPG_CIF*(*)
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
 C     ..
 C     .. Local Scalars ..
@@ -3463,7 +3463,7 @@ C
 C
 C---- Format Statements
 C
- 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a)
+ 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a11)
  200  FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
      $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
       END
