@@ -9,11 +9,14 @@ C    epslon.f      invsym.f      keyhkl.f     maxval.f
 C    msyget.f      msymlb.f      pgdefn.f     pgmdf.f
 C    pgnlau.f      prmvci.f      prmvcr.f     
 C    rotfix.f      symfr2.f      symtrn.f     sysab.f
-C    xspecials.f
+C    xspecials.f   patsgp
 C       RDSYMM       ASUSET       ASUPUT       ASUGET	ASUPHP
 C       PRTRSM       INASU 
 C
 C-------------------------------------  Changes  -----
+C
+C  Added PATSGP                  15/12/92  PRE
+C  MSYMLB ignores blank lines in SYMOP file
 C
 C  Change call to EPSLN           4/10/91  PRE
 C
@@ -1115,7 +1118,8 @@ C     .. Local Arrays ..
       CHARACTER CVALUE(NPARSE)*4
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPDPN,CCPUPC,PARSER,SYMFR2,LERROR
+      EXTERNAL CCPDPN,CCPUPC,PARSER,SYMFR2,LERROR,LENSTR
+      INTEGER LENSTR
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC NINT
@@ -1155,6 +1159,9 @@ C     number of line of symmetry operations for non-primitive
 C     and primitive cells.
 C
         READ (IST,FMT='(A)',END=30) LINE
+C
+C---- Ignore blank lines
+	IF (LENSTR(LINE) .EQ. 0) GO TO 10
 C
 C            ************
         CALL CCPUPC(LINE)
@@ -4720,5 +4727,139 @@ C
 C----  Put phase in range 0 to 360
 C
       PHSOUT = MOD(PHSOUT+36000.0,360.0)
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE PATSGP(SPGNAM, PGNAME, PATNAM, LPATSG)
+C     =================================================
+C
+C Determine Patterson spacegroup from true space-group
+C
+C On entry:
+C     SPGNAM    space-group name. Only used to determine lattice centering
+C     PGNAME    point-group name
+C
+C On exit:
+C     PATNAM    name of Patterson spacegroup
+C     LPATSG    number of Patterson spacegroup
+C
+      CHARACTER*(*) SPGNAM, PGNAME, PATNAM
+      INTEGER LPATSG
+C
+      CHARACTER NMPG*8
+C
+C
+C Strip off 'PG' is present
+      IF (PGNAME(1:2) .EQ. 'PG') THEN
+         NMPG = PGNAME(3:)
+      ELSE
+         NMPG = PGNAME
+      ENDIF
+C
+C    Patterson space groups
+C      P-1     PG1
+C      P2/m    PG2
+C      C2/m    PG2
+C      Pmmm    PG222
+C      Cmmm    PG222
+C      Fmmm    PG222
+C      Immm    PG222
+C      P4/m    PG4
+C      I4/m    PG4
+C      P4/mmm  PG4/mmm
+C      I4/mmm  PG4/mmm
+C      P-3     PG3
+C      R-3     PG3
+C      P-31m   PG312
+C      P-3m1   PG321
+C      R-3m    PG321
+C      P6/m    PG622
+C      P6/mmm  PG622
+C      Pm-3    PG23
+C      Fm-3    PG23
+C      Im-3    PG23
+C      Pm-3m   PG432
+C      Fm-3m   PG432
+C      Im-3m   PG432
+C
+      IF (NMPG.EQ.'1'        .AND. SPGNAM(1:1).EQ.'P') THEN
+         LPATSG = 2
+         PATNAM = 'P-1'
+      ELSEIF (NMPG.EQ.'2'    .AND. SPGNAM(1:1).EQ.'P') THEN
+         LPATSG = 10
+         PATNAM = 'P2/m'
+      ELSEIF (NMPG.EQ.'2'    .AND. SPGNAM(1:1).EQ.'C') THEN
+         LPATSG = 12
+         PATNAM = 'C2/m'
+      ELSEIF (NMPG.EQ.'222'  .AND. SPGNAM(1:1).EQ.'P') THEN
+         LPATSG = 47
+         PATNAM = 'Pmmm'
+      ELSEIF (NMPG.EQ.'222'  .AND. SPGNAM(1:1).EQ.'C') THEN
+         LPATSG = 65
+         PATNAM = 'Cmmm'
+      ELSEIF (NMPG.EQ.'222'  .AND. SPGNAM(1:1).EQ.'F') THEN
+         LPATSG = 69
+         PATNAM = 'Fmmm'
+      ELSEIF (NMPG.EQ.'222'  .AND. SPGNAM(1:1).EQ.'I') THEN
+         LPATSG = 71
+         PATNAM = 'Immm'
+      ELSEIF (NMPG.EQ.'4'    .AND. SPGNAM(1:1).EQ.'P') THEN
+         LPATSG = 83
+         PATNAM = 'P4/m'
+      ELSEIF (NMPG.EQ.'4'    .AND. SPGNAM(1:1).EQ.'I') THEN
+         LPATSG = 87
+         PATNAM = 'I4/m'
+      ELSEIF (NMPG.EQ.'422'  .AND. SPGNAM(1:1).EQ.'P') THEN
+         LPATSG = 123
+         PATNAM = 'P4/mmm'
+      ELSEIF (NMPG.EQ.'422'  .AND. SPGNAM(1:1).EQ.'I') THEN
+         LPATSG = 139
+         PATNAM = 'I4/mmm'
+      ELSEIF (NMPG.EQ.'3'    .AND. SPGNAM(1:1).EQ.'P') THEN
+         LPATSG = 147
+         PATNAM = 'P-3'
+      ELSEIF (NMPG.EQ.'3'    .AND. SPGNAM(1:1).EQ.'R') THEN
+         LPATSG = 148
+         PATNAM = 'R-3'
+      ELSEIF (NMPG.EQ.'312'  .AND. SPGNAM(1:1).EQ.'P') THEN
+         LPATSG = 162
+         PATNAM = 'P-31m'
+      ELSEIF (NMPG.EQ.'321'  .AND. SPGNAM(1:1).EQ.'P') THEN
+         LPATSG = 164
+         PATNAM = 'P-3m1'
+      ELSEIF (NMPG.EQ.'321'  .AND. SPGNAM(1:1).EQ.'R') THEN
+         LPATSG = 166
+         PATNAM = 'R-3m'
+      ELSEIF (NMPG.EQ.'6'    .AND. SPGNAM(1:1).EQ.'P') THEN
+         LPATSG = 175
+         PATNAM = 'P6/m'
+      ELSEIF (NMPG.EQ.'622'  .AND. SPGNAM(1:1).EQ.'P') THEN
+         LPATSG = 191
+         PATNAM = 'P6/mmm'
+      ELSEIF (NMPG.EQ.'23'   .AND. SPGNAM(1:1).EQ.'P') THEN
+         LPATSG = 200
+         PATNAM = 'Pm-3'
+      ELSEIF (NMPG.EQ.'23'   .AND. SPGNAM(1:1).EQ.'F') THEN
+         LPATSG = 202
+         PATNAM = 'Fm-3'
+      ELSEIF (NMPG.EQ.'23'   .AND. SPGNAM(1:1).EQ.'I') THEN
+         LPATSG = 204
+         PATNAM = 'Im-3'
+      ELSEIF (NMPG.EQ.'432'  .AND. SPGNAM(1:1).EQ.'P') THEN
+         LPATSG = 221
+         PATNAM = 'Pm-3m'
+      ELSEIF (NMPG.EQ.'432'  .AND. SPGNAM(1:1).EQ.'F') THEN
+         LPATSG = 225
+         PATNAM = 'Fm-3m'
+      ELSEIF (NMPG.EQ.'432'  .AND. SPGNAM(1:1).EQ.'I') THEN
+         LPATSG = 229
+         PATNAM = 'Im-3m'
+      ELSE
+         LPATSG = 0
+         PATNAM = ' '
+      ENDIF
+C
       RETURN
       END
