@@ -525,7 +525,17 @@ FORTRAN_SUBR ( LRSYMM, lrsymm,
 
 }
 
-/* Fortran wrapper for MtzParseLabin */
+/** Fortran wrapper to MtzParseLabin. This matches tokens from the LABIN
+ * line against the program labels supplied by the program.
+ * @param mindx (I) MTZ file index.
+ * @param lsprgi (I) Array of program column labels. These are the column
+ *  labels used by the program, as opposed to the column labels in the file.
+ * @param nlprgi (I) Number of input program labels.
+ * @param ntok (I) From Parser: number of tokens on line
+ * @param labin_line (I) From Parser: input line
+ * @param ibeg (I) From Parser: array of starting delimiters for each token
+ * @param iend (I) From Parser: array of ending delimiters for each token
+ */
 FORTRAN_SUBR ( LKYIN, lkyin,
 	       (const int *mindx, const fpstr lsprgi, const int *nlprgi, 
                    const int *ntok, const fpstr labin_line, const int ibeg[], 
@@ -562,9 +572,10 @@ FORTRAN_SUBR ( LKYIN, lkyin,
     label[i*31+j] = '\0';
   }
  
-  MtzParseLabin(temp_name,label,*nlprgi,user_label_in[*mindx-1]);
+  if (MtzParseLabin(temp_name,label,*nlprgi,user_label_in[*mindx-1]) == -1) 
+    ccperror(1,"Error in label assignments in LABIN");
 
- free(temp_name);
+  free(temp_name);
   free(label);
 }
 
@@ -615,9 +626,10 @@ FORTRAN_SUBR ( LKYOUT, lkyout,
     label[i*31+j] = '\0';
   }
  
-  MtzParseLabin(temp_name,label,*nlprgo,user_label_out[*mindx-1]);
+  if (MtzParseLabin(temp_name,label,*nlprgo,user_label_out[*mindx-1]) == -1) 
+    ccperror(1,"Error in label assignments in LABOUT");
 
- free(temp_name);
+  free(temp_name);
   free(label);
 }
 
@@ -659,7 +671,8 @@ FORTRAN_SUBR ( LKYSET, lkyset,
     label[i*31+j] = '\0';
   }
  
-  MtzParseLabin(temp_name,label,*nlprgi,user_lab);
+  if (MtzParseLabin(temp_name,label,*nlprgi,user_lab) == -1) 
+    ccperror(1,"Error in label assignments in LKYSET");
 
   for (i = 0; i < *nlprgi; ++i) {
     /* leave kpoint unchanged unless user label exists */
@@ -682,9 +695,20 @@ FORTRAN_SUBR ( LKYSET, lkyset,
  free(user_lab);
 }
 
-/* Fortran wrapper for ccp4_lrassn */
-/* First this updates labels from user_label_in if set by lkyin,
-   then sets collookup array of pointers to columns */
+/** Fortran wrapper to ccp4_lrassn. First this updates labels from 
+ * user_label_in if set by lkyin, then sets collookup array of pointers 
+ * to columns.
+ * @param mindx (I) MTZ file index.
+ * @param lsprgi (I) Array of program column labels. These are the column
+ *  labels used by the program, as opposed to the column labels in the file.
+ * @param nlprgi (I) Number of input program labels.
+ * @param lookup (I/O) On input, indicates whether a column is compulsory
+ *  or not (-1 = hard compulsory - program will fail if column not found,
+ *  1 = soft compulsory - program will attempt to find column even if not
+ *  assigned on LABIN, 0 = optional). On output, gives the index of the
+ *  column in the input file.
+ * @param ctprgi (I) Array of column types.
+ */
 FORTRAN_SUBR ( LRASSN, lrassn,
 	       (const int *mindx, fpstr lsprgi, int *nlprgi, int lookup[], fpstr ctprgi, 
                       int lsprgi_len, int ctprgi_len),
@@ -699,8 +723,8 @@ FORTRAN_SUBR ( LRASSN, lrassn,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRASSN");)
 
- err = 0;
- if (MtzCheckSubInput(*mindx,"LRASSN",1)) return;
+  err = 0;
+  if (MtzCheckSubInput(*mindx,"LRASSN",1)) return;
 
   label = (char *) ccp4_utils_malloc((*nlprgi)*31*sizeof(char));
   type = (char *) ccp4_utils_malloc((*nlprgi)*3*sizeof(char));
@@ -709,7 +733,13 @@ FORTRAN_SUBR ( LRASSN, lrassn,
  /* for soft and hard compulsory labels, use program labels */
   for (i = 0; i < *nlprgi; ++i) {
     if (strcmp(user_label_in[*mindx-1][i][1],"") != 0) {
+
+      if (!MtzColLookup(mtzdata[*mindx-1],user_label_in[*mindx-1][i][1])) {
+       printf("Error in LABIN: label %s not found in file!\n",user_label_in[*mindx-1][i][1]);
+       /*       err++; */
+      }
       strcpy(label+i*31,user_label_in[*mindx-1][i][1]);
+
     } else if (lookup[i] != 0) {
       for (j = 0; j < 30; ++j) {
         if (j == lsprgi_len || lsprgi[lsprgi_len*i+j] == ' ') {
@@ -722,6 +752,11 @@ FORTRAN_SUBR ( LRASSN, lrassn,
     } else {
       label[i*31] = '\0';
     }
+  }
+
+  /* Exit on error */
+  if (err) {
+    ccperror(1,"Error in label assignments in LABIN");
   }
 
   for (i = 0; i < *nlprgi; ++i) {
@@ -768,7 +803,7 @@ FORTRAN_SUBR ( LRASSN, lrassn,
   free(type);
 
   /* Exit on error */
-  if (err != 0) {
+  if (err) {
     ccperror(1,"Error in label assignments");
   }
 
