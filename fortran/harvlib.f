@@ -2792,23 +2792,23 @@ C
       IF (Nval .le. 0) RETURN
 C
 C
-      CALL ccif_setup_context('REFINE_FUNCT_MINIMISED',
+      CALL ccif_setup_context('REFINE_FUNCT_MINIMIZED',
      +                        CurrCategory,
      +                        ccifBlockID,
      +                        ccifContext,ccifStatus,'loop')
 C
 C
         CALL ccif_output_fmt(
-     +       '_refine_funct_minimised.Residual',
+     +       '_refine_funct_minimized.Residual',
      +                       ' ',16,5,'g',ccifStatus)
         CALL ccif_output_fmt(
-     +       '_refine_funct_minimised.number_terms',
+     +       '_refine_funct_minimized.number_terms',
      +                       ' ',16,0,'d',ccifStatus)
         CALL ccif_output_fmt(
-     +       '_refine_funct_minimised.type',
+     +       '_refine_funct_minimized.type',
      +                       '-',40,0,'z',ccifStatus)
         CALL ccif_output_fmt(
-     +       '_refine_funct_minimised.weight',
+     +       '_refine_funct_minimized.weight',
      +                       '-',6,3,'f',ccifStatus)
 C
 C
@@ -2821,22 +2821,22 @@ c Hrefine_fnmin(Nval,Nterms,Vterms,Cterms,Wterms)
         IF (Nterms(Jdo) .gt. 0 ) THEN
         ccifStatus = AppendRow
         IF (lenstr(Cterms(Jdo)).gt.0)
-     +   CALL ccif_put_char('_refine_funct_minimised.type',
+     +   CALL ccif_put_char('_refine_funct_minimized.type',
      +                     Cterms(Jdo)(1:Lenstr(Cterms(Jdo))),
      +                     ccifContext,ccifStatus)
         ccifStatus = KeepContext
-          CALL ccif_put_int('_refine_funct_minimised.number_terms',
+          CALL ccif_put_int('_refine_funct_minimized.number_terms',
      +                        Nterms(Jdo),
      +                        ccifContext,ccifStatus)
         Ntot = Ntot + Nterms(Jdo)
         ccifStatus = KeepContext
-          CALL ccif_put_real('_refine_funct_minimised.Residual',
+          CALL ccif_put_real('_refine_funct_minimized.Residual',
      +                        Vterms(Jdo),
      +                        ccifContext,ccifStatus)
         Rtot = Rtot + Vterms(Jdo)
         IF (Wterms(Jdo).gt.0.0) then
         ccifStatus = KeepContext
-          CALL ccif_put_real('_refine_funct_minimised.weight',
+          CALL ccif_put_real('_refine_funct_minimized.weight',
      +                        Wterms(Jdo),
      +                        ccifContext,ccifStatus)
          end if
@@ -2845,15 +2845,15 @@ c Hrefine_fnmin(Nval,Nterms,Vterms,Cterms,Wterms)
 C
 C
         ccifStatus = AppendRow
-        CALL ccif_put_char('_refine_funct_minimised.type',
+        CALL ccif_put_char('_refine_funct_minimized.type',
      +                     'Total_Function',
      +                     ccifContext,ccifStatus)
         ccifStatus = KeepContext
-          CALL ccif_put_int('_refine_funct_minimised.number_terms',
+          CALL ccif_put_int('_refine_funct_minimized.number_terms',
      +                        Ntot,
      +                        ccifContext,ccifStatus)
         ccifStatus = KeepContext
-          CALL ccif_put_real('_refine_funct_minimised.Residual',
+          CALL ccif_put_real('_refine_funct_minimized.Residual',
      +                        Rtot,
      +                        ccifContext,ccifStatus)
 C
@@ -3524,19 +3524,19 @@ C
      +                     RType(1:Lenstr(RType)),
      +                     ccifContext,ccifStatus)
         ccifStatus = KeepContext
-        IF (Clow .gt. 0.0)
+        IF (Clow .lt. valueNotDet -1.0 .and. Clow .gt. 0.0)
      +  CALL ccif_put_real(
      +       '_refine_ls_restr_type.distance_cutoff_low',
      +                     Clow,ccifContext,ccifStatus)
         ccifStatus = KeepContext
-        IF (Chigh .gt.0.0)
+        IF (Chigh .lt. valueNotDet -1.0 .and. Chigh .gt.0.0)
      +  CALL ccif_put_real(
      +       '_refine_ls_restr_type.distance_cutoff_high',
      +                     Chigh,ccifContext,ccifStatus)
         ccifStatus = KeepContext
         IF (Usigma .lt. valueNotDet -1.0)
      +  CALL ccif_put_real(
-     +       '_refine_ls_restr_type.U_sigma_wghts',
+     +       '_refine_ls_restr_type.U_sigma_weights',
      +                     Usigma,ccifContext,ccifStatus)
         CALL ccif_release_context(ccifContext)
 C
