@@ -2538,7 +2538,7 @@ C     .. Data statements ..
 C
 C---- check level
 C
-	 TITLEH = TITLE
+      TITLEH = TITLE
       IF ((IDRLVL.EQ.0) .OR. (IDRLVL.GT.2)) 
      +            CALL GSLVCK('GSDVON')
 C
@@ -12329,7 +12329,7 @@ C     .. Scalars in Common ..
       INTEGER INIT,IUNIT,LUNIN,LUNOUT
 C     ..
 C     .. Arrays in Common ..
-      CHARACTER*1 PC,PF,PL
+      CHARACTER*1 PC(4),PF(6),PL(6)
 C     ..
 C     .. Local Scalars ..
       INTEGER J,NDO,NL,NBYTES,NMCITM
@@ -12350,15 +12350,15 @@ C     .. Intrinsic Functions ..
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
-      COMMON /TRIKKDAT/INIT,IUNIT,PC(4),PL(6),PF(6)
+C      COMMON /TRIKKDAT/INIT,IUNIT,PC(4),PL(6),PF(6)
 C
 C     .. Save Statement ..
 C
       SAVE
-      DATA INIT/0/
 C
 C     .. Equivalences .. character*1 to integer
       EQUIVALENCE (NBYTES,PC)
+      DATA INIT/0/
 C
 C
 C---- Set up all needed info; note odd byte counts must actually be even
