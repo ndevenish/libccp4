@@ -123,7 +123,11 @@ static double coefhkl[MFILES][6] = {0};
 
 /* MVS defaults to int and doesn't like it */
 #ifdef _MSC_VER
+#if (CALL_LIKE_MVS==2)
+void CCP4H_INIT_LIB(int *ihtml, int *isumm);
+#else
  void __stdcall CCP4H_INIT_LIB(int *ihtml, int *isumm);
+#endif
 #endif
 
 void MtzMemTidy(void) {
