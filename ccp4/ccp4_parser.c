@@ -1164,7 +1164,7 @@ int doublefromstr(const char *str, const double max_exp, const double min_exp,
   int    lstr,ichar=0,char_value,diag=0;
   int    sign,expsign,point,exponent,is_int,is_frc,is_exp;
   int    n_int_digits=0,n_frc_digits=0,n_exp_digits=0;
-  char   this_char;
+  char   this_char, this_str[2];
   double int_value=0,frc_value=0,exp_value=0;
 
   if (diag) printf("DOUBLEFROMSTR: starting\n");
@@ -1247,7 +1247,9 @@ int doublefromstr(const char *str, const double max_exp, const double min_exp,
 
       if (diag) printf(" is a digit ...\n");
 
-      char_value = atoi(&this_char);
+      this_str[0] = this_char;
+      this_str[1] = '\0';
+      char_value = atoi(this_str);
 
       if (is_int) {
 	/* Integer part of the number */
