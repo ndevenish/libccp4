@@ -37,7 +37,7 @@ _pgf,1,
   [define(_readonly,[,READONLY])],
 dnl * in Dec Fortran V3.0-2, at least, this seems to be *necessary*:
 _dec_fortran,1,
-  [define(_readonly,[READONLY,])],
+  [define(_readonly,[,READONLY])],
   [define(_readonly,)])dnl
 dnl
 dnl * fortran compiler may or may not accept CARRIAGECONTROL specifier on OPEN:
