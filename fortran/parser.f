@@ -2038,7 +2038,7 @@ C     ..
 C
 C
       LL = LENSTR(STROUT)
-      IF (LL.GT.133) THEN
+      IF (LL.GE.133) THEN
       LX = 1
       LS = 132
 10    CONTINUE
