@@ -202,7 +202,7 @@ int ccp4fyp(int argc, char **argv)
   char *envname[CCP4_MAXNAMES],*envtype[CCP4_MAXNAMES],*envext[CCP4_MAXNAMES];
 
   /* Flags for processing command line switches */
-  int  info=0,ihelp=0,idefault=0,ienviron=0,nohtml=0,nosummary=0;
+  int  info=0,ihelp=1,idefault=0,ienviron=0,nohtml=0,nosummary=0;
   char *testarg=NULL;
 
   /* Filenames, directories etc */
