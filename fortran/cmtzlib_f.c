@@ -71,7 +71,7 @@ static MTZ *mtzdata[MFILES] = {NULL};         /* cf. Eugene's channel for rwbroo
 static char fileout[MFILES][MAXFLEN];
 static int irref[MFILES] = {0};
 static int iwref[MFILES] = {0};
-static int ifile_order[MFILES] = {-1};        /* Last reflection read in file order */
+static int ifile_order[MFILES] = {-1};        /* Write reflection data in file order */
 static MTZCOL *collookup_file[MFILES][MCOLUMNS]; /* File order lookup */
 static char user_label_in[MFILES][MCOLUMNS][2][31];
 static char user_label_out[MFILES][MCOLUMNS][2][31];
@@ -206,6 +206,10 @@ FORTRAN_SUBR ( LROPEN, lropen,
      }
    }
  }
+ /* Set flag to indicate that file order should be used when
+    writing out reflections
+    This will be reset by LWASSN, LWCLAB etc */
+ ifile_order[*mindx-1] = 1;
  
  free(fullfilename); 
  free(temp_name);
@@ -1056,8 +1060,6 @@ FORTRAN_SUBR ( LRREFL, lrrefl,
  } else {
    *eof = FORTRAN_LOGICAL_FALSE;
  }
- /* Set internal flag indicating that the data was read in file order */
- ifile_order[mindex-1] = 1;
 }
 
 /* Fortran wrapper for ccp4_lrreff */
@@ -1102,8 +1104,6 @@ FORTRAN_SUBR ( LRREFF, lrreff,
  } else {
    *eof = FORTRAN_LOGICAL_FALSE;
  }
- /* Set internal flag indicating that the data was not read in file order */
- ifile_order[mindex-1] = 0;
 }
 
 /* Fortran wrapper for ccp4_lrrefm */
@@ -1926,6 +1926,10 @@ FORTRAN_SUBR ( LWIDAS, lwidas,
     }
   }
 
+  /* Set internal flag indicating that the data should be written
+     in order defined by application */
+  ifile_order[*mindx-1] = 0;
+
   free(project_name);
   free(crystal_name);
   free(dataset_name);
@@ -2003,6 +2007,10 @@ FORTRAN_SUBR ( LWIDASX, lwidasx,
           crystal_name+i*(xname_len+1), dataset_name+i*(dname_len+1));
     }
   }
+
+  /* Set internal flag indicating that the data should be written
+     in order defined by application */
+  ifile_order[*mindx-1] = 0;
 
   free(crystal_name);
   free(dataset_name);
@@ -2183,6 +2191,10 @@ FORTRAN_SUBR ( LWASSN, lwassn,
         if (strcmp(user_label_out[*mindx-1][i][1],"") ) strcpy(colarray[i]->label,user_label_out[*mindx-1][i][1]);
     /*should confirm ctype */
     
+    /* Set internal flag indicating that the data should be written
+       in order defined by application */
+    ifile_order[*mindx-1] = 0;
+
     free(colarray);
     free(label);
     free(type);
@@ -2254,6 +2266,10 @@ FORTRAN_SUBR ( LWCLAB, lwclab,
         colsort[j] = colarray[i];
   }
   MtzSetSortOrder(mtzdata[*mindx-1],colsort);
+
+  /* Set internal flag indicating that the data should be written
+     in order defined by application */
+  ifile_order[*mindx-1] = 0;
 
   free(colarray);
   free(label);
@@ -2635,7 +2651,7 @@ FORTRAN_SUBR ( LWREFL, lwrefl,
  ++iwref[*mindx-1];
 
  /* Check whether we are using file order or lookup order */
- if (ifile_order[*mindx-1] > 0) {
+ if (ifile_order[*mindx-1] == 1) {
    /* Use file order */
    for (ncols=MCOLUMNS; ncols > 0; --ncols)
      if (collookup_file[*mindx-1][ncols-1])
