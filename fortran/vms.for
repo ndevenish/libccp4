@@ -628,7 +628,7 @@ C
       CHARACTER*(*) LINE
 C
       WRITE (6,99) LINE
-99    FORMAT ('+',A,$)
+99    FORMAT (1X,A,$)
 C
       END
 C
