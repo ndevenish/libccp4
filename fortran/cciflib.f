@@ -13,18 +13,9 @@ CDOC  This subroutine must be called before any other in cciflib.f !!
 
       IMPLICIT NONE
 
-c     This syntax for include files seems to work on every system that
-c     I've tried it on.
       include 'cciflib.fh'
 
-      INTEGER MAXBLK
-      PARAMETER (MAXBLK=100)
-
       INTEGER FMTSTAT
-
-      INTEGER IATOM_CONTEXT,IATOM_STATUS
-      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
-     +                  IATOM_STATUS(0:MAXBLK-1)
 
       DATA IATOM_CONTEXT/MAXBLK*-1/,IATOM_STATUS/MAXBLK*0/
       
@@ -148,6 +139,26 @@ c_______Was a particular block requested?
         call ccif_block_by_index(LOGNAM,IDX,blknam,blk_id,istat)
       ENDIF
       
+C Now we check for the presence of certain categories, and
+C set up sort if present
+      LANISOTROP(blk_id) = .FALSE.
+      ISTAT = 0
+      call ccp4ccif_setup_context('ATOM_SITE_ANISOTROP',blk_id,
+     +        IANISOTROP_CONTEXT(blk_id),istat,' ')
+      IF (ISTAT.GT.0) THEN
+        CALL CCIF_SETUP_SORT('ATOM_SITE_ANISOTROP',blk_id,
+     +                         IANISOTROP_SORT(blk_id),ISTAT)
+        IF (ISTAT.EQ.0) GOTO 100
+        CALL CCIF_ADD_TO_SORT('_atom_site_anisotrop.id',
+     +                         IANISOTROP_SORT(blk_id),ISTAT)
+        IF (ISTAT.EQ.0) GOTO 100
+        CALL CCIF_DO_SORT(IANISOTROP_SORT(blk_id),ISTAT)
+        IF (ISTAT.EQ.0) GOTO 100
+        LANISOTROP(blk_id) = .TRUE.
+      ENDIF
+
+ 100  CONTINUE
+
       return
       end
 
@@ -224,6 +235,29 @@ c_______Was a particular block requested?
         IDX = 1
         call ccif_block_by_index(LOGNAM,IDX,blknam,blk_id,istat)
       ENDIF
+      
+C If output based on an input file, we check for the presence of 
+C certain categories, and set up sort if present
+      LANISOTROP(blk_id) = .FALSE.
+      IF (LOGNAMIN.EQ.' ') GOTO 100    
+
+C This context can't be used to change values, hence 'RO'
+      ISTAT = 0
+      call ccp4ccif_setup_context('ATOM_SITE_ANISOTROP',blk_id,
+     +        IANISOTROP_CONTEXT(blk_id),istat,'RO')
+      IF (ISTAT.GT.0) THEN
+        CALL CCIF_SETUP_SORT('ATOM_SITE_ANISOTROP',blk_id,
+     +                         IANISOTROP_SORT(blk_id),ISTAT)
+        IF (ISTAT.EQ.0) GOTO 100
+        CALL CCIF_ADD_TO_SORT('_atom_site_anisotrop.id',
+     +                         IANISOTROP_SORT(blk_id),ISTAT)
+        IF (ISTAT.EQ.0) GOTO 100
+        CALL CCIF_DO_SORT(IANISOTROP_SORT(blk_id),ISTAT)
+        IF (ISTAT.EQ.0) GOTO 100
+        LANISOTROP(blk_id) = .TRUE.
+      ENDIF
+
+ 100  CONTINUE
      
       return
       end
@@ -283,7 +317,7 @@ C     Local lookup table or extend symop.lib
      + NSYMP,NSYM
       REAL ROT(4,4,192)
       character*8 PointGroupName
-      character*(cfllen) val*733, esdval, blknam, cval,
+      character*(cfllen) val, esdval, blknam, cval,
      & symm_itmnam(2), symm_catnam, itmnam
       character*(*) SpaceGroupName
       
@@ -376,7 +410,7 @@ c     Given a block_id, return _entity.id and _entity.type
       
       integer i, blk_id,ncntxt,istat,lenval,
      & btype,sline,IFAIL,istatus,ival
-      character*(cfllen) val*733,cval,entity_itmnam(2),entity_catnam
+      character*(cfllen) val,cval,entity_itmnam(2),entity_catnam
       character*(*) entityid(*),entitytype(*)
       
       entity_itmnam(1) = '_entity.id'
@@ -469,7 +503,7 @@ CDOC  IFAIL           (O)     INTEGER         =0 OK
       
       integer i,J,blk_id,ncntxt,istat,lenval,NASYM,
      & btype,sline,IFAIL,istatus,ival
-      character*(cfllen) val*733,cval,asym_itmnam(2),asym_catnam
+      character*(cfllen) val,cval,asym_itmnam(2),asym_catnam
       character*(*) asymid(*),asymentityid(*),entitytype(*)
       character*(cfllen) entid(MAXENTITY),enttype(MAXENTITY),id
       
@@ -570,7 +604,7 @@ CDOC  IFAIL           (O)     INTEGER         =0 OK
       
       integer i, blk_id,length_dep,angle_dep,ncntxt,istat,
      & btype,sline,istate,IFAIL,istatus
-      character*(cfllen) val*733, esdval, blknam, 
+      character*(cfllen) val, esdval, blknam, 
      & cell_itmnam(7), cell_catnam, itmnam
       real cell(6),vol,vol_from_file,vol_check,rval,esd,
      + CONV,ALPH,BET,GAMM,SUM
@@ -817,7 +851,7 @@ C if matrices present, read and check against cell - derive NCODE
       INTEGER blk_id,IFAIL1,IFAIL2,NCODE,ncntxt,istat,
      & btype,sline,istate,IFAIL,istatus
       REAL RF(4,4),RO(4,4),CELL(6),vol
-      character*(cfllen) val*733, esdval, blknam, 
+      character*(cfllen) val, esdval, blknam, 
      & mat_itmnam(7), mat_catnam, itmnam
 
 C--- See if orthogonalising matrices are in file
@@ -864,7 +898,7 @@ CDOC                                          =1 not found in file
       
       integer i,J,K,blk_id,ncntxt,istat,
      & btype,sline,IFAIL,istatus
-      character*(cfllen) val*733, blknam, 
+      character*(cfllen) val, blknam, 
      & mat_itmnam(9), vec_itmnam(9), mat_catnam, itmnam
       real RO(4,4),rval
 
@@ -967,7 +1001,7 @@ CDOC                                          =1 not found in file
       
       integer i,J,K,blk_id,ncntxt,istat,
      & btype,sline,IFAIL,istatus
-      character*(cfllen) val*733, blknam, 
+      character*(cfllen) val, blknam, 
      & mat_itmnam(9), vec_itmnam(9), mat_catnam, itmnam
       real RF(4,4),rval
 
@@ -1242,7 +1276,7 @@ CDOC  NENTITY         (I)     INTEGER         number of entities
       
       integer i, ncntxt,istat,lenval,
      & btype,sline,istatus,ival
-      character*(cfllen) val*733,cval,entity_itmnam(2),entity_catnam
+      character*(cfllen) val,cval,entity_itmnam(2),entity_catnam
       
       entity_itmnam(1) = '_entity.id'
       entity_itmnam(2) = '_entity.type'
@@ -1306,7 +1340,7 @@ CDOC                                          in _audit.update_record
       
       integer i, ncntxt,istat,lenval,lenstr,
      & btype,sline,istatus,ival,nline,itmpos
-      character*(cfllen) val*733,cval,audit_itmnam(4),audit_catnam
+      character*(cfllen) val,cval,audit_itmnam(4),audit_catnam
       character progname*80,ciftime*25
       character*(cftxtlen) txtval
       
@@ -1476,7 +1510,7 @@ C-- Arguments
      + btype,sline,istate,istatus,ival,NSYMP,NSYM,NSPGP
       REAL ROT(4,4,192)
       character*10 PointGroupName,NAMSPGP
-      character*(cfllen) val*733, esdval, blknam, cval,
+      character*(cfllen) val, esdval, blknam, cval,
      & symm_itmnam(2), symm_catnam, itmnam
 
       IF (NumSpaceGroup.EQ.0 .AND. SpaceGroupName.EQ.' ') THEN
@@ -1549,7 +1583,7 @@ CDOC
       
       integer i,J,K,blk_id,ncntxt,istat,
      & btype,sline,istatus
-      character*(cfllen) val*733, blknam, 
+      character*(cfllen) val, blknam, 
      & mat_itmnam(9), vec_itmnam(9), mat_catnam, itmnam
       real RF(4,4),rval
 
@@ -1661,9 +1695,6 @@ CDOC  LEND            (O)     LOGICAL         .TRUE. if end of loop
 
       include 'cciflib.fh'
 
-      INTEGER MAXBLK
-      PARAMETER (MAXBLK=100)
-
 C---data items
       CHARACTER*(*) SYMBOL,ATOMID,RESID,CHAINID,ALTID,RESNO,ATOMNO
       INTEGER IRES
@@ -1671,14 +1702,10 @@ C---data items
 
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,
      +  istatus,IFAIL(12)
-      character*(cfllen) val*733,esdval,atom_site_catnam,itmnam,
+      character*(cfllen) val,esdval,atom_site_catnam,itmnam,
      +  ATOM_SITE_ITMNAM(3)
       REAL rval,esd
       LOGICAL LEND
-
-      INTEGER IATOM_CONTEXT,IATOM_STATUS
-      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
-     +                  IATOM_STATUS(0:MAXBLK-1)
       
 C--- Has an ATOM_SITE context been set for this data block?
       IF (IATOM_CONTEXT(blk_id).EQ.-1) THEN
@@ -1758,12 +1785,7 @@ CDOC                                          = -2 write out '.'
 
       IMPLICIT NONE
 
-c     This syntax for include files seems to work on every system that
-c     I've tried it on.
       include 'cciflib.fh'
-
-      INTEGER MAXBLK
-      PARAMETER (MAXBLK=100)
 
 C---data items
       CHARACTER*(*) SYMBOL,ATOMID,RESID,CHAINID,ALTID,RESNO,ATOMNO
@@ -1772,14 +1794,10 @@ C---data items
 
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,IFAIL(13),
      +  istatus
-      character*(cfllen) val*733,esdval,atom_site_catnam,itmnam,
+      character*(cfllen) val,esdval,atom_site_catnam,itmnam,
      +  ATOM_SITE_ITMNAM(3),disposition
       REAL rval,esd
       LOGICAL NEWROW
-
-      INTEGER IATOM_CONTEXT,IATOM_STATUS
-      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
-     +                  IATOM_STATUS(0:MAXBLK-1)
    
 C--- Has an ATOM_SITE context been set for this data block?
 C    Category may or may not exist already.
@@ -1844,26 +1862,17 @@ CDOC  LEND            (O)     LOGICAL         .TRUE. if end of loop
 
       IMPLICIT NONE
 
-c     This syntax for include files seems to work on every system that
-c     I've tried it on.
       include 'cciflib.fh'
-
-      INTEGER MAXBLK
-      PARAMETER (MAXBLK=100)
 
 C---data items
       REAL XONE(3),X(*),Y(*),Z(*)
 
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,IFAIL,
      +  istatus,npack,nread
-      character*(cfllen) val*733,esdval,atom_site_catnam,itmnam,
+      character*(cfllen) val,esdval,atom_site_catnam,itmnam,
      +  ATOM_SITE_ITMNAM(3)
       REAL rval,esd
       LOGICAL LEND
-
-      INTEGER IATOM_CONTEXT,IATOM_STATUS
-      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
-     +                  IATOM_STATUS(0:MAXBLK-1)
       
 C--- Has an ATOM_SITE context been set for this data block?
       IF (IATOM_CONTEXT(blk_id).EQ.-1) THEN
@@ -1932,19 +1941,12 @@ CDOC  LEND            (O)     LOGICAL         .TRUE. if end of loop
 
       include 'cciflib.fh'
 
-      INTEGER MAXBLK
-      PARAMETER (MAXBLK=100)
-
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,IFAIL,
      +  istatus
-      character*(cfllen) val*733,esdval,atom_site_catnam,itmnam,
+      character*(cfllen) val,esdval,atom_site_catnam,itmnam,
      +  ATOM_SITE_ITMNAM(3)
       REAL X(3),rval,esd
       LOGICAL LEND
-
-      INTEGER IATOM_CONTEXT,IATOM_STATUS
-      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
-     +                  IATOM_STATUS(0:MAXBLK-1)
       
       LEND = .FALSE.
       
@@ -2143,8 +2145,8 @@ CDOC  LEND            (O)     LOGICAL         .TRUE. if end of loop
 
       include 'cciflib.fh'
 
-      INTEGER MAXBLK,NITEMS
-      PARAMETER (MAXBLK=100,NITEMS=8)
+      INTEGER NITEMS
+      PARAMETER (NITEMS=8)
 
 C---data items
       CHARACTER*(*) SYMBOL,ATOMID,RESID,CHAINID,ALTID,RESNO,ATOMNO
@@ -2152,14 +2154,10 @@ C---data items
 
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,
      +  istatus,lenval,ival,ivalue(NITEMS),IFAIL(NITEMS)
-      character*(cfllen) val*733,cval*733,esdval,atom_site_catnam,
-     +  itmnam,ATOM_SITE_ITMNAM(NITEMS),cvalue(NITEMS)*733
+      character*(cfllen) val,cval,esdval,atom_site_catnam,
+     +  itmnam,ATOM_SITE_ITMNAM(NITEMS),cvalue(NITEMS)
       REAL rval,esd
       LOGICAL LEND
-
-      INTEGER IATOM_CONTEXT,IATOM_STATUS
-      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
-     +                  IATOM_STATUS(0:MAXBLK-1)
       
       LEND = .FALSE.
       
@@ -2284,18 +2282,11 @@ CDOC  LEND            (O)     LOGICAL         .TRUE. if end of loop
 
       include 'cciflib.fh'
 
-      INTEGER MAXBLK
-      PARAMETER (MAXBLK=100)
-
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,IFAIL,
      +  istatus
-      character*(cfllen) val*733,esdval,atom_site_catnam,itmnam
+      character*(cfllen) val,esdval,atom_site_catnam,itmnam
       REAL BISO,rval,esd
       LOGICAL LEND
-
-      INTEGER IATOM_CONTEXT,IATOM_STATUS
-      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
-     +                  IATOM_STATUS(0:MAXBLK-1)
       
       LEND = .FALSE.
 
@@ -2342,8 +2333,10 @@ C----Did we reach end of loop?
 
       subroutine ccp4ccif_getanisou(blk_id,u_aniso,IFAIL,LEND)
       
-CDOC  Given a block_id, get the next set of ADPs.
-CDOC  Search several possible sets of data items.
+CDOC  Given a block_id, get the set of ADPs for the next
+CDOC  atom_site packet. First check the ATOM_SITE_ANISOTROP
+CODC  category, if present, for U then B. If not found, try
+CDOC  the atom_site packet itself, for U then B.
 CDOC
 CDOC  Arguments :
 CDOC
@@ -2360,27 +2353,18 @@ CDOC  LEND            (O)     LOGICAL         .TRUE. if end of loop
 
       IMPLICIT NONE
 
-c     This syntax for include files seems to work on every system that
-c     I've tried it on.
       include 'cciflib.fh'
 
-      INTEGER MAXBLK
-      PARAMETER (MAXBLK=100)
-
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,IFAIL,
-     +  istatus
-      character*(cfllen) val*733,esdval,atom_site_catnam,itmnam,
-     +  ATOM_SITE_ITMNAM(6)
-      REAL U_aniso(6),rval,esd,eightpipi
+     +  istatus,IKEY,lenval,istatold
+      character*(cfllen) val,esdval,atom_site_catnam,itmnam,
+     +  ATOM_SITE_ITMNAM(6),cval
+      REAL U_aniso(6),rval,esd,eightpipi,FKEY
       LOGICAL LEND
-
-      INTEGER IATOM_CONTEXT,IATOM_STATUS
-      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
-     +                  IATOM_STATUS(0:MAXBLK-1)
       
       LEND = .FALSE.
       eightpipi = 128.0*(atan(1.0))**2
-      
+
 C--- Has an ATOM_SITE context been set for this data block?
       IF (IATOM_CONTEXT(blk_id).EQ.-1) THEN
         atom_site_catnam = 'ATOM_SITE'
@@ -2394,7 +2378,87 @@ C--- Has an ATOM_SITE context been set for this data block?
         istat = IATOM_STATUS(blk_id)
         IF (ISTAT.EQ.0) istat = advance_context
       ENDIF
+      istatold = istat
 
+C   ATOM_SITE_ANISOTROP category, if present, takes precedence
+      IF (LANISOTROP(blk_id)) THEN
+
+        itmnam = '_atom_site.id'
+        call ccif_get_char(itmnam, val, cval, lenval,
+     &      ncntxt, istat)
+        IF (ISTAT.NE.loop_value) GOTO 300
+        IKEY = 0
+        FKEY = 0.0
+        CALL CCIF_SEARCH_CONTEXT(IANISOTROP_SORT(blk_id),
+     +          IANISOTROP_CONTEXT(blk_id),1,IKEY,FKEY,CVAL,
+     +                CFLLEN,ISTAT)
+        IF (ISTAT.NE.1) GOTO 300
+
+C  We have now found the current _atom_site.id in ATOM_SITE_ANISOTROP
+
+        ATOM_SITE_ITMNAM(1) = '_atom_site_anisotrop.U[1][1]'
+        ATOM_SITE_ITMNAM(2) = '_atom_site_anisotrop.U[1][2]'
+        ATOM_SITE_ITMNAM(3) = '_atom_site_anisotrop.U[1][3]'
+        ATOM_SITE_ITMNAM(4) = '_atom_site_anisotrop.U[2][2]'
+        ATOM_SITE_ITMNAM(5) = '_atom_site_anisotrop.U[2][3]'
+        ATOM_SITE_ITMNAM(6) = '_atom_site_anisotrop.U[3][3]'
+
+        DO I=1,6
+          itmnam = ATOM_SITE_ITMNAM(I)
+c___Check type of data item (real, integer, etc.)
+          btype = 4
+          call ccp4ccif_check_type(itmnam, btype, sline)
+          istat = keep_context
+          call ccif_get_real_esd(itmnam, val, rval, esdval, esd, 
+     &        IANISOTROP_CONTEXT(blk_id), istat, istate)
+
+C----If no value found, try anisotrop.B
+          IF (ISTAT.NE.loop_value) THEN
+            GOTO 400
+          ENDIF
+
+          IFAIL = IFAILSTAT(ISTAT/2)
+          U_aniso(I) = RVAL
+
+        ENDDO
+
+        GOTO 100
+
+ 400    CONTINUE
+
+        ATOM_SITE_ITMNAM(1) = '_atom_site_anisotrop.B[1][1]'
+        ATOM_SITE_ITMNAM(2) = '_atom_site_anisotrop.B[1][2]'
+        ATOM_SITE_ITMNAM(3) = '_atom_site_anisotrop.B[1][3]'
+        ATOM_SITE_ITMNAM(4) = '_atom_site_anisotrop.B[2][2]'
+        ATOM_SITE_ITMNAM(5) = '_atom_site_anisotrop.B[2][3]'
+        ATOM_SITE_ITMNAM(6) = '_atom_site_anisotrop.B[3][3]'
+
+        DO I=1,6
+          itmnam = ATOM_SITE_ITMNAM(I)
+c___Check type of data item (real, integer, etc.)
+          btype = 4
+          call ccp4ccif_check_type(itmnam, btype, sline)
+          istat = keep_context
+          call ccif_get_real_esd(itmnam, val, rval, esdval, esd, 
+     &        IANISOTROP_CONTEXT(blk_id), istat, istate)
+
+C----If no value found, try aniso_U
+          IF (ISTAT.NE.loop_value) THEN
+            GOTO 300
+          ENDIF
+
+          IFAIL = IFAILSTAT(ISTAT/2)
+          U_aniso(I) = RVAL/eightpipi
+
+        ENDDO
+
+        GOTO 100
+
+      ENDIF
+
+ 300  CONTINUE
+
+      istat = istatold
       IFAIL = -2
       ATOM_SITE_ITMNAM(1) = '_atom_site.aniso_U[1][1]'
       ATOM_SITE_ITMNAM(2) = '_atom_site.aniso_U[1][2]'
@@ -2419,16 +2483,13 @@ C----Did we reach end of loop?
         IF (ISTAT.EQ.end_of_context) THEN
           LEND = .TRUE.
           GOTO 100
+C----If no value found, try aniso_B
         ELSEIF (ISTAT.NE.loop_value) THEN
           GOTO 200
         ENDIF
 
         IFAIL = IFAILSTAT(ISTAT/2)
-        IF (IFAIL.GE.0) THEN
-          U_aniso(I) = RVAL
-        ELSE
-          U_aniso(I) = -999.0
-        ENDIF
+        U_aniso(I) = RVAL
 
       ENDDO
 
@@ -2457,7 +2518,7 @@ c_______Check type of data item (real, integer, etc.)
      &      ncntxt, istat, istate)
 
 C----Did we reach end of loop?
-        IF (ISTAT.EQ.8) THEN
+        IF (ISTAT.EQ.end_of_context) THEN
           LEND = .TRUE.
           GOTO 100
         ENDIF
@@ -2497,22 +2558,13 @@ CDOC  LEND            (O)     LOGICAL         .TRUE. if end of loop
 
       IMPLICIT NONE
 
-c     This syntax for include files seems to work on every system that
-c     I've tried it on.
       include 'cciflib.fh'
-
-      INTEGER MAXBLK
-      PARAMETER (MAXBLK=100)
 
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,IFAIL,
      +  istatus
-      character*(cfllen) val*733,esdval,atom_site_catnam,itmnam
+      character*(cfllen) val,esdval,atom_site_catnam,itmnam
       REAL OCCUP,rval,esd
       LOGICAL LEND
-
-      INTEGER IATOM_CONTEXT,IATOM_STATUS
-      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
-     +                  IATOM_STATUS(0:MAXBLK-1)
       
       LEND = .FALSE.
       
@@ -2576,23 +2628,14 @@ CDOC                                          = -2 write out '.'
 
       IMPLICIT NONE
 
-c     This syntax for include files seems to work on every system that
-c     I've tried it on.
       include 'cciflib.fh'
-
-      INTEGER MAXBLK
-      PARAMETER (MAXBLK=100)
 
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,IFAIL(3),
      +  istatus
-      character*(cfllen) val*733,atom_site_catnam,itmnam,
+      character*(cfllen) val,atom_site_catnam,itmnam,
      +  disposition,ATOM_SITE_ITMNAM(3)
       REAL X(3),rval
       LOGICAL NEWROW
-
-      INTEGER IATOM_CONTEXT,IATOM_STATUS
-      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
-     +                  IATOM_STATUS(0:MAXBLK-1)
 
 C--- Has an ATOM_SITE context been set for this data block?
 C    Category may or may not exist already.
@@ -2681,12 +2724,10 @@ CDOC                                          = -2 write out '.'
 
       IMPLICIT NONE
 
-c     This syntax for include files seems to work on every system that
-c     I've tried it on.
       include 'cciflib.fh'
 
-      INTEGER MAXBLK,NITEMS
-      PARAMETER (MAXBLK=100,NITEMS=8)
+      INTEGER NITEMS
+      PARAMETER (NITEMS=8)
 
 C---data items
       CHARACTER*(*) SYMBOL,ATOMID,RESID,CHAINID,ALTID,RESNO,ATOMNO
@@ -2694,15 +2735,11 @@ C---data items
 
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,IFAIL0,
      +  IFAIL(NITEMS),istatus,lenval,ival,ivalue(NITEMS)
-      character*(cfllen) val*733,cval*733,esdval,atom_site_catnam,
+      character*(cfllen) val,cval,esdval,atom_site_catnam,
      +  disposition,itmnam,ATOM_SITE_ITMNAM(NITEMS),
-     +  cvalue(NITEMS)*733
+     +  cvalue(NITEMS)
       REAL rval,esd
       LOGICAL NEWROW
-
-      INTEGER IATOM_CONTEXT,IATOM_STATUS
-      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
-     +                  IATOM_STATUS(0:MAXBLK-1)
 
 C--- Has an ATOM_SITE context been set for this data block?
 C    Category may or may not exist already.
@@ -2844,23 +2881,14 @@ CDOC                                          = -2 write out '.'
 
       IMPLICIT NONE
 
-c     This syntax for include files seems to work on every system that
-c     I've tried it on.
       include 'cciflib.fh'
-
-      INTEGER MAXBLK
-      PARAMETER (MAXBLK=100)
 
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,IFAIL,
      +  istatus
-      character*(cfllen) val*733,atom_site_catnam,itmnam,
+      character*(cfllen) val,atom_site_catnam,itmnam,
      +  disposition
       REAL BISO,rval
       LOGICAL NEWROW
-
-      INTEGER IATOM_CONTEXT,IATOM_STATUS
-      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
-     +                  IATOM_STATUS(0:MAXBLK-1)
 
 C--- Has an ATOM_SITE context been set for this data block?
 C    Category may or may not exist already.
@@ -2924,23 +2952,14 @@ CDOC                                          = -2 write out '.'
 
       IMPLICIT NONE
 
-c     This syntax for include files seems to work on every system that
-c     I've tried it on.
       include 'cciflib.fh'
-
-      INTEGER MAXBLK
-      PARAMETER (MAXBLK=100)
 
       INTEGER I,BLK_ID,ncntxt,istat, btype, sline,istate,IFAIL,
      +  istatus
-      character*(cfllen) val*733,atom_site_catnam,itmnam,
+      character*(cfllen) val,atom_site_catnam,itmnam,
      +  disposition
       REAL OCCUP,rval
       LOGICAL NEWROW
-
-      INTEGER IATOM_CONTEXT,IATOM_STATUS
-      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
-     +                  IATOM_STATUS(0:MAXBLK-1)
 
 C--- Has an ATOM_SITE context been set for this data block?
 C    Category may or may not exist already.
