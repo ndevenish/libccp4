@@ -91,7 +91,8 @@ $L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) $L(rwatom.o) \
 	  $L(mtzlib.o) $L(diskio.o) $L(unix.o) \
 	  $L(binsortint.o) $L(library.o) \
 	  $L(plot84lib.o) $L(plotsubs.o)
-	test -f /usr/lib/fortran/time.o && make $L(time.o) # titan special
+# titan special:
+	-(test -f /usr/lib/fortran/time.o && make '$L(time.o)') || true
 	$(RANLIB) $@
 
 test-lib : $(srcdir)/testlib.f $L(library.o) $L(unix.o) $L(ccplib.o) \
@@ -384,10 +385,10 @@ dist : realclean
 test : testlib
 	./testlib -v 3 testenv foo
 
-tags : unix.f
-	etags ${srcdir}/*.[fch] ${srcdir}/unix.m4
-	sed -e -e 's|^\([a-zA-Z_]*.c\),|$(srcdir)/\1,|' \
- 		-e 's/unix.f/unix.m4/' tagdir/TAGS > TAGS
+tags TAGS : unix.f
+	etags ${srcdir}/*.[fch] #${srcdir}/unix.m4
+#	sed -e -e 's|^\([a-zA-Z_]*.c\),|$(srcdir)/\1,|' \
+# 		-e 's/unix.f/unix.m4/' tagdir/TAGS > TAGS
 	rm -f unix.f
 
 # Local Variables:
