@@ -166,6 +166,7 @@
 #define READ_OP         1
 #define WRITE_OP        2
 
+#include<fcntl.h>
 #ifndef SEEK_SET
 #  define SEEK_SET 0
 #  define SEEK_CUR 1
