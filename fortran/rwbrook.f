@@ -308,7 +308,7 @@ C     .. Parameters ..
       PARAMETER (MAXFILESOPEN=90,MAXSYM=96)
 C     ..
 C     .. Arguments ..
-      INTEGER IFAIL,IUNIT,ICRYST,II,JJ,K,ISYM
+      INTEGER IFAIL,IUNIT,ICRYST,II,III,JJ,K,ISYM
       REAL AM,BM,RCHK1,RCHK2,FAC
       CHARACTER*(*) FILTYP,LOGNAM,RWSTAT
 C     ..
@@ -464,7 +464,7 @@ C---REMARK 290       4555   1/2+X,1/2-Y,-Z
              READ(BROOKA(11:18),'(I8)')NSYMCHK
              CALL  symfr2 (BROOKA,22,nsymchk,rsymchk)
               write(6,'(a,i3,4(/,4f10.3))')' remark 290',nsymchk,
-     + ((rsymchk(ii,jj,nsymchk),ii=1,4),jj=1,4)
+     + ((rsymchk(iii,jj,nsymchk),iii=1,4),jj=1,4)
            ENDIF
           ENDIF
 C
