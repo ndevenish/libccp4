@@ -782,7 +782,9 @@ c     ============================
 ccFrom GERARD@XRAY.BMC.UU.SE Thu Sep 24 00:25:25 1998
 c
 ifelse(_ifc,8,
-[      USE IFPORT])
+[      USE IFPORT],
+_xlf,1,
+[      use xlfutility])
       implicit none
 c
       character ciftime*(*)
@@ -800,6 +802,12 @@ _ifc,8,
      +        localyear,nhours,nminutes,diff
       integer(kind=8)  :: stime
 ],
+_xlf,1,
+[      integer gmt_hour,gmt_minutes,localdaymonth,
+     +        localhours,localminutes,localmonth,localseconds,
+     +        localyear,nhours,nminutes,diff
+      integer(kind=TIME_SIZE)  :: stime, time
+],
 [      integer gmt_hour,gmt_minutes,localdaymonth,
      +        localhours,localminutes,localmonth,localseconds,
      +        localyear,nhours,nminutes,stime,diff
@@ -813,6 +821,8 @@ ifelse(_AIX,1,
       real*8 timef,stimef
       integer time
       external time,timef],
+_xlf,1,
+,
 [
       integer time])
 c
@@ -832,21 +842,33 @@ dnl * len is quoted since also m4 macro
 c
 ifelse(_ifc,1,
 [      stime = time(timstr)
+      call gmtime(stime,gmtarray)
+      call ltime(stime,tarray)
 ],
 _efc,1,
 [      stime = int(rtc(), kind=8)
+      call gmtime(stime,gmtarray)
+      call ltime(stime,tarray)
 ],
 _ifc,8, 
 [      stime = int(rtc(), kind=8)
-],
-[
-      stime = time()])
       call gmtime(stime,gmtarray)
-ifelse(_AIX,1,
-[
-      call ltime_(stime,tarray)],
-[
-      call ltime(stime,tarray)])
+      call ltime(stime,tarray)
+],
+_xlf,1,
+[      stime = time()
+      call gmtime(stime,gmtarray)
+      call ltime(stime,tarray)
+],
+_AIX,1,
+[      stime = time()
+      call gmtime(stime,gmtarray)
+      call ltime_(stime,tarray)]
+],
+[      stime = time()
+      call gmtime(stime,gmtarray)
+      call ltime(stime,tarray)
+])
 c
       nminutes = gmtarray(2)
       nhours = gmtarray(3)
