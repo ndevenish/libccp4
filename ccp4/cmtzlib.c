@@ -2205,6 +2205,7 @@ int MtzPut(MTZ *mtz, const char *logname)
  int *intbuf = (int *) buf;
  float *fltbuf = buf + NBATCHINTEGERS;
  MTZBAT *batch, *lastoldbatch;
+ MTZXTAL *xtl;
 
  if (debug) 
    printf(" MtzPut: entering \n");
@@ -2263,15 +2264,21 @@ int MtzPut(MTZ *mtz, const char *logname)
  if (debug) printf(" MtzPut: NCOL just written \n");
 
  /* Purely for backwards compatibility: output first non-zero cell as
-    global cell. */
- for (i = 0; i < mtz->nxtal; ++i)
+    global cell. Also update base dataset cell. */
+ for (i = 0; i < mtz->nxtal; ++i) {
+   if ( !strcmp(mtz->xtal[i]->xname,"HKL_base") ) continue;
+   if ( (MtzNumActiveSetsInXtal(mtz,mtz->xtal[i]) == 0) ) continue;
    if (mtz->xtal[i]->cell[0] > 0.001) {
      sprintf(hdrrec,"CELL  %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f",mtz->xtal[i]->cell[0],
            mtz->xtal[i]->cell[1],mtz->xtal[i]->cell[2],mtz->xtal[i]->cell[3],
            mtz->xtal[i]->cell[4],mtz->xtal[i]->cell[5]);
      MtzWhdrLine(fileout,65,hdrrec);
+     if (xtl = MtzXtalLookup(mtz,"HKL_base"))
+       for (j = 0; j < 6; ++j)
+         xtl->cell[j] = mtz->xtal[i]->cell[j];
      break;
    }
+ }
  if (debug) printf(" MtzPut: CELL just written \n");
 
  ccp4_lrsort(mtz, isort);
