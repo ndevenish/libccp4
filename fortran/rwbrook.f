@@ -453,11 +453,22 @@ C...  MMDB get spacegroup and cell (cache)
 C...
 C...  MMDB get CELL and VOL for cache
             CALL MMDB_F_RBCELL(IUNIT,CELL,VOL,IRET)
-            IF (IRET.EQ.0) IFCRYS=.TRUE.
+            IF (IRET.EQ.0) THEN
+              IFCRYS=.TRUE.
+            ELSE
+              IFCRYS=.FALSE.
+            ENDIF
 C...  MMDB get the orthogonalisation and fractional matrices
             RO(1,1) = 0.0
             CALL MMDB_F_RBORF(IUNIT,RO,RF,NCODE,IRET)
-            IF (IRET.EQ.0) IFSCAL=.TRUE.
+C IFSCAL indicates SCALEx cards found, MATRIX indicates RO,RF in /ORTHOG/ set up
+            IF (IRET.EQ.0) THEN
+              IFSCAL=.TRUE.
+              MATRIX=.TRUE.
+            ELSE
+              IFSCAL=.FALSE.
+              MATRIX=.FALSE.
+            ENDIF
 C
 C If BRKSPGRP contains "/" it is probably a Patterson group and may
 C occupy the full 15 characters. Else it may be from the PDB and
@@ -493,8 +504,7 @@ C---- R name associated with a=b=c; Alpha=Beta=Gamma
 C
              END IF
 C...   set up standard orth matrices (cache)
-            CALL RBFROR
-            IF(IFSCAL) MATRIX=.TRUE.
+            IF (IFCRYS) CALL RBFROR
           ENDIF
 C
 C==== If the file is an OUTPUT file
