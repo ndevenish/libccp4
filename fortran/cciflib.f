@@ -3163,17 +3163,18 @@ C--- No category found (but context will be assigned for output files
 C    unless DISPOSITION set to 'RO').
       IF (ISTAT.EQ.cat_not_present) THEN
         IF (ISTAT_EXP.NE.cat_not_present) THEN
-          write(ERRLINE,*) 
-     +     ' Warning in ccp4ccif_setup_context: Category '//
-     +     catnam_in(1:lenstr(catnam_in))//' not present in data block.'
+          write(ERRLINE,"(A,A,A)") 
+     +     ' Warning in ccp4ccif_setup_context: Category ',
+     +     catnam_in,' not present in data block.'
           CALL CCPERR(2,ERRLINE)
         ENDIF
 
 C--- Loop found
       ELSEIF (ISTAT.EQ.loop_context) THEN
         IF (ISTAT_EXP.EQ.item_context) THEN
-          write(ERRLINE,*) ' Error in ccp4ccif_setup_context: '//
-     +    'Tried to set up category '//catnam_in(1:lenstr(catnam_in))//
+          write(ERRLINE,"(A,A,A)") 
+     +    ' Error in ccp4ccif_setup_context: '//
+     +    'Tried to set up category ',catnam_in,
      +    ' as item context when it is loop context.'
           CALL CCPERR(1,ERRLINE)
         ENDIF
@@ -3181,16 +3182,18 @@ C--- Loop found
 C--- Loop found
       ELSEIF (ISTAT.EQ.item_context) THEN
         IF (ISTAT_EXP.EQ.loop_context) THEN
-          write(ERRLINE,*) ' Error in ccp4ccif_setup_context: '//
-     +    'Tried to set up category '//catnam_in(1:lenstr(catnam_in))//
+          write(ERRLINE,"(A,A,A)") 
+     +    ' Error in ccp4ccif_setup_context: '//
+     +    'Tried to set up category ',catnam_in,
      +    ' as item context when it is loop context.'
           CALL CCPERR(1,ERRLINE)
         ENDIF
 
       ELSE
-        write(ERRLINE,*) ' Error in ccp4ccif_setup_context: '//
-     +    'Unexpected context type for category '//
-     +    catnam_in(1:lenstr(catnam_in))
+        write(ERRLINE,"(A,A)") 
+     +    ' Error in ccp4ccif_setup_context: '//
+     +    'Unexpected context type for category ',
+     +    catnam_in
         CALL CCPERR(1,ERRLINE)
       ENDIF
 
@@ -3217,8 +3220,7 @@ CDOC
       include 'cciflib.fh'
 
       integer btype, sline, btype_exp, sline_exp
-      character*(*) itmnam
-      character*(cfllen) ccode, pcode
+      character*(cfllen) itmnam, ccode, pcode
       character*(200) errlin
 
       integer lenstr
