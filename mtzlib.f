@@ -597,9 +597,12 @@ C
 C---- CTPRGI is given
 C
               ELSE 
-                IF ((CTYPE(LOOKUP(JDO100),MINDX).NE.
-     +              CTPRGI(JDO100)) .AND. 
+C               The check for 'U' and 'V' here is for the translation
+C               function special in CAD to avoid the warning
+                IF ((CTYPE(LOOKUP(JDO100),MINDX).NE.CTPRGI(JDO100)).AND.
      +              (CTYPE(LOOKUP(JDO100),MINDX).NE.'R') .AND.
+     +              (CTPRGI(JDO100).NE.'U') .AND.
+     +              (CTPRGI(JDO100).NE.'V') .AND.
      +              (CTYPE(LOOKUP(JDO100),MINDX).NE.' ')) THEN
                   JLENG = LENSTR(LSPRGI(JDO100))
                   ISTAT = 1
