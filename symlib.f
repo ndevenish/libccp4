@@ -214,6 +214,7 @@ C   3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
 C   4 pg2    2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
 C   6 pg222  mmm        hkl:h>=0, k>=0, l>=0            16 ...
 C   7 pg4    4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
+C                                                k>0 if h>0
 C   8 pg422 4/mmm       hkl:h>=0, k>=0, l>=0            89..
 C   9 pg3     3bar      hkl:h>=0, k>0  00l:l>0         143..
 C  10 pg312  3/m        hkl:h>=0, k>=0 with k<=h for all l.
@@ -222,7 +223,8 @@ C           Space group numbers :   149-151-153
 C  11 pg321  3/m        hkl:h>=0, k>=0 with k<=h for all l.
 C                           if h = k  l>=0
 C           Space group numbers :   150-152-154
-C  12 pg6    6/m        hkl:h>=0, k>=0, l>=0 with k=0 if  h=0
+C  12 pg6    6/m        hkl:h>=0, k>=0, l>=0 with k>=0 if  h=0
+C                       and k> 0 if h>0
 C  13 pg622 6/mmm       hkl:h>=0, k>=0, l>=0 with h>=k 177..
 C  14 pg23   m3         hkl:h>=0, k>=0, l>=0 with l>=h,  k>=h
 C  15 pg432  m3m        hkl:h>=0, k>=0, l>=0  with  k>=l
@@ -3275,6 +3277,7 @@ C LCF CADLCF nlaue number
 C   3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
 C   4 pg2    2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
 C   6 pg222  mmm        hkl:h>=0, k>=0, l>=0            16 ...
+C                                                k>0 if h>0
 C   7 pg4    4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
 C   8 pg422 4/mmm       hkl:h>=0, k>=0, l>=0            89..
 C   9 pg3     3bar      hkl:h>=0, k>0  00l:l>0         143..
@@ -3284,7 +3287,8 @@ C           Space group numbers :   149-151-153
 C  11 pg321  3/m        hkl:h>=0, k>=0 with k<=h for all l.
 C                           if h = k  l>=0
 C           Space group numbers :   150-152-154
-C  12 pg6    6/m        hkl:h>=0, k>=0, l>=0 with k=0 if  h=0
+C  12 pg6    6/m        hkl:h>=0, k>=0, l>=0 with k>=0 if  h=0
+C                       and k> 0 if h>0
 C  13 pg622 6/mmm       hkl:h>=0, k>=0, l>=0 with h>=k 177..
 C  14 pg23   m3         hkl:h>=0, k>=0, l>=0 with l>=h,  k>=h
 C  15 pg432  m3m        hkl:h>=0, k>=0, l>=0  with  k>=l  and
