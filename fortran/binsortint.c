@@ -80,11 +80,30 @@ KEYBUF consist of NKEYS entries, each of the form:
 
 /* F2C isn't disjoint with the rest, so be careful (also for other
    routines). */
+#if defined (PROTOTYPE)
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77)
-  int srtbeg_ (nkeys, keybuf, lrecl, memsize)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
+  int srtbeg_ (int *nkeys, int *keybuf, int *lrecl, int *memsize)
+#endif
+
+#if defined (__hpux) || defined (_AIX)
+  int srtbeg (int *nkeys, int *keybuf, int *lrecl, int *memsize)
+#endif
+
+#if defined (ardent) || defined (titan) || defined (stardent)
+  int SRTBEG (int *nkeys, int *keybuf, int *lrecl, int *memsize)
+#endif
+
+#if defined (alliant) || defined (sun) || defined (solbourne) 
+  int srtbeg_ (int *nkeys, int *keybuf, int *lrecl, int *memsize)
+#endif
 
 #else
+
+#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
+  int srtbeg_ (nkeys, keybuf, lrecl, memsize)
+#endif
 
 #if defined (__hpux) || defined (_AIX)
   int srtbeg (nkeys, keybuf, lrecl, memsize)
@@ -94,16 +113,16 @@ KEYBUF consist of NKEYS entries, each of the form:
   int SRTBEG (nkeys, keybuf, lrecl, memsize)
 #endif
 
-#if defined (alliant) || defined (sun) || defined (solbourne)
+#if defined (alliant) || defined (sun) || defined (solbourne) 
   int srtbeg_ (nkeys, keybuf, lrecl, memsize)
-#endif
-
 #endif
 
 int     	*keybuf;	/* keys description */
 int	        *lrecl;		/* length of record */
 int	        *nkeys;		/* number of keys */
 int	        *memsize;       /* size of memory (BYTES) used by sort */
+
+#endif
 {
   char         **argv, **pargv;
   int            argc;
@@ -221,12 +240,30 @@ SRTRLS:	Release one record into Sort
                                         errno otherwise
 =======================================================*/
 
-
+#if defined (PROTOTYPE)
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77)
-  int srtrls_ (record)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
+  int srtrls_ (char *record)
+#endif
+
+#if defined (__hpux) || defined (_AIX)
+  int srtrls (char *record)
+#endif
+
+#if defined (ardent) || defined (titan) || defined (stardent)
+  int SRTRLS (char *record)
+#endif
+
+#if defined (alliant) || defined (sun) || defined (solbourne)
+  int srtrls_ (char *record)
+#endif
 
 #else
+
+#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
+  int srtrls_ (record)
+#endif
 
 #if defined (__hpux) || defined (_AIX)
   int srtrls (record)
@@ -240,9 +277,9 @@ SRTRLS:	Release one record into Sort
   int srtrls_ (record)
 #endif
 
+char            *record
 #endif
 
-char		*record;
 {
   register size_t ret;
 
@@ -260,7 +297,7 @@ SRTMRG:	Merge - finish release phase
 
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
   int srtmrg_ ()
 
 #else
@@ -297,12 +334,30 @@ SRTRET:	Return 1 record from sort
 					errno otherwise
 =======================================================*/
 
-
+#if defined (PROTOTYPE)
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77)
-  int srtret_ (record)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
+  int srtret_ (char *record)
+#endif
+
+#if defined (__hpux) || defined (_AIX)
+  int srtret (char *record)
+#endif
+
+#if defined (ardent) || defined (titan) || defined (stardent)
+  int SRTRET (char *record)
+#endif
+
+#if defined (alliant) || defined (sun) || defined (solbourne)
+  int srtret_ (char *record)
+#endif
 
 #else
+
+#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
+  int srtret_ (record)
+#endif
 
 #if defined (__hpux) || defined (_AIX)
   int srtret (record)
@@ -315,10 +370,8 @@ SRTRET:	Return 1 record from sort
 #if defined (alliant) || defined (sun) || defined (solbourne)
   int srtret_ (record)
 #endif
-
+char            *record;
 #endif
-
-char		*record;
 {
     register size_t	ret;
     int reterr;
