@@ -64,13 +64,6 @@ C    sigdraw.f     siginit.f     sigmove.f   sigpixinit.f
 C    sigpoint.f
 C
 C
-C     Plot84 routines
-C
-C    pl84clear.f    pl84close.f    pl84draw.f    pl84end.f
-C    pl84init.f     pl84integ.f    pl84move.f    pl84newline.f
-C    pl84origin.f   pl84real.f     pl84string.f  pl84xcur.f
-C
-C
 C     LNO3 routines
 C
 C    lno3draw.f    lno3init.f    lno3move.f    lno3point.f
