@@ -287,10 +287,19 @@
 /* path where (g)cc will find it.  The [[#define]] is to avoid the          */
 /* undefinition of macros like [[sgi]].                                     */
 /*                                                                          */
+/* this has been altered for g2c.h as f2c.h is not always distributed       */
 /* <header files>=                                                          */
-#if defined (F2C) || defined (G77)
+#if defined (F2C)
 #  define Skip_f2c_Undefs
 #  include "f2c.h"
+#endif
+#if defined (G77)
+#  define Skip_f2c_Undefs       /* g2c.h infelicity... */
+#  if defined (HAVE_G2C_H)
+#    include "g2c.h"
+#  else
+#    include "f2c.h"
+#  endif
 #endif
 /* \section{[[#define]]s}                                                   */
 /* \subsection{Defaults and customisable items}                             */
