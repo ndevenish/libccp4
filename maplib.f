@@ -25,7 +25,7 @@ C    October 1985
 C            added entry points MRFNAM, MWFNAM, routine MTTCPY  PRE
 C    5/9/86  added routine MTTREP  replace output title after
 C            MWRHDR/MTTCPY
-C   30/10/86 Add missing argument in opening SYMOP using CCPOPN
+C   30/10/86 Add missing argument in opening SYMOP using CCPDPN
 C            in routine MSYPUT
 C   30/9/86  Add rms level of map (from mean) to header, extra arguments
 C            to routines MRDHDR and MCLOSE   P.Brick/PRE
@@ -91,7 +91,7 @@ C      SUBROUTINE MSYCPY(IN,IOUT)
 C      SUBROUTINE MTTCPY(TITLE)
 C      SUBROUTINE MTTREP(TITLE,NT)
 C      SUBROUTINE MSKPUT(ASKWMT,ASKWTN)
-C      SUBROUTINE MODECV(X,BLINE,N,MODE,JB)
+C      SUBROUTINE MODECV(X,BLINE,N,MODE)
 C      SUBROUTINE MSYWRT(IUNIT,NSYM,ROT)
 C
 C      INTEGER FUNCTION MSKGET(ASKWMT,ASKWTN)
@@ -975,9 +975,6 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL QCLOSE,QMODE,QSEEK,QWARCH,QWRITR,MSTMST,QPRLVL
 C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC SQRT
-C     ..
 C     .. Common blocks ..
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
@@ -1787,7 +1784,7 @@ C
 C---- We need to convert N elements from the file in RLINE
 C     to real numbers in X. Subroutine MODECV is machine specific
 C
-          CALL MODECV(X(J),RLINE,N,MODEE,JB)
+          CALL MODECV(X(J),RLINE,N,MODEE)
 C
           J = J + N
           IF (J.LT.M) GO TO 10
@@ -1883,7 +1880,7 @@ C     .. External Functions ..
       EXTERNAL NBYTXX
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPOPN,QSEEK,QWRITR, CCPERR
+      EXTERNAL CCPDPN,QSEEK,QWRITR, CCPERR
 C     ..
 C     .. Common blocks ..
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
@@ -1900,7 +1897,7 @@ C
 C---- Open symmetry file
 C
       IFAIL = 0
-      CALL CCPOPN(IST,'SYMOP',5,1,LDUM,IFAIL)
+      CALL CCPDPN(IST,'SYMOP','READONLY','F',LDUM,IFAIL)
 C     
 C---- Position map file to before symmetry operators
 C     
@@ -2378,20 +2375,15 @@ C
 C
 C
 C
-      SUBROUTINE MODECV(X,BLINE,N,MODE,JB)
-C     ====================================
+      SUBROUTINE MODECV(X,BLINE,N,MODE)
+C     =================================
 C
 C---- Convert N items from BLINE in mode MODE to reals in X
-C     JB = number of bytes/item
 C
 C      IMPLICIT NONE
-C
-C     .. Parameters ..
-      INTEGER LUNOUT
-      PARAMETER (LUNOUT=6)
 C     ..
 C     .. Scalar Arguments ..
-      INTEGER JB,MODE,N
+      INTEGER MODE,N
 C     ..
 C     .. Array Arguments ..
       REAL BLINE(*),X(*)
