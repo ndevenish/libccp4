@@ -442,7 +442,7 @@ FORTRAN_SUBR ( PGDEFN, pgdefn,
                (fpstr nampg, int nampg_len, int *nsymp, const int *nsym, 
                 float rsmt[192][4][4], const ftn_logical *lprint))
 {
-  int i,k,l;
+  int i,j,k,l,nsym1;
   ccp4_symop *op1;
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: PGDEFN");)
@@ -460,8 +460,36 @@ FORTRAN_SUBR ( PGDEFN, pgdefn,
       op1[i].trn[k] = 0.0;
     }
   }
+
+  /* Throw away symops that are duplicated once the
+     translations have been removed */
+  nsym1 = *nsym;
+  i = 0; 
+  while ( i < nsym1 ) {
+    j = i + 1;
+    while ( j < nsym1 ) {
+      if (ccp4_symop_code( op1[i] ) == ccp4_symop_code( op1[j] )) {
+	/* Duplication - overwrite this with the symop
+	   at the end of the list */
+	--nsym1;
+	for (k = 0; k < 3; ++k) {
+	  for (l = 0; l < 3; ++l) {
+	    op1[j].rot[k][l] = op1[nsym1].rot[k][l];
+	  }
+	  /* Nb don't increment j as we need to test the 'new'
+	     symop for duplication before stepping on */
+	}
+      } else {
+	/* Look at next symop */
+	++j;
+      }
+    }
+    /* Look at next symop */
+    ++i;
+  }
+
   /* first, identify a spacegroup from supplied symops */
-  spacegroup = ccp4_spgrp_reverse_lookup(*nsym,op1);
+  spacegroup = ccp4_spgrp_reverse_lookup(nsym1,op1);
   free(op1);
 
   if (!spacegroup) ccperror(1,"Fatal error in PGDEFN");
