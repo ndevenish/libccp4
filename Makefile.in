@@ -65,7 +65,7 @@ all :  $L binsort
          test help
 
 $L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) $L(rwatom.o) \
-	  $L(rwbrook.o) $L(modlib.o) $L(mthlib.o) $L(symlib.o) $L(lcflib.o) \
+	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) $L(lcflib.o) \
 	  $L(mtzlib.o) $L(diskio.o) $L(unix.o) $L(frodo_maplib.o) \
 	  $L(binsortint.o) $L(library.o) $L(ucurse.o) $L(hlplib.o) \
 	  $L(plot84lib.o) $L(graflib.o) $L(graphics.o) $L(gdummy.o)
