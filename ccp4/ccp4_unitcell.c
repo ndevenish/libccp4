@@ -278,3 +278,31 @@ int ccp4uc_cells_differ(const double cell1[6], const double cell2[6], const doub
   }
   return 0;
 }
+
+int ccp4uc_is_rhombohedral(const float cell[6], const float tolerance) {
+
+  double acheck;
+
+  acheck = fabs(cell[0]-cell[1]);
+  acheck += fabs(cell[1]-cell[2]);
+  acheck += fabs(cell[0]-cell[2]);
+  acheck += fabs(cell[3]-cell[4]);
+  acheck += fabs(cell[3]-cell[5]);
+  acheck += fabs(cell[4]-cell[5]);
+  if (acheck > (double) tolerance) return 0;
+  return 1;
+
+}
+
+int ccp4uc_is_hexagonal(const float cell[6], const float tolerance) {
+
+  double acheck;
+
+  acheck = fabs(cell[0]-cell[1]);
+  acheck += fabs(cell[3]-90.0);
+  acheck += fabs(cell[4]-90.0);
+  acheck += fabs(cell[5]-120.0);
+  if (acheck > (double) tolerance) return 0;
+  return 1;
+
+}
