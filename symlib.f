@@ -48,7 +48,7 @@ c  Internal routines:-
 C    fndsmp       factrz
 C
 C 4) Subroutines for testing coordinate  data.
-C    xspecials    krot
+C    xspecials    krotC    calc_orig_ps
 C
 C 5) Subroutines for permuting symmetry operators, etc.
 C    prmvci        prmvcr        rotfix      
@@ -59,7 +59,6 @@ C    ccp4_hash_zeroit
 C
 C 7) Miscellaneous subroutines.
 C    setrsl        sthlsq        sts3r4        pstoph
-C    CALC_ORIG_PS
 C
 C_END_SYMLIB
 C_BEGIN_OUTLINE
@@ -621,6 +620,28 @@ C
 C Group 4: Subroutines for testing coordinate data
 C======================================================================
 C
+C      SUBROUTINE CALC_ORIG_PS(NAMSPG_CIF,NSYM,RSYM,NORIG,ORIG,
+C     +                         LPAXISX,LPAXISY,LPAXISZ)
+C
+C -P- CALC_ORIG_PS - creates list of equivalent origins for the named spacegroup.
+C
+C                  ARGUMENTS
+C                  ---------
+C                    (I) NAMSPG_CIF - spacegroup name (character)
+C                    (I) NSYM - number of symmetry operations
+C                    (I) RSYM(4,4,NSYM) - symmetry ops stored as 4x4 matrices
+C                    (O) NORIG - number of origins.
+C                    (O) ORIG(3,i) - vector of alternate origin 
+C                               (for example : 0.5,0.0,0.5)
+C                               only positive components.
+C                               include vector: (0,0,0)
+C                    (O) LPAXISX - logical; set true if s/grp is polar along x axis
+C                    (O) LPAXISY - logical; set true if s/grp is polar along y axis
+C                    (O) LPAXISZ - logical; set true if s/grp is polar along z axis
+C
+C
+C    Taken from Alexei Vagin
+C
 C---- SUBROUTINE XSPECIALS(NSYM,RSYM,XF,YF,ZF,NSPEC)
 C        Input NSYM  - number of symmetry operators. ( integer)
 C        Input RSYM - 4*4*NSYM symmetry matrices. ( real)
@@ -762,14 +783,6 @@ C***   *****  PSTOPH  *****
 C***   Convert PSIX,PSIY,PSIZ (= epsx,epsy,epsz) to PHIX,PHIY,PHIZ ,
 C***    using AVPHI
 C      All angles in radians
-C
-C -P- CALC_ORIG_PS - creats list of equivalent origins.
-C                    NORIG - number of origins.
-C                    ORIG(3,i) - vector of alternate origin
-C                               (for example : 0.5,0.0,0.5)
-C                               only positive components.
-C                               include vector: (0,0,0)
-C    Taken from Alexei Vagin
 C
 C
 C  End of Brief Description.
@@ -6055,15 +6068,28 @@ C
       END
 
 C ******
+C     =========================================================
        SUBROUTINE CALC_ORIG_PS(NAMSPG_CIF,NSYM,RSYM,NORIG,ORIG,
      +                         LPAXISX,LPAXISY,LPAXISZ)
-
-C -P- CALC_ORIG_PS - creats list of equivalent origins.
-C                    NORIG - number of origins.
-C                    ORIG(3,i) - vector of alternate origin 
+C     =========================================================
+C
+C -P- CALC_ORIG_PS - creates list of equivalent origins for the named spacegroup.
+C
+C                  ARGUMENTS
+C                  ---------
+C                    (I) NAMSPG_CIF - spacegroup name (character)
+C                    (I) NSYM - number of symmetry operations
+C                    (I) RSYM(4,4,NSYM) - symmetry ops stored as 4x4 matrices
+C                    (O) NORIG - number of origins.
+C                    (O) ORIG(3,i) - vector of alternate origin 
 C                               (for example : 0.5,0.0,0.5)
 C                               only positive components.
 C                               include vector: (0,0,0)
+C                    (O) LPAXISX - logical; set true if s/grp is polar along x axis
+C                    (O) LPAXISY - logical; set true if s/grp is polar along y axis
+C                    (O) LPAXISZ - logical; set true if s/grp is polar along z axis
+C
+C                        
 C    Taken from Alexei Vagin
 C -------------------------------------------------------------
        CHARACTER*(*) NAMSPG_CIF
@@ -6078,6 +6104,10 @@ C   These 6 fractions can represent an origin shift
       DATA      ID/0,6,4,8,3,9/
 C                   1/2 1/3 2/3 1/4 3/4
 C -------------------------------------------------------------
+C    Initialise logicals
+      LPAXISX=.TRUE.
+      LPAXISY=.TRUE.
+      LPAXISZ=.TRUE.
 C    Find which axes are "polar" and cannot have alternate origins.
       IFX=0
       IFY=0
