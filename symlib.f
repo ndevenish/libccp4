@@ -1162,8 +1162,8 @@ C     and primitive cells.
 C
         READ (IST,FMT='(A)',END=30) LINE
 C
-C---- Ignore blank lines
-        IF (LENSTR(LINE) .EQ. 0) GO TO 10
+C---- Ignore blank or comment lines
+        IF (LENSTR(LINE) .EQ. 0 .OR. LINE(:1) .EQ. '!') GO TO 10
 C
 C            ************
         CALL CCPUPC(LINE)
