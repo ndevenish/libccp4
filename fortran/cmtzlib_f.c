@@ -2528,56 +2528,56 @@ FORTRAN_SUBR ( LWCLOS, lwclos,
 FORTRAN_SUBR ( RBATHD, rbathd,
 	       (),(),())
 {
-   printf("Old internal routine: you should not be calling this!\n");
+   printf("RBATHD: Obsolete internal routine: you should not be calling this!\n");
    return;
 }
 
 FORTRAN_SUBR ( WBATHD, wbathd,
 	       (),(),())
 {
-   printf("Old internal routine: you should not be calling this!\n");
+   printf("WBATHD: Obsolete internal routine: you should not be calling this!\n");
    return;
 }
 
 FORTRAN_SUBR ( LRHDRL, lrhdrl,
 	       (),(),())
 {
-   printf("Old internal routine: you should not be calling this!\n");
+   printf("LRHDRL: Obsolete internal routine: you should not be calling this!\n");
    return;
 }
 
 FORTRAN_SUBR ( LABPRT, labprt,
 	       (),(),())
 {
-   printf("Old internal routine: you should not be calling this!\n");
+   printf("LABPRT: Obsolete internal routine: you should not be calling this!\n");
    return;
 }
 
 FORTRAN_SUBR ( LBPRTH, lbprth,
 	       (),(),())
 {
-   printf("Old internal routine: you should not be calling this!\n");
+   printf("LBPRTH: Obsolete internal routine: you should not be calling this!\n");
    return;
 }
 
 FORTRAN_SUBR ( SORTUP, sortup,
 	       (),(),())
 {
-   printf("Old internal routine: you should not be calling this!\n");
+   printf("SORTUP: Obsolete internal routine: you should not be calling this!\n");
    return;
 }
 
 FORTRAN_SUBR ( ADDLIN, addlin,
 	       (),(),())
 {
-   printf("Old internal routine: you should not be calling this!\n");
+   printf("ADDLIN: Obsolete internal routine: you should not be calling this!\n");
    return;
 }
 
 FORTRAN_FUN (int, NEXTLN, nextln,
 	       (),(),())
 {
-   printf("Old internal function: you should not be using this!\n");
+   printf("NEXTLN: Obsolete internal function: you should not be using this!\n");
    return -1;
 }
 
@@ -2586,6 +2586,6 @@ FORTRAN_SUBR ( IS_MAGIC, is_magic,
 	       (const float *val_magic, const float *valtst, ftn_logical *lvalms),
 	       (const float *val_magic, const float *valtst, ftn_logical *lvalms))
 {
-   printf("Old internal routine: you should not be calling this!\n");
+   printf("IS_MAGIC: Obsolete internal routine: you should not be calling this!\n");
    return;
 }
