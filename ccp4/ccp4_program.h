@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 #define CCP4_VERSION_NO "5.0"
-#define CCP4_PATCH_LEVEL "5.0.-1"
+#define CCP4_PATCH_LEVEL "5.0.a"
 
 /* Maximum lengths of strings holding program names and versions */
 #define MAXLEN_PROGNAME    80
