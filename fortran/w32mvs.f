@@ -25,7 +25,7 @@ C VAXVMS - Logical function returns TRUE if VAX/VMS
 C WINMVS - Logical function returns TRUE if W32/Microsoft dev studio
 C TTSEND - Write string to terminal with various carriage control
 C     options
-C GETELAPSED - Print timing info for CCPERR
+C GETELAPSED - Print timing info for CCPERR - removed for now
 C UGTARG - Get command-line argument
 C GETREF - Abstracted from abscale since it has BYTE declaration.
 C CCPSPW - Spawns a new process to run shell command
@@ -678,32 +678,32 @@ C     these formats are mostly non-standard, of course...
 C
 C
 C     =====================
-      SUBROUTINE GETELAPSED
-C     =====================
-C
-      EXTERNAL LUNSTO, USTIME
-      INTEGER LUNSTO
-      REAL TARRAY(2), JUNK
-      INTEGER ELAPS, START
-      LOGICAL INITED
-      SAVE START, INITED
-      DATA INITED /.FALSE./
-C     
-      JUNK = ETIME(TARRAY)
-      CALL USTIME(ELAPS)
-      ELAPS = ELAPS - START
-C     don't print anything if it hasn't been initialised (by CCPFYP)
-      IF (INITED) WRITE(LUNSTO(1),6000) TARRAY(1), TARRAY(2), 
-     +     ELAPS/60, MOD(ELAPS, 60)
- 6000 FORMAT(' Times: User: ', F9.1, 's System: ', F6.1, 's Elapsed:',
-     +     I5 , ':',I2.2)
-C     
-      ENTRY INITFYP
-      CALL USTIME(START)
-      INITED = .TRUE.
-C     Machine-dependent startup, e.g. set FPE on SunOS
+c      SUBROUTINE GETELAPSED
+cC     =====================
+cC
+c      EXTERNAL LUNSTO, USTIME
+c      INTEGER LUNSTO
+c      REAL TARRAY(2), JUNK
+c      INTEGER ELAPS, START
+c      LOGICAL INITED
+c      SAVE START, INITED
+c      DATA INITED /.FALSE./
+cC     
+c      JUNK = ETIME(TARRAY)
+c      CALL USTIME(ELAPS)
+c      ELAPS = ELAPS - START
+cC     don't print anything if it hasn't been initialised (by CCPFYP)
+c      IF (INITED) WRITE(LUNSTO(1),6000) TARRAY(1), TARRAY(2), 
+c     +     ELAPS/60, MOD(ELAPS, 60)
+c 6000 FORMAT(' Times: User: ', F9.1, 's System: ', F6.1, 's Elapsed:',
+c     +     I5 , ':',I2.2)
+cC     
+c      ENTRY INITFYP
+c      CALL USTIME(START)
+c      INITED = .TRUE.
+cC     Machine-dependent startup, e.g. set FPE on SunOS
 
-      END
+c      END
 C
       SUBROUTINE UGTARG(I, ARG)
       INTEGER I
