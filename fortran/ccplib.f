@@ -37,8 +37,8 @@ C      CCPMDE    If byte handling available return nos. of bytes for map
 C                modes
 C      CCPMVB    Move bytes from one non-character array to another if
 C                byte handling is available
-C      CCPMVI    Move words from one non-character array to another
-C                using a simple loop
+C      CCPMVI    Move words from one integer array to another
+C      CCPMVR    Move words from one rael array to another
 C      CCPONL    See if program is being run interactively
 C      CCPPSF    Parse file name into components
 C      CCPRCS    Like CCPVRS but use RCS-format date string
@@ -1336,18 +1336,43 @@ C
 C
 C
 C_BEGIN_CCPMVI
-      SUBROUTINE CCPMVI (ARR1,ARR2,NUM)
+      SUBROUTINE CCPMVI (IARR1,IARR2,NUM)
 C     =================================
 C
-C  This routine assigns the first NUM words of ARR2 to ARR1
+C  This routine assigns the first NUM words of IARR2 to IARR1
 C
 C Arguments:
 C ==========
 C
-C    ARR1 (O)   INTEGER or REAL ARRAY(*)
-C    ARR2 (O)   INTEGER or REAL ARRAY(*)
+C    IARR1 (O)   INTEGER ARRAY(*)
+C    IARR2 (O)   INTEGER ARRAY(*)
 C     NUM (I)   Number of words to copy
 C_END_CCPMVI
+C
+C  Arguments
+      INTEGER NUM
+      REAL IARR1(*),IARR2(*)
+C
+      INTEGER J
+C
+      DO 10 J=1,NUM
+   10 IARR1(J)=IARR2(J)
+      END
+C
+C
+C_BEGIN_CCPMVR
+      SUBROUTINE CCPMVR (ARR1,ARR2,NUM)
+C     =================================
+C
+C  This routine assigns the first NUM elements of ARR2 to ARR1
+C
+C Arguments:
+C ==========
+C
+C    ARR1 (O)   REAL ARRAY(*)
+C    ARR2 (O)   REAL ARRAY(*)
+C     NUM (I)   Number of words to copy
+C_END_CCPMVR
 C
 C  Arguments
       INTEGER NUM
