@@ -1,3 +1,13 @@
+C    REVISED on						SMM  23-Oct-1992
+C    (1) Make mtzlib.1 (from WR) match library and vice versa
+C    (2) General tidy up of comments, quite a lot removed
+C    (3) Removed M column type (as per ccpdev mail)
+C    (4) Removed unused common blocks
+C    (5) Enforce 3 as minimum number of columns - not necessary, but previously
+C        could open with 1 column, and they ARE reflection data files
+C        Put a few more safety checks in
+C
+C
 C    Fixed small bug in LWASSN re 0 input columns	SMM  22-June-1992
 C    Renamed colasn as LKYASN (LKY because it's a utility subroutine)
 C
@@ -23,9 +33,9 @@ C     Force RESOL in LRREFL/F to lie in range SRANGE  PRE
 C
 C     Revised 26 nov 1991 added write statement to lwassn
 C
-C      Replaced LRASSN and LWASSN fropm ejd
+C     Replaced LRASSN and LWASSN fropm ejd
 C
-C          changed arguements to LKYIN and LKYOUT
+C          changed arguments to LKYIN and LKYOUT
 C          to add file_number (Index).
 C
 C          changed variable INDEX from fortran Intrinsic to MINDX
@@ -169,81 +179,94 @@ C   LWSYMM      Update the Symmetry operation in the MTZ header
 C
 C   LWTITL      Append to or replace the title in the MTZ header
 C
-C   LWREFL      Write a refection record to the MTZ file
+C   LWREFL      Write a reflection record to the MTZ file
 C
 C   LWCLOS      Close an MTZ file which has been opened for write
 C
 C
 C The (extra) subroutines for multi-record MTZ files are :
 C
-C  LRBAT   return batch information from the header for one batch
+C   LRBAT       Return batch information from the header for one batch
 C
-C  LWBAT   write updated batch header for one batch
+C   LWBAT       Write updated batch header for one batch
 C
-C  LRBSCL  return selected values from the header for one batch
+C   LRBSCL      Return selected values from the header for one batch
 C
-C  LRBTIT  Return the batch title from the header for one batch
+C   LRBTIT      Return the batch title from the header for one batch
 C
-C  LWBSCL  update selected values in the header for one batch
+C   LWBSCL      Update selected values in the header for one batch
 C
-C  LWBTIT  write batch title & dummy orientation block for one batch
+C   LWBTIT      Write batch title & dummy orientation block for one batch
 C
-C  LBPRT   print batch information in pretty format -
-C          called by LRBAT - calls LBPRTH (does the actual print)
-C
-C - the next 5 are internal subroutines
-C
-C  LBPRTH  does the actual printing for LBPRT
-C
-C  RBATHD  read the actual header from the file and return the data
-C          items packed into a REAL and a CHAR array - called by LROPEN
-C
-C  WBATHD  write the batch headers to the MTZ file open for write
-C          the batch headers are written at the end of the file -
-C          called by LWCLOS
-C
-C  LRHDRL  read one line from the header on the file (calls qread)
-C
-C  LWHDRL  write one line to the header on the file (calls qwrite)
+C   LBPRT       Print batch information in pretty format -
+C               called by LRBAT - calls LBPRTH (does the actual print)
 C
 C
 C The utility subroutines for MTZ files are :
 C
-C   LKYIN     These subroutines should be used by the calling program
-C   LKYOUT    to parse any label assignments (input and output) made
-C             by the user
+C   LKYIN       These subroutines should be used by the calling program
+C   LKYOUT      to parse any label assignments (input and output) made
+C               by the user
 C
-C   LKYSET    Similar to LKYIN except the "lookup" array is passed back
-C             to the program
+C   LKYSET      Similar to LKYIN except the "lookup" array is passed back
+C               to the program
 C
-C   LKYASN    Jiffy to call LKYIN & LRASSN, no need for parser in main prog
+C   LKYASN      Jiffy to call LKYIN & LRASSN, no need for parser in main prog
 C
-C   LHPRT     Subroutine to output data from an MTZ header mark 1
+C   LHPRT       Subroutine to output data from an MTZ header mark 1
 C
-C   LPHIST    Print the history information from the MTZ header
+C   LPHIST      Print the history information from the MTZ header
 C
 C
-C - these last 8 are internal subroutines
+C The next 13 are internal subroutines
 C
-C   SYMFR3    These are the only symmetry subroutines called from the
-C   SYMTR3    MTZ subroutines mark 1. They are both slight modifications
-C             of subroutines from Eleanor.
+C   LBPRTH      Does the actual printing for LBPRT
 C
-C   SORTUP    INTEGER version of indexed Singleton sort -
-C             copied from STILLS program.
+C   RBATHD      Read the actual header from the file and return the data
+C               items packed into a REAL and a CHAR array - called by LROPEN
 C
-C   LABPRT    Subroutine used to output character strings (eg column
-C             labels) nicely across 80 character page
+C   WBATHD      Write the batch headers to the MTZ file open for write
+C               the batch headers are written at the end of the file -
+C               called by LWCLOS
 C
-C   ADDLIN    Subroutine to add a new line to a character array
+C   LRHDRL      Read one line from the header on the file (calls qread)
 C
-C   NEXTLN    Function to find the next empty line in a character array
+C   LWHDRL      Write one line to the header on the file (calls qwrite)
 C
-C   LSTRSL    Routine to calculate coefficients for (sin(theta)/lambda)**2 
-C             from h,k,l for general axes
+C   SYMFR3      These are the only symmetry subroutines called from the
+C   SYMTR3      MTZ subroutines mark 1. They are both slight modifications
+C               of subroutines from Eleanor.
 C
-C   LSTLSQ    Function to calculate (sin(theta)/lambda)**2 from h,k,l
-C             coef's set by call to LSTRSL, for the file open on index MINDX
+C   SORTUP      INTEGER version of indexed Singleton sort -
+C               copied from STILLS program.
+C
+C   LABPRT      Subroutine used to output character strings (eg column
+C               labels) nicely across 80 character page
+C
+C   ADDLIN      Subroutine to add a new line to a character array
+C
+C   NEXTLN      Function to find the next empty line in a character array
+C
+C   LSTRSL      Routine to calculate coefficients for (sin(theta)/lambda)**2 
+C               from h,k,l for general axes
+C
+C   LSTLSQ      Function to calculate (sin(theta)/lambda)**2 from h,k,l
+C               coef's set by call to LSTRSL, for the file open on index MINDX
+C
+C
+C
+C COMMON blocks for MTZ subroutines
+C
+C     Common MTZHDR contains INTEGER and REAL variables
+C            from the MTZ Headers
+C
+C     Common MTZCHR contains CHARACTER variables from the MTZ headers
+C
+C     Common MTZWRK contains work variables for the MTZ routines
+C
+C     Common MTZWRC contains character work variables for MTZ routines
+C
+C     Since they are not in the main program, we must SAVE them
 C
 C
 C
@@ -260,18 +283,10 @@ C
 C     This subroutine replaces (6/91) the BLOCK DATA MTZINI.
 C
 C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C
 C
 C     .. Parameters ..
-      INTEGER MFILES,MCOLS,MBATCH,MFILESX
-      PARAMETER (MFILES=3,MCOLS=200,MBATCH=240,MFILESX=9)
+      INTEGER MFILES,MCOLS,MBATCH,MFILEX
+      PARAMETER (MFILES=3,MCOLS=200,MBATCH=240,MFILEX=9)
 C
       INTEGER MBLENG
       PARAMETER (MBLENG=185)
@@ -285,11 +300,11 @@ C     .. Arrays in Common ..
       CHARACTER LSUSRI*30,LSUSRO*30
 C     ..
 C     .. Local Scalars ..
-      INTEGER JDO10,JDO20
+      INTEGER JDO10,JDO20,JDO30
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZLAB/NLUSRI(MFILESX),NLUSRO(MFILESX)
-      COMMON /MTZLBC/LSUSRI(MFILESX,MCOLS),LSUSRO(MFILESX,MCOLS)
+      COMMON /MTZLAB/NLUSRI(MFILEX),NLUSRO(MFILEX)
+      COMMON /MTZLBC/LSUSRI(MFILEX,MCOLS),LSUSRO(MFILEX,MCOLS)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
@@ -311,22 +326,22 @@ C     WLUN   - unit numbers for files open for write (>0 means file open)
 C
 C
 C
-      DO 5  JDO5  = 1,MFILESX
-      NLUSRI(JDO5) = 0
-      NLUSRO(JDO5) = 0
+      DO 20 JDO20  = 1,MFILEX
+        NLUSRI(JDO20) = 0
+        NLUSRO(JDO20) = 0
+C
+        DO 10 JDO10 = 1,MCOLS
+          LSUSRI(JDO20,JDO10) = ' '
+          LSUSRO(JDO20,JDO10) = ' '
+   10   CONTINUE
+C
+   20 CONTINUE
 C
 C
-      DO 10 JDO10 = 1,MCOLS
-        LSUSRI(JDO5,JDO10) = ' '
-        LSUSRO(JDO5,JDO10) = ' '
- 10   CONTINUE
-  5   CONTINUE
-C
-C
-      DO 20 JDO20 = 1,MFILES
-        RLUN(JDO20) = 0
-        WLUN(JDO20) = 0
- 20   CONTINUE
+      DO 30 JDO30 = 1,MFILES
+        RLUN(JDO30) = 0
+        WLUN(JDO30) = 0
+ 30   CONTINUE
 C
       RETURN
 C
@@ -349,46 +364,30 @@ C     can be checked before stopping.
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     LSPRGI    CHARACTER*30    array of dimension at least NLPRGI
-C                               containing the program label strings
+C     LSPRGI    (I)	CHARACTER*30    array of dimension at least NLPRGI
+C                               	containing the program label strings
 C
-C     NLPRGI    INTEGER         number of input program labels
+C     NLPRGI    (I)	INTEGER         number of input program labels
 C
-C     LOOKUP    INTEGER         array of dimension at least NLPRGI
-C                               containing index from program labels
-C                               to file labels. On input these should be
-C                               set to -1 for compulsory labels and 0
-C                               for optional labels, and exit labels
-C                               which are not present in the file have
-C                               their lookup entry set to 0.
+C     LOOKUP    (I/O)	INTEGER         array of dimension at least NLPRGI
+C                               	containing index from program labels
+C                               	to file labels. On input these should 
+C                               	be set to -1 for compulsory labels 
+C                               	and 0 for optional labels, and on exit
+C                               	labels which are not present in the 
+C                               	file have their lookup entry set to 0.
 C
-C     CTPRGI    CHAR*1          array of dimension at least NLPRGI
-C                               containing the program label types
+C     CTPRGI    (I)	CHARACTER*1	array of dimension at least NLPRGI
+C                               	containing the program label types
 C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C     from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types
 C
 C
 C     .. Parameters ..
-      INTEGER MFILES,MCOLS,MBATCH,MFILESX
-      PARAMETER (MFILES=3,MCOLS=200,MBATCH=240,MFILESX=9)
-      INTEGER NTYP,LTYP
-      PARAMETER (NTYP=13,LTYP=8)
+      INTEGER MFILES,MCOLS,MBATCH,MFILEX
+      PARAMETER (MFILES=3,MCOLS=200,MBATCH=240,MFILEX=9)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
@@ -398,9 +397,7 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,NLPRGI
 C     ..
 C     .. Array Arguments ..
-cc      integer lookup(mcols)
       INTEGER LOOKUP(*)
-cc      character ctprgi(mcols)*1,lsprgi(mcols)*30
       CHARACTER*1  CTPRGI(*)
       CHARACTER*30 LSPRGI(*)
 C     ..
@@ -421,10 +418,7 @@ C     .. Local Scalars ..
      +        JDO50,JDO60,JDO90,JDO100,JLENG
       CHARACTER CWORK*30,LINE*400,STROUT*400
 C     ..
-C     .. Local Arrays ..
-      CHARACTER CTYPES(NTYP)*1,LTYPES(LTYP)*1
-C     ..
-C     .. External Functions ..
+C     .. External Functions .. 
       INTEGER LENSTR
       EXTERNAL LENSTR
 C     ..
@@ -440,8 +434,8 @@ C     .. Common blocks ..
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZLAB/NLUSRI(MFILESX),NLUSRO(MFILESX)
-      COMMON /MTZLBC/LSUSRI(MFILESX,MCOLS),LSUSRO(MFILESX,MCOLS)
+      COMMON /MTZLAB/NLUSRI(MFILEX),NLUSRO(MFILEX)
+      COMMON /MTZLBC/LSUSRI(MFILEX,MCOLS),LSUSRO(MFILEX,MCOLS)
       COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
      +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
@@ -452,11 +446,6 @@ C     .. Common blocks ..
 C     ..
 C     .. Save statement ..
       SAVE
-C     ..
-C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','M','W','A','B','Y','I',
-     +     'R'/
-      DATA LTYPES/'P','A','B','C','I','F','R','?'/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -653,28 +642,16 @@ C     serial numbers from the header of a multi-record MTZ file
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     NBATX     INTEGER         number of batches in the file on
-C                               exit
+C     NBATX     (O)	INTEGER         number of batches in the file on
+C                               	exit
 C
-C     BATCHX    INTEGER         array of dimension at least NBATX
-C                               containing the serial numbers of the
-C                               batches in the file
+C     BATCHX    (O)	INTEGER         array of dimension at least NBATX
+C                               	containing the serial numbers of the
+C                               	batches in the file
 C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
 C
 C
 C     .. Parameters ..
@@ -682,24 +659,16 @@ C     .. Parameters ..
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,NBATX
 C     ..
 C     .. Array Arguments ..
-cc      integer batchx(mbatch)
       INTEGER BATCHX(*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      REAL CELL,CRANGE,RBATR,RSYM,SRANGE
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
@@ -709,24 +678,14 @@ C     .. External Subroutines ..
       EXTERNAL LERROR
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
      +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZHDR/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -775,40 +734,21 @@ C     has been opened for read on index MINDX.
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     BATNO     INTEGER         batch number to reset pointer to
-C                               If BATNO = 0, reset to beginning of
-C                               batch headers
+C     BATNO     (I)	INTEGER         batch number to reset pointer to
+C                               	If BATNO = 0, reset to beginning of
+C                               	batch headers
 C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
 C
 C
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
-      INTEGER NTYP,LTYP
-      PARAMETER (NTYP=13,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX, BATNO
@@ -819,24 +759,17 @@ C     .. Arrays in Common ..
      +        NSYMP,RLUN,RPOINT,WLUN,NBATCH,BATNUM,NBATW,WOMBAT,
      +        NBATR,HDRST,NHISTL
       LOGICAL SORTB
-      CHARACTER CTYPE*1,LTYPE*1,SPGNAM*10,CLABEL*30,PLABS*30,TITLE*70,
-     +          CBATR*1,CBATW*1,HSCR*80,PGNAM*10
 C     ..
 C     .. Local Scalars ..
       CHARACTER  LINE2*400
       INTEGER    ISTAT,IFAIL,JDO10
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
      +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),
      +       ISORT(5,MFILES),CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
@@ -844,7 +777,7 @@ C     .. Common blocks ..
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZHDR/,/MTZWRK/
 C     ..
 C     .. External Subroutines ..
       EXTERNAL LERROR
@@ -933,21 +866,20 @@ C     on index MINDX
 C
 C---- Arguments :
 C
-C Input:
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     BATNO     INTEGER         batch number 
+C     BATNO     (I)	INTEGER         batch number 
 C
-C     NBATSC    INTEGER         maximum number of batch scales expected
+C     NBATSC    (I)	INTEGER         maximum number of batch scales expected
 C
-C Output:
-C     BATSCL(NBATSC)
-C               REAL            batch scale, relative Bfactor,
-C                               SD(Bscale), SD(Bfactor) if NBATSC = 4
-C                                else NBATSC/2 scales or B-factors + Sd's
+C     BATSCL	(O)	REAL            array of dimension at least NBATSC containing
+C					batch scale, relative Bfactor,
+C                               	SD(Bscale), SD(Bfactor) if NBATSC = 4
+C                                	else NBATSC/2 scales or B-factors + Sd's
+C					on output
 C
-C     NBATSC    INTEGER         number of batch scales found
+C     NBATSC    (O)	INTEGER         number of batch scales found
 C
 C
 C     .. Arguments ..
@@ -1025,25 +957,22 @@ C     ============================================
 C     ============================================
 C
 C---- Subroutine to read batch title for
-C     batch BATNO from batch headers from multi-record file open
+C     batch BATNO from batch headers from multi-record mtz file open
 C     on index MINDX
 C
 C---- Arguments :
 C
-C Input:
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     BATNO     INTEGER         batch number 
+C     BATNO     (I)	INTEGER         batch number 
 C
-C     IPRINT    INTEGER         print flag
-C                                = 0  no print
-C                                = 1  print title
-C                                = 2  print title & orientation block
+C     IPRINT    (I)	INTEGER         print flag
+C                             		= 0  no print
+C                             		= 1  print title
+C					= 2  print title & orientation block
 C
-C
-C Output:
-C     TBATCH    CHARACTER       batch title
+C     TBATCH    (O)	CHARACTER       batch title
 C
 C ... Arguments
       INTEGER MINDX, BATNO, IPRINT
@@ -1075,7 +1004,6 @@ C
 C
       INTEGER ISTAT,IFAIL,I
       CHARACTER*100 LINE2
-      EXTERNAL LERROR
 C
 C--- Set read pointer to this batch
       CALL LRBRES(MINDX,BATNO)
@@ -1098,42 +1026,24 @@ C     ==============================
 C
 C
 C
-C---- Subroutine to return Cell Parameters from header of MTZ file
+C---- Subroutine to return Cell Parameters from header of MTZ file open for read
+C     on index MINDX
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     CELLP     REAL            array of dimension (6) containing cell
-C                               parameters from header on exit
+C     CELLP     (O)	REAL            array of dimension (6) containing cell
+C                               	parameters from header on exit
 C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types and lattice types
 C
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
-      INTEGER NTYP,LTYP
-      PARAMETER (NTYP=13,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
@@ -1142,48 +1052,25 @@ C     .. Array Arguments ..
       REAL CELLP(6)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
       CHARACTER LINE*400
 C     ..
-C     .. Local Arrays ..
-      CHARACTER CTYPES(NTYP)*1,LTYPES(LTYP)*1
-C     ..
 C     .. External Subroutines ..
       EXTERNAL LERROR
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
      +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
-C     ..
-C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','M','W','A','B','Y','I',
-     +     'R'/
-      DATA LTYPES/'P','A','B','C','I','F','R','?'/
+      SAVE /MTZHDR/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -1226,39 +1113,22 @@ C     of columns from the header of an MTZ file.
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     CLABS     CHARACTER*30    array of dimension at least NCOL
-C                               containing the column labels on exit
+C     CLABS     (O)	CHARACTER*30    array of dimension at least NCOL
+C                               	containing the column labels on exit
 C
-C     CTYPS     CHARACTER*1     array of dimension at least NCOL
-C                               containing the column types on exit
+C     CTYPS     (O)	CHARACTER*1     array of dimension at least NCOL
+C                               	containing the column types on exit
 C
-C     NCOL      INTEGER         number of columns in MTZ file
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
+C     NCOL      (O)	INTEGER         number of columns in MTZ file
 C
 C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types and lattice types
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
-      INTEGER NTYP,LTYP
-      PARAMETER (NTYP=13,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
@@ -1268,25 +1138,18 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,NCOL
 C     ..
 C     .. Array Arguments ..
-cc      character ctyps(mcols)*1,clabs(mcols)*30
       CHARACTER*1  CTYPS(*)
       CHARACTER*30 CLABS(*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
+      CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
+     +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
       CHARACTER LINE*400
-C     ..
-C     .. Local Arrays ..
-      CHARACTER CTYPES(NTYP)*1,LTYPES(LTYP)*1
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -1304,21 +1167,9 @@ C     .. Common blocks ..
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
-C     ..
-C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','M','W','A','B','Y','I',
-     +     'R'/
-      DATA LTYPES/'P','A','B','C','I','F','R','?'/
+      SAVE /MTZHDR/,/MTZCHR/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -1363,24 +1214,9 @@ C---- Subroutine to close an MTZ file which has been opened for read.
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
 C
 C
 C
@@ -1396,13 +1232,10 @@ C     .. Scalar Arguments ..
       INTEGER MINDX
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
+      REAL RBATW,WRANGE,WSRNGE
+      INTEGER HDRST,NBATR,NBATW,NCOLW,NHISTL,NPLABS,NREFR,NREFW,RLUN,
+     +        RPOINT,WLUN,WOMBAT
       LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
@@ -1412,16 +1245,6 @@ C     .. External Subroutines ..
       EXTERNAL LERROR,QCLOSE
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
-      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
-     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
-     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
@@ -1429,7 +1252,7 @@ C     .. Common blocks ..
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZWRK/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -1476,28 +1299,12 @@ C     (but probably programs stamps at least).
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     HSTRNG    CHARACTER       array of (NLINES) with the history lines
+C     HSTRNG    (O)	CHARACTER       array of (NLINES) with the history lines
 C
-C     NLINES    INTEGER         number of history lines being returned
-C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
+C     NLINES    (O)	INTEGER         number of history lines being returned
 C
 C
 C
@@ -1516,13 +1323,11 @@ C     .. Array Arguments ..
       CHARACTER HSTRNG(*)*(*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
+      REAL RBATW,WRANGE,WSRNGE
+      INTEGER HDRST,NBATR,NBATW,NCOLW,NHISTL,NPLABS,NREFR,NREFW,RLUN,
+     +        RPOINT,WLUN,WOMBAT
       LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      CHARACTER CBATW*1,PLABS*30,HSCR*80
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
@@ -1532,14 +1337,6 @@ C     .. External Subroutines ..
       EXTERNAL LERROR
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
-      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
-     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
-     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
       COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
      +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
@@ -1549,7 +1346,7 @@ C     .. Common blocks ..
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZWRK/,/MTZWRC/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -1572,8 +1369,8 @@ C
         IF (NHISTL(MINDX).EQ.0) THEN
 C
           NLINES = 0
-        ELSE
 C
+        ELSE
 C
 C---- Copy the history lines to HSTRNG
 C
@@ -1584,6 +1381,108 @@ C
 C
 C
         END IF
+      END IF
+C
+C
+      END
+C
+C
+C
+C
+C     ===================================================
+      SUBROUTINE LRINFO(MINDX,VERSNX,NCOLX,NREFLX,RANGES)
+C     ===================================================
+C
+C
+C
+C---- Subroutine to return information about the MTZ file open for
+C     read on index MINDX.
+C
+C---- Arguments : 
+C
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
+C
+C     VERSNX    (O)	CHARACTER*10    version stamp of MTZ subroutines used to
+C                               	write the file.
+C
+C     NCOLX     (O)	INTEGER         number of columns in the file
+C
+C     NREFLX    (O)	INTEGER         number of reflection records in the file
+C
+C     RANGES    (O)	REAL            array(2,ncolx) containing the minimum
+C                               	and maximum values in each column
+C
+C
+C
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS,MBATCH
+      PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
+      CHARACTER*10 VERSN
+      PARAMETER (VERSN='MTZ:V1.1')
+      INTEGER MBLENG,CBLENG
+      PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER NHISLM
+      PARAMETER (NHISLM=30)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER MINDX,NCOLX,NREFLX
+      CHARACTER VERSNX*10
+C     ..
+C     .. Array Arguments ..
+      REAL RANGES(2,*)
+C     ..
+C     .. Arrays in Common ..
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
+C     ..
+C     .. Local Scalars ..
+      INTEGER IFAIL,ISTAT,JDO10
+      CHARACTER LINE*400
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL LERROR
+C     ..
+C     .. Common blocks ..
+      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
+     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
+     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+C     ..
+C     .. Save statement ..
+      SAVE /MTZHDR/
+C     ..
+C
+C---- First check that the MINDX is valid
+C
+      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
+        WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
+     +    'From LRINFO : Index',MINDX,
+     +    ' is out of range (allowed 1..',MFILES,')'
+        ISTAT = 2
+        IFAIL = -1
+C
+C            ************************
+        CALL LERROR(ISTAT,IFAIL,LINE)
+C            ************************
+C
+      ELSE
+C
+C---- Then return the information
+C
+        VERSNX = VERSN
+        NCOLX = NCOLS(MINDX)
+        NREFLX = NREFS(MINDX)
+C
+C
+        DO 10 JDO10 = 1,NCOLS(MINDX)
+          RANGES(1,JDO10) = CRANGE(1,JDO10,MINDX)
+          RANGES(2,JDO10) = CRANGE(2,JDO10,MINDX)
+   10   CONTINUE
+C
+C
       END IF
 C
 C
@@ -1600,10 +1499,10 @@ C     read on index MINDX. A simpler call than LRINFO.
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     NCOLX     INTEGER         number of columns in MTZ file
+C     NCOLX     (O)	INTEGER         number of columns in MTZ file
 C
 C
 C
@@ -1614,12 +1513,11 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
 C     ..
 C     .. Scalar arguments ..
-      INTEGER NCOLX
+      INTEGER MINDX,NCOLX
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RSYM
-      INTEGER BATNUM,ISORT,NBATCH,NCOLS,
-     +        NREFS,NSPGRP,NSYM,NSYMP 
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP 
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
@@ -1659,141 +1557,6 @@ C
       END IF
 C
       END
-C     
-C
-C
-C
-C     ===================================================
-      SUBROUTINE LRINFO(MINDX,VERSNX,NCOLX,NREFLX,RANGES)
-C     ===================================================
-C
-C
-C
-C---- Subroutine to return information about the MTZ file open for
-C     read on index MINDX.
-C
-C---- Arguments : 
-C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
-C
-C     VERSNX    CHARACTER*10    version stamp of MTZ subroutines used to
-C                               write the file.
-C
-C     NCOLX     INTEGER         number of columns in the file
-C
-C     NREFLX    INTEGER         number of reflection records in the file
-C
-C     RANGES    REAL            array(2,ncolx) containing the minimum
-C                               and maximum values in each column
-C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types
-C
-C
-C
-C     .. Parameters ..
-      INTEGER MFILES,MCOLS,MBATCH
-      PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
-      CHARACTER*10 VERSN
-      PARAMETER (VERSN='MTZ:V1.1')
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
-C     ..
-C     .. Scalar Arguments ..
-      INTEGER MINDX,NCOLX,NREFLX
-      CHARACTER VERSNX*10
-C     ..
-C     .. Array Arguments ..
-cc      real ranges(2,mcols)
-      REAL RANGES(2,*)
-C     ..
-C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
-C     ..
-C     .. Local Scalars ..
-      INTEGER IFAIL,ISTAT,JDO10
-      CHARACTER LINE*400
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL LERROR
-C     ..
-C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
-      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
-     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
-     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
-C     ..
-C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
-C     ..
-C
-C---- First check that the MINDX is valid
-C
-      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
-        WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
-     +    'From LRINFO : Index',MINDX,
-     +    ' is out of range (allowed 1..',MFILES,')'
-        ISTAT = 2
-        IFAIL = -1
-C
-C            ************************
-        CALL LERROR(ISTAT,IFAIL,LINE)
-C            ************************
-C
-      ELSE
-C
-C---- Then return the information
-C
-        VERSNX = VERSN
-        NCOLX = NCOLS(MINDX)
-        NREFLX = NREFS(MINDX)
-C
-C
-        DO 10 JDO10 = 1,NCOLS(MINDX)
-          RANGES(1,JDO10) = CRANGE(1,JDO10,MINDX)
-          RANGES(2,JDO10) = CRANGE(2,JDO10,MINDX)
-   10   CONTINUE
-C
-C
-      END IF
-C
-C
-      END
 C
 C
 C
@@ -1814,26 +1577,11 @@ C
 C
 C---- Arguments:
 C
-C     MINDX     INTEGER         indicates which MTZ file (up to MFILES
-C                               possible open at once)
+C     MINDX     (I)	INTEGER         indicates which MTZ file (up to MFILES
+C                               	possible open at once)
 C
-C     REFNUM    INTEGER         the reflection record number of the
-C                               next reflection to be read
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
+C     REFNUM    (O)	INTEGER         the reflection record number of the
+C                               	next reflection to be read
 C
 C
 C     .. Parameters ..
@@ -1848,13 +1596,10 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,REFNUM
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
+      REAL RBATW,WRANGE,WSRNGE
+      INTEGER HDRST,NBATR,NBATW,NCOLW,NHISTL,NPLABS,NREFR,NREFW,RLUN,
+     +        RPOINT,WLUN,WOMBAT
       LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
@@ -1864,16 +1609,6 @@ C     .. External Subroutines ..
       EXTERNAL LERROR
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
-      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
-     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
-     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
@@ -1881,7 +1616,7 @@ C     .. Common blocks ..
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZWRK/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -1923,48 +1658,32 @@ C     and positions the file ready to read the first data record.
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I) 	INTEGER         indicates which MTZ file - 1 index
+C                       	        points to both input and output files
 C
-C     FILNAM    CHARACTER       name of file to be opened
+C     FILNAM    (I)	CHARACTER       name of file to be opened
 C
-C     IPRINT    INTEGER         print indicator : meaning :
-C                               =0 No MTZ info printed at all
-C                               =1 Brief header info printed (default)
-C                               =2 as above plus history info
-C                               =3 Full header dump; symmetry
-C                               any other value; nothing happens
-C     IFAIL     INTEGER         error indicator : meaning :
-C                               on output
-C                               =0 OK
-C                               =-1 no such file
-C                               all other errors cause stop
-C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types
+C     IPRINT    (I)	INTEGER         print indicator : meaning :
+C     					=0 No MTZ info printed at all
+C	                               	=1 Brief header info printed (default)
+C	                               	=2 as above plus history info
+C        	                       	=3 Full header dump; symmetry
+C               	                any other value; nothing happens
+C     IFAIL     (O)	INTEGER         error indicator : meaning :
+C                               	on output
+C                               	=0 OK
+C                               	=-1 no such file
+C                               	all other errors cause stop
 C
 C
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
+      INTEGER MINCOL
+      PARAMETER (MINCOL=3)
       INTEGER NTYP,LTYP
-      PARAMETER (NTYP=13,LTYP=8)
+      PARAMETER (NTYP=12,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER SIZE1
@@ -1988,10 +1707,10 @@ C     .. Arrays in Common ..
      +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
-      INTEGER BATFLG,EFLAG,ENDLOP,IER,ISTAT,IUNIN,IWORD,JDO10,JDO100,
-     +        JDO110,JDO120,JDO130,JDO140,JDO150,JDO190,JDO20,JDO200,
-     +        JDO30,JDO40,JDO50,JDO60,JDO80,JDO90,NBATRF,NCOLR,NITEM,
-     +        NJUNK,NSYMIN,NTOK,SYFLAG
+      INTEGER BATFLG,EFLAG,ENDLOP,IER,ISTAT,ITEND,IUNIN,IWORD,JDO10,
+     +        JDO100,JDO110,JDO120,JDO130,JDO140,JDO150,JDO190,JDO20,
+     +        JDO200,JDO30,JDO40,JDO50,JDO60,JDO80,JDO90,NBATRF,NCOLR,
+     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG
       LOGICAL LEND
       CHARACTER KEY*4,MKEY*4,LINE*80,LINE2*400,STROUT*400
 C     ..
@@ -2030,8 +1749,7 @@ C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
 C     ..
 C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','M','W','A','B','Y','I',
-     +     'R'/
+      DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R'/
       DATA LTYPES/'P','A','B','C','I','F','R','?'/
 C     ..
 C
@@ -2197,7 +1915,7 @@ C
             ISTAT = 2
             IFAIL = -1
             WRITE (LINE2,FMT='(A,A,A)') 'From LROPEN : File ',
-     +        FILNAM(1:LENSTR(FILNAM)),'is not an MTZ file'
+     +        FILNAM(1:LENSTR(FILNAM)),' is not an MTZ file'
 C
 C                *************************
             CALL LERROR(ISTAT,IFAIL,LINE2)
@@ -2505,6 +2223,22 @@ C
 C---- End of loop over keywords
 C     -------------------------
 C
+C---- Check we have minimum number of columns - should always be true because
+C     you can't get out of LWCLOS with less, but check anyway
+C
+            IF (NCOLS(MINDX).LT.MINCOL) THEN
+              WRITE (LINE2,FMT='(A,I4,A,I4)')
+     +          'From LROPEN : Header indicates',NCOLS(MINDX),
+     +          ' columns, but minimum allowed columns in MTZ file is',
+     +          MINCOL
+              ISTAT = 1
+C
+C                  *************************
+              CALL LERROR(ISTAT,IFAIL,LINE2)
+C                  *************************
+C
+            END IF
+C
 C---- Check no. of column cards input equals NCOLS from 1st line
 C
             IF (NCOLR.NE.NCOLS(MINDX)) THEN
@@ -2656,12 +2390,18 @@ C     ============================
       SUBROUTINE LRHDRL(ILUN,LINE)
 C     ============================
 C
-C     MTZLIB internal subroutine to read one header record from an MTZ
+C---- MTZLIB internal subroutine to read one header record from an MTZ
 C     file open for read on unit ILUN, and place the result in the
 C     character string LINE.
 C     All the header lines are 80 characters long and written to the
 C     file in 20A4 format, so have to decode from integers to chars
 C     QMODE = 0 for the header record (ie bytes)
+C
+C---- Arguments :
+C
+C     ILINE	(I)	INTEGER		LUN on which the MTZ file is opened
+C
+C     LINE	(O)	CHARACTER*(*)	80 Character header line
 C
 C
 C
@@ -2715,35 +2455,18 @@ C
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER     indicates which MTZ file - 1 index
-C                           points to both input and output files
+C     MINDX     (I)	INTEGER		indicates which MTZ file - 1 index
+C     					points to both input and output files
 C
-C     RESOL     REAL        resolution (4 * sin**theta/lambda**2)
-C                           if 1st 3 cols are not of type H value has
-C                           no meaning and is -1.0
+C     RESOL     (O)	REAL		resolution (4 * sin**theta/lambda**2)
+C     					if 1st 3 cols are not of type H value has
+C     					no meaning and is -1.0
 C
-C     ADATA     REAL        array of dimension at least NPLABS(MINDX)
-C                           containing the reflection record on exit
-C                           in lookup order
+C     ADATA     (O)	REAL		array of dimension at least NPLABS(MINDX)
+C     					containing the reflection record on exit
+C     					in lookup order
 C
-C     EOF       LOGICAL     End-of-File indicator
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types and lattice types
+C     EOF       (O)	LOGICAL		End-of-File indicator
 C
 C
 C
@@ -2761,7 +2484,6 @@ C     .. Scalar Arguments ..
       LOGICAL EOF
 C     ..
 C     .. Array Arguments ..
-cc      real adata(mcols)
       REAL ADATA(*)
 C     ..
 C     .. Arrays in Common ..
@@ -2770,8 +2492,8 @@ C     .. Arrays in Common ..
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
       LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
+     +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
       INTEGER IERR,IFAIL,ISTAT,JDO10,IH,IK,IL
@@ -2780,6 +2502,9 @@ C     .. Local Scalars ..
 C     ..
 C     .. Local Arrays ..
       REAL BDATA(MCOLS)
+C     .. 
+C     .. Intrinsic Functions
+      INTRINSIC ABS
 C     ..
 C     .. External Functions ..
       REAL LSTLSQ
@@ -2796,8 +2521,6 @@ C     .. Common blocks ..
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
@@ -2805,7 +2528,7 @@ C     .. Common blocks ..
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -2867,7 +2590,8 @@ C
 C---- First calculate resolution, only look for HKL in 1st 3 cols
 C     regardless of lookup
 C
-            IF ((CTYPE(1,MINDX).EQ.'H').AND.(CTYPE(2,MINDX).EQ.'H')
+            IF ((NCOLS(MINDX).GE.3).AND.(CTYPE(1,MINDX).EQ.'H')
+     +          .AND.(CTYPE(2,MINDX).EQ.'H')
      +          .AND.(CTYPE(3,MINDX).EQ.'H')) THEN
 C
               IH = BDATA(1)
@@ -2931,35 +2655,18 @@ C
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     RESOL     REAL            resolution (4 * sin**theta/lambda**2)
-C                               if 1st 3 cols are not of type H value has
-C                               no meaning and is -1.0
+C     RESOL     (O)	REAL            resolution (4 * sin**theta/lambda**2)
+C                               	if 1st 3 cols are not of type H value has
+C                               	no meaning and is -1.0
 C
-C     ADATA     REAL            array of dimension at least NCOLS(MINDX)
-C                               containing the reflection record on exit
-C                               in file order
+C     ADATA     (O)	REAL            array of dimension at least NCOLS(MINDX)
+C                               	containing the reflection record on exit
+C                               	in file order
 C
-C     EOF       LOGICAL         End-of-File indicator
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types and lattice types
+C     EOF       (O)	LOGICAL         End-of-File indicator
 C
 C
 C
@@ -2967,7 +2674,7 @@ C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
       INTEGER NTYP,LTYP
-      PARAMETER (NTYP=13,LTYP=8)
+      PARAMETER (NTYP=12,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
@@ -2979,7 +2686,6 @@ C     .. Scalar Arguments ..
       LOGICAL EOF
 C     ..
 C     .. Array Arguments ..
-cc      real adata(mcols)
       REAL ADATA(*)
 C     ..
 C     .. Arrays in Common ..
@@ -2988,16 +2694,16 @@ C     .. Arrays in Common ..
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
       LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
+     +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
       INTEGER IERR,IFAIL,ISTAT,IH,IK,IL
       CHARACTER LINE*400
       REAL RSOL
-C     ..
-C     .. Local Arrays ..
-      CHARACTER CTYPES(NTYP)*1,LTYPES(LTYP)*1
+C     .. 
+C     .. Intrinsic Functions
+      INTRINSIC ABS
 C     ..
 C     .. External Functions ..
       REAL LSTLSQ
@@ -3014,8 +2720,6 @@ C     .. Common blocks ..
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
@@ -3023,12 +2727,7 @@ C     .. Common blocks ..
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
-C     ..
-C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','M','W','A','B','Y','I',
-     +     'R'/
-      DATA LTYPES/'P','A','B','C','I','F','R','?'/
+      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -3088,9 +2787,9 @@ C
           ELSE
 C
 C---- Calculate resolution, only look for HKL in 1st 3 cols
-C     regardless of lookup
 C
-            IF ((CTYPE(1,MINDX).EQ.'H').AND.(CTYPE(2,MINDX).EQ.'H')
+            IF ((NCOLS(MINDX).GE.3).AND.(CTYPE(1,MINDX).EQ.'H')
+     +          .AND.(CTYPE(2,MINDX).EQ.'H')
      +          .AND.(CTYPE(3,MINDX).EQ.'H')) THEN
 C
               IH = ADATA(1)
@@ -3140,12 +2839,9 @@ C     The file is postioned at the start of the reflection records.
 C
 C --- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C
-C
-C--- Parameters, COMMON blocks, and declarations for MTZ subroutines
 C
 C
 C     .. Parameters ..
@@ -3251,22 +2947,23 @@ C---- Subroutine to return the resolution range for the reflections in the
 C     MTZ file open for read on index MINDX.  (Resolution is 1/d-squared).
 C     The resolution limits are calculated when the file is written. No 'S'
 C     column is required in MTZ files (see also subroutines LRREFF, LRREFL).
+C     If MINRES and MAXRES return as 0.0 there is no resolution limits
+C     present in the header. This will happend if H,K,L are not in the
+C     first 3 columns.
 C
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     MINRES    REAL            minimum resolution for reflections
-C                               in file (smallest number)
+C     MINRES    (O)	REAL            minimum resolution for reflections
+C                               	in file (smallest number)
 C
-C     MAXRES    REAL            maximum resolution for reflections
-C                               in file (largest number)
+C     MAXRES    (O)	REAL            maximum resolution for reflections
+C                               	in file (largest number)
 C
 C
-C
-C--- Parameters, COMMON blocks, and declarations for MTZ subroutines
 C
 C
 C     .. Parameters ..
@@ -3282,18 +2979,15 @@ C     .. Scalar Arguments ..
       REAL MINRES,MAXRES
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
       CHARACTER LINE*400
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QSEEK
+      EXTERNAL LERROR
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
@@ -3301,14 +2995,9 @@ C     .. Common blocks ..
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZWRK/,/MTZHDR/
+      SAVE /MTZHDR/
 C     ..
 C
 C --- First check that the MINDX is valid
@@ -3352,25 +3041,11 @@ C
 C
 C---- Arguments:
 C
-C     MINDX     INTEGER         indicates which MTZ file (up to MFILES
-C                               possible open at once)
+C     MINDX     (I)	INTEGER         indicates which MTZ file (up to MFILES
+C                               	possible open at once)
 C
-C     REFNUM    INTEGER         the reflection record number to which
-C                               to move in the file
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutinesC
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
+C     REFNUM    (I)	INTEGER         the reflection record number to which
+C                               	to move in the file
 C
 C
 C
@@ -3393,8 +3068,6 @@ C     .. Arrays in Common ..
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
       LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
@@ -3404,16 +3077,11 @@ C     .. External Subroutines ..
       EXTERNAL LERROR,QSEEK
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
      +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
@@ -3421,7 +3089,7 @@ C     .. Common blocks ..
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZHDR/,/MTZWRK/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -3461,7 +3129,7 @@ C              **********************************************
 C              **********************************************
 C
 C---- And update NREFR - file read pointer (or no. of refls read)
-C     Is this correct ? Ask Phil.
+C     Is this correct ? Ask Phil. Well no-one's complained so far.
 C
           NREFR(MINDX) = REFNUM - 1
 C
@@ -3482,29 +3150,13 @@ C---- Subroutine to return sort order from header of MTZ file
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     SORTX     INTEGER         array of dimension (5) containing sort
-C                               order of 1st 5 columns in MTZ file
-C                               negative numbers for descending order
-C                               0 for not sorted
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types and lattice types
-C
+C     SORTX     (O)	INTEGER         array of dimension (5) containing sort
+C                               	order of 1st 5 columns in MTZ file
+C                               	negative numbers for descending order
+C                               	0 for not sorted
 C
 C
 C     .. Parameters ..
@@ -3522,13 +3174,8 @@ C     .. Array Arguments ..
       INTEGER SORTX(5)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
@@ -3538,24 +3185,14 @@ C     .. External Subroutines ..
       EXTERNAL LERROR
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
      +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZHDR/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -3598,37 +3235,20 @@ C     operations) from the MTZ header
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     NSYMPX    INTEGER         no. of primitive symmetry ops
+C     NSYMPX    (O)	INTEGER         no. of primitive symmetry ops
 C
-C     LTYPEX    CHARACTER*1     single character denoting the lattice
-C                               type (possible values are P,A,B,C,I,F,R)
-C                               if blank then not present in header
+C     LTYPEX    (O)	CHARACTER*1     single character denoting the lattice
+C                               	type (possible values are P,A,B,C,I,F,R)
+C                               	if blank then not present in header
 C
-C     NSPGRX    INTEGER         space group number, 0 if not present
+C     NSPGRX    (O)	INTEGER         space group number, 0 if not present
 C
-C     SPGRNX    CHARACTER*10    space group name, blank if not present
+C     SPGRNX    (O)	CHARACTER*10    space group name, blank if not present
 C
-C     PGNAMX    CHARACTER*6     point group name, blank if not present
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types
+C     PGNAMX    (O)	CHARACTER*6     point group name, blank if not present
 C
 C
 C
@@ -3636,7 +3256,7 @@ C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
       INTEGER NTYP,LTYP
-      PARAMETER (NTYP=13,LTYP=8)
+      PARAMETER (NTYP=12,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
@@ -3647,20 +3267,14 @@ C     .. Scalar Arguments ..
       CHARACTER LTYPEX*1,PGNAMX*10,SPGRNX*10
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
+      CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
+     +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
       CHARACTER LINE*400
-C     ..
-C     .. Local Arrays ..
-      CHARACTER CTYPES(NTYP)*1,LTYPES(LTYP)*1
 C     ..
 C     .. External Subroutines ..
       EXTERNAL LERROR
@@ -3674,21 +3288,9 @@ C     .. Common blocks ..
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
-C     ..
-C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','M','W','A','B','Y','I',
-     +     'R'/
-      DATA LTYPES/'P','A','B','C','I','F','R','?'/
+      SAVE /MTZHDR/,/MTZCHR/
 C     ..
 C
 C
@@ -3738,31 +3340,16 @@ C---- Subroutine to return Symmetry operations from header of MTZ file
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     NSYMX     INTEGER         total no. of symmetry operations
-C                               if =0 on exit then no symm info present
+C     NSYMX     (O)	INTEGER         total no. of symmetry operations
+C                               	if =0 on exit then no symm info present
 C
-C     RSYMX     REAL            array of dimensions (4,4,NSYM) of
-C                               symmetry ops on exit (max. NSYM is 96)
-C
-C
+C     RSYMX     (O)	REAL            array of dimensions (4,4,NSYM) of
+C                               	symmetry ops on exit (max. NSYM is 96)
 C
 C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
 C
 C
 C
@@ -3781,13 +3368,8 @@ C     .. Array Arguments ..
       REAL RSYMX(4,4,96)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10,JDO20,JDO30
@@ -3797,24 +3379,14 @@ C     .. External Subroutines ..
       EXTERNAL LERROR
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
      +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZHDR/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -3863,30 +3435,15 @@ C     header of an MTZ file.
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     FTITLE    CHARACTER*(*)   Character string containing the title
-C                               on output - maximum possible length 70
+C     FTITLE    (O)	CHARACTER*(*)   Character string containing the title
+C                               	on output - maximum possible length 70
 C
-C     LEN       INTEGER         Length of the title string - ie no. of
-C                               chars from start to last non-blank char
+C     LEN       (O)	INTEGER         Length of the title string - ie no. of
+C                               	chars from start to last non-blank char
 C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
 C
 C
 C
@@ -3903,13 +3460,8 @@ C     .. Scalar Arguments ..
       CHARACTER FTITLE* (*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
+     +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
@@ -3926,21 +3478,9 @@ C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
-      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
-     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
-     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZCHR/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -3985,45 +3525,30 @@ C     extracted.
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     LSPRGO    CHARACTER*30    array of dimension at least NLPRGO
-C                               containing the program output labels
+C     LSPRGO    (I)	CHARACTER*30    array of dimension at least NLPRGO
+C                               	containing the program output labels
 C
-C     NLPRGO    INTEGER         number of output program labels
+C     NLPRGO    (I)	INTEGER         number of output program labels
 C
-C     CTPRGO    CHARACTER*1     array of dimension at least NLPRGO
-C                               containing the output column types
+C     CTPRGO    (I)	CHARACTER*1     array of dimension at least NLPRGO
+C                               	containing the output column types
 C
-C     IAPPND    INTEGER         =0 replace all existing labels and types
-C                               =1 append to the existing lbls & types
+C     IAPPND    (I)	INTEGER         =0 replace all existing labels and types
+C                               	=1 append to the existing lbls & types
 C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types
 C
 C
 C
 C     .. Parameters ..
-      INTEGER MFILES,MCOLS,MBATCH,MFILESX
-      PARAMETER (MFILES=3,MCOLS=200,MBATCH=240,MFILESX=9)
+      INTEGER MFILES,MCOLS,MBATCH,MFILEX
+      PARAMETER (MFILES=3,MCOLS=200,MBATCH=240,MFILEX=9)
+      INTEGER MINCOL
+      PARAMETER (MINCOL=3)
       INTEGER NTYP,LTYP
-      PARAMETER (NTYP=13,LTYP=8)
+      PARAMETER (NTYP=12,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
@@ -4049,8 +3574,8 @@ C     .. Arrays in Common ..
      +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
-      INTEGER IFAIL,ILEN,IOUT,ISTAT,JDO10,JDO40,JDO50,JDO60,JDO70,JDO80,
-     +        LSTART
+      INTEGER IFAIL,ILEN,IOUT,ISTAT,JDO10,JDO30,JDO40,JDO50,JDO60,JDO70,
+     +        JDO80,LSTART
       CHARACTER LINE*400,STROUT*400,CWORK*30
 C     ..
 C     .. Local Arrays ..
@@ -4073,8 +3598,8 @@ C     .. Common blocks ..
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZLAB/NLUSRI(MFILESX),NLUSRO(MFILESX)
-      COMMON /MTZLBC/LSUSRI(MFILESX,MCOLS),LSUSRO(MFILESX,MCOLS)
+      COMMON /MTZLAB/NLUSRI(MFILEX),NLUSRO(MFILEX)
+      COMMON /MTZLBC/LSUSRI(MFILEX,MCOLS),LSUSRO(MFILEX,MCOLS)
       COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
      +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
@@ -4087,8 +3612,7 @@ C     .. Save statement ..
       SAVE
 C     ..
 C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','M','W','A','B','Y','I',
-     +     'R'/
+      DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R'/
       DATA LTYPES/'P','A','B','C','I','F','R','?'/
 C     ..
 C
@@ -4118,7 +3642,18 @@ C
 C---- Work out total number of columns to be written to output file
 C
         NCOLW(MINDX) = LSTART + NLPRGO - 1
-        IF (NCOLW(MINDX).GT.MCOLS) THEN
+        IF (NCOLW(MINDX).LT.MINCOL) THEN
+          WRITE (LINE,FMT='(A,A,I4)')
+     +      'From LWASSN : Not enough output columns -',
+     +      ' minimum allowed is',MINCOL
+          ISTAT = 2
+          IFAIL = -1
+C
+C              ************************
+          CALL LERROR(ISTAT,IFAIL,LINE)
+C              ************************
+C
+        ELSE IF (NCOLW(MINDX).GT.MCOLS) THEN
           WRITE (LINE,FMT='(A,I4)')
      +      'From LWASSN : Too many output columns - maximum allowed is'
      +      ,MCOLS
@@ -4288,18 +3823,17 @@ C     batch headers for multi-record file open on index MINDX
 C
 C---- Arguments :
 C
-C     Input:
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     BATNO     INTEGER         batch number 
+C     BATNO     (I)	INTEGER         batch number 
 C
-C     BATSCL(NBATSC)
-C               REAL            batch scale, relative Bfactor,
-C                               SD(Bscale), SD(Bfactor) if NBATSC = 4
-C                                else NBATSC/2 scales or B-factors + Sd's
+C     BATSCL	(I)	REAL            array of dimension NBATSCL containing
+C					batch scale, relative Bfactor,
+C                               	SD(Bscale), SD(Bfactor) if NBATSC = 4
+C                                	else NBATSC/2 scales or B-factors + Sd's
 C
-C     NBATSC    INTEGER         number of batch scales (=0 to clear)
+C     NBATSC    (I)	INTEGER         number of batch scales (=0 to clear)
 C
 C     ..
 C     .. Scalar Arguments ..
@@ -4379,13 +3913,12 @@ C     on index MINDX
 C
 C---- Arguments :
 C
-C Input:
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     BATNO     INTEGER         batch number 
+C     BATNO     (I)	INTEGER         batch number 
 C
-C     TBATCH    CHARACTER       batch title
+C     TBATCH    (I)	CHARACTER       batch title
 C
 C
 C ... Arguments
@@ -4403,7 +3936,6 @@ C
 C
       INTEGER ISTAT,IFAIL,I
       CHARACTER*100 LINE2
-      EXTERNAL LERROR
       DATA RBATCH/MBLENG*0/
 C
 C
@@ -4433,27 +3965,12 @@ C---- Subroutine to write Cell Parameters into the header common block
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     CELLP     REAL            array of dimension (6) containing cell
-C                               parameters to write to header
+C     CELLP     (I)	REAL            array of dimension (6) containing cell
+C                               	parameters to write to header
 C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
 C
 C
 C
@@ -4477,27 +3994,24 @@ C     .. Arrays in Common ..
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
       LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
       CHARACTER LINE*400
+      LOGICAL CELLCH
+C     .. 
+C     .. Intrinsic Functions
+      INTRINSIC ABS
 C     ..
 C     .. External Subroutines ..
       EXTERNAL LERROR,LSTRSL
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
      +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
@@ -4505,7 +4019,7 @@ C     .. Common blocks ..
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZHDR/,/MTZWRK/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -4525,7 +4039,10 @@ C
 C
 C---- Then update the header block
 C
+        CELLCH = .FALSE.
         DO 10 JDO10 = 1,6
+          IF (ABS(CELL(JDO10,MINDX) - CELLP(JDO10)).GT.0.000006) 
+     +      CELLCH=.TRUE.
           CELL(JDO10,MINDX) = CELLP(JDO10)
    10   CONTINUE
 C
@@ -4533,6 +4050,21 @@ C---- Set S range to dummy values - no easy way to correct them
 C
         SRANGE(1,MINDX) = 0.0
         SRANGE(2,MINDX) = 100.0
+C
+C---- Print warning is this is done after reflections have been written
+C
+        IF ((NREFW(MINDX).GT.0).AND. CELLCH) THEN
+          WRITE (LINE,FMT='(A,A,A)')
+     +      'From LWCELL : You are changing the cell after you have',
+     +      'written reflections to file - ',
+     +      'resolution limits will be wrong'
+          ISTAT = 1
+C
+C              ************************
+          CALL LERROR(ISTAT,IFAIL,LINE)
+C              ************************
+C
+        END IF
 C
 C---- And setup again for the S calculation
 C
@@ -4562,45 +4094,30 @@ C     are exactly what come into this subroutine in CLABS.
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     LSPRGO    CHARACTER*30    array of dimension at least NLPRGO
-C                               containing the column labels on entry
+C     LSPRGO    (I)	CHARACTER*30    array of dimension at least NLPRGO
+C                               	containing the column labels on entry
 C
-C     NLPRGO    INTEGER         number of columns input
+C     NLPRGO    (I)	INTEGER         number of columns input
 C
-C     CTPRGO    CHARACTER*1     array of dimension at least NLPRGO
-C                               containing the column types on entry
+C     CTPRGO    (I)	CHARACTER*1     array of dimension at least NLPRGO
+C                               	containing the column types on entry
 C
-C     IAPPND    INTEGER         =0 replace all existing labels and types
-C                               =1 append to the existing lbls & types
+C     IAPPND    (I)	INTEGER         =0 replace all existing labels and types
+C                               	=1 append to the existing lbls & types
 C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types and lattice types
 C
 C
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
+      INTEGER MINCOL
+      PARAMETER (MINCOL=3)
       INTEGER NTYP,LTYP
-      PARAMETER (NTYP=13,LTYP=8)
+      PARAMETER (NTYP=12,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
@@ -4610,7 +4127,6 @@ C     .. Scalar Arguments ..
       INTEGER IAPPND,MINDX,NLPRGO
 C     ..
 C     .. Array Arguments ..
-cc      character ctprgo(mcols)*1,lsprgo(mcols)*30
       CHARACTER*1  CTPRGO(*)
       CHARACTER*30 LSPRGO(*)
 C     ..
@@ -4620,11 +4136,11 @@ C     .. Arrays in Common ..
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
       LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
+     +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
-      INTEGER IFAIL,IOUT,ISTAT,JDO10,JDO20,JDO30,LSTART
+      INTEGER IFAIL,IOUT,ISTAT,JDO10,JDO20,JDO30,JDO40,JDO50,LSTART
       CHARACTER LINE*400,CWORK*30
 C     ..
 C     .. Local Arrays ..
@@ -4646,8 +4162,6 @@ C     .. Common blocks ..
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
@@ -4655,11 +4169,10 @@ C     .. Common blocks ..
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
 C     ..
 C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','M','W','A','B','Y','I',
-     +     'R'/
+      DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R'/
       DATA LTYPES/'P','A','B','C','I','F','R','?'/
 C     ..
 C
@@ -4689,7 +4202,18 @@ C
 C---- Work out total number of columns to be written to output file
 C
         NCOLW(MINDX) = LSTART + NLPRGO - 1
-        IF (NCOLW(MINDX).GT.MCOLS) THEN
+        IF (NCOLW(MINDX).LT.MINCOL) THEN
+          WRITE (LINE,FMT='(A,A,I4)')
+     +      'From LWASSN : Not enough output columns -',
+     +      ' minimum allowed is',MINCOL
+          ISTAT = 2
+          IFAIL = -1
+C
+C              ************************
+          CALL LERROR(ISTAT,IFAIL,LINE)
+C              ************************
+C
+        ELSE IF (NCOLW(MINDX).GT.MCOLS) THEN
           WRITE (LINE,FMT='(A,I4)')
      +      'From LWCLAB : Too many output columns - maximum allowed is'
      +      ,MCOLS
@@ -4786,34 +4310,17 @@ C
 C
 C---- Arguments:
 C
-C     MINDX     INTEGER         indicates which MTZ file (up to MFILES
-C                               possible open at once)
+C     MINDX      (I)	INTEGER         indicates which MTZ file (up to MFILES
+C                               	possible open at once)
 C
-C     IPRINT    INTEGER         print indicator : meaning :
-C                               =0 No MTZ info printed at all
-C                               =1 Brief header info printed (default)
-C                               =2 Brief header plus history
-C                               =3 Full header dump
-C
-C
+C     IPRINT    (I)	INTEGER         print indicator : meaning :
+C                               	=0 No MTZ info printed at all
+C                               	=1 Brief header info printed (default)
+C                               	=2 Brief header plus history
+C                               	=3 Full header dump
 C
 C
 C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types
 C
 C
 C
@@ -5219,7 +4726,12 @@ C     All the header lines are 80 characters long and written to the
 C     file in 20A4 format, so have to encode from chars to integers
 C     QMODE is 0 for the header records (ie byte)
 C
+C---- Arguments
 C
+C     ILUN	(I)	INTEGER 	LUN on which the file is open
+C
+C     LINE	(I)	CHARACTER*(*)	Character string containing header record
+C					to be written to file
 C
 C
 C     .. Scalar Arguments ..
@@ -5260,28 +4772,12 @@ C     with the older lines.
 C
 C     Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     HSTRNG    CHARACTER       array of (NLINES) with the history lines
+C     HSTRNG    (I)	CHARACTER       array of (NLINES) with the history lines
 C
-C     NLINES    INTEGER         number of history lines to be written
-C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
+C     NLINES    (I)	INTEGER         number of history lines to be written
 C
 C
 C
@@ -5301,13 +4797,11 @@ C     .. Array Arguments ..
       CHARACTER HSTRNG(NLINES)*80
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
+      REAL RBATW,WRANGE,WSRNGE
+      INTEGER HDRST,NBATR,NBATW,NCOLW,NHISTL,NREFR,NREFW,RLUN,
+     +        RPOINT,WLUN,WOMBAT,NPLABS
       LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      CHARACTER CBATW*1,PLABS*30,HSCR*80
 C     ..
 C     .. Local Scalars ..
       INTEGER ENDLOP,IFAIL,ISTAT,JDO10,JDO20,JDO5
@@ -5320,14 +4814,6 @@ C     .. External Subroutines ..
       EXTERNAL LERROR
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
-      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
-     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
-     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
       COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
      +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
@@ -5337,7 +4823,7 @@ C     .. Common blocks ..
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZWRK/,/MTZWRC/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -5410,37 +4896,18 @@ C---- Subroutine to open an MTZ file for write.
 C
 C     Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     FILNAM    CHARACTER       name of file to be opened
-C
-C
+C     FILNAM    (I)	CHARACTER       name of file to be opened
 C
 C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types
 C
 C
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
-      INTEGER NTYP,LTYP
-      PARAMETER (NTYP=13,LTYP=8)
       INTEGER SIZE1
       PARAMETER (SIZE1=20)
       INTEGER MBLENG,CBLENG
@@ -5468,7 +4935,6 @@ C     .. Local Scalars ..
 C     ..
 C     .. Local Arrays ..
       INTEGER IDUMMY(SIZE1)
-      CHARACTER CTYPES(NTYP)*1,LTYPES(LTYP)*1
 C     ..
 C     .. External Subroutines ..
       EXTERNAL LERROR,QMODE,QOPEN,QWRITE
@@ -5492,11 +4958,6 @@ C     .. Common blocks ..
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
-C     ..
-C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','M','W','A','B','Y','I',
-     +     'R'/
-      DATA LTYPES/'P','A','B','C','I','F','R','?'/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -5651,27 +5112,12 @@ C            Is there also one for CCP4 programs ?
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     ADATA     REAL            array of dimension at least NCOLW(MINDX)
-C                               containing the reflection record
+C     ADATA     (I)	REAL            array of dimension at least NCOLW(MINDX)
+C                               	containing the reflection record
 C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
 C
 C
 C
@@ -5689,7 +5135,6 @@ C     .. Scalar Arguments ..
       INTEGER MINDX
 C     ..
 C     .. Array Arguments ..
-cc      real adata(mcols)
       REAL ADATA(*)
 C     ..
 C     .. Arrays in Common ..
@@ -5698,8 +5143,8 @@ C     .. Arrays in Common ..
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
       LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
+     +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10,IH,IK,IL
@@ -5722,8 +5167,6 @@ C     .. Common blocks ..
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
@@ -5731,7 +5174,7 @@ C     .. Common blocks ..
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -5779,20 +5222,23 @@ C
         END IF
    10   CONTINUE
 C
-C---- Update the resolution range 
+C---- Update the resolution range if appropriate
 C
-        IH = ADATA(1)
-        IK = ADATA(2)
-        IL = ADATA(3)
+        IF ((NCOLW(MINDX).GE.3).AND.(CTYPE(1,MINDX).EQ.'H')
+     +       .AND.(CTYPE(2,MINDX).EQ.'H')
+     +       .AND.(CTYPE(3,MINDX).EQ.'H')) THEN
+
+          IH = ADATA(1)
+          IK = ADATA(2)
+          IL = ADATA(3)
 C
-C               **********************
-        RESOL = 4.0 * LSTLSQ(MINDX,IH,IK,IL)
-C               **********************
+C                 ****************************
+          RESOL = 4.0 * LSTLSQ(MINDX,IH,IK,IL)
+C                 ****************************
 C
-        IF (RESOL.LT.WSRNGE(1,MINDX)) THEN
-          WSRNGE(1,MINDX) = RESOL
-        ELSE IF (RESOL.GT.WSRNGE(2,MINDX)) THEN
-          WSRNGE(2,MINDX) = RESOL
+          IF (RESOL.LT.WSRNGE(1,MINDX))  WSRNGE(1,MINDX) = RESOL
+          IF (RESOL.GT.WSRNGE(2,MINDX))  WSRNGE(2,MINDX) = RESOL
+C
         END IF
 C
 C---- Write the reflection record to file
@@ -5820,29 +5266,14 @@ C     MTZ header.
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     SORTX     INTEGER         array of dimension (5) containing sort
-C                               order of 1st 5 columns in MTZ file
-C                               negative numbers for descending order
-C                               0 for not sorted
+C     SORTX     (I)	INTEGER         array of dimension (5) containing sort
+C                               	order of 1st 5 columns in MTZ file
+C                               	negative numbers for descending order
+C                               	0 for not sorted
 C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
 C
 C
 C
@@ -5861,13 +5292,8 @@ C     .. Array Arguments ..
       INTEGER SORTX(5)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
@@ -5877,24 +5303,14 @@ C     .. External Subroutines ..
       EXTERNAL LERROR
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
      +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZHDR/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -5926,10 +5342,10 @@ C
 C
 C
 C
-C     ===========================================================
+C     ================================================================
       SUBROUTINE LWSYMM(MINDX,NSYMX,NSYMPX,RSYMX,LTYPEX,NSPGRX,SPGRNX,
      +                  PGNAMX)
-C     ===========================================================
+C     ================================================================
 C
 C
 C
@@ -5938,45 +5354,28 @@ C     in the MTZ header.
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     NSYMX     INTEGER         total no. of symmetry operations
-C                               if this is 0 then symm operation values
-C                               are not changed
+C     NSYMX     (I)	INTEGER         total no. of symmetry operations
+C                               	if this is 0 then symm operation values
+C                               	are not changed
 C
-C     NSYMPX    INTEGER         no. of primitive operations
+C     NSYMPX    (I)	INTEGER         no. of primitive operations
 C
-C     RSYMX     REAL            array of dimensions (4,4,96) of
-C                               symmetry ops on entry
+C     RSYMX     (I)	REAL            array of dimensions (4,4,96) of
+C                               	symmetry ops on entry
 C
-C     LTYPEX    CHARACTER*1     single character denoting the lattice
-C                               type (possible values are P,A,B,C,I,F,R)
-C                               if blank then current value not changed
+C     LTYPEX    (I)	CHARACTER*1     single character denoting the lattice
+C                               	type (possible values are P,A,B,C,I,F,R)
+C                               	if blank then current value not changed
 C
-C     NSPGRX    INTEGER         space group number, if 0 not changed
+C     NSPGRX    (I)	INTEGER         space group number, if 0 not changed
 C
-C     SPGRNX    CHARACTER*10    space group name, if blank not changed
+C     SPGRNX    (I)	CHARACTER*10    space group name, if blank not changed
 C
-C     PGNAMX    CHARACTER*6     point group name, if blank not changed
+C     PGNAMX    (I)	CHARACTER*6     point group name, if blank not changed
 C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types and lattice types
 C
 C
 C
@@ -5984,7 +5383,7 @@ C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
       INTEGER NTYP,LTYP
-      PARAMETER (NTYP=13,LTYP=8)
+      PARAMETER (NTYP=12,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
@@ -5998,13 +5397,10 @@ C     .. Array Arguments ..
       REAL RSYMX(4,4,96)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
+      CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
+     +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,IPRINT,ISTAT,JDO10,JDO20,JDO30,JDO40
@@ -6025,20 +5421,12 @@ C     .. Common blocks ..
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZHDR/,/MTZCHR/
 C     ..
 C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','M','W','A','B','Y','I',
-     +     'R'/
+      DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R'/
       DATA LTYPES/'P','A','B','C','I','F','R','?'/
 C     ..
 C
@@ -6148,30 +5536,15 @@ C     common block
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     NTITLE    CHARACTER*(*)   Character string containing the title
-C                               on output - maximum possible length 70
+C     NTITLE    (I)	CHARACTER*(*)   Character string containing the title
+C                               	 - maximum possible length 70
 C
-C     FLAG      INTEGER         =0 replace old title with new one
-C                               =1 append new one to old, with one space
+C     FLAG      (I)	INTEGER         =0 replace old title with new one
+C                               	=1 append new one to old, with one space
 C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
 C
 C
 C
@@ -6188,13 +5561,8 @@ C     .. Scalar Arguments ..
       CHARACTER NTITLE* (*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
+     +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ILEN,ISTAT,JLEN,KLEN
@@ -6214,21 +5582,9 @@ C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
      +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
      +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
-      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
-     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
-     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZCHR/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -6319,47 +5675,33 @@ C     a pretty format.
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     BATNO     INTEGER         serial number of this batch
-C                               returned as -1 if all batch headers
-C                               have been read
+C     BATNO     (O)	INTEGER         serial number of this batch
+C                               	returned as -1 if all batch headers
+C                               	have been read
 C
-C     RBATCH    REAL(*)         array into which integer and real batch
-C                               info is stored by subroutine rbathd
-C                               this should be equivalenced onto the
-C                               appropriate COMMON block in the calling
-C                               program. The first item is Nwords,ie how
-C                               many items in the array:-
-C                               Nwords = 0 if no orientation
-C                               data is present in the batch header
+C     RBATCH    (O)	REAL(*)         array into which integer and real batch
+C                               	info is stored by subroutine rbathd
+C                               	this should be equivalenced onto the
+C                               	appropriate COMMON block in the calling
+C                               	program. The first item is Nwords,ie how
+C                               	many items in the array:-
+C                               	Nwords = 0 if no orientation
+C                               	data is present in the batch header
 C
-C     CBATCH    CHARACTER(*)*1  as RBATCH, but for character items - no
-C                               nwords however
+C     CBATCH    (O)	CHARACTER(*)*1  as RBATCH, but for character items - no
+C                               	nwords however
 C
-C     IPRINT    INTEGER         print indicator
-C                                 = 0 no print
-C                                 = 1 print batch title only
-C                                 = 2 print orientation block as well
-C                                 .GT. 30 print orientation block as well
-C                                    BUT TO IPRINT unit number
-C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
+C     IPRINT    (I)	INTEGER         print indicator
+C                                 	= 0 no print
+C                                 	= 1 print batch title only
+C                                 	= 2 print orientation block as well
+C                                 	.GT. 30 print orientation block as well
+C                                    	BUT TO IPRINT unit number
 C
 C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
 C
 C
 C     .. Parameters ..
@@ -6375,9 +5717,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       REAL RBATCH(MBLENG)
-cc      real rbatch(*)
       CHARACTER CBATCH(CBLENG)*1
-cc      character*(*) cbatch(*)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
@@ -6385,8 +5725,8 @@ C     .. Arrays in Common ..
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
       LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
+     +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
       REAL RBATCX
@@ -6405,8 +5745,6 @@ C     .. Common blocks ..
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
-     +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
@@ -6420,7 +5758,7 @@ C     .. Equivalences ..
       EQUIVALENCE (RBATCX,NWORDS)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -6508,39 +5846,23 @@ C
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     BATNO     INTEGER         serial number of this batch
-C                               if 0 wipe away all batch info for file
+C     BATNO     (I)	INTEGER         serial number of this batch
+C                               	if 0 wipe away all batch info for file
 C
-C     RBATCH    REAL(*)         array from which integer and real batch
-C                               info is decoded by subroutine wbathd
-C                               this should be equivalenced onto the
-C                               appropriate COMMON block in the calling
-C                               program. The first item is nwords,ie how
-C                               many items in the array, if nword is 0
-C                               then only the title is written to header
+C     RBATCH    (I)	REAL(*)         array from which integer and real batch
+C                               	info is decoded by subroutine wbathd
+C                               	this should be equivalenced onto the
+C                               	appropriate COMMON block in the calling
+C                               	program. The first item is nwords,ie how
+C                               	many items in the array, if nword is 0
+C                               	then only the title is written to header
 C
-C     CBATCH    CHARACTER(*)*1  as RBATCH, but for character items - no
-C                               nwords however; title is 1st 70 chars of
-C                               CBATCH.
-C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
+C     CBATCH    (I)	CHARACTER(*)*1  as RBATCH, but for character items - no
+C                               	nwords however; title is 1st 70 chars of
+C                               	CBATCH.
 C
 C
 C
@@ -6557,9 +5879,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       REAL RBATCH(MBLENG)
-cc      real rbatch(*)
       CHARACTER CBATCH(CBLENG)*1
-cc      character*(*) cbatch(*)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
@@ -6567,8 +5887,7 @@ C     .. Arrays in Common ..
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
       LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      CHARACTER CBATW*1,PLABS*30,HSCR*80
 C     ..
 C     .. Local Scalars ..
       REAL RBATCX
@@ -6579,9 +5898,6 @@ C     .. External Subroutines ..
       EXTERNAL LERROR
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
      +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
@@ -6602,7 +5918,7 @@ C     .. Equivalences ..
       EQUIVALENCE (RBATCX,NWORDS)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZHDR/,/MTZWRK/,/MTZWRC/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -6676,11 +5992,10 @@ C---- Check NWORDS
 C
         RBATCX = RBATCH(1)
 C
-C
         IF (NWORDS.GT.MBLENG) THEN
           WRITE (LINE2,FMT=
-     +'('' From LWBAT : NWORDS = '',I8,
-     +'' is greater than buffer length '',I8)') NWORDS,MBLENG
+     +          '('' From LWBAT : NWORDS = '',I8,
+     +          '' is greater than buffer length '',I8)') NWORDS,MBLENG
           ISTAT = 2
           IFAIL = -1
 C
@@ -6721,21 +6036,21 @@ C
 C
 C---- Arguments :
 C
-C     ILUN      INTEGER         LUN on which the file is open
+C     ILUN      (I)	INTEGER         LUN on which the file is open
 C
-C     BATCH     INTEGER         serial number of this batch
+C     BATCH     (O)	INTEGER         serial number of this batch
 C
-C     RBATCH    REAL(*)         array into which integer and real batch
-C                               info is decoded by subroutine
-C                               this should be equivalenced onto the
-C                               appropriate COMMON block in the calling
-C                               program. The first item is nwords,ie how
-C                               many items in the array, if nword is 0
-C                               then only the title is present
+C     RBATCH    (O)	REAL(*)         array into which integer and real batch
+C                               	info is decoded by subroutine
+C                               	this should be equivalenced onto the
+C                               	appropriate COMMON block in the calling
+C                               	program. The first item is nwords,ie how
+C                               	many items in the array, if nword is 0
+C                               	then only the title is present
 C
-C     CBATCH    CHARACTER(*)*1  as RBATCH, but for character items - no
-C                               nwords however; title is 1st 70 chars of
-C                               CBATCH.
+C     CBATCH    (O)	CHARACTER(*)*1  as RBATCH, but for character items - no
+C                               	nwords however; title is 1st 70 chars of
+C                               	CBATCH.
 C
 C     The lengths of the RBATCH & CBATCH arrays are parameters here!
 C
@@ -6748,9 +6063,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       REAL RBATCH(MBLENG)
-cc      real rbatch(*)
       CHARACTER CBATCH(CBLENG)*1
-cc      character*(*) cbatch(*)
 C     ..
 C     .. Local Scalars ..
       INTEGER I,IEND,IFGERR,ISTERR,J,K,L,NWORDS,NINTGR,NREALS,NITEM,IER
@@ -6806,12 +6119,12 @@ C   20   CONTINUE
 C------------------------------------------------------------------
 C---- Read the orientation block in with a single QREAD, QMODE 2
 C
-C             ********************************
-         CALL QMODE(ILUN,2,NITEM)
-         CALL QREAD(ILUN,RBATCH(1),NWORDS,IER)
-         IF (IER.GT.0) GOTO 50
-         CALL QMODE(ILUN,0,NITEM)
-C             ********************************
+C            ********************************
+        CALL QMODE(ILUN,2,NITEM)
+        CALL QREAD(ILUN,RBATCH(1),NWORDS,IER)
+        IF (IER.GT.0) GOTO 50
+        CALL QMODE(ILUN,0,NITEM)
+C            ********************************
 C
 C---- Read rest of CBATCH (we need to know here how much to read!)
 C     Using 2 loops means that CBATCH can expand 
@@ -6867,24 +6180,25 @@ C
 C
 C---- Arguments :
 C
-C     ILUN      INTEGER         LUN on which the file is open
+C     ILUN      (I)	INTEGER         LUN on which the file is open
 C
-C     BATCH     INTEGER         serial number of this batch
+C     BATCH     (I)	INTEGER         serial number of this batch
 C
-C     RBATCH    REAL(*)         array from which integer and real batch
-C                               info is encoded by subroutine
-C                               this should be equivalenced onto the
-C                               appropriate COMMON block in the calling
-C                               program. The first item is nwords,ie how
-C                               many items in the array, if nword is 0
-C                               then only the title is written
+C     RBATCH    (I)	REAL(*)         array from which integer and real batch
+C                               	info is encoded by subroutine
+C                               	this should be equivalenced onto the
+C                               	appropriate COMMON block in the calling
+C                               	program. The first item is nwords,ie how
+C                               	many items in the array, if nword is 0
+C                               	then only the title is written
 C
-C     CBATCH    CHARACTER(*)*1  as RBATCH, but for character items - no
-C                               nwords however; title is 1st 70 chars of
-C                               CBATCH.
+C     CBATCH    (I)	CHARACTER(*)*1  as RBATCH, but for character items - no
+C                               	nwords however; title is 1st 70 chars of
+C                               	CBATCH.
 C
 C
 C     The lengths of the RBATCH & CBATCH arrays are parameters here!
+C
 C     .. Parameters ..
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
@@ -6894,9 +6208,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       REAL RBATCH(MBLENG)
-cc      real rbatch(*)
       CHARACTER CBATCH(CBLENG)*1
-cc      character*(*) cbatch(*)
 C     ..
 C     .. Local Scalars ..
       REAL RBATCX,RBATCY,RBATCZ
@@ -7017,31 +6329,29 @@ C-----Subroutine to read standard input lines of the form
 C              LABIN  item1=name1 item2=name2 ...
 C     Use this to read the inputs, and then LRASSN to setup the
 C     program label to file label assignments.
-C     NB : there should only be one LABIN card for each program,
-C     with continuation lines if necessary.
 C
 C---- Arguments:
 C
-C     LSPRGI    CHARACTER*30    program label strings (array)
-C                               L(abel) S(tring) PRG(rammme) I(nput)
+C     LSPRGI    (I)	CHARACTER*30    program label strings (array)
+C                               	L(abel) S(tring) PRG(rammme) I(nput)
 C
-C     NLPRGI    INTEGER         number of program input labels
-C                               N(umber of) L(abels) PRG(ramme) I(nput)
+C     NLPRGI    (I)	INTEGER         number of program input labels
+C                               	N(umber of) L(abels) PRG(ramme) I(nput)
 C
-C     NTOK      INTEGER         from Parser, number of tokens on line
+C     NTOK      (I)	INTEGER         from Parser, number of tokens on line
 C
-C     LINE      CHARACTER*400   the input line
+C     LINE      (I)	CHARACTER*400   the input line
 C
-C     IBEG,IEND INTEGER         arrays from the parser, delimiters
-C                               for each token
+C     IBEG,IEND (I)	INTEGER         arrays from the parser, delimiters
+C                               	for each token
 C
 C
 C
 C            
 C
 C     .. Parameters ..
-      INTEGER MCOLS,MFILES,MFILESX
-      PARAMETER (MCOLS=200,MFILES=3,MFILESX=9)
+      INTEGER MCOLS,MFILES,MFILEX
+      PARAMETER (MCOLS=200,MFILES=3,MFILEX=9)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER NLPRGI,NTOK,MINDX
@@ -7049,7 +6359,6 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       INTEGER IBEG(*),IEND(*)
-cc      character lsprgi(mcols)*30
       CHARACTER*30 LSPRGI(*)
 C     ..
 C     .. Arrays in Common ..
@@ -7068,8 +6377,8 @@ C     .. External Subroutines ..
       EXTERNAL CCPUPC,PUTLIN
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZLAB/NLUSRI(MFILESX),NLUSRO(MFILESX)
-      COMMON /MTZLBC/LSUSRI(MFILESX,MCOLS),LSUSRO(MFILESX,MCOLS)
+      COMMON /MTZLAB/NLUSRI(MFILEX),NLUSRO(MFILEX)
+      COMMON /MTZLBC/LSUSRI(MFILEX,MCOLS),LSUSRO(MFILEX,MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE
@@ -7185,23 +6494,21 @@ C-----Subroutine to read standard input lines of the form
 C              LABOUT LabelFC=userFC   LabelPHCAL=userPHCAL ...
 C     Use this to read the inputs, and then LWASSN to setup the
 C     program label to (new) file label assignments.
-C     NB : there should only be one LABOUT card for each program,
-C     with continuation lines if necessary.
 C
 C---- Arguments:
 C
-C     LSPRGO    CHARACTER*30    program label strings (array)
-C                               L(abel) S(tring) PRG(rammme) O(utput)
+C     LSPRGO    (I)	CHARACTER*30    program label strings (array)
+C                               	L(abel) S(tring) PRG(rammme) O(utput)
 C
-C     NLPRGO    INTEGER         number of program output labels
-C                               N(umber of) L(abels) PRG(ramme) O(utput)
+C     NLPRGO    (I)	INTEGER         number of program output labels
+C                               	N(umber of) L(abels) PRG(ramme) O(utput)
 C
-C     NTOK      INTEGER         from Parser, number of tokens on line
+C     NTOK      (I)	INTEGER         from Parser, number of tokens on line
 C
-C     LINE      CHARACTER*400   the input line
+C     LINE      (I)	CHARACTER*400   the input line
 C
-C     IBEG,IEND INTEGER         arrays from the parser, delimiters
-C                               for each token
+C     IBEG,IEND (I)	INTEGER         arrays from the parser, delimiters
+C                               	for each token
 C
 C
 C--- Local or Common variables of interest
@@ -7216,8 +6523,8 @@ C
 C
 C
 C     .. Parameters ..
-      INTEGER MCOLS,MFILES,MFILESX
-      PARAMETER (MCOLS=200,MFILES=3,MFILESX=9)
+      INTEGER MCOLS,MFILES,MFILEX
+      PARAMETER (MCOLS=200,MFILES=3,MFILEX=9)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER NLPRGO,NTOK,MINDX
@@ -7225,7 +6532,6 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       INTEGER IBEG(*),IEND(*)
-cc      character lsprgo(mcols)*30
       CHARACTER*30 LSPRGO(*)
 C     ..
 C     .. Arrays in Common ..
@@ -7244,8 +6550,8 @@ C     .. External Subroutines ..
       EXTERNAL CCPUPC,PUTLIN
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZLAB/NLUSRI(MFILESX),NLUSRO(MFILESX)
-      COMMON /MTZLBC/LSUSRI(MFILESX,MCOLS),LSUSRO(MFILESX,MCOLS)
+      COMMON /MTZLAB/NLUSRI(MFILEX),NLUSRO(MFILEX)
+      COMMON /MTZLBC/LSUSRI(MFILEX,MCOLS),LSUSRO(MFILEX,MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE
@@ -7360,37 +6666,44 @@ C     ==================================================================
 C
 C
 C
-C-----Subroutine to read standard input lines of the form
+C-----Subroutine to parse standard input lines of the form
 C              LABIN  item1=name1 item2=name2 ...
-C     Use this to read the inputs, and then LRASSN to setup the
-C     program label to file label assignments.
-C     NB : there should only be one LABIN card for each program,
-C     with continuation lines if necessary.
-C         EJD - It doesn't seem to matter if there is more..
+C
+C     This subroutine returns the User input labels to the calling program
+C     (LKYIN doesn't) and the array Kpoint to indicate which of the program
+C     labels were set.
+C     
+C     Note : (i) there is no MINDX argument in this call - it is not tied to any
+C                specific file, and the header common blocks are not affected
+C                by this subroutine
+C
+C           (ii) although it looks similar to LKYIN IT DOES NOT REPLACE IT,
+C                it just adds extra functionality
 C
 C---- Arguments:
 C
-C     LSPRGI    CHARACTER*30    program label strings (array)
-C                               L(abel) S(tring) PRG(rammme) I(nput)
+C     LSPRGI    (I)	CHARACTER*30    program label strings (array)
+C                               	L(abel) S(tring) PRG(rammme) I(nput)
 C
-C     NLPRGI    INTEGER         number of program input labels
-C                               N(umber of) L(abels) PRG(ramme) I(nput)
+C     NLPRGI    (I)	INTEGER         number of program input labels
+C                               	N(umber of) L(abels) PRG(ramme) I(nput)
 C
-C     LSPRGJ    CHARACTER*30    user supplied  label strings (array)
-C                               L(abel) S(tring) USR(rammme) I(nput)
-C                              Copy of LSUSRI to return to calling program
+C     LSPRGJ    (O)	CHARACTER*30    user supplied  label strings (array)
+C                               	L(abel) S(tring) USR(rammme) I(nput)
+C                              		Copy of LSUSRI to return to calling program
 C
+C     KPOINT    (O)	INTEGER         Indicator whether this LSPRGI is set.
+C					-1 if set, 0 if not
 C
-C     KPOINT    INTEGER         Indicator whether this LSPRGI is set.
+C     ITOK      (I)	INTEGER         First token to search on line
+C     					(allows you to skip the LABIN token)
 C
-C     ITOK      INTEGER         First token to search on line
+C     NTOK      (I)	INTEGER         from Parser, number of tokens on line
 C
-C     NTOK      INTEGER         from Parser, number of tokens on line
+C     LINE      (I)	CHARACTER*400   the input line
 C
-C     LINE      CHARACTER*400   the input line
-C
-C     IBEG,IEND INTEGER         arrays from the parser, delimiters
-C                               for each token
+C     IBEG,IEND (I)	INTEGER         arrays from the parser, delimiters
+C                               	for each token
 C
 C
 C     .. Parameters ..
@@ -7403,11 +6716,10 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       INTEGER           IBEG(*),IEND(*),KPOINT(*)
-cc      character         lsprgi(*)*30,lsusrj(*)*30
-      CHARACTER*30         LSPRGI(*),LSUSRJ(*)
+      CHARACTER*30      LSPRGI(*),LSUSRJ(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER           JDO,JLENG,JLOOP,JSTART,JTOK,NLUSRF
+      INTEGER           JDO,JLENG,JLOOP,JSTART,JTOK,JDO5
       CHARACTER         CWORK*30,CWORK2*30,LC1*30,LC2*30,STROUT*400
 C     ..
 C     .. External Functions ..
@@ -7416,10 +6728,6 @@ C     .. External Functions ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL          CCPUPC,PUTLIN
-C     ..
-C     ..
-C     .. Save statement ..
-      SAVE
 C     ..
 C
 C
@@ -7446,6 +6754,12 @@ C            ***********************
 C            ***********************
 C
       ELSE
+C
+C---- Set Kpoint array to 0s
+C
+        DO 5 JDO5 = 1,NLPRGI
+          KPOINT(JDO5) = 0
+    5   CONTINUE
 C
 C---- Find input label assignments
 C
@@ -7526,16 +6840,16 @@ C
 C
 C
 C
-C     =====================================================
+C     ====================================================
       SUBROUTINE LKYASN(MINDX,NLPRGI,LSPRGI,CTPRGI,LOOKUP)
-C     =====================================================
+C     ====================================================
 C
 C
 C---- There follows a jiffy subroutine to do column assignments, bypassing
 C     the need for keyworded input. This is useful in writing little mtz
 C     programs, without using Parser in the main program.          PRE
 C
-c
+C
 C     Read column assignments and make them, for input MTZ file 
 C     open for read on index MINDX
 C
@@ -7545,27 +6859,24 @@ C
 C     This routine is useful for simple jiffy programs that don't want 
 C     full keyworded input
 C
-C On entry:
 C
-C     MINDX	INTEGER		file index number for opened MTZ input file
+C     MINDX	(I)	INTEGER		file index number for opened MTZ input file
 C
-C     NLPRGI    INTEGER		number of input program labels
+C     NLPRGI    (I)	INTEGER		number of input program labels
 C
-C     LSPRGI	CHARACTER*30	array of dimension at least NLPRGI
-C                               containing the program label strings
+C     LSPRGI	(I)	CHARACTER*30	array of dimension at least NLPRGI
+C                               	containing the program label strings
 C
-C     CTPRGI	CHAR*1		array of column types for each column: 
-C				these will be checked to see that they 
-C				match the actual column types in the file. 
-C				If you don't want to check column types, 
-C				provide blank types here
-C				(dimension at least NLPRGI)
+C     CTPRGI	(I)	CHAR*1		array of column types for each column: 
+C					these will be checked to see that they 
+C					match the actual column types in the file. 
+C					If you don't want to check column types, 
+C					provide blank types here
+C					(dimension at least NLPRGI)
 C
-C On exit:
-C
-C     LOOKUP	INTEGER		array of dimension at least NLPRGI
-C				contining column numbers for each 
-C				assigned label
+C     LOOKUP	(O)	INTEGER		array of dimension at least NLPRGI
+C					contining column numbers for each 
+C					assigned label
 C
 C
 C     .. Parameters ..
@@ -7640,13 +6951,13 @@ C
 C---- Labin column assignments
 C
 C              **********************************************
-          CALL LKYIN(INDEX,LSPRGI,NLPRGI,NTOK,LINE,IBEG,IEND)
+          CALL LKYIN(MINDX,LSPRGI,NLPRGI,NTOK,LINE,IBEG,IEND)
 C              **********************************************
 C
 C---- Column assignments, set lookup
 C
 C              ****************************************
-          CALL LRASSN(INDEX,LSPRGI,NLPRGI,LOOKUP,CTPRGI)
+          CALL LRASSN(MINDX,LSPRGI,NLPRGI,LOOKUP,CTPRGI)
 C              ****************************************
 C
         ELSE
@@ -7674,17 +6985,17 @@ C     ================================
 C
 C
 C
-C---- Utility subroutine for MTZ routines mark 1 - to output an
+C---- Utility subroutine for MTZ routines - to output an
 C     array of character strings across the page nicely
 C     eg labels or types
 C     Uses subroutine PUTLIN to output to window CURWIN.
 C
 C---- Arguments :
 C
-C     LABELS    CHARACTER*(*)   Array of dimension (NLABS) containing
-C                               the character strings to be output
+C     LABELS    (I)	CHARACTER*(*)   Array of dimension (NLABS) containing
+C                               	the character strings to be output
 C
-C     NLABS     INTEGER         number of labels to be output
+C     NLABS     (I)	INTEGER         number of labels to be output
 C
 C
 C
@@ -7770,24 +7081,9 @@ C     (but probably programs stamps at least).
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C            from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Common MTZWRC contains character work variables for MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
 C
 C
 C
@@ -7803,13 +7099,11 @@ C     .. Scalar Arguments ..
       INTEGER MINDX
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
+      REAL RBATW,WRANGE,WSRNGE
+      INTEGER HDRST,NBATR,NBATW,NCOLW,NHISTL,NREFR,NREFW,RLUN,RPOINT,
+     +        WLUN,WOMBAT,NPLABS
       LOGICAL SORTB
-      CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+      CHARACTER CBATW*1,PLABS*30,HSCR*80
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ILEN,ISTAT,JDO10
@@ -7823,14 +7117,6 @@ C     .. External Subroutines ..
       EXTERNAL BLANK,LERROR,PUTLIN
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
-     +       CTYPE(MCOLS,MFILES),SPGNAM(MFILES),LTYPE(MFILES),
-     +       CBATR(CBLENG,MBATCH,MFILES),PGNAM(MFILES)
-      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
-     +       RSYM(4,4,96,MFILES),NCOLS(MFILES),NREFS(MFILES),
-     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
-     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
       COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
      +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
@@ -7840,7 +7126,7 @@ C     .. Common blocks ..
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
+      SAVE /MTZWRK/,/MTZWRC/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -7915,39 +7201,22 @@ C     COMMON blocks for the MTZ file open on index MINDX.
 C
 C---- Arguments :
 C
-C     MINDX     INTEGER         indicates which MTZ file - 1 index
-C                               points to both input and output files
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
 C
-C     IPRINT    INTEGER         print indicator : meaning :
-C                               =1 Brief header info printed (default)
-C                               =2 As above plus history info
-C                               =3 Full header dump, symmetry, alles !
-C                               =4 As 1 plus full symmetry 
-C                               any other value, nothing happens
+C     IPRINT    (I)	INTEGER         print indicator : meaning :
+C                               	=1 Brief header info printed (default)
+C                               	=2 As above plus history info
+C                               	=3 Full header dump, symmetry, alles !
+C                               	=4 As 1 plus full symmetry 
+C                               	any other value, nothing happens
 C
-C
-C
-C---- Parameters, COMMON blocks, and declarations for MTZ subroutines
-C
-C
-C     Common MTZHDR contains INTEGER and REAL variables
-C                   from the MTZ Headers
-C
-C     Common MTZCHR contains CHARACTER variables from the MTZ headers
-C
-C     Common MTZWRK contains work variables for the MTZ routines
-C
-C     Since they are not in the main program, we must SAVE them
-C
-C     And set up the column types
 C
 C
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
-      INTEGER NTYP,LTYP
-      PARAMETER (NTYP=13,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
 C     ..
@@ -7955,11 +7224,8 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,IPRINT
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
-      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,CLABEL*30,
      +          TITLE*70
 C     ..
@@ -7970,7 +7236,7 @@ C     .. Local Scalars ..
       REAL RESMIN,RESMAX
 C     ..
 C     .. Local Arrays ..
-      CHARACTER CTYPES(NTYP)*1,LTYPES(LTYP)*1,SYMCHS(96)*80
+      CHARACTER SYMCHS(96)*80
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -7991,19 +7257,9 @@ C     .. Common blocks ..
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
-C     ..
-C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','M','W','A','B','Y','I',
-     +     'R'/
-      DATA LTYPES/'P','A','B','C','I','F','R','?'/
+      SAVE /MTZHDR/,/MTZCHR/
 C     ..
 C
 C---- Check IPRINT is OK
@@ -8138,7 +7394,8 @@ C              ***********************
 C
 C---- Resolution range for all
 C
-          IF ((CTYPE(1,MINDX).EQ.'H').AND.(CTYPE(2,MINDX).EQ.'H')
+          IF ((NCOLS(MINDX).GE.3).AND.(CTYPE(1,MINDX).EQ.'H')
+     +        .AND.(CTYPE(2,MINDX).EQ.'H')
      +        .AND.(CTYPE(3,MINDX).EQ.'H')
      +        .AND.(SRANGE(1,MINDX).GT.0.0)
      +        .AND.(SRANGE(2,MINDX).GT.0.0)) THEN
@@ -8287,26 +7544,26 @@ C     some sense of these numbers.
 C
 C---- Arguments :
 C
-C     IBATCH    INTEGER         batch number
+C     IBATCH    (I)	INTEGER         batch number
 C
-C     IPRINT    INTEGER         print indicator : meaning :
-C                               =0 no print
-C                               =1 print batch title only
-C                               =2 also print orientation block
-C                               .GT. 30 also print orientation block
-C                                    BUT TO IPRINT UNIT NUMBER
+C     IPRINT    (I)	INTEGER         print indicator : meaning :
+C                               	=0 no print
+C                               	=1 print batch title only
+C                               	=2 also print orientation block
+C                               	.GT. 30 also print orientation block
+C                                    	BUT TO IPRINT UNIT NUMBER
 C
-C     RBATCH    REAL(*)         array from which integer and real batch
-C                               info is decoded by subroutine wbathd
-C                               this should be equivalenced onto the
-C                               appropriate COMMON block in the calling
-C                               program. The first item is nwords,ie how
-C                               many items in the array, if nword is 0
-C                               then only the title is written to header
+C     RBATCH    (I)	REAL(*)         array from which integer and real batch
+C                               	info is decoded by subroutine wbathd
+C                               	this should be equivalenced onto the
+C                               	appropriate COMMON block in the calling
+C                               	program. The first item is nwords,ie how
+C                               	many items in the array, if nword is 0
+C                               	then only the title is written to header
 C
-C     CBATCH    CHARACTER(*)*1  as RBATCH, but for character items - no
-C                               nwords however; title is 1st 70 chars of
-C                               CBATCH.
+C     CBATCH    (I)	CHARACTER(*)*1  as RBATCH, but for character items - no
+C                               	nwords however; title is 1st 70 chars of
+C                               	CBATCH.
 C
 C
 C     The lengths of the RBATCH & CBATCH arrays are parameters here!
@@ -8322,9 +7579,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       REAL RBATCH(MBLENG)
-cc      real rbatch(*)
       CHARACTER CBATCH(CBLENG)*1
-cc      character*(*) cbatch(*)
 C     ..
 C     .. Arrays in Common ..
       REAL RARRAY
@@ -8381,13 +7636,14 @@ C     from the MTZ COMMON blocks /MBTHDR/ and /CBTHDR/ (already there)
 C     
 C---- Arguments :
 C     
-C     IBATCH    INTEGER         batch number
+C     IBATCH	(I)	INTEGER         batch number
 C     
-C     IPRINT    INTEGER         print indicator : meaning :
-C     =0 no print
-C     =1 print batch title only
-C     =2 also print orientation block
-C     .GT. 30 also print orientation block TO UNIT NUMBER IPRINT
+C     IPRINT    (I)	INTEGER         print indicator : meaning :
+C     					=0 no print
+C     					=1 print batch title only
+C     					=2 also print orientation block
+C     					.GT. 30 also print orientation block 
+C					TO UNIT NUMBER IPRINT
 C     
 C     
 C     
@@ -8609,12 +7865,13 @@ C
 C
 C
       IF (IPRINT.GT.30) THEN
-         WRITE (IPRINT,FMT='(A)') ' Batch number: '
+        WRITE (IPRINT,FMT='(A)') ' Batch number: '
+C
       ELSE
 C     
-C     ***********************
-      CALL PUTLIN(STROUT,'CURWIN')
-C     ***********************
+C            ***********************
+        CALL PUTLIN(STROUT,'CURWIN')
+C            ***********************
 C
       END IF
 C
@@ -8623,12 +7880,13 @@ C
 C
 C
       IF (IPRINT.GT.30) THEN
-          WRITE (IPRINT,FMT='(1X,I6,4X,A)') IBATCH,BTITLE
+        WRITE (IPRINT,FMT='(1X,I6,4X,A)') IBATCH,BTITLE
+C
       ELSE
 C     
-C     ***********************
-      CALL PUTLIN(STROUT,'CURWIN')
-C     ***********************
+C            ***********************
+        CALL PUTLIN(STROUT,'CURWIN')
+C            ***********************
 C
       END IF
 C
@@ -8639,8 +7897,8 @@ C
 C---- Clear LINES arrays
 C     
       DO 10 I = 1,MXLLIN
-         LINES(I) = ' '
-         SOMELN(I) = ' '
+        LINES(I) = ' '
+        SOMELN(I) = ' '
  10   CONTINUE
 C     
 C     
@@ -8663,25 +7921,26 @@ C
 C
 C
       IF (MISFLG .EQ. 0) THEN
-         WRITE (SOMELN, FMT=6005) UMAT
+        WRITE (SOMELN, FMT=6005) UMAT
 C
 C
-         IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6005) UMAT
+        IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6005) UMAT
 C
 C
-         CALL ADDLIN(SOMELN,LINES,MXLLIN)
+        CALL ADDLIN(SOMELN,LINES,MXLLIN)
+C
       ELSEIF (MISFLG .GT. 0) THEN
-         WRITE (SOMELN, FMT=6006) UMAT
+C
+        WRITE (SOMELN, FMT=6006) UMAT
+C
+        IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6006) UMAT
 C
 C
-         IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6006) UMAT
+        CALL ADDLIN(SOMELN,LINES,MXLLIN)
+        WRITE (SOMELN, FMT=6010) ((PHIXYZ(I,J),I=1,3),J=1,MISFLG)
 C
 C
-         CALL ADDLIN(SOMELN,LINES,MXLLIN)
-         WRITE (SOMELN, FMT=6010) ((PHIXYZ(I,J),I=1,3),J=1,MISFLG)
-C
-C
-         IF (IPRINT.GT.30) 
+        IF (IPRINT.GT.30) 
      +     WRITE (IPRINT, FMT=6010) ((PHIXYZ(I,J),I=1,3),J=1,MISFLG)
 C
 C
@@ -8703,24 +7962,25 @@ C
 C
 C---- Isotropic mosaicity
 C
-         WRITE (SOMELN, FMT=6030) ETAD
+        WRITE (SOMELN, FMT=6030) ETAD
 C
 C
-         IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6030) ETAD
+        IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6030) ETAD
 C
 C
-         CALL ADDLIN(SOMELN,LINES,MXLLIN)
+        CALL ADDLIN(SOMELN,LINES,MXLLIN)
+C
       ELSEIF (LCRFLG .EQ. 1) THEN
 C
 C---- Anisotropic mosaicity
 C
-         WRITE (SOMELN, FMT=6035) ETADH,ETADV
+        WRITE (SOMELN, FMT=6035) ETADH,ETADV
 C
 C
-         IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6035) ETADH,ETADV
+        IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6035) ETADH,ETADV
 C
 C
-         CALL ADDLIN(SOMELN,LINES,MXLLIN)
+        CALL ADDLIN(SOMELN,LINES,MXLLIN)
       END IF
       WRITE (SOMELN, FMT=6040) (DATUM(I),I=1,NGONAX)
 C
@@ -8733,13 +7993,13 @@ C
 C
 C
       IF (JSCAXS .GT. 0 .AND. JSCAXS .LE. NGONAX) THEN
-         WRITE (SOMELN, FMT=6050) GONLAB(JSCAXS)
+        WRITE (SOMELN, FMT=6050) GONLAB(JSCAXS)
 C
 C
-         IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6050) GONLAB(JSCAXS)
+        IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6050) GONLAB(JSCAXS)
 C
 C
-         CALL ADDLIN(SOMELN,LINES,MXLLIN)
+        CALL ADDLIN(SOMELN,LINES,MXLLIN)
       ENDIF
 C
 C
@@ -8755,12 +8015,12 @@ C
 C---- Batch scale factors (if set)
 C
       IF (NBSCAL .GT. 0) THEN
-         IF (NBSCAL .EQ. 4) THEN
-            WRITE (SOMELN, 6065) BSCALE,SDBSCL,BBFAC,SDBFAC 
-            IF (IPRINT.GT.30) 
+        IF (NBSCAL .EQ. 4) THEN
+          WRITE (SOMELN, 6065) BSCALE,SDBSCL,BBFAC,SDBFAC 
+          IF (IPRINT.GT.30) 
      +            WRITE (IPRINT, 6065) BSCALE,SDBSCL,BBFAC,SDBFAC 
-            CALL ADDLIN(SOMELN,LINES,MXLLIN)
-         ENDIF
+          CALL ADDLIN(SOMELN,LINES,MXLLIN)
+        ENDIF
       ENDIF
 C
 C
@@ -8776,25 +8036,27 @@ C
       WRITE (SOMELN, FMT=6080) SOURCE,S0
       IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6080) SOURCE,S0
       CALL ADDLIN(SOMELN,LINES,MXLLIN)
+C
       IF (LBMFLG .EQ. 0) THEN
 C
 C---- Monochromatic (laboratory) beam
 C
-         WRITE (SOMELN, FMT=6090) ALAMBD,DELAMB
+        WRITE (SOMELN, FMT=6090) ALAMBD,DELAMB
 C
 C
-         IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6090)  ALAMBD,DELAMB
+        IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6090)  ALAMBD,DELAMB
 C
 C
-         CALL ADDLIN(SOMELN,LINES,MXLLIN)
+        CALL ADDLIN(SOMELN,LINES,MXLLIN)
+C
       ELSEIF (LBMFLG .EQ. 1) THEN
 C
 C---- Monochromatic (synchrotron) beam
 C
-         WRITE (SOMELN, FMT=6095) ALAMBD,DELAMB,DELCOR,DIVHD,DIVVD
-         IF (IPRINT.GT.30)
+        WRITE (SOMELN, FMT=6095) ALAMBD,DELAMB,DELCOR,DIVHD,DIVVD
+        IF (IPRINT.GT.30)
      +     WRITE (IPRINT, FMT=6095) ALAMBD,DELAMB,DELCOR,DIVHD,DIVVD
-         CALL ADDLIN(SOMELN,LINES,MXLLIN)
+        CALL ADDLIN(SOMELN,LINES,MXLLIN)
       END IF
 C
 C
@@ -8877,17 +8139,17 @@ C                   ======
 C     
 C     
       DO 40 I = 1,J
-         STROUT = LINES(I)
+        STROUT = LINES(I)
 C     
-C             ***********************
-         CALL PUTLIN(STROUT,'CURWIN')
-C             ***********************
+C            ***********************
+        CALL PUTLIN(STROUT,'CURWIN')
+C            ***********************
 C     
  40   CONTINUE
 C     
-C     *****************
+C          *****************
       CALL BLANK('CURWIN',1)
-C     *****************
+C          *****************
 C     
       RETURN
       END 
@@ -8904,29 +8166,28 @@ C---- Read and interpret symmetry operations
 C
 C---- Arguments :
 C
-C     ICOL      CHARACTER*80    Line containing the symmetry ops
+C     ICOL      (I)	CHARACTER*80    Line containing the symmetry ops
 C
-C     I1        INTEGER         First character to look at
-C                               (say after keyword 'SYM')
+C     I1        (I)	INTEGER         First character to look at
+C                               	(say after keyword 'SYM')
 C
-C     NS        INTEGER         is the number of the first symmetry
-C                               operation to be read, & returns with the
-C                               number of the last one read (ie you can
-C                               have more than one on a line!)
+C     NS        (I/O)	INTEGER         is the number of the first symmetry
+C                               	operation to be read, & returns with the
+C                               	number of the last one read (ie you can
+C                               	have more than one on a line!)
 C
-C     ROT       REAL            Array (4,4,at_least_NS),
-C                               on exit contains the real-space
-C                               symmetry matrices, in standard
-C                               convention, ie
+C     ROT       (O)	REAL            Array (4,4,at_least_NS),
+C                               	on exit contains the real-space
+C                               	symmetry matrices, in standard
+C                               	convention, ie
+C                                 	[x']    = [s][x]
+C                     			x'(I)=Sum(J=1,3)ROT(I,J,NS)*x(J) + ROT(I,4,NS)
 C
-C                                 [x']    = [s][x]
-C                     x'(I)=Sum(J=1,3)ROT(I,J,NS)*x(J) + ROT(I,4,NS)
+C                     			ROT(I,4,NS) contains the fractional translations
 C
-C                     ROT(I,4,NS) contains the fractional translations
-C
-C     EFLAG     INTEGER         Error flag - on exit,
-C                                  if 0 then OK,
-C                                  gt 0, an error occurred.
+C     EFLAG     (O)	INTEGER         Error flag - on exit,
+C                                  	if 0 then OK,
+C                                  	gt 0, an error occurred.
 C
 C
 C
@@ -9237,18 +8498,17 @@ C
 C
 C---- Arguments :
 C
-C     NSM       INTEGER         Number of Symmetry operations
+C     NSM       (I)	INTEGER         Number of Symmetry operations
 C
-C     RSM       REAL            Array of dimension (4,4,at_least_NSM)
-C                               containing symmetry operations on input
+C     RSM       (I)	REAL            Array of dimension (4,4,at_least_NSM)
+C                               	containing symmetry operations on input
 C
-C     SYMCHS    CHARACTER*80    Array of dimension at_least_NSM
-C                               containing int tab char
-C                               strings on output
+C     SYMCHS    (O)	CHARACTER*80    Array of dimension at_least_NSM
+C                               	containing int tab char strings on output
 C
-C     IPRINT    INTEGER         Print flag
-C                               =0 No printing
-C                               =1 Print the int tab strings
+C     IPRINT    (I)	INTEGER         Print flag
+C                               	=0 No printing
+C                               	=1 Print the int tab strings
 C
 C
 C     .. Scalar Arguments ..
@@ -9485,21 +8745,25 @@ C
 C
 C
 C
+C     ======================================
       SUBROUTINE ADDLIN(NEWLIN,LINES,MAXLIN)
-C     =====================================
+C     ======================================
 C
-C Add newlines from NEWLIN to array LINES
+C---- Add newlines from NEWLIN to array LINES
 C
-C Input:  NEWLIN(MAXLIN) character array
+C     Input:  NEWLIN(MAXLIN) character array
 C
-C Output: LINES(MAXLIN)  character array
-C         NEWLIN   cleared on output
+C     Output: LINES(MAXLIN)  character array
+C             NEWLIN   cleared on output
 C
 C
       INTEGER MAXLIN
       CHARACTER*(*) NEWLIN(MAXLIN),LINES(MAXLIN)
 C
-      INTEGER I, N, M, NEXTLN
+      INTEGER I, N, M
+C
+      INTEGER NEXTLN
+      EXTERNAL NEXTLN
 C
 C Get number of lines to add
       N = NEXTLN(NEWLIN,MAXLIN)-1
@@ -9518,14 +8782,15 @@ C
 C
 C
 C
+C     =====================================
       INTEGER FUNCTION NEXTLN(LINES,MAXLIN)
 C     =====================================
 C
-C Find next blank line in character array LINES
+C---- Find next blank line in character array LINES
 C
-C Input: LINES(MAXLIN)  character array
+C     Input: LINES(MAXLIN)  character array
 C
-C Returns: NEXTLN       number of next blank line (= -1 if full)
+C     Returns: NEXTLN       number of next blank line (= -1 if full)
 C
       INTEGER MAXLIN
       CHARACTER*(*) LINES(MAXLIN)
@@ -9560,6 +8825,12 @@ C---- This is exactly the same as the subroutine SETRSL in SYMLIB,
 C     except that it stores it's variables in the internal MTZ
 C     COMMON blocks, and will work if more than one file is open at once.
 C
+C---- Arguments :
+C
+C     MINDX	(I)	INTEGER		indicates which MTZ file
+C
+C     A,B,C,ALPHA,BETA,GAMMA (I) REAL	cell parameters
+C     
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=240)
@@ -9596,6 +8867,7 @@ C     .. Common blocks ..
      +       COEFKK(MFILES),COEFKL(MFILES),COEFLL(MFILES)
 C     ..
       SAVE /MTZWRK/, /MRCPLT/
+C     ..
 C     .. Data statements ..
       DATA QMIN,ZERO/5.0E-7,0.0/
       DATA DTORAD/0.01745329/
@@ -9654,7 +8926,7 @@ C
       IF (ABS(CY/TMAX).LT.QMIN) CY = ZERO
 C
 C
-c      WRITE (6,FMT=6000) AX,BX,BY,CX,CY,CZ
+C     WRITE (6,FMT=6000) AX,BX,BY,CX,CY,CZ
 C
 C---- Now for reciprocal vectors
 C
@@ -9669,7 +8941,7 @@ C
       IF (ABS(AYST/STMAX).LT.QMIN) AYST = ZERO
       IF (ABS(AZST/STMAX).LT.QMIN) AZST = ZERO
       IF (ABS(BZST/STMAX).LT.QMIN) BZST = ZERO
-c      WRITE (6,FMT=6002) AXST,AYST,BYST,AZST,BZST,CZST
+C     WRITE (6,FMT=6002) AXST,AYST,BYST,AZST,BZST,CZST
 C
 C---- The other three components of reciprocal vectors are zero
 C     coefficient of h*h
@@ -9716,13 +8988,15 @@ C
 C---- Calculate (sin(theta)/lambda)**2 from h,k,l; coef's set by call to
 C     LSTRSL, for the file open on index MINDX
 C
-C        LSTRSL : good for any kind of axes
-C
 C---- This is exactly the same as the function STHLSQ in SYMLIB,
 C     except that it stores it's variables in the internal MTZ
 C     COMMON blocks, and will work if more than one file is open at once.
 C
+C---- Arguments :
 C
+C     MINDX	(I)	INTEGER		indicates which MTZ file
+C
+C     IH,IK,IL	(I)	INTEGER 	Miller indices for the reflection
 C
 C
 C
@@ -9733,7 +9007,7 @@ C     .. Parameters ..
       PARAMETER (MBLENG=185,MBLINT=29,MBLREA=156)
 C     ..
 C     .. Scalar Arguments ..
-      INTEGER IH,IK,IL
+      INTEGER MINDX,IH,IK,IL
 C     ..
 C     .. Arrays in Common ..
       REAL COEFHH,COEFHK,COEFHL,COEFKK,COEFKL,COEFLL
