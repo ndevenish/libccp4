@@ -2010,6 +2010,7 @@ FORTRAN_SUBR ( LWCLAB, lwclab,
   }
   MtzSetSortOrder(mtzdata[*mindx-1],colsort);
 
+  free(colarray);
   free(label);
   free(type);
 
