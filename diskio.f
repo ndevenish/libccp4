@@ -1,4 +1,8 @@
 C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part i)' software.  See the conditions
+C     in the CCP4 manual for a copyright statement.
+C
 C A set of Fortran subroutines to perform random access I/O on various
 C data items (including bytes). Uses the C functions fopen, fclose,
 C fread, fwrite, fseek, ftell, etc - by calling routines in library.c
@@ -33,7 +37,7 @@ C           1, 'UNKNOWN'   open as 'OLD'/'NEW' check existence
 C           2, 'SCRATCH'   open as 'OLD' and delete on closing
 C           3, 'OLD'       file MUST exist or program halts
 C           4, 'NEW'       create (overwrite) new file
-C           5, 'READONLY'  self explanitory
+C           5, 'READONLY'  self explanAtory
 C
 C  NOTE: When using QQOPEN or QOPEN with ISTAT = 4 a check is made on
 C        the environment variable CCP4_OPEN - if this is set to UNKNOWN
@@ -42,10 +46,10 @@ C        to prevent overwriting files that already exist.
 C
 C  MODE   = Access mode = 0, BYTES
 C                       = 1, SHORT INT
-C                       = 2, WORD
+C                       = 2, (REAL) WORD
 C                       = 3, SHORT COMPLEX
 C                       = 4, COMPLEX
-C                       = 5, INTEGER*4
+C                       = 6, INTEGER
 C
 C  NMCITM = No. of machine items (eg bytes) per element
 C  ARRAY  = Starting location for data storage in core
@@ -70,7 +74,7 @@ C Input:  LOGNAME       Logical name of file to open
 C         ISTAT         File status: 1 (UNKNOWN), 2 (SCRATCH), 3 (OLD),
 C                                    4 (NEW) or 5 (READONLY)
 C
-C Output: IUNIT         unit number number assigned to file. If negative
+C Output: IUNIT         Integer handle assigned to file. If negative
 C                       the following error conditions occurred:
 C                       -1 No more streams left
 C                       -2 Could not open the file
@@ -108,18 +112,18 @@ C     .. Data statements ..
 C     ..
 C
       IF (ISTAT.LT.1 .OR. ISTAT.GT.5) THEN
-        WRITE (ERRSTR,FMT=6000) ' (Q)QOPEN has no file status ',ISTAT
+        WRITE (ERRSTR,FMT=6000) ' (Q)QOPEN: bad mode: ',ISTAT
         CALL CCPERR(1,ERRSTR)
       END IF
 C
-C---- Test CCP4_OPEN for 'U' or 'u' (UNKNOWN) to switch mode 4 to 1
+C---- Test CCP4_OPEN for 'UNKNOWN' to switch mode 4 to 1
 C
       JSTAT = ISTAT
       REWRIT = ' '
       IF (JSTAT.EQ.4) THEN
         CALL UGTENV('CCP4_OPEN',REWRIT)
         CALL CCPUPC(REWRIT)
-        IF (REWRIT(1:1).EQ.'U') JSTAT = 1
+        IF (REWRIT.EQ.'UNKNOWN') JSTAT = 1
       END IF
 C
 C---- Check Logical Names
@@ -128,278 +132,132 @@ C
       LNAME = LOGNAM
       IF (LNAME.EQ.' ') LNAME = 'diskio.dft'
       CALL UGTENV(LNAME,FNAME)
-      IF (FNAME(1:MAX(LENSTR(FNAME),1)).EQ.'/dev/null') THEN
+      IF (FNAME.EQ.'/dev/null') THEN
         JSTAT = 1
       ELSE IF (FNAME.EQ.' ') THEN
         FNAME = LNAME
       END IF
       IF (REWRIT(1:1).EQ.'U') CALL QPRINT(2,
      +                            '(Q)QOPEN status changed from NEW to '
-     +                             //'UNKNOWN for '//
-     +                             LNAME(1:LENSTR(LNAME)))
+     +                             //'UNKNOWN for '// LNAME)
 C
 C---- Open the file as requested
 C
       CALL COPEN(IUNIT,FNAME,JSTAT)
-      CALL UGTUID(USRNAM)
-      WRITE (ERRSTR,FMT=6000) '(Q)QOPEN allocated stream ',IUNIT
-      CALL QPRINT(1,ERRSTR)
-      ERRSTR = 'User:   '//USRNAM//' Logical Name: '//
-     +         LNAME(1:LENSTR(LNAME))
-      CALL QPRINT(1,ERRSTR)
-      ERRSTR = 'Status: '//MODES(JSTAT)//' Filename: '//
-     +         FNAME(1:LENSTR(FNAME))
-      CALL QPRINT(1,ERRSTR)
 C
 C---- Error conditions
 C
       IF (IUNIT.EQ.-1) THEN
-        CALL QPRINT(1,' (Q)QOPEN failed - no streams left')
-        CALL CCPERR(1,' Stop on QOPEN failure')
-        STOP
+        CALL CCPERR(1,' (Q)QOPEN failed - no streams left')
       ELSE IF (IUNIT.EQ.-2) THEN
-        CALL QPRINT(1,' (Q)QOPEN failed - cannot open file')
         WRITE (ERRSTR,FMT=6001) '(Q)QOPEN failed - File name:',LOGNAM
-        CALL CCPERR(1,' (Q)QOPEN failed - cannot open file')
-        STOP
+        CALL CCPERR(1,ERRSTR)
       END IF
+
+      CALL UGTUID(USRNAM)
+      WRITE (ERRSTR,FMT=6000) '(Q)QOPEN allocated # ',IUNIT
+      CALL QPRINT(1,ERRSTR)
+      ERRSTR = 'User:   '//USRNAM//' Logical Name: '//LNAME
+      CALL QPRINT(1,ERRSTR)
+      ERRSTR = 'Status: '//MODES(JSTAT)//' Filename: '//FNAME
+      CALL QPRINT(1,ERRSTR)
 C
  6000 FORMAT (A,I2)
  6001 FORMAT (A,5X,A)
       END
-C
-C
-C======================================================================
-C
-C QCLOSE - Close file unit
-C
-C Usage:  CALL QCLOSE (IUNIT)
-C         INTEGER      IUNIT
-C
-C Input:  IUNIT        unit number assigned to file
-C
-C Output: None.
-C
-C======================================================================
-C
-      SUBROUTINE QCLOSE(IUNIT)
-C     ========================
-C
-C     .. Scalar Arguments ..
-      INTEGER IUNIT
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CCLOSE
-C     ..
-      CALL CCLOSE(IUNIT)
-C
-      END
-C
-C
-C======================================================================
-C
-C QMODE - Set mode for file access
-C
-C Usage:  CALL QMODE (IUNIT, MODE, NMCITM)
-C         INTEGER     IUNIT, MODE, NMCITM
-C
-C Input:  IUNIT       unit number to assign to file
-C         MODE        mode to switch into: 0 (BYTES), 1 (SMALL INTEGER),
-C                                          2 (WORDS), 3 (SHORT COMPLEX),
-C                                          4 (COMPLEX) 6 (INTEGER)
-C
-C Output: NMCITM      number of bytes per item on this machine.
-C
-C======================================================================
-C
-      SUBROUTINE QMODE(IUNIT,MODE,NMCITM)
-C     ==================================
-C
-C     .. Scalar Arguments ..
-      INTEGER IUNIT,MODE,NMCITM
-C     ..
-C     .. Local Scalars ..
-      CHARACTER ERRSTR*255
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CCPERR,CMODE
-C     ..
-      IF (MODE.LT.0 .OR. MODE.GT.6) THEN
-        WRITE (ERRSTR,FMT=6000) ' QMODE has no such mode ',MODE
-        CALL CCPERR(1,ERRSTR)
-      ELSE
-        CALL CMODE(IUNIT,MODE,NMCITM)
-      END IF
-C
- 6000 FORMAT (A,I2)
-      END
-C
-C
-C======================================================================
-C
-C QREAD - Read from IUNIT into BUFFER, NITEMS items
-C
-C Usage:  CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
-C         INTEGER     IUNIT, NITEMS, RESULT
-C         REAL        BUFFER
-C
-C Input:  IUNIT       unit number assigned to file
-C         NITEMS      number of items (item size set by QMODE)
-C
-C Output: RESULT      0 (no error), -1 (EOF) or number of items read
-C         BUFFER      holds the items read
-C
-C======================================================================
-C
-      SUBROUTINE QREAD(IUNIT,ARRAY,NITEMS,IER)
-C     ========================================
-C
-C     .. Scalar Arguments ..
-      INTEGER IER,IUNIT,NITEMS
-C     ..
-C     .. Array Arguments ..
-      REAL ARRAY(*)
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CREAD
-C     ..
-      CALL CREAD(IUNIT,ARRAY,NITEMS,IER)
-C
-      END
-C
-C
-C======================================================================
-C
-C QWRITE - Write to IUNIT from BUFFER, NITEMS items
-C
-C Usage:  CALL QWRITE (IUNIT,BUFFER,NITEMS)
-C         INTEGER      IUNIT, NITEMS
-C         REAL         BUFFER
-C
-C Input:  IUNIT        unit number assigned to file
-C         NITEMS       number of items (item size set by QMODE)
-C         BUFFER       holds the items to write
-C
-C Output: None.
-C
-C======================================================================
-C
-      SUBROUTINE QWRITE(IUNIT,ARRAY,NITEMS)
-C     =====================================
-C
-C     .. Scalar Arguments ..
-      INTEGER IUNIT,NITEMS
-C     ..
-C     .. Array Arguments ..
-      REAL ARRAY(*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER IER
-      CHARACTER ERRSTR*255
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CWRITE,QPRINT
-C     ..
-      CALL CWRITE(IUNIT,ARRAY,NITEMS,IER)
-      IF (IER.NE.0) THEN
-        WRITE (ERRSTR,FMT=6000) 'QWRITE only wrote out ',IER,
-     +    ' items instead of ',NITEMS
-        CALL QPRINT(2,ERRSTR)
-        CALL CCPERR(1,' Stop in Qwrite failure ')
-        STOP
-      END IF
-C
- 6000 FORMAT (A,I4,A,I4)
-      END
-C
-C
-C======================================================================
-C
-C QSEEK - Position a file pointer in a IUNIT
-C
-C Usage:  CALL QSEEK (IUNIT, IRECL, IEL, LRECL)
-C         INTEGER     IUNIT, IRECL, IEL, LRECL
-C
-C Input:  IUNIT       unit number to assign to file
-C         IRECL       record number to seek
-C         IEL         element number to seek
-C         LRECL       length of a record
-C
-C Output: None
-C
-C======================================================================
-C
-      SUBROUTINE QSEEK(IUNIT,IREC,IEL,LRECL)
-C     ======================================
-C
-C
-C     .. Scalar Arguments ..
-      INTEGER IEL,IREC,IUNIT,LRECL
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CSEEK
-C     ..
-      CALL CSEEK(IUNIT,IREC,IEL,LRECL)
-C
-      END
-C
-C
-C======================================================================
-C
-C QBACK - skip back 1 record of length LRECL
-C
-C Usage:  CALL QBACK (IUNIT,LRECL)
-C         INTEGER     IUNIT, LRECL
-C
-C Input:  IUNIT       unit number assigned to file
-C         LRECL       length of a record in items
-C
-C Output: None
-C
-C======================================================================
-C
-      SUBROUTINE QBACK(IUNIT,LRECL)
-C     =============================
-C
-C
-C     .. Scalar Arguments ..
-      INTEGER IUNIT,LRECL
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CBACK
-C     ..
-      CALL CBACK(IUNIT,LRECL)
-C
-      END
-C
-C
-C======================================================================
-C
-C QSKIP - skip forward 1 record of length LRECL
-C
-C Usage:  CALL QSKIP (IUNIT,LRECL)
-C         INTEGER     IUNIT, LRECL
-C
-C Input:  IUNIT       unit number assigned to file
-C         LRECL       length of a record in items
-C
-C Output: None
-C
-C======================================================================
-C
-      SUBROUTINE QSKIP(IUNIT,LRECL)
-C     =============================
-C
-C
-C     .. Scalar Arguments ..
-      INTEGER IUNIT,LRECL
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CSKIP
-C     ..
-      CALL CSKIP(IUNIT,LRECL)
-C
-      END
+CCCC
+CCCC
+CCCC======================================================================
+CCCC
+CCCC QCLOSE - Close file unit
+CCCC
+CCCC Usage:  CALL QCLOSE (IUNIT)
+CCCC         INTEGER      IUNIT
+CCCC
+CCCC Input:  IUNIT        unit number assigned to file
+CCCC
+CCCC Output: None.
+CCCC See linrary.c
+CCCC======================================================================
+CCCC
+CCCC QMODE - Set mode for file access
+CCCC
+CCCC Usage:  CALL QMODE (IUNIT, MODE, NMCITM)
+CCCC         INTEGER     IUNIT, MODE, NMCITM
+CCCC
+CCCC Input:  IUNIT       unit number to assign to file
+CCCC         MODE        mode to switch into: 0 (BYTES), 1 (SMALL INTEGER),
+CCCC                                          2 (WORDS), 3 (SHORT COMPLEX),
+CCCC                                          4 (COMPLEX) 6 (INTEGER)
+CCCC
+CCCC Output: NMCITM      number of bytes per item on this machine.
+CCCC See linrary.c
+CCCC======================================================================
+CCCC
+CCCC QREAD - Read from IUNIT into BUFFER, NITEMS items
+CCCC
+CCCC Usage:  CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
+CCCC         INTEGER     IUNIT, NITEMS, RESULT
+CCCC         REAL        BUFFER
+CCCC
+CCCC Input:  IUNIT       unit number assigned to file
+CCCC         NITEMS      number of items (item size set by QMODE)
+CCCC
+CCCC Output: RESULT      0 (no error), -1 (EOF) or number of items read
+CCCC         BUFFER      holds the items read
+CCCC See linrary.c
+CCCC======================================================================
+CCCC
+CCCC QWRITE - Write to IUNIT from BUFFER, NITEMS items
+CCCC
+CCCC Usage:  CALL QWRITE (IUNIT,BUFFER,NITEMS)
+CCCC         INTEGER      IUNIT, NITEMS
+CCCC         REAL         BUFFER
+CCCC
+CCCC Input:  IUNIT        unit number assigned to file
+CCCC         NITEMS       number of items (item size set by QMODE)
+CCCC         BUFFER       holds the items to write
+CCCC
+CCCC Output: None.
+CCCC See linrary.c
+CCCC======================================================================
+CCCC
+CCCC QSEEK - Position a file pointer in a IUNIT
+CCCC
+CCCC Usage:  CALL QSEEK (IUNIT, IRECL, IEL, LRECL)
+CCCC         INTEGER     IUNIT, IRECL, IEL, LRECL
+CCCC
+CCCC Input:  IUNIT       unit number to assign to file
+CCCC         IRECL       record number to seek
+CCCC         IEL         element number to seek
+CCCC         LRECL       length of a record
+CCCC
+CCCC Output: None
+CCCC See linrary.c
+CCCC======================================================================
+CCCC
+CCCC QBACK - skip back 1 record of length LRECL
+CCCC
+CCCC Usage:  CALL QBACK (IUNIT,LRECL)
+CCCC         INTEGER     IUNIT, LRECL
+CCCC
+CCCC Input:  IUNIT       unit number assigned to file
+CCCC         LRECL       length of a record in items
+CCCC
+CCCC Output: None
+CCCC See linrary.c
+CCCC======================================================================
+CCCC
+CCCC QSKIP - skip forward 1 record of length LRECL
+CCCC
+CCCC Usage:  CALL QSKIP (IUNIT,LRECL)
+CCCC         INTEGER     IUNIT, LRECL
+CCCC
+CCCC Input:  IUNIT       unit number assigned to file
+CCCC         LRECL       length of a record in items
+CCCC
+CCCC Output: None
+CCCC See linrary.c
 C
 C
 C======================================================================
@@ -411,7 +269,7 @@ C Usage:  CALL QQINQ   (IUNIT,LOGNAM,FILNAM,LENGTH)
 C         INTEGER       IUNIT,LENGTH
 C         CHARACTER*(*) LOGNAM,FILNAM
 C
-C Input:  IUNIT         stream to check
+C Input:  IUNIT         handle to check (as returned by QOPEN)
 C         LOGNAM        Logical name
 C
 C Output: FILNAM        the full file name or "" if no file
@@ -438,42 +296,26 @@ C     .. External Subroutines ..
 C     ..
       FNAME = ' '
       LNAME = LFN
-      IF (LNAME.EQ.' ') LNAME = 'DISKIO.DFT'
+      IF (LNAME.EQ.' ') LNAME = 'diskio.dft'
       CALL UGTENV(LNAME,FNAME)
       IF (FNAME.EQ.' ') FNAME = LNAME
       CALL CQINQ(IUNIT,FNAME,LENGTH)
       FILNAM = FNAME
 C
       END
-C
-C
-C======================================================================
-C
-C QLOCATE - return current position in file (measured in items)
-C
-C Usage:  CALL QLOCATE (IUNIT,LOCATE)
-C         INTEGER       IUNIT,LOCATE
-C
-C Input:  IUNIT         stream to check
-C
-C Output: LOCATE        Current position in file or -1 for no file
-C
-C======================================================================
-C
-      SUBROUTINE QLOCATE(IUNIT,LOCATE)
-C     ================================
-C
-C
-C     .. Scalar Arguments ..
-      INTEGER IUNIT,LOCATE
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CLOCATE
-C     ..
-      CALL CLOCATE(IUNIT,LOCATE)
-C
-      END
-C
+CCCC
+CCCC
+CCCC======================================================================
+CCCC
+CCCC QLOCATE - return current position in file (measured in items)
+CCCC
+CCCC Usage:  CALL QLOCATE (IUNIT,LOCATE)
+CCCC         INTEGER       IUNIT,LOCATE
+CCCC
+CCCC Input:  IUNIT         stream to check
+CCCC
+CCCC Output: LOCATE        Current position in file or -1 for no file
+CCCC See library.c
 C
 C======================================================================
 C
@@ -501,17 +343,22 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Local Scalars ..
       INTEGER ISTAT
+      CHARACTER FOO*80
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QQOPEN
+      EXTERNAL QQOPEN, CCPUPC
 C     ..
       ISTAT = 0
-      IF (ATBUTA(1:1).EQ.'U' .OR. ATBUTA(1:1).EQ.'u') ISTAT = 1
-      IF (ATBUTA(1:1).EQ.'S' .OR. ATBUTA(1:1).EQ.'s') ISTAT = 2
-      IF (ATBUTA(1:1).EQ.'O' .OR. ATBUTA(1:1).EQ.'o') ISTAT = 3
-      IF (ATBUTA(1:1).EQ.'N' .OR. ATBUTA(1:1).EQ.'n') ISTAT = 4
-      IF (ATBUTA(1:1).EQ.'R' .OR. ATBUTA(1:1).EQ.'r') ISTAT = 5
+      CALL CCPUPC(ATBUTA)
+      IF (ATBUTA(:1).EQ.'U') ISTAT = 1
+      IF (ATBUTA(:1).EQ.'S') ISTAT = 2
+      IF (ATBUTA(:1).EQ.'O') ISTAT = 3
+      IF (ATBUTA(:1).EQ.'N') ISTAT = 4
+      IF (ATBUTA(:1).EQ.'R') ISTAT = 5
+      IF (ISTAT.EQ.0) THEN
+        FOO = ATBUTA
+        CALL CCPERR(1,'Bad attribute in QOPEN: '//FOO)
+      ENDIF
 C
       CALL QQOPEN(IUNIT,LOGNAM,ISTAT)
-C
       END
