@@ -244,9 +244,8 @@ FORTRAN_SUBR ( LRINFO, lrinfo,
       }
 }
 
-/** Fortran wrapper to function returning number of columns.
- * In fact, it returns current number of active columns on MINDX
- * rather than number read in.
+/** Fortran wrapper to function returning number of columns read in
+ * from input file.
  * @param mindx MTZ file index
  * @param ncolx Number of columns.
  */
@@ -260,7 +259,7 @@ FORTRAN_SUBR ( LRNCOL, lrncol,
 
  if (MtzCheckSubInput(*mindx,"LRNCOL",1)) return;
 
- *ncolx = MtzNumActiveCol(mtzdata[*mindx-1]);
+ *ncolx = MtzNumSourceCol(mtzdata[*mindx-1]);
 
 }
 
@@ -930,7 +929,7 @@ FORTRAN_SUBR ( LRSEEK, lrseek,
  /* lrrefl / lrreff will increment this */
  irref[*mindx-1] = *nrefl - 1;
  if (!cmtz_in_memory) {
-   respos = *nrefl * MtzNumActiveCol(mtzdata[*mindx-1]) + SIZE1 + 1;
+   respos = *nrefl * MtzNumSourceCol(mtzdata[*mindx-1]) + SIZE1 + 1;
    ccp4_file_seek(mtzdata[*mindx-1]->filein, respos, SEEK_SET); 
  }
 }
@@ -957,7 +956,7 @@ FORTRAN_SUBR ( LRREFL, lrrefl,
 
  if (MtzCheckSubInput(mindex,"LRREFL",1)) return;
 
- ndatmss[mindex-1] = MtzNumActiveCol(mtzdata[mindex-1]);
+ ndatmss[mindex-1] = MtzNumSourceCol(mtzdata[mindex-1]);
 
  ++irref[mindex-1];
  ieof = ccp4_lrrefl(mtzdata[mindex-1], resol, adata, logmss[mindex-1], irref[mindex-1]);
