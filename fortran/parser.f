@@ -2198,7 +2198,7 @@ C---- Global defaults set here
 C
         RESMAX = 10000.0
         RESMIN = .1
-        IF (NTOK.LE.ITOK) THEN
+        IF (NTOK.LT.ITOK) THEN
           CALL LERROR(1,0,'Resolution missing')
           RETURN
         END IF
@@ -2214,7 +2214,7 @@ C
       IF (ABS(RESMIN).LE.0.000001) RESMIN = 0.00001
 C     
 C     ***************************************
-      IF (NTOK.GE.(ITOK+1))
+      IF (NTOK.GT.ITOK)
      +      CALL GTPREA(ITOK+1,RESMAX,NTOK,ITYPE,FVALUE)
 C     ***************************************
 C     
