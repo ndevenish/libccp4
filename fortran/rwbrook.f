@@ -781,8 +781,8 @@ C
           IF (BROOKB .NE. ' ') THEN
           IF (ITYP .EQ. 0) THEN
             BROOKB(1:6) = 'ATOM  '
-          ELSE
-            BROOKB(1:6) = ITYPE(ITYP)
+C          ELSE
+C            BROOKB(1:6) = ITYPE(ITYP)
           ENDIF
             DO 70 I=7,27
               WBROOK1(I) = WBROOK(I)
