@@ -290,6 +290,7 @@ FORTRAN_SUBR(PARSER,parser,
               int *ityp, float *fvalue, fpstr cvalue, int cvalue_len, int *idec,
               int *ntok, ftn_logical *lend, const ftn_logical *print))
 {
+  static FILE *fparse_fp = NULL;
   int  max_line_len,lline,cprint = 0;
   char *cline;
   CCP4PARSERARRAY *parser = NULL;
@@ -349,7 +350,13 @@ FORTRAN_SUBR(PARSER,parser,
       puts("PARSER: verbose output OFF");
     }
   })
-  
+
+  /* Was ccp4_parser reading from an external file last time? */
+  if (fparse_fp) {
+    PARSER_DEBUG(printf("PARSER: we were reading from an external file\n");)
+    parser->fp = fparse_fp;
+  }
+
   /* Call ccp4_parser to do the work */
   PARSER_DEBUG({
     printf("PARSER: line sent as \"%s\"\n",cline);
@@ -386,6 +393,15 @@ FORTRAN_SUBR(PARSER,parser,
     PARSER_DEBUG(printf("PARSER: arrays populated\n");)
   }
   PARSER_DEBUG(puts("PARSER: finished assignments");)
+
+  /* Check if ccp4_parser was reading from an external file
+     which is still open */
+  if (parser->fp) {
+    PARSER_DEBUG(printf("PARSER: reading from external file\n");)
+    fparse_fp = parser->fp;
+  } else {
+    fparse_fp = NULL;
+  }
 
   /* Free the parser array */
   ccp4_parse_end(parser);
