@@ -515,14 +515,23 @@ C
             IERR = 10
             GO TO 70
    40       RPOINT(JDO50,MINDX) = JDO30
-          ELSE
+          ENDIF
+   70   CONTINUE
 C
 C---- No input assignment given for this program label
 C
-            CWORK = LSPRGI(JDO50)
+        DO 75 JDO50 = 1,NLPRGI
+          CWORK = LSUSRI(MINDX,JDO50)
+          IF ((NLUSRI(MINDX).EQ.0) .OR. (CWORK.EQ.' ')) THEN
 C
+            CWORK = LSPRGI(JDO50)
             DO 50 JDO60 = 1,NCOLS(MINDX)
-              IF (CWORK.EQ.CLABEL(JDO60,MINDX)) GO TO 60
+              IF (CWORK.EQ.CLABEL(JDO60,MINDX)) THEN
+                DO 55 JDO55 = 1,NCOLS(MINDX)
+                  IF (RPOINT(JDO55,MINDX).EQ.JDO60) GOTO 75
+ 55             CONTINUE
+                GO TO 60
+              END IF
    50       CONTINUE
 C
             IF (LOOKUP(JDO50).NE.0) THEN
@@ -537,10 +546,10 @@ C                  ************************
 C
               IERR = 10
             END IF
-            GO TO 70
+            GO TO 75
    60       RPOINT(JDO50,MINDX) = JDO60
           END IF
-   70   CONTINUE
+   75   CONTINUE
 C
 C---- Copy RPOINT to LOOKUP
 C
