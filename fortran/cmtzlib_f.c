@@ -2492,7 +2492,8 @@ FORTRAN_SUBR ( LWBAT, lwbat,
  /* add as new batch */
  batch = NULL;
 
- ccp4_lwbat(mtzdata[*mindx-1], batch, *batno, rbatch, cbatch); 
+ if (!ccp4_lwbat(mtzdata[*mindx-1], batch, *batno, rbatch, cbatch) )
+   ccperror(1,"LWBAT: error in ccp4_lwbat, see messages above");
 
  /* record number of batch headers for output */
  ++nbatw[*mindx-1];
@@ -2543,7 +2544,8 @@ FORTRAN_SUBR ( LWBTIT, lwbtit,
  /* add as new batch */
  batch = NULL;
 
- ccp4_lwbat(mtzdata[*mindx-1], batch, *batno, rbatch, cbatch); 
+ if (!ccp4_lwbat(mtzdata[*mindx-1], batch, *batno, rbatch, cbatch) )
+   ccperror(1,"LWBTIT: error in ccp4_lwbat, see messages above"); 
 
  /* record number of batch headers for output */
  ++nbatw[*mindx-1];
@@ -2596,10 +2598,16 @@ FORTRAN_SUBR ( LWBSCL, lwbscl,
  for (i = 0; i < *nbatsc; ++i) 
    rbatch[72+i] = batscl[i];
 
- ccp4_lwbat(mtzdata[*mindx-1], batch, *batno, rbatch, cbatch); 
+ if (!ccp4_lwbat(mtzdata[*mindx-1], batch, *batno, rbatch, cbatch) )
+   ccperror(1,"LWBSCL: error in ccp4_lwbat, see messages above"); 
 }
 
-/* Fortran wrapper for ccp4_lwbat */
+/** Obsolete. Use LWBSETIDX
+ * @param mindx MTZ file index
+ * @param batno Serial number of batch.
+ * @param project_name Project Name
+ * @param dataset_name Dataset Name
+ */
 FORTRAN_SUBR ( LWBSETID, lwbsetid,
 	       (const int *mindx, const int *batno, const fpstr project_name, 
                   const fpstr dataset_name, 
@@ -2651,7 +2659,13 @@ FORTRAN_SUBR ( LWBSETID, lwbsetid,
   free(temp_dname); 
 }
 
-/* Fortran wrapper for ccp4_lwbsetid */
+/** Assign a batch to a particular dataset, identified by crystal name
+ * and dataset name.
+ * @param mindx MTZ file index
+ * @param batno Serial number of batch.
+ * @param crystal_name Crystal Name
+ * @param dataset_name Dataset Name
+ */
 FORTRAN_SUBR ( LWBSETIDX, lwbsetidx,
 	       (const int *mindx, const int *batno, const fpstr crystal_name, 
                   const fpstr dataset_name, 
