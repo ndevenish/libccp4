@@ -1,4 +1,8 @@
 C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part i)' software.  See the conditions
+C     in the CCP4 manual for a copyright statement.
+C
 C   SYMLIB
 C
 C $Date$
@@ -96,6 +100,7 @@ C   NSYM         number of symmetry operations
 C   ROT(4,4,NSYM)  rotation/translation  matrices
 C
 C.....  Calls SYMFR2
+C
 C
 C---- SYMTRN(NSM,RSM)
 C           symmetry translation from matrix back to characters
@@ -204,7 +209,7 @@ C---- SUBROUTINE PGNLAU(NAMPG,NLAUE,LAUNAM)
 C
 C       This subroutine returns a laue code number used to choose
 C      the unique region of reciprocal space for
-C      each point group.  
+C      each point group.
 C       The number nlaue is the same as the one set in CAD for
 C       this purpose.
 C
@@ -328,10 +333,10 @@ C     .. Array Arguments ..
       REAL RSM(4,4,96)
 C     ..
 C     .. Scalars in Common ..
-      INTEGER NCENT,NEZONE
+      INTEGER NCENT
 C     ..
 C     .. Arrays in Common ..
-      REAL CPROJ,EPZONE
+      REAL CPROJ
 C     ..
 C     .. Local Scalars ..
       INTEGER IH,IK,IL,J,NC
@@ -347,7 +352,6 @@ C     .. External Subroutines ..
 C     ..
 C     .. Common blocks ..
       COMMON /CP/CPROJ(3,20),NCENT
-      COMMON /EPS/EPZONE(4,20),NEZONE
 C     ..
 C     .. Save statement ..
       SAVE
@@ -427,7 +431,6 @@ C     ==========
 C
 C
 C          A (I)     4*4 matrix to be inverted
-C          AI (O)    inverse matrix
 C          DET       Determinant of A
 C
 C
@@ -488,11 +491,11 @@ C
 C
 C---- Get inverse matrix
 C
-      DO 70 I = 1,4
-        DO 60 J = 1,4
-          AI(I,J) = C(J,I)/D
-   60   CONTINUE
-   70 CONTINUE
+CCC      DO 70 I = 1,4
+CCC        DO 60 J = 1,4
+CCC          AI(I,J) = C(J,I)/D
+CCC   60   CONTINUE
+CCC   70 CONTINUE
 C
 C
       DET = D
@@ -546,10 +549,10 @@ C     .. Array Arguments ..
       REAL RSM(4,4,96)
 C     ..
 C     .. Scalars in Common ..
-      INTEGER NCENT,NEZONE
+      INTEGER NEZONE
 C     ..
 C     .. Arrays in Common ..
-      REAL CPROJ,EPZONE
+      REAL EPZONE
 C     ..
 C     .. Local Scalars ..
       INTEGER IH,IK,IL,J,NC,NEPS,ISTERR,IFGERR,LATMUL,N,I
@@ -565,7 +568,6 @@ C     .. External Subroutines ..
       EXTERNAL PUTLIN,LERROR,INVSYM
 C     ..
 C     .. Common blocks ..
-      COMMON /CP/CPROJ(3,20),NCENT
       COMMON /EPS/EPZONE(4,20),NEZONE
 C     ..
 C     .. Save statement ..
@@ -1157,7 +1159,7 @@ C
         READ (IST,FMT='(A)',END=30) LINE
 C
 C---- Ignore blank lines
-	IF (LENSTR(LINE) .EQ. 0) GO TO 10
+        IF (LENSTR(LINE) .EQ. 0) GO TO 10
 C
 C            ************
         CALL CCPUPC(LINE)
@@ -1835,7 +1837,6 @@ C
  6004 FORMAT (/' **NO OPERATOR**',/' ',A)
  6006 FORMAT (' **BLANK OPERATOR FIELD**',/' ',A)
  6008 FORMAT (' **LAST GENERAL POSITION IS INCOMPLETE**',/' ',A)
- 6010 FORMAT (/' **PROGRAM TERMINATED**')
 C
 C
       END
@@ -2074,7 +2075,7 @@ CC        IF (ISYSAB.EQ.1) WRITE (6,FMT=6000) IN
 C
 C---- Format statements
 C
- 6000 FORMAT (/'  REFLECTION',3I4,' SYSTEMATIC ABSENCE')
+CCC 6000 FORMAT (/'  REFLECTION',3I4,' SYSTEMATIC ABSENCE')
 C
 C
       END
@@ -2156,7 +2157,6 @@ C
 C
 C
       END
-C
 C     ============================
       LOGICAL FUNCTION HKLEQ(IH,KH)
 C     =============================
@@ -2425,12 +2425,12 @@ C
 C
 C---- Format statements
 C
- 6000 FORMAT (' Direct Matrix     :',T25,1P,E15.6,2 (12X,'0.0'),/,
-     +                               T25,2E15.6,12X,'0.0',/,
-     +                               T25,3E15.6,/)
- 6002 FORMAT (' Reciprocal Matrix :',T25,1P,E15.6,2 (12X,'0.0'),/,
-     +                               T25,2E15.6,12X,'0.0',/,
-     +                               T25,3E15.6,/)
+CCC 6000 FORMAT (' Direct Matrix     :',T25,1P,E15.6,2 (12X,'0.0'),/,
+CCC     +                               T25,2E15.6,12X,'0.0',/,
+CCC     +                               T25,3E15.6,/)
+CCC 6002 FORMAT (' Reciprocal Matrix :',T25,1P,E15.6,2 (12X,'0.0'),/,
+CCC     +                               T25,2E15.6,12X,'0.0',/,
+CCC     +                               T25,3E15.6,/)
 C
 C
       END
@@ -2800,12 +2800,11 @@ C     .. Array Arguments ..
       REAL RSMT(4,4,96)
 C     ..
 C     .. Scalars in Common ..
-      INTEGER ICENTR,IFAST,INTER,ISLOW,IVERSN,KLASS,MAXB,MAXR,NCENT,
-     +        NEZONE
+      INTEGER ICENTR,IFAST,INTER,ISLOW,IVERSN,KLASS,MAXB,MAXR
       CHARACTER STROUT*140
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CPROJ,EPZONE
+      REAL CELL
       INTEGER ISCREW
 C     ..
 C     .. Local Scalars ..
@@ -2825,8 +2824,6 @@ C     .. Intrinsic Functions ..
       INTRINSIC ABS,NINT
 C     ..
 C     .. Common blocks ..
-      COMMON /CP/CPROJ(3,20),NCENT
-      COMMON /EPS/EPZONE(4,20),NEZONE
       COMMON /MDFPAR/MAXR,MAXB,CELL(6),ISLOW,INTER,IFAST,KLASS,ICENTR,
      +       ISCREW(3),IVERSN
 C     ..
@@ -3906,7 +3903,7 @@ C     HKL --    H.GE.0, K.GE.0, AND L.GE.0 WITH H.GE.K
  460  IF (L) 7,465,465
  465  IF (J-K) 7,5,5
 C
- 500  CONTINUE
+C 500  CONTINUE
 C----3 BAR
 C      HKL ---   H.LE.0, L.GE.0, WITH K.GE.0 IF H.LE.0 OR
 C               K.GE.1 IF H.LT.0
