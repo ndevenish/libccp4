@@ -392,7 +392,7 @@ C     NLPRGI    (I)	INTEGER         number of input program labels
 C
 C     LOOKUP    (I/O)	INTEGER         array of dimension at least NLPRGI
 C                               	containing index from program labels
-C                               	to file labels. on entry these should 
+C                               	to file labels. On entry these should 
 C                               	be set to -1 for compulsory labels 
 C                               	and 0 for optional labels, and on exit
 C                               	labels which are not present in the 
@@ -416,9 +416,9 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,NLPRGI
 C     ..
 C     .. Array Arguments ..
-      INTEGER LOOKUP(NLPRGI)
-      CHARACTER*1  CTPRGI(NLPRGI)
-      CHARACTER*30 LSPRGI(NLPRGI)
+      INTEGER LOOKUP(*)
+      CHARACTER*1  CTPRGI(*)
+      CHARACTER*30 LSPRGI(*)
 C     ..
 C     .. Scalars in Common ..
       INTEGER NLUSRI,NLUSRO
@@ -697,7 +697,7 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,NBATX
 C     ..
 C     .. Array Arguments ..
-      INTEGER BATCHX(NBATX)
+      INTEGER BATCHX(*)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,RBATR,RSYM,SRANGE,VAL_MISS
@@ -1178,8 +1178,8 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,NCOL
 C     ..
 C     .. Array Arguments ..
-      CHARACTER*1  CTYPS(NCOL)
-      CHARACTER*30 CLABS(NCOL)
+      CHARACTER*1  CTYPS(*)
+      CHARACTER*30 CLABS(*)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
@@ -1356,7 +1356,7 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,NLINES
 C     ..
 C     .. Array Arguments ..
-      CHARACTER HSTRNG(NLINES)*(*)
+      CHARACTER HSTRNG(*)*(*)
 C     ..
 C     .. Arrays in Common ..
       REAL RBATW,WRANGE,WSRNGE
@@ -1464,7 +1464,7 @@ C     .. Scalar Arguments ..
       CHARACTER VERSNX*10
 C     ..
 C     .. Array Arguments ..
-      REAL RANGES(2,NCOLX)
+      REAL RANGES(2,*)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
@@ -3713,8 +3713,8 @@ C     .. Scalar Arguments ..
       INTEGER IAPPND,MINDX,NLPRGO
 C     ..
 C     .. Array Arguments ..
-      CHARACTER*1  CTPRGO(NLPRGO)
-      CHARACTER*30 LSPRGO(NLPRGO)
+      CHARACTER*1  CTPRGO(*)
+      CHARACTER*30 LSPRGO(*)
 C     ..
 C     .. Scalars in Common ..
       INTEGER NLUSRI,NLUSRO
@@ -4278,8 +4278,8 @@ C     .. Scalar Arguments ..
       INTEGER IAPPND,MINDX,NLPRGO
 C     ..
 C     .. Array Arguments ..
-      CHARACTER*1  CTPRGO(NLPRGO)
-      CHARACTER*30 LSPRGO(NLPRGO)
+      CHARACTER*1  CTPRGO(*)
+      CHARACTER*30 LSPRGO(*)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
@@ -6582,7 +6582,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       INTEGER IBEG(*),IEND(*)
-      CHARACTER*30 LSPRGI(NLPRGI)
+      CHARACTER*30 LSPRGI(*)
 C     ..
 C     .. Arrays in Common ..
       CHARACTER LSUSRI*30,LSUSRO*30
@@ -6769,7 +6769,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       INTEGER IBEG(*),IEND(*)
-      CHARACTER*30 LSPRGO(NLPRGO)
+      CHARACTER*30 LSPRGO(*)
 C     ..
 C     .. Arrays in Common ..
       INTEGER NLUSRI,NLUSRO
@@ -6932,8 +6932,8 @@ C     .. Scalar Arguments ..
       CHARACTER         LINE* (*)
 C     ..
 C     .. Array Arguments ..
-      INTEGER           IBEG(*),IEND(*),KPOINT(NLPRGI)
-      CHARACTER*30      LSPRGI(NLPRGI),LSUSRJ(NLPRGI)
+      INTEGER           IBEG(*),IEND(*),KPOINT(*)
+      CHARACTER*30      LSPRGI(*),LSUSRJ(*)
 C     ..
 C     .. Local Scalars ..
       INTEGER           JDO,JLOOP,JSTART,JTOK
@@ -7098,7 +7098,7 @@ C					provide blank types here
 C					(dimension at least NLPRGI)
 C
 C     LOOKUP	(O)	INTEGER		array of dimension at least NLPRGI
-C					contining column numbers for each 
+C					containing column numbers for each 
 C					assigned label
 C
 C     .. Parameters ..
@@ -7111,9 +7111,9 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,NLPRGI
 C     ..
 C     .. Array Arguments ..
-      INTEGER LOOKUP(NLPRGI)
-      CHARACTER*1  CTPRGI(NLPRGI)
-      CHARACTER*30 LSPRGI(NLPRGI)
+      INTEGER LOOKUP(*)
+      CHARACTER*1  CTPRGI(*)
+      CHARACTER*30 LSPRGI(*)
 C     ..
 C     .. Local Scalars ..
       CHARACTER KEY*4,LINE*80,LINE2*400
