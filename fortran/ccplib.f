@@ -1771,7 +1771,7 @@ C
  20     CONTINUE
       ELSEIF (MVS) THEN
         DO 21 L=LMAX,LMIN,-1
-          IF (FILNAM(L:L).EQ.BKS)GO TO 30
+          IF (FILNAM(L:L).EQ.BKS .OR. FILNAM(L:L).EQ.'/')GO TO 30
  21     CONTINUE
       ELSE
         DO 22 L=LMAX,LMIN,-1
