@@ -9762,3 +9762,78 @@ C
         IF(LVALMS) BDATA(JDO10) = VAL_MAGICB
  10   CONTINUE
       END
+         
+      SUBROUTINE  CELLCHK(CELL1,CELL2,ERRFRC,IERR)
+C    
+C     Check consistency of CELL1 and CELL2 
+C
+C---- Arguments :
+C
+C     CELL1     (I)     REAL            array containing first set of
+C                                       cell parameters
+C
+C     CELL2     (I)     REAL            array containing second set of
+C                                       cell parameters
+C
+C     ERRFRC    (I)     REAL            fractional error allowed.
+C
+C     IERR      (O)     INTEGER         =1 if problem, =0 otherwise
+C
+
+C     Arguments
+      INTEGER IERR
+      REAL CELL1(6),CELL2(6),ERRFRC
+
+C     Local variables
+      INTEGER II
+      REAL ACHK,CONV,ALPH,BET,GAMM,SUM,V,VOL1,VOL2
+      CHARACTER WORD*5
+
+      IERR = 0
+      ACHK = 0.00
+      WORD = '  '
+      CONV = 3.14159/180.0
+
+C   Calculate volume of CELL1
+      ALPH = CELL1(4)*CONV
+      BET = CELL1(5)*CONV
+      GAMM = CELL1(6)*CONV
+      SUM = (ALPH+BET+GAMM)*0.5
+      V = SQRT(SIN(SUM-ALPH)*SIN(SUM-BET)*SIN(SUM-GAMM)*SIN(SUM))
+      VOL1 = 2.0*CELL1(1)*CELL1(2)*CELL1(3)*V
+
+C   Calculate volume of CELL2
+      ALPH = CELL2(4)*CONV
+      BET = CELL2(5)*CONV
+      GAMM = CELL2(6)*CONV
+      SUM = (ALPH+BET+GAMM)*0.5
+      V = SQRT(SIN(SUM-ALPH)*SIN(SUM-BET)*SIN(SUM-GAMM)*SIN(SUM))
+      VOL2 = 2.0*CELL2(1)*CELL2(2)*CELL2(3)*V
+
+C   Check agreement of volumes
+      ACHK = ABS(0.5*(Vol1 - Vol2))/(Vol1 + Vol2)
+      IF(ACHK .GT. ERRFRC) GO TO 10
+
+C   Check individual dimensions
+      ACHK = 0.00
+      DO 550 II = 1,6
+        ACHK = ABS(0.5*(Cell2(II)-Cell1(II)))/
+     +                   (Cell2(II)+Cell1(II)) + ACHK
+        IF (ACHK.GT.3.0*ERRFRC) WORD='Large'
+        IF (ACHK.GT.  ERRFRC) WORD='Small'
+ 550  CONTINUE
+
+C   If cells agree, return
+      IF(WORD.EQ.'  ') RETURN
+C
+  10  CONTINUE
+      WRITE(6,'(/,3A)')'-----',
+     +         WORD,'Difference in cell parameters detected'
+      WRITE(6,'(A,6F8.3,F14.2)')' ----- First  Cell and Volume :',
+     +                               CELL1,VOL1
+      WRITE(6,'(A,6F8.3,F14.2)')' ----- Second Cell and Volume :',
+     +                               CELL2,VOL2
+      IERR = 1
+C
+      RETURN
+      END
