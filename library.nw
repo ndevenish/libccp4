@@ -1549,7 +1549,7 @@ int itime_ (array)
 
 static long clk_tck = 0;
 
-float etime_ (tarray)
+doublefloat etime_ (tarray)	/* NB `doublefloat' return for f2c. */
      float tarray[2];
 {
   struct tms buffer;
