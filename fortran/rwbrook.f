@@ -6,7 +6,7 @@ C     in the CCP4 manual for a copyright statement.
 C
 C**************************************************************************
 C
-C
+C
 C
       SUBROUTINE XYZINIT()
 C     ====================
@@ -56,9 +56,10 @@ C     .. Common Blocks ..
       COMMON /RBRKYY/ BROOK(80),WBROOK(80),WBROOK1(80)
       COMMON /RBRKZZ/ CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /ORTHOG/ RO(4,4),RF(4,4),NCODE
+      COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
 C     ..
 C     .. Save ..
-      SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/,/RBRKZZ/,/ORTHOG/
+      SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/,/RBRKZZ/,/ORTHOG/,/ORTHOGU/
 C     ..
 
       FILESOPEN = 0
@@ -88,14 +89,22 @@ C
           RO(J,I)=0.0
           RF(I,J)=0.0
           RF(J,I)=0.0
+          ROU(I,J)=0.0
+          ROU(J,I)=0.0
+          RFU(I,J)=0.0
+          RFU(J,I)=0.0
 40      CONTINUE
         RO(I,I)=1.0
         RF(I,I)=1.0
+        ROU(I,I)=1.0
+        RFU(I,I)=1.0
 30    CONTINUE
 C
 C
       RO(4,4)=1.0
       RF(4,4)=1.0
+      ROU(4,4)=1.0
+      RFU(4,4)=1.0
 
       DO 50 I=1,80
         BROOK(I) = ' '
@@ -143,6 +152,7 @@ C     .. Common Blocks ..
      +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
       COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
+      COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
 C     ..
 C     .. Save Statement ..
       SAVE /RBRKAA/,/RBRKXX/,/ORTHOG/
@@ -172,12 +182,20 @@ C
           RO(J,I)=0.0
           RF(I,J)=0.0
           RF(J,I)=0.0
+          ROU(I,J)=0.0
+          ROU(J,I)=0.0
+          RFU(I,J)=0.0
+          RFU(J,I)=0.0
    40   CONTINUE
         RO(I,I)=1.0
         RF(I,I)=1.0
+        ROU(I,I)=1.0
+        RFU(I,I)=1.0
    30 CONTINUE
       RO(4,4)=1.0
       RF(4,4)=1.0
+      ROU(4,4)=1.0
+      RFU(4,4)=1.0
 
 
       RETURN
@@ -239,7 +257,7 @@ C     .. Local Scalars ..
       REAL ERROR,VOLCHK
       INTEGER I,II,IORTH,IFILTYP,J,LL
       CHARACTER BROOKA*80,ERRLIN*600,FILNAM*255,IE*2,IRTYPE*4
-      CHARACTER*40 ORTH(5)
+      CHARACTER*40 ORTH(6)
 C     ..
 C     .. Local Arrays ..
       REAL P(4,4)
@@ -263,6 +281,7 @@ C     .. Common Blocks ..
       COMMON /RBRKYY/BROOK(80),WBROOK(80),WBROOK1(80)
       COMMON /RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
+      COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
 C     ..
 C     .. Equivalences ..
       EQUIVALENCE (IRTYPE,BROOK(1)),(IE,BROOK(5)),(BROOKA,BROOK(1))
@@ -276,7 +295,8 @@ C     .. Data Statement ..
      *          'B // XO, A* // ZO',
      *          'C // XO, B* // ZO',
      *          'HEX A+B // XO, C* // ZO',
-     *          'A* // XO, C // ZO (ROLLETT)'/
+     *          'A* // XO, C // ZO (ROLLETT)',
+     *          'A // XO, B* // YO'/
 C     ..
       I = 0
       II = 0
@@ -442,7 +462,10 @@ C
             DO 110 IORTH=1,6
               DO 120 I=1,3
                 DO 120 J=1,3
-                  IF(ABS(RO(I,J)-RR(I,J,IORTH)).GT.0.001)GO TO 110
+                RCHK1 = (RO(I,J)+RR(I,J,IORTH))
+                RCHK2 = (RO(I,J)-RR(I,J,IORTH))
+                IF(ABS(RCHK1).LT.0.1) GO TO 120
+                IF(ABS(RCHK2/RCHK1) .GT.0.01)GO TO 110
   120         CONTINUE
               GO TO 130
   110       CONTINUE
@@ -475,10 +498,14 @@ C
   150       CONTINUE
             CALL CCPERR(4,' ')
 
-            IF (IORTH .GT. 0) THEN
+            IF(NCODE.EQ.0) THEN
+              Write(ERRLIN,'(A,I3)') ' Warning - No ORTH code',NCODE
+              CALL CCPERR(2,ERRLIN)
+            ENDIF
+            IF (NCODE .GT. 0) THEN
               CALL CCPERR(4,' ')
-              WRITE(ERRLIN,FMT='(A,A)')'  ORTHOGONALISATION CODE: ',
-     +                   ORTH(IORTH)
+              WRITE(ERRLIN,FMT='(A,I3,A)')'  ORTHOGONALISATION CODE: ',
+     +            NCODE,  ORTH(NCODE)
               CALL CCPERR(4,ERRLIN)
               CALL CCPERR(4,' ')
             ENDIF
@@ -531,6 +558,20 @@ C Not yet ready
       ENDIF
 
  1000 IF (TYPE(FILESOPEN) .EQ. 1) REWIND UNIT(FILESOPEN)
+C     Generate ROU and RFU for AnisoU stuff
+       IF (MATRIX) THEN
+         RFU(4,4) = 1.0
+         DO I = 1,3
+         FAC= SQRT(RF(I,1)*RF(I,1) + RF(I,2)*RF(I,2) +
+     +              RF(I,3)*RF(I,3))
+         RFU(I,1) = RF(I,1)/FAC
+         RFU(I,2) = RF(I,2)/FAC
+         RFU(I,3) = RF(I,3)/FAC
+         RFU(I,4) = 0.0
+         RFU(4,I) = 0.0
+         END DO 
+         CALL RBRINV(RFU,ROU)
+       END IF 
       RETURN
       END
 C
@@ -640,8 +681,8 @@ C     .. Variables in Common ..
 C     ..
 C     .. Local Variables ..
       INTEGER I,II
-      CHARACTER*80 ERRLIN,BROOKA,BROOKB
-      CHARACTER*4 ITYPE(7)
+      CHARACTER*80 ERRLIN,BROOKA,BROOKB,BROOKC
+      CHARACTER*6 ITYPE(7)
 C     ..
 C     .. External Routines ..
       EXTERNAL CCPERR,WREMARK
@@ -653,15 +694,18 @@ C     .. Common Blocks ..
       COMMON /RBRKYY/ BROOK(80),WBROOK(80),WBROOK1(80)
       COMMON /RBRKZZ/ CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /ORTHOG/ RO(4,4),RF(4,4),NCODE
+      COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
 C     ..
 C     .. Equivalences ..
-      EQUIVALENCE (BROOKA,BROOK(1)),(BROOKB,WBROOK(1))
+      EQUIVALENCE (BROOKA,BROOK(1)),(BROOKB,WBROOK1(1)),
+     +            (BROOKC,WBROOK(1))
 C     ..
 C     .. Save Statement ..
       SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/,/RBRKZZ/,/ORTHOG/
 C     ..
 C     .. Data Statements ..
-      DATA ITYPE/'CRYS','SCAL','TER ','ATOM','HETA','ANIS','END '/
+      DATA ITYPE/'CRYST1','SCALE ','TER   ','ATOM  ','HETATM',
+     +           'ANISOU','END   '/
 C     ..
       II = 0
       DO 10 I=1,FILESOPEN
@@ -679,7 +723,7 @@ C
    15 IF (TYPE(II) .EQ. 1) THEN
    20   READ (UNIT(II),FMT='(80A1)',END=100) BROOK
         DO 30 I=1,7
-          IF (ITYPE(I) .EQ. BROOKA(1:4)) THEN
+          IF (ITYPE(I)(1:4) .EQ. BROOKA(1:4)) THEN
             ITYP = I
             GOTO 40
           ENDIF
@@ -710,6 +754,7 @@ C
    50     CONTINUE
         ELSE IF (ITYP .EQ. 6) THEN
           DO 60 I=1,80
+            WBROOK(I) = ' '
             WBROOK1(I) = BROOK(I)
    60     CONTINUE
         ENDIF
@@ -723,16 +768,21 @@ C
           IFHDOUT = .TRUE.
         ENDIF
 
-        IF (BROOKB .NE. ' ') THEN
+        IF (BROOKC .NE. ' ') THEN
           IF (ITYP .EQ. 0) THEN
-            BROOKB(1:4) = 'ATOM'
+            BROOKC(1:6) = 'ATOM  '
           ELSE
-            BROOKB(1:6) = ITYPE(ITYP)
+            BROOKC(1:6) = ITYPE(ITYP)
           ENDIF
-          WRITE(UNIT(II),FMT='(80A1)') WBROOK
+          IF(ITYP.NE.6)WRITE(UNIT(II),FMT='(80A1)') WBROOK
         ENDIF
         IF (WBROOK1(1) .NE. ' ') THEN
           IF (BROOKB .NE. ' ') THEN
+          IF (ITYP .EQ. 0) THEN
+            BROOKB(1:6) = 'ATOM  '
+          ELSE
+            BROOKB(1:6) = ITYPE(ITYP)
+          ENDIF
             DO 70 I=7,27
               WBROOK1(I) = WBROOK(I)
    70       CONTINUE
@@ -752,7 +802,9 @@ C
 C
 C---- End of file but without having END card
 C
-  100 RETURN 2
+  100 CONTINUE
+      ITYP = 0
+      RETURN 2
  1000 FORMAT('CRYST1',3F9.3,3F7.2)
  2000 FORMAT( 2('SCALE',I1,4X,3F10.5,5X,'   0.00000',/),
      $          'SCALE',I1,4X,3F10.5,5X,'   0.00000')
@@ -799,6 +851,7 @@ C     .. Arguments ..
       INTEGER IRESN,ISER,IUNIT,IZ
       CHARACTER*(*) RESNO,ATNAM,RESNAM,CHNNAM
       CHARACTER*(*) ID,INSCOD,ALTCOD,SEGID
+      CHARACTER*6 ITYPE(7)
 C     ..
 C     .. Variables in Common ..
       INTEGER FILESOPEN,ITYP,UNIT,TYPE
@@ -806,7 +859,7 @@ C     .. Variables in Common ..
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Scalars ..
-      REAL B(6),OCC,X,Y,Z
+      REAL U(6),OCC,X,Y,Z
       INTEGER I,II
       CHARACTER*100 ERRLIN
       CHARACTER BROOKA*80,PDBATN*4,PDBRESN*4,PDBCHN*1,PDBID*4,
@@ -822,6 +875,10 @@ C     .. Common Blocks ..
       COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
       COMMON /RBRKYY/ BROOK(80),WBROOK(80),WBROOK1(80)
 C     ..
+C     .. Data Statements ..
+      DATA ITYPE/'CRYST1','SCALE','TER   ','ATOM  ','HETATM',
+     +           'ANISOU','END   '/
+C
 C     .. Equivalences ..
       EQUIVALENCE (BROOKA,WBROOK(1))
 C     ..
@@ -853,7 +910,7 @@ C
         ALTCOD = ' '
         SEGID = ' '
         CALL PDBREAD(ISER,PDBATN,PDBRESN,PDBCHN,IRESN,PDBRESNO,
-     +               X,Y,Z,OCC,B,IZ,PDBSEGID,PDBID)
+     +               X,Y,Z,OCC,U,IZ,PDBSEGID,PDBID)
         ALTCOD = BROOK(17)
         ATNAM = PDBATN
         RESNAM = PDBRESN
@@ -866,7 +923,12 @@ C
 C==== Output PDB file
 C
       ELSE IF (TYPE(II) .EQ. -1) THEN
-        IF (ITYP .EQ. 0) BROOKA(1:6) = 'ATOM  '
+        IF (ITYP .EQ. 0) THEN
+          BROOKA(1:6) = 'ATOM  '
+        ELSE
+          BROOKA(1:6) = ITYPE(ITYP)
+        ENDIF
+        IF(BROOKA(1:6) .EQ. '      ')BROOKA(1:6) = 'ATOM  '
         BROOKA(17:17) = ALTCOD(1:1)
         IF (ID(1:1) .EQ. ' ') THEN
           BROOKA(12:13) = '  '
@@ -896,7 +958,7 @@ C Not yet ready
 C
 C
 C
-      SUBROUTINE XYZCOORD(IUNIT,XFLAG,BFLAG,X,Y,Z,OCC,BISO,B)
+      SUBROUTINE XYZCOORD(IUNIT,XFLAG,BFLAG,X,Y,Z,OCC,BISO,U)
 C     =======================================================
 C
 C_BEGIN_XYZCOORD
@@ -904,13 +966,29 @@ C
 C	This subroutine reads or writes x, y, z, occupancy and b from/to 
 C the internal buffer. The buffer is updated from the file by 
 C XYZADVANCE. The coordinates can be input/output (to the subroutine) 
-C as orthogonal or fractional. The anisotropic temperature factors can be 
-C input/output as orthogonal Us or as crystallographic bs. These are 
-C defined below;
-C T(aniso) = U(11)*H**2 + U(22)*K**2 + 2*U(12)*H*K + ...
-C where H,K,L are orthogonal reciprocal lattice indecies.
-C T(aniso) = b(11)*h**2 + b(22)*k**2 + b(33)*k**2 + b(12)*h*k ...    and
-C Biso     = 8*PI**2 (U(11) + U(22) + U(33)) / 3.0
+C as orthogonal or fractional. 
+C
+C  PDB files contain anisotropic temperature factors as orthogonal Us.
+C The anisotropic temperature factors can be input/output to this routine 
+C  as orthogonal or as crystallographic Us. 
+C  
+C  Shelx defines Uf to calculate temperature factor as:
+C T(aniso_Uf) = exp (-2PI**2 ( (h*ast)**2 Uf_11 + (k*bst)**2 Uf_22 + ... 
+C                            + 2hk*ast*bst*Uf_12 +..)
+C
+C   Note:   Uo_ji == Uo_ij and  Uf_ji == Uf_ij.
+C
+C  [Uo_ij] listed on ANISOU card satisfy  the relationship:
+C  [Uo_ij] =   [RFu]-1 [Uf_ij] {[RFu]-1}T   C
+C        where [Rfu] is the normalised [Rf] matrix read from the SCALEi cards.
+C        see code.   [ROu] ==  [RFu]-1
+C
+C T(aniso_Uo) = U(11)*H**2 + U(22)*K**2 + 2*U(12)*H*K + ...
+C where H,K,L are orthogonal reciprocal lattice indecies. ( EJD: I think????)
+C
+C Biso     = 8*PI**2 (Uo_11 + Uo_22 + Uo_33) / 3.0
+C
+C   [Uf(symm_j)] = [Symm_j] [Uf] [Symm_j]T
 C
 C Parameters:
 C
@@ -922,17 +1000,17 @@ C                   For output file
 C                     ='F' passed coordinates are fractional
 C                     ='O' passed coordinates are orthogonal
 C       BFLAG  (I)  For input file
-C                     ='B' will get crystallographic bs
-C                     ='U' will get orthogonal Us.
+C                     ='F' will get fractional us
+C                     ='O' will get orthogonal Us.
 C                   For output file
-C                     ='B' have crystallographic bs
-C                     ='U' have othogonal Us
+C                     ='F' have fractional us
+C                     ='O' have othogonal Us
 C           X (I/O) Coordinates (orthogonal angstrom coordinates as
 C           Y (I/O)     "        stored)
 C           Z (I/O)     "
 C         OCC (I/O) Occupancy
 C        BISO  (O)  Isotropic temperature factor, NOT used for output file.
-C        B(6) (I/O) Anisotropic temperature factor, unless only B(1) defined.
+C        U(6) (I/O) Orthogonal Anisotropic temperature factor, unless only U(1) defined.
 C
 C_END_XYZCOORD
 C     
@@ -941,7 +1019,7 @@ C     .. Paramters ..
       PARAMETER (MAXFILESOPEN=10)
 C     ..
 C     .. Arguments ..
-      REAL B(6),BISO,X,Y,Z
+      REAL U(6),BISO,X,Y,Z
       INTEGER IUNIT
       CHARACTER*1 BFLAG,XFLAG
 C     ..
@@ -959,7 +1037,7 @@ C     .. Local Scalars ..
       CHARACTER*80 BROOKA,BROOKB
 C     ..
 C     .. External Routines/Functions ..
-      EXTERNAL CCPERR,CCPUPC,CVANISOB,CVFRAC2,PDBREAD
+      EXTERNAL CCPERR,CCPUPC,CVANISOU,CVFRAC2,PDBREAD
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC ABS,NINT
@@ -981,6 +1059,9 @@ C     .. Data Statement ..
 C     ..
       CALL CCPUPC(XFLAG)
       CALL CCPUPC(BFLAG)
+Cejd - a fudge
+       IF ( BFLAG.EQ.'B') BFLAG = 'O'
+C
 
       II = 0
       DO 10 I=1,FILESOPEN
@@ -997,7 +1078,7 @@ C==== Input PDB file
 C  
    20 IF (TYPE(II) .EQ. 1) THEN
         CALL PDBREAD(ISER,ATNAM,RESNAM,CHNNAM,IRESN,RESNO,
-     +               X,Y,Z,OCC,B,IZ,SEGID,ID)
+     +               X,Y,Z,OCC,U,IZ,SEGID,ID)
 C
 C---- Convert x,y,z to fractional if necessary
 C
@@ -1012,16 +1093,16 @@ C
           ENDIF
         ENDIF
 C
-C---- Calulate isotropic B from Us, if necessary convert.
+C---- Calulate isotropic Uf from Uo, if necessary convert.
 C
-        IF (B(2).NE.0.0 .AND. B(3).NE.0.0) THEN
-          BISO = EIGHTPI2 * (B(1)+B(2)+B(3))/3.0
-          IF (BFLAG.EQ.'B') CALL CVANISOB(B,1)
+        IF (U(2).NE.0.0 .AND. U(3).NE.0.0) THEN
+          BISO = EIGHTPI2 * (U(1)+U(2)+U(3))/3.0
+          IF (BFLAG.EQ.'F') CALL CVANISOU(U,1)
 C
 C---- Go here if no anisotropic B
 C
         ELSE
-          BISO = B(1)
+          BISO = U(1)
         ENDIF
 C
 C==== Output PDB file
@@ -1042,14 +1123,14 @@ C
 C
 C---- Check for anisotropic temperature factors
 C
-        IF (B(2).NE.0.0 .OR. B(3).NE.0.0) THEN
-          IF (BFLAG .EQ. 'B') CALL CVANISOB(B,0)
-          BISO = EIGHTPI2 * (B(1)+B(2)+B(3))/3.0
+        IF (U(2).NE.0.0 .OR. U(3).NE.0.0) THEN
+          IF (BFLAG .EQ. 'F') CALL CVANISOU(U,0)
+          BISO = EIGHTPI2 * (U(1)+U(2)+U(3))/3.0
 
           BROOKB(1:6) = 'ANISOU'
-          WRITE(BROOKB(29:70),FMT='(6I7)') (NINT(B(I)*1.0E+04),I=1,6)
+          WRITE(BROOKB(29:70),FMT='(6I7)') (NINT(U(I)*1.0E+04),I=1,6)
         ELSE
-          BISO = B(1)
+          BISO = U(1)
         ENDIF
 
         WRITE(BROOKA(31:66),FMT='(3F8.3,2F6.2)') XX,YY,ZZ,OCC,BISO
@@ -1291,7 +1372,7 @@ C
 C
 C
       SUBROUTINE PDBREAD(ISER,ATNAM,RESNAM,CHNNAM,IRESN,RESNO,
-     *X,Y,Z,OCC,B,IZ,SEGID,ID)
+     *X,Y,Z,OCC,U,IZ,SEGID,ID)
 C     ========================================================
 C
 C_BEGIN_PDBREAD
@@ -1314,7 +1395,7 @@ C           X (O) Coordinates (orthogonal angstrom coordinates as
 C           Y (O)     "        stored)
 C           Z (O)     "
 C         OCC (O) Occupancy
-C        B(6) (O) Temperature factor
+C        U(6) (O) Temperature factor
 C          IZ (O) Atomic number (returned as 7 from ambiguous atoms)
 C          ID (O) Atomic ID related to atomic number + ionic state. 
 C                 (character*4)
@@ -1361,7 +1442,7 @@ C     .. Parameters ..
       PARAMETER (MAXIATM=102)
 C     ..
 C     .. Arguments ..
-      REAL B(6),OCC,X,Y,Z
+      REAL U(6),OCC,X,Y,Z
       INTEGER IRESN,ISER,IZ
       CHARACTER*(*) RESNO
       CHARACTER ATNAM*4,CHNNAM*1,ID*4,RESNAM*4,SEGID*4
@@ -1381,7 +1462,7 @@ C     .. Local Scalars ..
       CHARACTER*1 ISP
 C     ..
 C     .. Local Arrays ..
-      INTEGER IB(6)
+      INTEGER IU(6)
       CHARACTER*40 ORTH(5)
       CHARACTER*2 IATM(MAXIATM),IHATM(10)
 C     ..
@@ -1397,6 +1478,7 @@ C     .. Common Blocks ..
       COMMON /RBRKYY/BROOK(80),WBROOK(80),WBROOK1(80)
       COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
+      COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
 C     ..
 C     .. Equivalences ..
       EQUIVALENCE (IRTYPE,BROOK(1)),(IE,BROOK(5)),(BROOKA,BROOK(1))
@@ -1431,7 +1513,7 @@ C
 C---- Atom/hetatm card processing
 C
       IF (IRTYPE.EQ.'ATOM' .OR. IRTYPE.EQ.'HETA' .OR.
-     +       IRTYPE.EQ.'TER ') THEN
+     +    IRTYPE.EQ.'ANIS' .OR. IRTYPE.EQ.'TER ') THEN
         IF (IRTYPE.EQ.'TER ') THEN
 C
 C---- 'ter' card found
@@ -1440,12 +1522,7 @@ C
           IFTER=.TRUE.
           GO TO 450
         ENDIF
-        DO 40 I=1,6
-          B(I) = 0.0
-   40   CONTINUE
-        IF (IRTYPE.EQ.'ATOM') ITYP=4
-        IF (IRTYPE.EQ.'HETA') ITYP=5
-        READ(BROOKA,1005)X,Y,Z,OCC,B(1)
+
         IF(BROOK(13).EQ.ISP)GO TO 410
         ATNAM=BROOK(13)//BROOK(14)//BROOK(15)//BROOK(16)
         GO TO 450
@@ -1556,36 +1633,31 @@ C---- Put elment ID into output buffer.
 C
         DO 485 J=1,4
           WBROOK(76+J) = ID(J:J)
+          WBROOK1(76+J) = ID(J:J)
 485     CONTINUE
-        RETURN
+         IF (IRTYPE .EQ. 'ATOM'.or.IRTYPE.EQ.'HETA') THEN
+C  This is the ONLY flag that you have read a ATOM or HETATOM card..
+          DO 40 I=1,6
+            U(I) = 0.0
+   40     CONTINUE
+            IF (IRTYPE.EQ.'ATOM') ITYP=4
+            IF (IRTYPE.EQ.'HETA') ITYP=5
+          READ(BROOKA,1005)X,Y,Z,OCC,U(1)
 C
 C---- AnisoU cards
 C
-      ELSE IF (IRTYPE .EQ. 'ANIS') THEN
-
-        READ(BROOKA,1010)IB(1),IB(2),IB(3),IB(4),IB(5),IB(6)
+        ELSE IF (IRTYPE .EQ. 'ANIS') THEN
+C
+        READ(BROOKA,1010)IU(1),IU(2),IU(3),IU(4),IU(5),IU(6)
         DO 510 I=1,6
-          B(I) = IB(I)/1.0E+04
+          U(I) = IU(I)/1.0E+04
 510     CONTINUE
-        IF(BROOK(13).NE.ISP) THEN
-          ATNAM=BROOK(13)//BROOK(14)//BROOK(15)//BROOK(16)
-        ELSE
-          ATNAM=BROOK(14)//BROOK(15)//BROOK(16)//BROOK(17)
-        ENDIF
-        READ(BROOKA,1006)ISER,IRESN
-        RESNAM=BROOK(18)//BROOK(19)//BROOK(20)//ISP
-        RESNO=BROOK(23)//BROOK(24)//BROOK(25)//BROOK(26)
-        IF(LENSTR(RESNO).GT.4)RESNO(5:5)=BROOK(27)
-        CHNNAM=BROOK(22)
-        SEGID = BROOK(73)//BROOK(74)//BROOK(75)//BROOK(76)
-C
-C---- Find atomic number and ID, ID can be kept in columns 77-80
-C
-        ID = BROOK(77)//BROOK(78)//BROOK(79)//BROOK(80)
-        CALL CCPUPC(ID)
+C  Get rid of this, sometimes useful to know xyz 
+C   use values of U(i) to check for ANISOU 
         X = 0.0
         Y = 0.0
         Z = 0.0
+        ENDIF
 C
         RETURN        
       ENDIF
@@ -1712,7 +1784,36 @@ C     ==========================
 C
 C_BEGIN_RBRORF
 C
+C	This routine is obsolete and should be removed.
+C
 C      SUBROUTINE RBRORF(ROO,RFF)
+C
+C     Subroutine to  fill or return RF (fractionalising) and Ro
+C     (orthogonalising) matrices. 
+C
+C PARAMETERS
+C
+C          ROO (I) (REAL(4,4))  4*4 MATRIX TO BE INVERTED
+C          RFF (O) (REAL(4,4))  INVERSE MATRIX
+C
+C common blocks
+C
+C
+C
+      DIMENSION ROO(4,4),RFF(4,4)
+C
+      LCODE = 0
+      CALL RBRORF2(ROO,RFF,LCODE)
+      END
+C
+C
+C
+      SUBROUTINE RBRORF2(ROO,RFF,LCODE)
+C     ==========================
+C
+C_BEGIN_RBRORF
+C
+C      SUBROUTINE RBRORF2(ROO,RFF,LCODE)
 C
 C     Subroutine to  fill or return RF (fractionalising) and Ro
 C     (orthogonalising) matrices. 
@@ -1746,6 +1847,7 @@ C
         ROO(II,JJ)=RO(II,JJ)
 30      CONTINUE
 40      CONTINUE
+        LCODE = NCODE
         RETURN
       END IF
 C  FILL...
@@ -1756,11 +1858,11 @@ C  FILL...
         RO(II,JJ)=ROO(II,JJ)
 60      CONTINUE
 50      CONTINUE
+        NCODE = LCODE
         MATRIX = .TRUE.
         RETURN
       END IF
       END
-C
 C
 C
       SUBROUTINE RBRINV(A,AI)
@@ -1824,6 +1926,7 @@ C
 C
 C
 C
+C
       SUBROUTINE RBFROR
 C     =================
 C
@@ -1852,6 +1955,12 @@ C   SET UP MATRICES TO ORTHOGONALISE H K L AND X Y Z FOR THIS CELL.
 C
 C Common Blocks
 C
+C     .. Scalar Arguments ..
+      REAL VOLL
+C     ..
+C     .. Array Arguments ..
+      REAL CEL(6),RRR(3,3,6)
+C
 C      COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
 C      COMMON /RBREC/AC(6)
 C
@@ -1863,124 +1972,11 @@ C
 C
 C---- Initialisations
 C
-      CONV=3.14159/180.
-      FCT=8.*3.14159*3.14159
-      ALPH=CONV*CELL(4)
-      BET=CONV*CELL(5)
-      GAMM=CONV*CELL(6)
-      SUM=0.5*(ALPH+BET+GAMM)
-      V=SQRT(SIN(SUM-ALPH)*SIN(SUM-BET)*SIN(SUM-GAMM)*SIN(SUM))
-      VOL=2.0*CELL(1)*CELL(2)*CELL(3)*V
-      SINA=SIN(ALPH)
-      COSA=COS(ALPH)
-      SINB=SIN(BET)
-      COSB=COS(BET)
-      SING=SIN(GAMM)
-      COSG=COS(GAMM)
-      COSBS=(COSA*COSG-COSB)/(SINA*SING)
-      SINBS=SQRT(1.-COSBS*COSBS)
-      COSAS=(COSG*COSB-COSA)/(SINB*SING)
-      SINAS=SQRT(1.-COSAS*COSAS)
-      COSGS=(COSA*COSB-COSG)/(SINA*SINB)
-      SINGS=SQRT(1.-COSGS*COSGS)
-      A=CELL(1)
-      B=CELL(2)
-      C=CELL(3)
-      AS=B*C*SINA/VOL
-      BS=C*A*SINB/VOL
-      CS=A*B*SING/VOL
-      ALPHAS=ATAN2(SINAS,COSAS)/CONV
-      BETAS=ATAN2(SINBS,COSBS)/CONV
-      GAMMAS=ATAN2(SINGS,COSGS)/CONV
-      CELLAS(1)=AS
-      CELLAS(2)=BS
-      CELLAS(3)=CS
-      CELLAS(4)=ALPHAS
-      CELLAS(5)=BETAS
-      CELLAS(6)=GAMMAS
-C
-C       WRITE (6,'(//,A,F15.4)')
-C     1 '  Unit cell volume from input cell dimensions ', VOL
-C
-C---- Set useful things for calculating dstar
-C
-      AC(1)=AS*AS
-      AC(2)=Bs*BS
-      AC(3)=Cs*CS
-      AC(4)=2.*Bs*Cs*COSAS
-      AC(5)=2.*Cs*As*COSBS
-      AC(6)=2.*As*Bs*COSGS
-C
-C---- Zero matrices
-C
-      DO 5 N=1,6
-      DO 5 I=1,3
-      DO 5 J=1,3
-      RR(I,J,N)=0.0
-5     CONTINUE
-C
-C---- Calculate matrices
-C
-C   XO along a  Zo along c*
-C
-      NCODE=1
-      RR(1,1,NCODE)=A
-      RR(1,2,NCODE)=B*COSG
-      RR(1,3,NCODE)=C*COSB
-      RR(2,2,NCODE)=B*SING
-      RR(2,3,NCODE)=-C*SINB*COSAS
-      RR(3,3,NCODE)=C*SINB*SINAS
-C
-C---- XO along b  Zo along a*
-C
-      NCODE=2
-      RR(3,1,NCODE)=A*SING*SINBS
-      RR(1,1,NCODE)=A*COSG
-      RR(1,2,NCODE)=B
-      RR(1,3,NCODE)=C*COSA
-      RR(2,1,NCODE)=-A*SING*COSBS
-      RR(2,3,NCODE)=C*SINA
-C
-C---- XO along c  Zo along b*
-C
-      NCODE=3
-      RR(1,1,NCODE)=A*COSB
-      RR(1,2,NCODE)=B*COSA
-      RR(1,3,NCODE)=C
-      RR(2,1,NCODE)=A*SINB
-      RR(2,2,NCODE)=-B*SINA*COSGS
-      RR(3,2,NCODE)=B*SINA*SINGS
-C
-C---- trigonal only - XO along a+b  YO along a-b  Zo along c*
-C
-      NCODE=4
-      RR(3,3,NCODE)=C
-      RR(1,1,NCODE)=A/2.
-      RR(1,2,NCODE)=A/2.
-      RR(2,1,NCODE)=-A*SING
-      RR(2,2,NCODE)=A*SING
-C
-C---- XO along a*   ZO along c
-C
-      NCODE=5
-      RR(1,1,NCODE)=A*SINB*SINGS
-      RR(3,1,NCODE)=A*COSB
-      RR(3,2,NCODE)=B*COSA
-      RR(3,3,NCODE)=C
-      RR(2,1,NCODE)=-A*SINB*COSGS
-      RR(2,2,NCODE)=B*SINA
-C
-C---- Grr*! to  Gerard Bricogne - his setting for P1 in SKEW.
-C   XO along a  Yo along b*
-C
-      NCODE=6
-      RR(1,1,NCODE)=A
-      RR(1,2,NCODE)=B*COSG
-      RR(1,3,NCODE)=C*COSB
-      RR(2,2,NCODE)=B*SING*SINAS
-      RR(3,2,NCODE)=-B*SING*COSAS
-      RR(3,3,NCODE)=C*SINB
-C
+        DO I = 1,6
+         CEL(I)=CELL(I)
+        END DO
+        VOLL = VOL
+      CALL RBFRO1(CEL,VOLL,RRR)
 C
       RETURN
       END
@@ -2003,6 +1999,25 @@ C   VOLL (O) (REAL)        Cell volume
 C   RRR  (O) (REAL(3,3,6)) Standard orthogonisational matrices
 C
 C_END_RBFRO1
+C
+C THIS SUBROUTINE CALCULATES MATRICES FOR STANDARD ORTHOGONALISATIONS
+c   and cell volume
+C
+C  this generates the various orthogonalising matrices
+C     ' NCODE =1 -  ORTHOG AXES ARE DEFINED TO HAVE'
+C                    A PARALLEL TO XO   CSTAR PARALLEL TO ZO'
+C     ' NCODE =2 -  ORTHOG AXES ARE DEFINED TO HAVE'
+C     '               B PARALLEL TO XO   ASTAR PARALLEL TO ZO'
+C     ' NCODE =3 -  ORTHOG AXES ARE DEFINED TO HAVE'
+C     '               C PARALLEL TO XO   BSTAR PARALLEL TO ZO'
+C     ' NCODE =4 -  ORTHOG AXES ARE DEFINED TO HAVE'
+C     '         HEX A+B PARALLEL TO XO   CSTAR PARALLEL TO ZO'
+C     ' NCODE =5 -  ORTHOG AXES ARE DEFINED TO HAVE'
+C     '           ASTAR PARALLEL TO XO       C PARALLEL TO ZO'
+C     ' NCODE =6 -  ORTHOG AXES ARE DEFINED TO HAVE'
+C                    A  PARALLEL TO XO   BSTAR PARALLEL TO YO'
+C
+C   SET UP MATRICES TO ORTHOGONALISE H K L AND X Y Z FOR THIS CELL.
 C
 C     .. Scalar Arguments ..
       REAL VOLL
@@ -2038,18 +2053,21 @@ C
       CELDEL = 0.0
       IF (CEL(1).GT.0.0) THEN
         IF (CELL(1).GT.0.0) THEN
+          IWARN = 0
           DO 101 I = 1,6
             CELDEL = ABS(CEL(I)-CELL(I))/CEL(I)
-            IF (CELDEL.GT.0.01) WRITE (6,9876) CEL,CELL
-9876        FORMAT(' Inconsistency in Cell Dimensions',2(/,3X,6F10.5))
+            IF (CELDEL.GT.0.01) IWARN = 1
  101      CONTINUE
+          IF(IWARN.NE.0) WRITE(6,9876)CELL,CEL
+9876      FORMAT(' Inconsistency in Cell Dimensions - replacing old:',
+     +      /,' Old cell:',3X,6F10.5,/,' New cell:',3X,6F10.5)
         ENDIF
         DO 10 I = 1,6
           CELL(I) = CEL(I)
    10   CONTINUE
       ENDIF
       IF (CELL(1).EQ.0.0) call ccperr(1,
-     +  ' **** No Cell Input ?? **** from rwbrook.for')
+     +  ' **** No Cell Input to subroutine rbfro1?? ****')
 C
 C
       CONV = 3.14159/180.0
@@ -2059,17 +2077,17 @@ C
       GAMM = CELL(6)*CONV
       SUM = (ALPH+BET+GAMM)*0.5
       V = SQRT(SIN(SUM-ALPH)*SIN(SUM-BET)*SIN(SUM-GAMM)*SIN(SUM))
-      VOL = CELL(1)*2.0*CELL(2)*CELL(3)*V
+      VOL = 2.0*CELL(1)*CELL(2)*CELL(3)*V
       SINA = SIN(ALPH)
       COSA = COS(ALPH)
       SINB = SIN(BET)
       COSB = COS(BET)
       SING = SIN(GAMM)
       COSG = COS(GAMM)
-      COSBS = (COSA*COSG-COSB)/ (SINA*SING)
-      SINBS = SQRT(1.0-COSBS*COSBS)
       COSAS = (COSG*COSB-COSA)/ (SINB*SING)
       SINAS = SQRT(1.0-COSAS*COSAS)
+      COSBS = (COSA*COSG-COSB)/ (SINA*SING)
+      SINBS = SQRT(1.0-COSBS*COSBS)
       COSGS = (COSA*COSB-COSG)/ (SINA*SINB)
       SINGS = SQRT(1.0-COSGS*COSGS)
       A = CELL(1)
@@ -2079,7 +2097,7 @@ C
       BS = C*A*SINB/VOL
       CS = A*B*SING/VOL
       ALPHAS = ATAN2(SINAS,COSAS)/CONV
-      BETAS = ATAN2(SINBS,COSBS)/CONV
+      BETAS  = ATAN2(SINBS,COSBS)/CONV
       GAMMAS = ATAN2(SINGS,COSGS)/CONV
       CELLAS(1) = AS
       CELLAS(2) = BS
@@ -2099,7 +2117,7 @@ C
 C
 C---- Zero matrices
 C
-      DO 40 N = 1,5
+      DO 40 N = 1,6
         DO 30 I = 1,3
           DO 20 J = 1,3
             RR(I,J,N) = 0.0
@@ -2122,41 +2140,41 @@ C
 C---- XO along b  Zo along a*
 C
       NCODE = 2
-      RR(3,1,NCODE) = A*SING*SINBS
       RR(1,1,NCODE) = A*COSG
       RR(1,2,NCODE) = B
       RR(1,3,NCODE) = C*COSA
       RR(2,1,NCODE) = -A*SING*COSBS
       RR(2,3,NCODE) = C*SINA
+      RR(3,1,NCODE) = A*SING*SINBS
 C
 C---- XO along c  Zo along b*
 C
       NCODE = 3
-      RR(2,1,NCODE) = A*SINB
-      RR(2,2,NCODE) = -B*SINA*COSGS
-      RR(3,2,NCODE) = B*SINA*SINGS
       RR(1,1,NCODE) = A*COSB
       RR(1,2,NCODE) = B*COSA
       RR(1,3,NCODE) = C
+      RR(2,1,NCODE) = A*SINB
+      RR(2,2,NCODE) = -B*SINA*COSGS
+      RR(3,2,NCODE) = B*SINA*SINGS
 C
 C---- trigonal only - XO along a+b  YO alon a-b  Zo along c*
 C
       NCODE = 4
-      RR(3,3,NCODE) = C
       RR(1,1,NCODE) = A/2.0
       RR(1,2,NCODE) = A/2.0
       RR(2,1,NCODE) = -A*SING
       RR(2,2,NCODE) = A*SING
+      RR(3,3,NCODE) = C
 C
 C---- XO along a*   ZO along c
 C
       NCODE = 5
       RR(1,1,NCODE) = A*SINB*SINGS
+      RR(2,1,NCODE) = -A*SINB*COSGS
+      RR(2,2,NCODE) = B*SINA
       RR(3,1,NCODE) = A*COSB
       RR(3,2,NCODE) = B*COSA
       RR(3,3,NCODE) = C
-      RR(2,1,NCODE) = -A*SINB*COSGS
-      RR(2,2,NCODE) = B*SINA
 C
 C---- Grr*! to  Gerard Bricogne - his setting for P1 in SKEW.
 C     XO along a  Yo along b*
@@ -2188,7 +2206,6 @@ C
 C
 C
       END
-C
 C
 C
       SUBROUTINE CVFRAC2(X,Y,Z,XX,YY,ZZ,IFLAG)
@@ -2270,32 +2287,71 @@ C     ..
       RETURN
       END
 C
-C
+C
 C
       SUBROUTINE CVANISOB(B,IFLAG)
+C     THIS SUBROUTINE SHOULD NOT BE USED
+C     SEE CVANISOU
+      REAL B(6)
+      INTEGER IFLAG
+      EXTERNAL CVANISOu, CCPERR
+      WRITE (6, 'ERR: THIS PROGRAM USES S/R CVANISOB')
+      WRITE (6, 'ERR: IT SHOULD NOT USE THIS ROUTINE')
+      WRITE (6, 'ERR: CVANISOU IS CALLED AUTOMATICALLY')
+      CALL CCPERR(2, 'CHANGE YOUR CODE')
+      CALL CVANISOU(B, IFLAG)
+      RETURN
+      END
+C
+C
+C
+C
+      SUBROUTINE CVANISOU(U,IFLAG)
 C     ============================
 C
-C_BEGIN_CVANISOB
+C_BEGIN_CVANISOU
 C
 C      This subroutine is used to convert between crystallographic bs and 
 C orthogonal Us or the other way round. The orthogonal matrices are 
 C required, if no matrices have been set up then the program will stop 
 C with an error message. The temperature factors are defined below;
-C T(anisoU) = U(1,1)*H**2 + U(2,2)*K**2 + U(1,2)*H*K + ... 
-C where H,K,L represent the orthogonal representation of the Miller indices
-C T(anisob) = b(1,1)*h**2 + b(2,2)*k**2 + b(1,2)*h*k + ...
-C thus  U = A * B * AT / (2 * pi**2)  where A is the orthogonalisation matrix
 C
+C  PDB files contain anisotropic temperature factors as orthogonal Us.
+C The anisotropic temperature factors can be input/output to this routine 
+C  as orthogonal or as crystallographic Us. 
+C  
+C  Shelx defines Uf to calculate temperature factor as:
+C T(aniso_Uf) = exp (-2PI**2 ( (h*ast)**2 Uf_11 + (k*bst)**2 Uf_22 + ... 
+C                            + 2hk*ast*bst*Uf_12 +..)
+C
+C   Note:   Uo_ji == Uo_ij and  Uf_ji == Uf_ij.
+C
+C  [Uo_ij] listed on ANISOU card satisfy  the relationship:
+C  [Uo_ij] =   [RFu]-1 [Uf_ij] {[RFu]-1}T   
+C
+C        where [Rfu] is the normalised [Rf] matrix read from the SCALEi cards.
+C        see code.   [ROu] ==  [RFu]-1
+C  Hence:
+C  [Uf_ij] =   [RFu]   [Uo_ij] {[RFu]  }T   
+C
+C T(aniso_Uo) = U(11)*H**2 + U(22)*K**2 + 2*U(12)*H*K + ...
+C where H,K,L are orthogonal reciprocal lattice indecies. ( EJD: I think????)
+C
+C Biso     = 8*PI**2 (Uo_11 + Uo_22 + Uo_33) / 3.0
+C
+C   [Uf(symm_j)] = [Symm_j] [Uf] [Symm_j]T
+C
+C 
 C Arguments:
 C            
-C    B(6) (I/O  (REAL)  Input coordinates.
+C    U(6) (I/O  (REAL)  Input coordinates.
 C   IFLAG (I) (INTEGER)  Flag =0, Convert coordinates from fract. to orthog.
 C                             =1, Convert coordinates from orthog. to fract.
 C
-C_END_CVANISOB
+C_END_CVANISOU
 C
 C     .. Arguments ..
-      REAL B(6)
+      REAL U(6)
       INTEGER IFLAG
 C     ..
 C     .. Variables in Common ..
@@ -2314,9 +2370,10 @@ C     ..
 C     .. Common Blocks ..
       COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
+      COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
 C     ..
 C     .. Save Statement ..
-      SAVE /RBRKXX/,/ORTHOG/
+      SAVE /RBRKXX/,/ORTHOG/,/ORTHOGU/
 C     ..
 C     .. Data Statements ...
       DATA TWOPI2 /19.739209/
@@ -2328,53 +2385,41 @@ C
 C
 C---- Perform transformation
 C
+        TMP(1,1)=U(1)
+        TMP(2,2)=U(2)
+        TMP(3,3)=U(3)
+        TMP(1,2)=U(4)
+        TMP(2,1)=U(4)
+        TMP(1,3)=U(5)
+        TMP(3,1)=U(5)
+        TMP(2,3)=U(6)
+        TMP(3,2)=U(6)
+C
+C   IFLAG (I) (INTEGER)  Flag =0, Convert coordinates from fract. to orthog.
+C   IFLAG (I) (INTEGER)  Flag =1, Convert coordinates from orthog. to fract.
+C
       IF (IFLAG .EQ. 0) THEN
-        TMP(1,1)=B(1)
-        TMP(2,2)=B(2)
-        TMP(3,3)=B(3)
-        TMP(1,2)=B(4)
-        TMP(2,1)=B(4)
-        TMP(1,3)=B(5)
-        TMP(3,1)=B(5)
-        TMP(2,3)=B(6)
-        TMP(3,2)=B(6)
         DO 10 I=1,3
           DO 10 J=1,3
-            A(J,I)=RO(J,I)
-            AT(I,J)=RO(J,I)
+            A(J,I)=ROU(J,I)
+            AT(I,J)=ROU(J,I)
    10   CONTINUE
-        CALL MATMUL(TMPMAT,TMP,AT)
-        CALL MATMUL(TMP,A,TMPMAT)
-        B(1)=TMP(1,1)/TWOPI2
-        B(2)=TMP(2,2)/TWOPI2
-        B(3)=TMP(3,3)/TWOPI2
-        B(4)=TMP(1,2)/TWOPI2
-        B(5)=TMP(1,3)/TWOPI2
-        B(6)=TMP(2,3)/TWOPI2
       ELSE
-        TMP(1,1) = B(1)
-        TMP(2,2) = B(2)
-        TMP(3,3) = B(3)
-        TMP(1,2) = B(4)
-        TMP(2,1) = B(4)
-        TMP(1,3) = B(5)
-        TMP(3,1) = B(5)
-        TMP(2,3) = B(6)
-        TMP(3,2) = B(6)
         DO 20 I=1,3
           DO 20 J=1,3
-            A(J,I) = RF(J,I)
-            AT(I,J) = RF(J,I)
+            A(J,I) = RFU(J,I)
+            AT(I,J) = RFU(J,I)
    20   CONTINUE
+      ENDIF
+C
         CALL MATMUL(TMPMAT,TMP,AT)
         CALL MATMUL(TMP,A,TMPMAT)
-        B(1) = TWOPI2*TMP(1,1)
-        B(2) = TWOPI2*TMP(2,2)
-        B(3) = TWOPI2*TMP(3,3)
-        B(4) = TWOPI2*TMP(1,2)
-        B(5) = TWOPI2*TMP(1,3)
-        B(6) = TWOPI2*TMP(2,3)
-      ENDIF
+        U(1) = TMP(1,1)
+        U(2) = TMP(2,2)
+        U(3) = TMP(3,3)
+        U(4) = TMP(1,2)
+        U(5) = TMP(1,3)
+        U(6) = TMP(2,3)
 
       RETURN
 C
@@ -2637,7 +2682,7 @@ C
       CALL CCPERR
      +  (0,' No match for full atom ID - subtract one character ')
         IF(NID.GT.1)ID2 = ID2(1:NID-1)//' '//ID2(NID+1:6)
-        IF(NID.GT.1)ID  = ID (1:NID-1)//' '
+        IF(NID.GT.1)ID  = ID (1:NID-1)//'    '
   25  CONTINUE
       CALL CCPERR(1,'No match for atom ID')
 C
@@ -2730,7 +2775,7 @@ C     .. Common Blocks ..
       COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
      +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
-      COMMON /RBRKZZ/ CELL(6),RR(3,3,6)
+      COMMON /RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
 C     ..
       SAVE /ORTHOG/,/RBRKAA/,/RBRKXX/,/RBRKZZ/
