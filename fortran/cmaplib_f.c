@@ -36,6 +36,9 @@ static int ioArrayPrint(IOConvMap *ioMap)
   const char *filename = ccp4_file_name((*ioMap->mapfile).stream);
   long length = ccp4_file_length((*ioMap->mapfile).stream);
   unsigned rw_mode = ccp4_file_is_read((*ioMap->mapfile).stream);
+
+  printf("\n Logical Name: %s   Filename: %s \n",
+	 ioMap->logname,filename);
   
   if (rw_mode == 1) {
     fprintf(stdout,"\nFile name for input map file on unit %3d : %s\n",
