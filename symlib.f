@@ -1253,7 +1253,7 @@ C
    60     CONTINUE
         END IF
 C
-        REWIND IST
+        CLOSE (IST)
         RETURN
 C
 C
