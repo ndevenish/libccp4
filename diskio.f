@@ -105,7 +105,8 @@ C     .. External Subroutines ..
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
-      EXTERNAL LENSTR
+      EXTERNAL LENSTR, VAXVMS
+      LOGICAL VAXVMS
 C     ..
 C     .. Data statements ..
       DATA MODES/'UNKNOWN','SCRATCH','OLD','NEW','READONLY'/
@@ -143,7 +144,12 @@ C
 C
 C---- Open the file as requested
 C
-      CALL COPEN(IUNIT,FNAME,JSTAT)
+      IF (VAXVMS() .AND. JSTAT.EQ.2) THEN
+C       we have to specify the version so that the delete will work...
+        CALL COPEN(IUNIT,FNAME(:LENSTR(FNAME))//';',JSTAT)
+      ELSE
+        CALL COPEN(IUNIT,FNAME,JSTAT)
+      ENDIF
 C
 C---- Error conditions
 C
