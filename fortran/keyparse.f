@@ -90,12 +90,15 @@ C     not sure if necessary:
       
       entry parsekey (key, flag)
 C     bare KEY -- set FLAG if found
-C     This used to check to see if ntok was 1.
-C     But its actually handy to allow it to set a logical
-C     if the key is called. So its been changed!
       if (memokey.eq.key) then
+C       matched key
+        if (ntok.eq.1) then
           success(1) = .true.
           flag = .true.
+        else
+          argerr = .true.
+          call lerror (1, 0, 'No argument expected')
+        end if
       end if
       return
 
