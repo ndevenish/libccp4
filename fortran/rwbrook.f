@@ -1560,8 +1560,8 @@ C_END_PDBREAD
 C
 C
 C     .. Parameters ..
-      INTEGER MAXIATM
-      PARAMETER (MAXIATM=102)
+      INTEGER MAXIATM, MAXIHATM
+      PARAMETER (MAXIATM=102,MAXIHATM=14)
 C     ..
 C     .. Arguments ..
       REAL U(6),OCC,X,Y,Z
@@ -1586,7 +1586,7 @@ C     ..
 C     .. Local Arrays ..
       INTEGER IU(6)
       CHARACTER*40 ORTH(5)
-      CHARACTER*2 IATM(MAXIATM),IHATM(10)
+      CHARACTER*2 IATM(MAXIATM),IHATM(MAXIHATM)
 C     ..
 C     .. External Routines/Functions ..
       INTEGER LENSTR
@@ -1620,7 +1620,8 @@ C     .. Data Statement ..
      *          'TL','PB','BI','PO','AT','RN','FR','RA','AC','TH',
      *          'PA',' U','NP','PU','AM','CM','BK','CF','ES','FM',
      *          ' D','AN'/
-      DATA IHATM/'0H','1H','2H','3H','4H','5H','6H','7H','8H','HH'/
+      DATA IHATM/'0H','1H','2H','3H','4H','5H','6H','7H','8H','9H',
+     +           'HH','*H',"'H",'"H'/
       DATA IAA/' A'/,ISP/' '/
       DATA ORTH/'A // XO, C* // ZO (STANDARD PDB)',
      *          'B // XO, A* // ZO',
@@ -1718,7 +1719,7 @@ C
         ENDIF
 C
         II=1
-        DO 454 J=1,10
+        DO 454 J=1,MAXIHATM
           IF (IAT.EQ.IHATM(J)) GO TO 480
 454     CONTINUE
 C
