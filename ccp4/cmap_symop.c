@@ -99,13 +99,16 @@ int ccp4_cmap_get_symop(CMMFile *mfile, char *buffer)
  is blocked if data has alread been written to the file.  80
  bytes of continuous memory is written to the file.
  \param mfile (CMMFile *)
- \param buffer (const char *) character array containing the 
+ \param symop (const char *) character array containing the 
  symop string (at least 80 characters in length
  \return 1 on success, EOF on failure */
-int ccp4_cmap_set_symop(CMMFile *mfile, const char *buffer)
+int ccp4_cmap_set_symop(CMMFile *mfile, const char *symop)
 {
   const int n_byt_symop = 80;
-  
+  char buffer[80];
+  memset(buffer,' ',80U);
+  memcpy(buffer, symop, (strlen(symop) > n_byt_symop) ?
+         n_byt_symop : strlen(symop) );   
   if (ccp4_file_is_write(mfile->stream) && mfile->data.number == 0) {
     if (ccp4_file_writechar(mfile->stream, buffer, n_byt_symop) != n_byt_symop) {
       ccp4_signal( CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_WriteFail),
