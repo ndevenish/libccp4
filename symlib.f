@@ -6528,59 +6528,87 @@ c          ENDDO
        ENDDO
       ENDDO
  100  CONTINUE
-       WRITE(6,'(///,3A,I4)') 
-     +  ' Number of Alternate origins for Spacegroup:  ',NAMSPG_CIF,
-     +  ' is:',NORIG
       LINE = ' '
 
-      IF( LPAXISX)    LINE=
-     + ' This is a Polar spacegroup: Origin is not fixed along A axis'
-      IF( LPAXISY)    LINE=
-     + ' This is a Polar spacegroup: Origin is not fixed along B axis'
-      IF( LPAXISZ)    LINE=
-     + ' This is a Polar spacegroup: Origin is not fixed along C axis'
-      IF( LPAXISX .AND. LPAXISY)    LINE=
-     + ' This is a Polar+ spacegroup: Origin anywhere in A B plane'
-      IF( LPAXISX .AND. LPAXISZ)    LINE=
-     + ' This is a Polar+ spacegroup: Origin anywhere in A C plane'
-      IF( LPAXISY .AND. LPAXISZ)    LINE=
-     + ' This is a Polar+ spacegroup: Origin anywhere in B C plane'
+       write(6,*) ' LPAXISX Y Z',LPAXISX,LPAXISY,LPAXISZ
+      IF( LPAXISX .AND. LPAXISY .AND. LPAXISZ) THEN
+      LINE = ' This is P1: Origin anywhere'
+       WRITE(6,'(///,3A,I4)') 
+     +  ' Number of Alternate origins for Spacegroup:  ',NAMSPG_CIF,
+     +  ' is infinite.'
+      ELSE IF( LPAXISX .AND. LPAXISY)    THEN
+      LINE=
+     +' This is a Polar+ spacegroup: Origin anywhere in A B plane'
+       WRITE(6,'(///,3A,I4)')
+     +  ' Number of Alternate origin containing planes for Spacegroup:',
+     +  NAMSPG_CIF, ' is:',NORIG
+      ELSE IF( LPAXISX .AND. LPAXISZ)    THEN
+      LINE=
+     +' This is a Polar+ spacegroup: Origin anywhere in A C plane'
+       WRITE(6,'(///,3A,I4)')
+     +  ' Number of Alternate origin containing planes for Spacegroup:',
+     +  NAMSPG_CIF, ' is:',NORIG
+      ELSE IF( LPAXISY .AND. LPAXISZ)    THEN
+      LINE=
+     +' This is a Polar+ spacegroup: Origin anywhere in B C plane'
+       WRITE(6,'(///,3A,I4)')
+     +  ' Number of Alternate origin containing planes for Spacegroup:',
+     +  NAMSPG_CIF, ' is:',NORIG
+      ELSE IF( LPAXISX)    THEN
+      LINE=
+     +' This is a Polar spacegroup: Origin is not fixed along A axis'
+       WRITE(6,'(///,3A,I4)')
+     +  ' Number of Alternate origin containing lines for Spacegroup: ',
+     +  NAMSPG_CIF, ' is:',NORIG
+      ELSE IF( LPAXISY)    THEN
+      LINE=
+     +' This is a Polar spacegroup: Origin is not fixed along B axis'
+       WRITE(6,'(///,3A,I4)')
+     +  ' Number of Alternate origin containing lines for Spacegroup: ',
+     +  NAMSPG_CIF, ' is:',NORIG
+      ELSE IF( LPAXISZ)    THEN
+      LINE=
+     +' This is a Polar spacegroup: Origin is not fixed along C axis'
+       WRITE(6,'(///,3A,I4)')
+     +  ' Number of Alternate origin containing lines for Spacegroup: ',
+     +  NAMSPG_CIF, ' is:',NORIG
+      ELSE 
+       WRITE(6,'(///,3A,I4)')
+     +  ' Number of Alternate origins for Spacegroup:  ',NAMSPG_CIF,
+     +  ' is:',NORIG
+      END IF
 
        IF(LINE.NE.' ') WRITE(6,'(/,A)')LINE
 
       LINE = ' Norigin     Ox      Oy      Oz'
-      IF( LPAXISX)    LINE =
-     + ' Norigin     ??      Oy      Oz'
-      IF( LPAXISY)    LINE =
-     + ' Norigin     Ox      ??      Oz'
-      IF( LPAXISZ)    LINE =
-     + ' Norigin     Ox      Oy      ??'
-      IF( LPAXISX .AND. LPAXISY)    LINE=
-     + ' Norigin     ??      ??      Oz'
-      IF( LPAXISX .AND. LPAXISZ)    LINE=
-     + ' Norigin     ??      Oy      ??'
-      IF( LPAXISY .AND. LPAXISZ)    LINE=
-     + ' Norigin     Ox      ??      ??'
        WRITE(6,'(//,A)')LINE
        DO I=1,NORIG
-         IF(.NOT. (LPAXISX.OR.LPAXISY.OR.LPAXISZ)) 
-     +     WRITE(6,'(i8,3F8.4)') I,ORIG(1,I),ORIG(2,I),ORIG(3,I)
-         IF(LPAXISX .AND. .NOT. (LPAXISY.OR.LPAXISZ))  
-     +     WRITE(6,'(i8,A8,2F8.4)') I,'     ?? ',ORIG(2,I),ORIG(3,I)
-         IF(LPAXISY .AND. .NOT. (LPAXISX.OR.LPAXISZ))  
-     +     WRITE(6,'(i8,F8.4,A8,F8.4)') I,ORIG(1,I),'     ?? ',ORIG(3,I)
-         IF(LPAXISZ .AND. .NOT. (LPAXISX.OR.LPAXISY))  
-     +     WRITE(6,'(i8,2F8.4,A8)') I,ORIG(1,I),ORIG(2,I),'     ?? '
-         IF(LPAXISX .AND. LPAXISY)  
-     +     WRITE(6,'(i8,2A8,F8.4)') I,'     ?? ','     ?? ',ORIG(3,I)
-         IF(LPAXISX .AND. LPAXISZ)  
-     +     WRITE(6,'(i8,A8,F8.4,A8)') I,'     ?? ',ORIG(2,I),'     ?? '
-         IF(LPAXISY .AND. LPAXISZ)  
-     +     WRITE(6,'(i8,F8.4,2A8)') I,ORIG(1,I),'     ?? ','     ?? '
+         IF(LPAXISY .AND. LPAXISZ .AND. LPAXISX)  THEN
+           WRITE(6,'(i8,3A8)') I,'     ?? ','     ?? ','     ?? '
+         ELSE IF(LPAXISX .AND. LPAXISY)  THEN
+           WRITE(6,'(i8,2A8,F8.4)') I,'     ?? ','     ?? ',ORIG(3,I)
+         ELSE IF(LPAXISX .AND. LPAXISZ)  THEN
+           WRITE(6,'(i8,A8,F8.4,A8)') I,'     ?? ',ORIG(2,I),'     ?? '
+         ELSE IF(LPAXISY .AND. LPAXISZ)  THEN
+           WRITE(6,'(i8,F8.4,2A8)') I,ORIG(1,I),'     ?? ','     ?? '
+         ELSE IF( LPAXISX)    THEN
+           WRITE(6,'(i8,A8,2F8.4)') I,'     ?? ',ORIG(2,I),ORIG(3,I)
+         ELSE IF(LPAXISY)  THEN
+           WRITE(6,'(i8,F8.4,A8,F8.4)') I,ORIG(1,I),'     ?? ',ORIG(3,I)
+         ELSE IF(LPAXISZ)  THEN
+           WRITE(6,'(i8,2F8.4,A8)') I,ORIG(1,I),ORIG(2,I),'     ?? '
+         ELSE 
+           WRITE(6,'(i8,3F8.4)') I,ORIG(1,I),ORIG(2,I),ORIG(3,I)
+         END IF
        ENDDO
 
       RETURN
       END
+
+
+
+
+
 
 
 
