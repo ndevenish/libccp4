@@ -336,7 +336,7 @@ C
       SUBROUTINE MATMLI(A,B,C)
 C     ========================
 C Integer matrix multiply
-      INTEGER A(3,3),B(3,3),C(3,3)
+      INTEGER A(3,3),B(3,3),C(3,3),I,J,K
 C
 C_END_MATMULI
 C
@@ -1003,7 +1003,8 @@ C  4. replace a(n),b(n) by a(1),b(1) in fm02ad to avoid vax array checking.
 C
       FUNCTION FA01AS(I)
 C     ==================
-      DOUBLE PRECISION  G
+      DOUBLE PRECISION  G, FA01AS
+      INTEGER I
       COMMON/FA01ES/G
       G= 1431655765.D0
 C
@@ -1017,6 +1018,9 @@ C
       SUBROUTINE FA01BS(MAX,NRAND)
 C     ============================
 C
+      INTEGER NRAND, MAX
+      DOUBLE PRECISION FA01AS
+      EXTERNAL FA01AS
       NRAND=INT(FA01AS(1)*FLOAT(MAX))+1
       RETURN
       END
@@ -1025,6 +1029,7 @@ C
 C     ========================
 C
       DOUBLE PRECISION  G
+      INTEGER IL,IR
       COMMON/FA01ES/G
       G= 1431655765.D0
 C
@@ -1037,6 +1042,7 @@ C
 C     ========================
 C
       DOUBLE PRECISION  G
+      INTEGER IL,IR
       COMMON/FA01ES/G
       G= 1431655765.D0
 C
@@ -1083,6 +1089,7 @@ C---- The following statement changed from a(n),b(n) to avoid vax dynamic
 C     array check failure.
 C
       DIMENSION A(1),B(1)
+      INTEGER N,JA,IA,JB,IB,I
 C
       R1=0D0
       IF(N.LE.0) GO TO 2
@@ -1236,6 +1243,7 @@ C
 C      A = BC
 C
 C     .. Array Arguments ..
+      INTEGER N,M
       REAL              A(N,N),B(N,M),C(M,N)
 C
 C_END_MATMUL
