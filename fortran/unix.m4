@@ -993,6 +993,23 @@ C     but it seems not to.  This works in HP-UX A.09.01.
 [      CALL EXIT (ICODE)
 ])dnl
       END
+
+dnl * f2c needs bit-twiddling stuff (also in library.c)
+
+ifelse(_f2c,1
+[      INTEGER FUNCTION IEOR (I,J)
+      INTRINSIC XOR
+      IEOR = XOR (I,J)
+      END
+      INTEGER FUNCTION IOR (I,J)
+      INTRINSIC OR
+      IOR = OR (I,J)
+      END
+      INTEGER FUNCTION IAND (I,J)
+      INTRINSIC AND
+      IAND = AND (I,J)
+      END
+])
 dnl * Dummy GL stubs iff not SGI
 ifelse(_sgi,1,,
 [        subroutine gdummy
