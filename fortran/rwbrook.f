@@ -1449,7 +1449,6 @@ C
       SAVE /RBRKXX/,/RBRKYY/
       DATA IAT/0,1,5,6,7,8,9,15,16,19,23,39,53,74,92/
       DATA ITYPE/'CRYST1','SCALE ','TER   ','ATOM  ','HETATM'/
-      DATA FTNOT /' '/
 C
 C---- Choose output format to give correct position for atom name
 C     and option for residue number treatment
@@ -1457,12 +1456,13 @@ C
       JTYP=ITYP
 C      ALTLOC=BROOK(17)
       ALTLOC=ATNAM(4:4)
-      FOOTN=FTNOT
 C     Dropped the feature of writing out atomic number where footnote
 C     should be
+CCC      FOOTN=FTNOT
 CCC      IF(IZ.EQ.0)FTNOT='   '
 CCC      IF(IZ.GT.0)WRITE(FOOTN,9876)IZ
 CCC9876  FORMAT(1X,I2)
+      FOOTN=' '
       IF(ITYP.EQ.0)THEN
       JTYP=4
       ALTLOC=' '
