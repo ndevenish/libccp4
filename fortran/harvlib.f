@@ -853,9 +853,9 @@ C     .. Local Scalars ..
      +          FileName*256,mkdirMode*3,chmodMode*3
 C     ..
 C     .. External Functions ..
-      LOGICAL VAXVMS
+      LOGICAL VAXVMS, WINMVS
       INTEGER Lenstr
-      EXTERNAL Lenstr,VAXVMS
+      EXTERNAL Lenstr,VAXVMS,WINMVS
 C     ..
 C     .. External Subroutines ..
       EXTERNAL ccif_block_by_name,
@@ -865,7 +865,7 @@ C     .. External Subroutines ..
      +             ccif_release_context,
      +              ccif_setup_context,
      +               ccif_set_line_limit,
-     +                fdate,cchmod,cmkdir,
+     +                cchmod,cmkdir,
      +                 ustenv,ugtenv
 C     ..
 C     .. Data statements ..
@@ -947,6 +947,8 @@ C---- see if $HARVESTHOME/DepositFiles directory exists
 C
         IF (VAXVMS()) THEN
           FileName = Buffer(1:Lenstr(Buffer))//':[DepositFiles]'
+        ELSE IF (WINMVS()) THEN
+          FileName = Buffer(1:Lenstr(Buffer))//'\DepositFiles'
         ELSE
           FileName = Buffer(1:Lenstr(Buffer))//'/DepositFiles'
         END IF
@@ -979,7 +981,10 @@ C---- now look for ProjectName sub-directory
 C
         IF (VAXVMS()) THEN
           FileName = FileName(1:Lenstr(FileName)-1)//'.'//
-     +               ProjectName(1:Lenstr(ProjectName))//']'
+     +               ProjectName(1:Lenstr(ProjectName))
+        ELSE IF (WINMVS()) THEN
+          FileName = FileName(1:Lenstr(FileName))//'\'//
+     +               ProjectName(1:Lenstr(ProjectName))
         ELSE
           FileName = FileName(1:Lenstr(FileName))//'/'//
      +               ProjectName(1:Lenstr(ProjectName))
@@ -5209,10 +5214,9 @@ C     .. External Subroutines ..
      +          ccif_put_int,
      +           ccif_release_context,
      +            ccif_setup_context,
-     +             Ccpupc,
-     +              ugtenv,
-     +               ccpdpn,
-     +                Hparse
+     +             ugtenv,
+     +              ccpdpn,
+     +               Hparse
 C     ..
 C     .. External Functions ..
       INTEGER Lenstr
