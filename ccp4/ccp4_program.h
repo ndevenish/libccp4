@@ -28,6 +28,10 @@ extern "C" {
 #define CCP4_VERSION_NO "4.2"
 #define CCP4_PATCH_LEVEL "4.2.0"
 
+/* Maximum lengths of strings holding program names and versions */
+#define MAXLEN_PROGNAME    80
+#define MAXLEN_PROGVERSION 80
+
 /*------------------------------------------------------------------*/
 
 /* Function Prototypes */
