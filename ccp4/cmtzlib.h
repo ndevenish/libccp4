@@ -775,9 +775,20 @@ int MtzSetSortOrder(MTZ *mtz, MTZCOL *colsort[5]);
  */
 int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nlines);
 
-int ccp4_lwsymm(MTZ *mtz, int *nsymx, int *nsympx, float rsymx[192][4][4], 
-		char ltypex[], int *nspgrx, char spgrnx[], char pgnamx[]);
-
+/** Write or update symmetry information for MTZ header. This provides support
+ * for the Fortran API, and is not particularly convenient for C programs.
+ * @param mtz pointer to MTZ struct
+ * @param nsymx number of symmetry operators
+ * @param nsympx number of primitive symmetry operators
+ * @param rsymx array of symmetry operators (dimensions ordered in C convention)
+ * @param ltypex lattice type
+ * @param nspgrx spacegroup number
+ * @param spgrnx spacegroup name
+ * @param pgnamx point group name
+ * @return 1 on success 
+ */
+int ccp4_lwsymm(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4], 
+		char ltypex[], int nspgrx, char spgrnx[], char pgnamx[]);
 
 /* Assign columns for writing. Check to see if columns already exist,
  * else create them. New columns are assigned to the base dataset if it 

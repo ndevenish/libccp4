@@ -1909,22 +1909,22 @@ int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],
   return 1;
 }
 
-int ccp4_lwsymm(MTZ *mtz, int *nsymx, int *nsympx, float rsymx[192][4][4], 
-   char ltypex[], int *nspgrx, char spgrnx[], char pgnamx[])
+int ccp4_lwsymm(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4], 
+   char ltypex[], int nspgrx, char spgrnx[], char pgnamx[])
 {
   int i,j,k;
 
-  mtz->mtzsymm.nsym = *nsymx;
-  mtz->mtzsymm.nsymp = *nsympx;
-  for (i = 0; i < *nsymx; ++i) {
+  mtz->mtzsymm.nsym = nsymx;
+  mtz->mtzsymm.nsymp = nsympx;
+  for (i = 0; i < nsymx; ++i) {
     for (j = 0; j < 4; ++j) {
       for (k = 0; k < 4; ++k) {
-        mtz->mtzsymm.sym[i][k][j] = rsymx[i][j][k];
+        mtz->mtzsymm.sym[i][j][k] = rsymx[i][j][k];
       }
     }
   }
   mtz->mtzsymm.symtyp = ltypex[0];
-  mtz->mtzsymm.spcgrp = *nspgrx;
+  mtz->mtzsymm.spcgrp = nspgrx;
   ccp4spg_to_shortname(mtz->mtzsymm.spcgrpname,spgrnx);
   strcpy(mtz->mtzsymm.pgname,pgnamx);
 
