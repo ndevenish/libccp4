@@ -1,6 +1,6 @@
 /****************************************************************************
-  binsort.c
-  Z270792
+  binsort.c                                                                */
+#define VERSION "Z290992"                                                  /*
 
 HOW TO USE
 
@@ -47,7 +47,20 @@ from fortran programs?
 
 Do not critisize the programing style. This is a compromise between
 ANSI & old-fasioned C
+*****************************************************************************
+*****************************************************************************
+  merge
+
+Polyphase merge sorting with "horizontal distribution"
+implemented for T = 4, P = T-1 = 3
+as published in:
+         Donald E. Knuth: The Art of Computer Programming Vol.3
+                          (Sorting and Searching) pp. 270-271
+                          Addison-Wesley Publishing Company, Inc. (1973)
+
 *****************************************************************************/
+#define T                     4
+#define P                     3
 
 /*#define FUNCPROTO   1       Good for debugging under ANSI C */
 
@@ -67,13 +80,21 @@ ANSI & old-fasioned C
 #    include <errno.h>
 #    include <sys/param.h>        /* for statistics */
 #    include <sys/times.h>        /* for statistics */
+#    include <time.h>
+#    include <stdlib.h>
 
+#    ifndef NOUNISTD		/* ESV, for instance, doesn't have it */
+#      include <unistd.h>
+#      include <malloc.h>
+#    endif
 #    ifndef  SEEK_SET
 #      if defined(ESV) && defined(SYSTYPE_BSD43)
 #       include <sys/file.h>
 #       define SEEK_SET L_SET
-#      else
-#       include <unistd.h>
+#       ifndef L_END
+#         define L_END L_XTND /* necessary for ESV OS2.3 it seems */
+#       endif
+#       define SEEK_END L_END
 #      endif
 #    endif /* SEEK_SET */
 #endif     /* VAX_VMS - UNIX */
@@ -135,6 +156,9 @@ struct scratch_tape {
   char      *buf;         /* i/o buffer */
   char      *pbuf;        /* pointer to buffer */
 };
+static struct scratch_tape TAPE [T+1]; /* Number of the physical tape unit
+					  corresponding to logical tape unit
+					  number j */
 
 
 /*** routines used int this module ***/
@@ -426,9 +450,9 @@ Notes:\n\
 	Current work area size %dB,\n\
 	Current scratch file path %s.\n\
 \n\
-Version Z270792                            Good Luck\n\
+Version %s                            Good Luck\n\
                                               J. Zelinka\n\
-", workasz, scrpath);
+", workasz, scrpath, VERSION);
 }
 
 /*** Internal constants - do not change them ***/
@@ -499,8 +523,8 @@ char    *argv[];
                           /* record allignment */
   actworkasz = workasz - (workasz % (actrecl * 4)); /* rounded on 4 records
 						       boundary */
-  scrbufsize = actworkasz / 4;                      /* scratch file buffer */
   workainrec = actworkasz / actrecl;                /* lengths in records */
+  scrbufsize = actworkasz / 4;                      /* scratch file buffer */
   scrbufinrec = scrbufsize / actrecl;
   if (workainrec <= 50 || !(workarea = (char *)malloc(actworkasz)))
     memoryerr();
@@ -612,6 +636,7 @@ char		*argv[];
   }
 
   pkeys = keys = (struct key_dsc *)malloc(nkeys * sizeof(struct key_dsc));
+  if (pkeys == NULL) memoryerr();
   for (i = 1; i < argc; ++i)
     if (!strcmp(argv[i], F_KEY)) {	/* key values */
       d2 = 1;                           /* default length */
@@ -1078,7 +1103,7 @@ _exit(status);
 static void
 printkeys()
 {
-  int			 i, length, mask;
+  int			 i, mask;
   struct key_dsc	*p;
   char		        *ttype, *tasc;
 
@@ -1127,10 +1152,21 @@ prtstatist(realtime)
 long		realtime;
 {
   struct tms	spenttime;
+  int           tapenum;
+  unsigned long one, total;
 
   fprintf(stderr,"\n\nbinsort statistics:\n");
   fprintf(stderr,"\tSorted records:\t\t\t%d\n", nrecs);
   fprintf(stderr,"\tInternal memory [bytes]:\t%d\n", actworkasz);
+  fprintf(stderr,"\tScratch space used:\n");
+  total = 0;
+  for (tapenum = 1; tapenum <= 4; ++tapenum)
+    if ((TAPE+tapenum)->fd != 0) {
+      one = (unsigned long)lseek((TAPE+tapenum)->fd, 0L, SEEK_END);
+      total += one;
+      fprintf(stderr, "\t\ttape %2d: %10ld\n", tapenum, one);
+    }
+  fprintf(stderr,"\t\tTotal  : %10ld\n", total);
   fprintf(stderr,"\tReal time [s]:\t\t\t%d\n", (int)realtime + 1);
   times(&spenttime);
   fprintf(stderr,"\tUser time [s]:\t\t\t%.2f\n",
@@ -1160,8 +1196,6 @@ as published in:
                           Addison-Wesley Publishing Company, Inc. (1973)
 
 ***************************************************************************/
-
-
 #define T                     4
 #define P                     3
 
@@ -1175,15 +1209,11 @@ static int     j,         /* logical tape unit 1 <= j <= T */
                D [T+1];   /* Number of dummy runs assumed to be present at
 			     the beginning of logical tape unit number j */
 
-static struct scratch_tape TAPE [T+1]; /* Number of the physical tape unit
-					  corresponding to logical tape unit
-					  number j */
-
 
 static void
 merge()
 {
-  register int        i, nrec, a, sizerec;
+  register int        i, nrec, a;
   char               *pb;
   struct scratch_tape tmpTAPE;
   register int        tmpD;
@@ -1290,7 +1320,7 @@ merge()
 static void
 mergeruns()
 {
-  register int         i, j, size;
+  register int         j;
   int                  newrunlng;
   int                  nmergeruns;       /* # of actual merged runs */
   struct scratch_tape *tapes [P+1],      /* tapes taken into account */
@@ -1459,7 +1489,7 @@ int     num;
     fprintf(stderr, "binsort -- scratch is not a regular file\n");
     my_exit(1);
   }
-  unlink(scrname);                         /* delete after close !!! */
+  /* unlink(scrname);                         * delete after close !!! */
   ctape->fd = fdes;                        /* file descriptor */
   ctape->truns = ctape->runlng = 0;        /* no runs on tape */
   ctape->buf = ctape->pbuf = (char *)NULL;
@@ -1470,14 +1500,13 @@ rewindtape(num)
 int          num;
 {
   struct scratch_tape   *ctape;
-  unsigned               size;
 
   ctape = TAPE + num;
+  (void)lseek(ctape->fd, 0L, SEEK_SET);
   if (num == T)
     ctape->pbuf = ctape->buf;               /* tape for write is empty */
   else
     ctape->pbuf = ctape->buf + scrbufsize;  /* tape for read in empty */
-  (void)lseek(ctape->fd, 0L, SEEK_SET);
 }
 
 
@@ -1517,7 +1546,7 @@ int          nrec;
 	*pb++ = *pd++;
       }
     }
-    if ((char *)pb != iob)           /* last piece of indormation in buffer */
+    if ((char *)pb != iob)           /* last piece of information in buffer */
       if (write(ctape->fd, (void *)iob, ((char *)pb - iob)) == -1)
 	    ioerr();
   }
