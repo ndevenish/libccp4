@@ -56,7 +56,8 @@ C     No provision for existing XML files to be reopened
       common /ccp4xmld/ elementnumber, elementstatus, openelements, 
      $     XMLFileName
 
-      external ccpexs
+      integer lenstr
+      external ccpexs,lenstr
 
       XMLFileName=' '
       elementnumber=0
@@ -127,7 +128,8 @@ C              <leftopen
      $     XMLFileName
 c      save /ccp4xml/
 
-      external ccpexs
+      integer lenstr
+      external ccpexs,lenstr
 
       indentline=' ' 
 
@@ -256,6 +258,7 @@ C
      $     XMLFileName
 c      save /ccp4xml/
 
+      integer lenstr
       external lenstr
 
       indentline=' '
@@ -318,6 +321,7 @@ C
       integer XMLFileUnit, ifail, elementstatus(80), elementnumber 
       character*80 openelements(80), XMLFileName
       
+      integer lenstr
       external lenstr
 
       common /ccp4xmld/ elementnumber, elementstatus, openelements,
