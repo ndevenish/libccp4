@@ -1506,7 +1506,7 @@ int ccp4_lhprt(const MTZ *mtz, int iprint) {
 
     printf(" * Number of Symmetry Operations = %d \n",mtz->mtzsymm.nsym);
     printf(" * Number of Primitive Operations = %d \n",mtz->mtzsymm.nsymp);
-    printf(" * Space Group = %d %s \n",mtz->mtzsymm.spcgrp,mtz->mtzsymm.spcgrpname);
+    printf(" * Space Group = %d \'%s\' \n",mtz->mtzsymm.spcgrp,mtz->mtzsymm.spcgrpname);
     printf(" * Lattice Type = %c \n",mtz->mtzsymm.symtyp);
     printf(" * Point Group Name = %s \n",mtz->mtzsymm.pgname);
 
@@ -1522,7 +1522,7 @@ int ccp4_lhprt(const MTZ *mtz, int iprint) {
     }
 
   } else {
-    printf(" * Space group = %s (number     %d)\n\n",mtz->mtzsymm.spcgrpname,
+    printf(" * Space group = \'%s\' (number     %d)\n\n",mtz->mtzsymm.spcgrpname,
        mtz->mtzsymm.spcgrp);
   }
 
@@ -1855,6 +1855,7 @@ int MtzAssignHKLtoBase(MTZ *mtz)
       if (colarray[l]) MtzAssignColumn(mtz, colarray[l], "HKL_base","HKL_base");
 
   }
+  return 1;
 }
 
 int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],  
@@ -1912,7 +1913,7 @@ int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],
 int ccp4_lwsymm(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4], 
    char ltypex[], int nspgrx, char spgrnx[], char pgnamx[])
 {
-  int i,j,k;
+  int i,j,k,length;
 
   mtz->mtzsymm.nsym = nsymx;
   mtz->mtzsymm.nsymp = nsympx;
@@ -1925,7 +1926,11 @@ int ccp4_lwsymm(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4],
   }
   mtz->mtzsymm.symtyp = ltypex[0];
   mtz->mtzsymm.spcgrp = nspgrx;
-  ccp4spg_to_shortname(mtz->mtzsymm.spcgrpname,spgrnx);
+
+  length = ( strlen(spgrnx) < MAXSPGNAMELENGTH ) ? strlen(spgrnx) : MAXSPGNAMELENGTH;
+  strncpy(mtz->mtzsymm.spcgrpname,spgrnx,length);
+  mtz->mtzsymm.spcgrpname[length] = '\0';
+
   strcpy(mtz->mtzsymm.pgname,pgnamx);
 
   return 1;
@@ -2196,10 +2201,10 @@ int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[],
 
 int MtzPut(MTZ *mtz, const char *logname)
 
-{ char hdrrec[81],symline[81];
+{ char hdrrec[81],symline[81],spgname[MAXSPGNAMELENGTH+3];
  CCP4File *fileout;
  int i, j, k, l, hdrst, icol, numbat, isort[5], debug=0;
- int ind[3],ind_xtal,ind_set,ind_col[3];
+ int ind[3],ind_xtal,ind_set,ind_col[3],length;
  double coefhkl[6];
  float maxres=0.0,minres=100.0,res,refldata[200];
  int nwords=NBATCHWORDS,nintegers=NBATCHINTEGERS,nreals=NBATCHREALS;
@@ -2289,10 +2294,15 @@ int MtzPut(MTZ *mtz, const char *logname)
  MtzWhdrLine(fileout,25,hdrrec);
  if (debug) printf(" MtzPut: SORT just written \n");
 
- sprintf(hdrrec,"SYMINF %3d %2d %c %5d %7s %5s",mtz->mtzsymm.nsym,mtz->mtzsymm.nsymp,
-	     mtz->mtzsymm.symtyp,mtz->mtzsymm.spcgrp,mtz->mtzsymm.spcgrpname,
-             mtz->mtzsymm.pgname);
- MtzWhdrLine(fileout,35,hdrrec);
+ spgname[0] = '\'';
+ length = strlen(mtz->mtzsymm.spcgrpname);
+ while (mtz->mtzsymm.spcgrpname[--length] == ' ');
+ strncpy(spgname+1,mtz->mtzsymm.spcgrpname,length+1);
+ spgname[length+2] = '\'';
+ spgname[length+3] = '\0';
+ sprintf(hdrrec,"SYMINF %3d %2d %c %5d %22s %5s",mtz->mtzsymm.nsym,mtz->mtzsymm.nsymp,
+      mtz->mtzsymm.symtyp,mtz->mtzsymm.spcgrp,spgname,mtz->mtzsymm.pgname);
+ MtzWhdrLine(fileout,50,hdrrec);
  if (debug) printf(" MtzPut: SYMINF just written \n");
 
  for (i = 0; i < mtz->mtzsymm.nsym; ++i) {
