@@ -86,7 +86,7 @@ C     .. Local Scalars ..
      +     NAMFIL*255,HANDLE*5,OPNVAR*20, access*10
       INTEGER UNKNWN, SCRTCH, OLD, NEW, RDONLY, PRINTR
       PARAMETER (UNKNWN=1, SCRTCH=2, OLD=3, NEW=4, RDONLY=5, PRINTR=6)
-      LOGICAL CCPEXS
+      LOGICAL CCPEXS, LNONAM
 C     ..
 C     .. Local Arrays ..
       CHARACTER STAT(6)*7, DISP*6
@@ -137,13 +137,10 @@ C     with status UNKNOWN rather than new if they exist
 C
 C     check for `logical name' referencing real file
       CALL UGTENV(LOGNAM,NAMFIL)
+      LNONAM = .FALSE.
       IF (NAMFIL.EQ.' ') THEN
-        IF (.NOT. CCPEXS(LOGNAM)) THEN
-	    ERRSTR = 'CCPOPN Logical name '//LOGNAM
-          ERRSTR(LENSTR(ERRSTR)+2:) = 'has not been assigned to a file'
-          CALL CCPERR(2,ERRSTR)
-        END IF
-	  NAMFIL = LOGNAM
+        IF (.NOT. CCPEXS(LOGNAM)) LNONAM = .TRUE.
+        NAMFIL = LOGNAM
       END IF
 C     VMS null device (VMS code canonicalises /dev/null)
       IF (NAMFIL.EQ.'NL:' .OR. NAMFIL.EQ.'nl:') NAMFIL='/dev/null'
@@ -237,6 +234,12 @@ C     don't report UNKNOWN if actually SCRATCH
       IF (IOS.NE.0) THEN
         CALL UGERR(IOS,ERRSTR)
         IF (IFAIL.EQ.0) THEN
+C         warning if there was no file associated with logical name
+          IF (LNONAM) THEN
+             ERRSTR = 'CCPOPN Logical name '//LOGNAM
+             ERRSTR(LENSTR(ERRSTR)+2:) = 'has no associated file name'
+             CALL CCPERR(2,ERRSTR)
+          END IF
 C         hard failure
           WRITE (LUNSTO (1),FMT=6002) IUN, NAMFIL(1:LENSTR(NAMFIL)),
      +         LOGNAM(1:LENSTR(LOGNAM))
