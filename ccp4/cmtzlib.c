@@ -364,7 +364,8 @@ MTZ *MtzGet(const char *logname, int read_refs)
          }  
        }
     else if (strncmp (mkey, "TITL",4) == 0) {
-       strncpy(mtz->title,hdrrec+6,71); 
+       strncpy(mtz->title,hdrrec+6,70); 
+       mtz->title[70] = '\0';
        }
 
     else if (strncmp (mkey, "CELL",4) == 0) {
@@ -737,14 +738,16 @@ void MtzHklcoeffs(const float cell[6], double coefhkl[6]) {
   coefhkl[5] = 0.25*(czst*czst);
 }
 
-void ccp4_lrtitl(const MTZ *mtz, char ftitle[], size_t *len) {
+int ccp4_lrtitl(const MTZ *mtz, char *title) {
 
-  size_t length;
+  int length;
 
-  length = strlen(strcpy(ftitle, mtz->title));
-  while (ftitle[--length] == ' ');
-  *len =  ++length;
-
+  length = (int) strlen(strcpy(title, mtz->title));
+  if (length > 0) {
+    while (title[--length] == ' ');
+    ++length;
+  }
+  return(length);
 }
 
 int ccp4_lrhist(const MTZ *mtz, char history[][MTZRECORDLENGTH]) {

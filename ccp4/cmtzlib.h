@@ -396,7 +396,13 @@ void MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf);
 
 /**** pseudo-mtzlib routines ****/
 
-void ccp4_lrtitl(const MTZ *mtz, char ftitle[], size_t *len);
+/** Returns title of MTZ structure 'mtz'
+ * @param mtz pointer to MTZ struct
+ * @param title MTZ title as character string
+ * @return length of title excluding trailing blanks and terminating null
+ *  character.
+ */
+int ccp4_lrtitl(const MTZ *mtz, char *title);
 
 int ccp4_lrhist(const MTZ *mtz, char history[][MTZRECORDLENGTH]);
 

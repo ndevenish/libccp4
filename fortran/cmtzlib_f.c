@@ -154,15 +154,16 @@ FORTRAN_SUBR ( LRTITL, lrtitl,
 	       (int *mindx, fpstr ftitle, int *len, int ftitle_len),
 	       (int *mindx, fpstr ftitle, int *len),
 	       (int *mindx, fpstr ftitle, int ftitle_len, int *len))
-
 {
+  char temp_title[71];
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRTITL");)
+  if (MtzCheckSubInput(*mindx,"LRTITL",1)) return;
 
- if (MtzCheckSubInput(*mindx,"LRTITL",1)) return;
+  *len = ccp4_lrtitl(mtzdata[*mindx-1], temp_title);
+  ccp4_CtoFString(FTN_STR(ftitle),FTN_LEN(ftitle),temp_title);
 
-  ccp4_lrtitl(mtzdata[*mindx-1], ftitle, (size_t *) len);
-
+  free (temp_title);
 }
 
 /* Fortran wrapper for ccp4_lrhist */
