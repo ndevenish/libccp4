@@ -105,7 +105,7 @@ float invert4matrix(const float a[4][4], float ai[4][4])
      +         x[0][1]*x[1][2]*x[2][0] - x[0][1]*x[1][0]*x[2][2] +
      +         x[0][2]*x[1][0]*x[2][1] - x[0][2]*x[1][1]*x[2][0];
 	    i2 = ii + jj;
-	    c[ii][jj] = pow_ii(-1.0, i2) * am;
+	    c[ii][jj] = ccp4_pow_ii(-1.0, i2) * am;
 	}
     }
 
@@ -133,7 +133,7 @@ float invert4matrix(const float a[4][4], float ai[4][4])
   return d;
 } 
 
-float pow_ii(const float base, const int power) {
+float ccp4_pow_ii(const float base, const int power) {
 
   int i = 0;
   float pow = 1;

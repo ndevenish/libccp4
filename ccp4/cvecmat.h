@@ -17,7 +17,7 @@ void ccp4_4matmul( float c[4][4], const float  a[4][4], const float b[4][4]);
 double invert3matrix(const double a[3][3], double ai[3][3]);
 float invert4matrix(const float a[4][4], float ai[4][4]);
 
-float pow_ii(const float base, const int power);
+float ccp4_pow_ii(const float base, const int power);
 
 #ifdef __cplusplus
 }
