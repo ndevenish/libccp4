@@ -303,8 +303,9 @@ binsort : $(srcdir)/binsort.c $(srcdir)/binsort.h
 	$(LNS) binsort ../../src/binsort
 
 # the unix-specific bits need preprocessing for different unix variants
-$L(unix.o) : $(srcdir)/unix.m4
+unix.$F : $(srcdir)/unix.m4
 	$(M4) $(srcdir)/unix.m4 >unix.$F
+$L(unix.o) : unix.$F
 	-rm -rf unix.dir; mkdir unix.dir
 	echo '      SUBROUTINE UNIX' > unix.dir/unix.$F
 	echo '      END' >> unix.dir/unix.$F
@@ -345,10 +346,12 @@ test : testlib
 
 tags :
 	-rm -rf tagdir; mkdir tagdir
-	ln -s $(srcdir)/*.[ch] tagdir
+	ln -s $(srcdir)/*.c tagdir
 	for i in $(srcdir)/*.for; do \
  		ln -s $$i tagdir/`basename $$i .for`.f; done
-	cd tagdir; etags *.[fch]
+	ln -s $(srcdir)/unix.m4 tagdir/unix.f
+	cd tagdir; etags *.[fc]
 	sed -e 's|^\([a-zA-Z_]*\).f,|$(srcdir)/\1.for,|' \
- 		-e 's|^\([a-zA-Z_]*.[ch]\),|$(srcdir)/\1,|' tagdir/TAGS > TAGS
+ 		-e 's|^\([a-zA-Z_]*.c\),|$(srcdir)/\1,|' \
+ 		-e 's/unix.for/unix.m4/' tagdir/TAGS > TAGS
 	rm -rf tagdir
