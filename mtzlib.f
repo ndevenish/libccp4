@@ -1954,7 +1954,6 @@ C
             END IF
 C
 C                *************************************
-Cdw            CALL QMODE(RLUN(MINDX),2,NITEM)
             CALL QMODE(RLUN(MINDX),6,NITEM)
             CALL QREAD(RLUN(MINDX),HDRST(MINDX),1,IER)
             CALL QSEEK(RLUN(MINDX),1,HDRST(MINDX),1)
@@ -4380,11 +4379,11 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER ENDLOP,I,IFAIL,ISTAT,IWORD,JDO10,JDO100,JDO20,JDO30,JDO40,
-     +        JDO50,JDO60,JDO65,JDO80,MSTAMP,NITEM
+     +        JDO50,JDO60,JDO65,JDO80,NITEM
       CHARACTER LINE*400,STROUT*400
 C     ..
 C     .. Local Arrays ..
-      INTEGER WINDEX(MBATCH)
+      INTEGER WINDEX(MBATCH),MSTAMP(1)
       CHARACTER SYMCHS(96)*80
 C     ..
 C     .. External Functions ..
@@ -4703,15 +4702,15 @@ C
 C---- Get the machine stamp
 C
 C            *************
-        CALL QTYPE(MSTAMP)
+        CALL QTYPE(MSTAMP(1))
 C            *************
 C
 C            **********************************
         CALL QWRITE(WLUN(MINDX),IWORD,4)
         CALL QMODE (WLUN(MINDX),2,NITEM)
         CALL QWRITE(WLUN(MINDX),HDRST(MINDX),1)
-        CALL QMODE (WLUN(MINDX),0,NITEM)
-        CALL QWRITE(WLUN(MINDX),MSTAMP,4)
+        CALL QMODE (WLUN(MINDX),6,NITEM)
+        CALL QWRITE(WLUN(MINDX),MSTAMP,1)
 C            **********************************
 C
 C---- Output information
@@ -6159,14 +6158,6 @@ C          READ (LINE,FMT='(2X,I2,18A4)') K, (RBATCH(I),I=J,IEND)
 C          IF (K.NE.L) GO TO 50
 C   20   CONTINUE
 C------------------------------------------------------------------
-Cdw-DO NOT--- Read the orientation block in with a single QREAD, QMODE 2
-C
-C             ********************************
-C         CALL QMODE(ILUN,2,NITEM)
-C         CALL QREAD(ILUN,RBATCH(1),NWORDS,IER)
-C         IF (IER.GT.0) GOTO 50
-C         CALL QMODE(ILUN,0,NITEM)
-C             ********************************
 Cdw---- Read NINTGR integers followed by NREALS reals as BINARY
          CALL QMODE(ILUN,6,NITEM)
          CALL QREAD(ILUN,RBATCH(1),NINTGR,IER)
