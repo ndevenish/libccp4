@@ -55,17 +55,20 @@ dnl
 dnl * In some cases we can't unlink scratch files in case they're rewond
 dnl   since REWIND is implemented as close + open.  Maybe a better solution
 dnl   would use a routine doing a rewind instead of REWIND on scratch files.
-dnl   There does *not* seem to be a problem with eth following OSs:
-dnl     irix (4.0.5), osf/1 (1.3), concentrix 2800 (3.0), aix (2.3?),
-dnl     HPUX (9.01)
+dnl   There does *not* seem to be a problem with the following systems:
+dnl     irix (4.0.5) (but see below), osf/1 (1.3), concentrix 2800 (3.0),
+dnl     aix (2.3?), HPUX (9.01), SunOS (4.1.3/SunPro 2.0.1)
 ifelse(_convex,1,
   [define(_cant_unlink,1)],dnl  OS 10, at least
 _esv,1,
   [define(_cant_unlink,1)])dnl
 dnl * In the case above, we then want to open STATUS='DELETE', if 
 dnl   supported.  Note the file will still be left around if the program
-dnl   crashes.
+dnl   crashes.  Irix (f77 3.4.4) tolerates the unlink but re-instates
+dnl   the file when you try to do anything with it...
 ifelse(_convex,1,
+  [define(_dispose,[DISPOSE=DISP,])],
+  _sgi,1,
   [define(_dispose,[DISPOSE=DISP,])],
 _esv,1,
   [define(_dispose,[DISPOSE=DISP,])],
