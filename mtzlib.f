@@ -3,6 +3,10 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
+C     6/5/95  EJD
+C      Add subroutines to recognise and use Missing nos - 
+C      LRREFM   SET_MAGIC  IS_MAGIC  RESET_MAGIC
+C
 C     16/6/94  DJGL
 C     Change 96s to (parameterised) 192s to allow the possibility of
 C     using the 3 SGs in the complete symop file with this number of
@@ -316,7 +320,7 @@ C     .. Arrays in Common ..
       INTEGER NLUSRI,NLUSRO
       INTEGER HDRST,NBATR,NBATW,NCOLW,NHISTL,NPLABS,NREFR,NREFW,RLUN,
      +        RPOINT,WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS
       CHARACTER LSUSRI*30,LSUSRO*30
 C     ..
 C     .. Local Scalars ..
@@ -330,6 +334,7 @@ C     .. Common blocks ..
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZLAB/, /MTZLBC/, /MTZWRK/
@@ -419,11 +424,11 @@ C     .. Scalars in Common ..
       INTEGER NLUSRI,NLUSRO
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
@@ -447,7 +452,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZLAB/NLUSRI(MFILEX),NLUSRO(MFILEX)
       COMMON /MTZLBC/LSUSRI(MFILEX,MCOLS),LSUSRO(MFILEX,MCOLS)
       COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
@@ -457,6 +463,7 @@ C     .. Common blocks ..
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE
@@ -692,8 +699,9 @@ C     .. Array Arguments ..
       INTEGER BATCHX(*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,RBATR,RSYM,SRANGE
+      REAL CELL,CRANGE,RBATR,RSYM,SRANGE,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
+      LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
@@ -707,7 +715,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/
@@ -777,11 +786,11 @@ C     .. Scalar Arguments ..
       INTEGER MINDX, BATNO
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RSYM,WRANGE,WSRNGE,RBATR,RBATW
+      REAL CELL,CRANGE,SRANGE,RSYM,WRANGE,WSRNGE,VAL_MISS,RBATR,RBATW
       INTEGER ISORT,NCOLS,NCOLW,NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,
      +        NSYMP,RLUN,RPOINT,WLUN,NBATCH,BATNUM,NBATW,WOMBAT,
      +        NBATR,HDRST,NHISTL
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
 C     ..
 C     .. Local Scalars ..
       CHARACTER  LINE2*400
@@ -792,12 +801,14 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),
      +       ISORT(5,MFILES),CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZWRK/
@@ -1079,8 +1090,9 @@ C     .. Array Arguments ..
       REAL CELLP(6)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
+      LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
@@ -1094,7 +1106,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/
@@ -1167,10 +1180,11 @@ C     .. Array Arguments ..
       CHARACTER*30 CLABS(*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,TITLE*70
+      LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
@@ -1191,7 +1205,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/
@@ -1255,7 +1270,7 @@ C     .. Arrays in Common ..
       REAL RBATW,WRANGE,WSRNGE
       INTEGER HDRST,NBATR,NBATW,NCOLW,NHISTL,NPLABS,NREFR,NREFW,RLUN,
      +        RPOINT,WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
@@ -1270,6 +1285,7 @@ C     .. Common blocks ..
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZWRK/
@@ -1343,7 +1359,7 @@ C     .. Arrays in Common ..
       REAL RBATW,WRANGE,WSRNGE
       INTEGER HDRST,NBATR,NBATW,NCOLW,NHISTL,NPLABS,NREFR,NREFW,RLUN,
      +        RPOINT,WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS
       CHARACTER CBATW*1,PLABS*30,HSCR*80
 C     ..
 C     .. Local Scalars ..
@@ -1361,6 +1377,7 @@ C     .. Common blocks ..
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZWRK/,/MTZWRC/
@@ -1447,8 +1464,9 @@ C     .. Array Arguments ..
       REAL RANGES(2,*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
+      LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
@@ -1462,7 +1480,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/
@@ -1527,8 +1546,9 @@ C     .. Scalar arguments ..
       INTEGER MINDX,NCOLX
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP 
+      LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
@@ -1542,7 +1562,8 @@ C     .. Common Blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/
@@ -1607,7 +1628,7 @@ C     .. Arrays in Common ..
       REAL RBATW,WRANGE,WSRNGE
       INTEGER HDRST,NBATR,NBATW,NCOLW,NHISTL,NPLABS,NREFR,NREFW,RLUN,
      +        RPOINT,WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
@@ -1622,6 +1643,7 @@ C     .. Common blocks ..
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZWRK/
@@ -1706,11 +1728,11 @@ C     .. Scalar Arguments ..
       CHARACTER FILNAM* (*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
@@ -1730,6 +1752,7 @@ C     ..
 C     .. External Functions ..
       INTEGER LENSTR
       EXTERNAL LENSTR
+      EXTERNAL QNAN
 C     ..
 C     .. External Subroutines ..
       EXTERNAL BLANK,GTPINT,GTPREA,LERROR,LHPRT,LRCLOS,LRHDRL,PARSER,
@@ -1744,7 +1767,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
      +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
@@ -1752,6 +1776,7 @@ C     .. Common blocks ..
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
@@ -1861,6 +1886,12 @@ C
         NPLABS(MINDX) = 0
         SRANGE(1,MINDX) = 10.0
         SRANGE(2,MINDX) = 0.0
+C  Default values - VAL_MISS(1,..) ( File for reading) is 0.0, 
+C                   VAL_MISS(2,..) ( File for writing) is Nan
+        VAL_MISS(1,MINDX) = 0.0
+        CALL QNAN(VAL_MISS(2,MINDX))
+        VAL_SET(1,MINDX) = .FALSE.
+        VAL_SET(2,MINDX) = .FALSE.
         NHISTL(MINDX) = 0
         HDRST(MINDX) = 0
         TITLE(MINDX) = '   '
@@ -1961,7 +1992,7 @@ C---- VERS - version of routines which wrote the file
 C
             IF (KEY.EQ.'VERS') THEN
               IF (LINE(IBEG(2):IEND(2)) .NE. 'MTZ:V1.1')
-     +           CALL CCPERR (1,' MTZ version ' // LINE(IBEG(2):IEND(2)) 
+     +           CALL CCPERR (1,' MTZ version ' // LINE(IBEG(2):IEND(2))
      +     // ' of file incompatible with this version of the software')
               IF (IPRINT.EQ.3) THEN
 C
@@ -2116,6 +2147,23 @@ C                  ******************************************
               CALL GTPREA(2,SRANGE(1,MINDX),NTOK,ITYP,FVALUE)
               CALL GTPREA(3,SRANGE(2,MINDX),NTOK,ITYP,FVALUE)
 C                  ******************************************
+C
+              GOTO 70
+C
+C---- VAL_MAGIC - Missing value flag
+C---  will either say VAL_MAGIC NAN   or VAL_MAGIC   real
+C
+            ELSE IF (KEY.EQ.'VALM') THEN
+C
+C   Second token is NAN -  Call QNAN function.
+              IF (ITYP(2).EQ.1)  THEN
+                CALL QNAN (VAL_MISS(1,MINDX))
+              ELSE
+                 CALL GTPREA(2,VAL_MISS(1,MINDX),NTOK,ITYP,FVALUE)
+              END IF
+              VAL_SET(1,MINDX) = .TRUE.
+C  Set output VAL_MISS same as input by default.
+              VAL_MISS(2,MINDX) = VAL_MISS(1,MINDX)
 C
               GOTO 70
 C
@@ -2395,6 +2443,91 @@ C            ************************
       END IF
       END
 C
+C
+C     ========================================
+      SUBROUTINE LRREFM(MINDX,LOGMSS)
+C     ========================================
+C
+C     Returns Logical array which flags missing data entries
+C      Array DATMSS set in LRREFF and LRREFL
+C
+C---- Arguments :
+C
+C     MINDX     (I)	INTEGER		indicates which MTZ file - 1 index
+C     					points to both input and output files
+C
+C     LOGMSS    (O)	LOGICAL         Array of dimension at least NPLABS(MINDX)
+C     					containing the logical record on exit
+C     					in lookup order
+C                                       IF LOGMSS(..) is TRUE the entry is "missing"
+C                                       Maps onto DATMSS
+C
+C
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS,MBATCH
+      PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
+      INTEGER MBLENG,CBLENG
+      PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER NHISLM
+      PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER MINDX
+C     ..
+C     ..
+C     .. Arrays in Common ..
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
+      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
+     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
+     +        WLUN,WOMBAT
+      LOGICAL SORTB,DATMSS,VAL_SET
+C     ..
+C     .. Local Arrays 
+      LOGICAL LOGMSS(*)
+C     ..
+C     .. Local Scalars
+      CHARACTER LINE*132
+C     .. 
+      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
+     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
+      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
+     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
+     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
+     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
+     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
+C     ..
+C     .. Save statement ..
+      SAVE /MTZHDR/,/MTZWRK/
+C     ..
+C
+C---- First check that the MINDX is valid
+C
+      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
+        WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
+     +       'From LRREFM: Index',MINDX,
+     +       ' is out of range (allowed 1..',MFILES,')'
+        CALL LERROR(2,-1,LINE)
+C
+C---- Then check that there is a file open
+C
+      ELSE IF (RLUN(MINDX).EQ.0) THEN
+        WRITE (LINE,FMT='(A,I3)')
+     +       'From LRREFM : There is no file open for read on index',
+     +       MINDX
+        CALL LERROR(2,-1,LINE)
+      END IF
+      DO 10 JDO10 = 1,NCOLS(MINDX)
+        LOGMSS(JDO10) = DATMSS(JDO10) 
+ 10   CONTINUE
+      END
 C
 C
 C     ========================================
@@ -2447,11 +2580,11 @@ C     .. Array Arguments ..
       REAL ADATA(*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,TITLE*70
 C     ..
@@ -2481,12 +2614,14 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
@@ -2597,13 +2732,19 @@ C---- Transfer data to ADATA in LOOKUP order, if RPOINT is 0 then
 C     presume it was an optional column and set it to 0.0
 C
             DO 10 JDO10 = 1,NPLABS(MINDEX)
+              DATMSS(JDO10) =.FALSE.
+C
               IF (RPOINT(JDO10,MINDEX).GT.0) THEN
                 ADATA(JDO10) = BDATA(RPOINT(JDO10,MINDEX))
+                IF( (VAL_SET(1,MINDEX)))
+     +    CALL IS_MAGIC(VAL_MISS(1,MINDEX),ADATA(JDO10),DATMSS(JDO10))
               ELSE
                 ADATA(JDO10) = 0.0
               END IF
+C
    10       CONTINUE
 C
+C  Prob not nec now??
 C---- Set BIOMOL absence flags to zero if the calling program can not
 C     interpret them
 C
@@ -2669,16 +2810,16 @@ C     .. Array Arguments ..
       REAL ADATA(*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
-      INTEGER IERR,IFAIL,ISTAT,IH,IK,IL
+      INTEGER IERR,IFAIL,ISTAT,IH,IK,IL,JDO10
       CHARACTER LINE*400
       REAL RSOL
 C     .. 
@@ -2700,12 +2841,14 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
@@ -2778,6 +2921,13 @@ C                ************************
 C
           ELSE
 C
+C     Check "missing data" flag
+            DO 10 JDO10 = 1,NCOLS(MINDEX)
+              DATMSS(JDO10) =.FALSE.
+              IF ((VAL_SET(1,MINDEX)))
+     +             CALL IS_MAGIC(VAL_MISS(1,MINDX),ADATA(JDO10),
+     +             DATMSS(JDO10))
+ 10         CONTINUE
 C---- Calculate resolution, only look for HKL in 1st 3 cols
 C
             IF ((NCOLS(MINDEX).GE.3).AND.(CTYPE(1,MINDEX).EQ.'H')
@@ -2854,11 +3004,11 @@ C     .. Scalar Arguments ..
       INTEGER MINDX
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
@@ -2872,12 +3022,14 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZWRK/,/MTZHDR/
@@ -2974,8 +3126,9 @@ C     .. Scalar Arguments ..
       REAL MINRES,MAXRES
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
+      LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
@@ -2989,7 +3142,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/
@@ -3057,11 +3211,11 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,REFNUM
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
@@ -3075,12 +3229,14 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZWRK/
@@ -3168,8 +3324,9 @@ C     .. Array Arguments ..
       INTEGER SORTX(5)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
+      LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
@@ -3183,7 +3340,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/
@@ -3259,10 +3417,11 @@ C     .. Scalar Arguments ..
       CHARACTER LTYPEX*1,PGNAMX*10,SPGRNX*10
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,TITLE*70
+      LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT
@@ -3279,7 +3438,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/
@@ -3357,8 +3517,9 @@ C     .. Array Arguments ..
       REAL RSYMX(4,4,*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
+      LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10,JDO20,JDO30
@@ -3372,7 +3533,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/
@@ -3547,11 +3709,11 @@ C     .. Scalars in Common ..
       INTEGER NLUSRI,NLUSRO
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
@@ -3578,7 +3740,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZLAB/NLUSRI(MFILEX),NLUSRO(MFILEX)
       COMMON /MTZLBC/LSUSRI(MFILEX,MCOLS),LSUSRO(MFILEX,MCOLS)
       COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
@@ -3588,6 +3751,7 @@ C     .. Common blocks ..
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE
@@ -3965,11 +4129,11 @@ C     .. Array Arguments ..
       REAL CELLP(6)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
@@ -3987,12 +4151,14 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZWRK/
@@ -4105,11 +4271,11 @@ C     .. Array Arguments ..
       CHARACTER*30 LSPRGO(*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,TITLE*70
 C     ..
@@ -4135,12 +4301,14 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
@@ -4264,6 +4432,151 @@ C
 C
 C
 C
+C     ==============================
+      SUBROUTINE SET_MAGIC(MINDX,VAL_MAGIC,SETVAL)
+C     ==============================
+C
+C
+C---- Subroutine to pass the "magic" value for this mtz file 
+C     either into the file or back to the calling program
+C
+C---- Arguments :
+C
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
+C
+C     VAL_MAGIC (I)	REAL            variable giving value assigned to 
+C                                       "missing data"; it may be passed to 
+C                                        an MTZ  file, or return a preset value.
+C
+C     SETVAL    (I)	LOGICAL         if TRUE on input, the mtz missing flag is 
+C                                       set to VAL_MAGIC - ie the value in the mtz 
+C                                       file is OVERWRITTEN!
+C
+C                                       if FALSE on input and there is a 
+C                                       "missing value" set in the input MTZ file 
+C                                       that will be returned as VAL_MAGIC, and
+C                                       SETVAL will be returned TRUE.
+C
+C                                       if FALSE on input and there is NO 
+C                                       "missing value" set in the input MTZ file 
+C                                       VAL_MAGIC will be set to the default
+C                                       for both input and output
+C                                       SETVAL returned TRUE
+C
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS,MBATCH
+      PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
+      INTEGER MBLENG,CBLENG
+      PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER NHISLM
+      PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER MINDX
+      REAL VAL_MAGIC
+      LOGICAL SETVAL
+C     ..
+C     ..
+C     .. Arrays in Common ..
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
+      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
+     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
+     +        WLUN,WOMBAT
+      LOGICAL SORTB,DATMSS,VAL_SET
+C     ..
+C     .. Local Scalars ..
+      CHARACTER LINE*400
+C     .. 
+C     .. Intrinsic Functions
+      INTRINSIC ABS
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL LERROR
+C     ..
+C     .. External Functions
+      EXTERNAL QNAN
+      LOGICAL QISNAN
+      EXTERNAL QISNAN
+C     .. Common blocks ..
+      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
+     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
+      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
+     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
+     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
+     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
+     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
+C     ..
+C     .. Save statement ..
+      SAVE /MTZHDR/,/MTZWRK/
+C     ..
+C
+C---- First check that the MINDX is valid
+C
+      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
+        WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
+     +    'From SET_MAGIC : Index',MINDX,
+     +    ' is out of range (allowed 1..',MFILES,')'
+        CALL LERROR(2,-1,LINE)
+      ELSE
+C   Passing a "missing value" to the output file ie - SETVAL TRUE
+C   set VAL_MISS and VAL_SET 
+        IF(SETVAL)THEN
+           IF(QISNAN(VAL_MAGIC)) THEN
+             CALL QNAN (VAL_MISS(2,MINDX))
+           ELSE
+             VAL_MISS(2,MINDX) = VAL_MAGIC
+           END IF
+           VAL_SET(2,MINDX)   =.TRUE.
+C
+C---- If SETVAL FALSE check if VAL_MISS(1,MINDX) set for this mtz file.
+        ELSE
+C
+C---- If VAL_SET(..) TRUE missing value present in mtz file.
+C         Return it in VAL_MAGIC
+C---- If VAL_SET FALSE set VAL_MAGIC to the default - currently Nan
+C---- Also transfer VAL_MISS(1,MINDX) taken from input to
+C         VAL_MISS(2,.. for output
+           IF(VAL_SET(1,MINDX))THEN
+              IF(QISNAN(VAL_MISS(1,MINDX))) THEN
+                CALL QNAN (VAL_MAGIC)
+                CALL QNAN (VAL_MISS(2,MINDX))
+              ELSE
+                VAL_MAGIC=VAL_MISS(1,MINDX) 
+                VAL_MISS(2,MINDX)=VAL_MISS(1,MINDX) 
+              END IF
+              VAL_SET(2,MINDX)=.TRUE.
+           ELSE
+C   Set default - currently NAN
+             CALL QNAN (VAL_MAGIC)
+             CALL QNAN (VAL_MISS(2,MINDX))
+              VAL_SET(2,MINDX)=.TRUE.
+           END IF
+        END IF
+C    Reset  SETVAL
+        SETVAL = .TRUE.
+C
+C---- Print warning is this is done after reflections have been written
+C
+          IF (NREFW(MINDX).GT.0) THEN
+            CALL LERROR(1,1, 'From SET_MAGIC: You are changing '//
+     +           'the missing value parameter after you have '//
+     +           'written reflections to file')
+            CALL LERROR(1,1,
+     +           '          Lets hope you know what you are doing!')
+          END IF
+      END IF
+      END
+C
+C
 C     ===============================
       SUBROUTINE LWCLOS(MINDX,IPRINT)
 C     ===============================
@@ -4308,11 +4621,11 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,IPRINT
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
@@ -4320,6 +4633,7 @@ C     .. Local Scalars ..
       INTEGER ENDLOP,I,IFAIL,ISTAT,JDO10,JDO100,JDO20,JDO30,JDO40,
      +        JDO50,JDO60,JDO65,JDO80,NITEM
       CHARACTER LINE*400, STROUT*80
+      LOGICAL VS
 C     ..
 C     .. Local Arrays ..
       INTEGER WINDEX(MBATCH)
@@ -4328,6 +4642,8 @@ C     ..
 C     .. External Functions ..
       INTEGER LENSTR
       EXTERNAL LENSTR
+      LOGICAL QISNAN
+      EXTERNAL QISNAN
 C     ..
 C     .. External Subroutines ..
       EXTERNAL BLANK,LERROR,LHPRT,QWRITC,PUTLIN,QCLOSE,QSEEK,
@@ -4341,7 +4657,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
      +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
@@ -4349,6 +4666,7 @@ C     .. Common blocks ..
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
@@ -4467,10 +4785,42 @@ C
         SRANGE(1,MINDX) = WSRNGE(1,MINDX)
         SRANGE(2,MINDX) = WSRNGE(2,MINDX)
 C
+C---- Missing value  - if it hasnt been set take the input value or the default.
+C
+C
+        IF(.NOT.VAL_SET(2,MINDX)) THEN
+          VS = VAL_SET(2,MINDX)
+          CALL SET_MAGIC(MINDX,VAL_MAGIC,VS)
+        END IF
+        IF( QISNAN(VAL_MISS(2,MINDX)))  THEN
+          WRITE (LINE,FMT='(A4,1X,A4)') 'VALM',' NAN'
+          WRITE (6,FMT='(1X,A4,1X,A4)') 'VALM',' NAN'
+        ELSE
+          WRITE (LINE,FMT='(A4,1X,F18.5)') 'VALM',VAL_MISS(2,MINDX)
+          WRITE (6,FMT='(1X,A4,1X,F18.5)') 'VALM',VAL_MISS(2,MINDX)
+        END IF
+C
+C            ******************************
+        CALL QWRITC(WLUN(MINDX),LINE(1:80))
+C            ******************************
+C
+C
 C---- Column info - labels, types, ranges
 C
         DO 20 JDO20 = 1,NCOLW(MINDX)
+         IF( QISNAN(WRANGE(1,JDO20,MINDX)))
+     +   WRITE (6,FMT='(1X,A,1X,A4,2I3)') 'WRANGE(1,JDO20,MINDX)',
+     +   ' NAN',JDO20,MINDX
+         IF (QISNAN(WRANGE(1,JDO20,MINDX))) WRANGE(1,JDO20,MINDX)=0
+         IF (QISNAN(WRANGE(2,JDO20,MINDX)))
+     +   WRITE (6,FMT='(1X,A,1X,A4,2I3)') 'WRANGE(2,JDO20,MINDX)',
+     +   ' NAN',JDO20,MINDX
+         IF( QISNAN(WRANGE(2,JDO20,MINDX))) WRANGE(2,JDO20,MINDX)=999
           WRITE (LINE,FMT='(A6,1X,A,1X,A,1X,2F19.4)') 
+     +      'COLUMN',
+     +      CLABEL(JDO20,MINDX),CTYPE(JDO20,MINDX),
+     +      WRANGE(1,JDO20,MINDX),WRANGE(2,JDO20,MINDX)
+          WRITE (6,FMT='(1X,A6,1X,A,1X,A,1X,2F19.4)') 
      +      'COLUMN',
      +      CLABEL(JDO20,MINDX),CTYPE(JDO20,MINDX),
      +      WRANGE(1,JDO20,MINDX),WRANGE(2,JDO20,MINDX)
@@ -4690,7 +5040,7 @@ C     .. Arrays in Common ..
       REAL RBATW,WRANGE,WSRNGE
       INTEGER HDRST,NBATR,NBATW,NCOLW,NHISTL,NREFR,NREFW,RLUN,
      +        RPOINT,WLUN,WOMBAT,NPLABS
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS
       CHARACTER CBATW*1,PLABS*30,HSCR*80
 C     ..
 C     .. Local Scalars ..
@@ -4711,6 +5061,7 @@ C     .. Common blocks ..
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZWRK/,/MTZWRC/
@@ -4851,11 +5202,11 @@ C     .. Scalar Arguments ..
       CHARACTER FILNAM* (*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
@@ -4868,7 +5219,7 @@ C     .. Local Arrays ..
       INTEGER IDUMMY(SIZE1)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QMODE,QOPEN,QWRITI
+      EXTERNAL LERROR,QMODE,QOPEN,QWRITI,QNAN
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -4878,7 +5229,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
      +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
@@ -4886,6 +5238,7 @@ C     .. Common blocks ..
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
@@ -4907,6 +5260,13 @@ C
       ELSE
 C
 C---- Check for other open files on this index - first read files
+C  If another file open with a missing value flag set,
+C    - transfer it to output as default.
+C
+        IF (RLUN(MINDX).NE.0 .AND. VAL_SET(1,MINDX) ) THEN
+            VAL_MISS(2,MINDX) = VAL_MISS(1,MINDX) 
+            VAL_SET(2,MINDX) = VAL_SET(1,MINDX) 
+        END IF 
 C     If no read file open, then LROPEN has not been called - init. here
 C     Some of these not necc. if no read file, but do it for consistency
 C
@@ -4957,6 +5317,8 @@ C
             RPOINT(JDO60,MINDX) = 0
             PLABS(JDO60,MINDX) = ' '
    70     CONTINUE
+          CALL QNAN (VAL_MISS(2,MINDX))
+            VAL_SET(2,MINDX) = .TRUE.
 C
         END IF
 C
@@ -5057,11 +5419,11 @@ C     .. Array Arguments ..
       REAL ADATA(*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,TITLE*70
 C     ..
@@ -5069,13 +5431,14 @@ C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10,IH,IK,IL
       REAL RESOL
       CHARACTER LINE*400
+      LOGICAL LVALMS
 C     ..
 C     .. External Functions ..
       REAL     LSTLSQ
       EXTERNAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QWRITR, CCPWRG
+      EXTERNAL LERROR,QWRITR
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -5085,12 +5448,14 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
@@ -5131,16 +5496,20 @@ C
 C
 C---- Update the column ranges
 C
-        IF (NREFW(MINDX) .EQ. 1) THEN
 C         Set the min. and max. values for the column ranges to the data
 C         values in the first record
+C
+C   rewrite of library.c CCPWRG
+C  Ejd - April 25 - might be better to check all adata at once like LRREFM SR
           DO 10 JDO10 = 1,NCOLW(MINDX)
-            WRANGE(1,JDO10,MINDX) = ADATA(JDO10)
-            WRANGE(2,JDO10,MINDX) = ADATA(JDO10)
+            CALL IS_MAGIC(VAL_MISS(2,MINDX),ADATA(JDO10),LVALMS)
+            IF (.NOT.LVALMS)THEN
+              IF(ADATA(JDO10).LT.WRANGE(1,JDO10,MINDX)) 
+     +                           WRANGE(1,JDO10,MINDX) = ADATA(JDO10)
+              IF(ADATA(JDO10).GT.WRANGE(2,JDO10,MINDX)) 
+     +                           WRANGE(2,JDO10,MINDX) = ADATA(JDO10)
+            END IF 
  10       CONTINUE
-        ENDIF
-C       Update the ranges in a NaN-safe way
-        CALL CCPWRG (NCOLW(MINDX), ADATA, WRANGE(1,1,MINDX))
 C
 C---- Update the resolution range if appropriate
 C
@@ -5210,8 +5579,9 @@ C     .. Array Arguments ..
       INTEGER SORTX(5)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
+      LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10
@@ -5225,7 +5595,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/
@@ -5307,12 +5678,13 @@ C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,NSPGRX,NSYMPX,NSYMX
       CHARACTER LTYPEX*1,PGNAMX*10,SPGRNX*10
+      LOGICAL VAL_SET
 C     ..
 C     .. Array Arguments ..
       REAL RSYMX(4,4,192)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,TITLE*70
@@ -5335,7 +5707,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/
@@ -5617,11 +5990,11 @@ C     .. Array Arguments ..
       CHARACTER CBATCH*(*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
      +          CLABEL*30,TITLE*70
 C     ..
@@ -5641,12 +6014,14 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
      +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C
 C---- Here are the important EQUIVALENCE statements
@@ -5776,11 +6151,11 @@ C     .. Array Arguments ..
       CHARACTER CBATCH*(*)
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
      +        WLUN,WOMBAT
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATW*1,PLABS*30,HSCR*80
 C     ..
 C     .. Local Scalars ..
@@ -5796,7 +6171,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
       COMMON /MTZWRC/PLABS(MCOLS,MFILES),HSCR(NHISLM,MFILES),
      +       CBATW(CBLENG,MBATCH,MFILES)
       COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
@@ -5804,6 +6180,7 @@ C     .. Common blocks ..
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C
 C---- Here are the important EQUIVALENCE statements
@@ -6532,7 +6909,7 @@ C     .. Array Arguments ..
       CHARACTER*30      LSPRGI(*),LSUSRJ(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER           JDO,JLOOP,JSTART,JTOK,JDO5
+      INTEGER           JDO,JLOOP,JSTART,JTOK
       CHARACTER         CWORK*30,CWORK2*30,LC1*30,LC2*30,STROUT*400
 C     ..
 C     .. External Functions ..
@@ -6882,7 +7259,7 @@ C     .. Arrays in Common ..
       REAL RBATW,WRANGE,WSRNGE
       INTEGER HDRST,NBATR,NBATW,NCOLW,NHISTL,NREFR,NREFW,RLUN,RPOINT,
      +        WLUN,WOMBAT,NPLABS
-      LOGICAL SORTB
+      LOGICAL SORTB,DATMSS
       CHARACTER CBATW*1,PLABS*30,HSCR*80
 C     ..
 C     .. Local Scalars ..
@@ -6904,6 +7281,7 @@ C     .. Common blocks ..
      +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS)
 C     ..
 C     .. Save statement ..
       SAVE /MTZWRK/,/MTZWRC/
@@ -6997,14 +7375,14 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,IPRINT
 C     ..
 C     .. Arrays in Common ..
-      REAL CELL,CRANGE,SRANGE,RBATR,RSYM
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,CLABEL*30,
      +          TITLE*70
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,IMAX,IMIN,IPR,ISTAT,JDO10,JDO20,JJ
-      LOGICAL SORTED
+      LOGICAL SORTED,VAL_SET
       CHARACTER CTEMP*1,LINE*400,STROUT*400
       REAL RESMIN,RESMAX
 C     ..
@@ -7014,6 +7392,7 @@ C     ..
 C     .. External Functions ..
       INTEGER LENSTR
       EXTERNAL LENSTR
+      LOGICAL QISNAN
 C     ..
 C     .. External Subroutines ..
       EXTERNAL BLANK,LABPRT,LERROR,LPHIST,PUTLIN,SYMTR3
@@ -7029,7 +7408,8 @@ C     .. Common blocks ..
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
-     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES)
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/
@@ -7070,6 +7450,30 @@ C              ***********************
           CALL BLANK('CURWIN',1)
           WRITE (STROUT,FMT='(A,I7)') '* Number of Reflections =',
      +      NREFS(MINDX)
+C   Something about missing value flag.
+          IF(VAL_SET(1,MINDX)) THEN
+              CALL PUTLIN(STROUT,'CURWIN')
+              CALL BLANK('CURWIN',1)
+              IF( QISNAN(VAL_MISS(1,MINDX))) 
+     +        WRITE (STROUT,FMT='(A)') 
+     +        '* Missing value set to NaN in input mtz  file'
+              IF( .NOT.QISNAN(VAL_MISS(1,MINDX))) 
+     +        WRITE (STROUT,FMT='(A,F18.2,A)') 
+     +        '* Missing value set to ',VAL_MISS(1,MINDX),
+     +        ' in input mtz  file'
+          END IF
+C
+          IF(VAL_SET(2,MINDX)) THEN
+              CALL PUTLIN(STROUT,'CURWIN')
+              CALL BLANK('CURWIN',1)
+              IF( QISNAN(VAL_MISS(2,MINDX))) 
+     +        WRITE (STROUT,FMT='(A)') 
+     +        '* Missing value set to NaN in output mtz  file'
+              IF( .NOT.QISNAN(VAL_MISS(2,MINDX))) 
+     +        WRITE (STROUT,FMT='(A,F18.2,A)') 
+     +        '* Missing value set to ',VAL_MISS(2,MINDX),
+     +        ' in output mtz  file'
+          END IF
           CALL PUTLIN(STROUT,'CURWIN')
           CALL BLANK('CURWIN',1)
 C              ***********************
@@ -7951,8 +8355,9 @@ CCC          EFLAG = EFLAG + 1
 CCC          RETURN
 CCC        END IF
 CCC      END IF
-C
-   20 I = I1 - 1
+CCCC
+CCC 20   CONTINUE
+      I = I1 - 1
       NS = NS - 1
    30 CONTINUE
       NS = NS + 1
@@ -8476,4 +8881,201 @@ C
      +         IH*IL*COEFHL(MINDX) + IK*IK*COEFKK(MINDX) + 
      +         IK*IL*COEFKL(MINDX) + IL*IL*COEFLL(MINDX)
 C
+      END
+
+C
+C     =====================================
+      SUBROUTINE IS_MAGIC (VAL_MAGIC,VALTST,LVALMS)
+C     =====================================
+C
+C---- Function  to test whether a number is  "magic" 
+C     Returns LVALMS TRUE if it is - otherwise LVALMS FALSE
+C
+C
+C---- Arguments :
+C
+C     VAL_MAGIC (I)     REAL            Missing value flag
+C                                       as "magic" for this mtz file.
+C
+C     VALTST    (I)     REAL            Number to test to see if it is defined 
+C                                       as "magic" for this mtz file.
+C
+C     LVALMS    (O)     LOGICAL        Returns LVALMS TRUE if VALTST is "magic"
+C                                      FALSE if it is not, or if
+C                                      there is no "missing" number set.
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS,MBATCH
+      PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
+      INTEGER MBLENG,CBLENG
+      PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+C     ..
+C     .. Scalar Arguments ..
+      LOGICAL LVALMS
+C     ..
+C     .. Local Scalars ..
+      REAL VALTST
+C     ..
+C     .. External Functions ..
+      LOGICAL QISNAN
+      EXTERNAL QISNAN
+C     ..
+      LVALMS = .FALSE.
+      IF (QISNAN(VAL_MAGIC)) THEN
+        IF (QISNAN(VALTST)) LVALMS = .TRUE.
+      ELSE
+        IF(VALTST .EQ. VAL_MAGIC) LVALMS = .TRUE.
+      END IF
+      END
+C^L
+C
+C     ========================================
+      SUBROUTINE EQUAL_MAGIC(MINDX,ADATA,NCOL)
+C     ========================================
+C
+C     Sets an array of NCOL to VAL_MISS(2,MINDX), the appropriate value
+C                                                 for the output file.
+C
+C---- Arguments :
+C
+C
+C     MINDX     (I)     INTEGER         indicates which MTZ file - 1 index
+C                                       points to both input and output files
+C
+C     ADATA      (I)     REAL            array of dimension at least NCOL
+C     					containing the reflection record  with
+C     					"missing" values set  to VAL_MAGICA
+C
+C
+C     NCOL       (I)	INTEGER         Array size of ADATA
+C
+C
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS,MBATCH
+      PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
+      INTEGER MBLENG,CBLENG
+      PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER NHISLM
+      PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER MINDX
+C     ..
+C     .. Arrays in Common ..
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
+      LOGICAL VAL_SET
+C     ..
+C     .. Intrinsic Functions
+      INTRINSIC ABS
+C     ..
+C     .. Common blocks ..
+      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
+     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
+C     ..
+C     .. Save statement ..
+      SAVE /MTZHDR/
+C     ..
+C     .. Local Arrays 
+      REAL ADATA(*)
+C     ..
+C
+C   If the file has been opened for Writing VAL_MISS(2,MINDX) will be set
+C
+      DO 10 JDO10 = 1,NCOL
+        ADATA(JDO10) = VAL_MISS(2,MINDX)
+ 10   CONTINUE
+      END
+C^L
+C
+C     ========================================
+      SUBROUTINE RESET_MAGIC(MINDX,ADATA,BDATA,NCOL,VAL_MAGICB)
+C     ========================================
+C
+C     Resets an array containing Missing value flags VAL_MAGICA  to
+C                one  containing Missing value flags VAL_MAGICB
+C     This allows you to list arrays containing Nan entries.
+C     
+C
+C---- Arguments :
+C
+C
+C     MINDX     (I)     INTEGER         indicates which MTZ file - 1 index
+C                                       points to both input and output files
+C
+C     ADATA      (I)     REAL            array of dimension at least NCOL
+C     					containing the reflection record  with
+C     					"missing" values set  to VAL_MAGICA
+C
+C     BDATA      (O)	REAL            Array of dimension at least NCOL
+C     					containing the reflection record  with
+C     					"missing" values reset  to VAL_MAGIC
+C
+C     NCOL       (I)	INTEGER         Array size of ADATA
+C
+C     VAL_MAGICB (I)	REAL            "Missing value" flag to reset in BDATA
+C                                        to allow record to be printed.
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS,MBATCH
+      PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
+      INTEGER MBLENG,CBLENG
+      PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER NHISLM
+      PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER MINDX
+C     ..
+C     .. Arrays in Common ..
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,
+     +        NREFS,NSPGRP,NSYM,NSYMP
+      LOGICAL VAL_SET
+C     ..
+C     .. Local Scalars ..
+      INTEGER JDO10
+      LOGICAL LVALMS
+C     ..
+C     .. Intrinsic Functions
+      INTRINSIC ABS
+C     ..
+C     .. Common blocks ..
+      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
+     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +     VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
+C     ..
+C     .. Save statement ..
+      SAVE /MTZHDR/
+C     ..
+      REAL ADATA(*),BDATA(*),VAL_MAGICA,VAL_MAGICB
+C     ..
+C
+C  If file only opened for Reading .
+      VAL_MAGICA = VAL_MISS(1,MINDX)
+C
+C   If the file has been opened for Writing VAL_SET(2,MINDX) will be set
+C      and VAL_MISS(2,MINDX) too 
+C
+      IF (VAL_SET(2,MINDX)) VAL_MAGICA = VAL_MISS(2,MINDX)
+C
+      DO 10 JDO10 = 1,NCOL
+        BDATA(JDO10) = ADATA(JDO10)
+        CALL IS_MAGIC (VAL_MAGICA,ADATA(JDO10),LVALMS)
+        IF(LVALMS) BDATA(JDO10) = VAL_MAGICB
+ 10   CONTINUE
       END
