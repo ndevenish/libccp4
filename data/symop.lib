@@ -4743,7 +4743,7 @@
  1/2+X,1/2+Y,Z * -X,1/2-Y,1/2+Z * X,-Y,-Z * 1/2-X,Y,1/2-Z
 1021 2 1 C222a PG222 ORTHORHOMBIC 'C 2 2 2a'  ! C21212a origin on 21 21
  X,Y,Z * 1/2-X,1/2-Y,Z * X+1/2,-Y,-Z * -X,Y+1/2,-Z
- 1/2+ X,1/2+Y,Z * -X,-Y,Z * X,1/2-Y,-Z * 1/2-X,Y,-Z
+ 1/2+X,1/2+Y,Z * -X,-Y,Z * X,1/2-Y,-Z * 1/2-X,Y,-Z
 1022 4 1 F222a PG222 ORTHORHOMBIC 'F 2 2 2a' ! same as 1018 with face centring ! shift (1/4,0,0)
  X,Y,Z         * 1/2-X,1/2-Y,Z * X+1/2,-Y,-Z * -X,Y+1/2,-Z
  X,Y+1/2,Z+1/2 * 1/2-X,-Y,Z+1/2 * X+1/2,-Y+1/2,-Z+1/2 * -X,Y,-Z+1/2
