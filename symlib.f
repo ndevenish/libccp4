@@ -415,7 +415,7 @@ C
 C
        END
 C
-
+C
 C     ========================
       SUBROUTINE DETERM(DET,A)
 C     ========================
@@ -529,7 +529,7 @@ C      COMMON /CP/ CPROJ(3,20),NCENT
 C      COMMON /EPS/ EPZONE(4,20),NEZONE
 C
 C   Set up this common block for use when searching for systematic absences
-      IMPLICIT LOGICAL (A-Z)
+C
 C     ..
 C     .. Common blocks ..
       INTEGER NSMT
@@ -1683,7 +1683,7 @@ C
 C
       ROT(4,4,NS) = 1.0
    60 CONTINUE
-
+C
       S = 1.0
 C
 C---- Set j=4 for translation vector
@@ -2979,7 +2979,7 @@ C
    20 CONTINUE
 C
 C
-
+C
       RETURN
 C
 C
@@ -3209,7 +3209,7 @@ c       INASU   (function) test if reflection is in asymmetric unit
 c               called by ASUPUT                        
 C
 C
-
+C
       SUBROUTINE PGDEFN(NAMPG,NSYMP,NSYM,RSMT,LPRINT)
 C     ==============================================
 C
@@ -3990,7 +3990,7 @@ C    PGNAME  point-group name
 C    MSYMP   number of primitive symmetry operations
 C    MLAUE   Laue group number
 C
-      IMPLICIT LOGICAL (A-Z)
+C
 C Arguments:
       INTEGER NUMSGP, MSYM, MSYMP, MLAUE
       REAL    RRSYM(4,4,96) 
@@ -4120,7 +4120,7 @@ C
 C  The real-space symmetry matrices are applied by premultiplying them
 C  by a row vector hkl,  ie  (h'k'l') = (hkl)R
 C
-      IMPLICIT LOGICAL (A-Z)
+C
 C  Arguments
       INTEGER IHKL(3), JHKL(3), ISYM
 C
@@ -4205,7 +4205,7 @@ C  The real-space symmetry matrices are applied in ASUPUT by
 C premultiplying them by a row vector hkl,  ie  (h'k'l') = (hkl)R
 C  So here we calculate (hkl) = (h'k'l') R**-1
 C
-      IMPLICIT LOGICAL (A-Z)
+C
 C  Arguments
       INTEGER IHKL(3), JHKL(3), ISYM
 C
@@ -4317,7 +4317,7 @@ C
 C -- TEST FOR HKL IN ASYMMETRIC UNIT
 C     INCORPORATED INTO DATCO5 JUNE 70
 C
-      IMPLICIT LOGICAL (A-Z)
+C
 C Arguments
       INTEGER IH(3), NLAUE
 C Locals
@@ -4550,7 +4550,7 @@ C
 C  The real-space symmetry matrices are applied by premultiplying them
 C  by a row vector hkl,  ie  (h'k'l') = (hkl)R
 C
-      IMPLICIT LOGICAL (A-Z)
+C
 C  Arguments
       INTEGER NSYMP
       REAL RSYMIV(4,4,*)
@@ -4661,7 +4661,7 @@ C   NSYM     number of symmetry operations
 C   NSYMP    number of primitive symmetry operations
 C   NLAUE    number of Laue group
 C
-      IMPLICIT LOGICAL (A-Z)
+C
 C
 C     .. Parameters ..
       INTEGER           MAXSYM

@@ -24,6 +24,7 @@
  * Comments, complaints, moans and updates to: ccp4@uk.ac.daresbury.cxa     *
  *                                                                          *
  * CCP4, 28th February 1992                                                 *
+ *  mod. DL 17/6/92                                                         *
  *                                                                          *
  ****************************************************************************/
 
@@ -31,52 +32,76 @@
  * Known Machines                                                           *
  ****************************************************************************/
 
+/* Each type of system we know about should cause KNOWN_MACHINE to be
+   defined and also define CALL_LIKE_<something> to be defined.  Thus
+   if you know system foo has a Fortran calling convention like the
+   native Sun compiler uses, define CALL_LIKE_SUN and you won't need
+   to examine the definitions of the interface functions below.
+   Further tests on the system type may be necessary e.g., to get the
+   include files right. */
+
 #if defined (_AIX)                        /* IBM unix - models RS/6000 */
 				/* (surmised from GNU configures -- needs
 				   confirmation) */
-#define KNOWN_MACHINE
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_AIX 1
 #endif
 #if defined (alliant)                          /* alliant model FX28xx */
-#define KNOWN_MACHINE
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_SUN 1
 #endif
-#if defined (ardent)                     /* (st)ardent and titan range */
-#define KNOWN_MACHINE
+#if defined (ardent) || defined (titan)  /* (st)ardent and titan range */
+#  ifndef stardent
+#    define stardent
+#  endif
 #endif
 #if defined (__convex__)                            /* Convex C series */
-#define KNOWN_MACHINE
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_SUN 1
 #endif
 #if defined (ESV)                /* Evans & Sutherland ESV workstation */
-#define KNOWN_MACHINE
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_SUN 1
 #endif
-#if defined (hpux)                           /* Hewlett Packard models */
-#define KNOWN_MACHINE
+#if defined (__hpux)                         /* Hewlett Packard models */
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_HPUX 1
 #endif
 #if defined (iris)                      /* Silicon graphics with 68xxx */
-#define KNOWN_MACHINE
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_IRIS 1
+#endif
+#ifdef __sgi			/* ansi */
+#  ifndef sgi
+#    define sgi
+#  endif
 #endif
 #if defined (sgi)                     /* Silicon graphics with R3000's */
-#define KNOWN_MACHINE
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_SUN 1
 #endif
 #if defined (solbourne)                                   /* sun clone */
-#define KNOWN_MACHINE
+#  ifndef sun
+#   define sun               /* don't know whether it's defined or not */
+#  endif
 #endif
 #if defined (stardent)                                    /* as ardent */
-#define KNOWN_MACHINE
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_STARDENT 1
 #endif
 #if defined (sun)                                  /* sun workstations */
-#define KNOWN_MACHINE
-#endif
-#if defined (titan)                                       /* as ardent */
-#define KNOWN_MACHINE
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_SUN 1
 #endif
 #if defined (ultrix)                                       /* DEC unix */
-#define KNOWN_MACHINE
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_SUN 1
 #endif
 #if defined (vax)                      /* DEC VAX-VMS operating system */
-#define KNOWN_MACHINE
+#  define KNOWN_MACHINE
 #endif
 #if ! defined (KNOWN_MACHINE)
-#  error System type is not known -- see the Installation Guide
+  #error System type is not known -- see the Installation Guide
 #else
 
 /****************************************************************************
@@ -84,13 +109,15 @@
  ****************************************************************************/
 
 #include <stdio.h>
-#include <signal.h>
+
+#ifndef vax
+#  include <sys/types.h>
+#  include <sys/times.h>
+#  include <sys/param.h>
+#endif
 
 #if defined (alliant)
-/*"pid_t" previously declared with a different type in 
-     /usr/include/sys/types.h, line 40 */
 #  include <sys/file.h>
-/*   typedef int pid_t;*/
 #else
 #  ifndef ESV
 #  include <stdlib.h> 
@@ -183,10 +210,10 @@
  * Global Initialised Variables                                             *
  ****************************************************************************/
 
-int flushf      =  0;                     /* counter to flush output buffer */
-int print_flag  = -1;                   /* flag to output debug information */
-int initialised =  0;           /* flag to initialise data and file streams */
-char *file_attribute[] = {"w+", "w+", "r+", "w+", "r"};       /* file modes */
+static int flushf      =  0;              /* counter to flush output buffer */
+static int print_flag  = -1;            /* flag to output debug information */
+static int initialised =  0;    /* flag to initialise data and file streams */
+static char *file_attribute[] = {"w+", "w+", "r+", "w+", "r"};/* file modes */
 
 static int item_sizes[] = {                      /* table of bytes per item */
   (int) sizeof (char),                                             /* bytes */
@@ -205,11 +232,23 @@ static int item_sizes[] = {                      /* table of bytes per item */
  * Global Uninitialised Variables                                           *
  ****************************************************************************/
 
-FILE *file_stream[MAXFILES];                        /* Pointer to disk file */
-char file_name[MAXFILES][MAXFLEN];             /* Pointer to disk file name */
-int  file_bytes_per_item[MAXFILES];       /* Pointer to disk file item size */
-int  file_is_scratch[MAXFILES];           /* Indicates if file is 'SCRATCH' */
-int  file_last_op [MAXFILES];  /* reason - see man fopen rd/wr combinations */
+static FILE *file_stream[MAXFILES];                 /* Pointer to disk file */
+static char file_name[MAXFILES][MAXFLEN];      /* Pointer to disk file name */
+static int  file_bytes_per_item[MAXFILES];/* Pointer to disk file item size */
+static int  file_is_scratch[MAXFILES];    /* Indicates if file is 'SCRATCH' */
+static int  file_last_op [MAXFILES];    /* see man fopen rd/wr combinations */
+
+/****************************************************************************
+ * Routine: flength                                                         *
+ ****************************************************************************/
+
+static int flength (s, len)          /* get real length of a Fortran string */
+char *s;
+int len;
+{
+  while (s[--len] == ' ');
+  return (++len);
+} /* End of flength */
 
 /****************************************************************************
  * Routine: ustenv (Unix only - vms version in vms.for)                     *
@@ -217,42 +256,30 @@ int  file_last_op [MAXFILES];  /* reason - see man fopen rd/wr combinations */
 
 #if ! defined (vax)
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX
   void ustenv (str, Lstr, result)
   char *str;
   int  Lstr;
 #endif
 
-#if defined (hpux)
-  void ustenv_ (str, Lstr, result)
+#if CALL_LIKE_HPUX
+  void ustenv (str, result, Lstr)
   char *str;
   int  Lstr;
 #endif
 
-#if defined (ardent) || defined (titan) || defined (stardent)
+#if CALL_LIKE_STARDENT
   void USTENV (str, result)
   struct Str_Desc *str;
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void ustenv_ (str, result, Lstr)
   char *str;
   int  Lstr;
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void ustenv_ (str, result, Lstr)
-  char *str;
-  int  Lstr;
-#endif
-
-#if defined (solbourne)
-  void ustenv_ (str, result, Lstr)
-  char *str;
-  int  Lstr;
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran ustenv_ (Lstr, str, result)
   char *str;
   int  Lstr;
@@ -263,7 +290,7 @@ int *result;
   int Length;
   char name[MAXFLEN], value[MAXFLEN], *temp;
 
-#if defined (ardent) || defined (titan) || defined (stardent)
+#if CALL_LIKE_STARDENT
   Length = flength (str->Str_pointer, str->Str_length);
   if (Length > MAXFLEN) Length = MAXFLEN - 1;
   (void) strncpy (name, str->Str_pointer, Length);
@@ -272,16 +299,17 @@ int *result;
   if (Length > MAXFLEN) Length = MAXFLEN - 1;
   (void) strncpy (name, str, Length);
 #endif
-  name[Length] = (char) NULL; 
+  name[Length] = '\0'; 
 
-#if defined (sgi) || defined (sun) || defined (ESV)
+#if defined (sgi) || defined (sun) || defined (__hpux)
   temp = (char *) malloc (MAXFLEN);
   (void) strcpy (temp, name);
   *result = putenv (temp);
+  /* note the necessary lack of free() */
 #else
   temp = (char *) index (name, '=');
   if (temp != (char *) NULL) {
-    *temp = (char) NULL;
+    *temp = '\0';
     temp++;
     (void) strcpy (value, temp);
   };
@@ -295,19 +323,13 @@ int *result;
  * Routine: cunlink                                                         *
  ****************************************************************************/
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX || CALL_LIKE_HPUX
   void cunlink (filename, Lfilename)
   char *filename;
   int  Lfilename;
 #endif
 
-#if defined (hpux)
-  void cunlink_ (filename, Lfilename)
-  char *filename;
-  int  Lfilename;
-#endif
-
-#if defined (ardent) || defined (titan) || defined (stardent)
+#if CALL_LIKE_STARDENT
   void CUNLINK (filename)
   struct Str_Desc *filename;
 #endif
@@ -317,25 +339,13 @@ int *result;
   struct dsc$descriptor_s *filename;
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void cunlink_ (filename, Lfilename)
   char *filename;
   int  Lfilename;
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void cunlink_ (filename, Lfilename)
-  char *filename;
-  int  Lfilename;
-#endif
-
-#if defined (solbourne)
-  void cunlink_ (filename, Lfilename)
-  char *filename;
-  int  Lfilename;
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran cunlink_ (Lfilename, filename)
   char *filename;
   int  Lfilename;
@@ -344,27 +354,27 @@ int *result;
   int Length;
   char tempfile[MAXFLEN];
 
-#if defined (ardent) || defined (titan) || defined (stardent)
+#if CALL_LIKE_STARDENT
     Length = flength (filename->Str_pointer, filename->Str_length);
     if (Length > MAXFLEN) Length = MAXFLEN - 1;
     (void) strncpy (tempfile, filename->Str_pointer, Length);
-    tempfile[Length] = (char) NULL; 
+    tempfile[Length] = '\0'; 
     (void) DELFILE (tempfile);
 #else
 
-#if ! defined (vax)
+#  if ! defined (vax)
     Length = flength (filename, Lfilename);
     if (Length > MAXFLEN) Length = MAXFLEN - 1;
     (void) strncpy (tempfile, filename, Length);
-    tempfile[Length] = (char) NULL; 
+    tempfile[Length] = '\0'; 
     (void) DELFILE (tempfile);
-#else
+#  else
     Length = flength (filename->dsc$a_pointer, filename->dsc$w_length);
     if (Length > MAXFLEN) Length = MAXFLEN - 1;
     (void) strncpy (tempfile, filename->dsc$a_pointer, Length);
-    tempfile[Length] = (char) NULL; 
+    tempfile[Length] = '\0'; 
     (void) DELFILE (tempfile);
-#endif
+#  endif
 
 #endif
 } /* End of cunlink */
@@ -375,65 +385,60 @@ int *result;
 
 #if ! defined (vax)
 
-#include <sys/types.h>
-#include <sys/times.h>
-#include <sys/param.h>
-
 long elapsed;                                   /* used to get elapsed time */
 
-#if defined (__convex__)
-/* #define HZ CLK_TCK */
-#define HZ 60
-#else
-#define HZ 60
+#ifndef HZ			/* this needs attention */
+#  ifdef CLK_TCK
+#    define HZ CLK_TCK
+#  else
+#    define HZ 60
+#  endif
 #endif
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX || CALL_LIKE_HPUX
   void getelapsed ()
 #endif
 
-#if defined (hpux)
-  void getelapsed_ ()
-#endif
-
-#if defined (ardent) || defined (titan) || defined (stardent)
+#if CALL_LIKE_STARDENT
   void GETELAPSED ()
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void getelapsed_ ()
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void getelapsed_ ()
-#endif
-
-#if defined (solbourne)
-  void getelapsed_ ()
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran getelapsed_ ()
 #endif
 {
+#if defined (__hpux)
+  int minutes;
+  float seconds;
+
+  elapsed = (clock ()/CLOCKS_PER_SEC) - elapsed;
+  minutes = (int) (elapsed / 60);
+  seconds = (int) elapsed - 60.0 * (float) minutes; 
+  (void) printf ("Elapsed: %02d:%04.2fs\n", minutes, seconds);
+#else
   int minutes;
   float usertime, systime, seconds;
   struct tms  buffer;
-  long time ();
 
   if (times (&buffer) != -1)
     {
       usertime = (float) (buffer.tms_utime + buffer.tms_cutime);
       systime  = (float) (buffer.tms_stime + buffer.tms_cstime);
       usertime /= HZ;
-      systime  /= HZ;  
+      systime  /= HZ;
+      /* fixme: should use fortran i/o */
       printf ("User: %-.2fs System: %-.2fs ", usertime, systime);
     }
 
-  elapsed = time (0) - elapsed;
+  elapsed = (long) time (0) - elapsed;
   minutes = (int) (elapsed / 60);
   seconds = (int) elapsed - 60.0 * (float) minutes; 
   printf ("Elapsed: %02d:%04.2fs\n", minutes, seconds);
+#endif				/* __hpux */
 }
 #endif  /* end of #if ! defined (vax) */
 
@@ -443,37 +448,27 @@ long elapsed;                                   /* used to get elapsed time */
  * Routine: initfyp (Unix only - vms version in vms.for)                    *
  ****************************************************************************/
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX || CALL_LIKE_HPUX
   void initfyp ()
 #endif
 
-#if defined (hpux)
-  void initfyp_ ()
-#endif
-
-#if defined (ardent) || defined (titan) || defined (stardent)
+#if CALL_LIKE_STARDENT
   void INITFYP ()
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void initfyp_ ()
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void initfyp_ ()
-#endif
-
-#if defined (solbourne)
-  void initfyp_ ()
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran initfyp_ ()
 #endif
 {
-  long time ();
-
-  elapsed = time (0) ;
+#if defined (__hpux)
+  elapsed = clock () / CLOCKS_PER_SEC ;
+#else
+  elapsed = (long) time (0) ;
+#endif				/* __hpux */
 }
 #endif  /* end of #if ! defined (vax) */
 
@@ -481,11 +476,12 @@ long elapsed;                                   /* used to get elapsed time */
  * Routine: sysmsg                                                          *
  ****************************************************************************/
 
-void sysmsg (s1, s2, s3, num)
+static void sysmsg (s1, s2, s3, num)
 char *s1, *s2, *s3;
 int num;
 {
-  if (*s1 == (char) NULL)
+  /* fixme: should use fortran i/o */
+  if (*s1 == '\0')
     (void) fprintf (stdout, "%s %s %s\n", s1, s2, s3);
   else
     (void) fprintf (stdout, "%s: %s %s\n", s1, s2, s3);
@@ -493,34 +489,22 @@ int num;
 } /* End of sysmsg */
 
 /****************************************************************************
- * Routine: flength                                                         *
- ****************************************************************************/
-
-int flength (s, len)                 /* get real length of a Fortran string */
-char *s;
-int len;
-{
-  while (s[--len] == ' ');
-  return (++len);
-} /* End of flength */
-
-/****************************************************************************
  * Routine: copen                                                           *
  ****************************************************************************/
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX
   void copen (iunit, filename, Lfilename, istat)
   char *filename;
   int  Lfilename;
 #endif
 
-#if defined (hpux)
-  void copen_ (iunit, filename, Lfilename, istat)
+#if CALL_LIKE_HPUX
+  void copen (iunit, filename, istat, Lfilename)
   char *filename;
   int  Lfilename;
 #endif
 
-#if defined (ardent) || defined (titan) || defined (stardent)
+#if CALL_LIKE_STARDENT
   void COPEN (iunit, filename, istat)
   struct Str_Desc *filename;
 #endif
@@ -530,25 +514,13 @@ int len;
   struct dsc$descriptor_s *filename;
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void copen_ (iunit, filename, istat, Lfilename)
   char *filename;
   int  Lfilename;
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void copen_ (iunit, filename, istat, Lfilename)
-  char *filename;
-  int  Lfilename;
-#endif
-
-#if defined (solbourne)
-  void copen_ (iunit, filename, istat, Lfilename)
-  char *filename;
-  int  Lfilename;
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran copen_ (iunit, Lfilename, filename, istat)
   char *filename;
   int  Lfilename;
@@ -557,14 +529,13 @@ int len;
 int  *iunit, *istat;
 {
   int Length, i, jstat;
-  void sysmsg ();
 
   jstat = *istat;
 
   if (! initialised) {
     for (i = 1; i < MAXFILES; i++) {
       file_stream[i]         = (FILE *) NULL;
-      file_name[i][0]        = (char) NULL;
+      file_name[i][0]        = '\0';
       file_bytes_per_item[i] = item_sizes[DEFSIZE];  /* default item size */
       file_is_scratch[i]     = 0;                                /* FALSE */
       file_last_op[i]        = IRRELEVANT_OP;
@@ -579,7 +550,7 @@ int  *iunit, *istat;
     i = -1;                                 /* return no more units flag */
   else {
 
-#if defined (ardent) || defined (titan) || defined (stardent)
+#if CALL_LIKE_STARDENT
     Length = flength (filename->Str_pointer, filename->Str_length);
     if (Length > MAXFLEN) Length = MAXFLEN - 1;
     (void) strncpy (file_name[i], filename->Str_pointer, Length);
@@ -597,12 +568,13 @@ int  *iunit, *istat;
 
 #endif
 
-    file_name[i][Length] = (char) NULL;
+    file_name[i][Length] = '\0';
     file_last_op[i] = IRRELEVANT_OP;
     file_bytes_per_item[i] = item_sizes[DEFSIZE];      /* default item size */
     file_is_scratch[i] = (jstat == 2 ? 1 : 0);
     file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1]);
-    if (file_stream[i] == NULL) i = -2;         /* return open failure flag */
+    if (file_stream[i] == (FILE *) NULL)        /* return open failure flag */
+      i = -2;
     if (i > 0 && file_is_scratch[i]) {
       if (DELFILE (file_name[i]))
         sysmsg ("(Q)QOPEN", "error unlinking scratch file", file_name[i],NO_ERR);
@@ -668,86 +640,58 @@ int  *iunit, *istat;
  * Routine: cclose                                                          *
  ****************************************************************************/
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX || CALL_LIKE_HPUX
   void cclose (iunit)
-#endif
-
-#if defined (hpux)
-  void cclose_ (iunit)
 #endif
 
 #if defined (vax) || defined (ardent) || defined (titan) || defined (stardent)
   void CCLOSE (iunit)
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void cclose_ (iunit)
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void cclose_ (iunit)
-#endif
-
-#if defined (solbourne)
-  void cclose_ (iunit)
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran cclose_ (iunit)
 #endif
 
 int *iunit;
 {
-  void sysmsg ();
-
   if (! initialised) 
     sysmsg ("QCLOSE","qopen/qqopen not yet called", "", NO_OPEN);
 
-  if (file_stream[*iunit] != NULL) {
+  if (file_stream[*iunit] != (FILE *) NULL) {
     if (fclose (file_stream[*iunit]) == EOF) 
       sysmsg ("QCLOSE", "error closing", file_name[*iunit], NO_CLOSE);
     file_stream[*iunit] = (FILE *) NULL;
   }
 
-  file_name[*iunit][0] = (char) NULL;
+  file_name[*iunit][0] = '\0';
 } /* End of cclose */
 
 /****************************************************************************
  * Routine: cmode                                                           *
  ****************************************************************************/
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX || CALL_LIKE_HPUX
   void cmode (iunit, mode, size)
-#endif
-
-#if defined (hpux)
-  void cmode_ (iunit, mode, size)
 #endif
 
 #if defined (vax) || defined (ardent) || defined (titan) || defined (stardent)
   void CMODE (iunit, mode, size)
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void cmode_ (iunit, mode, size)
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void cmode_ (iunit, mode, size)
-#endif
-
-#if defined (solbourne)
-  void cmode_ (iunit, mode, size)
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran cmode_ (iunit, mode, size)
 #endif
 
 int *iunit, *mode, *size;
 {
-  void sysmsg ();
-
   if (! initialised) 
     sysmsg ("QMODE", "qopen/qqopen not yet called", "", NO_OPEN);
 
@@ -769,31 +713,19 @@ int *iunit, *mode, *size;
  * Routine: cread                                                           *
  ****************************************************************************/
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX || CALL_LIKE_AIX
   void cread (iunit, buffer, nitems, result)
-#endif
-
-#if defined (hpux)
-  void cread_ (iunit, buffer, nitems, result)
 #endif
 
 #if defined (vax) || defined (ardent) || defined (titan) || defined (stardent)
   void CREAD (iunit, buffer, nitems, result)
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void cread_ (iunit, buffer, nitems, result)
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void cread_ (iunit, buffer, nitems, result)
-#endif
-
-#if defined (solbourne)
-  void cread_ (iunit, buffer, nitems, result)
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran cread_ (iunit, buffer, nitems, result)
 #endif
 
@@ -802,7 +734,6 @@ int *iunit, *nitems, *result;
 {
   int i, nbytes;
   register char *buf;
-  void sysmsg ();
 
   if (! initialised) 
     sysmsg ("QREAD", "qopen/qqopen not yet called", "", NO_OPEN);
@@ -812,8 +743,15 @@ int *iunit, *nitems, *result;
   file_last_op[*iunit] = READ_OP;
 
 #ifndef CONVERT
+#if defined (__hpux)
+  /* HP's don't like the fread below, but will take the read here - why? */
+  nbytes = *nitems * file_bytes_per_item[*iunit];
+  i = (int) read (fileno(file_stream[*iunit]), buffer, (size_t) nbytes);
+  i /= file_bytes_per_item[*iunit];
+#else
   i = fread (buffer, (size_t) file_bytes_per_item[*iunit], (size_t) *nitems, 
              file_stream[*iunit]);
+#endif
 #else
 /*****************************************************************************
  *       Code needed to implement integer/float conversion in heterogeneous  *  
@@ -860,31 +798,19 @@ int *iunit, *nitems, *result;
  * Routine: cwrite                                                          *
  ****************************************************************************/
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX || CALL_LIKE_HPUX
   void cwrite (iunit, buffer, nitems, result)
-#endif
-
-#if defined (hpux)
-  void cwrite_ (iunit, buffer, nitems, result)
 #endif
 
 #if defined (vax) || defined (ardent) || defined (titan) || defined (stardent)
   void CWRITE (iunit, buffer, nitems, result)
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void cwrite_ (iunit, buffer, nitems, result)
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void cwrite_ (iunit, buffer, nitems, result)
-#endif
-
-#if defined (solbourne)
-  void cwrite_ (iunit, buffer, nitems, result)
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran cwrite_ (iunit, buffer, nitems, result)
 #endif
 
@@ -892,7 +818,6 @@ float *buffer;
 int *iunit, *nitems, *result;
 {
   int i;
-  void sysmsg ();
 
   if (! initialised) 
     sysmsg ("QWRITE", "qopen/qqopen not yet called", "", NO_OPEN);
@@ -911,38 +836,25 @@ int *iunit, *nitems, *result;
  * Routine: cseek                                                           *
  ****************************************************************************/
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX || CALL_LIKE_HPUX
   void cseek (iunit, irecl, iel, lrecl)
-#endif
-
-#if defined (hpux)
-  void cseek_ (iunit, irecl, iel, lrecl)
 #endif
 
 #if defined (vax) || defined (ardent) || defined (titan) || defined (stardent)
   void CSEEK (iunit, irecl, iel, lrecl)
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void cseek_ (iunit, irecl, iel, lrecl)
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void cseek_ (iunit, irecl, iel, lrecl)
-#endif
-
-#if defined (solbourne)
-  void cseek_ (iunit, irecl, iel, lrecl)
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran cseek_ (iunit, irecl, iel, lrecl)
 #endif
 
 int *iunit, *irecl, *iel, *lrecl;
 {
   long int position;
-  void sysmsg ();
 
   if (! initialised) 
     sysmsg ("QSEEK", "qopen/qqopen not yet called", "", NO_OPEN);
@@ -957,38 +869,25 @@ int *iunit, *irecl, *iel, *lrecl;
  * Routine: cback                                                           *
  ****************************************************************************/
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX || CALL_LIKE_HPUX
   void cback (iunit, lrecl)
-#endif
-
-#if defined (hpux)
-  void cback_ (iunit, lrecl)
 #endif
 
 #if defined (vax) || defined (ardent) || defined (titan) || defined (stardent)
   void CBACK (iunit, lrecl)
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void cback_ (iunit, lrecl)
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void cback_ (iunit, lrecl)
-#endif
-
-#if defined (solbourne)
-  void cback_ (iunit, lrecl)
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran cback_ (iunit, lrecl)
 #endif
 
 int *iunit, *lrecl;
 {
   long int position;
-  void sysmsg ();
 
   if (! initialised) 
     sysmsg ("QBACK", "qopen/qqopen not yet called", "", NO_OPEN);
@@ -1002,38 +901,25 @@ int *iunit, *lrecl;
  * Routine: cskip                                                           *
  ****************************************************************************/
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX || CALL_LIKE_HPUX
   void cskip (iunit, lrecl)
-#endif
-
-#if defined (hpux)
-  void cskip_ (iunit, lrecl)
 #endif
 
 #if defined (vax) || defined (ardent) || defined (titan) || defined (stardent)
   void CSKIP (iunit, lrecl)
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void cskip_ (iunit, lrecl)
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void cskip_ (iunit, lrecl)
-#endif
-
-#if defined (solbourne)
-  void cskip_ (iunit, lrecl)
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran cskip_ (iunit, lrecl)
 #endif
 
 int *iunit, *lrecl;
 {
   long int position;
-  void sysmsg ();
 
   if (! initialised) 
     sysmsg ("QSKIP", "qopen/qqopen not yet called", "", NO_OPEN);
@@ -1047,19 +933,19 @@ int *iunit, *lrecl;
  * Routine: cqinq                                                           *
  ****************************************************************************/
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX
   void cqinq (iunit, filnam, len_filnam, length)
   char *filnam; 
   int len_filnam;
 #endif
 
-#if defined (hpux)
-  void cqinq_ (iunit, filnam, len_filnam, length)
+#if CALL_LIKE_HPUX
+  void cqinq (iunit, filnam, length, len_filnam)
   char *filnam; 
   int len_filnam;
 #endif
 
-#if defined (ardent) || defined (titan) || defined (stardent)
+#if CALL_LIKE_STARDENT
   void CQINQ (iunit, filnam, length)
   struct Str_Desc *filnam;
 #endif
@@ -1069,25 +955,13 @@ int *iunit, *lrecl;
   struct dsc$descriptor_s *filnam;
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void cqinq_ (iunit, filnam, length, len_filnam)
   char *filnam;
   int len_filnam;
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void cqinq_ (iunit, filnam, length, len_filnam)
-  char *filnam;
-  int len_filnam;
-#endif
-
-#if defined (solbourne)
-  void cqinq_ (iunit, filnam, length, len_filnam)
-  char *filnam;
-  int len_filnam;
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran cqinq_ (iunit, len_filnam, filnam, length)
   char *filnam;
   int len_filnam;
@@ -1098,7 +972,6 @@ int *iunit, *length;
   char real_name[MAXFLEN];
   int stream, Length, i;
   long position;
-  void sysmsg ();
 
   if (! initialised) 
     sysmsg ("QQINQ", "qopen/qqopen not yet called", "", NO_OPEN);
@@ -1107,7 +980,7 @@ int *iunit, *length;
   stream = *iunit;
 
   if (file_stream[stream] == (FILE *) NULL) {/* no unit open try file name */
-#if defined (ardent) || defined (titan) || defined (stardent)
+#if CALL_LIKE_STARDENT
     Length = flength (filnam->Str_pointer, filnam->Str_length);
     if (Length > MAXFLEN) Length = MAXFLEN - 1;
     (void) strncpy (real_name, filnam->Str_pointer, Length);
@@ -1124,7 +997,7 @@ int *iunit, *length;
 #endif
 
 #endif
-    real_name[Length] = (char) NULL;
+    real_name[Length] = '\0';
     for (i = 0; i < MAXFILES; i++)
       if (! strcmp (real_name, file_name[i])) break;
     stream = i % MAXFILES;
@@ -1144,43 +1017,29 @@ int *iunit, *length;
  * Routine: clocate                                                         *
  ****************************************************************************/
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX || CALL_LIKE_HPUX
   void clocate (iunit, locate)
-#endif
-
-#if defined (hpux)
-  void clocate_ (iunit, locate)
 #endif
 
 #if defined (vax) || defined (ardent) || defined (titan) || defined (stardent)
   void CLOCATE (iunit, locate)
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void clocate_ (iunit, locate)
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void clocate_ (iunit, locate)
-#endif
-
-#if defined (solbourne)
-  void clocate_ (iunit, locate)
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran clocate_ (iunit, locate)
 #endif
 
 int *iunit, *locate;
 {
-  void sysmsg ();
-
   if (! initialised) 
     sysmsg ("QLOCATE", "qopen/qqopen not yet called", "", NO_OPEN);
 
   *locate = -1;
-  if (file_stream[*iunit] != NULL)
+  if (file_stream[*iunit] != (FILE *) NULL)
     *locate = (int) ftell (file_stream[*iunit]) / file_bytes_per_item[*iunit];
 } /* End of clocate */
 
@@ -1188,19 +1047,13 @@ int *iunit, *locate;
  * Routine: cprint                                                          *
  ****************************************************************************/
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX || CALL_LIKE_HPUX
   void cprint (istat, line, Lline)
   char *line;
   int  Lline;
 #endif
 
-#if defined (hpux)
-  void cprint_ (istat, line, Lline)
-  char *line;
-  int  Lline;
-#endif
-
-#if defined (ardent) || defined (titan) || defined (stardent)
+#if CALL_LIKE_STARDENT
   void CPRINT (istat, line)
   struct Str_Desc *line;
 #endif
@@ -1210,25 +1063,13 @@ int *iunit, *locate;
   struct dsc$descriptor_s *line;
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void cprint_ (istat, line, Lline)
   char *line;
   int  Lline;
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void cprint_ (istat, line, Lline)
-  char *line;
-  int  Lline;
-#endif
-
-#if defined (solbourne)
-  void cprint_ (istat, line, Lline)
-  char *line;
-  int  Lline;
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran cprint_ (istat, Lline, line)
   char *line;
   int  Lline;
@@ -1238,9 +1079,8 @@ int *istat;
 {
   int Length;
   char temp[MAXFLEN];
-  void sysmsg ();
 
-#if defined (ardent) || defined (titan) || defined (stardent)
+#if CALL_LIKE_STARDENT
   Length = flength (line->Str_pointer, line->Str_length);
   if (Length > MAXFLEN) Length = MAXFLEN - 1;
   (void) strncpy (temp, line->Str_pointer, Length);
@@ -1258,7 +1098,7 @@ int *istat;
 
 #endif
 
-  temp[Length] = (char) NULL;
+  temp[Length] = '\0';
   if (print_flag == -1) print_flag = *istat;  /* on first call set up level */
   if (*istat <= print_flag) sysmsg ("","",temp,NO_ERR);
 } /* End of cprint */
@@ -1271,13 +1111,8 @@ int *istat;
 #define DF_MT 0
 #endif
 
-#if defined (_AIX)
+#if CALL_LIKE_AIX || CALL_LIKE_HPUX
   void cmtype (istamp)
-  int *istamp;
-#endif
-
-#if defined (hpux)
-  void cmtype_ (istamp)
   int *istamp;
 #endif
 
@@ -1286,22 +1121,12 @@ int *istat;
   int *istamp;
 #endif
 
-#if defined (__convex__) || defined (ultrix)  || defined (sgi)
+#if CALL_LIKE_SUN
   void cmtype_ (istamp)
   int *istamp;
 #endif
 
-#if defined (ESV)        || defined (alliant) || defined (sun)
-  void cmtype_ (istamp)
-  int *istamp;
-#endif
-
-#if defined (solbourne)
-  void cmtype_ (istamp)
-  int *istamp;
-#endif
-
-#if defined (iris)
+#if CALL_LIKE_IRIS
   fortran cmtype_ (istamp)
   int *istamp;
 #endif
@@ -1426,4 +1251,88 @@ int size;
     return(0);
 }
 #endif /* CONVERT */
+
+
+#if defined (__hpux)
+
+/* these extra routines are used by HPUX machines */
+
+/****************************************************************************
+ * Routine: gerror                                                          *
+ ****************************************************************************/
+
+void gerror (str, Lstr)
+char *str;
+int  Lstr;
+{
+  int i;
+  extern int errno;
+
+  (void) strncpy (str, strerror (errno), Lstr);
+  for (i = strlen (str); i < Lstr; i++) str[i] = ' ';   /* pad with spaces */
+} /* End of gerror (str, Lstr) */
+
+/****************************************************************************
+ * Routine: getenv_                                                         *
+ ****************************************************************************/
+
+void getenv_ (name, value, Lname, Lvalue)
+char *name, *value;
+int Lname, Lvalue;
+{
+  int i;
+
+  name[flength (name, Lname)] = (char) NULL; 
+
+  (void) strncpy (value, getenv (name), Lvalue);
+  for (i = strlen (value); i < Lvalue; i++) 
+    value[i] = ' ';                                      /* pad with spaces */
+} /* End of getenv_ (name, value, lname, lvalue) */
+
+/****************************************************************************
+ * Routine: rename_                                                         *
+ ****************************************************************************/
+
+int rename_ (from, to, Lfrom, Lto)
+char *from, *to;
+int Lfrom, Lto;
+{
+  from[flength (from, Lfrom)] = (char) NULL; 
+  to[flength (to, Lto)] = (char) NULL; 
+
+  return (rename (from, to));
+} /* End of rename_ (from, to) */
+
+/****************************************************************************
+ * Routine: access_                                                         *
+ ****************************************************************************/
+
+int access_ (name, mode, Lname, Lmode)
+char *name, *mode;
+int Lname, Lmode;
+{
+  int imode;
+
+  switch (*mode) {
+    case 'R':
+    case 'r': imode = R_OK;
+              break;
+    case 'W':
+    case 'w': imode = W_OK;
+              break;
+    case 'X':
+    case 'x': imode = X_OK;
+              break;
+    case 'E':
+    case 'e':
+    default:  imode = F_OK;
+              break;
+  };
+  name[flength (name, Lname)] = (char) NULL; 
+
+  return (access (name, imode));
+} /* End of access_ (name, value) */
+
+#endif /* defined (__hpux) */
+
 #endif				/*  ! defined (KNOWN_MACHINE) */

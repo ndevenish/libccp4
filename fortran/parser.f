@@ -2022,7 +2022,7 @@ C     NSYM    Number of symmetry operations (including non-primitive)
 C     NSYMP   Number of primitive symmetry operations
 C     RSYM    Symmetry matrices (4x4)
 C     
-      IMPLICIT LOGICAL (A-Z)
+C
 C     
       INTEGER JTOK,NTOK
       INTEGER IBEG(NTOK),IEND(NTOK),ITYP(NTOK)
@@ -2127,7 +2127,7 @@ C     batch titles o/p
 C     ORIENTATION sets MTZBPR = 2
 C     batch orientation also
 C     
-      IMPLICIT LOGICAL (A-Z)
+C
 C     
       INTEGER JTOK,NTOK
       INTEGER IBEG(NTOK),IEND(NTOK),ITYP(NTOK)
@@ -2195,7 +2195,7 @@ C
 C     CELL(1-6)  Cell dimensions.
 C     
 C     
-      IMPLICIT LOGICAL (A-Z)
+C
 C     
 C     
 C     .. Scalar Arguments ..
@@ -2254,7 +2254,7 @@ C     RESMAX  Maximum resolution (in As)
 C     SMIN    Minimum resolution ( 4sin**2/lambda**2)
 C     SMAX    Maximum resolution ( 4sin**2/lambda**2)
 C     
-      IMPLICIT LOGICAL (A-Z)
+C
 C     
 C     
 C     .. Scalar Arguments ..
@@ -2350,7 +2350,7 @@ C     On exit
 C     ILPRGI - number in array of LSPRGI whose scale has been reset
 C     SCAL - scale factor.
 C     BB   - temperature factor.
-      IMPLICIT LOGICAL (A-Z)
+C
 C     
       INTEGER MCOLS
       PARAMETER (MCOLS=200)
