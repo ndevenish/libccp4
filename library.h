@@ -286,7 +286,7 @@
 #include <ctype.h>
 
 #if defined(_AIX) || defined (__hpux) || defined(F2C) ||\
-    defined(G77) || defined(_WIN32)/* would do no harm on others, though */
+    defined(G77) || defined(ABSOFT_F77) || defined(LAHEY) || defined(_WIN32)/* would do no harm on others, though */
 #  include <time.h>
 #endif
 /* We need INT_MAX and DBL_MAX defined for routine Hgetlimits               */
@@ -315,6 +315,9 @@
 #  else
 #    include "f2c.h"
 #  endif
+#endif
+#if defined (ABSOFT_F77)
+#  include "stdlib.h"
 #endif
 /* \section{[[#define]]s}                                                   */
 /* \subsection{Defaults and customisable items}                             */
