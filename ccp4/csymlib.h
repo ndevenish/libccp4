@@ -65,7 +65,7 @@ void ccp4spg_mem_tidy(void);
 /** Free memory associated with spacegroup.
  * @param sp pointer to spacegroup
  */
-void ccp4spg_free(CCP4SPG *sp);
+void ccp4spg_free(CCP4SPG **sp);
 
 /** Look up spacegroup in standard setting by number and load into
  * static storage of csymlib_f.

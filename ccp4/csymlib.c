@@ -517,10 +517,11 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   return spacegroup;
 }
 
-void ccp4spg_free(CCP4SPG *sp) {
-  free (sp->symop);
-  free (sp->invsymop);
-  free (sp);
+void ccp4spg_free(CCP4SPG **sp) {
+  free ((*sp)->symop);
+  free ((*sp)->invsymop);
+  free (*sp);
+  *sp=NULL;
 }
 
 int ccp4_spg_get_centering(const char *symbol_Hall, float cent_ops[4][3])
