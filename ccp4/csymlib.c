@@ -950,8 +950,9 @@ int ccp4_int_compare( const void *p1, const void *p2 )
 }
 
 int ccp4spg_is_in_pm_asu(const CCP4SPG* sp, const int h, const int k, const int l) {
+  if (ccp4spg_is_in_asu(sp,h,k,l)) return (1);
   if (ccp4spg_is_in_asu(sp,-h,-k,-l)) return (-1);
-  return ccp4spg_is_in_asu(sp,h,k,l);
+  return 0;
 }
 
 int ccp4spg_is_in_asu(const CCP4SPG* sp, const int h, const int k, const int l) {
