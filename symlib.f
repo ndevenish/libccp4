@@ -777,8 +777,7 @@ C     .. Arrays in Common ..
       REAL EPZONE
 C     ..
 C     .. Local Scalars ..
-      INTEGER IH,IK,IL,J,NC,NEPS,ISTERR,IFGERR,LATMUL,N,I
-      CHARACTER LINERR*100
+      INTEGER IH,IK,IL,J,NC,NEPS,LATMUL,N,I
       CHARACTER STROUT*400
 C     ..
 C     .. Local Arrays ..
@@ -909,17 +908,12 @@ C
 C
 C
         IF (NEZONE.LT.1) THEN
-          WRITE (LINERR,FMT='(A,A)')
-     +' Have to have at least one EPSILON ZONE CARD ',
-     +' **Execution suppressed'
-          ISTERR = 2
-          IFGERR = 1
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(2,-1,
+     +         'EPSLN: have to have at least one EPSILON ZONE')
 C              ****************************
 C
-          CALL CCPERR(1,' STOP in SYMLIB.for 3388')
       END IF
       END IF
 C
@@ -978,8 +972,7 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       REAL TEST
-      INTEGER I,J,ISTERR,IFGERR
-      CHARACTER LINERR*200
+      INTEGER I,J
 C     ..
 C     .. External Subroutines ..
       EXTERNAL SYSAB,LERROR
@@ -1005,17 +998,13 @@ C
    20 CONTINUE
 C
 C
-          WRITE (LINERR,FMT='(A,3I5,A)') 
-     + ' NO EPSILON ZONE found for reflection ',IH,
-     + ' **EXECUTION SUPPRESSED**'
-          ISTERR = 2
-          IFGERR = 1
+          WRITE (LINERR,FMT='(A,3I5)')
+     +     ' NO EPSILON ZONE found for reflection ',IH
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(2,-1,LINERR)
 C              ****************************
 C
-                CALL CCPERR(1,' STOP in SYMLIB.for 3377')
    30 EPSI = EPZONE(4,I)
       ISYSAB = 0
 C
@@ -1225,17 +1214,10 @@ C
 C
 C
    60 CONTINUE
-          WRITE (LINERR,FMT='(A,A)') 
-     +  ' **PROGRAM TERMINATED** ',
-     +  '**SYMMETRY FILE ERROR**'
-          ISTERR = 2
-          IFGERR = 1
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(2,-1,'**SYMMETRY FILE ERROR**')
 C              ****************************
-C
-                CALL CCPERR(1,' STOP in SYMLIB.for 3366')
 C
 C---- Format statements
 C
@@ -1447,32 +1429,19 @@ C
 C
 C
    70   CONTINUE
-          WRITE (LINERR,FMT='(A,A,A)')
-     +   ' **SYMMETRY FILE ERROR**',
-     +   ' **MSYMLB: Error in format of SYMOP FILE**'
-          ISTERR = 1
-          IFGERR = 0
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(1,0,'**MSYMLB: Error in format of SYMOP FILE**')
 C              ****************************
 C
       END IF
 C
 C
    80 CONTINUE
-          WRITE (LINERR,FMT='(A,A)')
-     +  ' **SYMMETRY FILE ERROR** ',
-     +  ' **PROGRAM TERMINATED**'
-          ISTERR = 2
-          IFGERR = 1
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(2,-1,'**SYMMETRY FILE ERROR**')
 C              ****************************
-C
-                CALL CCPERR(1,' STOP in SYMLIB.for 3355')
-C
 C
       END
 C
@@ -2849,10 +2818,7 @@ C     ..
 C
 C---- Error trap
 C
-      IF (NS.LE.0) THEN
-        WRITE (LUNOUT,6000) NS
-                  CALL CCPERR(1,' STOP in SYMLIB.for 6600')
-      END IF
+      IF (NS.LE.0) CALL CCPERR(1,'internal error: NS <= 0 in KROT')
       KROT = 1
       DO 20 I = 1,3
         L = JT(I,NS)
@@ -3617,17 +3583,17 @@ C
 C   
 C     
 C     ====================================
-      SUBROUTINE PGNLAU(NAMPG,NLAUE,LAUNAM)
+      LOGICAL FUNCTION PGNLAU(NAMPG,NLAUE,LAUNAM)
 C     ====================================
 C     
 C---- Choose Laue group from PG name.
 C     
 C     On entry:
-C     NAMPG      point-group name
+C     NAMPG      point-group name (Int Tab A or `CCP4' (from PGDEFN))
 C     
 C     On exit:
 C     NLAUE     Laue group number
-C     LAUNAM    Laue group name
+C     LAUNAM    Laue group name (Int Tab A)
 C     
 C     .. Scalar Arguments ..
       INTEGER NLAUE
@@ -3641,6 +3607,8 @@ C     ..
 C     
       NLAUE = 0
       LOCNAM = NAMPG
+C     be case-insensitive
+      CALL CCPUPC (LOCNAM)
 C     Strip off 'PG' if present
       IF (NAMPG(1:2) .EQ. 'PG') LOCNAM = NAMPG(3:)
       LPG = LENSTR(LOCNAM)
@@ -3651,99 +3619,102 @@ C     Cubic
 C     14 pg23   pgm3bar - Laue m3
 C     15 pg432  pg4bar3m pgm3barm - Laue m3m
 C     
-      IF (LOCNAM(1:LPG).EQ.'23'
-     +.OR.LOCNAM(1:LPG).EQ.'m3bar') THEN
+      IF (LOCNAM.EQ.'23'
+     +     .OR.LOCNAM.EQ.'M3BAR') THEN
         NLAUE = 14
-        LAUNAM = 'm3'
-      ELSE IF (LOCNAM(1:LPG).EQ.'432'
-     +.OR.LOCNAM(1:LPG).EQ.'4bar3m'
-     +.OR.LOCNAM(1:LPG).EQ.'m3barm') THEN
+        LAUNAM = 'm3bar'
+      ELSE IF (LOCNAM.EQ.'432'
+     +       .OR.LOCNAM.EQ.'4BAR3M'
+     +       .OR.LOCNAM.EQ.'M3BARM') THEN
         NLAUE = 15
-        LAUNAM = 'm3m'
-C     
-C----  8 pg422 pg4mm pg4bar2m pg4barm2 - Laue 4/mmm
-C     11 pg321 pg32 pg3m1 pg3barm1 pg3m - Laue  3/m
-C                          hkl:h>=0, k>=0 with k<=h for all l.
-C                           if h = k  l>=0
-C           Space group numbers :   150-152-154
-C     13 pg622 pg6mm pg6bar2m pg6barm2 pg6/mmm - Laue 6/mmm
-C     
-      ELSE IF (LOCNAM(1:LPG).EQ.'422'
-     +.OR.LOCNAM(1:LPG).EQ.'4mm'
-     +.OR.LOCNAM(1:LPG).EQ.'4bar2m'
-     +.OR.LOCNAM(1:LPG).EQ.'4barm2') THEN
+        LAUNAM = 'm3barm'
+C       
+C----   8 pg422 pg4mm pg4bar2m pg4barm2 - Laue 4/mmm
+C       11 pg321 pg32 pg3m1 pg3barm1 pg3m - Laue  3/m
+C       hkl:h>=0, k>=0 with k<=h for all l.
+C       if h = k  l>=0
+C       Space group numbers :   150-152-154
+C       13 pg622 pg6mm pg6bar2m pg6barm2 pg6/mmm - Laue 6/mmm
+C       
+      ELSE IF (LOCNAM.EQ.'422'
+     +       .OR. LOCNAM.EQ.'4/MMM'
+     +       .OR.LOCNAM.EQ.'4MM'
+     +       .OR.LOCNAM.EQ.'4BAR2M'
+     +       .OR.LOCNAM.EQ.'4BARM2') THEN
         NLAUE = 8
         LAUNAM = '4/mmm'
-      ELSE IF (LOCNAM(1:LPG).EQ.'321'
-     +.OR.LOCNAM(1:LPG).EQ.'32'
-     +.OR.LOCNAM(1:LPG).EQ.'3m1'
-     +.OR.LOCNAM(1:LPG).EQ.'3barm1'
-     +.OR.LOCNAM(1:LPG).EQ.'3m') THEN
+      ELSE IF (LOCNAM.EQ.'321'
+     +       .OR.LOCNAM.EQ.'32'
+     +       .OR.LOCNAM.EQ.'3M1'
+     +       .OR.LOCNAM.EQ.'3BARM1'
+     +       .OR. LOCNAM.EQ.'3BARM'
+     +       .OR.LOCNAM.EQ.'3M') THEN
         NLAUE = 11
-        LAUNAM = '3/m'
-      ELSE IF (LOCNAM(1:LPG).EQ.'622'
-     +.OR.LOCNAM(1:LPG).EQ.'6mm'
-     +.OR.LOCNAM(1:LPG).EQ.'6bar2m'
-     +.OR.LOCNAM(1:LPG).EQ.'6barm2'
-     +.OR.LOCNAM(1:LPG).EQ.'6/mmm') THEN
+        LAUNAM = '3barm'
+      ELSE IF (LOCNAM.EQ.'622'
+     +       .OR.LOCNAM.EQ.'6MM'
+     +       .OR.LOCNAM.EQ.'6BAR2M'
+     +       .OR.LOCNAM.EQ.'6BARM2'
+     +       .OR.LOCNAM.EQ.'6/MMM') THEN
         NLAUE = 13
         LAUNAM = '6/mmm'
-C     
-C---- 6 pg222  pgmm2 pgmmm - Laue mmm   
-C      hkl:h>=0, k>=0, l>=0            16 ...
-C     10 pg312  pg31m pg3bar1m - Laue 3bar1m 
+C       
+C----   6 pg222  pgmm2 pgmmm - Laue mmm   
+C       hkl:h>=0, k>=0, l>=0            16 ...
+C       10 pg312  pg31m pg3bar1m - Laue 3bar1m 
 C       hkl:h>=0, k>=0 with k<=h for all l.
-C                           if k = 0  l>=0
-C           Space group numbers :   149-151-153
-C     
-      ELSE IF (LOCNAM(1:LPG).EQ.'312'
-     +.OR.LOCNAM(1:LPG).EQ.'31m'
-     +.OR.LOCNAM(1:LPG).EQ.'3bar1m') THEN
+C       if k = 0  l>=0
+C       Space group numbers :   149-151-153
+C       
+      ELSE IF (LOCNAM.EQ.'312'
+     +       .OR.LOCNAM.EQ.'31M'
+     +       .OR.LOCNAM.EQ.'3BAR1M') THEN
         NLAUE = 10
         LAUNAM = '3bar1m'
-      ELSE IF (LOCNAM(1:LPG).EQ.'222'
-     +.OR.LOCNAM(1:LPG).EQ.'mmm'
-     +.OR.LOCNAM(1:LPG).EQ.'mm2') THEN
+      ELSE IF (LOCNAM.EQ.'222'
+     +       .OR.LOCNAM.EQ.'MMM'
+     +       .OR.LOCNAM.EQ.'MM2'
+     +       .OR.LOCNAM.EQ.'2MM'
+     +       .OR.LOCNAM.EQ.'M2M') THEN
         NLAUE = 6
         LAUNAM = 'mmm'
-C     
-C---- 4 pg2 pgm pg2/m - Laue   2/m
-C     
-      ELSE IF (LOCNAM(1:LPG).EQ.'2'
-     +.OR.LOCNAM(1:LPG).EQ.'2A'
-     +.OR.LOCNAM(1:LPG).EQ.'m'
-     +.OR.LOCNAM(1:LPG).EQ.'2/m') THEN
+C       
+C----   4 pg2 pgm pg2/m - Laue   2/m
+C       
+      ELSE IF (LOCNAM.EQ.'2'
+     +       .OR.LOCNAM.EQ.'2A'
+     +       .OR.LOCNAM.EQ.'M'
+     +       .OR.LOCNAM.EQ.'2/M') THEN
         NLAUE = 4
         LAUNAM = '2/m'
-C     
-C---- 3 pg1     1bar
-C     7 pg4    4/m
-C     9  pg3     3bar
-C     12 pg6    6/m
-C     
-      ELSE IF (LOCNAM(1:LPG).EQ.'1'
-     +.OR.LOCNAM(1:LPG).EQ.'1bar') THEN
+C       
+C----   3 pg1     1bar
+C       7 pg4    4/m
+C       9  pg3     3bar
+C       12 pg6    6/m
+C       
+      ELSE IF (LOCNAM.EQ.'1'
+     +       .OR.LOCNAM.EQ.'1BAR') THEN
         NLAUE = 3
         LAUNAM = '-1'
-      ELSE IF (LOCNAM(1:LPG).EQ.'3'
-     +.OR.LOCNAM(1:LPG).EQ.'3bar') THEN
+      ELSE IF (LOCNAM.EQ.'3'
+     +       .OR.LOCNAM.EQ.'3BAR') THEN
         NLAUE = 9
         LAUNAM = '-3'
-      ELSE IF (LOCNAM(1:LPG).EQ.'4'
-     +.OR.LOCNAM(1:LPG).EQ.'4/m'
-     +.OR.LOCNAM(1:LPG).EQ.'4bar') THEN
+      ELSE IF (LOCNAM.EQ.'4'
+     +       .OR.LOCNAM.EQ.'4/M'
+     +       .OR.LOCNAM.EQ.'4BAR') THEN
         NLAUE = 7
         LAUNAM = '4/m'
-      ELSE IF (LOCNAM(1:LPG).EQ.'6'
-     +.OR.LOCNAM(1:LPG).EQ.'6/m'
-     +.OR.LOCNAM(1:LPG).EQ.'6bar') THEN
+      ELSE IF (LOCNAM.EQ.'6'
+     +       .OR.LOCNAM.EQ.'6/M'
+     +       .OR.LOCNAM.EQ.'6BAR') THEN
         NLAUE = 12
-        LAUNAM = '6/m'
+        LAUNAM = '6/M'
       END IF
 C     
       IF (NLAUE.EQ.0)           CALL CCPERR(1,
-     +  ' You have not defined PG name properly ')
-C     
+     +  'You have not defined PG name properly')
 C     
       END
 C
@@ -3864,7 +3835,7 @@ C
           WRITE(STROUT, 6020) ' **** Illegal Laue group : ',NLAUE
  6020     FORMAT(1X,A,I6)
           CALL PUTLIN(STROUT,'CURWIN')
-                    CALL CCPERR(1,' STOP in SYMLIB.for 7711')
+                    CALL CCPERR(1,'ASUSET: Fatal error')
         ENDIF
 C
         STROUT = 'Asymmetric unit: '//STROUT
@@ -4003,7 +3974,7 @@ C   NLAUE    number of Laue group
       REAL RSYM,RSYMIV
 C
 C Locals
-      INTEGER I,J,L,ISGN
+      INTEGER I,L,ISGN
       CHARACTER*100 LINERR
 C
 C L is symmetry operation number
