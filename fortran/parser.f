@@ -835,7 +835,7 @@ C     .. Local Scalars ..
       CHARACTER   LINERR*200
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL          KEYERR,LERROR, CCPERR
+      EXTERNAL          KEYERR, CCPERR
 C     ..
 C
       DO 10 I = NSTART,NSTART + N - 1
@@ -878,7 +878,6 @@ C     .. Local Arrays ..
       CHARACTER         TYPE(3)*12
 C     ..
 C     .. Local Scalars ..
-      INTEGER ISTERR,IFGERR
       CHARACTER LINERR*150
 C     ..
 C     .. External Subroutines ..
@@ -1148,7 +1147,7 @@ C     .. Array Arguments ..
       REAL              X(M),FVALUE(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER           I,K,ISTERR,IFGERR
+      INTEGER           I,K
       CHARACTER LINERR*100
 C     ..
 C     .. External Subroutines ..
@@ -1208,7 +1207,7 @@ C     .. Array Arguments ..
       REAL              FVALUE(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER           I,K,ISTERR,IFGERR
+      INTEGER           I,K
       CHARACTER LINERR*200
 C     ..
 C     .. Intrinsic Functions ..
@@ -1839,9 +1838,6 @@ C     .. Scalar Arguments ..
       INTEGER ERRFLG,IFAIL
       CHARACTER ERRMSG* (*)
 C     ..
-C     .. External Functions ..
-      INTEGER LENSTR
-      EXTERNAL LENSTR
 C     ..
 C     .. External Subroutines ..
       EXTERNAL BLANK,PUTLIN
