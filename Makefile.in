@@ -73,7 +73,7 @@ AR          = ar r
 RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
 
 # modules to go in libccp4.a:
-LIBTARGETS = ccplib fftlib maplib parser rwbrook modlib \
+LIBTARGETS = cciflib ccplib fftlib maplib parser rwbrook modlib \
            symlib lgglib harvlib mtzlib diskio unix plot84lib libhtml \
            binsortint library plotsubs keyparse pack_f pack_c
 
@@ -91,7 +91,7 @@ LIBTARGETS = ccplib fftlib maplib parser rwbrook modlib \
 
 all :  $L
 
-$L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
+$L : $L(cciflib.o) $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) \
 	  $L(mtzlib.o) $L(lgglib.o) $L(harvlib.o) $L(diskio.o) $L(unix.o) \
 	  $L(binsortint.o) $L(library.o) $L(plot84lib.o) \
@@ -236,6 +236,18 @@ $L(harvlib.o) : $(srcdir)/harvlib.f $(srcdir)/harvest.inc $(srcdir)/harderiv.inc
           && $(AR) ../$L *.o
 	rm -f harvlib.dir/*.o
 harvlib : $L(harvlib.o)
+	$(RANLIB) $L
+
+$L(cciflib.o) : $(srcdir)/cciflib.f $(srcdir)/cciflib.fh
+	-rm -rf cciflib.dir; mkdir cciflib.dir
+	echo '      SUBROUTINE CCIFLIB' > cciflib.dir/cciflib.$F
+	echo '      END' >> cciflib.dir/cciflib.$F
+	cd cciflib.dir && fsplit $(srcdir)/cciflib.f >/dev/null && $(RMEMPTY) && \
+          for i in `pwd`/*.$F; do \
+            $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
+          && $(AR) ../$L *.o
+	rm -f cciflib.dir/*.o
+cciflib : $L(cciflib.o)
 	$(RANLIB) $L
 
 $L(diskio.o) : $(srcdir)/diskio.f
