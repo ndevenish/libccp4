@@ -3286,6 +3286,9 @@ C
 C
 C---- Now try to find the help
 C
+        ISTAT = 0
+        CALL CCPDPN(91, 'HLP/HELP.RAB', 'READONLY', 'F', 0, ISTAT)
+        IF (ISTAT .NE. 0) GOTO 99
          OPEN(UNIT=91,ERR=99,STATUS='OLD',ACCESS='DIRECT',READONLY,
      &       FORM='FORMATTED',RECL=70,FILE='HLP/HELP.RAB')
         HELPOPEN=.TRUE.
