@@ -164,9 +164,9 @@ C     .. Array Arguments ..
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,K,KSTREAM,LENLIN,LINLEN,LSTREAM,MSTREAM,N,
-     +        NITEM
+     +        NITEM,NINCHR,LX
       LOGICAL FIRST, HAVLIN
-      CHARACTER FLNAME*255,LINEX*1500,LINEK1,SLASH
+      CHARACTER FLNAME*256,LINEX*1500,LINEK1,SLASH
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -1426,6 +1426,7 @@ C
 C_END_SBLANK
 C
       CHARACTER*1 ARRAY(*)
+      INTEGER I,N1,N2
 C
       DO 10 I=N1,N2
          ARRAY(I)=' '
@@ -1632,7 +1633,7 @@ C     .. Array Arguments ..
       CHARACTER WORDS(NWORDS)*(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER LK,I,L,NFOUND
+      INTEGER LK,I,L,NFOUND,JDO
       CHARACTER LINERR*200
 C     ..
 C     .. Local Arrays ..
@@ -1762,7 +1763,7 @@ C     .. Scalar Arguments ..
       CHARACTER STROUT* (*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER LUNOUT
+      INTEGER LUNOUT,LL,LS,LX
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -1947,7 +1948,8 @@ C
       REAL FVALUE(*)
       CHARACTER*(*)LINE,SPGNAM,PGNAME
       CHARACTER*20 SPGNAMS
-      INTEGER NUMSGP,NSYM,NSYMP
+      INTEGER NUMSGP,NSYM,NSYMP,LENSTR
+      EXTERNAL LENSTR
       REAL RSYM(4,4,*)
 C     
 C---- Look at next field on line: this can be
