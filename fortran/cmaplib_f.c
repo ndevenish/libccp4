@@ -46,6 +46,7 @@ static int ioArrayPrint(IOConvMap *ioMap)
       ioMap->ipc,filename);
     fprintf(stdout,"logical name %s\n\n",ioMap->logname);
   }
+  free(filename);      /* we strdup it in ccp4_file_name */
   return 1;
 }
 
