@@ -698,9 +698,24 @@ double ccp4_erfc( double x )
 }
 #endif
 
-#if defined (__APPLE__)
+#if defined (__APPLE__) && defined (__GNUC__) && ( __GNUC__ < 3 )
 void _carbon_init(int argc, char **argv) {}
 void _objcInit(void) {}
+#endif
+
+#if defined (__APPLE__) && defined (__GNUC__) && ( __GNUC__ == 3 ) && (__GNUC_MINOR__ == 1)
+float acosf(float x) {
+  return (float) acos( (double) x);
+}
+
+float atanf(float x) {       
+  return (float) atan( (double) x);
+}
+
+float asinf(float x) {       
+  return (float) asin( (double) x);
+}
+
 #endif
 
 #  if (defined _MVS)
