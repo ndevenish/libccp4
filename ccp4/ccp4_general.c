@@ -206,7 +206,7 @@ int ccp4fyp(int argc, char **argv)
   char *testarg=NULL;
 
   /* Filenames, directories etc */
-  char *cinclude=NULL,*home=NULL;
+  char *basename=NULL,*cinclude=NULL,*home=NULL;
   char *dir=NULL,*std_dir=NULL,*tmpstr=NULL;
 
   /* Decoding environ/defaults files */
@@ -241,7 +241,11 @@ int ccp4fyp(int argc, char **argv)
   /* ------------------------------------------------------ */
   ccp4ProgramTime(1);
 
-  ccp4ProgramName(ccp4_utils_basename(argv[0])); 
+  /*ccp4ProgramName(ccp4_utils_basename(argv[0])); */
+  basename = ccp4_utils_basename(argv[0]);
+  ccp4ProgramName(basename);
+  free(basename);
+  basename = NULL;
 
   /* ------------------------------------------------------ */
   /* Process command line option switches */
@@ -325,7 +329,10 @@ int ccp4fyp(int argc, char **argv)
     }
   }
   /* Release the memory associated with the temporary argument pointer */
-  if (testarg) free(testarg);
+  if (testarg) {
+    free(testarg);
+    testarg = NULL;
+  }
 
   /* ------------------------------------------------------ */
   /* Finished processing command line options */
@@ -592,7 +599,10 @@ int ccp4fyp(int argc, char **argv)
       /* Close the environ.def file and free memory storing
 	 the filename*/
       fclose(envfp);
-      if (env_file) free(env_file);
+      if (env_file) {
+	free(env_file);
+	env_file = NULL;
+      }
 
       /* Finished with the parser array */
       ccp4_parse_end(parser);
@@ -769,7 +779,10 @@ int ccp4fyp(int argc, char **argv)
     }
     /* Close the default.def file */
     fclose(deffp);
-    if (def_file) free(def_file);
+    if (def_file) {
+      free(def_file);
+      def_file = NULL;
+    }
 
     /* Finished with the parser array */
     ccp4_parse_end(parser);
@@ -1245,9 +1258,10 @@ void ccp4_banner(void) {
   if (diag) printf("Entering ccp4_banner \n");
 
   if (ccp4_prog_vers(NULL)) {
-    strcpy(prog_vers_str,ccp4_prog_vers(NULL));
+    strncpy(prog_vers_str,ccp4_prog_vers(NULL),18);
+    prog_vers_str[18]='\0';
   } else {
-    strcpy(prog_vers_str," ");
+    strncpy(prog_vers_str," ",2);
   }
 
   printf(" \n");
@@ -1255,10 +1269,10 @@ void ccp4_banner(void) {
   printf(" ###############################################################\n");
   printf(" ###############################################################\n");
   printf(" ### CCP4 %3s: %-18s %-18s  ##########\n", 
-       CCP4_VERSION_NO,ccp4ProgramName(NULL),prog_vers_str);
+	 CCP4_VERSION_NO,ccp4ProgramName(NULL),prog_vers_str);
   printf(" ###############################################################\n");
   printf(" User: %s  Run date: %s Run time: %s \n\n\n",
-       ccp4_utils_username(),ccp4_utils_date(date),ccp4_utils_time(time)); 
+	 ccp4_utils_username(),ccp4_utils_date(date),ccp4_utils_time(time)); 
   printf(" Please reference: Collaborative Computational Project, Number 4. 1994.\n");
   printf(" \"The CCP4 Suite: Programs for Protein Crystallography\". Acta Cryst. D50, 760-763.\n");
   printf(" as well as any specific reference in the program write-up.\n\n");
