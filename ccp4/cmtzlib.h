@@ -358,6 +358,16 @@ int MtzListColumn(const MTZ *mtz, char clabs[][31], char ctyps[][3], int csetid[
 
 /**** helper functions ****/
 
+/** Find where indices h, k, l are in MTZ structure. Usually, they
+ * will be first 3 columns of 1st dataset, but safest not to assume this.
+ * @param mtz pointer to MTZ struct
+ * @param ind_xtal crystal containing indices
+ * @param ind_set dataset containing indices
+ * @param ind_col 3 columns containing indices
+ * @return void
+ */
+void MtzFindInd(const MTZ *mtz, int *ind_xtal, int *ind_set, int ind_col[3]);
+
 /** Calculate resolution from indices and coefhkl.
  * coefhkl is obtained from MtzHklcoeffs.
  * @param in integer array of 3 indices
