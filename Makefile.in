@@ -36,8 +36,8 @@
 # * ar *.o into ../libccp4.a
 # * rm *.o from foo.dir (leave *.f there so you can do symbolic debug,
 #   although you then have to get the path right.  fixme: compile
-#   $(srcdir)/*.f to solve this problem if it doesn't make lines too
-#   long for sh...)
+#   $(srcdir)/<dir>/*.f to solve this problem if it doesn't make lines
+#   too long for sh...)
 
 # The following variables are expected to be set by configure:
 # top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
@@ -49,6 +49,12 @@ L           = libccp4.a#        convenient abbreviation only
 
 INSTALL_BIN = cp# fixme: should be set by configure
 INSTALL_DATA = cp# fixme: should be set by configure
+
+# this is for the benefit of makes that don't pass variable values in
+# recursive invocations, so that you can overrise these values on the
+# command line at the top level
+MVARS = libdir=$(libdir) bindir=$(bindir) FC="$(FC)" CC="$(CC)" \
+        FFLAGS="$(FFLAGS)" CFLAGS="$(CFLAGS)" LNS="$(LNS)" M4="$(M4)" F=$F
 
 # how to add a member to an archive (second and first args
 # respectively); this might need to be set by configure:
@@ -74,9 +80,11 @@ $L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) $L(rwatom.o) \
 	  $L(plot84lib.o) $L(graflib.o) $L(graphics.o) $L(gdummy.o)
 	$(RANLIB) $@
 
-ranlib: ; $(RANLIB) $L
+test-lib: $(srcdir)/testlib.for $L(library.o) $L(unix.o) $L(ccplib.o) \
+          $L(diskio.o)
+	$(RANLIB) $L
 
-$(LIBTARGETS) : ; $(MAKE) $(MFLAGS) "$L($@.o)"
+$(LIBTARGETS) : ; $(MAKE) $(MFLAGS) $(MVARS) "$L($@.o)"
 
 # explicit building of the real targets, sigh...
 
@@ -105,13 +113,14 @@ $L(maplib.o) : $(srcdir)/maplib.for
 	rm -f maplib.dir/*.o
 
 $L(parser.o) : $(srcdir)/parser.for
-# NB already has PARSER.{f,o} (uppercase), but make sure there's a
-# parser.o too and don't make an extra `parser_' (or whatever) symbol
 	-rm -rf parser.dir; mkdir parser.dir
-	echo '      SUBROUTINE PRSER' > parser.dir/parser.$F
-	echo '      END' >> parser.dir/parser.$F
-	cd parser.dir; fsplit $(srcdir)/parser.for; \
-	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
+	cd parser.dir; fsplit $(srcdir)/parser.for;
+# `-' for convex, sigh
+	-if test ! -f parser.dir/parser.$F; then \
+	  echo '      SUBROUTINE PRSER' > parser.dir/parser.$F; \
+	  echo '      END' >> parser.dir/parser.$F; \
+	fi
+	cd parser.dir; $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f parser.dir/*.o
 
 $L(rwbrook.o) : $(srcdir)/rwbrook.for
@@ -262,9 +271,8 @@ $L(unix.o) : $(srcdir)/unix.m4
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f unix.dir/*.o
 
-# testbed for library.c:
-testlib : $(srcdir)/testlib.for $L(library.o) $L(unix.o) $L(ccplib.o) \
-          $L(diskio.o) ranlib
+# testbed for library.c and some other modules:
+testlib : test-lib
 	-rm -f testlib.$F; $(LNS) $(srcdir)/testlib.for testlib.$F
 	$(FC) -o testlib $(FFLAGS) testlib.$F $L
 
