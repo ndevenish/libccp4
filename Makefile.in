@@ -313,7 +313,7 @@ $L(library.o) : $(srcdir)/library.c $(srcdir)/library.h
 library : $L(library.o)
 	$(RANLIB) $L
 
-$L(library_f.o) : $(srcdir)/library_f.c $(srcdir)/library.h $(srcdir)/library_f.h
+$L(library_f.o) : $(srcdir)/library_f.c $(srcdir)/library.h 
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/library_f.c
 	$(AR) $L library_f.o && rm library_f.o
 library_f : $L(library_f.o)
