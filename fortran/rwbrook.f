@@ -521,6 +521,7 @@ C_END_RBROOK
 C
 C
       LOGICAL IFCRYS,IFSCAL,IFEND,IFTER,MATRIX
+      INTEGER ICELLCK
       CHARACTER*72 BROOKA
       CHARACTER*40 ORTH(5)
       CHARACTER*4 ATNAM,RESNAM,ITYPE(5),IRTYPE
@@ -584,13 +585,16 @@ C
         READ(BROOKA,1003)CELL
 C
         IF (ICHK.EQ.1) THEN
+          ICELLCK = 0
           DO 111 I=1,6
             CELDEL = ABS(CELCHK(I)-CELL(I))/CELCHK(I)
             IF(CELDEL.GT.0.01)THEN
-              WRITE(6,987)CELCHK,CELL
-987          FORMAT(' Inconsistency in Cell Dimensions',2(/,3X,6F10.5))
+              ICELLCK = ICELLCK + 1
             ENDIF
 111       CONTINUE
+          IF(ICELLCK.GT.0)WRITE(6,987)CELCHK,CELL
+ 987      FORMAT(' Inconsistency in cell dimensions (may not matter)',
+     +         2(/,3X,6F10.5))
         ENDIF
 C
         CALL RBFROR
