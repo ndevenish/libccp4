@@ -939,11 +939,12 @@ C
         ENDIF
         IF (WBROOK1(1) .NE. ' ') THEN
           IF (BROOKB .NE. ' ') THEN
-          IF (ITYP .EQ. 0) THEN
-            BROOKB(1:6) = 'ATOM  '
+cpjx      Why do this?
+cpjx          IF (ITYP .EQ. 0) THEN
+cpjx            BROOKB(1:6) = 'ATOM  '
 C          ELSE
 C            BROOKB(1:6) = ITYPE(ITYP)
-          ENDIF
+cpjx          ENDIF
             DO 70 I=7,27
               WBROOK1(I) = WBROOK(I)
    70       CONTINUE
