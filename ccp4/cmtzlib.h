@@ -46,9 +46,9 @@ MTZ *MtzGet(const char *logname, int read_refs);
  * @param filein pointer to input file
  * @param ncol number of columns to read
  * @param refldata array of reflection data
- * @return void
+ * @return istat from ccp4_file_read
  */
-void MtzRrefl(CCP4File *filein, int ncol, float *refldata);
+int MtzRrefl(CCP4File *filein, int ncol, float *refldata);
 
 /** Writes an MTZ data structure to disk. If file is already open, MtzPut
  * uses file pointer in mtz struct, else uses logical name of file.
@@ -148,9 +148,9 @@ int MtzSpacegroupNumber(const MTZ *mtz);
  * @param mtz pointer to MTZ struct
  * @param minres minimum resolution
  * @param maxres maximum resolution
- * @return void
+ * @return 1 on success 
  */
-void MtzResLimits(const MTZ *mtz, float *minres, float *maxres);
+int MtzResLimits(const MTZ *mtz, float *minres, float *maxres);
 
 /**** Crystal operations ****/
 
@@ -378,9 +378,9 @@ int MtzListColumn(const MTZ *mtz, char clabs[][31], char ctyps[][3], int csetid[
  * @param ind_xtal crystal containing indices
  * @param ind_set dataset containing indices
  * @param ind_col 3 columns containing indices
- * @return void
+ * @return 1 on success
  */
-void MtzFindInd(const MTZ *mtz, int *ind_xtal, int *ind_set, int ind_col[3]);
+int MtzFindInd(const MTZ *mtz, int *ind_xtal, int *ind_set, int ind_col[3]);
 
 /** Calculate resolution from indices and coefhkl.
  * coefhkl is obtained from MtzHklcoeffs.
@@ -393,17 +393,17 @@ float MtzInd2reso(const int in[3], const double coefhkl[6]);
 /** Generate coefhkl coefficients from given cell parameters.
  * @param cell cell dimensions to be used for resolution calculation.
  * @param coefhkl double array of 6 coefficients
- * @return void
+ * @return 1 on success
  */
-void MtzHklcoeffs(const float cell[6], double coefhkl[6]);
+int MtzHklcoeffs(const float cell[6], double coefhkl[6]);
 
 /** Reads batch arrays into data structure.
  * @param intbuf pointer to integer batch array
  * @param fltbuf pointer to float batch array
  * @param batch pointer to batch structure
- * @return void
+ * @return 1 on success
  */
-void MtzArrayToBatch(const int *intbuf, const float *fltbuf, MTZBAT *batch);
+int MtzArrayToBatch(const int *intbuf, const float *fltbuf, MTZBAT *batch);
 
 void MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf);
 /* Writes batch info into the structure `batch`. */
@@ -420,16 +420,16 @@ int ccp4_lrtitl(const MTZ *mtz, char *title);
 
 int ccp4_lrhist(const MTZ *mtz, char history[][MTZRECORDLENGTH]);
 
-void ccp4_lrsort(const MTZ *mtz, int isort[5]);
+int ccp4_lrsort(const MTZ *mtz, int isort[5]);
 
-void ccp4_lrbats(const MTZ *mtz, int *nbatx, int batchx[]);
+int ccp4_lrbats(const MTZ *mtz, int *nbatx, int batchx[]);
 
-void ccp4_lrcell(const MTZXTAL *xtl, float cell[]);
+int ccp4_lrcell(const MTZXTAL *xtl, float cell[]);
 
-void ccp4_lrsymi(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx, 
+int ccp4_lrsymi(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx, 
        char *spgrnx, char *pgnamx);
 
-void ccp4_lrsymm(const MTZ *mtz, int *nsymx, float rsymx[192][4][4]);
+int ccp4_lrsymm(const MTZ *mtz, int *nsymx, float rsymx[192][4][4]);
 
 int MtzParseLabin(char *labin_line, const char prog_labels[][31], 
 	   const int nlprgi, char user_labels[][2][31]);

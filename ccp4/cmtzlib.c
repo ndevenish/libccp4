@@ -594,7 +594,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
   return(mtz);}
 
-void MtzArrayToBatch(const int *intbuf, const float *fltbuf, MTZBAT *batch)
+int MtzArrayToBatch(const int *intbuf, const float *fltbuf, MTZBAT *batch)
 
 {  int i;
 
@@ -659,18 +659,20 @@ void MtzArrayToBatch(const int *intbuf, const float *fltbuf, MTZBAT *batch)
     batch->detlm[i][1][0] = fltbuf[115 + (i * 6)];
     batch->detlm[i][1][1] = fltbuf[116 + (i * 6)];}
 
+  return 1;
 }
 
-void MtzRrefl(CCP4File *filein, int ncol, float *refldata) {
+int MtzRrefl(CCP4File *filein, int ncol, float *refldata) {
 
   int istat;
 
   ccp4_file_setmode(filein,2);
   istat = ccp4_file_read(filein, (uint8 *) refldata, ncol);
 
+  return istat;
 }
 
-void MtzFindInd(const MTZ *mtz, int *ind_xtal, int *ind_set, int ind_col[3]) {
+int MtzFindInd(const MTZ *mtz, int *ind_xtal, int *ind_set, int ind_col[3]) {
 
   int i,j,k;
 
@@ -698,6 +700,7 @@ void MtzFindInd(const MTZ *mtz, int *ind_xtal, int *ind_set, int ind_col[3]) {
        ind_col[2] = k;
     }
 
+  return 1;
 }
 
 float MtzInd2reso(const int in[3], const double coefhkl[6]) {
@@ -717,7 +720,7 @@ float MtzInd2reso(const int in[3], const double coefhkl[6]) {
 
 }
 
-void MtzHklcoeffs(const float cell[6], double coefhkl[6]) {
+int MtzHklcoeffs(const float cell[6], double coefhkl[6]) {
 
   /* generate coefhkl coefficients from given cell parameters */
 
@@ -732,7 +735,7 @@ void MtzHklcoeffs(const float cell[6], double coefhkl[6]) {
   for (i = 0; i < 6; ++i)
     if (cell[i] < 0.001) {
       ccp4_signal(CMTZ_ERRNO(CMTZERR_Cellerr),"MtzHklcoeffs",NULL);
-      return;
+      return 0;
     }
 
   degtorad = atan(1.0)/45.0;
@@ -767,6 +770,8 @@ void MtzHklcoeffs(const float cell[6], double coefhkl[6]) {
   coefhkl[3] = 0.25*(byst*byst + bzst*bzst);
   coefhkl[4] = 0.5*(bzst*czst);
   coefhkl[5] = 0.25*(czst*czst);
+
+  return 1;
 }
 
 int ccp4_lrtitl(const MTZ *mtz, char *title) {
@@ -792,7 +797,7 @@ int ccp4_lrhist(const MTZ *mtz, char history[][MTZRECORDLENGTH]) {
   return mtz->histlines;
 }
 
-void ccp4_lrsort(const MTZ *mtz, int isort[5]) {
+int ccp4_lrsort(const MTZ *mtz, int isort[5]) {
 
   int i,j,k,l,icol;
 
@@ -814,9 +819,10 @@ void ccp4_lrsort(const MTZ *mtz, int isort[5]) {
     }
   }
 
+  return 1;
 }
 
-void ccp4_lrbats(const MTZ *mtz, int *nbatx, int batchx[]) {
+int ccp4_lrbats(const MTZ *mtz, int *nbatx, int batchx[]) {
 
   int i=0;
   MTZBAT *batch;
@@ -828,6 +834,7 @@ void ccp4_lrbats(const MTZ *mtz, int *nbatx, int batchx[]) {
     batch = batch->next;
   }
 
+  return i;
 }
 
 void MtzDebugHierarchy(const MTZ *mtz) {
@@ -888,17 +895,18 @@ int MtzListColumn(const MTZ *mtz, char clabs[][31], char ctyps[][3], int csetid[
    return icol;
 }
 
-void ccp4_lrcell(const MTZXTAL *xtl, float cell[]) {
+int ccp4_lrcell(const MTZXTAL *xtl, float cell[]) {
 
   int i;
 
   for (i = 0; i < 6; ++i) {
     cell[i] = xtl->cell[i];
   }
-
+ 
+  return 1;
 }
 
-void MtzResLimits(const MTZ *mtz, float *minres, float *maxres) {
+int MtzResLimits(const MTZ *mtz, float *minres, float *maxres) {
 
   int i;
 
@@ -910,9 +918,10 @@ void MtzResLimits(const MTZ *mtz, float *minres, float *maxres) {
     if (mtz->xtal[i]->resmin < *minres) *minres = mtz->xtal[i]->resmin;
   }
 
+  return 1;
 }
 
-void ccp4_lrsymi(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx, 
+int ccp4_lrsymi(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx, 
        char *spgrnx, char *pgnamx) {
 
   *nsympx = mtz->mtzsymm.nsymp;
@@ -922,6 +931,7 @@ void ccp4_lrsymi(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx,
   strcpy(spgrnx,mtz->mtzsymm.spcgrpname);
   strcpy(pgnamx,mtz->mtzsymm.pgname);
 
+  return *nspgrx;
 }
 
 int MtzSpacegroupNumber(const MTZ *mtz)
@@ -931,7 +941,7 @@ int MtzSpacegroupNumber(const MTZ *mtz)
   return mtz->mtzsymm.spcgrp;
 }
 
-void ccp4_lrsymm(const MTZ *mtz, int *nsymx, float rsymx[192][4][4]) {
+int ccp4_lrsymm(const MTZ *mtz, int *nsymx, float rsymx[192][4][4]) {
 
   int i,j,k;
 
@@ -944,6 +954,7 @@ void ccp4_lrsymm(const MTZ *mtz, int *nsymx, float rsymx[192][4][4]) {
     }
   }
 
+  return *nsymx;
 }
 
 int MtzParseLabin(char *labin_line, const char prog_labels[][31], 
