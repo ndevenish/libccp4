@@ -225,7 +225,14 @@ C      CALL CUNLINK ('DISKIO')
 C     Now check we can open and close a scratch file
       CALL QOPEN (LUN, 'foo.bar', 'SCRATCH')
       CALL QCLOSE (LUN)
+C     and can we rewind a scratch file?  (make sure something's been
+C     written to it first)
+      I = 0
+      CALL CCPDPN (LUN,'FOO','SCRATCH','F',0,I)
+      WRITE (LUN,'(A)') 'foo'
+      REWIND (LUN,ERR=70)
       CALL CCPERR(0,'Normal Termination')
+ 70   CALL CCPERR (1,'Can''t rewind scratch file')
 C
 C---- Format Statements
 C
