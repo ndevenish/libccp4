@@ -2378,6 +2378,27 @@ C     ..
 C
 C
 C
+C_BEGIN_CCP4_VERSION
+      SUBROUTINE CCP4_VERSION(VERSION)
+C     =================================
+C
+C---- Return current CCP4 version as string
+C
+C Arguments:
+C ==========
+C
+C       VERSION (O)   CHARACTER*(*): current version of CCP4 suite
+C_END_CCP4_VERSION
+C
+C     .. Scalar Arguments ..
+      CHARACTER*(*) VERSION
+
+      VERSION = '3.4'
+
+      END
+C
+C
+C
 C_BEGIN_CCPVRS
       SUBROUTINE CCPVRS(ILP,PROG,VDATE)
 C     =================================
@@ -2400,7 +2421,7 @@ C     .. Scalar Arguments ..
       CHARACTER PROG* (*),VDATE* (*), PNM*(*)
 C     ..
 C     .. Local Scalars ..
-      CHARACTER CTIME*8,DT2*8,DT*10,PR*20,UID*20,TMPPRG*20
+      CHARACTER CTIME*8,DT2*8,DT*10,PR*20,UID*20,TMPPRG*20,VERSION*10
       SAVE PR
 C     ..
 C     .. External Functions ..
@@ -2420,12 +2441,14 @@ C
       CALL CCPDAT(DT2)
       CALL UGTUID(UID)
       CALL UTIME(CTIME)
-      WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
+      CALL CCP4_VERSION(VERSION)
+      WRITE (ILP,FMT=6000) PR,VERSION(1:LENSTR(VERSION)),
+     +  DT,UID(1:LENSTR(UID)),DT2,CTIME
  6000 FORMAT (/,/,/,/,
      + '1##########################################################',/,
      + ' ##########################################################',/,
      + ' ##########################################################',/,
-     + ' ### CCP PROGRAM SUITE: ',A10,2X,'VERSION 3.4: ',A8,'##',/,
+     + ' ### CCP PROGRAM SUITE: ',A10,2X,'VERSION 'A': ',A8,'##',/,
      + ' ##########################################################',/,
      + ' User: ',A,'  Run date: ',A8,'  Run time:',A,
      + /,/,/,
