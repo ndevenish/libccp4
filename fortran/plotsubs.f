@@ -382,7 +382,7 @@ C
       REAL X,Y,XV,YV
 C
 C  transform coordinates
-      CALL PLTTNF(X,Y,XV,YV)
+      CALL PLTTNS(X,Y,XV,YV)
       CALL PLTMBY(XV,YV)
       END
       SUBROUTINE PLTMBY(X,Y)
