@@ -202,7 +202,7 @@ typedef float float32;
 typedef unsigned char uint8;
 static char rcsid[] = "$Id$";
 static int initialised =  0;    /* flag to initialise data and file streams */
-#if defined (__DECC)
+#if defined(__DECC) && defined(VMS)
 static char *file_attribute[] = { /* DISKIO file modes */
   "wb+",   /* 'UNKNOWN'   open as 'OLD'/'NEW' check existence */
   "wb+",   /* 'SCRATCH'   open as 'OLD' and delete on closing */
@@ -1260,7 +1260,7 @@ int *iunit, *irec, *iel, *lrecl;
 (void) fflush (file_stream[*iunit]);
 #endif
   if (fseek (file_stream[*iunit],position,SEEK_SET) != 0)
-    fatal ("QSEEK failed");     /* fixme: add file info */
+    fatal ("QSEEK failed -- maybe corrupt file."); /* fixme: add file info */
 }
 #if CALL_LIKE_HPUX
   void qback (iunit, lrecl)
@@ -1534,6 +1534,50 @@ float etime (tarray)
         return ((real->i & 0x0000ff80) == 0x00008000);
       default :
         fatal("CISNAN: bad nativeFT");  }
+}
+#define MDFBIG -1.0E10          /* BIOMOL absence flag value */
+#if CALL_LIKE_HPUX
+  void ccpbml (ncols, cols)
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void CCPBML (ncols, cols)
+#endif
+#if CALL_LIKE_SUN
+  void ccpbml_ (ncols, cols)
+#endif
+#if CALL_LIKE_IRIS
+  fortran ccpbml_ (ncols, cols)
+#endif
+  int *ncols;
+  union float_uint_uchar cols[];
+{
+  int i;
+  for (i=0; i<*ncols; i++)
+    if (cols[i].i != NAN)
+      if (cols[i].f <= MDFBIG) cols[i].f = 0.0;
+}
+#if CALL_LIKE_HPUX
+  void ccpwrg (ncols, cols, wminmax)
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void CCPWRG (ncols, cols, wminmax)
+#endif
+#if CALL_LIKE_SUN
+  void ccpwrg_ (ncols, cols, wminmax)
+#endif
+#if CALL_LIKE_IRIS
+  fortran ccpwrg_ (ncols, cols, wminmax)
+#endif
+  int *ncols;
+  float wminmax[];
+  union float_uint_uchar cols[];
+{
+  int i;
+  for (i=0; i<*ncols; i++)
+    if (cols[i].i != NAN)
+       if (cols[i].f > MDFBIG) {
+         if (cols[i].f < wminmax[2*i]) wminmax[2*i] = cols[i].f;
+         if (cols[i].f > wminmax[1+2*i]) wminmax[1+2*i] = cols[i].f; }
 }
 #endif
 
