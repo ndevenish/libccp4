@@ -230,6 +230,7 @@
 #  define NOUNISTD
 #else
 #  include <sys/types.h>
+#  include <sys/stat.h>
 #  ifndef _MVS
 #    include <sys/times.h>
 #  endif
