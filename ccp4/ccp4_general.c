@@ -93,6 +93,15 @@ int ccperror(int ierr, const char *message)
     /* Get the amount of time elapsed since start of
        program. Initialised by ccp4fyp */
     ccp4ProgramTime(0);
+
+    /* closing tags - these are simplified w.r.t. Fortranic 
+       versions for this special case */
+    if (html_log_output(-1)) {
+      printf("</pre>\n");
+      printf("</html>\n");
+    }
+    if (summary_output(-1)) 
+      printf("<!--SUMMARY_END-->\n");
     exit(0);
 
   } else if (ierr==1 || ierr==-1) {
@@ -107,6 +116,15 @@ int ccperror(int ierr, const char *message)
     /* Get the amount of time elapsed since start of
        program. Initialised by ccp4fyp */
     ccp4ProgramTime(0);
+
+    /* closing tags - these are simplified w.r.t. Fortranic 
+       versions for this special case */
+    if (html_log_output(-1)) {
+      printf("</pre>\n");
+      printf("</html>\n");
+    }
+    if (summary_output(-1)) 
+      printf("<!--SUMMARY_END-->\n");
     exit(1);
 
   } else if (ierr==2) {

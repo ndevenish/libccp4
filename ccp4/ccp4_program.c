@@ -207,4 +207,21 @@ int ccp4_licence_exists(const char *name)
   }
   return 1;
 }
- 
+
+/* html_log_output and summary_output currently only used by ccperror to
+   tidy up Fortran program output. Defaults are 0 for C programs. */
+int html_log_output(int ihtml_in) {
+  static int ihtml=0;
+
+  if (ihtml_in >= 0)
+    ihtml = ihtml_in;
+  return ihtml;
+}
+
+int summary_output(int isumm_in) {
+  static int isumm=0;
+
+  if (isumm_in >= 0)
+    isumm = isumm_in;
+  return isumm;
+}

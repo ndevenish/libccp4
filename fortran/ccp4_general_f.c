@@ -39,7 +39,7 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
                (),
                (),
                ())
-{ int argc, i, ierr, arg_len=500, debug=0;
+{ int argc, i, ierr, arg_len=500, debug=0, ihtml, isumm;
   char **argv=NULL, arg[500];
 
   /* turn on line buffering for stdout from C (don't think this affects
@@ -91,9 +91,25 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
     ccperror(ierr,(char*) ccp4_strerror(ccp4_errno));
   }
 
+  /* initialise html/summary stuff 
+     Note, command line switches dealt with in ccp4fyp */
+  ihtml = 0;
+  isumm = 0;
+  FORTRAN_CALL (CCP4H_INIT_LIB, ccp4h_init_lib, (&ihtml,&isumm), (&ihtml,&isumm), (&ihtml,&isumm));
+
   if (debug) 
     printf(" Leaving CCPFYP \n");
   return;
+}
+
+/* pass html and summary flags to C level */
+FORTRAN_SUBR ( CCP4H_INIT_CLIB, ccp4h_init_clib,
+               (int *ihtml, int *isumm),
+               (int *ihtml, int *isumm),
+               (int *ihtml, int *isumm))
+{
+  html_log_output(*ihtml);
+  summary_output(*isumm);
 }
 
 FORTRAN_SUBR ( CCPUPC, ccpupc,
@@ -149,9 +165,16 @@ FORTRAN_SUBR ( CCPERR, ccperr,
   strncpy(tmp_errstr,errstr,length);
   tmp_errstr[length]='\0';
 
+  if (abs(*istat) <= 2)
+    FORTRAN_CALL (CCP4H_SUMMARY_BEG, ccp4h_summary_beg, (), (), ());
+
   if (*istat==0 || *istat==1) ccp4f_mem_tidy();
 
   ccperror(*istat, tmp_errstr);
+
+  /* in fact, doesn't return if istat 0 or 1 */
+  if (abs(*istat) <= 2)
+    FORTRAN_CALL (CCP4H_SUMMARY_END, ccp4h_summary_end, (), (), ());
 }
 
 FORTRAN_SUBR ( QPRINT, qprint,
@@ -296,9 +319,14 @@ FORTRAN_SUBR ( CCPVRS, ccpvrs,
 { 
   char *tmp_prog;
 
+  FORTRAN_CALL (CCP4H_SUMMARY_BEG, ccp4h_summary_beg, (), (), ());
+  FORTRAN_CALL (CCP4H_PRE_BEG, ccp4h_pre_beg, (), (), ());
+
   tmp_prog = ccp4_FtoCString(FTN_STR(prog), FTN_LEN(prog));
   ccp4ProgramName(tmp_prog);
   ccp4_banner();
+
+  FORTRAN_CALL (CCP4H_SUMMARY_END, ccp4h_summary_end, (), (), ());
 
   free((char *) tmp_prog);
 }
@@ -315,9 +343,15 @@ FORTRAN_SUBR ( CCPRCS, ccprcs,
 
   tmp_prog = ccp4_FtoCString(FTN_STR(prog), FTN_LEN(prog));
   tmp_rcsdat = ccp4_FtoCString(FTN_STR(rcsdat), FTN_LEN(rcsdat));
+
+  FORTRAN_CALL (CCP4H_SUMMARY_BEG, ccp4h_summary_beg, (), (), ());
+  FORTRAN_CALL (CCP4H_PRE_BEG, ccp4h_pre_beg, (), (), ());
+
   ccp4ProgramName(tmp_prog);
   ccp4RCSDate(tmp_rcsdat);
   ccp4_banner();
+
+  FORTRAN_CALL (CCP4H_SUMMARY_END, ccp4h_summary_end, (), (), ());
 
   free((char *) tmp_prog);
 }

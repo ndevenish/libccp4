@@ -118,7 +118,12 @@ FORTRAN_SUBR ( MTZINI, mtzini,
                ( ),
                ( ),
                ( ))
-{
+{ int ihtml, isumm;
+
+  /* initialise html/summary stuff */
+  ihtml = 0;
+  isumm = 0;
+  FORTRAN_CALL (CCP4H_INIT_LIB, ccp4h_init_lib, (&ihtml,&isumm), (&ihtml,&isumm), (&ihtml,&isumm));
   return;
 }
 

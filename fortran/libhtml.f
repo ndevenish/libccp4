@@ -110,7 +110,7 @@ C                     -1 (switch off html tags)
 C              isumm = 0 (use default settings for summary tags)
 C                     -1 (switch off summary tags)
 C
-      integer ihtml,isumm
+      integer ihtml,isumm,ihtml_level,isumm_level
       integer lpt, idum, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160,dummy*160
@@ -140,6 +140,11 @@ C
         else
           logsumm=(dummy.eq.' ')
         end if
+        ihtml_level=0
+        if (html) ihtml_level=1
+        isumm_level=0
+        if (logsumm) isumm_level=1
+        call ccp4h_init_clib(ihtml_level,isumm_level)
         htmlinit=0
         summopen=.false.
         summlevel=0
