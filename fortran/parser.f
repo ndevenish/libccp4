@@ -824,6 +824,7 @@ C
       REAL FVALUE(*)
       CHARACTER*(*)LINE,SPGNAM,PGNAME
       CHARACTER*20 SPGNAMS
+      CHARACTER*200 ERRLINE
       INTEGER NUMSGP,NSYM,NSYMP,LENSTR
       EXTERNAL LENSTR
 
@@ -860,11 +861,11 @@ C---- it's a string, treat as space-group name
 C     
                SPGNAM = LINE(IBEG(JTOK) :IEND(JTOK))
                CALL  CCPUPC(SPGNAM)
-C---- Rs are brocken anyway
                IF (SPGNAM(1:1).EQ.'R') THEN
-                 SPGNAM(1:1)='H'
-                 CALL PUTLIN('Warning: R switched to H','CURWIN')
-                 ENDIF
+                 WRITE(6,'(A,A)') 'Warning: rhombohedral axes implied',
+     +                  ' - if you have hexagonal axes then use H'
+                 CALL PUTLIN(ERRLINE,'CURWIN')
+               ENDIF
                NUMSGP = 0
             END IF
 C     
