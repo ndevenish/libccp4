@@ -81,10 +81,14 @@ KEYBUF consist of NKEYS entries, each of the form:
 /* F2C isn't disjoint with the rest, so be careful (also for other
    routines). */
 #if defined (PROTOTYPE)
+
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
+    defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
+    defined (solbourne)
   int srtbeg_ (int *nkeys, int *keybuf, int *lrecl, int *memsize)
-#endif
+
+#else
 
 #if defined (__hpux) || defined (_AIX)
   int srtbeg (int *nkeys, int *keybuf, int *lrecl, int *memsize)
@@ -94,16 +98,18 @@ KEYBUF consist of NKEYS entries, each of the form:
   int SRTBEG (int *nkeys, int *keybuf, int *lrecl, int *memsize)
 #endif
 
-#if defined (alliant) || defined (sun) || defined (solbourne) 
-  int srtbeg_ (int *nkeys, int *keybuf, int *lrecl, int *memsize)
 #endif
 
+/* no PROTOTYPE */
 #else
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
+    defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
+    defined (solbourne)
   int srtbeg_ (nkeys, keybuf, lrecl, memsize)
-#endif
+
+#else
 
 #if defined (__hpux) || defined (_AIX)
   int srtbeg (nkeys, keybuf, lrecl, memsize)
@@ -113,8 +119,6 @@ KEYBUF consist of NKEYS entries, each of the form:
   int SRTBEG (nkeys, keybuf, lrecl, memsize)
 #endif
 
-#if defined (alliant) || defined (sun) || defined (solbourne) 
-  int srtbeg_ (nkeys, keybuf, lrecl, memsize)
 #endif
 
 int     	*keybuf;	/* keys description */
@@ -241,10 +245,14 @@ SRTRLS:	Release one record into Sort
 =======================================================*/
 
 #if defined (PROTOTYPE)
+
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
+    defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
+    defined (solbourne)
   int srtrls_ (char *record)
-#endif
+
+#else
 
 #if defined (__hpux) || defined (_AIX)
   int srtrls (char *record)
@@ -254,16 +262,18 @@ SRTRLS:	Release one record into Sort
   int SRTRLS (char *record)
 #endif
 
-#if defined (alliant) || defined (sun) || defined (solbourne)
-  int srtrls_ (char *record)
 #endif
 
+/* no PROTOTYPE */
 #else
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
+    defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
+    defined (solbourne)
   int srtrls_ (record)
-#endif
+
+#else
 
 #if defined (__hpux) || defined (_AIX)
   int srtrls (record)
@@ -273,13 +283,10 @@ SRTRLS:	Release one record into Sort
   int SRTRLS (record)
 #endif
 
-#if defined (alliant) || defined (sun) || defined (solbourne)
-  int srtrls_ (record)
 #endif
 
 char            *record;
 #endif
-
 {
   register size_t ret;
 
@@ -297,7 +304,9 @@ SRTMRG:	Merge - finish release phase
 
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
+    defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
+    defined (solbourne)
   int srtmrg_ ()
 
 #else
@@ -310,12 +319,7 @@ SRTMRG:	Merge - finish release phase
   int SRTMRG ()
 #endif
 
-#if defined (alliant) || defined (sun) || defined (solbourne)
-  int srtmrg_ ()
 #endif
-
-#endif
-
 {
     fclose(filout);
     if (!(filin = fdopen(fildesin[0], "r")))
@@ -336,9 +340,12 @@ SRTRET:	Return 1 record from sort
 
 #if defined (PROTOTYPE)
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
+    defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
+    defined (solbourne)
   int srtret_ (char *record)
-#endif
+
+#else
 
 #if defined (__hpux) || defined (_AIX)
   int srtret (char *record)
@@ -348,16 +355,18 @@ SRTRET:	Return 1 record from sort
   int SRTRET (char *record)
 #endif
 
-#if defined (alliant) || defined (sun) || defined (solbourne)
-  int srtret_ (char *record)
 #endif
 
+/* no PROTOTYPE */
 #else
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || defined(G77) || defined(linux)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
+    defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
+    defined (solbourne)
   int srtret_ (record)
-#endif
+
+#else
 
 #if defined (__hpux) || defined (_AIX)
   int srtret (record)
@@ -367,9 +376,8 @@ SRTRET:	Return 1 record from sort
   int SRTRET (record)
 #endif
 
-#if defined (alliant) || defined (sun) || defined (solbourne)
-  int srtret_ (record)
 #endif
+
 char            *record;
 #endif
 {
