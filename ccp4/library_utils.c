@@ -352,10 +352,17 @@ void *ccp4_utils_calloc(size_t nelem , size_t elsize)
  */
 char *ccp4_utils_username(void)
 #if ! defined (_MVS) && ! defined (_WIN32)
+#if defined (__APPLE__) && __GNUC__ > 2
+{
+  printf("No cuserid under 3.1");
+  return NULL;
+}
+#else
 { 
   char *userid=NULL;
   return(cuserid(userid)); 
 }
+#endif
 #else
 {
   printf("No login id under ming32\n");
