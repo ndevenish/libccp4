@@ -371,7 +371,7 @@ C
 C     don't print anything if it hasn't been initialised (by CCPFYP)
       IF (INITED) WRITE(LUNSTO(1),6000) TARRAY(1), TARRAY(2), 
      +     ELAPS/60, MOD(ELAPS, 60)
- 6000 FORMAT(' Times: User: ', F6.1, 's System: ', F6.1, 's Elapsed:',
+ 6000 FORMAT(' Times: User: ', F9.1, 's System: ', F6.1, 's Elapsed:',
      +     I5 , ':',I2.2)
 C     
       ENTRY INITFYP
@@ -631,10 +631,10 @@ _hpux,1,
       ANSWER = 0
       IF (ISATTY(%VAL(FNUM(FLUN))) .EQ.1) ANSWER = 1],
 dnl (else)
-[      LOGICAL ISATTY
+[      INTEGER ISATTY
       EXTERNAL ISATTY
       ANSWER = 0
-      IF (ISATTY(FLUN)) ANSWER = 1])
+      IF (ISATTY(FLUN) .EQ.1) ANSWER = 1])
 C
       END
 C
