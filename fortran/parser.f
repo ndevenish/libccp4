@@ -3,7 +3,7 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
-C          CCP4 PARSER Routines       ( 19-Feb-1990)
+C          CCP4 PARSER Routines       ( 13-Sep-1993 )
 C          ====================
 C
 C  Original Author: Based on Mike Levitt's routine of the same name.
@@ -12,10 +12,8 @@ C
 C
 C  19/2/93  added RDRESL, GTTREA, GTTINT  Phil Evans
 C
-C $Date$
 C
-C
-C  Routine PARSER.FOR  contains the following subroutines and functions
+C  Library PARSER.FOR contains the following subroutines and functions
 C
 C
 C
@@ -24,100 +22,53 @@ C  SUBROUTINES
 C
 C    PARSER(KEY,LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,NTOK,LEND,PRINT)
 C    PARSE(LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,N)
+C    PARSDL(NEWDLM,NNEWDL,NSPECD)
 C    KEYNUM(N,NSTART,LINE,IBEG,IEND,ITYP,NTOK)
-C    KEYERR(I,MODE,LINE,IBEG,IEND,ITYP)
-C    CHKNUM(ISYSW,N1,N2,NTOK,ITYP,IBEG,IEND,LINE)
-C    CHKTOK(ISYSW,I,IWANT,NTOK,ITYP,IBEG,IEND,LINE)
-C    GETREA(N,X,NTOK,ITYP,FVALUE)
-C    GETINT(N,I,NTOK,ITYP,FVALUE)
+C  [ KEYERR(I,MODE,LINE,IBEG,IEND,ITYP) ] - internal subroutine (KEYNUM)
+C  [ CHKNUM(ISYSW,N1,N2,NTOK,ITYP,IBEG,IEND,LINE) ] - not used (Sep 1993)
+C  [ CHKTOK(ISYSW,I,IWANT,NTOK,ITYP,IBEG,IEND,LINE) ] - internal (CHKNUM)
+C  [ GETREA(N,X,NTOK,ITYP,FVALUE) ] - not used (Sep 1993)
+C  [ GETINT(N,I,NTOK,ITYP,FVALUE) ] - not used (Sep 1993)
 C    GTNREA(N,M,X,NTOK,ITYP,FVALUE)
 C    GTNINT(N,M,J,NTOK,ITYP,FVALUE)
 C    GTPREA(N,X,NTOK,ITYP,FVALUE)
 C    GTPINT(N,I,NTOK,ITYP,FVALUE)
-C    GETSTR(N,STRING,NTOK,ITYP,IBEG,IEND,LINE)
+C  [ GETSTR(N,STRING,NTOK,ITYP,IBEG,IEND,LINE) ] - not used (Sep 1993)
 C    SBLANK(ARRAY,N1,N2)
-C    GTCFLD(NFIELD,ITEXT,NCHAR,MINC,MAXC,IGFLAG)
-C    CPYCHR(STRINGA,STRINGB,NCHAR)
-C    CMOVE(STRINGA,STRINGB,NCHAR)
+C  [ GTCFLD(NFIELD,ITEXT,NCHAR,MINC,MAXC,IGFLAG) ] - not used (Sep 1993)
+C  [ CPYCHR(STRINGA,STRINGB,NCHAR) ] - not used (Sep 1993)
+C  [ CMOVE(STRINGA,STRINGB,NCHAR) ] - not used (Sep 1993)
 C    CHKKEY(KEY,WORDS,NWORDS,IKEY)
-C
+C    PUTLIN(STROUT,OUTWIN)
+C    BLANK(OUTWIN,NLINES)
+C    LERROR(ERRFLG,IFAIL,ERRMSG)
+C    RDSYMM(JTOK,LINE,IBEG,IEND,ITYP,FVALUE,NTOK,SPGNAM,NUMSGP,PGNAME,
+C           NSYM,NSYMP,RSYM)
+C    RDHEAD(JTOK,LINE,IBEG,IEND,ITYP,FVALUE,NTOK,MTZPRT,MTZBPR)
+C    RDCELL(ITOK,ITYPE,FVALUE,NTOK,CELL)
+C    RDRESO(ITOK,ITYPE,FVALUE,NTOK,RESMIN,RESMAX,SMIN,SMAX)
+C    RDSCAL(ITOK,LINE,IBEG,IEND,ITYP,FVALUE,NTOK,NLPRGI,LSPRGI,ILPRGI,SCAL,BB)
 C    RDRESL(ITOK,ITYPE,FVALUE,CVALUE,NTOK,RESMIN,RESMAX,SMIN,SMAX,ISTAT)
 C    GTTREA(N,X,LFLAG,NTOK,ITYP,FVALUE)
 C    GTTINT(N,I,LFLAG,NTOK,ITYP,FVALUE)
 C
 C FUNCTIONS
 C
-C    REAL FUNCTION DOCALC(VALUE,OPER,VALUE0)
+C  [ REAL FUNCTION DOCALC(VALUE,OPER,VALUE0) ] - internal (PARSE)
 C    LOGICAL FUNCTION CMATCH(STRING1,STRING2,NCHAR)
 C
 C
-C
+C_BEGIN_PARSER
 C     =================================================================
       SUBROUTINE PARSER(KEY,LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,NTOK,
      +                  LEND,PRINT)
 C     =================================================================
-C
-C
-C
-C  7-12-89  EJD: Two corrections
-C      1) There was no check if there were more than the permitted
-C         number of items(nitem) on each line ( currently nitem = 20)
-C         The first call to PARSER now should transfer nitem in the
-C         NTOK.  If NTOK .lt.20 I will set NITEM = 20
-C
-C      2) Line needed a ' ' as the last character.
-C         Now you are warned if either of these faults has occurred.
-C                  
-C 28-11-89  Parser from Sandra - more or less the same as PARSER77NOW
 C
 C---- Read control card from stream (default = 5), and interpret
 C     Stream 5 is the standard input stream (= terminal or batch 
 C     stream), but a line beginning with @name starts reading 
 C     reading from a file of name 'name' (on stream 11), 
 C     until end-of-file
-C
-C
-C
-C
-C On entry
-C ========
-C
-C   LINE       if blank, read line
-C              if not blank, parse this
-C   NTOK       if .gt. 20, set the maximum number of fields = NTOK,
-C              else set = 20
-C   PRINT      = .true. reflect line
-C              = .false. don't
-C
-C Returns
-C =======
-C
-C   KEY  keyword at beginning of line (CHARACTER*4) (if present)
-C          Uppercased before returning
-C
-C  NTOK fields.
-C       NTOK returned = -1 for line beginning '$' DCL command
-C
-C For I=1,NTOK :
-C   IBEG(I)      1st column number in field (1 - 80)
-C   IEND(I)      last column number in field
-C   ITYP(I)      =0  null field
-C                =1  character string
-C                =2  number
-C   FVALUE(I)    value of number . Items in FVALUE and CVALUE are left
-C                 unchanged for null fields
-C   CVALUE(I)    character string (1st 4 characters),
-C                 for numbers as well as strings
-C   IDEC(I)      number of 'digits'
-C                 for string, number number of characters (=4 if.gt.4)
-C                 for integer, number of digits-1
-C                 for real number, (number of digits before point+1)*100
-C                                  +number of digits after point
-C
-C
-C Returns LEND = .FALSE. for control card
-C              = .TRUE.  for end-of-file
-C
 C
 C---- Each logical 'card' may be continued on next line by
 C     the continuation character '&' or '-'  at the end of
@@ -134,6 +85,64 @@ C
 C---- For strings, the routine will accept quoted or
 C     unquoted strings
 C
+C
+C---- Arguments :
+C
+C   KEY    (O)  CHARACTER*4    Keyword at beginning of line (if present),
+C                              uppercased before returning.
+C
+C   LINE   (I)  CHARACTER*(*)  Parse this input string,
+C                              if blank read a line from unit 5.
+C
+C   IBEG   (O)  INTEGER(*)     Array of size at least NTOK.
+C                              1st column number of tokens in field 
+C
+C   IEND   (O)  INTEGER(*)     Array of size at least NTOK.
+C                              Last column number of tokens in field
+C
+C   ITYP   (O)  INTEGER(*)     Array of size at least NTOK. 
+C                              =0  null field
+C                              =1  character string
+C                              =2  number
+C
+C   FVALUE (O)  REAL(*)        Array of size at least NTOK.
+C                              Value of number.
+C
+C   CVALUE (O)  CHARACTER(*)*4 Array of size at least NTOK. 
+C                              Character string (1st 4 characters),
+C                              for numbers as well as strings.
+C
+C      Items in FVALUE and CVALUE are left unchanged for null fields
+C
+C   IDEC   (O)  INTEGER(*)     Array of size at least NTOK.
+C                              Number of 'digits':
+C                              for string, number of characters (=4 if.gt.4)
+C                              for integer, number of digits-1
+C                              for real number,
+C                              (number of digits before point+1)*100
+C                               +number of digits after point
+C
+C   NTOK   (I/O) INTEGER       On input sets the maximum number of fields
+C                              to be parsed (if <20 then defaults to 20)
+C                              On output returns the number of fields parsed.
+C
+C   LEND    (O)  LOGICAL       .FALSE. for control card
+C                              .TRUE.  for end-of-file
+C
+C   PRINT   (I)  LOGICAL       .TRUE. echo line to unit 6 via PUTLIN
+C                              .FALSE. don't echo
+C
+C
+C  7-12-89  EJD: Two corrections
+C      1) There was no check if there were more than the permitted
+C         number of items(nitem) on each line ( currently nitem = 20)
+C         The first call to PARSER now should transfer nitem in the
+C         NTOK.  If NTOK .lt.20 I will set NITEM = 20
+C
+C      2) Line needed a ' ' as the last character.
+C         Now you are warned if either of these faults has occurred.
+C                  
+C_END_PARSER
 C
 C     .. Parameter ..
       INTEGER NPARM
@@ -435,46 +444,56 @@ C
 C
       END
 C            
-C
+C
+C_BEGIN_PARSE
 C     ==========================================================
       SUBROUTINE PARSE(LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,N)
 C     ==========================================================
-C
 C---- Free format read routine
-C
-C---- Enters with characters in LINE (CHARACTER)
-C     ======
-C
-C     N    if .lt. 0, first entry,
-C          NITEM = -N = maximum number
-C          of fields to interpret on subsequent
-C          entries for continuation lines, = number so far
-C
-C---- Returns N fields, N = 0 if blank or comment
-C     =======
-C
-C For I=1,N :
-C   IBEG(I)      1st column number in field
-C   IEND(I)      last column number in field
-C   ITYP(I)      =0  null field
-C                =1  character string
-C                =2  number
-C   FVALUE(I)    value of number.
-C                Items in FVALUE and CVALUE are left
-C                unchanged for null fields
-C   CVALUE(I)    character string (1st 4 characters),
-C                for numbers as well as strings
-C   IDEC(I)      number of 'digits'
-C                 for string, number number of characters (=4 if.gt.4)
-C                 for integer, number of digits-1
-C                 for real number, (number of digits before point+1)*100
-C                                  +number of digits after point
 C
 C---- For strings, the routine will accept
 C     quoted or unquoted strings
 C
+C---- Arguments:
+C
+C   LINE  (I)     CHARACTER*(*)  String to be parsed
+C
+C   N     (I/O)   INTEGER        On first entry .lt. 0,
+C                                -N = maximum number of fields to interpret.
+C                                On subsequent entries for continuation lines,
+C                                = number of items so far.
+C                                Returns number of fields, 0 if blank or comment
+C
+C
+C  For I=1,N :
+C
+C   IBEG(I)   (O) INTEGER(*)     1st column number in field
+C
+C   IEND(I)   (O) INTEGER(*)     last column number in field
+C
+C   ITYP(I)   (O) INTEGER(*)     =0  null field
+C                                =1  character string
+C                                =2  number
+C
+C   FVALUE(I) (O) REAL(*)        Value of number.
+C
+C   CVALUE(I) (O) CHARACTER(*)*4 Character string (1st 4 characters)
+C                                for numbers as well as strings
+C
+C     Items in FVALUE and CVALUE are left unchanged for null fields
+C
+C   IDEC(I)   (O) INTEGER(*)     Number of 'digits'
+C                                for string, number of characters (=4 if.gt.4)
+C                                for integer, number of digits-1
+C                                for real number,
+C                                (number of digits before point+1)*100
+C                                +number of digits after point
+C
+C
 C   30/4/91 Changed to restrict number of delimiters
 C                Phil Evans
+C
+C_END_PARSE
 C
 C     .. Parameter ..
       INTEGER NPARM
@@ -740,21 +759,21 @@ C
 C---- Set sign of number
 C
                     SIGN = ISGN(J-10)
-C
-C---- Find + - * / e as operators
-C
-                  ELSE IF (J.GE.11 .AND. J.LE.15) THEN
-C
-C---- Do not allow 2 operators
-C
-                    IF (OPRATR) NUMBER = .FALSE.
-                    VALUE0 = VALUE
-                    SIGN0 = SIGN
-                    OPER = J - 10
-                    VALUE = 0.0
-                    SIGN = 1.0
-                    IDOT = 0
-                    OPRATR = .TRUE.
+CCCC
+CCCC---- Find + - * / e as operators
+CCCC
+CCC                  ELSE IF (J.GE.11 .AND. J.LE.15) THEN
+CCCC
+CCCC---- Do not allow 2 operators
+CCCC
+CCC                    IF (OPRATR) NUMBER = .FALSE.
+CCC                    VALUE0 = VALUE
+CCC                    SIGN0 = SIGN
+CCC                    OPER = J - 10
+CCC                    VALUE = 0.0
+CCC                    SIGN = 1.0
+CCC                    IDOT = 0
+CCC                    OPRATR = .TRUE.
 C
 C---- Find a decimal point
 C       decimal point
@@ -827,17 +846,25 @@ C
       END IF
       RETURN
 C
-C----------------------------------------------------------------------------
 C
+C_BEGIN_PARSDL
+C     =================================
       ENTRY PARSDL(NEWDLM,NNEWDL,NSPECD)
 C     =================================
+C Entry point in PARSE. Call to change delimiters
 C
-C Call to change delimiters
+C  NEWDLM  (I) CHARACTER*(*)  Array containing NNEWDL new delimiters
 C
-C  NEWDLM  character string (NB NOT array) containing NNEWDL new delimiters
-C          if NNEWDL .le. 0, reset delimiters to the standard default set
-C  NSPECD  number of "special" delimiters (the first NSPECD) which
-C            cannot delimit a null field
+C  NNEWDL  (I) INTEGER        Number of new delimiters.
+C                             If .le. 0, reset delimiters to the standard
+C                             default set (in DDELIM).
+C
+C  NSPECD  (I) INTEGER        Number of special delimiters which
+C                             cannot delimit a null field. These are
+C                             at the beginning of the delimiter array.
+C                             (defaults in NDSDLM)
+C
+C_END_PARSDL
 C
       IF (NNEWDL .LE. 0) THEN
 C Reset default delimiters
@@ -861,15 +888,33 @@ C
 C
       END
 C
-C
+C
+C_BEGIN_KEYNUM
 C     ====================================================
       SUBROUTINE KEYNUM(N,NSTART,LINE,IBEG,IEND,ITYP,NTOK)
 C     ====================================================
+C  Check that correct number of numbers (numeric fields) are present
 C
-C  Check that correct number of numbers are present
+C--- Arguments:
 C
+C  N      (I) INTEGER        Number of consecutive numeric fields expected
 C
+C  NSTART (I) INTEGER        Number of first field to check
 C
+C  LINE   (I) CHARACTER*(*)  Array containing the fields
+C
+C  IBEG   (I) INTEGER(*)     First column number of fields (from PARSER)
+C
+C  IEND   (I) INTEGER(*)     Last column number of fields (from PARSER)
+C
+C  ITYP   (I) INTEGER(*)     =0  null field
+C                            =1  character string
+C                            =2  number
+C                            (from PARSER)
+C
+C  NTOK   (I) INTEGER        Number of fields (from PARSER)
+C
+C_END_KEYNUM
 C     .. Parameter ..
       INTEGER NPARM
       PARAMETER (NPARM=200)
@@ -905,7 +950,7 @@ C          *******************************
    20 CALL KEYERR(I,2,LINE,IBEG,IEND,ITYP)
 C          *******************************
 C
-      CALL CCPERR(1,' stop inparser.for 7777')
+      CALL CCPERR(1,' STOP IN PARSER 7777')
    30 CONTINUE
 C
           WRITE (LINERR,FMT='(A,I4,A,I4,A)') 
@@ -919,17 +964,16 @@ C              ****************************
           CALL LERROR(ISTERR,IFGERR,LINERR)
 C              ****************************
 C
-      call ccperr(1,' stop in parser.for 7788')
+      CALL CCPERR(1,' STOP IN PARSER 7788')
 C
 C
       END
 C
-C
-C     =============================================
+C
       SUBROUTINE KEYERR(I,MODE,LINE,IBEG,IEND,ITYP)
 C     =============================================
-C
 C  Print warning when token not of correct type.
+C  Internal subroutine, called from KEYNUM.
 C
 C     .. Parameter ..
       INTEGER NPARM
@@ -989,14 +1033,14 @@ C
 C
       END
 C
-C
+C
       SUBROUTINE CHKNUM(ISYSW,N1,N2,NTOK,ITYP,IBEG,IEND,LINE)
 C     ======================================================
-C
-C  used with the parser routine to check that correct number
+C  Used with the parser routine to check that correct number
 C  of numbers are present on line
 C
-C  variables used by parser routine
+C  Not currently used by anything (Sep 1993). Hide it!
+C  Alternative is KEYNUM (?).  WRR
 C
 C     .. Parameter ..
       INTEGER NPARM
@@ -1033,7 +1077,7 @@ C              ****************************
           CALL LERROR(ISTERR,IFGERR,LINERR)
 C              ****************************
 C
-          call ccperr(1,' stop in parser.for 7766')
+          call ccperr(1,' stop in parser 7766')
       ELSE
 C
           DO 10 I = N1,N2
@@ -1051,9 +1095,10 @@ C
 C
       SUBROUTINE CHKTOK(ISYSW,I,IWANT,NTOK,ITYP,IBEG,IEND,LINE)
 C     ========================================================
+C  Check token is of correct type
 C
-C  check token is of correct type
-C
+C Currently (Sep 1993) called only from CHKNUM which itself is not used.
+C                                                    WRR
 C      I     is token position in string line
 C      iwant is code for desired token
 C
@@ -1100,18 +1145,19 @@ C              ****************************
           CALL LERROR(ISTERR,IFGERR,LINERR)
 C              ****************************
 C
-          caLL CCPERR(1,' stop in parser.for 7755')
+          caLL CCPERR(1,' stop in parser 7755')
       END IF
 C
 C
       END
-C 
+C
 C
       SUBROUTINE GETREA(N,X,NTOK,ITYP,FVALUE)
 C     ======================================
-C
 C Extract real number X from N'th value Parser array FVALUE, if possible
 C If no value, X = 0.0 . If illegal, write message
+C
+C Not currently used in any ccp4 programs, Sep 1993, WRR
 C
 C     .. Parameter ..
       INTEGER NPARM
@@ -1158,13 +1204,13 @@ C
 C
       END
 C
-C
 C
       SUBROUTINE GETINT(N,I,NTOK,ITYP,FVALUE)
 C     ======================================
-C
 C Extract integer I from N'th value Parser array FVALUE, if possible
 C If no value, I = 0  . If illegal, write message
+C
+C Not currently used in any ccp4 programs, WRR, Sep 1993
 C
 C     .. Parameter ..
       INTEGER NPARM
@@ -1212,13 +1258,32 @@ C
 C
       END
 C
-C
 C
+C_BEGIN_GTNREA
+C     ========================================
       SUBROUTINE GTNREA(N,M,X,NTOK,ITYP,FVALUE)
 C     ========================================
+C  Extract M real numbers X starting from N'th value of Parser
+C  array FVALUE, if possible. If no value, X = 0.0 .
+C  If illegal, write message.
 C
-C  Extract M real numbers X from N'th value Parser array FVALUE, 
-C  if possible. If no value, X = 0.0 . If illegal, write message
+C--- Arguments:
+C
+C N      (I) INTEGER    Number of 1st element of FVALUE to be extracted
+C
+C M      (I) INTEGER    Number of elements to be extracted
+C
+C X      (O) REAL(M)    Put extracted elements into this array
+C
+C NTOK   (I) INTEGER    Total number of fields (from PARSER)
+C
+C ITYP   (I) INTEGER(*)  =0  null field
+C                        =1  character string
+C                        =2  number
+C
+C FVALUE (I) REAL(*)     Array of numbers to be extracted (from PARSER)
+C
+C_END_GTNREA
 C
 C     .. Parameter ..
       INTEGER NPARM
@@ -1265,14 +1330,31 @@ C
 C
       END
 C
-C
 C
+C_BEGIN_GTNINT
+C     ========================================
       SUBROUTINE GTNINT(N,M,J,NTOK,ITYP,FVALUE)
 C     ========================================
+C Extract M integers J starting from N'th value of Parser array FVALUE,
+C if possible. If no value, J = 0 . If illegal, write message
 C
-C Extract M integers J from N'th value Parser array FVALUE, if possible
-C If no value, J = 0  . If illegal, write message
+C--- Arguments:
 C
+C N      (I) INTEGER     Number of 1st element of FVALUE to be extracted
+C
+C M      (I) INTEGER     Number of elements to be extracted
+C
+C J      (O) INTEGER(M)  Put extracted elements into this array
+C
+C NTOK   (I) INTEGER     Total number of fields (from PARSER)
+C
+C ITYP   (I) INTEGER(*)  =0  null field
+C                        =1  character string
+C                        =2  number
+C
+C FVALUE (I) REAL(*)     Array of numbers to be extracted (from PARSER)
+C
+C_END_GTNINT
 C     .. Parameter ..
       INTEGER NPARM
       PARAMETER (NPARM=200)
@@ -1319,15 +1401,29 @@ C
 C
       END
 C
-C
 C
+C_BEGIN_GTPREA
+C     ======================================
       SUBROUTINE GTPREA(N,X,NTOK,ITYP,FVALUE)
 C     ======================================
+C Extract real number X from N'th value Parser array FVALUE, if possible
+C If no value, leave X unchanged. If illegal, write message
 C
-C---- Extract real number X from N'th value Parser array FVALUE,
-C     if possible
+C--- Arguments:
 C
-C---- If no value, leave X unchanged. If illegal, write message
+C N      (I) INTEGER    Number of 1st element of FVALUE to be extracted
+C
+C X      (O) REAL       Extracted number put here
+C
+C NTOK   (I) INTEGER    Total number of fields (from PARSER)
+C
+C ITYP   (I) INTEGER(*)  =0  null field
+C                        =1  character string
+C                        =2  number
+C
+C FVALUE (I) REAL(*)     Array of numbers to be extracted (from PARSER)
+C
+C_END_GTPREA
 C
 C     .. Parameters ..
       INTEGER NPARM
@@ -1369,15 +1465,29 @@ C
 C
       END
 C
-C
 C
+C_BEGIN_GTPINT
+C     ======================================
       SUBROUTINE GTPINT(N,I,NTOK,ITYP,FVALUE)
 C     ======================================
+C Extract integer I from N'th value Parser array FVALUE, if possible
+C If no value, leave I unchanged. If illegal, write message
 C
-C---- Extract integer I from N'th value Parser array FVALUE,
-C     if possible
+C--- Arguments:
 C
-C---- If no value, leave I unchanged. If illegal, write message
+C N      (I) INTEGER    Number of 1st element of FVALUE to be extracted
+C
+C I      (O) INTEGER    Extracted number put here
+C
+C NTOK   (I) INTEGER    Total number of fields (from PARSER)
+C
+C ITYP   (I) INTEGER(*)  =0  null field
+C                        =1  character string
+C                        =2  number
+C
+C FVALUE (I) REAL(*)     Array of numbers to be extracted (from PARSER)
+C
+C_END_GTPINT
 C
 C     .. Parameters ..
       INTEGER NPARM
@@ -1421,13 +1531,37 @@ C
 C
       END
 C
-C
 C
+C_BEGIN_GETSTR
+C     ===================================================
       SUBROUTINE GETSTR(N,STRING,NTOK,ITYP,IBEG,IEND,LINE)
 C     ===================================================
-C
 C Extract string STRING from N'th value Parser array CVALUE, if possible
 C If no value, STRING  = blank '    '.
+C
+C--- Arguments:
+C
+C N      (I) INTEGER        Number of 1st field of LINE to be extracted
+C
+C STRING (O) CHARACTER*(*)  Extracted string put here
+C
+C NTOK   (I) INTEGER        Total number of fields (from PARSER)
+C
+C ITYP   (I) INTEGER(*)     =0  null field
+C                           =1  character string
+C                           =2  number
+C                           (from PARSER)
+C
+C IBEG   (I) INTEGER(*)     1st column number in field (from PARSER)
+C
+C IEND   (I) INTEGER(*)     last column number in field (from PARSER)
+C
+C LINE   (I) CHARACTER*(*)  String extracted from here. (from PARSER)
+C
+C
+C NB. This subroutine not currently used in any CCCP4 programs. WRR, Sep 1993
+C
+C_END_GETSTR
 C
 C     .. Parameter ..
       INTEGER NPARM
@@ -1446,13 +1580,28 @@ C
 C
       END
 C
-C
 C
+C_BEGIN_DOCALC
+C     =======================================
       REAL FUNCTION DOCALC(VALUE,OPER,VALUE0)
 C     =======================================
+C Do simple arithmetic on two arguments
 C
-C      Do simple arithmetic on two arguments
+C--- Arguments:
 C
+C VALUE  (I) REAL     Value of first argument
+C
+C OPER   (I) INTEGER  =1 add
+C                     =2 subtract
+C                     =3 mutliply
+C                     =4 divide
+C                     =5 evaluate VALUE0 * 10**VALUE
+C
+C VALUE0 (I) REAL     Value of second argument
+C
+C NB. This subroutine not currently used in any CCCP4 programs. WRR, Sep 1993
+C
+C_END_DOCALC
 C     .. Scalar Arguments ..
       REAL                 VALUE,VALUE0
       INTEGER              OPER
@@ -1487,12 +1636,22 @@ C
 C
       END
 C
-C
 C
+C_BEGIN_SBLANK
+C     ==============================
       SUBROUTINE SBLANK(ARRAY,N1,N2)
 C     ==============================
+C Blank characters N1 to N2 of ARRAY
 C
-C---- Blank characters N1 to N2 of ARRAY
+C--- Arguments:
+C
+C ARRAY (I/O)  CHARACTER(*)
+C
+C N1    (I)    INTEGER
+C
+C N2    (I)    INTEGER
+C
+C_END_SBLANK
 C
       CHARACTER*1 ARRAY(*)
 C
@@ -1504,30 +1663,38 @@ C
       RETURN
       END
 C
-C
 C
+C_BEGIN_GTCFLD
+C     ====================================================
       SUBROUTINE GTCFLD(NFIELD,ITEXT,NCHAR,MIN,MAX,IGFLAG)
 C     ====================================================
-C
-C
 C
 C---- This subroutine finds the minimum and maximum character 
 C     numbers in a packed text string for a requested field number. 
 C     The character fields are assumed to be separated by spaces
 C
 C
+C---- Arguments: 
 C
-C PARAMETERS
+C NFIELD (I) INTEGER            The number of the field to be retrieved
 C
-C      NFIELD (I) the number of the field to be retrieved
-C       ITEXT (I) array containing the packed character string to be
-C                 interpreted (character array)
-C       NCHAR (I) the no. of characters in the text string
-C         MIN (O) the no. of the first character in the requested field
-C         MAX (O) the no. of the final character in the requested field
+C ITEXT  (I) CHARACTER*1(NCHAR) Array containing the packed character string
+C                               to be interpreted
 C
-C    RETURN 1     blank field found (end of text string)
-C                 IGFLAG = -1
+C NCHAR  (I) INTEGER            The no. of characters in the text string
+C
+C MIN    (O) INTEGER            The no. of the first character
+C                               in the requested field
+C
+C MAX    (O) INTEGER            The no. of the final character
+C                               in the requested field
+C
+C IGFLAG (O) INTEGER            = -1 blank field found (end of text string)
+C
+C
+C NB. Not currently called by anything in ccp4. WRR, Sep 1993
+C
+C_END_GTCFLD
 C
       CHARACTER*1 ITEXT(NCHAR)
 C
@@ -1579,15 +1746,26 @@ C
       RETURN
       END
 C
-C
 C
+C_BEGIN_CPYCHR
+C     ========================================
       SUBROUTINE CPYCHR(STRINGA,STRINGB,NCHAR)
 C     ========================================
+C---- Copy nchar characters from character array b to a
+C
+C---- Arguments:
+C
+C STRINGA (O) CHARACTER*1(*)  Array to copy to
+C
+C STRINGB (I) CHARACTER*1(*)  Array to copy from
+C
+C NCHAR   (I) INTEGER         Number of characters to copy
 C
 C
+C NB. Not currently called by anything in ccp4. WRR, Sep 1993
+
 C
-C---- copy nc characters from character array b to a
-C
+C_END_CPYCHR
 C
       INTEGER NCHAR
       CHARACTER*1 STRINGA(*),STRINGB(*)
@@ -1601,15 +1779,24 @@ C
       RETURN
       END
 C
-C
 C
+C_BEGIN_CMATCH
+C     ==============================================
       LOGICAL FUNCTION CMATCH(STRING1,STRING2,NCHAR)
 C     ==============================================
 C
-C
-C---- test k characters against characters read into a
-C     character variable f 
+C---- Compare nchar character in string1 and string2
 C     return cmatch .true. if all match, else .false.
+C
+C---- Arguments:
+C
+C STRING1 (I) CHARACTER*(*)  1st string to compare
+C
+C STRING2 (I) CHARACTER*(*)  2nd string to compare
+C
+C NCHAR   (I) INTEGER        number of characters to compare
+C
+C_END_CMATCH
 C
       CHARACTER*(*) STRING1,STRING2
       INTEGER NCHAR
@@ -1623,14 +1810,26 @@ C
       RETURN
       END
 C
-C
 C
+C_BEGIN_CMOVE
+C     =======================================
       SUBROUTINE CMOVE(STRINGA,STRINGB,NCHAR)
 C     =======================================
-C
-C---- copy n characters from b to a :  
+C---- Copy nchar characters from stringb to stringa :  
 C     (only used for character data  IN FORTRAN77
 C
+C---- Arguments:
+C
+C STRINGA (O) CHARACTER*1(*)  Array to copy to
+C
+C STRINGB (I) CHARACTER*1(*)  Array to copy from
+C
+C NCHAR   (I) INTEGER         Number of characters to copy
+C
+C NB. Not currently called by anything in ccp4. WRR, Sep 1993
+C NB. Alternative is CMATCH
+C
+C_END_CMOVE
 C
 C
       CHARACTER*1 STRINGA(*),STRINGB(*)
@@ -1648,19 +1847,29 @@ C
       RETURN
       END
 C
-C
 C
+C_BEGIN_CHKKEY
+C     ========================================
       SUBROUTINE CHKKEY(KEY,WORDS,NWORDS,IKEY)
 C     ========================================
+C Check keyword KEY against list of NWORDS possible keywords in WORDS.
+C Allows abbreviated or extended keys provided they are not ambiguous.
 C
-C Check keyword KEY against list of NWORDS possible keywords WORDS
-C Allows abbreviated or extended keys provided they are not ambiguous
-C  If KEY = '?', list all words
+C---- Arguments:
 C
-C Returns:
-C  IKEY  = keyword number found (.gt.0)
-C        = 0 if not found or null
-C        = -1 if ambiguous
+C KEY    (I) CHARACTER*(*)         Keyword for checking
+C
+C WORDS  (I) CHARACTER(NWORDS)*(*) List of possible keywords
+C
+C NWORDS (I) INTEGER               Number of keywords in WORDS
+C
+C IKEY (I/O) INTEGER               = '?', list all words
+C                                  Returns:
+C                                  = keyword number found (.gt.0)
+C                                  = 0 if not found or null
+C                                  = -1 if ambiguous
+C
+C_END_CHKKEY
 C
 C     .. Scalar Arguments ..
       INTEGER NWORDS, IKEY
@@ -1798,21 +2007,22 @@ C
       END
 C
 C
-C     =========================
+C_BEGIN_PUTLIN
+C     ================================
       SUBROUTINE PUTLIN(STROUT,OUTWIN)
-C     =========================
-C
-C
-C
+C     ================================
 C---- This is a dummy PUTLIN to link with the MTZ routines mark 1 -
 C     all it does is write the line in STROUT to lun 6. Later the
 C     routines will be linked with the Compose-Parser etc. from Kim
 C     where PUTLIN does a few more things !
 C
+C---- Arguments:
 C
+C STROUT (I) CHARACTER*(*)  Input line
 C
+C OUTWIN (O) CHARACTER*(*)  Not used
 C
-C
+C_END_PUTLIN
 C
 C     .. Scalar Arguments ..
       CHARACTER OUTWIN* (*)
@@ -1860,23 +2070,20 @@ C
       END
 C
 C
+C_BEGIN_BLANK
 C     ===============================
       SUBROUTINE BLANK(OUTWIN,NLINES)
 C     ===============================
-C
-C
-C
 C---- This subroutine calls PUTLIN to output NLINES blank lines to the
 C     window OUTWIN
 C
-C---- Arguments :
+C---- Arguments:
 C
-C     OUTWIN    CHARACTER*6     output window
+C     OUTWIN  (I)   CHARACTER*6     output window
 C
-C     NLINES    INTEGER         number of blank lines to output
+C     NLINES  (I)   INTEGER         number of blank lines to output
 C
-C
-C
+C_END_BLANK
 C
 C     .. Scalar Arguments ..
       INTEGER NLINES
@@ -1909,30 +2116,24 @@ C
       END
 C
 C
+C_BEGIN_LERROR
 C     =======================================
       SUBROUTINE LERROR(ERRFLG,IFAIL,ERRMSG)
 C     =======================================
-C
-C
-C
 C---- General error reporting subroutine, for the MTZ routines, etc
 C
 C---- Arguments:
 C
-C     ERRFLG    INTEGER         =1 output meesage as warning
-C                               =2 output message as fatal
+C     ERRFLG  (I)  INTEGER         =1 output meesage as warning
+C                                  =2 output message as fatal
 C
-C     IFAIL     INTEGER         =0 return after fatal error
-C                               =-1 STOP after reporting fatal error
+C     IFAIL   (I)  INTEGER         =0 return after fatal error
+C                                  =-1 STOP after reporting fatal error
 C
-C     ERRMSG    CHARACTER*(*)   character string containing error
-C                               message to output
+C     ERRMSG  (I)  CHARACTER*(*)   character string containing error
+C                                  message to output
 C
-C
-C
-C
-C
-C
+C_END_LERROR
 C
 C     .. Scalar Arguments ..
       INTEGER ERRFLG,IFAIL
@@ -1984,7 +2185,7 @@ C
         IF (IFAIL.LT.0) THEN
           STROUT = '*** Program Terminated '
           CALL PUTLIN(STROUT,'ERRWIN')
-          call ccperr(1,' stop in parser.for 7733')
+          call ccperr(1,' stop in parser 7733')
         ELSE
           CALL BLANK('ERRWIN',1)
         END IF
@@ -2010,28 +2211,50 @@ C
 C
 C
 C
+C_BEGIN_RDSYMM
+C     =======================================================
       SUBROUTINE RDSYMM(JTOK,LINE,IBEG,IEND,ITYP,FVALUE,NTOK,
      .    SPGNAM,NUMSGP,PGNAME,NSYM,NSYMP,RSYM)
-C     =========================================
+C     =======================================================
+C---- Read and decode symmetry specification
+C
+C---- Arguments:
+C
+C   JTOK    (I)  INTEGER        Number of first field to interpret
+C
+C   LINE    (I)  CHARACTER*(*)  Input string (from PARSER)
+C
+C   IBEG    (I)  INTEGER(*)     1st column number of tokens in field 
+C                               (from PARSER)
+C
+C   IEND    (I)  INTEGER(*)     Last column number of tokens in field
+C                               (from PARSER)
+C
+C   ITYP    (I)  INTEGER(*)     =0  null field
+C                               =1  character string
+C                               =2  number
+C                               (from PARSER)
+C
+C   FVALUE  (I)  REAL(*)        Array of numbers. (from PARSER)
+C
+C   NTOK    (I)  INTEGER        The number of fields parsed. (from PARSER)
+C
 C     
-C     Read and decode symmetry specification
-C     
-C     On entry:
-C     LINE,IBEG,IEND,ITYP,FVALUE,NTOK contain information from Parser
-C     JTOK  is first field to interpret
-C     
-C     NSYM  number of symmetry operations already read (should be cleared
-C     to 0 at beginning)
-C     
-C     On exit
-C     SPGNAM  Spacegroup name
-C     NUMSGP  Spacegroup number
-C     PGNAME  Pointgroup name
-C     NSYM    Number of symmetry operations (including non-primitive)
-C     NSYMP   Number of primitive symmetry operations
-C     RSYM    Symmetry matrices (4x4)
-C     
-C      IMPLICIT NONE
+C   NSYM  (I/O)  INTEGER        Number of symmetry operations already read,
+C                               including non-primitive.
+C                               (should be cleared to 0 at beginning)
+C
+C   SPGNAM  (O) CHARACTER*(*)   Space group name
+C
+C   NUMSGP  (O) INTEGER         Space group number
+C
+C   PGNAME  (O) CHARACTER*(*)   Point group name
+C
+C   NSYMP   (O) INTEGER         Number of primitive symmetry operations
+C
+C   RSYM    (O) REAL(4,4,*)     Symmetry matrices. * should be at least =NSYM
+C
+C_END_RDSYMM
 C     
       INTEGER JTOK,NTOK
       INTEGER IBEG(NTOK),IEND(NTOK),ITYP(NTOK)
@@ -2105,39 +2328,54 @@ C
 C     
 C     
 C     
+C_BEGIN_RDHEAD
+C     ======================================================
       SUBROUTINE RDHEAD(JTOK,LINE,IBEG,IEND,ITYP,FVALUE,NTOK,
      .    MTZPRT,MTZBPR)
-C     =========================================
+C     ======================================================
+C---- Read and decode HEADER command, to set print flags for MTZ headers
+C
+C---- Arguments:
+C 
+C   JTOK   (I) INTEGER       Number of first field to interpret
+C
+C   LINE   (I) CHARACTER*(*) Input string (from PARSER)
+C
+C   IBEG   (I) INTEGER(*)    1st column number of tokens in field 
+C                            (from PARSER)
+C
+C   IEND   (I) INTEGER(*)    Last column number of tokens in field
+C                            (from PARSER)
+C
+C   ITYP   (I) INTEGER(*)    =0  null field
+C                            =1  character string
+C                            =2  number
+C                            (from PARSER)
+C
+C   FVALUE (I) REAL(*)       Array of numbers. (from PARSER)
+C
+C   NTOK   (I) INTEGER       The number of fields parsed. (from PARSER)
+C
 C     
-C     Read and decode HEADER command, to set print flags for MTZ headers
+C   MTZPRT (O) INTEGER       Flag to control printout from MTZ file header
+C                            NONE    sets MTZPRT = 0
+C                             no header o/p
+C                            BRIEF   sets MTZPRT = 1 (default)
+C                             brief header o/p
+C                            HISTORY sets MTZPRT = 2
+C                             brief + mtz history
+C                            ALL     sets MTZPRT = 3
+C                             full header o/p from mtz reads
 C     
-C     On entry:
-C     LINE,IBEG,IEND,ITYP,FVALUE,NTOK contain information from Parser
-C     JTOK  is first field to interpret
-C     
-C     On exit:
-C     
-C     MTZPRT flag to control printout from MTZ file header
-C     
-C     NONE  sets  MTZPRT = 0
-C     no header o/p
-C     BRIEF  sets MTZPRT = 1  (default)
-C     brief header o/p
-C     HISTORY sets MTZPRT = 2
-C     brief + mtz history
-C     ALL     sets MTZPRT = 3
-C     full header o/p from mtz reads
-C     
-C     MTZBPR controls printout from BATCH HEADERS
-C     
-C     NOBATCH sets  MTZBPR = 0
-C     no batch header o/p
-C     BATCH    sets MTZBPR = 1  (default)
-C     batch titles o/p
-C     ORIENTATION sets MTZBPR = 2
-C     batch orientation also
-C     
-C      IMPLICIT NONE
+C   MTZBPR (O) INTEGER       Controls printout from BATCH HEADERS
+C                            NOBATCH     sets MTZBPR = 0
+C                             no batch header o/p
+C                            BATCH       sets MTZBPR = 1  (default)
+C                             batch titles o/p
+C                            ORIENTATION sets MTZBPR = 2
+C                             batch orientation also
+C
+C_END_RDHEAD
 C     
       INTEGER JTOK,NTOK
       INTEGER IBEG(NTOK),IEND(NTOK),ITYP(NTOK)
@@ -2186,27 +2424,29 @@ C
       RETURN
       END
 C     
-C   
+C_BEGIN_RDCELL
 C     ==============================================
       SUBROUTINE RDCELL(ITOK,ITYPE,FVALUE,NTOK,CELL)
-C     ==============================================
-C     
-C     
-C     
+C     ==============================================     
 C---- Read and decode resolution limits.
 C     
-C     On entry:
-C     
-C     ITYPE,FVALUE,NTOK contain information from Parser
-C     ITOK  is first field to interpret
-C     
-C     On exit:
-C     
-C     CELL(1-6)  Cell dimensions.
-C     
-C     
-C      IMPLICIT NONE
-C     
+C---- Arguments:
+C
+C   ITOK   (I) INTEGER     Number of first field to interpret
+C
+C   ITYPE  (I) INTEGER(*)  =0  null field
+C                          =1  character string
+C                          =2  number
+C                          (from PARSER)
+C
+C   FVALUE (I) REAL(*)     Array of numbers. (from PARSER)
+C
+C   NTOK   (I) INTEGER     The number of fields parsed. (from PARSER)
+C
+C
+C   CELL   (O) REAL(6)     Cell parameters a, b, c, alpha, beta, gamma.
+C
+C_END_RDCELL
 C     
 C     .. Scalar Arguments ..
       INTEGER           ITOK,NTOK
@@ -2241,32 +2481,37 @@ C
       RETURN
       END
 C     
-C   
 C     
-C     =====================================================
+C_BEGIN_RDRESO
+C     ================================================
       SUBROUTINE RDRESO(ITOK,ITYPE,FVALUE,NTOK,RESMIN,
      +                  RESMAX,SMIN,SMAX)
-C     =====================================================
-C     
-C     
+C     ================================================
 C---- Read and decode resolution limits.
 C     
+C---- Arguments:
+C
+C     ITOK    (I) INTEGER     Number of first field to interpret
 C     
-C     On entry:
+C     ITYPE   (I) INTEGER(*)  =0  null field
+C                             =1  character string
+C                             =2  number
+C                             (from PARSER)
+C
+C     FVALUE  (I) REAL(*)     Array of numbers. (from PARSER)
+C
+C     NTOK    (I) INTEGER     The number of fields parsed. (from PARSER)
+C
 C     
-C     ITYPE,FVALUE,NTOK contain information from Parser
-C     ITOK  is first field to interpret
-C     
-C     On exit:
-C     
-C     RESMIN  Minimum resolution (in As)
-C     RESMAX  Maximum resolution (in As)
-C     SMIN    Minimum resolution ( 4sin**2/lambda**2)
-C     SMAX    Maximum resolution ( 4sin**2/lambda**2)
-C     
-C      IMPLICIT NONE
-C     
-C     
+C     RESMIN  (O) REAL        Minimum resolution (in As)
+C
+C     RESMAX  (O) REAL        Maximum resolution (in As)
+C
+C     SMIN    (O) REAL        Minimum resolution ( 4sin**2/lambda**2)
+C
+C     SMAX    (O) REAL        Maximum resolution ( 4sin**2/lambda**2)
+C
+C_END_RDRESO
 C     .. Scalar Arguments ..
       REAL              RESMAX,RESMIN,SMAX,SMIN
       INTEGER           ITOK,NTOK
@@ -2341,25 +2586,47 @@ C
       END
 C     
 C     
+C_BEGIN_RDSCAL     
+C     ======================================================
       SUBROUTINE RDSCAL(ITOK,LINE,IBEG,IEND,ITYP,FVALUE,NTOK,
      .    NLPRGI,LSPRGI,ILPRGI,SCAL,BB)
-C     =========================================
+C     ======================================================
+C---- Read and decode SCALE .
 C     
-C     Read and decode SCALE .
-C     
-C     LSPRGI    CHARACTER*30    program label strings (array)
-C     L(abel) S(tring) PRG(rammme) I(nput)
-C     
-C     
-C     On entry:
-C     LINE,IBEG,IEND,ITYP,FVALUE,NTOK contain information from Parser
-C     ITOK  is first field to interpret
-C     
-C     On exit
-C     ILPRGI - number in array of LSPRGI whose scale has been reset
-C     SCAL - scale factor.
-C     BB   - temperature factor.
-C      IMPLICIT NONE
+C---- Arguments:
+C
+C  ITOK   (I) INTEGER       Number of first field to interpret
+C
+C  LINE   (I) CHARACTER*(*) Input string (from PARSER)
+C
+C  IBEG   (I) INTEGER(*)    1st column number of tokens in field 
+C                           (from PARSER)
+C
+C  IEND   (I) INTEGER(*)    Last column number of tokens in field
+C                           (from PARSER)
+C
+C  ITYP   (I) INTEGER(*)    =0  null field
+C                           =1  character string
+C                           =2  number
+C                           (from PARSER)
+C
+C  FVALUE (I) REAL(*)       Array of numbers. (from PARSER)
+C
+C  NTOK   (I) INTEGER       The number of fields parsed. (from PARSER)
+C
+C
+C  LSPRGI (I) CHARACTER(MCOLS)*30  Program label strings.
+C                                  L(abel) S(tring) PRG(ram) I(nput)
+C
+C  NLPRGI (I) INTEGER        Number of label strings in LSPRGI
+C
+C  ILPRGI (O) INTEGER        Number in array of LSPRGI whose scale has been reset
+C
+C  SCAL   (O) REAL           Scale factor.
+C
+C  BB     (O) REAL           Temperature factor.
+C
+C_END_RDSCAL
 C     
       INTEGER MCOLS
       PARAMETER (MCOLS=200)
@@ -2398,12 +2665,11 @@ C
 C
 C
 C
-C     =====================================================
+C_BEGIN_RDRESL
+C     ======================================================
       SUBROUTINE RDRESL(ITOK,ITYPE,FVALUE,CVALUE,NTOK,RESMIN,
      +                  RESMAX,SMIN,SMAX,ISTAT)
-C     =====================================================
-C     
-C     
+C     ======================================================     
 C---- Read and decode resolution limits.
 C     Subkeywords in CVALUE recognized:
 C       LOW   read next number as low resolution limit
@@ -2411,27 +2677,41 @@ C       HIGH  read next number as high resolution limit
 C
 C     If LOW & HIGH are both present, the limits will still be swapped
 C     to the correct order
-C     
-C     On entry:
-C     
-C     ITYPE,FVALUE,NTOK,CVALUE contain information from Parser
-C     ITOK  is first field to interpret
-C     
-C     On exit:
-C     
-C     RESMIN  Minimum resolution (in As) (ie low resolution)
-C     RESMAX  Maximum resolution (in As) (ie high resolution)
-C     SMIN    Minimum resolution ( 4sin**2/lambda**2) (ie low resolution)
-C     SMAX    Maximum resolution ( 4sin**2/lambda**2) (ie high resolution)
-C     ISTAT   = 0, OK; = -1 illegal subkeyword ; = +1  no limits set
-C             = +2 illegal number (probably can't happen)
 C
 C     If only LOW or HIGH are given, the unset limit (ie either RESMAX, SMAX
 C     or RESMIN, SMIN) will be set to -1.0. If only one number is given,
 C     it is treated as a high resolution limit
-C     
-C      IMPLICIT NONE
-C     
+C
+C---- Arguments:
+C
+C  ITOK   (I) INTEGER         Number of first field to interpret
+C
+C  ITYP   (I) INTEGER(*)      =0  null field
+C                             =1  character string
+C                             =2  number
+C                             (from PARSER)
+C
+C  FVALUE (I) REAL(*)         Array of numbers. (from PARSER)
+C
+C  NTOK   (I) INTEGER         The number of fields parsed. (from PARSER)
+C
+C  CVALUE (I) CHARACTER(*)*4  Parsed tokens from program input. (from PARSER)
+C
+C  RESMIN  (O) REAL           Minimum resolution (in As) (ie low resolution)
+C
+C  RESMAX  (O) REAL           Maximum resolution (in As) (ie high resolution)
+C
+C  SMIN    (O) REAL           Minimum resolution ( 4sin**2/lambda**2)
+C                                (ie low resolution)
+C
+C  SMAX    (O) REAL           Maximum resolution ( 4sin**2/lambda**2)
+C                                (ie high resolution)
+C
+C  ISTAT   (O) INTEGER        =0  OK
+C                             =-1 illegal subkeyword
+C                             =+1 no limits set
+C                             =+2 illegal number (probably can't happen)
+C_END_RDRESL
 C     
 C     .. Scalar Arguments ..
       REAL              RESMAX,RESMIN,SMAX,SMIN
@@ -2571,21 +2851,36 @@ C
       END
 C     
 C
-C
-C
+C_BEGIN_GTTREA
+C     =============================================
       SUBROUTINE GTTREA(N,X,LFLAG,NTOK,ITYP,FVALUE)
 C     =============================================
+C---- Extract real number X from N'th value of Parser array FVALUE,
+C     if possible.
 C
-C---- Extract real number X from N'th value Parser array FVALUE,
-C     if possible
+C     If no value, leave X unchanged. If illegal, write message
 C
-C---- If no value, leave X unchanged. If illegal, write message
-C  Returns
-C   LFLAG =  0  OK (valid number or null field)
-C         = -1  beyond end of line
-C         = +1  illegal number
+C---- Arguments:
 C
-C      IMPLICIT NONE
+C  N      (I) INTEGER     Number of 1st element of FVALUE to be extracted
+C
+C  X      (O) REAL        Put extracted number here
+C
+C  LFLAG  (O) INTEGER     =  0  OK (valid number or null field)
+C                         = -1  beyond end of line
+C                         = +1  illegal number
+C
+C  NTOK   (I) INTEGER     Total number of fields (from PARSER)
+C
+C  ITYP   (I) INTEGER(*)  =0  null field
+C                         =1  character string
+C                         =2  number
+C                         (from PARSER)
+C
+C  FVALUE (I) REAL(*)     Array of numbers to be extracted (from PARSER)
+C
+C_END_GTTREA
+C
 C     .. Parameters ..
       INTEGER NPARM
       PARAMETER (NPARM=200)
@@ -2630,19 +2925,35 @@ C
 C
       END
 C
-C
-C
+C_BEGIN_GTTINT
+C     =============================================
       SUBROUTINE GTTINT(N,I,LFLAG,NTOK,ITYP,FVALUE)
 C     =============================================
+C---- Extract integer I from N'th value of Parser array FVALUE,
+C     if possible.
 C
-C---- Extract integer I from N'th value Parser array FVALUE,
-C     if possible
+C     If no value, leave I unchanged. If illegal, write message.
 C
-C---- If no value, leave I unchanged. If illegal, write message
-C  Returns
-C   LFLAG =  0  OK (valid number or null field)
-C         = -1  beyond end of line
-C         = +1  illegal number
+C---- Arguments:
+C
+C  N      (I) INTEGER     Number of 1st element of FVALUE to be extracted
+C
+C  I      (O) INTEGER     Put extracted number here
+C
+C  LFLAG  (O) INTEGER     =  0  OK (valid number or null field)
+C                         = -1  beyond end of line
+C                         = +1  illegal number
+C
+C  NTOK   (I) INTEGER     Total number of fields (from PARSER)
+C
+C  ITYP   (I) INTEGER(*)  =0  null field
+C                         =1  character string
+C                         =2  number
+C                         (from PARSER)
+C
+C  FVALUE (I) REAL(*)     Array of numbers to be extracted (from PARSER)
+C
+C_END_GTTINT
 C
 C      IMPLICIT NONE
 C     .. Parameters ..
