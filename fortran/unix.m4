@@ -662,7 +662,7 @@ ifelse(_convex,1,
 [      INTEGER STIME
       ISEC = STIME()],
 _hpux,1,
-[ifelse(_hpux9,1,,[      ISEC = SECNDS(0.0)])],
+[ifelse(_hpux9,1,,[ifelse(_hpux10,1,[      isec=time()],[      ISEC = SECNDS(0.0)])])],
 [      INTEGER TIME
 C
       ISEC = TIME()])
