@@ -263,7 +263,7 @@ C
 C---- Centred characters with uniform spacing
 C
       CALL GSCENC(1)
-      CALL GSCSPA(0.0,0.0,1)
+      CALL GSCSPA(0.0,0.0)
 C
 C---- locate which side of axis to annotate and label
 C
@@ -5775,7 +5775,7 @@ C
 C
 C---- First dot
 C
-      CALL GSDOTB(IX,IY)
+      CALL GSDOTB(REAL(IX), REAL(IY))
 C
 C---- Draw rest of line
 C
@@ -5792,7 +5792,7 @@ C
             IY = IY + MSIGN
             ND = ND - NXY2
           END IF
-          CALL GSDOTB(IX,IY)
+          CALL GSDOTB(REAL(IX), REAL(IY))
           GO TO 10
         END IF
       ELSE
@@ -5808,7 +5808,7 @@ C
             IX = IX + MSIGN
             ND = ND - NXY2
           END IF
-          CALL GSDOTB(IX,IY)
+          CALL GSDOTB(REAL(IX), REAL(IY))
           GO TO 20
         END IF
 C
@@ -6290,10 +6290,12 @@ C     .. Local Scalars ..
 C     ..
 C     .. Local Arrays ..
       INTEGER*2 JXY(2)
+      INTEGER JJXY (1)
+      EQUIVALENCE (JXY,JJXY)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL GSLVCK,QBACK,QCLOSE,QOPEN,QREAD,QSEEK,
-     +         QSKIP,QWRITE,QMODE
+      EXTERNAL GSLVCK,QBACK,QCLOSE,QOPEN,QREADI,QSEEK,
+     +         QSKIP,QWRITI,QMODE
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC INDEX
@@ -6419,7 +6421,7 @@ C
       PASWRD = FILE84
       IUNIT = IUNITR
 C
-      CALL QWRITE(IUNITR,IREC,NRECL)
+      CALL QWRITR(IUNITR,IREC,NRECL)
       IF (IPRINT.GE.2) WRITE (LUNOUT,FMT=6000) AREC(1),IREC(2),
      +   IREC(3),(AREC(I),I=4,16), (IREC(I),I=17,22),
      + AREC(23),TITLEH,PASWRD
@@ -6435,7 +6437,7 @@ C
       JXY(1) = IX
       JXY(2) = IY
       IF (IPRINT.GE.3) WRITE (LUNOUT,FMT=*) JXY(1),JXY(2)
-      CALL QWRITE(IUNITR,JXY,4)
+      CALL QWRITI(IUNITR,JJXY,4)
       RETURN
 C
       ENTRY GSUHDR()
@@ -6460,7 +6462,7 @@ C
      +IREC(2),IREC(3), (AREC(I),I=4,16), 
      +(IREC(I),I=17,22),AREC(23),
      +      TITLEH,PASWRD
-        CALL QWRITE(IUNITR,IREC,NRECL)
+        CALL QWRITR(IUNITR,IREC,NRECL)
            KRECORD = AREC(1)*4
         CALL QSKIP(IUNITR,KRECORD)
       END IF
@@ -6478,7 +6480,7 @@ C     is terminated by an empty header.
 C
       KEOF = 0
       IER = 0
-      CALL QREAD(IUNITR,IREC,NRECL,IER)
+      CALL QREADR(IUNITR,IREC,NRECL,IER)
 C
 C---- Check for empty or end of file
 C
@@ -6502,7 +6504,7 @@ C---- Read in ix,iy  return to statement * on  eof
 C
       KKEOF = 0
       IER = 0
-      CALL QREAD(IUNITR,JXY,4,IER)
+      CALL QREADI(IUNITR,JJXY,4,IER)
       IF (IER.NE.0) THEN
         KKEOF = 1
       ELSE
@@ -6542,7 +6544,7 @@ C     ===========================
 C
 C---- Write an integer array of nbyte bytes
 C
-      CALL QWRITE(IUNITR,IARRAY,NBYTE)
+      CALL QWRITR(IUNITR,IARRAY,NBYTE)
       RETURN
 C
       ENTRY GSFLRR(IARRAY,NBYTE,KKKEOF)
@@ -6552,7 +6554,7 @@ C---- Read an integer array of nbyte bytes
 C
       KKKEOF = 0
       IER = 0
-      CALL QREAD(IUNITR,IARRAY,NBYTE,IER)
+      CALL QREADR(IUNITR,IARRAY,NBYTE,IER)
       IF (IER.NE.0) KKKEOF = 1
 C
 C---- Format statements
@@ -8766,7 +8768,7 @@ C     .. Local Arrays ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL GSBFTM,GSGRTM,GSSLTM,GSTIM0,GSTIMR,
-     +         GSTYTM,QCLOSE,QOPEN,QREAD
+     +         GSTYTM,QCLOSE,QOPEN,QREADI
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
@@ -8804,7 +8806,7 @@ C---- Start reading rows
 C     and put them onto screen from top to bottom
 C
       DO 10 NROW = NRWMAX,NRWMIN,-4
-        CALL QREAD(IUNIT,SCREEN,512,IERR)
+        CALL QREADI(IUNIT,SCREEN,512,IERR)
         IF (IERR.EQ.1) THEN
           GO TO 20
         ELSE
@@ -9722,7 +9724,7 @@ C     .. Local Arrays ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL GSBFTM,GSGRTM,GSRDTM,GSTIM0,GSTIMR,
-     +         QCLOSE,QOPEN,QWRITE
+     +         QCLOSE,QOPEN,QWRITI
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
@@ -9759,7 +9761,7 @@ C
 C---- Start writing rows
 C
       DO 10 NROW = NRWMAX,NRWMIN,-4
-        CALL QWRITE(IUNIT,SCREEN(0, (NROW-3)),512)
+        CALL QWRITI(IUNIT,SCREEN(0, (NROW-3)),512)
    10 CONTINUE
 C
 C---- Close disc file
@@ -12324,17 +12326,17 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER J,NDO,NL,NBYTES,NMCITM
-      CHARACTER*1 FOWARD,LINEFEED,REVERSE
+      CHARACTER*1 FOWARD,REVERSE
 C     ..
 C     .. Local Arrays ..
-      CHARACTER*1 BLANK(250),COLOURCH(3)
+      CHARACTER*1 BLANK(250),COLOURCH(3),LINEFEED(1)
 C     ..
 C     .. External Functions ..
       LOGICAL CCPONL
       EXTERNAL CCPONL
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QOPEN,QWRITE,QMODE
+      EXTERNAL QCLOSE,QOPEN,QWRITI,QMODE
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC MOD
@@ -12360,7 +12362,7 @@ C
       COLOURCH(1) = CHAR(16)
       COLOURCH(2) = CHAR(17)
       COLOURCH(3) = CHAR(18)
-      LINEFEED = CHAR(10)
+      LINEFEED(1) = CHAR(10)
       PC(1) = CHAR(0)
       PC(2) = CHAR(0)
       PC(3) = CHAR(5)
@@ -12411,13 +12413,13 @@ C
         NDO = -NROWS
         PL(4) = REVERSE
         DO 10 J = 1,NDO
-          CALL QWRITE(IUNIT,PL,6)
+          CALL QWRITI(IUNIT,PL,6)
    10   CONTINUE
       ELSE IF (NROWS.GT.0) THEN
         NDO = NROWS
         PL(4) = CHAR(0)
         DO 20 J = 1,NDO
-          CALL QWRITE(IUNIT,PL,6)
+          CALL QWRITI(IUNIT,PL,6)
    20   CONTINUE
       END IF
       RETURN
@@ -12429,13 +12431,13 @@ C
         NDO = -NFORMS
         PF(4) = REVERSE
         DO 30 J = 1,NDO
-          CALL QWRITE(IUNIT,PF,6)
+          CALL QWRITI(IUNIT,PF,6)
    30   CONTINUE
       ELSE IF (NFORMS.GT.0) THEN
         NDO = NFORMS
         PF(4) = CHAR(0)
         DO 40 J = 1,NDO
-          CALL QWRITE(IUNIT,PF,6)
+          CALL QWRITI(IUNIT,PF,6)
    40   CONTINUE
       END IF
       RETURN
@@ -12445,9 +12447,9 @@ C     ==========================
 C
       NBYTES = LENGTH + 3
       NL = 1
-      CALL QWRITE(IUNIT,PC,4)
-      CALL QWRITE(IUNIT,LINE,LENGTH)
-      CALL QWRITE(IUNIT,LINEFEED,NL)
+      CALL QWRITI(IUNIT,PC,4)
+      CALL QWRITI(IUNIT,LINE,LENGTH)
+      CALL QWRITI(IUNIT,LINEFEED,NL)
       PC(4) = CHAR(0)
       RETURN
 C
@@ -12456,10 +12458,10 @@ C     ================================
 C
       NBYTES = LENGTH + IOFF + 3
       NL = 1
-      CALL QWRITE(IUNIT,PC,4)
-      IF (IOFF.GT.0) CALL QWRITE(IUNIT,BLANK,IOFF)
-      CALL QWRITE(IUNIT,LINE,LENGTH)
-      CALL QWRITE(IUNIT,LINEFEED,NL)
+      CALL QWRITI(IUNIT,PC,4)
+      IF (IOFF.GT.0) CALL QWRITI(IUNIT,BLANK,IOFF)
+      CALL QWRITI(IUNIT,LINE,LENGTH)
+      CALL QWRITI(IUNIT,LINEFEED,NL)
       PC(4) = CHAR(0)
       RETURN
 C
@@ -12932,7 +12934,7 @@ C     .. Local Arrays ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CLOSETRIPLOT,INITRIPLOT,GSLRSB,GSTIM0,GSTIMR,
-     +         QCLOSE,QOPEN,QREAD,TRICOLOUR,TRIFORM,TRIPLOTC,TRIROW
+     +         QCLOSE,QOPEN,QREADI,TRICOLOUR,TRIFORM,TRIPLOTC,TRIROW
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC MIN,REAL
@@ -12994,7 +12996,7 @@ C
       CALL TRIROW(NSPARE)
       NFORM = 1
       NLNSKP = 0
-      CALL QREAD(IUNIT,MREC,80,IER)
+      CALL QREADI(IUNIT,MREC,80,IER)
       IF ((IER.EQ.0) .AND. (NREC.GT.0)) THEN
 C
 C---- Rescale for different dot densities
@@ -13079,7 +13081,7 @@ C---- NDOT remembers when a dot code was last issued
 C
         NDOT = 0
         DO 50 IRECX = 1,NREC
-          CALL QREAD(IUNIT,KXY,4,IER)
+          CALL QREADI(IUNIT,KXY,4,IER)
           IF (IER.NE.0) THEN
             GO TO 80
           ELSE
@@ -13263,7 +13265,7 @@ C     .. Local Scalars ..
 C     ..
 C     .. Local Arrays ..
 C     .. External Subroutines ..
-      EXTERNAL QREAD
+      EXTERNAL QREADI
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
@@ -13292,7 +13294,7 @@ C
 C
 C---- Read header
 C
-      CALL QREAD(IUNIT,IREC,512,IER)
+      CALL QREADR(IUNIT,IREC,512,IER)
 C
 C---- End File if block length wrong
 C
