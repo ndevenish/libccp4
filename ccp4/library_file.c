@@ -940,7 +940,7 @@ CCP4File *ccp4_file_open (const char *filename, const int flag)
 #endif
     if (cfile->fd == -1) {
       ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_CantOpenFile),
-                  "ccp4_file_open", NULL);
+                  "ccp4_file_open1", NULL);
       return NULL; 
     } else {
 #if defined _MVS
@@ -993,7 +993,7 @@ CCP4File *ccp4_file_open (const char *filename, const int flag)
 #endif
     if (!cfile->stream) {
       ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_CantOpenFile),
-                  "ccp4_file_open", NULL);
+                  "ccp4_file_open2", NULL);
       cfile->iostat = CIO_CantOpenFile;
       return NULL; } 
 #if defined (__alpha) && defined (vms)
