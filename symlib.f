@@ -822,11 +822,10 @@ C
       LATMUL = NSM/NSMP
 C
       IF(IPRINT.GT.0)THEN
-       STROUT = '   ******   EPSILON ZONES -  Reflection Classes'//
-     +       ' and their multiplicity ****** '
 C
 C          ****************
-      CALL PUTLIN(STROUT,'CURWIN')
+      CALL PUTLIN(' ******   EPSILON ZONES -  Reflection Classes'//
+     +       ' and their multiplicity ****** ','CURWIN')
 C          ****************
          END IF
 C
@@ -1481,8 +1480,8 @@ C     ..
 C
 C
       IF (JLASS.EQ.0) THEN
-       STROUT = ' Filling  JLASS JCENTR JSCREW from common block.'
-       CALL PUTLIN(STROUT,'CURWIN')
+       CALL PUTLIN(' Filling  JLASS JCENTR JSCREW from common block.',
+     +      'CURWIN')
         JLASS = KLASS
         JCENTR = ICENTR
         JSCREW(1) = ISCREW(1)
@@ -1491,10 +1490,10 @@ C
       END IF
 C
       IF (JLASS.GT.0) THEN
-        STROUT = ' Filling  KLASS ICENTR ISCREW in common block.'
 C
 C            ****************
-        CALL PUTLIN(STROUT,'CURWIN')
+        CALL PUTLIN(' Filling  KLASS ICENTR ISCREW in common block.',
+     +       'CURWIN')
 C            ****************
 C
         KLASS = JLASS
@@ -1503,11 +1502,10 @@ C
         ISCREW(2) = JSCREW(2)
         ISCREW(3) = JSCREW(3)
 C
-        STROUT = ' **** ICENTR   gives  axis of centering *****'
-C
 C            *****************
         CALL BLANK('CURWIN',2)
-        CALL PUTLIN(STROUT,'CURWIN')
+        CALL PUTLIN(' **** ICENTR   gives  axis of centering *****',
+     +       'CURWIN')
 C            *****************
 C
         IF (ICENTR.EQ.0) THEN
@@ -3466,10 +3464,8 @@ C
  175      CONTINUE
  170    CONTINUE
 C     
-C     
-        WRITE (STROUT,FMT='(A)')
-     +       ' **** ICENTR   gives  axis of centering *****'
-        CALL PUTLIN(STROUT,'CURWIN')
+        CALL PUTLIN(' **** ICENTR   gives  axis of centering *****',
+     +       'CURWIN')
         IF (ICENTR.EQ.0) THEN
           STROUT = '  No centering              (P spacegroups)'
         ELSE IF (ICENTR.EQ.1) THEN
@@ -3486,14 +3482,10 @@ C
           CALL BLANK('CURWIN',2)
           WRITE (STROUT,FMT='(A)') '  Rhombohedral centering'
           CALL PUTLIN(STROUT,'CURWIN')
-          WRITE (STROUT,FMT='(A)') 
-     .           ' (R spacegroups with hexagonal axes)'
-          CALL PUTLIN(STROUT,'CURWIN')
-          WRITE (STROUT,FMT='(A)') 
-     +         ' (NOTE: R-spacegroups with rhombohedral axes'
-          CALL PUTLIN(STROUT,'CURWIN')
-          WRITE (STROUT,FMT='(A)')  ' have ICENTR = 0 !)'
-          CALL PUTLIN(STROUT,'CURWIN')
+          CALL PUTLIN(' (R spacegroups with hexagonal axes)','CURWIN')
+          CALL PUTLIN(' (NOTE: R-spacegroups with rhombohedral axes',
+     +         'CURWIN')
+          CALL PUTLIN(' have ICENTR = 0 !)','CURWIN')
           GO TO 9876
         END IF
 C     
@@ -3504,9 +3496,8 @@ C
 C
  9876   ISCR = ISCREW(1) + ISCREW(2) + ISCREW(3)
         IF (ISCR.GT.0) THEN
-          WRITE (STROUT,FMT='(A)') ' **** Screw axes are: *****'
           CALL BLANK('CURWIN',2)
-          CALL PUTLIN(STROUT,'CURWIN')
+          CALL PUTLIN(' **** Screw axes are: *****','CURWIN')
         END IF
 C
         IF (ISCREW(1).GT.0) THEN
@@ -3531,9 +3522,10 @@ C
         END IF
 C     
         WRITE (STROUT,FMT='(A)')
-     +   ' *** KLASS    : a crystal class name used in MDF files ***'
+     +   
         CALL BLANK('CURWIN',3)
-        CALL PUTLIN(STROUT,'CURWIN')  
+        CALL PUTLIN('*** KLASS: a crystal class name used in MDF '//
+     +       'files ***','CURWIN')  
 C
 C---- (int. tables)
 C
@@ -3696,6 +3688,7 @@ C
       ELSE IF (LOCNAM.EQ.'1'
      +       .OR.LOCNAM.EQ.'1BAR') THEN
         NLAUE = 3
+C       why not `1bar' here (etc.)?
         LAUNAM = '-1'
       ELSE IF (LOCNAM.EQ.'3'
      +       .OR.LOCNAM.EQ.'3BAR') THEN
@@ -3787,8 +3780,7 @@ C
 C Print
       IF (LPRINT) THEN
         CALL BLANK('CURWIN',1)
-        STROUT = '          Reciprocal space symmetry'
-        CALL PUTLIN(STROUT,'CURWIN')
+        CALL PUTLIN('          Reciprocal space symmetry','CURWIN')
         NAME = PGNAME
         L = LENSTR(NAME)
         IF (NAME(1:2) .EQ. 'PG') NAME = NAME(3:L)
@@ -3838,15 +3830,13 @@ C
                     CALL CCPERR(1,'ASUSET: Fatal error')
         ENDIF
 C
-        STROUT = 'Asymmetric unit: '//STROUT
-        CALL PUTLIN(STROUT,'CURWIN')
+        CALL PUTLIN('Asymmetric unit: '//STROUT,'CURWIN')
 C
 C Print symmetry operations
         CALL PRTRSM(PGNAME, NSYMP, RSYMIV)
 C
       ENDIF
 C
-      RETURN
       END
 C
 C
@@ -4314,12 +4304,10 @@ C Locals
       CHARACTER LINE*80, HKL(3)*1
       DATA   HKL/'h','k','l'/
 C
-      LINE = ' '
       CALL BLANK('CURWIN',1)
 C
-      LINE = 'Original indices for reflection hkl with '//
-     .     'symmetry number ISYM'
-      CALL PUTLIN(LINE,'CURWIN')
+      CALL PUTLIN('Original indices for reflection hkl with '//
+     .     'symmetry number ISYM','CURWIN')
 C
       NLINC = (NSYMP+3)/4
 C
