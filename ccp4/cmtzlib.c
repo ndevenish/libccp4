@@ -1067,12 +1067,8 @@ int ccp4_lrsymm(const MTZ *mtz, int *nsymx, float rsymx[192][4][4]) {
 
 int MtzParseLabin(char *labin_line, const char prog_labels[][31], 
             const int nlprgi, char user_labels[][2][31]) 
-
-/* Uses LABIN or LABOUT line to convert program labels to user labels */
-/* This is a helper function, but does not access reflection structure at all */
-/* Returns the number of program labels matched */
  
-{ int i,j,imatch,nlabels=0;
+{ int i,j,imatch,nlabels=0,err=0;
   char label1[31],label2[31];
 
   /* For cparser */
@@ -1084,7 +1080,7 @@ int MtzParseLabin(char *labin_line, const char prog_labels[][31],
   parser = ccp4_parse_start(strlen(labin_line));
   if (parser == NULL) {
     ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_ParserFail),"MtzParseLabin",NULL);
-    return 0;
+    return -1;
   }
   /* Set some convenient pointers to members of the parser array */
   key   = parser->keyword;
@@ -1140,21 +1136,22 @@ int MtzParseLabin(char *labin_line, const char prog_labels[][31],
       }
     } else {
       printf("clkyin: run out of labels trying to match \"%s\"\n",label1);
-      /* Stop here - there are no more labels to process
-	 This is an error but there is no way to flag it */
+      /* Stop here - there are no more labels to process */
+      err++;
       break;
     }
 
     if (imatch == 0) {
       /* no match */
       printf("clkyin: neither label recognised: %s %s \n",label1,label2);
+      err++;
     }
   }
 
   /* Finished with the parser array */
   ccp4_parse_end(parser);
 
-  return (nlabels);
+  return err ? -1 : nlabels;
 }
 
 MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels, 
