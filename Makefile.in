@@ -75,7 +75,7 @@ RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
 # modules to go in libccp4.a:
 LIBTARGETS = ccplib fftlib maplib parser rwbrook modlib \
            symlib mtzlib diskio unix plot84lib \
-           binsortint library plotsubs keyparse
+           binsortint library plotsubs keyparse pack_f pack_c
 
 .PRECIOUS : $L # don't zap the library if a component fails
 
