@@ -113,11 +113,13 @@
 #line 307 "library.nw"
 #ifndef NOUNISTD
 #  include <unistd.h>
-#  include <stdlib.h> 
 #else
 #  ifndef VMS
 #    include <sys/file.h>       /* ESV, old Concentrix */ /* non-POSIX */
 #  endif
+#endif
+#ifndef VMS
+#  include <stdlib.h> 
 #endif
 
 #include <errno.h>
@@ -126,21 +128,21 @@
 #if defined(_AIX) || defined (__hpux) /* would do no harm on others, though */
 #  include <time.h>
 #endif
-#line 328 "library.nw"
+#line 330 "library.nw"
 #define MAXFLEN       500       /* the maximum length of a filename in CCP4 */
 #define MAXFILES       10    /* maximum number of files open symultaneously */
 #define DEFMODE         2    /* default mode access for random access files */
-#line 334 "library.nw"
+#line 336 "library.nw"
 #define IRRELEVANT_OP   0
 #define READ_OP         1
 #define WRITE_OP        2
-#line 343 "library.nw"
+#line 345 "library.nw"
 #ifndef SEEK_SET
 #  define SEEK_SET 0
 #  define SEEK_CUR 1
 #  define SEEK_END 2
 #endif /* ! SEEK_SET */
-#line 349 "library.nw"
+#line 351 "library.nw"
 #if defined (ardent) || defined (titan) || defined (stardent)
   struct Str_Desc {
     char *Str_pointer;
@@ -148,14 +150,14 @@
     int id;
   };
 #endif
-#line 362 "library.nw"
+#line 364 "library.nw"
 #define BYTE  0
 #define INT16 1   
 #define INT32 6
 #define FLOAT32 2
 #define COMP32  3
 #define COMP64  4
-#line 1349 "library.nw"
+#line 1351 "library.nw"
 /* class info codes for int */
 #define DFNTI_MBO       1       /* Motorola byte order 2's compl */
 #define DFNTI_IBO       4       /* Intel byte order 2's compl */
@@ -165,23 +167,23 @@
 #define DFNTF_VAX       2       /* Vax format */
 #define DFNTF_CONVEXNATIVE 5    /* Convex native floats */
 #define DFNTF_LEIEEE    4       /* little-endian IEEE format */
-#line 1367 "library.nw"
+#line 1369 "library.nw"
 #if defined (VAX) || defined (vax) /* gcc seems to use vax */
 #  define NATIVEFT DFNTF_VAX
 #  define NATIVEIT DFNTI_IBO
 #endif
-#line 1379 "library.nw"
+#line 1381 "library.nw"
 #if defined(MIPSEL) || defined(alliant) || defined(__alpha) || defined(i386) || defined(i860)
 #  define NATIVEIT DFNTI_IBO
 #  define NATIVEFT DFNTF_LEIEEE
 #endif
-#line 1388 "library.nw"
+#line 1390 "library.nw"
 /* the VAX VMS compiler objected to splitting the following line */
 #if defined(MIPSEB) || defined(__hpux) || defined(_AIX) || defined(m68k) || defined(mc68000) || defined(sparc)
 #  define NATIVEIT DFNTI_MBO
 #  define NATIVEFT DFNTF_BEIEEE
 #endif
-#line 1395 "library.nw"
+#line 1397 "library.nw"
 #if defined(__convex__) || defined(__convexc__)
 #  define NATIVEIT DFNTI_MBO
 #  ifdef _IEEE_FLOAT_
@@ -197,7 +199,7 @@
 #ifndef NATIVEFT
   #error "Can't determine machine number format"
 #endif
-#line 1417 "library.nw"
+#line 1419 "library.nw"
 #define DFNT_UINT       0       /* unsigned int */
 #define DFNT_SINT       1       /* short int */
 #define DFNT_INT        2       /* int */
@@ -205,12 +207,12 @@
 #define DFNT_CHAR       4       /* char */
 #define DFNT_FLOAT      5       /* float */
 #define DFNT_DOUBLE     6       /* double */
-#line 1426 "library.nw"
+#line 1428 "library.nw"
 typedef unsigned short uint16;
 typedef unsigned long uint32;
 typedef float float32;
 typedef unsigned char uint8;
-#line 372 "library.nw"
+#line 374 "library.nw"
 static char rcsid[] = "$Id$";
 static int initialised =  0;    /* flag to initialise data and file streams */
 static char *file_attribute[] = { /* DISKIO file modes */
@@ -220,7 +222,7 @@ static char *file_attribute[] = { /* DISKIO file modes */
   "wb+",   /* 'NEW'       create (overwrite) new file */
   "rb"     /* 'READONLY'  self explanatory */
 };                                                                      
-#line 388 "library.nw"
+#line 390 "library.nw"
 static int item_sizes[] = {
   (int) sizeof (char),                                          /* 0: bytes */
 #if defined (sgi)
@@ -237,17 +239,17 @@ static int item_sizes[] = {
   (int) sizeof (int),           /* 5: not used */
   (int) sizeof (int)            /* 6: integers */
 };
-#line 407 "library.nw"
+#line 409 "library.nw"
 static FILE *file_stream[MAXFILES];                 /* Pointer to disk file */
 static char file_name[MAXFILES][MAXFLEN];      /* Pointer to disk file name */
 static int  file_bytes_per_item[MAXFILES];/* Pointer to disk file item size */
 static int  file_is_scratch[MAXFILES];    /* Indicates if file is 'SCRATCH' */
 static int  file_last_op [MAXFILES];    /* see man fopen rd/wr combinations */
 static int file_mode[MAXFILES];               /* diskio mode of each stream */
-#line 1411 "library.nw"
+#line 1413 "library.nw"
 static uint16 nativeIT = NATIVEIT; /* machine integer type */ 
 static uint16 nativeFT = NATIVEFT; /* machine float type */
-#line 1432 "library.nw"
+#line 1434 "library.nw"
 union float_uint_uchar {
     float32 f;
     uint32 i;
@@ -255,7 +257,7 @@ union float_uint_uchar {
 static int
     Iconvert[MAXFILES],         /* integer convserion needed on read*/
     Fconvert[MAXFILES];         /* real convserion needed on read*/
-#line 421 "library.nw"
+#line 423 "library.nw"
 static size_t flength (s, len)
 char *s;
 int len;
@@ -263,7 +265,7 @@ int len;
   while (s[--len] == ' ');
   return (++len);
 }
-#line 432 "library.nw"
+#line 434 "library.nw"
 static void fatal (message)
 char *message;
 {
@@ -302,7 +304,7 @@ char *message;
   (void) ccperr_ ((int) strlen(message), &one, message);
 #endif
  }
-#line 1523 "library.nw"
+#line 1525 "library.nw"
 static void vaxF2ieeeF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
@@ -344,7 +346,7 @@ int size;
     buffer[i] = out;            /* copy back result */
   }
 }
-#line 1566 "library.nw"
+#line 1568 "library.nw"
 static void ieeeF2vaxF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
@@ -391,7 +393,7 @@ int size;
     buffer[i] = out;            /* copy back the result */
   }
 }
-#line 1618 "library.nw"
+#line 1620 "library.nw"
 static void convexF2ieeeF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
@@ -433,7 +435,7 @@ int size;
     buffer[i] = out;            /* copy back result */
   }
 }
-#line 1661 "library.nw"
+#line 1663 "library.nw"
 static void ieeeF2convexF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
@@ -481,9 +483,9 @@ int size;
     buffer[i] = out;            /* copy back the result */
   }
 }
-#line 483 "library.nw"
+#line 485 "library.nw"
 #if ! defined (VMS)
-#line 487 "library.nw"
+#line 489 "library.nw"
 #if CALL_LIKE_HPUX
   void ustenv (str, result, Lstr)
   char *str;
@@ -538,9 +540,9 @@ int *result;
   *result = setenv (name, value, 1);
 #endif
 }
-#line 485 "library.nw"
+#line 487 "library.nw"
 #endif
-#line 548 "library.nw"
+#line 550 "library.nw"
 #if CALL_LIKE_HPUX
   void cunlink (filename, Lfilename)
   char *filename;
@@ -585,7 +587,7 @@ int *result;
   fatal("CUNLINK: Can't unlink");
 #endif /* VMS */
 }
-#line 605 "library.nw"
+#line 607 "library.nw"
 #if CALL_LIKE_HPUX
   void copen (iunit, filename, istat, Lfilename)
   char *filename;
@@ -656,7 +658,7 @@ int  *iunit, *istat;
   file_bytes_per_item[i] = item_sizes[DEFMODE]; /* default item size */
   file_mode[i] = DEFMODE;
   file_is_scratch[i] = (jstat == 2);
-#line 696 "library.nw"
+#line 698 "library.nw"
 #ifdef VMS
   if (file_is_scratch[i])
     file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1],
@@ -675,16 +677,16 @@ int  *iunit, *istat;
     *iunit = -2;                /* return open failure flag */
     return; }
   Iconvert[i] = Fconvert[i] = 0;
-#line 1071 "library.nw"
+#line 1073 "library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 715 "library.nw"
+#line 717 "library.nw"
   if (fseek (file_stream[*iunit], 0L, SEEK_SET) != 0)
     fatal("(Q)QOPEN: fseek failed");
   *iunit = i;
 }
-#line 749 "library.nw"
+#line 751 "library.nw"
 #if CALL_LIKE_HPUX
   void qrarch (iunit, ipos, ireslt)
 #endif
@@ -707,11 +709,11 @@ int  *iunit, *istat;
   char *native = getenv ("NATIVEMTZ");
 
   if (native != NULL) { *ireslt = 0; return; }
-#line 1071 "library.nw"
+#line 1073 "library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 772 "library.nw"
+#line 774 "library.nw"
   if ((fseek (file_stream[*iunit], (size_t) ((*ipos)*item_sizes[2]),
               SEEK_SET) != 0))
     fatal ("QRARCH: seek failed");
@@ -728,7 +730,7 @@ int  *iunit, *istat;
     Iconvert[*iunit] = fileIT;  /* else assume native */
   *ireslt = fileFT + (16*fileIT);
 }
-#line 802 "library.nw"
+#line 804 "library.nw"
 #if CALL_LIKE_HPUX
   void qwarch (iunit, ipos)
 #endif
@@ -747,11 +749,11 @@ int  *iunit, *istat;
   int *ipos, *iunit;
 {
   unsigned char mtstring[4];    /* machine stamp */
-#line 1071 "library.nw"
+#line 1073 "library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 821 "library.nw"
+#line 823 "library.nw"
   if (fseek (file_stream[*iunit], (size_t) ((*ipos)*item_sizes[2]),
              SEEK_SET) != 0)
     fatal ("QWARCH: seek failed");
@@ -764,7 +766,7 @@ int  *iunit, *istat;
              file_stream[*iunit]) != 4)
     fatal ("QWARCH: can't write machine stamp");
 }
-#line 837 "library.nw"
+#line 839 "library.nw"
 #if CALL_LIKE_HPUX
   void qclose (iunit)
 #endif
@@ -790,7 +792,7 @@ int *iunit;
   }
   file_name[*iunit][0] = '\0';
 }
-#line 869 "library.nw"
+#line 871 "library.nw"
 #if CALL_LIKE_HPUX
   void qmode (iunit, mode, size)
 #endif
@@ -816,7 +818,7 @@ int *iunit, *mode, *size;
   *size = file_bytes_per_item[*iunit];       /* return number of bytes/item */
   file_mode[*iunit] = *mode;
 }
-#line 904 "library.nw"
+#line 906 "library.nw"
 #if CALL_LIKE_HPUX
   void qread (iunit, buffer, nitems, result)
 #endif
@@ -838,11 +840,11 @@ int *iunit, *nitems, *result;
   if (! initialised) 
     fatal ("QREAD: qopen/qqopen not yet called");
   if (file_last_op[*iunit] == WRITE_OP) {
-#line 1071 "library.nw"
+#line 1073 "library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 926 "library.nw"
+#line 928 "library.nw"
     if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0) {
       *result = -1;
       return; } }
@@ -857,14 +859,14 @@ int *iunit, *nitems, *result;
   *result = 0;
   n = *nitems;
   
-#line 943 "library.nw"
+#line 945 "library.nw"
   switch (file_mode[*iunit]) {
   case BYTE:
     break;
   case INT16:
     if (Iconvert[*iunit])
       
-#line 1445 "library.nw"
+#line 1447 "library.nw"
 {
 if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
     (Iconvert[*iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO)) {
@@ -876,17 +878,17 @@ if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
 else
   fatal("QREAD: bad file integer type in conversion");
 }
-#line 949 "library.nw"
+#line 951 "library.nw"
     break;
   case INT32:
     if (Iconvert[*iunit])
       
-#line 1457 "library.nw"
+#line 1459 "library.nw"
 {
 if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
     (Iconvert[*iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO))
   
-#line 1506 "library.nw"
+#line 1508 "library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -897,16 +899,16 @@ if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1461 "library.nw"
+#line 1463 "library.nw"
 else
   fatal("QREAD: bad file integer type in conversion");
 }
-#line 953 "library.nw"
+#line 955 "library.nw"
     break;
   case FLOAT32:
     if (Fconvert[*iunit])
       
-#line 1468 "library.nw"
+#line 1470 "library.nw"
 {
 switch (Fconvert[*iunit]) {     /* get to BE IEEE */
    case DFNTF_VAX :
@@ -919,7 +921,7 @@ switch (Fconvert[*iunit]) {     /* get to BE IEEE */
      break;
    case DFNTF_LEIEEE :
      
-#line 1506 "library.nw"
+#line 1508 "library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -930,18 +932,18 @@ switch (Fconvert[*iunit]) {     /* get to BE IEEE */
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1480 "library.nw"
+#line 1482 "library.nw"
      break;
    default :
      fatal("QREAD: bad file real type in conversion");
    }
-#line 1489 "library.nw"
+#line 1491 "library.nw"
 switch (nativeFT) {
   case DFNTF_BEIEEE :
     break;                      /* done enough */
   case DFNTF_LEIEEE :
     
-#line 1506 "library.nw"
+#line 1508 "library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -952,7 +954,7 @@ switch (nativeFT) {
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1494 "library.nw"
+#line 1496 "library.nw"
     break;
   case DFNTF_CONVEXNATIVE :
     ieeeF2convexF(buffer, n);
@@ -964,13 +966,13 @@ switch (nativeFT) {
     fatal("QREAD: bad native real type in conversion");
   }
 }
-#line 957 "library.nw"
+#line 959 "library.nw"
     break;
   case COMP32:
     if (Fconvert[*iunit]) {
       n = 2*n;                  /* pairs of ints */
       
-#line 1445 "library.nw"
+#line 1447 "library.nw"
 {
 if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
     (Iconvert[*iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO)) {
@@ -982,14 +984,14 @@ if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
 else
   fatal("QREAD: bad file integer type in conversion");
 }
-#line 962 "library.nw"
+#line 964 "library.nw"
     }
     break;
   case COMP64:
     if (Fconvert[*iunit]) {
       n = 2*n;                  /* pairs of reals */
       
-#line 1468 "library.nw"
+#line 1470 "library.nw"
 {
 switch (Fconvert[*iunit]) {     /* get to BE IEEE */
    case DFNTF_VAX :
@@ -1002,7 +1004,7 @@ switch (Fconvert[*iunit]) {     /* get to BE IEEE */
      break;
    case DFNTF_LEIEEE :
      
-#line 1506 "library.nw"
+#line 1508 "library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -1013,18 +1015,18 @@ switch (Fconvert[*iunit]) {     /* get to BE IEEE */
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1480 "library.nw"
+#line 1482 "library.nw"
      break;
    default :
      fatal("QREAD: bad file real type in conversion");
    }
-#line 1489 "library.nw"
+#line 1491 "library.nw"
 switch (nativeFT) {
   case DFNTF_BEIEEE :
     break;                      /* done enough */
   case DFNTF_LEIEEE :
     
-#line 1506 "library.nw"
+#line 1508 "library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -1035,7 +1037,7 @@ switch (nativeFT) {
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1494 "library.nw"
+#line 1496 "library.nw"
     break;
   case DFNTF_CONVEXNATIVE :
     ieeeF2convexF(buffer, n);
@@ -1047,15 +1049,15 @@ switch (nativeFT) {
     fatal("QREAD: bad native real type in conversion");
   }
 }
-#line 968 "library.nw"
+#line 970 "library.nw"
     }
     break;
   default:
     fatal ("QREAD: Bad mode");
   }
-#line 940 "library.nw"
+#line 942 "library.nw"
 }
-#line 978 "library.nw"
+#line 980 "library.nw"
 #if CALL_LIKE_HPUX
   void qwrite (iunit, buffer, nitems)
 #endif
@@ -1076,11 +1078,11 @@ int *iunit, *nitems;
   if (! initialised) 
     fatal ("QWRITE: qopen/qqopen not yet called");
   if (file_last_op[*iunit] == READ_OP) {
-#line 1071 "library.nw"
+#line 1073 "library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 999 "library.nw"
+#line 1001 "library.nw"
     if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0)
       fatal ("QWRITE: i/o error"); }
   file_last_op[*iunit] = WRITE_OP;
@@ -1088,7 +1090,7 @@ int *iunit, *nitems;
                     (size_t) *nitems, file_stream[*iunit]);
   if (i != *nitems) fatal ("QWRITE: i/o error");
 }
-#line 1011 "library.nw"
+#line 1013 "library.nw"
 #if CALL_LIKE_HPUX
   void qseek (iunit, irec, iel, lrecl)
 #endif
@@ -1111,15 +1113,15 @@ int *iunit, *irec, *iel, *lrecl;
   position = (long) ((*lrecl)*(*irec - 1) + (*iel - 1));
   position *= (long) file_bytes_per_item[*iunit];
   file_last_op[*iunit] = IRRELEVANT_OP;
-#line 1071 "library.nw"
+#line 1073 "library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 1034 "library.nw"
+#line 1036 "library.nw"
   if (fseek (file_stream[*iunit],position,SEEK_SET) != 0)
     fatal ("QSEEK failed");     /* fixme: add file info */
 }
-#line 1041 "library.nw"
+#line 1043 "library.nw"
 #if CALL_LIKE_HPUX
   void qback (iunit, lrecl)
 #endif
@@ -1141,15 +1143,15 @@ int *iunit, *lrecl;
     fatal ("QBACK: qopen/qqopen not yet called");
   position = ftell (file_stream[*iunit]) - (*lrecl)*file_bytes_per_item[*iunit];
   file_last_op[*iunit] = IRRELEVANT_OP;
-#line 1071 "library.nw"
+#line 1073 "library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 1063 "library.nw"
+#line 1065 "library.nw"
   if (fseek (file_stream[*iunit], position, SEEK_SET) != 0)
     fatal ("QBACK failed");     /* fixme: add file info */
 }
-#line 1077 "library.nw"
+#line 1079 "library.nw"
 #if CALL_LIKE_HPUX
   void qskip (iunit, lrecl)
 #endif
@@ -1172,15 +1174,15 @@ int *iunit, *lrecl;
   position = ftell (file_stream[*iunit]) +
     (*lrecl)*file_bytes_per_item[*iunit];
   file_last_op[*iunit] = IRRELEVANT_OP;
-#line 1071 "library.nw"
+#line 1073 "library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 1100 "library.nw"
+#line 1102 "library.nw"
   if (fseek (file_stream[*iunit],position,SEEK_SET) != 0)
     fatal ("QSKIP failed");     /* fixme: add file info */
 }
-#line 1109 "library.nw"
+#line 1111 "library.nw"
 #if CALL_LIKE_HPUX
   void cqinq (istrm, filnam, length, len_filnam)
   char *filnam; 
@@ -1246,18 +1248,18 @@ int *istrm, *length;
     if (fflush (file_stream[*iunit]) != 0) fatal ("QQINQ: flush failed");
 #endif
     position = ftell (file_stream[*iunit]);   /* remember current position */
-#line 1071 "library.nw"
+#line 1073 "library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 1175 "library.nw"
+#line 1177 "library.nw"
     (void) fseek (file_stream[*iunit],0L,SEEK_END); /* seek EOF */
     *length = (int) ftell (file_stream[*iunit]); /* get file size */
     if (fseek (file_stream[*iunit],position,SEEK_SET) != 0) /* seek position */
       fatal ("QQINQ: seek failed"); /* fixme: add file info */
   }
 }
-#line 1185 "library.nw"
+#line 1187 "library.nw"
 #if CALL_LIKE_HPUX
   void qlocate (iunit, locate)
 #endif
@@ -1279,7 +1281,7 @@ int *iunit, *locate;
   if (file_stream[*iunit] != NULL)
     *locate = (int) ftell (file_stream[*iunit]) / file_bytes_per_item[*iunit];
 }
-#line 1212 "library.nw"
+#line 1214 "library.nw"
 #ifdef _AIX
 void idate (d, m, y)
      int *y, *m, *d;
@@ -1291,7 +1293,7 @@ void idate (d, m, y)
      *y = lt->tm_year + 1000; *m = lt->tm_mon; *d = lt->tm_mday;
 }
 #endif
-#line 1224 "library.nw"
+#line 1226 "library.nw"
 #if defined (__hpux) || defined (_AIX)
 void gerror (str, Lstr)
 char *str;
@@ -1354,7 +1356,7 @@ float etime (tarray)
 }
 
 #endif  /* AIX || HPUX */
-#line 1760 "library.nw"
+#line 1762 "library.nw"
 #if CALL_LIKE_HPUX
   float qnan ()
 #endif
@@ -1364,14 +1366,14 @@ float etime (tarray)
 #if CALL_LIKE_SUN || CALL_LIKE_IRIS
   float qnan_ ()
 #endif
-#line 1775 "library.nw"
+#line 1777 "library.nw"
 #if NATIVEFT == DFNTF_BEIEEE
 #  define NAN 0xfffa5a5a
 #endif
 #if NATIVEFT == DFNTF_LEIEEE
 #  define NAN 0x5a5afaff
 #endif
-#line 1784 "library.nw"
+#line 1786 "library.nw"
 #if NATIVEFT == DFNTF_CONVEXNATIVE
 #  define NAN 0x80000000
 #endif
@@ -1387,7 +1389,7 @@ float etime (tarray)
   NaNvalue.i = NAN;
   return NaNvalue.f;
 }
-#line 1808 "library.nw"
+#line 1810 "library.nw"
 #if CALL_LIKE_HPUX
   int cisnan (real)
 #endif
@@ -1403,7 +1405,7 @@ float etime (tarray)
   union float_uint_uchar real;
 {
     
-#line 1828 "library.nw"
+#line 1830 "library.nw"
 switch (nativeFT) {
  case DFNTF_BEIEEE :
    return (((real.i & 0x7f800000)
@@ -1415,14 +1417,14 @@ switch (nativeFT) {
             == 0x0000807f)      /* exponent all 1s */
            && ((real.i & 0xffff7f00)
                == 0));          /* non-zero fraction */
-#line 1843 "library.nw"
+#line 1845 "library.nw"
   case DFNTF_CONVEXNATIVE :
     return ((real.i & 0xff800000) == 0x80000000);      
   case DFNTF_VAX :
     return ((real.i & 0x0000ff80) == 0x00008000);
   default :
     fatal("CISNAN: bad nativeFT");  }
-#line 1823 "library.nw"
+#line 1825 "library.nw"
 }
 #line 262 "library.nw"
 #endif

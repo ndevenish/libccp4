@@ -306,11 +306,13 @@ configuration makes the appropriate [[#define]] of [[NOUNISTD]].
 <<header files>>=
 #ifndef NOUNISTD
 #  include <unistd.h>
-#  include <stdlib.h> 
 #else
 #  ifndef VMS
 #    include <sys/file.h>       /* ESV, old Concentrix */ /* non-POSIX */
 #  endif
+#endif
+#ifndef VMS
+#  include <stdlib.h> 
 #endif
 
 #include <errno.h>
