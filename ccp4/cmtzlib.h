@@ -589,6 +589,15 @@ void MtzDebugHierarchy(const MTZ *mtz);
  */
 int MtzListColumn(const MTZ *mtz, char clabs[][31], char ctyps[][3], int csetid[]);
 
+/** List of column information from input file: label, type, dataset.
+ * @param mtz pointer to MTZ struct
+ * @param clabs List of labels (output).
+ * @param ctyps List of column types (output).
+ * @param csetid List of dataset IDs (output).
+ * @return number of columns in input file.
+ */
+int MtzListInputColumn(const MTZ *mtz, char clabs[][31], char ctyps[][3], int csetid[]);
+
 /**** helper functions ****/
 
 /** Find where indices h, k, l are in MTZ structure. Usually, they
