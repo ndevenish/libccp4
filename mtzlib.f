@@ -4569,16 +4569,16 @@ C   Set default - currently NAN
         END IF
 C    Reset  SETVAL
         SETVAL = .TRUE.
-C
-C---- Print warning is this is done after reflections have been written
-C
-          IF (NREFW(MINDX).GT.0) THEN
-            CALL LERROR(1,1, 'From SET_MAGIC: You are changing '//
-     +           'the missing value parameter after you have '//
-     +           'written reflections to file')
-            CALL LERROR(1,1,
-     +           '          Lets hope you know what you are doing!')
-          END IF
+CCCC
+CCCC---- Print warning is this is done after reflections have been written
+CCCC
+CCC          IF (NREFW(MINDX).GT.0) THEN
+CCC            CALL LERROR(1,1, 'From SET_MAGIC: You are changing '//
+CCC     +           'the missing value parameter after you have '//
+CCC     +           'written reflections to file')
+CCC            CALL LERROR(1,1,
+CCC     +           '          Lets hope you know what you are doing!')
+CCC          END IF
       END IF
       END
 C
