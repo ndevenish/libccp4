@@ -1,3 +1,4 @@
+dnl -*-fortran-*-
 dnl *** This file is meant to be processed by m4 with an appropriate 
 dnl     definition for the system type to produce unix.f
 dnl
@@ -345,42 +346,36 @@ C     ======================
       SUBROUTINE UCPUTM(SEC)
 C     ======================
 C
-C UCPUTM - Get CPU time
+C     Get CPU time in seconds
 C
-C Input:     SEC <= 0.0 to initialize timer, other value reads cpu time
-C
-C Output:    SEC
-C
-C Arguments: REAL    SEC,ELAPS
-C
-C Usage:     CALL UCPUTM(IFLAG,SEC)
+C     Parameter:
+C     REAL SEC (i/o): If sec<=0.0, initialize timer and return current
+C                     elapsed cpu time since start of execution, otherwise
+C                     return elapsed cpu since timer was initialized.
+C                     Time is in seconds.
 C
 C     .. Scalar Arguments ..
       REAL SEC
 C     ..
 C     .. Local Scalars ..
-      LOGICAL IFLAG
+      REAL TLAST
 C     ..
 C     .. Local Arrays ..
       REAL TARRAY(2)
 C     ..
 C     .. Save statement ..
-      SAVE IFLAG
+      SAVE TLAST
 C     ..
 C     .. External Functions ..
-      REAL DTIME
-      EXTERNAL DTIME
+      REAL ETIME
+      EXTERNAL ETIME
 C     ..
-C     .. Data statements ..
-      DATA IFLAG/.TRUE./
-C     ..
-      IF (IFLAG) THEN
-        VALUE = DTIME (TARRAY)
-        IFLAG = .FALSE.
+      IF (SEC.LE.0.0) THEN
+        TLAST = ETIME (TARRAY)
+        SEC = TLAST
       ELSE
-        SEC = DTIME (TARRAY)
+        SEC = ETIME (TARRAY) - TLAST
       ENDIF
-C
       END
 C
 C

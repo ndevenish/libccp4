@@ -1790,27 +1790,25 @@ C
       SUBROUTINE CCPTIM(IFLAG,CPU,ELAPS)
 C     ==================================
 C
-C---- subroutine to return cpu time and elapsed time. times are 
-C     intervals From the initial call with iflag=0 and are 
-C     in seconds
+C---- Return cpu time and elapsed time in seconds as
+C     intervals from the initial call with iflag=0.  Note that there is
+C     only one timer!
 C
 C PARAMETERS
 C ==========
 C
-C       IFLAG (I/O) =0, INITIALISE, =1, RETURN TIMES, =-1 DUMMY CALL
-C                   RETURNS -1 IF TIME NOT AVAILABLE
-C         CPU (O)   CPU TIME IN SECONDS
-C       ELAPS (O)   ELAPSED TIME IN SECONDS
+C       IFLAG (I/O) =0, initialise, =1, return times, =-1 dummy call
+C                   returns -1 if time not available, in which case CPU
+C                   and ELAPS are zero
+C         CPU (O)   cpu time in seconds
+C       ELAPS (O)   elapsed time in seconds
 C
-C---- If time not available then iflag is returned as -1 and cpu and
-C     elaps are set to zero
 C     .. Scalar Arguments ..
       REAL CPU,ELAPS
       INTEGER IFLAG
 C     ..
 C     .. Local Scalars ..
       INTEGER STIME, TIM0
-      REAL CPUX
 C     ..
 C     .. External Subroutines ..
       EXTERNAL UCPUTM,USTIME
@@ -1822,12 +1820,12 @@ C     ..
         ELAPS = 0.0
         CPU = 0.0
         CALL USTIME(TIM0)
-        CALL UCPUTM(CPUX)
+        CALL UCPUTM(CPU)
       ELSE
         CALL USTIME(STIME)
         ELAPS = STIME - TIM0
+        CPU = 1.0
         CALL UCPUTM(CPU)
-        CPU = CPU - CPUX
       END IF
       END
 C

@@ -230,25 +230,22 @@ C     ======================
       SUBROUTINE UCPUTM(SEC)
 C     ======================
 C
-C UCPUTM - Get CPU timE
+C     Get CPU time in seconds
 C
-C Input:  SEC = 0.0 will initialize timer, any other value reads cpu time.
-C
-C Output: SEC
-C
-C Arguments: REAL    SEC
-C
-C Usage:     CALL UCPUTM(SEC)
+C     Parameter:
+C     REAL SEC (i/o): If sec<=0.0, initialize timer and return current
+C                     elapsed cpu time since start of execution, otherwise
+C                     return elapsed cpu since timer was initialized.
+C                     Time is in seconds.
 C
       REAL    SEC,ELAPS,SECNDS
       INTEGER IFLAG
 C
-      SAVE /ELAPS/
-C
-      DATA ELAPS/0.0/
+      SAVE ELAPS
 C
       IF (SEC.LT.0.0001) THEN
         ELAPS = SECNDS(0.0)
+        SEC = ELAPS
       ELSE
         SEC = SECNDS(ELAPS)
       ENDIF
