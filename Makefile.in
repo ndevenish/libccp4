@@ -96,110 +96,121 @@ $L(ccplib.o) : $(srcdir)/ccplib.for
 	-rm -rf ccplib.dir; mkdir ccplib.dir
 	echo '      SUBROUTINE CCPLIB' > ccplib.dir/ccplib.$F
 	echo '      END' >> ccplib.dir/ccplib.$F
-	cd ccplib.dir; fsplit $(srcdir)/ccplib.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd ccplib.dir && fsplit $(srcdir)/ccplib.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f ccplib.dir/*.o
 ccplib : $L(ccplib.o)
+	$(RANLIB) $L
 
 $L(fftlib.o) : $(srcdir)/fftlib.for
 	-rm -rf fftlib.dir; mkdir fftlib.dir
 	echo '      SUBROUTINE FFTLIB' > fftlib.dir/fftlib.$F
 	echo '      END' >> fftlib.dir/fftlib.$F
-	cd fftlib.dir; fsplit $(srcdir)/fftlib.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd fftlib.dir && fsplit $(srcdir)/fftlib.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f fftlib.dir/*.o
 fftlib : $L(fftlib.o)
+	$(RANLIB) $L
 
 $L(maplib.o) : $(srcdir)/maplib.for
 	-rm -rf maplib.dir; mkdir maplib.dir
 	echo '      SUBROUTINE MAPLIB' > maplib.dir/maplib.$F
 	echo '      END' >> maplib.dir/maplib.$F
-	cd maplib.dir; fsplit $(srcdir)/maplib.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd maplib.dir && fsplit $(srcdir)/maplib.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f maplib.dir/*.o
 maplib : $L(maplib.o)
+	$(RANLIB) $L
 
 $L(parser.o) : $(srcdir)/parser.for
 	-rm -rf parser.dir; mkdir parser.dir
-	cd parser.dir; fsplit $(srcdir)/parser.for;
+	cd parser.dir && fsplit $(srcdir)/parser.for;
 # `-' for convex, sigh
 	-if test ! -f parser.dir/parser.$F; then \
 	  echo '      SUBROUTINE PRSER' > parser.dir/parser.$F; \
 	  echo '      END' >> parser.dir/parser.$F; \
 	fi
-	cd parser.dir; $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd parser.dir && $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f parser.dir/*.o
 parser : $L(parser.o)
+	$(RANLIB) $L
 
 $L(rwbrook.o) : $(srcdir)/rwbrook.for
 	-rm -rf rwbrook.dir; mkdir rwbrook.dir
 	echo '      SUBROUTINE RWBROOK' > rwbrook.dir/rwbrook.$F
 	echo '      END' >> rwbrook.dir/rwbrook.$F
-	cd rwbrook.dir; fsplit $(srcdir)/rwbrook.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd rwbrook.dir && fsplit $(srcdir)/rwbrook.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f rwbrook.dir/*.o
 rwbrook : $L(rwbrook.o)
+	$(RANLIB) $L
 
 $L(rwatom.o) : $(srcdir)/rwatom.for
 	-rm -rf rwatom.dir; mkdir rwatom.dir
 	echo '      SUBROUTINE RWATOM' > rwatom.dir/rwatom.$F
 	echo '      END' >> rwatom.dir/rwatom.$F
-	cd rwatom.dir; fsplit $(srcdir)/rwatom.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd rwatom.dir && fsplit $(srcdir)/rwatom.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f rwatom.dir/*.o
 rwatom : $L(rwatom.o)
+	$(RANLIB) $L
 
 $L(modlib.o) : $(srcdir)/modlib.for
 	-rm -rf modlib.dir; mkdir modlib.dir
 	echo '      SUBROUTINE MODLIB' > modlib.dir/modlib.$F
 	echo '      END' >> modlib.dir/modlib.$F
-	cd modlib.dir; fsplit $(srcdir)/modlib.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd modlib.dir && fsplit $(srcdir)/modlib.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f modlib.dir/*.o
 modlib : $L(modlib.o)
+	$(RANLIB) $L
 
 $L(mthlib.o) : $(srcdir)/mthlib.for
 	-rm -rf mthlib.dir; mkdir mthlib.dir
 	echo '      SUBROUTINE MTHLIB' > mthlib.dir/mthlib.$F
 	echo '      END' >> mthlib.dir/mthlib.$F
-	cd mthlib.dir; fsplit $(srcdir)/mthlib.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd mthlib.dir && fsplit $(srcdir)/mthlib.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f mthlib.dir/*.o
 mthlib : $L(mthlib.o)
+	$(RANLIB) $L
 
 $L(symlib.o) : $(srcdir)/symlib.for
 	-rm -rf symlib.dir; mkdir symlib.dir
 	echo '      SUBROUTINE SYMLIB' > symlib.dir/symlib.$F
 	echo '      END' >> symlib.dir/symlib.$F
-	cd symlib.dir; fsplit $(srcdir)/symlib.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd symlib.dir && fsplit $(srcdir)/symlib.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f symlib.dir/*.o
 symlib : $L(symlib.o)
+	$(RANLIB) $L
 
 $L(lcflib.o) : $(srcdir)/lcflib.for
 	-rm -rf lcflib.dir; mkdir lcflib.dir
 	echo '      SUBROUTINE LCFLIB' > lcflib.dir/lcflib.$F
 	echo '      END' >> lcflib.dir/lcflib.$F
-	cd lcflib.dir; fsplit $(srcdir)/lcflib.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd lcflib.dir && fsplit $(srcdir)/lcflib.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f lcflib.dir/*.o
 lcflib : $L(lcflib.o)
+	$(RANLIB) $L
 
 $L(mtzlib.o) : $(srcdir)/mtzlib.for
 	-rm -rf mtzlib.dir; mkdir mtzlib.dir
 	echo '      SUBROUTINE MTZLIB' > mtzlib.dir/mtzlib.$F
 	echo '      END' >> mtzlib.dir/mtzlib.$F
-	cd mtzlib.dir; fsplit $(srcdir)/mtzlib.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd mtzlib.dir && fsplit $(srcdir)/mtzlib.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f mtzlib.dir/*.o
 mtzlib : $L(mtzlib.o)
+	$(RANLIB) $L
 
 $L(diskio.o) : $(srcdir)/diskio.for
 	-rm -rf diskio.dir; mkdir diskio.dir
 	echo '      SUBROUTINE DISKIO' > diskio.dir/diskio.$F
 	echo '      END' >> diskio.dir/diskio.$F
-	cd diskio.dir; fsplit $(srcdir)/diskio.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd diskio.dir && fsplit $(srcdir)/diskio.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f diskio.dir/*.o
 diskio : $L(diskio.o)
 
@@ -207,72 +218,82 @@ $L(hlplib.o) : $(srcdir)/hlplib.for
 	-rm -rf hlplib.dir; mkdir hlplib.dir
 	echo '      SUBROUTINE HLPLIB' > hlplib.dir/hlplib.$F
 	echo '      END' >> hlplib.dir/hlplib.$F
-	cd hlplib.dir; fsplit $(srcdir)/hlplib.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd hlplib.dir && fsplit $(srcdir)/hlplib.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f hlplib.dir/*.o
 hlplib : $L(hlplib.o)
+	$(RANLIB) $L
 
 # fixme: change >14 characters name!
 $L(frodo_maplib.o) : $(srcdir)/frodo_maplib.for
 	-rm -rf frodo_maplib.dir; mkdir frodo_maplib.dir
 	echo '      SUBROUTINE frodo_MAPLIB' > frodo_maplib.dir/frodo_maplib.$F
 	echo '      END' >> frodo_maplib.dir/frodo_maplib.$F
-	cd frodo_maplib.dir; fsplit $(srcdir)/frodo_maplib.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd frodo_maplib.dir && fsplit $(srcdir)/frodo_maplib.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f frodo_maplib.dir/*.o
 frodo_maplib : $L(frodo_maplib.o)
+	$(RANLIB) $L
 
 $L(plot84lib.o) : $(srcdir)/plot84lib.for
 	-rm -rf plot84lib.dir; mkdir plot84lib.dir
 	echo '      SUBROUTINE PLOT84LIB' > plot84lib.dir/plot84lib.$F
 	echo '      END' >> plot84lib.dir/plot84lib.$F
-	cd plot84lib.dir; fsplit $(srcdir)/plot84lib.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd plot84lib.dir && fsplit $(srcdir)/plot84lib.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f plot84lib.dir/*.o
 plot84lib : $L(plot84lib.o)
+	$(RANLIB) $L
 
 $L(graflib.o) : $(srcdir)/graflib.for
 	-rm -rf graflib.dir; mkdir graflib.dir
 	echo '      SUBROUTINE GRAFLIB' > graflib.dir/graflib.$F
 	echo '      END' >> graflib.dir/graflib.$F
-	cd graflib.dir; fsplit $(srcdir)/graflib.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd graflib.dir && fsplit $(srcdir)/graflib.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f graflib.dir/*.o
 graflib : $L(graflib.o)
+	$(RANLIB) $L
 
 $L(graphics.o) : $(srcdir)/graphics.for
 	-rm -rf graphics.dir; mkdir graphics.dir
 	echo '      SUBROUTINE GRAPHICS' > graphics.dir/graphics.$F
 	echo '      END' >> graphics.dir/graphics.$F
-	cd graphics.dir; fsplit $(srcdir)/graphics.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd graphics.dir && fsplit $(srcdir)/graphics.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f graphics.dir/*.o
 graphics : $L(graphics.o)
+	$(RANLIB) $L
 
 $L(gdummy.o) : $(srcdir)/gdummy.for
 	-rm -rf gdummy.dir; mkdir gdummy.dir
-	cd gdummy.dir; fsplit $(srcdir)/gdummy.for; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F ; \
+	cd gdummy.dir && fsplit $(srcdir)/gdummy.for && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F  && \
 	  $(AR) ../$L *.o
 	rm -f gdummy.dir/*.o
 gdummy : $L(gdummy.o)
+	$(RANLIB) $L
 
 # C stuff: (these are kept as whole modules)
 
 $L(library.o) : $(srcdir)/library.c $(srcdir)/machine.h $(srcdir)/dfconvert.h \
                 $(srcdir)/diconvert.h
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/library.c
-	$(AR) $L library.o; rm library.o
+	$(AR) $L library.o && rm library.o
 library : $L(library.o)
+	$(RANLIB) $L
 
 $L(binsortint.o) : $(srcdir)/binsortint.c $(srcdir)/binsort.h
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/binsortint.c
-	$(AR) $L binsortint.o; rm binsortint.o
+	$(AR) $L binsortint.o && rm binsortint.o
 binsortint : $L(binsortint.o)
+	$(RANLIB) $L
 
 $L(ucurse.o) : $(srcdir)/ucurse.c
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/ucurse.c
-	$(AR) $L ucurse.o; rm ucurse.o
+	$(AR) $L ucurse.o && rm ucurse.o
+ucurse : $L(ucurse.o)
+	$(RANLIB) $L
 
 #
 # specials
@@ -291,11 +312,11 @@ $L(unix.o) : $(srcdir)/unix.m4
 	-rm -rf unix.dir; mkdir unix.dir
 	echo '      SUBROUTINE UNIX' > unix.dir/unix.$F
 	echo '      END' >> unix.dir/unix.$F
-	cd unix.dir; fsplit ../unix.$F; \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F; $(AR) ../$L *.o
+	cd unix.dir && fsplit ../unix.$F && \
+	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
 	rm -f unix.dir/*.o
-# null rule here prevents implicit rule using unix.f
-unix : $L(unix.o) ;
+unix : $L(unix.o)
+	$(RANLIB) $L
 
 # testbed for library.c and some other modules:
 testlib : test-lib
@@ -309,6 +330,9 @@ testlib : test-lib
 install :
 	$(INSTALL_BIN) binsort $(bindir)
 	$(INSTALL_DATA) $L $(libdir)/$L
+
+unintstall :
+	-rm -f $(bindir)/binsort $(libdir)/$L
 
 clean :
 	-rm -f core *.o *~ *.dir/*.o testlib disc.dft a.out
