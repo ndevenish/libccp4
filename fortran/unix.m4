@@ -52,11 +52,6 @@ dnl * sometimes we can use IOINIT to specify carriagecontrol:
 ifelse(_sun,1,
   [undefine(_has_carriagecontrol)define(_ioinit,1)])dnl
 dnl
-dnl * AIX and HPUX don't have the stuff in libU77 on other systems.  We can use
-dnl   C routines in AIX by enforcing the correct calling convention
-ifelse(_AIX,1,
-  [define(EXIT,[[EXIT]](%VAL($1)))],
-  [])dnl
 dnl * In some cases we can't unlink scratch files in case they're rewond
 dnl   since REWIND is implemented as close + open.  Maybe a better solution
 dnl   would use a routine doing a rewind instead of REWIND on scratch files.
@@ -598,7 +593,7 @@ _hpux,1,
 [      INTEGER ISATTY
       EXTERNAL ISATTY
       ANSWER = 0
-      IF (ISATTY(FLUN).EQ.1) ANSWER = 1],
+      IF (ISATTY(%VAL(FNUM(FLUN))) .EQ.1) ANSWER = 1],
 dnl (else)
 [      LOGICAL ISATTY
       EXTERNAL ISATTY
@@ -774,7 +769,21 @@ C
       INTEGER I
       CHARACTER *(*) ARG
 ifelse(_hpux,1,
-[      INTEGER J
+[C Maybe HPUX doesn't need to be different here.  The Fortran/9000
+C Reference says:
+C   4.  GETARG can be accessed only with the
+C 
+C       $HP9000_800 INTRINSICS  ON
+C 
+C       compiler directive.  GETARG is similar to IGETARG except that
+C       GETARG is called as a subroutine instead of as a function.  It
+C       accepts two arguments:  n and str.  n is an integer specifying
+C       which command-line argument is requested.  When n=1, it returns
+C       the program name (unlike IGETARG which returns the program name
+C       when n equals zero).  str is a character variable that will
+C       contain the requested command-line argument, padded with blanks on
+C       the end.
+      INTEGER J
        J = IGETARG(I, ARG, LEN(ARG))],
 [      CALL GETARG(I, ARG)])
       END
@@ -954,3 +963,23 @@ C
        EXTERNAL SYSTEM
        CALL SYSTEM(STRING)
        END
+C
+      SUBROUTINE CEXIT (ICODE)
+C     trivial interface to system-dependent EXIT routine
+      INTEGER ICODE
+dnl * for AIX we need an underscore to get the fortran-callable one
+dnl   according to an item on the net, but that doesn't work in xlf with
+dnl   AIX 2.3.  The EXIT here does seem to be a Fortran one which 
+dnl   flushes the o/p buffers.  This may be different in more recent 
+dnl   versions where the exit here might end up calling the libc one.
+ifelse(_AIX,1,
+[      CALL EXIT (%VAL(ICODE))
+],
+_hpux,1,
+[C     The HP-UX fortran manual implies CALL EXIT flushes buffers
+C     but it seems not to.  This works in HP-UX A.09.01.
+      CALL F77EXIT (ICODE)
+],
+[      CALL EXIT (ICODE)
+])dnl
+      END
