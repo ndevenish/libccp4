@@ -73,6 +73,7 @@ C      NOCRLF    write line supressing cr/lf to standard output
 C      QPRINT    write debug messages
 C      STBITS    Set a bit field within a word to a given (unsigned)
 C                integer value
+C      CCPLIC    Check that license conditions have been agreed
 C_END_CCPLIB
 C
 C
@@ -2977,4 +2978,54 @@ C
       KMSK = NOT(KMSK)
       KVAL = ISHFT(KVAL,LSB)
       IWORD = IOR(IAND(IWORD,KMSK),KVAL)
+      END
+C
+C
+C FUNCTION 'CCPLIC'
+C ===================
+C
+C_BEGIN_CCPLIC
+C 
+C Arguments:
+C ==========
+C
+C      NAME (I)  CHARACTER: Which license to test for. Only CCP4 currently works.
+C
+C_END_CCPLIC
+C
+C====== Set the bits
+C
+      LOGICAL FUNCTION CCPLIC(NAME)
+
+      CHARACTER NAME* (*)
+C     The name defines the kind of license.
+C     Theoretically one day more than one licenses could be added.
+      PARAMETER (ISTRLN=200)
+      LOGICAL VAXVMS, WINMVS, CCPEXS
+      CHARACTER LINE* (ISTRLN)
+      INTEGER SUE
+
+      CALL CCPUPC(NAME)
+      SUE = 0
+      IF (.NOT.VAXVMS() .AND. .NOT.WINMVS() .AND. NAME.EQ.'CCP4') THEN
+C first off check for global agreement
+        CALL UGTENV (NAME, LINE)
+        LINE =  LINE(1:LENSTR(LINE))//'/.agree2ccp4'
+        IF (.NOT. CCPEXS(LINE(1:LENSTR(LINE)))) THEN
+          SUE = 1
+        ENDIF
+C secondly check for local only if global is not there.
+        IF (SUE.EQ.1) THEN
+          CALL UGTENV ("HOME", LINE)
+          LINE =  LINE(1:LENSTR(LINE))//'/.agree2ccp4'
+          IF (.NOT. CCPEXS(LINE(1:LENSTR(LINE)))) THEN
+            SUE = SUE + 1
+          ENDIF
+        ENDIF
+      ENDIF
+c if SUE is greater than 1 then fail.
+      IF (SUE.GT.1) THEN
+        CALL CCPERR (1,'Can''t find required license agreements.')
+      ENDIF
+      CCPLIC = .TRUE.
       END
