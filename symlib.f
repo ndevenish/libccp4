@@ -858,7 +858,7 @@ C     .. Local Scalars ..
       CHARACTER STROUT*400
 C     ..
 C     .. Local Arrays ..
-      REAL CPROJ(3,20),CPRJ(3,12),TRANSCEN(3,12)
+      REAL CPROJ(3,20),CPRJ(3,12),TRANSCEN(3,12),F_HKL(3)
       INTEGER IHKL(3,12),IN(3)
       CHARACTER REFTYP(12)*7
 C     ..
@@ -882,13 +882,17 @@ C
       DATA EPS_LOC/1.0E-7/,SETUP /.FALSE./
 C     ..
 C
+
       IF (.NOT.SETUP) CALL CCPERR (1, 'CENTR: CENTRIC not called first')
       IC = 0
+      F_HKL(1) = HKL(1)
+      F_HKL(2) = HKL(2)
+      F_HKL(3) = HKL(3)
       IF (NCENT.NE.0) THEN
         DO 10 I = 1,NCENT
-          TEST_LOC = CPROJ(1,I)*FLOAT(HKL(1))+
-     &               CPROJ(2,I)*FLOAT(HKL(2))+
-     &               CPROJ(3,I)*FLOAT(HKL(3))
+          TEST_LOC = CPROJ(1,I)*F_HKL(1)+
+     &               CPROJ(2,I)*F_HKL(2)+
+     &               CPROJ(3,I)*F_HKL(3)
           IF (ABS(TEST_LOC).LT.EPS_LOC) GO TO 20
    10   CONTINUE
         RETURN
@@ -905,18 +909,21 @@ C     Return CENPHS - the centric phase should be CENPHS or CENPHS + pi
      +       CALL CCPERR(1,'CENTPHASE: CENTRIC not called first')
       PIDEG = 180.0
 
+      F_HKL(1) = HKL(1)
+      F_HKL(2) = HKL(2)
+      F_HKL(3) = HKL(3)
       IF (NCENT.GE.0) THEN
         DO 60 I = 1,NCENT
           ICENT = I
-          TEST_LOC = CPROJ(1,I)*FLOAT(HKL(1))+
-     &               CPROJ(2,I)*FLOAT(HKL(2))+
-     &               CPROJ(3,I)*FLOAT(HKL(3))
+          TEST_LOC = CPROJ(1,I)*F_HKL(1)+
+     &               CPROJ(2,I)*F_HKL(2)+
+     &               CPROJ(3,I)*F_HKL(3)
           IF (ABS(TEST_LOC).LT.EPS_LOC) GO TO 70
    60   CONTINUE
         CALL CCPERR(1,'CENTPHASE: This is not a centric reflection!')
         RETURN
-   70   RR = hkl(1)*TRANSCEN(1,ICENT)+hkl(2)*TRANSCEN(2,ICENT)
-     +                        +hkl(3)*TRANSCEN(3,ICENT)
+   70   RR = F_HKL(1)*TRANSCEN(1,ICENT)+F_HKL(2)*TRANSCEN(2,ICENT)
+     +                        +F_HKL(3)*TRANSCEN(3,ICENT)
         SS = REAL(INT(RR))
         IF (RR.GE.SS) THEN
           CENPHS = PIDEG * (RR - SS)
@@ -941,6 +948,9 @@ C   Choose any 3 coordinates which are not rational and generate the structure f
       Ztest= sqrt(5.0)
       Asf = 0.0
       Bsf = 0.0
+      F_HKL(1) = HKL(1)
+      F_HKL(2) = HKL(2)
+      F_HKL(3) = HKL(3)
       DO 25 J = 1,NSM
         Xs = RSM(1,1,J)*Xtest + RSM(1,2,J)*Ytest
      +     + RSM(1,3,J)*Ztest + RSM(1,4,J)
@@ -948,8 +958,8 @@ C   Choose any 3 coordinates which are not rational and generate the structure f
      +     + RSM(2,3,J)*Ztest + RSM(2,4,J)
         Zs = RSM(3,1,J)*Xtest + RSM(3,2,J)*Ytest
      +     + RSM(3,3,J)*Ztest + RSM(3,4,J)
-        Asf = Asf + cos(PI2*(HKL(1)*Xs +HKL(2)*Ys +HKL(3)*Zs))
-        Bsf = Bsf + sin(PI2*(HKL(1)*Xs +HKL(2)*Ys +HKL(3)*Zs))
+        Asf = Asf + cos(PI2*(F_HKL(1)*Xs +F_HKL(2)*Ys +F_HKL(3)*Zs))
+        Bsf = Bsf + sin(PI2*(F_HKL(1)*Xs +F_HKL(2)*Ys +F_HKL(3)*Zs))
    25 CONTINUE
 C
 c---Atan2 may fail when asf*asf+bsf*bsf == 0.0 with error message 
@@ -957,7 +967,7 @@ C---division by zero.
       PHASE_LOC = 0.0
       IF((Asf*Asf+Bsf*Bsf).GT.0.0) PHASE_LOC = ATAN2(Bsf,Asf)
 C
-C--I don't like next line. Potential error.
+C--I don't like next line. Potential error. GNM
       CENPHS = MOD( (PHASE_LOC*CONV  + 360.0),180.0)
       IF(IPRINT.NE.0) THEN
         WRITE(6,'(A,3I4,F8.1,A,F8.1)')
@@ -1009,14 +1019,18 @@ C
         DO 40 J = 1,NSM
           ISYM = J
 C
-C---Conevrsion may have problems. Should be fixed.
-          IH = IN(1)*RSM(1,1,J) + IN(2)*RSM(2,1,J) + IN(3)*RSM(3,1,J)
+C---Conevrsion may have problems. Should be fixed. Now fixed. GNM
+          IH = NINT(REAL(IN(1))*RSM(1,1,J) + 
+     &              REAL(IN(2))*RSM(2,1,J) + 
+     &              REAL(IN(3))*RSM(3,1,J))
           IF (IH.EQ.-IN(1)) THEN
-            IK = IN(1)*RSM(1,2,J) + IN(2)*RSM(2,2,J) +
-     +           IN(3)*RSM(3,2,J)
+            IK = NINT(REAL(IN(1))*RSM(1,2,J) + 
+     &                REAL(IN(2))*RSM(2,2,J) +
+     +                REAL(IN(3))*RSM(3,2,J))
             IF (IK.EQ.-IN(2)) THEN
-              IL = IN(1)*RSM(1,3,J) + IN(2)*RSM(2,3,J) +
-     +             IN(3)*RSM(3,3,J)
+              IL = NINT(REAL(IN(1))*RSM(1,3,J) + 
+     &                  REAL(IN(2))*RSM(2,3,J) +
+     +                  REAL(IN(3))*RSM(3,3,J))
               IF (IL.EQ.-IN(3)) GO TO 50
             END IF
           END IF
@@ -1183,7 +1197,7 @@ C     .. Common blocks ..
       COMMON /EPS/EPZONE(4,20),NEZONE
 C     ..
 C     .. Save statement ..
-      SAVE
+      SAVE /EPS/,/SYSABS/
 C     ..
 C     .. Data statements ..
 C
@@ -1233,16 +1247,19 @@ C
 C---- test whether h' k' l' equals h k l
 C
 C
-C--Another potential error
+C--Another potential error. Use conversion operators.
           DO 10 J = 2,NSMP
-            IH = IN(1)*RSM(1,1,J) + IN(2)*RSM(2,1,J) +
-     +           IN(3)*RSM(3,1,J)
+            IH = NINT(REAL(IN(1))*RSM(1,1,J) + 
+     &                REAL(IN(2))*RSM(2,1,J) +
+     +                REAL(IN(3))*RSM(3,1,J))
             IF (IH.EQ.IN(1)) THEN
-              IK = IN(1)*RSM(1,2,J) + IN(2)*RSM(2,2,J) +
-     +             IN(3)*RSM(3,2,J)
+              IK = NINT(REAL(IN(1))*RSM(1,2,J) + 
+     &                  REAL(IN(2))*RSM(2,2,J) +
+     +                  REAL(IN(3))*RSM(3,2,J))
               IF (IK.EQ.IN(2)) THEN
-                IL = IN(1)*RSM(1,3,J) + IN(2)*RSM(2,3,J) +
-     +               IN(3)*RSM(3,3,J)
+                IL = NINT(REAL(IN(1))*RSM(1,3,J) + 
+     &                    REAL(IN(2))*RSM(2,3,J) +
+     +                    REAL(IN(3))*RSM(3,3,J))
 C
 C---- next symm opn
 C
@@ -1350,7 +1367,7 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       REAL TEST,EPS_LOC
-      INTEGER I,J,IZONE
+      INTEGER I,J
       CHARACTER LINERR*200
 C     ..
 C     .. External Subroutines ..
@@ -1360,20 +1377,17 @@ C     .. Common blocks ..
       COMMON /EPS/EPZONE(4,20),NEZONE
 C     ..
 C     .. Save statement ..
-      SAVE
-      DATA EPS_LOC /1.0E-7/
+      SAVE /EPS/
+      DATA EPS_LOC /1.0E-6/
 C     ..
 C
-      IZONE = 0
       DO 20 I = 1,NEZONE
-        IZONE = IZONE + 1
-        TEST = 0.0
+        EPSI = EPZONE(4,I)
+        TEST = EPZONE(1,I)*FLOAT(IH(1))
+     +       + EPZONE(2,I)*FLOAT(IH(2))
+     +       + EPZONE(3,I)*FLOAT(IH(3))
 C
-        DO 10 J = 1,3
-          TEST = EPZONE(J,I)*FLOAT(IH(J)) + TEST
-   10   CONTINUE
-C
-        IF (ABS(TEST).LT.EPS_LOC) GO TO 30
+        IF (ABS(TEST).LE.EPS_LOC) GO TO 30
    20 CONTINUE
 C
           WRITE (LINERR,FMT='(A,3I5)')
@@ -1383,8 +1397,7 @@ C              ****************************
           CALL LERROR(2,-1,LINERR)
 C              ****************************
 C
-   30 EPSI = EPZONE(4,IZONE)
-      ISYSAB = 0
+   30 ISYSAB = 0
 C
 C                    *********************
       IF (EPSI.GT.1) CALL SYSAB(IH,ISYSAB)
@@ -3486,7 +3499,7 @@ C     .. Common blocks ..
       COMMON /SYSABS/NSM,RSM(4,4,MAXSYM),RSMT(4,4,MAXSYM)
 C     ..
 C     .. Save statement ..
-      SAVE
+      SAVE /SYSABS/
 C     ..
 C
 C---- Generate symm equivs
@@ -3497,22 +3510,26 @@ C
       IF (NSM.NE.1) THEN
 C
         DO 10 J = 2,NSM
-          IH = IN(1)*RSMT(1,1,J) + IN(2)*RSMT(2,1,J) + IN(3)*RSMT(3,1,J)
+          IH = NINT(REAL(IN(1))*RSMT(1,1,J) + 
+     &              REAL(IN(2))*RSMT(2,1,J) + 
+     &              REAL(IN(3))*RSMT(3,1,J))
           IF (IH.EQ.IN(1)) THEN
-            IK = IN(1)*RSMT(1,2,J) + IN(2)*RSMT(2,2,J) +
-     +           IN(3)*RSMT(3,2,J)
+            IK = NINT(REAL(IN(1))*RSMT(1,2,J) + 
+     &                REAL(IN(2))*RSMT(2,2,J) +
+     +                REAL(IN(3))*RSMT(3,2,J))
             IF (IK.EQ.IN(2)) THEN
-              IL = IN(1)*RSMT(1,3,J) + IN(2)*RSMT(2,3,J) +
-     +             IN(3)*RSMT(3,3,J)
+              IL = NINT(REAL(IN(1))*RSMT(1,3,J) + 
+     &                  REAL(IN(2))*RSMT(2,3,J) +
+     +                  REAL(IN(3))*RSMT(3,3,J))
               IF (IL.EQ.IN(3)) THEN
 C
 C---- Test whether this Symmetry equivalent has a different phase to
 C     in(1) in(2) in(3)  - If so it is a systematic absence
 C     .... Believe me EJD
 C
-                PHAS = IN(1)*RSM(1,4,J) + IN(2)*RSM(2,4,J) +
-     +                 IN(3)*RSM(3,4,J)
-                ERR = ABS(PHAS-NINT(PHAS))
+                PHAS = REAL(IN(1))*RSM(1,4,J) + REAL(IN(2))*RSM(2,4,J) +
+     +                 REAL(IN(3))*RSM(3,4,J)
+                ERR = ABS(PHAS-REAL(NINT(PHAS)))
                 IF (ERR.GT.0.05) ISYSAB = 1
               END IF
             END IF
@@ -3918,11 +3935,17 @@ C     .. Scalars in Common ..
 C     ..
 C     .. Common blocks ..
       COMMON /RECPLT/COEFHH,COEFHK,COEFHL,COEFKK,COEFKL,COEFLL
+C
+c---Local scalars
+      REAL F_H,F_K,F_L
       SAVE /RECPLT/
 C     ..
 C
-      STHLSQ = IH*IH*COEFHH + IH*IK*COEFHK + IH*IL*COEFHL +
-     +         IK*IK*COEFKK + IK*IL*COEFKL + IL*IL*COEFLL
+      F_H = REAL(IH)
+      F_K = REAL(IK)
+      F_L = REAL(IL)
+      STHLSQ = F_H*F_H*COEFHH + F_H*F_K*COEFHK + F_H*F_L*COEFHL +
+     +         F_K*F_K*COEFKK + F_K*F_L*COEFKL + F_L*F_L*COEFLL
 C
       END
 C
@@ -4081,19 +4104,24 @@ C
 C***CALCULATE PHIX
       SPX = SP2*SP + CP2*SP1*CP
       CPX = CP2*CP1
-      PHIX = ATAN2(SPX,CPX)
+      PHIX = 0.0
+      IF(SPX*SPX+CPX*CPX.GT.0.0) PHIX = ATAN2(SPX,CPX)
  
-C***CALCULATE PHIY
+C***CALCULATE PHIY. Potential error. PHIX = 90.0.
       SPY =-CP2*SP1*SP + SP2*CP
       CPY = CP2*CP1/COS(PHIX)
-      PHIY = ATAN2(SPY,CPY)
+      PHIY = 0.0
+      IF(SPY*SPY+CPY*CPY.GT.0.0) PHIY = ATAN2(SPY,CPY)
  
 C***CALCULATE PHIZ
       P11 = CP3*CP2*CP + SP*(CP3*SP2*SP1 - SP3*CP1)
       P21 = SP3*CP2*CP+SP*(SP3*SP2*SP1+CP3*CP1)
       SPZ =-SP*P11 + CP*P21
       CPZ = CP*P11 + SP*P21
-      PHIZ = ATAN2(SPZ,CPZ)
+C
+C---
+      PHIZ = 0.0
+      IF(SPZ*SPZ+CPZ*CPZ.GT.0.0) PHIZ = ATAN2(SPZ,CPZ)
  
       RETURN
 C**   DEBUG SUBCHK
@@ -4116,12 +4144,18 @@ C     ..
 C     .. Common blocks ..
       COMMON /RECPLT/COEFHH,COEFHK,COEFHL,COEFKK,COEFKL,COEFLL
 C     ..
+C
+C---Local scalars
+      REAL F_H,F_K,F_L
 C     .. Save statement ..
       SAVE /RECPLT/
 C     ..
 C
-      STS3R4 = IH*IH*COEFHH + IH*IK*COEFHK + IH*IL*COEFHL +
-     +         IK*IK*COEFKK + IK*IL*COEFKL + IL*IL*COEFLL
+      F_H = REAL(IH)
+      F_K = REAL(IK)
+      F_L = REAL(IL)
+      STS3R4 = F_H*F_H*COEFHH + F_H*F_K*COEFHK + F_H*F_L*COEFHL +
+     +         F_K*F_K*COEFKK + F_K*F_L*COEFKL + F_L*F_L*COEFLL
 C
       END
 C----------------------------------------------------------------
@@ -4479,9 +4513,15 @@ C
             NROT(JSM) = 0
 C
             DO 110 IROT = 1,6
-              IH = RSMT(1,1,J)*IHR + RSMT(2,1,J)*IKR + RSMT(3,1,J)*ILR
-              IK = RSMT(1,2,J)*IHR + RSMT(2,2,J)*IKR + RSMT(3,2,J)*ILR
-              IL = RSMT(1,3,J)*IHR + RSMT(2,3,J)*IKR + RSMT(3,3,J)*ILR
+              IH = NINT(RSMT(1,1,J)*REAL(IHR) + 
+     &                  RSMT(2,1,J)*REAL(IKR) + 
+     &                  RSMT(3,1,J)*REAL(ILR))
+              IK = NINT(RSMT(1,2,J)*REAL(IHR) + 
+     &                  RSMT(2,2,J)*REAL(IKR) + 
+     &                  RSMT(3,2,J)*REAL(ILR))
+              IL = NINT(RSMT(1,3,J)*REAL(IHR) + 
+     &                  RSMT(2,3,J)*REAL(IKR) + 
+     &                  RSMT(3,3,J)*REAL(ILR))
 C
 C---- Back to h k l - how many rotations to get here?
 C
@@ -4789,6 +4829,7 @@ C     ..
       EXTERNAL LENSTR
       INTEGER HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
       COMMON/HKLLMS/HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
+      SAVE /HKLLMS/
 C     ..
 C     
       HRNG0 = -9999
@@ -4986,6 +5027,7 @@ C
        INTEGER IHRNG0,IHRNG1,IKRNG0,IKRNG1,ILRNG0,ILRNG1
        INTEGER HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
        COMMON/HKLLMS/HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
+       SAVE /HKLLMS/
 C     ..
 C     
        IHRNG0 =  HRNG0
@@ -5171,8 +5213,9 @@ C
       DO 10, L=1,NSYMP
 C  h' = h R   ie row vector h premultiplies symmetry matrix
         DO 20, I=1,3
-          JHKL(I) = IHKL(1)*RSYM(1,I,L) + IHKL(2)*RSYM(2,I,L)
-     .            + IHKL(3)*RSYM(3,I,L)
+          JHKL(I) = NINT(REAL(IHKL(1))*RSYM(1,I,L) + 
+     &                   REAL(IHKL(2))*RSYM(2,I,L) +
+     .                   REAL(IHKL(3))*RSYM(3,I,L))
  20     CONTINUE
 C Test this index against the asymmetric unit
 C   Function INASU returns 0 if outside au, else +-1 depending on sign
@@ -5263,8 +5306,9 @@ C  Sign code +-1
 C
 C  h' = h R   ie row vector h premultiplies symmetry matrix
         DO 20, I=1,3
-          JHKL(I) = IHKL(1)*RSYMIV(1,I,L) + IHKL(2)*RSYMIV(2,I,L)
-     .            + IHKL(3)*RSYMIV(3,I,L)
+          JHKL(I) = NINT(REAL(IHKL(1))*RSYMIV(1,I,L) + 
+     &                   REAL(IHKL(2))*RSYMIV(2,I,L) +
+     &                   REAL(IHKL(3))*RSYMIV(3,I,L))
  20     CONTINUE
 C
 C  Multiply by sign
@@ -5602,7 +5646,7 @@ C
           L = L+18
  105    CONTINUE
         CALL PUTLIN(LINE,'CURWIN')
-C Loop symmetry 4 / line
+C Loop symmetry 4 / line. Could be problem
         DO 110, L = 1,(NSYMP+3)/4
           LINE = ' ISYM'
           NLMAX = MIN(NSYMP,L+NLINC*3)
@@ -5710,8 +5754,9 @@ C
 C      PHASCH=360.*(IHD*rot(1,4,ISYM)+IKD*rot(2,4,ISYM)
 C     1 +ILD*Rot(3,4,ISYM))
 C
-      PHASCH = (JHKL(1)*RSYM(1,4,LSYM)+JHKL(2)*RSYM(2,4,LSYM)+
-     +         JHKL(3)*RSYM(3,4,LSYM))*360.0
+      PHASCH = (REAL(JHKL(1))*RSYM(1,4,LSYM)+
+     &          REAL(JHKL(2))*RSYM(2,4,LSYM)+
+     +          REAL(JHKL(3))*RSYM(3,4,LSYM))*360.0
       PHSOUT = PHSOUT + PHASCH
 C
 C----  Put phase in range 0 to 360
@@ -6537,15 +6582,17 @@ c          ENDDO
              ENDDO
             ENDDO
             DO K=1,3
-              CHK= RSYMD(K,1)*IS(1)+RSYMD(K,2)*IS(2)+RSYMD(K,3)*IS(3) 
+              CHK= RSYMD(K,1)*REAL(IS(1))+
+     &             RSYMD(K,2)*REAL(IS(2))+
+     &             RSYMD(K,3)*REAL(IS(3)) 
      +           + 12000
               IF(ABS(MOD(CHK,12.0)).GT.0.05) GO TO 200
             ENDDO
           ENDDO
           NORIG=NORIG+1
-          ORIG(1,NORIG)=IS(1)/12.0
-          ORIG(2,NORIG)=IS(2)/12.0
-          ORIG(3,NORIG)=IS(3)/12.0
+          ORIG(1,NORIG)=REAL(IS(1))/12.0
+          ORIG(2,NORIG)=REAL(IS(2))/12.0
+          ORIG(3,NORIG)=REAL(IS(3))/12.0
  200      CONTINUE
         ENDDO
        ENDDO
