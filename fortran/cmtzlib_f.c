@@ -728,7 +728,7 @@ FORTRAN_SUBR ( LRIDX, lridx,
       if (iset+1 > *ndatasets) {
        printf("Warning in LRIDX. You have only reserved enough memory for %d datasets but there are more in the MTZ file. \n",*ndatasets);
        printf("Only returning partial dataset information. \n");
-       *ndatasets = iset;
+       *ndatasets = -1;
        return;
       }
 
