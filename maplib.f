@@ -1,4 +1,10 @@
 C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part i)' software.  See the conditions
+C     in the CCP4 manual for a copyright statement.
+C
+C WARNING!! symbol names need to be unique in first 31 characters
+C
 CMWCLOSE    ENTRY ccp4_map_write_close_auto
 CMRCLOS     ENTRY ccp4_map_read_close
 CMCLOSC     ENTRY ccp4_map_write_close_user_mean
@@ -8,8 +14,8 @@ CMRFNAM     ENTRY ccp4_map_get_last_read_filename
 CMWFNAM     ENTRY ccp4_map_get_last_write_filename
 CMRDLIN     ENTRY ccp4_map_read_line_as_mode
 CMSYMOP     ENTRY ccp4_map_read_symm_matrix
-CMGULP      ENTRY ccp4_map_read_whole_section_as_mode
-CMGULPR     ENTRY ccp4_map_read_whole_section_as_real
+CMGULP      ENTRY ccp4_map_read_whole_sect_as_mode
+CMGULPR     ENTRY ccp4_map_read_whole_sect_as_real
 CMODECV     ENTRY ccp4_map_mode_to_real
 CMRDHDR     ENTRY ccp4_map_read_open_header
 CMRDHDS     ENTRY ccp4_map_read_open_header_check
@@ -27,11 +33,6 @@ CMWRSEC     ENTRY ccp4_map_write_part_section
 CCCP4MAPHEAD ENTRY ccp4_map_read_header_only
 CCCP4MAPIN   ENTRY ccp4_map_read_whole_map
 CCCP4MAPOUT  ENTRY ccp4_map_write_whole_map
-C
-C     This code is distributed under the terms and conditions of the
-C     CCP4 licence agreement as `Part i)' software.  See the conditions
-C     in the CCP4 manual for a copyright statement.
-C
 C
 C---- F77MSUB.FOR                               30/10/86    JWC
 C
@@ -1750,7 +1751,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/
 C     ..
-      ENTRY ccp4_map_read_whole_section_as_mode(IUNIT,X,IER)
+      ENTRY ccp4_map_read_whole_sect_as_mode(IUNIT,X,IER)
 C
 C---- Size of section (elements)
 C
@@ -1819,7 +1820,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/
 C     ..
-      ENTRY ccp4_map_read_whole_section_as_real(IUNIT,X,IER)
+      ENTRY ccp4_map_read_whole_sect_as_real(IUNIT,X,IER)
 C
       NRL = NBYTXX(500)
 C
@@ -2748,7 +2749,7 @@ c  Call: CALL ccp4mapin (iunit,name,title,map,nu1,nv1,nw1,nu2,nv2,nw2)
 c
 c---- ccp4mapin is a "wrapper" subroutine which utilises calls to the
 c     following maplib routines: ccp4_map_read_open_header_check [MRDHDS],
-c                                ccp4_map_read_whole_section_as_real [MGULPR],
+c                                ccp4_map_read_whole_sect_as_real [MGULPR],
 c                                ccp4_map_read_close [MRCLOS].
 c
 c
@@ -2820,7 +2821,7 @@ c now read the map in the order it is on file
       do 200 islow=0,lslow-1 
 c get a section 
        ierr=0 
-       call ccp4_map_read_whole_section_as_real(iunit,lsec,ierr) 
+       call ccp4_map_read_whole_sect_as_real(iunit,lsec,ierr) 
        if (ierr.ne.0) call ccperr(1,' ccp4mapin - ccp4 read error') 
 c now sort into uvw map 
        ifms(3)=islow+m1(3) 
