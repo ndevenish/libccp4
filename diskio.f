@@ -375,14 +375,15 @@ C======================================================================
 C
 C QRARCH - set up number conversion
 C
-C Usage:  CALL QRARCH   (IUNIT, IOFFSET)
-C         INTEGER       IUNIT, IOFFSET
+C Usage:  CALL QRARCH   (IUNIT, IOFFSET, IRESLT)
+C         INTEGER       IUNIT, IOFFSET, IRESLT
 C
 C Input:  IUNIT         unit number number to assign to file
 C         IOFFSET       offset in words at which to find architecture
 C                       information
 C
-C Output: None.
+C Output: IRESLT        fileFT + (16*fileIT) (see library C code)
+C                       Zero if the stamp isn't present.
 C
 C     Reads the `machine stamp' giving information about the
 C     architecture with which the file was written and arranges to
