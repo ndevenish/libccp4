@@ -45,7 +45,33 @@ e.g. <tt>ccp4spg_is_in_asu</tt>, <tt>ccp4spg_is_centric</tt>,
 <tt>ccp4spg_get_multiplicity</tt>, <tt>ccp4spg_is_sysabs</tt>, etc.
 <li>Set appropriate grids for FFT, e.g. <tt>set_fft_grid</tt>
 </ul>
+ *
+ *  @section csym_operators Symmetry operators
 
+Symmetry operators are expressed in a variety of ways:
+<ul>
+<li>Using the struct <tt>ccp4_symop</tt>, which consists of a 3 x 3 rotation
+matrix and a translation vector.
+<li>As a 4 x 4 matrix, in which the rotation matrix is in the top-left-hand
+corner and the translation vector is in elements [*][3]. Element [3][3] is
+set to 1.0
+<li>As a string, such as "-x+1/2,-y,z+1/2"
+</ul>
+Check the function description for which form is expected. Often, there 
+are alternative functions if you wish to supply the operators in a
+different form. There are also the following conversion functions:
+<ul>
+<li>rotandtrn_to_mat4
+<li>rotandtrn_to_symop
+<li>mat4_to_rotandtrn
+<li>mat4_to_symop
+<li>mat4_to_recip_symop
+<li>symop_to_rotandtrn
+<li>symop_to_mat4
+</ul>
+Note that the order of symmetry operators may be important in some cases, for
+example in MTZ files with a M/ISYM column where ISYM encodes the symmetry operation
+used.
 */
 
 /** @file csymlib.h

@@ -1,4 +1,33 @@
-/* standard maplib fortran library routines */
+/*
+     This code is distributed under the terms and conditions of the
+     CCP4 licence agreement as `Part i)' software.  See the conditions
+     in the CCP4 manual for a copyright statement.
+*/
+
+/** @page cmap_f_page Fortran API to CMAP 
+ *
+ *  @section cmap_f_file_list File list
+
+<ul>
+<li>cmaplib_f.c
+</ul>
+
+ *  @section cmap_f_overview Overview
+
+This library consists of a set of wrappers to the CMAP library
+giving the same API as the original maplib.f For details of the
+API, see the original <a href="../maplib.html">documentation</a>.
+This document covers some peculiarities of the C implementation.
+
+ */
+ 
+/** @file cmaplib_f.c
+ *
+ *  @brief Fortran API for input, output and manipulation of CCP4 map files.
+ *
+ *  @author Charles Ballard
+ */
+
 #include<string.h>
 #include<stdio.h>
 #include<fcntl.h>

@@ -1,3 +1,14 @@
+/*
+     This code is distributed under the terms and conditions of the
+     CCP4 licence agreement as `Part i)' software.  See the conditions
+     in the CCP4 manual for a copyright statement.
+*/
+
+/** @file library_file.h
+ *  Functions for file i/o.
+ *  Charles Ballard
+ */
+
 #ifndef __CCP4_LIB_FILE
 #define __CCP4_LIB_FILE
 
@@ -9,6 +20,7 @@ namespace CCP4 {
 extern "C" {
 #endif
 
+/** Generic CCP4 file. */
 typedef struct _CFileStruct CCP4File;
 
 struct _CFileStruct {

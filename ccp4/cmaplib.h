@@ -1,10 +1,43 @@
-/*! \file cmaplib.h \brief ccp4 map io user-level library header file
-*/
 /*
      This code is distributed under the terms and conditions of the
      CCP4 licence agreement as `Part i)' software.  See the conditions
      in the CCP4 manual for a copyright statement.
 */
+
+/** @page cmap_page CMAP library
+ *
+ * @verbatim
+
+<!-- ::INDEX_INFO::CMAP library::Library::::C/C++ Software Library for CCP4 map files:::::::: -->
+
+   @endverbatim
+ *
+ *  @section cmap_file_list File list
+
+<ul>
+<li>cmaplib.h - contains details of the C/C++ API
+<li>cmap_data.h     
+<li>cmap_header.h   
+<li>cmap_skew.h     
+<li>cmap_errno.h    
+<li>cmap_labels.h   
+<li>cmap_stats.h    
+</ul>
+
+ *  @section cmap_overview Overview
+ 
+  Functions defining the C-level API for accessing CCP4 map files.
+
+ */
+
+/** @file cmaplib.h
+ *
+ *  @brief ccp4 map i/o user-level library header file
+ *
+ *  Functions defining the C-level API for accessing CCP4 map files.
+ *
+ *  @author Charles Ballard
+ */
 
 #ifndef __GUARD_MAPLIB
 #define __GUARD_MAPLIB

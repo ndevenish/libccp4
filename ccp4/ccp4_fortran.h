@@ -1,3 +1,14 @@
+/*
+     This code is distributed under the terms and conditions of the
+     CCP4 licence agreement as `Part i)' software.  See the conditions
+     in the CCP4 manual for a copyright statement.
+*/
+
+/** @file ccp4_fortran.h
+ *  header file for Fortran APIs
+ *  Eugene Krissinel
+ */
+
 #ifndef __CCP4_FORTRAN
 #define __CCP4_FORTRAN
 
@@ -281,10 +292,36 @@ static char rcsidhh[] = "$Id$";
     s  = str;                      \
     s##_len = size;
 
+/** Macro to define a function such that it is callable as
+ * a Fortran subroutine.
+ * @param NAME Subroutine name in upper case
+ * @param name Subroutine name in lower case
+ * @param p_sun Argument list in Sun style
+ * @param p_stardent Argument list in Stardent style
+ * @param p_mvs Argument list in MVS style
+*/
 #  define FORTRAN_SUBR(NAME,name,p_sun,p_stardent,p_mvs) \
     void name##_ p_sun
+
+/** Macro to call a Fortran subroutine from a C function.
+ * @param NAME Subroutine name in upper case
+ * @param name Subroutine name in lower case
+ * @param p_sun Argument list in Sun style
+ * @param p_stardent Argument list in Stardent style
+ * @param p_mvs Argument list in MVS style
+*/
 #  define FORTRAN_CALL(NAME,name,p_sun,p_stardent,p_mvs) \
     name##_ p_sun
+
+/** Macro to define a function such that it is callable as
+ * a Fortran function.
+ * @param val Data type of return value.
+ * @param NAME Function name in upper case
+ * @param name Function name in lower case
+ * @param p_sun Argument list in Sun style
+ * @param p_stardent Argument list in Stardent style
+ * @param p_mvs Argument list in MVS style
+*/
 #  define FORTRAN_FUN(val,NAME,name,p_sun,p_stardent,p_mvs) \
     val name##_ p_sun
 

@@ -53,7 +53,8 @@ The library divides roughly into the following sections:
 <dd>See the @ref cmtz_page page for C/C++ programmers, and the
 @ref cmtz_f_page page for Fortran programmers.
 <dt>CMAP library
-<dd>Pending ...
+<dd>See the @ref cmap_page page for C/C++ programmers, and the
+@ref cmap_f_page page for Fortran programmers.
 <dt>MMDB library
 <dd>See Eugene's <a href="http://www.ebi.ac.uk/~keb/cldoc">documentation</a>.
 <dt>CSYM library
@@ -61,8 +62,8 @@ The library divides roughly into the following sections:
 @ref csym_f_page page for Fortran programmers.
 <dt>CCP4 utility library
 <dd>See the @ref utilities_page page for C/C++ programmers.
-<dt>Low level functionality
-<dd>Pending ...
+<dt>Low level disk i/o
+<dd>See the @ref diskio_f_page page for Fortran programmers.
 </dl>
 
  */

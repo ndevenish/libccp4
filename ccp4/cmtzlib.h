@@ -361,9 +361,15 @@ char *MtzSetPath(const MTZ *mtz, const MTZSET *set);
  */
 MTZSET *MtzSetLookup(const MTZ *mtz, const char *label);
 
+/** Add a dataset to crystal xtl
+ * @param mtz pointer to MTZ struct.
+ * @param xtl pointer to crystal struct.
+ * @param dname Dataset name
+ * @param wavelength X-ray wavelength of dataset
+ * @return pointer to set
+ */
 MTZSET *MtzAddDataset(MTZ *mtz, MTZXTAL *xtl, const char *dname,
                     const float wavelength);
-/* Add a dataset to crystal xtl */
 
 /** For a given dataset, return number of columns in that dataset.
  * This is simply set->ncol and so includes all columns irrespective
@@ -411,7 +417,13 @@ MTZCOL *MtzIcolInSet(const MTZSET *set, const int icol);
 
 /**** Column operations ****/
 
-/* Add a column to dataset set and create + fill with NAN */
+/** Add a column to dataset set and create + fill with NAN
+ * @param mtz pointer to MTZ struct
+ * @param set pointer to dataset
+ * @param label Column label
+ * @param type Column type
+ * @return pointer to column
+ */
 MTZCOL *MtzAddColumn(MTZ *mtz, MTZSET *set, const char *label,
                    const char *type);
 
@@ -434,7 +446,12 @@ int MtzAssignHKLtoBase(MTZ *mtz);
 int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],  
 	     const char dataset_name[]);
 
-/* Toggle active flag of column */
+/** Toggle active flag of column. A value of 0 means inactive and will
+ * not be written out, whereas a value of 1 means active and will
+ * be written out.
+ * @param col pointer to column
+ * @return New value of col->active.
+ */
 int MtzToggleColumn(MTZCOL *col);
 
 /** Get the dataset associated with a column.
@@ -473,14 +490,27 @@ int MtzNumSourceCol(const MTZ *mtz);
  */
 char *MtzColPath(const MTZ *mtz, const MTZCOL *col);
 
+/** Complete a right-justified path by prefixing with wildcards
+ * @param path Completed path.
+ * @param partial Partial right-justified path
+ * @param njust
+ * @return 1 on success.
+ */
 int MtzRJustPath(char *path, const char *partial, const int njust);
-/* Complete a right-justified path by prefixing with wildcards */
 
+/** Test for match between two paths, including wildcards
+ * @param path1 First path
+ * @param path2 Second path
+ * @return 1 if paths match, else 0.
+ */
 int MtzPathMatch(const char *path1, const char *path2);
-/* test for match between two paths, including wildcards */
 
+/** Returns a pointer to the column of mtz with the given `label`, or NULL
+ * @param mtz pointer to MTZ struct
+ * @param label Column label.
+ * @return pointer to column
+ */
 MTZCOL *MtzColLookup(const MTZ *mtz, const char *label);
-/* Returns a pointer to the column of mtz with the given `label`, or NULL */
 
 /** Get the MTZ column type of a particular column.
  * @param col pointer to MTZ column.
@@ -495,9 +525,14 @@ char *MtzColType(MTZCOL *col);
  */
 void MtzDebugHierarchy(const MTZ *mtz);
 
+/** List of column information: label, type, dataset.
+ * @param mtz pointer to MTZ struct
+ * @param clabs List of labels (output).
+ * @param ctyps List of column types (output).
+ * @param csetid List of dataset IDs (output).
+ * @return number of columns in current structure.
+ */
 int MtzListColumn(const MTZ *mtz, char clabs[][31], char ctyps[][3], int csetid[]);
-/* List of column information: label, type, dataset.
-   Returns number of columns in current structure. */
 
 /**** helper functions ****/
 
@@ -657,17 +692,18 @@ int ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64],
             float datcell[6], float *datwave);
 
 /** Returns iref'th reflection from file held in MTZ struct mtz. Returns
- * data for all columns held in input file, but in the order that they are 
- * held in the datasets rather than in strict file order. The "lookup"
- * mechanism can still be used to find particular columns.
+ * data for all columns held in input file, in the order that they are 
+ * held in the source file. The value of col->source can be used to find
+ * particular columns.
  * In "in-memory" mode, reflection data is taken from arrays held in
  * memory. In the traditional file-based mode, a reflection record is
  * read from the input file.
  * @param mtz pointer to MTZ struct
  * @param resol resolution of reflection (output).
  * @param adata array of requested values (output).
- * @param logmss array of flags for missing data (output).
- * @param iref index of requested reflection
+ * @param logmss array of flags for missing data (output). A value of 1 indicates
+ * a Missing Number Flag, and a value of 0 indicates usable data.
+ * @param iref index of requested reflection (starting at 1).
  * @return 1 if past last reflection, else 0
  */
 int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int iref);
@@ -681,15 +717,23 @@ int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int i
  * @param mtz pointer to MTZ struct
  * @param resol resolution of reflection (output).
  * @param adata array of requested values (output).
- * @param logmss array of flags for missing data (output).
+ * @param logmss array of flags for missing data (output). A value of 1 indicates
+ * a Missing Number Flag, and a value of 0 indicates usable data.
  * @param lookup array of pointers to requested columns
  * @param ncols number of requested columns
- * @param iref index of requested reflection
+ * @param iref index of requested reflection (starting at 1).
  * @return 1 if past last reflection, else 0
  */
 int ccp4_lrreff(const MTZ *mtz, float *resol, float adata[], int logmss[],
 		const MTZCOL *lookup[], const int ncols, const int iref);
 
+/** Checks whether a particular reflection value represents missing data.
+ * @param mtz Pointer to the MTZ struct, which holds the value representing
+ * missing data (the Missing Number Flag) against which the input datum
+ * is compared.
+ * @param datum Reflection value to be checked.
+ * @return Returns 1 is datum is the MNF, and 0 otherwise.
+ */
 int ccp4_ismnf(const MTZ *mtz, const float datum);
 
 int ccp4_lhprt(const MTZ *mtz, int iprint);

@@ -30,6 +30,23 @@ a different set of calls is provided (the names of which generally
 start with "CCP4SPG_F_"). These identify the spacegroup of interest
 via an index "sindx" (by analogy with the "mindx" of mtzlib).
 
+ *   @section csym_f_mtz Symmetry information from MTZ files
+
+MTZ file headers contain 2 types of symmetry records:
+<dl>
+<dt>SYMINF
+<dd>Contains number of symmetry operators, number of primitive symmetry
+operators, lattice type, spacegroup number, spacegroup name and point
+group name.
+<dt>SYMM
+<dd>A series of records holding the symmetry operators.
+</dl>
+Note that the spacegroup name is likely to be ambiguous at best, with
+no indication of the particular setting used. The primary source of
+symmetry information is therefore taken to be the list of symmetry
+operators. Note also that the order of operators is important if an
+ISYM column is present.
+
  */
  
 /** @file csymlib_f.c

@@ -178,18 +178,57 @@ typedef struct ccp4array_base_ {
 */
 #define ccp4array_free(v) ccp4array_free_((ccp4_ptr*)(&v))
 
+/** 
+ * See macro ccp4array_new 
+*/
 ccp4_ptr ccp4array_new_(ccp4_ptr *p);
+/** 
+ * See macro ccp4array_new_size 
+*/
 ccp4_ptr ccp4array_new_size_(ccp4_ptr *p, const int size, const size_t reclen);
+/** 
+ * See macro ccp4array_resize 
+*/
 void ccp4array_resize_(ccp4_ptr *p, const int size, const size_t reclen);
+/** 
+ * See macro ccp4array_reserve 
+*/
 void ccp4array_reserve_(ccp4_ptr *p, const int size, const size_t reclen);
+/** 
+ * See macro ccp4array_append 
+*/
 void ccp4array_append_(ccp4_ptr *p, ccp4_constptr data, const size_t reclen);
+/** 
+ * See macro ccp4array_append_n 
+*/
 void ccp4array_append_n_(ccp4_ptr *p, ccp4_constptr data, const int n, const size_t reclen);
+/** 
+ * See macro ccp4array_append_list 
+*/
 void ccp4array_append_list_(ccp4_ptr *p, ccp4_constptr data, const int n, const size_t reclen);
+/** 
+ * See macro ccp4array_insert  
+*/
 void ccp4array_insert_(ccp4_ptr *p, const int i, ccp4_constptr data, const size_t reclen);
+/** 
+ * See macro ccp4array_delete_ordered 
+*/
 void ccp4array_delete_ordered_(ccp4_ptr *p, const int i, const size_t reclen);
+/** 
+ * See macro ccp4array_delete 
+*/
 void ccp4array_delete_(ccp4_ptr *p, const int i, const size_t reclen);
+/** 
+ * See macro ccp4array_delete_last 
+*/
 void ccp4array_delete_last_(ccp4_ptr *p, const size_t reclen);
+/** 
+ * See macro ccp4array_size 
+*/
 int ccp4array_size_(ccp4_constptr *p);
+/** 
+ * See macro ccp4array_free
+*/
 void ccp4array_free_(ccp4_ptr *p);
 
 #ifdef __cplusplus

@@ -4,6 +4,11 @@
      in the CCP4 manual for a copyright statement.
 */
 
+/** @file ccp4_utils.h
+ *  @brief   Utility functions.
+ *  @author  Charles Ballard
+ */
+
 #ifndef __CCP4_UTILS
 #define __CCP4_UTILS
 

@@ -754,8 +754,8 @@ int ccp4_file_byte(CCP4File *cfile)
  * @param flag (const int) io mode (O_RDONLY =0, O_WRONLY =1, O_RDWR =2,
  *        O_TMP =, O_APPEND =)
  *
- * open @cfile with existing handle FILE struct @file and mode @flag.
- * The struct stat is check to determine if @file is a regular file,
+ * open @cfile with existing handle FILE struct file and mode @flag.
+ * The struct stat is check to determine if file is a regular file,
  * if it is, and is not stdin, it is assumed to be direct access. 
  * Return: (CCP4File *) on success, NULL on failure
  */
@@ -809,7 +809,7 @@ CCP4File *ccp4_file_open_file (const FILE *file, const int flag)
  *        O_TMP =, O_APPEND =)
  *
  * initialise CCP4File struct with file descriptor @fd and mode @flag 
- * The struct stat is check to determine if @file is a regular file,
+ * The struct stat is check to determine if file is a regular file,
  * if it is, and is not stdin, it is assumed to be direct access. 
  * Return: (CCP4File *) on success, NULL on failure
  */
@@ -861,9 +861,9 @@ CCP4File *ccp4_file_open_fd (const int fd, const int flag)
  * @param flag (const int) io mode (O_RDONLY =0, O_WRONLY =1, O_RDWR =2,
  *        O_TMP =, O_APPEND =, O_TRUNC=)
  *
- * initialise CCP4File struct for file @filename with mode @flag.
+ * initialise CCP4File struct for file filename with mode @flag.
  * If !buffered use open(), otherwise fopen()
-  * The struct stat is check to determine if @file is a regular file,
+  * The struct stat is check to determine if file is a regular file,
  * if it is, and is not stdin, it is assumed to be direct access. 
  * Return: (CCP4File *) on success, NULL on failure
  */

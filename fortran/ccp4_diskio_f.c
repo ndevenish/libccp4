@@ -4,6 +4,22 @@
      in the CCP4 manual for a copyright statement.
 */
 
+/** @page diskio_f_page Fortran API for low level input/output. 
+ *
+ *  @section diskio_f_file_list File list
+
+<ul>
+<li>ccp4_diskio_f.c
+</ul>
+
+ *  @section diskio_f_overview Overview
+
+This library consists of a set of wrappers to C functions which
+perform random access input/output (I/O) on various data items, including 
+bytes, to stream-mode files.
+
+ */
+
 /** @file ccp4_diskio_f.c
  *  FORTRAN API for file i/o.
  *  Charles Ballard and Martyn Winn
