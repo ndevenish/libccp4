@@ -1906,9 +1906,9 @@ C
         NPLABS(MINDX) = 0
         SRANGE(1,MINDX) = 10.0
         SRANGE(2,MINDX) = 0.0
-C  Default values - VAL_MISS(1,..) ( File for reading) is 0.0, 
+C  Default values - VAL_MISS(1,..) ( File for reading) is NaN, 
 C                   VAL_MISS(2,..) ( File for writing) is Nan
-        VAL_MISS(1,MINDX) = 0.0
+        CALL QNAN(VAL_MISS(1,MINDX))
         CALL QNAN(VAL_MISS(2,MINDX))
         VAL_SET(1,MINDX) = .FALSE.
         VAL_SET(2,MINDX) = .FALSE.
@@ -6296,9 +6296,8 @@ C
         RBATCX = RBATCH(1)
 C
         IF (NWORDS.GT.MBLENG) THEN
-          WRITE (LINE2,FMT=
-     +          '('' From LWBAT : NWORDS = '',I8,
-     +          '' is greater than buffer length '',I8)') NWORDS,MBLENG
+          WRITE (LINE2,FMT='(A,I8,A,I8)') ' From LWBAT : NWORDS = ',
+     +      NWORDS,' is greater than buffer length ',MBLENG
           ISTAT = 2
           IFAIL = -1
 C
@@ -6427,9 +6426,9 @@ C
 C
 C---- Error on reading header
 C
-   50   WRITE (LINERR,FMT='(A,I2,A)')
-     +  'RBATHD error: Error reading batch header record from
-     +   MTZ file, only ',IER,' words read'
+   50   WRITE (LINERR,FMT='(A,A,I2,A)')
+     +  'RBATHD error: Error reading batch header record from',
+     +  ' MTZ file, only ',IER,' words read'
 
         ISTERR = 2
         IFGERR = -1
@@ -9151,7 +9150,10 @@ C      and VAL_MISS(2,MINDX) too
 C
       IF (VAL_SET(2,MINDX)) VAL_MAGICA = VAL_MISS(2,MINDX)
 C
-      DO 10 JDO10 = 1,NCOL
+      BDATA(1) = ADATA(1)
+      BDATA(2) = ADATA(2)
+      BDATA(3) = ADATA(3)
+      DO 10 JDO10 = 4,NCOL
         BDATA(JDO10) = ADATA(JDO10)
         CALL IS_MAGIC (VAL_MAGICA,ADATA(JDO10),LVALMS)
         IF(LVALMS) BDATA(JDO10) = VAL_MAGICB
