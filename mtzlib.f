@@ -5,7 +5,7 @@ C     in the CCP4 manual for a copyright statement.
 C
 C     6/5/95  EJD
 C      Add subroutines to recognise and use Missing nos - 
-C      LRREFM   SET_MAGIC  IS_MAGIC  RESET_MAGIC
+C      LRREFM   SET_MAGIC  IS_MAGIC  RESET_MAGIC EQUAL_MAGIC
 C
 C     16/6/94  DJGL
 C     Change 96s to (parameterised) 192s to allow the possibility of
@@ -103,17 +103,18 @@ C    MTZLIB.FOR
 C    ==========
 C
 C    MTZini.f
-C    lhprt.f      lrassn.f      lrbres.f      lrcell.f     lrrsol.f
-C    lrclab.f     lrclos.f      lrhist.f      lrinfo.f     lrnref.f
-C    lropen.f     lrreff.f      lrrefl.f      lrrewd.f     lrsort.f
-C    lrseek.f     lrsymi.f      lrsymm.f      lrtitl.f     lwassn.f
-C    lwcell.f     lwclab.f      lwclos.f      lwhist.f     lwopen.f
-C    lwrefl.f     lwsort.f      lwsymm.f      lwtitl.f     lwbscl.f
-C    symfr3.f     symtr3.f      lkyin.f       lkyout.f     labprt.f
-C    lbprt.f      lrbat.f       lwbat.f       rbathd.f     wbathd.f
-C    lrbscl.f     lrbtit.f      lwbscl.f      lwbtit.f     lrhdrl.f
-C    lwhdrl.f     lphist.f      sortup.f      addlin.f     nextln.f
-C    lrncol.f     lkyset.f      lstrsl.f      lstlsq.f     lkyasn.f
+C    lhprt.f      lrassn.f      lrbres.f      lrcell.f      lrrsol.f
+C    lrclab.f     lrclos.f      lrhist.f      lrinfo.f      lrnref.f
+C    lropen.f     lrrefm.f      lrreff.f      lrrefl.f      lrrewd.f
+C    lrsort.f     lrseek.f      lrsymi.f      lrsymm.f      lrtitl.f
+C    lwassn.f     lwcell.f      lwclab.f      lwclos.f      lwhist.f
+C    lwopen.f     lwrefl.f      lwsort.f      lwsymm.f      lwtitl.f
+C    lwbscl.f     symfr3.f      symtr3.f      lkyin.f       lkyout.f
+C    labprt.f     lbprt.f       lrbat.f       lwbat.f       rbathd.f
+C    wbathd.f     lrbscl.f      lrbtit.f      lwbscl.f      lwbtit.f
+C    lrhdrl.f     lwhdrl.f      lphist.f      sortup.f      addlin.f
+C    nextln.f     lrncol.f      lkyset.f      lstrsl.f      lstlsq.f
+C    lkyasn.f     equal_magic.f is_magic.f    reset_magic.f set_magic.f
 C
 C   The development of the MTZ files and associated software mark 1
 C   is part of the masterplan of the ESF/EACBM Working Group 2.1 for
@@ -177,6 +178,10 @@ C   LRREFL      Read a reflection record in file order from the MTZ file
 C
 C   LRREFF      Read a reflection record in Lookup order
 C               from the MTZ file
+C
+C   LRREFM      Called after a reflection is read in it returns a logical 
+C               array. If datum=MNF then the corresponding element is true, in 
+C               all other cases it is false
 C
 C   LRNREF      Return the number of the reflection record last read
 C               ie reports on position in file
@@ -245,6 +250,18 @@ C
 C   LHPRT       Subroutine to output data from an MTZ header mark 1
 C
 C   LPHIST      Print the history information from the MTZ header
+C
+C
+C These routines are specifically for missing number flags (MNF)
+C
+C   SET_MAGIC   Either returns the value of MNF in the MTZ header
+C               or overwrites it.
+C
+C   RESET_MAGIC Alters the MNF per reflection in the data itself 
+C
+C   EQUAL_MAGIC Initialises an array so all elements are set to MNF
+C
+C   IS_MAGIC    Routine that checks any datum to see if datum=MNF
 C
 C
 C The next 13 are internal subroutines
@@ -2447,10 +2464,11 @@ C            ************************
       END IF
       END
 C
+C
 C
-C     ========================================
+C     ===============================
       SUBROUTINE LRREFM(MINDX,LOGMSS)
-C     ========================================
+C     ===============================
 C
 C     Returns Logical array which flags missing data entries
 C      Array DATMSS set in LRREFF and LRREFL
@@ -2497,8 +2515,11 @@ C     .. Local Scalars
 C     ..
 C     .. External Routines ..
       EXTERNAL LERROR
-C
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC MAX
 C     .. 
+C     .. Common Blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
      +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
@@ -2538,6 +2559,7 @@ C     loop up to MCOLS in case the array isn't taht long.)
         LOGMSS(JDO) = DATMSS(JDO) 
  20   CONTINUE
       END
+C
 C
 C
 C     ========================================
@@ -4444,9 +4466,9 @@ C
 C
 C
 C
-C     ==============================
+C     ============================================
       SUBROUTINE SET_MAGIC(MINDX,VAL_MAGIC,SETVAL)
-C     ==============================
+C     ============================================
 C
 C
 C---- Subroutine to pass the "magic" value for this mtz file 
@@ -4492,7 +4514,6 @@ C     .. Scalar Arguments ..
       REAL VAL_MAGIC
       LOGICAL SETVAL
 C     ..
-C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
@@ -4501,18 +4522,18 @@ C     .. Arrays in Common ..
       LOGICAL SORTB,DATMSS,VAL_SET
 C     ..
 C     .. Local Scalars ..
-      CHARACTER LINE*400
+      CHARACTER LINE*132
 C     .. 
-C     .. Intrinsic Functions
+C     .. Intrinsic Functions ..
       INTRINSIC ABS
 C     ..
-C     .. External Subroutines ..
-      EXTERNAL LERROR
-C     ..
-C     .. External Functions
-      EXTERNAL QNAN
+C     .. External Functions ..
       LOGICAL QISNAN
       EXTERNAL QISNAN
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL LERROR, QNAN
+C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
      +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
@@ -4570,7 +4591,7 @@ C         VAL_MISS(2,.. for output
 C   Set default - currently NAN
              CALL QNAN (VAL_MAGIC)
              CALL QNAN (VAL_MISS(2,MINDX))
-              VAL_SET(2,MINDX)=.TRUE.
+             VAL_SET(2,MINDX)=.TRUE.
            END IF
         END IF
 C    Reset  SETVAL
@@ -4588,6 +4609,7 @@ CCC          END IF
       END IF
       END
 C
+C
 C
 C     ===============================
       SUBROUTINE LWCLOS(MINDX,IPRINT)
@@ -5437,7 +5459,7 @@ C     .. External Functions ..
       EXTERNAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QWRITR
+      EXTERNAL IS_MAGIC,LERROR,QWRITR
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -8941,9 +8963,11 @@ C
       END
 
 C
-C     =====================================
+C
+C
+C     =============================================
       SUBROUTINE IS_MAGIC (VAL_MAGIC,VALTST,LVALMS)
-C     =====================================
+C     =============================================
 C
 C---- Function  to test whether a number is  "magic" 
 C     Returns LVALMS TRUE if it is - otherwise LVALMS FALSE
@@ -8961,19 +8985,10 @@ C     LVALMS    (O)     LOGICAL        Returns LVALMS TRUE if VALTST is "magic"
 C                                      FALSE if it is not, or if
 C                                      there is no "missing" number set.
 C
-C     .. Parameters ..
-      INTEGER MFILES,MCOLS,MBATCH
-      PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER MAXSYM
-      PARAMETER (MAXSYM=192)
 C     ..
 C     .. Scalar Arguments ..
+      REAL VAL_MAGIC, VALTST
       LOGICAL LVALMS
-C     ..
-C     .. Local Scalars ..
-      REAL VALTST
 C     ..
 C     .. External Functions ..
       LOGICAL QISNAN
@@ -8986,7 +9001,8 @@ C     ..
         IF(VALTST .EQ. VAL_MAGIC) LVALMS = .TRUE.
       END IF
       END
-C^L
+C
+C
 C
 C     ========================================
       SUBROUTINE EQUAL_MAGIC(MINDX,ADATA,NCOL)
@@ -9020,13 +9036,17 @@ C     .. Parameters ..
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
-C     .. Scalar Arguments ..
-      INTEGER MINDX
+C     .. Arguments ..
+      REAL ADATA(*)
+      INTEGER MINDX, NCOL
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
       INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
       LOGICAL VAL_SET
+C     ..
+C     .. Local Scalars ..
+      INTEGER JDO10
 C     ..
 C     .. Intrinsic Functions
       INTRINSIC ABS
@@ -9042,9 +9062,6 @@ C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/
 C     ..
-C     .. Local Arrays 
-      REAL ADATA(*)
-C     ..
 C
 C   If the file has been opened for Writing VAL_MISS(2,MINDX) will be set
 C
@@ -9052,11 +9069,12 @@ C
         ADATA(JDO10) = VAL_MISS(2,MINDX)
  10   CONTINUE
       END
-C^L
 C
-C     ========================================
+C
+C
+C     =========================================================
       SUBROUTINE RESET_MAGIC(MINDX,ADATA,BDATA,NCOL,VAL_MAGICB)
-C     ========================================
+C     =========================================================
 C
 C     Resets an array containing Missing value flags VAL_MAGICA  to
 C                one  containing Missing value flags VAL_MAGICB
@@ -9092,8 +9110,9 @@ C     .. Parameters ..
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
-C     .. Scalar Arguments ..
-      INTEGER MINDX
+C     .. Arguments ..
+      REAL ADATA(*),BDATA(*),VAL_MAGICB
+      INTEGER MINDX,NCOL
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
@@ -9102,8 +9121,12 @@ C     .. Arrays in Common ..
       LOGICAL VAL_SET
 C     ..
 C     .. Local Scalars ..
+      REAL VAL_MAGICA
       INTEGER JDO10
       LOGICAL LVALMS
+C     ..
+C     .. External Rotuines ..
+      EXTERNAL IS_MAGIC
 C     ..
 C     .. Intrinsic Functions
       INTRINSIC ABS
@@ -9118,8 +9141,6 @@ C     .. Common blocks ..
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/
-C     ..
-      REAL ADATA(*),BDATA(*),VAL_MAGICA,VAL_MAGICB
 C     ..
 C
 C  If file only opened for Reading .
