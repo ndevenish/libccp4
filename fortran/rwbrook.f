@@ -47,7 +47,7 @@ C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL
       INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
-      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*11
+      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*20
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Scalars ..
@@ -315,13 +315,13 @@ C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL,ROU,RFU
       INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
-      CHARACTER*80 LOGUNIT,BROOK*1,WBROOK*1,WBROOK1*1, BRKSPGRP*11
+      CHARACTER*80 LOGUNIT,BROOK*1,WBROOK*1,WBROOK1*1, BRKSPGRP*20
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 c  Check symmetry stuff
 C
       integer  nsymchk,lspgrp,nsymppdbs,nsympdbs,ist
       real rsymchk(4,4,maxsym), rsympdbs(4,4,maxsym)
-      character SPGRPpdb*11,NAMSPG_CIFS*20,nampg*10
+      character SPGRPpdb*20,NAMSPG_CIFS*20,nampg*10
 C     ..
 C     .. Local Scalars ..
       REAL ERROR,VOLCHK
@@ -512,7 +512,7 @@ C
             ITYP=1
             IFCRYS=.TRUE.
             BRKSPGRP = ' '
-            READ(BROOKA,FMT='(6X,3F9.3,3F7.2,1x,a11)')CELL,BRKSPGRP
+            READ(BROOKA,FMT='(6X,3F9.3,3F7.2,1x,a)')CELL,BRKSPGRP
 C
 C Make sure that BRKSPGRP, the Space group name is left-justified
 C
@@ -862,7 +862,7 @@ C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL
       INTEGER FILESOPEN,NCODE,TYPE,UNIT
-      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*11
+      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*20
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Variables ..
@@ -993,7 +993,7 @@ C
   100 CONTINUE
       ITYP = 0
       RETURN 2
- 1000 FORMAT('CRYST1',3F9.3,3F7.2,1x,a11)
+ 1000 FORMAT('CRYST1',3F9.3,3F7.2,1x,a)
  2000 FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
      $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
       END
@@ -2785,7 +2785,7 @@ C
 C Returns spacegrpup from pdb
 C
 C PARAMETERS
-C     SPGRP (O) (CHARACTER*11) 
+C     SPGRP (O) (CHARACTER*20) 
 C
 C Common blocks
 C
@@ -2794,7 +2794,7 @@ C
 C_END_RBSPGRP
 C
       CHARACTER SPGRP*(*)
-      CHARACTER BRKSPGRP*11
+      CHARACTER BRKSPGRP*20
       INTEGER ILEN,KLEN,J
       COMMON /RBRKSPGRP/BRKSPGRP
       SPGRP = BRKSPGRP
@@ -2825,7 +2825,7 @@ C
 C Sets the internal spacegroup of a pdb file
 C
 C PARAMETERS
-C     SPGRP (I) (CHARACTER*11)
+C     SPGRP (I) (CHARACTER*20)
 C
 C Common Blocks
 C
@@ -2834,7 +2834,7 @@ C
 C_END_WBSPGRP
 C
       CHARACTER SPGRP*(*)
-      CHARACTER BRKSPGRP*11
+      CHARACTER BRKSPGRP*20
       COMMON /RBRKSPGRP/BRKSPGRP
       BRKSPGRP = SPGRP
       END
@@ -3117,7 +3117,7 @@ C     .. Variables in Common ..
       REAL CELL, RO, RF, RR
       INTEGER FILESOPEN, NCODE, TYPE, UNIT
       CHARACTER*80 LOGUNIT
-      CHARACTER BRKSPGRP*11
+      CHARACTER BRKSPGRP*20
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
 C     ..
 C     .. Local Scalars ..
@@ -3185,7 +3185,7 @@ C     ..
 C
 C---- Format Statements
 C
- 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a11)
+ 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a)
  200  FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
      $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
       END
@@ -3350,3 +3350,121 @@ C
 C
 C
 
+C
+        SUBROUTINE WBCELLS(IUNIT,ARGCELL,ARGNCODE,NAMSPG_CIF)
+C       =========================================
+C
+C_BEGIN_WBCELL
+C
+C   This subroutine writes out the cell and orthogonalisation matrices, to 
+C the output file. If the input parameters are null then the cell etc. are
+C taken from the COMMON blocks.
+C
+C PARAMETERS
+C
+C            IUNIT (I) (INTEGER)   Channel number for output file.
+C
+C       ARGCELL(6) (I) (REAL)      crystallographic cell taken from COMMON
+C                                  if cell = 0
+C         ARGNCODE (I) (INTEGER)   NCODE number taken from COMMON if NCODE=0
+C
+C_END_WBCELL
+C
+C     .. Parameters ..
+      INTEGER MAXFILESOPEN
+      PARAMETER (MAXFILESOPEN=90)
+C     ..
+C     .. Agruments ..
+      REAL ARGCELL(6)
+      INTEGER ARGNCODE,IUNIT
+C     ..
+C     .. Variables in Common ..
+      REAL CELL, RO, RF, RR
+      INTEGER FILESOPEN, NCODE, TYPE, UNIT
+      CHARACTER*80 LOGUNIT
+      CHARACTER BRKSPGRP*20,NAMSPG_CIF*(*)
+      LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
+C     ..
+C     .. Local Scalars ..
+      INTEGER I, II, J
+      CHARACTER*80 ERRLIN
+C     ..
+C     .. External Routines/Functions ..
+      EXTERNAL CCPERR,RBFROR,RBRINV
+C     ..
+C     .. Common Blocks ..
+      COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
+     +                UNIT(MAXFILESOPEN),TYPE(MAXFILESOPEN)
+      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
+      COMMON /RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
+      COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+      COMMON /RBRKSPGRP/BRKSPGRP
+C     ..
+      SAVE /ORTHOG/,/RBRKAA/,/RBRKXX/,/RBRKZZ/
+
+C    Has the spacegroup name been set yet?
+      ILEN1 = LENSTR(BRKSPGRP)
+      ILEN2 = LENSTR(NAMSPG_CIF)
+      
+       IF(BRKSPGRP.NE.' '.AND.
+     +    BRKSPGRP(1:ILEN1).NE.NAMSPG_CIF(1:ILEN2)) then
+         WRITE(6,'(A,/,4(A,5x))') '*** Incompatible space group names:',
+     +   ' From PDB input:         ',BRKSPGRP, 
+     +   ' To be written to output:',NAMSPG_CIF
+         CALL CCPERR(2,' Incompatible space group names')
+      END IF
+      IF(BRKSPGRP.EQ.' ') BRKSPGRP = NAMSPG_CIF(1:ILEN2)
+C
+      II = 0
+      DO 10 I=1,FILESOPEN
+        IF (IUNIT .EQ. UNIT(I)) THEN
+          II = I
+          GOTO 20
+        ENDIF
+   10 CONTINUE
+
+      ERRLIN = ' ERROR: in WBCELL file has not been opened'
+      CALL CCPERR(1,ERRLIN)
+
+   20 IF (TYPE(II) .GT. 0) THEN
+        ERRLIN = ' ERROR: in WBCELL file is of type input'
+        CALL CCPERR(1,ERRLIN)
+      ENDIF
+      IF (ARGCELL(1) .EQ. 0.0) THEN
+        IF (IFCRYS) WRITE (UNIT(II),100) CELL,BRKSPGRP
+      ELSE
+        WRITE(UNIT(II),100) ARGCELL,BRKSPGRP
+      ENDIF
+
+      IF (ARGNCODE .EQ. 0) THEN
+        IF (IFCRYS) WRITE (UNIT(II),200) (I,(RF(I,J),J=1,3),I=1,3)
+      ELSE
+        DO 30 I = 1,6
+          CELL(I) = ARGCELL(I)
+   30   CONTINUE
+
+        CALL RBFROR
+        DO 40 I = 1,3
+          DO 40 J = 1,3
+            RO(J,I) = RR(J,I,ARGNCODE)
+   40   CONTINUE
+
+        RO(4,4) = 1.0     
+        DO 50 I=1,3
+          RO(I,4) = 0.0
+   50   CONTINUE
+
+        CALL RBRINV(RO,RF)
+        WRITE (UNIT(II),200) (I,(RF(I,J),J=1,3),I=1,3)
+      ENDIF
+
+      IFHDOUT = .TRUE.
+      RETURN
+C
+C---- Format Statements
+C
+ 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a)
+ 200  FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
+     $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
+      END
+C
