@@ -1304,7 +1304,7 @@ CDOC                                          in _audit.update_record
       INTEGER blk_id
       character*(*) update_record
       
-      integer i, ncntxt,istat,lenval,IMONTH,IDAY,IYEAR,lenstr,
+      integer i, ncntxt,istat,lenval,lenstr,
      & btype,sline,istatus,ival,nline,itmpos
       character*(cfllen) val*733,cval,audit_itmnam(4),audit_catnam
       character progname*80,ciftime*25
@@ -1345,17 +1345,10 @@ C--- audit creation_date
       istat = keep_context
       call ccif_get_char(audit_itmnam(2),val,cval,lenval,ncntxt,istat)
       if (istat.ne.single_value.and.istat.ne.loop_value) then
-        call UIDATE(IMONTH,IDAY,IYEAR)
-C--- oh dear, will they be using this code in 100 years' time?
-        if (iyear.eq.99) then
-         write(cval,'(''19'',I2.2,''-'',I2.2,''-'',I2.2)')  
-     +         IYEAR,IMONTH,IDAY
-        else
-         write(cval,'(''20'',I2.2,''-'',I2.2,''-'',I2.2)')  
-     +         IYEAR,IMONTH,IDAY
-        endif
+        call Hciftime(cval)
         istat = keep_context
-        call ccif_put_char(audit_itmnam(2), cval, ncntxt, istat)
+        call ccif_put_char(audit_itmnam(2), cval(1:lenstr(cval)), 
+     +         ncntxt, istat)
       endif
 
 C--- audit creation_method
