@@ -163,25 +163,34 @@ C      each point group.
 C       The number nlaue is the same as the one set in CAD for
 C       this purpose.
 C
+C   Pointgroup Laue group        Limits
 C
 C   3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
-C   4 pg2    2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
-C   6 pg222  mmm        hkl:h>=0, k>=0, l>=0            16 ...
-C   7 pg4    4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
-C                                                k>0 if h>0
-C   8 pg422 4/mmm       hkl:h>=0, k>=0, l>=0            89..
+C     pg1bar
+C   4 pg2     2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
+C     pgm pg2/m
+C   6 pg222   mmm        hkl:h>=0, k>=0, l>=0            16 ...
+C     pgmm2 pgmmm 
+C   7 pg4     4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
+C     pg4bar pg4/m                            k>0 if h>0
+C   8 pg422   4/mmm       hkl:h>=0, k>=0, l>=0            89..
+C     pg4mm pg4bar2m pg4barm2 pg4/mmm
 C   9 pg3     3bar      hkl:h>=0, k>0  00l:l>0         143..
-C  10 pg312  3/m        hkl:h>=0, k>=0 with k<=h for all l.
-C                           if k = 0  l>=0
-C           Space group numbers :   149-151-153
-C  11 pg321  3/m        hkl:h>=0, k>=0 with k<=h for all l.
-C                           if h = k  l>=0
+C     pg3bar
+C  10 pg312   3/m        hkl:h>=0, k>=0 with k<=h for all l.
+C     pg32 pg3m pg3m1 pg3barm1 if k = 0  l>=0
+C           Space group numbers :   149-151-153 157 159 162 163
+C  11 pg321   3bar1m     hkl:h>=0, k>=0 with k<=h for all l.
+C     pg31m pg3bar1m      if h = k  l>=0
 C           Space group numbers :   150-152-154
-C  12 pg6    6/m        hkl:h>=0, k>=0, l>=0 with k>=0 if  h=0
-C                       and k> 0 if h>0
-C  13 pg622 6/mmm       hkl:h>=0, k>=0, l>=0 with h>=k 177..
-C  14 pg23   m3         hkl:h>=0, k>=0, l>=0 with l>=h,  k>=h
-C  15 pg432  m3m        hkl:h>=0, k>=0, l>=0  with  k>=l
+C  12 pg6     6/m        hkl:h>=0, k>=0, l>=0 with k>=0 if  h=0
+C     pg6bar  6/m        and k> 0 if h>0
+C  13 pg622   6/mmm       hkl:h>=0, k>=0, l>=0 with h>=k 177..
+C     pg6mm pg6barm2 pg6bar2m  pg 6/mmm
+C  14 pg23    m3         hkl:h>=0, k>=0, l>=0 with l>=h,  k>=h
+C     pgm3bar 
+C  15 pg432   m3m        hkl:h>=0, k>=0, l>=0  with  k>=l
+C     pg4bar3m pgm3barm
 C
 C
 C
@@ -2924,7 +2933,8 @@ C----------------------------------------------------------------
       SUBROUTINE PGDEFN(NAMPG,NSYMP,NSYM,RSMT,LPRINT)
 C     ==============================================
 C
-c  this subroutine contains bits for symlib
+c  this subroutine assigns a possible point group, using the 
+C  symmetry operators. Only simplest ones returned.
 C
 C
 C
@@ -3577,6 +3587,35 @@ C     used, but then isym has no meaning anymore.
 C
       END
 C     
+C
+C   3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
+C     pg1bar
+C   4 pg2     2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
+C     pgm pg2/m
+C   6 pg222   mmm        hkl:h>=0, k>=0, l>=0            16 ...
+C     pgmm2 pgmmm 
+C   7 pg4     4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
+C     pg4bar pg4/m                            k>0 if h>0
+C   8 pg422   4/mmm       hkl:h>=0, k>=0, l>=0            89..
+C     pg4mm pg4bar2m pg4barm2 pg4/mmm
+C   9 pg3     3bar      hkl:h>=0, k>0  00l:l>0         143..
+C     pg3bar
+C  10 pg312   3/m        hkl:h>=0, k>=0 with k<=h for all l.
+C     pg32 pg3m pg3m1 pg3barm1 if k = 0  l>=0
+C           Space group numbers :   149-151-153 157 159 162 163
+C  11 pg321   3bar1m     hkl:h>=0, k>=0 with k<=h for all l.
+C     pg31m pg3bar1m      if h = k  l>=0
+C           Space group numbers :   150-152-154
+C  12 pg6     6/m        hkl:h>=0, k>=0, l>=0 with k>=0 if  h=0
+C     pg6bar  6/m        and k> 0 if h>0
+C  13 pg622   6/mmm       hkl:h>=0, k>=0, l>=0 with h>=k 177..
+C     pg6mm pg6barm2 pg6bar2m  pg 6/mmm
+C  14 pg23    m3         hkl:h>=0, k>=0, l>=0 with l>=h,  k>=h
+C     pgm3bar 
+C  15 pg432   m3m        hkl:h>=0, k>=0, l>=0  with  k>=l
+C     pg4bar3m pgm3barm
+C
+C
 C   
 C     
 C     ====================================
@@ -3613,47 +3652,70 @@ C
 C     Rarest first
 C     
 C     Cubic
-C     14 pg23   m3
-C     15 pg432  m3m
+C     14 pg23   pgm3bar - Laue m3
+C     15 pg432  pg4bar3m pgm3barm - Laue m3m
 C     
-      IF (LOCNAM(1:LPG).EQ.'23') THEN
+      IF (LOCNAM(1:LPG).EQ.'23'
+     +.OR.LOCNAM(1:LPG).EQ.'m3bar') THEN
         NLAUE = 14
         LAUNAM = 'm3'
-      ELSE IF (LOCNAM(1:LPG).EQ.'432') THEN
+      ELSE IF (LOCNAM(1:LPG).EQ.'432'
+     +.OR.LOCNAM(1:LPG).EQ.'4bar3m'
+     +.OR.LOCNAM(1:LPG).EQ.'m3barm') THEN
         NLAUE = 15
         LAUNAM = 'm3m'
 C     
-C---- 8 pg422 4/mmm
-C     11 pg321  3/m        hkl:h>=0, k>=0 with k<=h for all l.
+C----  8 pg422 pg4mm pg4bar2m pg4barm2 - Laue 4/mmm
+C     11 pg321 pg32 pg3m1 pg3barm1 pg3m - Laue  3/m
+C                          hkl:h>=0, k>=0 with k<=h for all l.
 C                           if h = k  l>=0
 C           Space group numbers :   150-152-154
-C     13 pg622 6/mmm
+C     13 pg622 pg6mm pg6bar2m pg6barm2 pg6/mmm - Laue 6/mmm
 C     
-      ELSE IF (LOCNAM(1:LPG).EQ.'422') THEN
+      ELSE IF (LOCNAM(1:LPG).EQ.'422'
+     +.OR.LOCNAM(1:LPG).EQ.'4mm'
+     +.OR.LOCNAM(1:LPG).EQ.'4bar2m'
+     +.OR.LOCNAM(1:LPG).EQ.'4barm2') THEN
         NLAUE = 8
         LAUNAM = '4/mmm'
-      ELSE IF (LOCNAM(1:LPG).EQ.'321') THEN
+      ELSE IF (LOCNAM(1:LPG).EQ.'321'
+     +.OR.LOCNAM(1:LPG).EQ.'32'
+     +.OR.LOCNAM(1:LPG).EQ.'3m1'
+     +.OR.LOCNAM(1:LPG).EQ.'3barm1'
+     +.OR.LOCNAM(1:LPG).EQ.'3m') THEN
         NLAUE = 11
         LAUNAM = '3/m'
-      ELSE IF (LOCNAM(1:LPG).EQ.'622') THEN
+      ELSE IF (LOCNAM(1:LPG).EQ.'622'
+     +.OR.LOCNAM(1:LPG).EQ.'6mm'
+     +.OR.LOCNAM(1:LPG).EQ.'6bar2m'
+     +.OR.LOCNAM(1:LPG).EQ.'6barm2'
+     +.OR.LOCNAM(1:LPG).EQ.'6/mmm') THEN
         NLAUE = 13
         LAUNAM = '6/mmm'
 C     
-C---- 6 pg222  mmm        hkl:h>=0, k>=0, l>=0            16 ...
-C     10 pg312  3/m        hkl:h>=0, k>=0 with k<=h for all l.
+C---- 6 pg222  pgmm2 pgmmm - Laue mmm   
+C      hkl:h>=0, k>=0, l>=0            16 ...
+C     10 pg312  pg31m pg3bar1m - Laue 3bar1m 
+C       hkl:h>=0, k>=0 with k<=h for all l.
 C                           if k = 0  l>=0
 C           Space group numbers :   149-151-153
 C     
-      ELSE IF (LOCNAM(1:LPG).EQ.'312') THEN
+      ELSE IF (LOCNAM(1:LPG).EQ.'312'
+     +.OR.LOCNAM(1:LPG).EQ.'31m'
+     +.OR.LOCNAM(1:LPG).EQ.'3bar1m') THEN
         NLAUE = 10
-        LAUNAM = '3/m'
-      ELSE IF (LOCNAM(1:LPG).EQ.'222') THEN
+        LAUNAM = '3bar1m'
+      ELSE IF (LOCNAM(1:LPG).EQ.'222'
+     +.OR.LOCNAM(1:LPG).EQ.'mmm'
+     +.OR.LOCNAM(1:LPG).EQ.'mm2') THEN
         NLAUE = 6
-        LAUNAM = '222'
+        LAUNAM = 'mmm'
 C     
-C---- 4 pg2    2/m
+C---- 4 pg2 pgm pg2/m - Laue   2/m
 C     
-      ELSE IF (LOCNAM(1:LPG).EQ.'2') THEN
+      ELSE IF (LOCNAM(1:LPG).EQ.'2'
+     +.OR.LOCNAM(1:LPG).EQ.'m'
+     +.OR.LOCNAM(1:LPG).EQ.'2/m') THEN
         NLAUE = 4
         LAUNAM = '2/m'
 C     
@@ -3662,16 +3724,22 @@ C     7 pg4    4/m
 C     9  pg3     3bar
 C     12 pg6    6/m
 C     
-      ELSE IF (LOCNAM(1:LPG).EQ.'1') THEN
+      ELSE IF (LOCNAM(1:LPG).EQ.'1'
+     +.OR.LOCNAM(1:LPG).EQ.'1bar') THEN
         NLAUE = 3
         LAUNAM = '-1'
-      ELSE IF (LOCNAM(1:LPG).EQ.'3') THEN
+      ELSE IF (LOCNAM(1:LPG).EQ.'3'
+     +.OR.LOCNAM(1:LPG).EQ.'3bar') THEN
         NLAUE = 9
         LAUNAM = '-3'
-      ELSE IF (LOCNAM(1:LPG).EQ.'4') THEN
+      ELSE IF (LOCNAM(1:LPG).EQ.'4'
+     +.OR.LOCNAM(1:LPG).EQ.'4/m'
+     +.OR.LOCNAM(1:LPG).EQ.'4bar') THEN
         NLAUE = 7
         LAUNAM = '4/m'
-      ELSE IF (LOCNAM(1:LPG).EQ.'6') THEN
+      ELSE IF (LOCNAM(1:LPG).EQ.'6'
+     +.OR.LOCNAM(1:LPG).EQ.'6/m'
+     +.OR.LOCNAM(1:LPG).EQ.'6bar') THEN
         NLAUE = 12
         LAUNAM = '6/m'
       END IF
@@ -3732,7 +3800,7 @@ C Locals
       INTEGER I, J, L
       CHARACTER*100 STROUT, NAME*8, LAUNAM*8
 C
-C Get point group and primitive-only operations
+C Get point group and primitive-only operations from symmetry matrices
       CALL PGDEFN(PGNAME,MSYMP,MSYM,RRSYM,.FALSE.)
 C
 C Get Laue group number
