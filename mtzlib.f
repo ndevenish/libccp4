@@ -2572,11 +2572,7 @@ C
 C---- Set BIOMOL absence flags to zero if the calling program can not
 C     interpret them
 C
-            IF(.NOT. BIOMOL)THEN
-              DO 20 JDO20 = 1,NPLABS(MINDEX)
-                IF(ADATA(JDO20).LT.-0.99E+10) ADATA(JDO20) = 0.0
-   20         CONTINUE
-            ENDIF
+            IF (.NOT. BIOMOL) CALL CCPBML (NPLABS(MINDEX), ADATA)
 C
             EOF = .FALSE.
           END IF
@@ -2654,7 +2650,6 @@ C     .. Intrinsic Functions
       LOGICAL BIOMOL
 C     ..
 C     .. External Functions ..
-      LOGICAL QISNAN
       REAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
@@ -2782,13 +2777,7 @@ C
 C---- Set BIOMOL absence flags to zero if the calling program can not
 C     interpret them
 C
-            IF(.NOT. BIOMOL)THEN
-              DO 10 JDO10 = 1,NCOLS(MINDEX)
-                IF (.NOT.QISNAN(ADATA(JDO10))) THEN
-                  IF(ADATA(JDO10).LT.-0.99E+10) ADATA(JDO10) = 0.0
-                ENDIF
-   10         CONTINUE
-            ENDIF
+            IF (.NOT. BIOMOL) CALL CCPBML (NCOLS(MINDEX), ADATA)
 
             EOF = .FALSE.
           END IF
@@ -4982,6 +4971,7 @@ C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,JDO10,IH,IK,IL
       REAL RESOL
       CHARACTER LINE*400
+      REAL WMAX (MCOLS), WMIN (MCOLS)
 C     ..
 C     .. External Functions ..
       LOGICAL  QISNAN
@@ -5045,16 +5035,16 @@ C
 C
 C---- Update the column ranges
 C
-      DO 10 JDO10 = 1,NCOLW(MINDX)
-        IF (.NOT.QISNAN(ADATA(JDO10))) THEN
-          IF (ADATA(JDO10).NE.MDFBIG) THEN
-            IF (ADATA(JDO10).LT.WRANGE(1,JDO10,MINDX)) 
-     +                        WRANGE(1,JDO10,MINDX) = ADATA(JDO10)
-            IF (ADATA(JDO10).GT.WRANGE(2,JDO10,MINDX)) 
-     +                        WRANGE(2,JDO10,MINDX) = ADATA(JDO10)
-          END IF
-        END IF
-   10   CONTINUE
+        IF (NREFW(MINDX) .EQ. 1) THEN
+C         Set the min. and max. values for the column ranges to the data
+C         values in the first record
+          DO 10 JDO10 = 1,NCOLW(MINDX)
+            WRANGE(1,JDO10,MINDX) = ADATA(JDO10)
+            WRANGE(2,JDO10,MINDX) = ADATA(JDO10)
+ 10       CONTINUE
+        ENDIF
+C       Update the ranges in a NaN-safe way
+        CALL CCPWRG (NCOLW(MINDX), ADATA, WRANGE(1,1,MINDX))
 C
 C---- Update the resolution range if appropriate
 C
