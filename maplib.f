@@ -916,7 +916,7 @@ C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
-      CHARACTER*4	  MAP
+      CHARACTER*4  MAP
       PARAMETER (MAP      =  'MAP ')
 C     ..
 C     .. Scalar Arguments ..
@@ -1432,7 +1432,7 @@ C
           WRITE (LUNOUT,FMT=6012)
         ENDIF
 C
-Cdw----	Read labels as bytes
+Cdw---- Read labels as bytes
 C
         NITHDR = 800
         CALL QMODE(LSTRM(IUNIT),0,NCHHDR)
