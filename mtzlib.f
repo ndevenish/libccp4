@@ -1,11 +1,7 @@
+C    Fixed small bug in LWASSN re 0 input columns	SMM  22-June-1992
+C    Renamed colasn as LKYASN (LKY because it's a utility subroutine)
 C
-C added phil's colasn subroutine
-C
-C there follows a jiffy subroutine to do column assignments, bypassing
-C the need for keyworded input. This is useful in writing little mtz
-C programs, without using Parser in the main program. I think it would
-C be useful to add this to the mtzlib
-c     ====================================================
+C    Added Phil's colasn subroutine	21-Apr-1992
 C
 C
 C    REVISED on
@@ -79,7 +75,7 @@ C    symfr3.f     symtr3.f      lkyin.f       lkyout.f     labprt.f
 C    lbprt.f      lrbat.f       lwbat.f       rbathd.f     wbathd.f
 C    lrbscl.f     lrbtit.f      lwbscl.f      lwbtit.f     lrhdrl.f
 C    lwhdrl.f     lphist.f      sortup.f      addlin.f     nextln.f
-C    lrncol.f     lkyset.f      lstrsl.f      lstlsq.f
+C    lrncol.f     lkyset.f      lstrsl.f      lstlsq.f     lkyasn.f
 C
 C   The development of the MTZ files and associated software mark 1
 C   is part of the masterplan of the ESF/EACBM Working Group 2.1 for
@@ -89,7 +85,7 @@ C
 C
 C  MTZ Version 1.0
 C  Subroutines for standard files         SMM/HCT/EMBLHH    November 1989
-C  Subroutines for multi-record files     SMM/EMBLHH/DL  February 1990
+C  Subroutines for multi-record files     SMM/EMBLHH/KH/DL  February 1990
 C
 C  MTZ Version 1.1
 C  Complete rewrite of header handling    SMM/EMBLHH        November 1990
@@ -150,7 +146,7 @@ C               ie reports on position in file
 C
 C   LRSEEK      Move to a specific reflection record number
 C
-C   LRREWD      Rewind an LCF file for re-read
+C   LRREWD      Rewind an MTZ file for re-read
 C
 C   LRCLOS      Close an MTZ file which has been opened for read
 C
@@ -219,6 +215,8 @@ C             by the user
 C
 C   LKYSET    Similar to LKYIN except the "lookup" array is passed back
 C             to the program
+C
+C   LKYASN    Jiffy to call LKYIN & LRASSN, no need for parser in main prog
 C
 C   LHPRT     Subroutine to output data from an MTZ header mark 1
 C
@@ -1089,7 +1087,6 @@ C
 C
 C
       END
-
 C
 C
 C
@@ -4248,12 +4245,17 @@ C
 C
 C---- Print out program labels and column labels
 C
-          STROUT = '* Output Program Labels :'
 C
 C              ****************
+          STROUT = '* Output Program Labels :'
           CALL PUTLIN(STROUT,'CURWIN')
           CALL BLANK('CURWIN',1)
-          CALL LABPRT(LSPRGO,NLPRGO)
+          IF (NLPRGO.GT.0) THEN
+            CALL LABPRT(LSPRGO,NLPRGO)
+          ELSE
+            STROUT = 'There were NO output program labels'
+            CALL PUTLIN(STROUT,'CURWIN')
+          END IF
           CALL BLANK('CURWIN',1)
           STROUT = '* Output File Labels :'
           CALL PUTLIN(STROUT,'CURWIN')
@@ -4393,13 +4395,13 @@ C          of integers & reals
       INTEGER MBLENG,MBLINT,MBLREA
       PARAMETER (MBLENG=185,MBLINT=29,MBLREA=156)
       INTEGER RBATCH(MBLENG)
+      DATA RBATCH/MBLENG*0/
       CHARACTER*94 BTITLE
 C     
 C
       INTEGER ISTAT,IFAIL,I
       CHARACTER*100 LINE2
       EXTERNAL LERROR
-      DATA RBATCH/MBLENG*0/
 C
 C
 C Copy title
@@ -5765,14 +5767,13 @@ C
 C
 C---- Update the column ranges
 C
-        DO 10 JDO10 = 1,NCOLW(MINDX)
-          IF (ADATA(JDO10).NE.MDFBIG) THEN
-            IF (ADATA(JDO10).LT.WRANGE(1,JDO10,MINDX)) THEN
-              WRANGE(1,JDO10,MINDX) = ADATA(JDO10)
-            ELSE IF (ADATA(JDO10).GT.WRANGE(2,JDO10,MINDX)) THEN
-              WRANGE(2,JDO10,MINDX) = ADATA(JDO10)
-            END IF
-          END IF
+      DO 10 JDO10 = 1,NCOLW(MINDX)
+        IF (ADATA(JDO10).NE.MDFBIG) THEN
+          IF (ADATA(JDO10).LT.WRANGE(1,JDO10,MINDX)) 
+     +                        WRANGE(1,JDO10,MINDX) = ADATA(JDO10)
+          IF (ADATA(JDO10).GT.WRANGE(2,JDO10,MINDX)) 
+     +                        WRANGE(2,JDO10,MINDX) = ADATA(JDO10)
+        END IF
    10   CONTINUE
 C
 C---- Update the resolution range 
@@ -7520,7 +7521,146 @@ C
       END
 C
 C
-
+C
+C     =====================================================
+      SUBROUTINE LKYASN(MINDX,NLPRGI,LSPRGI,CTPRGI,LOOKUP)
+C     =====================================================
+C
+C
+C---- There follows a jiffy subroutine to do column assignments, bypassing
+C     the need for keyworded input. This is useful in writing little mtz
+C     programs, without using Parser in the main program.          PRE
+C
+c
+C     Read column assignments and make them, for input MTZ file 
+C     open for read on index MINDX
+C
+C     It expects to read from stream 5 a line of the form
+C       LABIN  program_label=file_label program_label=file_label . . .
+C
+C     This routine is useful for simple jiffy programs that don't want 
+C     full keyworded input
+C
+C On entry:
+C
+C     MINDX	INTEGER		file index number for opened MTZ input file
+C
+C     NLPRGI    INTEGER		number of input program labels
+C
+C     LSPRGI	CHARACTER*30	array of dimension at least NLPRGI
+C                               containing the program label strings
+C
+C     CTPRGI	CHAR*1		array of column types for each column: 
+C				these will be checked to see that they 
+C				match the actual column types in the file. 
+C				If you don't want to check column types, 
+C				provide blank types here
+C				(dimension at least NLPRGI)
+C
+C On exit:
+C
+C     LOOKUP	INTEGER		array of dimension at least NLPRGI
+C				contining column numbers for each 
+C				assigned label
+C
+C
+C     .. Parameters ..
+      INTEGER MFILES
+      PARAMETER (MFILES=3)
+      INTEGER MAXTOK
+      PARAMETER (MAXTOK=100)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER MINDX,NLPRGI
+C     ..
+C     .. Array Arguments ..
+      INTEGER LOOKUP(*)
+      CHARACTER*1  CTPRGI(*)
+      CHARACTER*30 LSPRGI(*)
+C     ..
+C     .. Local Scalars ..
+      CHARACTER KEY*4,LINE*80,SUBKEY*4,LINE2*400
+      INTEGER NTOK,ISTAT,IFAIL
+      LOGICAL LEND
+C     ..
+C     .. Local Arrays ..
+      CHARACTER CVALUE(MAXTOK)*4
+      INTEGER IBEG(MAXTOK),IEND(MAXTOK),ITYP(MAXTOK),IDEC(MAXTOK)
+      REAL    FVALUE(MAXTOK)
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL PARSER,LKYIN,LRASSN,LERROR
+C
+C
+C---- First check that the MINDX is valid
+C
+      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
+        WRITE (LINE2,FMT='(A,I3,A,1X,I1,1X,A)')
+     +    'From LKYASN : Index',MINDX,
+     +    ' is out of range (allowed 1..',MFILES,')'
+        ISTAT = 2
+        IFAIL = -1
+C
+C            ************************
+        CALL LERROR(ISTAT,IFAIL,LINE)
+C            ************************
+C
+      ELSE
+C
+C---- loop to read control input
+C
+ 1      LINE=' '
+        NTOK=MAXTOK
+C
+C            *********************************************************
+        CALL PARSER(
+     +    KEY,LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,NTOK,LEND,.TRUE.)
+C            *********************************************************
+C
+        IF(LEND) THEN
+          WRITE (LINE2,FMT='(A)')
+     +    'From LKYASN : *** End of file found in column assignment ***'
+          ISTAT = 1
+C
+C              ************************
+          CALL LERROR(ISTAT,IFAIL,LINE)
+C              ************************
+C
+          RETURN
+        END IF
+C
+        IF(NTOK.EQ.0) GO TO 1
+C
+        IF (KEY .EQ. 'LABI') THEN
+C
+C---- Labin column assignments
+C
+C              **********************************************
+          CALL LKYIN(INDEX,LSPRGI,NLPRGI,NTOK,LINE,IBEG,IEND)
+C              **********************************************
+C
+C---- Column assignments, set lookup
+C
+C              ****************************************
+          CALL LRASSN(INDEX,LSPRGI,NLPRGI,LOOKUP,CTPRGI)
+C              ****************************************
+C
+        ELSE
+C
+          WRITE (LINE2,FMT='(A,A)')
+     +    'From LKYASN:  *** Column assignment should begin',
+     +    ' with keyword LABIN ***'
+          ISTAT = 1
+C
+C              ************************
+          CALL LERROR(ISTAT,IFAIL,LINE)
+C              ************************
+C
+        END IF
+C
+      END IF
+C
+      END
 C
 C
 C
@@ -9610,84 +9750,3 @@ C
 C
 C
       END
-C
-      subroutine colasn(index,nlprgi,lsprgi,ctprgi,lookup)
-c     ====================================================
-C
-C
-C there follows a jiffy subroutine to do column assignments, bypassing
-C the need for keyworded input. This is useful in writing little mtz
-C programs, without using Parser in the main program. I think it would
-C be useful to add this to the mtzlib
-C
-c
-c  read column assignments and make them, for input MTZ file already opened
-c
-c  It expects to read from stream 5 a line of the form
-c     LABIN  program_label=file_label program_label=file_label . . .
-c
-c  This routine is useful for simple jiffy programs that don't want 
-c  full keyworded input
-c
-c On entry:
-c     index      file index number for opened MTZ input file
-c     nlprgi     number of columns to be assigned
-c     lsprgi     labels for each of the columns to be assigned (program labels)
-c                (array character*30 lsprgi(nlprgi))
-c     ctprgi     column types for each column: these will be checked to see
-c                that they match the actual column types in the file. If you
-c                don't want to check column types, provide blank types here
-c                (array character*1 ctprgi(nlprgi))
-c
-c On exit:
-c     lookup(nlprgi)  column numbers for each assigned label
-c
-C
-c
-c Arguments:
-      integer index, nlprgi
-      character*(*) lsprgi(nlprgi),ctprgi(nlprgi)
-      integer lookup(nlprgi)
-c
-c things for parser ----
-      integer maxtok
-      parameter (maxtok=100)
-      character key*4,cvalue(maxtok)*4,line*80,subkey*4
-      integer ibeg(maxtok),iend(maxtok),ityp(maxtok),
-     .     idec(maxtok),ntok
-      real    fvalue(maxtok)
-      logical lend
-c
-c
-c ---- loop to read control input
-c
-1     line=' '
-      ntok=maxtok
-      call parser(
-     .  key,line,ibeg,iend,ityp,fvalue,cvalue,idec,ntok,lend,.true.)
-      if(lend) then
-         write (6,'(a)')
-     $        ' *** End of file found in column assignment (COLASN) ***'
-         return
-      endif
-      if(ntok.eq.0) go to 1
-
-      if (key .eq. 'LABI') then
-c
-c labin column assignments
-c             **********************************************
-         call lkyin(index,lsprgi,nlprgi,ntok,line,ibeg,iend)
-c             **********************************************
-c  column assignments, set lookup
-c             ****************************************
-         call lrassn(index,lsprgi,nlprgi,lookup,ctprgi)
-c             ****************************************
-c
-      else
-c
-         write (6,'(a)')
-     $    ' *** Column assignment should begin with keyword LABIN ***'
-      endif
-
-      return
-      end
