@@ -244,7 +244,7 @@ C
          LINE = LINEX   // ' '
          FIRST = .FALSE.
       ELSE
-        LINE(:LL) = ' ' // LINEX(1:LX) // ' '
+        LINE(LL:) = ' ' // LINEX(1:LX) // ' '
       END IF
       GO TO 20
 C
@@ -260,7 +260,7 @@ C
       ELSE
       LX = LENSTR(LINEX)
       LL = LENSTR(LINE) + 1
-      LINE(1:LL) = ' ' // LINEX(1:LX) // ' '
+      LINE(LL:) = ' ' // LINEX(1:LX) // ' '
       END IF
 C
 C
