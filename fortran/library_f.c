@@ -854,6 +854,119 @@ float etime (tarray)
 }
 
 #endif             /*  HPUX and AIX support */
+
+/** Lahey Express LF95 6.0 **/
+#ifdef LF95
+int gerror_ (str, Lstr)
+char *str;
+int  Lstr;
+{
+  int i;
+
+  if (errno == 0) {             /* Avoid `Error 0' or some such message */
+    for (i=1; Lstr; i++)
+      str[i] = ' ';
+  } else {
+    (void) strncpy (str, strerror (errno), Lstr);
+    for (i = strlen (str); i < Lstr; i++) str[i] = ' ';  /* pad with spaces */
+  }
+  return 0;
+}
+#endif
+
+#if defined(ABSOFT_F77) || defined(LAHEY)
+/*  int exit_ (status) */
+/*       int *status; */
+/*  { */
+/*    f_exit (); */
+/*    exit (*status); */
+/*  } */
+
+/*  int time_ () */
+/*  { */
+/*    return (int) time (NULL); */
+/*  } */
+
+/*  int time_ () */
+/*  { */
+/*    return (int) time (NULL); */
+/*  } */
+
+int getpid_ ()
+{
+  return (int) getpid ();
+}
+
+int idate_ (iarray)
+int iarray[3];
+{
+  struct tm *lt;
+  time_t tim;
+  tim = time(NULL);
+  lt = localtime(&tim);
+  iarray[0] = lt->tm_mday;
+  iarray[1] = lt->tm_mon+1;
+  iarray[2] = lt->tm_year + 1900;
+  return 0;
+}
+
+int gerror_ (str, Lstr)
+char *str;
+int  Lstr;
+{
+  int i;
+
+  if (errno == 0) {             /* Avoid `Error 0' or some such message */
+    for (i=1; Lstr; i++)
+      str[i] = ' ';
+  } else {
+    (void) strncpy (str, strerror (errno), Lstr);
+    for (i = strlen (str); i < Lstr; i++) str[i] = ' ';  /* pad with spaces */
+  }
+  return 0;
+}
+
+int ierrno_ () {
+  return errno;
+}
+
+/*  void itime (array) */
+/*       int array[3]; */
+/*  { */
+/*       struct tm *lt; */
+/*       time_t tim; */
+/*       tim = time(NULL); */
+/*       lt = localtime(&tim); */
+/*       array[0] = lt->tm_hour; array[1] = lt->tm_min; array[2] = lt->tm_sec; */
+/*  } */
+
+int itime_ (array)
+int array[3];
+{
+  struct tm *lt;
+  time_t tim;
+  tim = time(NULL);
+  lt = localtime(&tim);
+  array[0] = lt->tm_hour; array[1] = lt->tm_min; array[2] = lt->tm_sec;
+}
+
+static long clk_tck = 0;
+
+float etime_ (tarray)      /* NB `doublereal' return for f2c. */
+     float tarray[2];
+{
+  struct tms buffer;
+  time_t utime, stime;
+  if (! clk_tck) clk_tck = sysconf(_SC_CLK_TCK);
+  (void) times(&buffer);
+  tarray[0] = (float) buffer.tms_utime / (float)clk_tck;
+  tarray[1] = (float) buffer.tms_stime / (float)clk_tck;
+  return (tarray[0]+tarray[1]);
+}
+
+#endif              /* ABSOFT_F77 support  */
+
+
 #if defined(F2C) || defined(G77)
 /* <f2c support>=                                                           */
 int exit_ (status)
@@ -986,6 +1099,7 @@ int /* logical */ btest_ (a, b)
   return ((((unsigned long) *a)>>(*b)))&1 ? TRUE_ : FALSE_;
 }
 #endif              /* F2C support  */
+
 /* isatty doesnt seem to be in Mircrosoft Visual Studdio so this is a fudge */
 #if CALL_LIKE_MVS
 int __stdcall ISATTY (int *lunit)
