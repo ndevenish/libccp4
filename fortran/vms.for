@@ -511,7 +511,8 @@ C     ===============================
       SUBROUTINE USTENV(LINE,IRESULT)
 C     ===============================
 C
-C     Create logical name assignment LOGNAM --> FILNAM
+C     Logical name assignment
+C     LINE is '<logical name>=<filename>'.  IRESULT.eq.0 iff successful
 C
       IMPLICIT NONE
       INTEGER IRESULT
