@@ -79,6 +79,11 @@
 #define _POSIX_SOURCE
 #endif
 
+/* include X/Open Unix extensions (e.g. cuserid) */
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE
+#endif
+
 #include <stdio.h>
 
 #if defined (VMS)
