@@ -243,8 +243,16 @@ that [[__OSF1__]] is defined, but it's reported that you need
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_SUN 1
 #endif
-@ \idx{VMS} is a law unto itself, of course.
+@ \idx{VMS} is a law unto itself, of course.  Help for VAX C doesn't
+actually say [[VMS]] is defined (as opposed to [[vms]]), although it
+seems to be.  The other possibilities are guesses for DEC C in strict
+ANSI mode.
 <<identifying the platform>>=
+#ifndef VMS
+#  if defined (vms) || defined (__vms) || defined (__VMS)
+#    define VMS
+#  endif
+#endif
 #if defined (VMS)
 #  define KNOWN_MACHINE
 #endif
@@ -371,12 +379,21 @@ half(integer)-word complex and complex, respectively:
 <<global variables>>=
 static char rcsid[] = "$Id$";
 static int initialised =  0;    /* flag to initialise data and file streams */
-static char *file_attribute[] = { /* DISKIO file modes */
-  "wb+",   /* 'UNKNOWN'   open as 'OLD'/'NEW' check existence */
-  "wb+",   /* 'SCRATCH'   open as 'OLD' and delete on closing */
-  "rb+",   /* 'OLD'       file MUST exist or program halts */
-  "wb+",   /* 'NEW'       create (overwrite) new file */
-  "rb"     /* 'READONLY'  self explanatory */
+@  These DISKIO file modes used to include a [[b]] since they're
+binary.  This caused serious lossage when reading a (scratch) file
+just after writing it ([[fread]] returned [[0]] but without any error
+indication).  I've no idea why.  However, I note that the \ac{ansi} C
+[[b]] doesn't have any effect in \ac{posix} anyway.  In \idx{VAX} C
+[[b]] means `no conversion of carriage-control information is
+attempted'.  It's not clear to me whether you want this or not.  Both
+possibilites {\em seem\/} to work OK\@.
+<<global variables>>=
+static char *file_attribute[] = {
+  "w+",   /* 'UNKNOWN'   open as 'OLD'/'NEW' check existence */
+  "w+",   /* 'SCRATCH'   open as 'OLD' and delete on closing */
+  "r+",   /* 'OLD'       file MUST exist or program halts */
+  "w+",   /* 'NEW'       create (overwrite) new file */
+  "r"     /* 'READONLY'  self explanatory */
 };                                                                      
 @ %def rcsid initialised file_attribute
 @ Here is a table of bytes per item for the different i/o modes
@@ -601,11 +618,6 @@ This functionality doesn't seem to exist in \idx{VMS}\@.
 Opens \meta{filename} on diskio stream \meta{iunit}.  \meta{istat}
 corresponds to the open mode given to [[qopen]], from which [[copen]]
 is always called---see diskio documentation.
- 
-\fixme{Support \idx{scratch files} properly on \idx{VMS}.  At present
-they need to be [[qclose]]d to go away.  It looks as though you can
-create them with [[creat]] rather than [[fopen]] to get a temporary
-one and then connect it as old.}
 <<diskio routines>>=
 #if CALL_LIKE_HPUX
   void copen (iunit, filename, istat, Lfilename)
@@ -924,7 +936,8 @@ int *iunit, *mode, *size;
 
 Reads \meta{nitems} in the current mode (set by [[qmode]]) from diskio stream
 \meta{iunit} previously opened by [[qopen]](/[[copen]]) and returns
-\meta{result} which is the number of items read or [[0]] on failure.
+\meta{result} which is [[0]] on success or [[-1]] at EOF\@.
+It aborts on an i/o error.
 Numbers written in a foreign format will be translated if necessary if
 the stream is connected to an MTZ or map file.
 <<diskio routines>>=
@@ -951,15 +964,20 @@ int *iunit, *nitems, *result;
   if (file_last_op[*iunit] == WRITE_OP) {
 <<OpenVMS seek fudge>>
     if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0) {
-      *result = -1;
+      /**result = -1;*/
+      fatal ("QREAD: seek error");
       return; } }
   file_last_op[*iunit] = READ_OP;
+  errno = 0;
   i = fread (buffer, (size_t) file_bytes_per_item[*iunit], 
                 (size_t) *nitems, file_stream[*iunit]);
   if (i != *nitems) {
     if (feof (file_stream[*iunit])) *result = -1;
-    else *result = i;
-    return;
+    else {
+      /**result = i;*/
+      fatal ("QREAD: i/o error");
+      return;
+    }
   }
   *result = 0;
   n = *nitems;
