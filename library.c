@@ -1295,15 +1295,17 @@ void idate (d, m, y)
 float dtime (tarray)
      float tarray[2];
 {
-  struct tms *buffer;
-  time_t utime, stime, old_utime = 0, old_stime = 0;
-  (void) times(buffer);
-  utime = buffer->tms_utime; stime = buffer->tms_stime;
+  struct tms buffer;
+  time_t utime, stime;
+  static time_t old_utime = 0, old_stime = 0;
+  (void) times(&buffer);
+  utime = buffer.tms_utime; stime = buffer.tms_stime;
   tarray[0] = ((float)(utime - old_utime)) / (float)CLK_TCK;
   tarray[1] = ((float)(stime - old_stime)) / (float)CLK_TCK;
   old_utime = utime; old_stime = stime;
   return (tarray[0]+tarray[1]);
 }
+
 #endif
 
 #if defined (__hpux)
