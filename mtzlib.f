@@ -7919,7 +7919,7 @@ C     IPRINT    INTEGER         print indicator : meaning :
 C                               =1 Brief header info printed (default)
 C                               =2 As above plus history info
 C                               =3 Full header dump, symmetry, alles !
-C                               =4 Special flag for LCFDUMP only
+C                               =4 As 1 plus full symmetry 
 C                               any other value, nothing happens
 C
 C
@@ -8187,9 +8187,9 @@ C                ***********************
 C
           END IF
 C
-C---- Symmetry: everything for a full header dump, else just name & number
+C---- Symmetry: everything for =3 or =4, else just name & number
 C
-          IF (IPRINT.EQ.3) THEN
+          IF ((IPRINT.EQ.3) .OR. (IPRINT.EQ.4)) THEN
 C
 C
             IF (NSYM(MINDX).GT.0) THEN
