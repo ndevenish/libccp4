@@ -289,6 +289,7 @@ int ccp4_file_raw_read(CCP4File *cfile, char *buffer, size_t n_items)
       ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_EOF), 
 		  "ccp4_file_raw_read", NULL); 
       cfile->iostat = CIO_EOF;
+      result = EOF;
     } else if (result != n_items && ferror(cfile->stream)) {
       ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_raw_read", NULL);
       cfile->iostat = CIO_ReadFail; 
