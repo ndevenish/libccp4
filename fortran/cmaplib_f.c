@@ -1114,7 +1114,8 @@ FORTRAN_SUBR( MSYWRT, msywrt,
 	      (int *iunit, int *nsym, float *rot),
 	      (int *iunit, int *nsym, float *rot))
 {
-  int ii,i;
+  int ii,i,j,k;
+  float rsm[4][4];
   char buffer[80];
 
   if ( (ii = GetChannel(*iunit)) == MAXFILES ||
@@ -1124,7 +1125,10 @@ FORTRAN_SUBR( MSYWRT, msywrt,
 
   for (i=0; i != *nsym ; ++i) {
     memset(buffer,' ',80U);
-    mat4_to_symop(buffer,&buffer[80],rot+16*i);
+    for (j=0; j != 4 ; ++j) 
+      for (k=0; k != 4 ; ++k) 
+        rsm[j][k] = *(rot+16*i+j+4*k);
+    mat4_to_symop(buffer,&buffer[80],rsm);
     ccp4_cmap_set_symop(ioArray[ii]->mapfile,buffer);
   }
   /* record for FORTRAN API */
@@ -1137,7 +1141,8 @@ FORTRAN_SUBR( CCP4_MAP_WRITE_SYMM_MATRIX, ccp4_map_write_symm_matrix,
 	      (int *iunit, int *nsym, float *rot))
      /* see MSYWRT */  
 {
-  int ii,i;
+  int ii,i,j,k;
+  float rsm[4][4];
   char buffer[80];
 
   if ( (ii = GetChannel(*iunit)) == MAXFILES ||
@@ -1147,7 +1152,10 @@ FORTRAN_SUBR( CCP4_MAP_WRITE_SYMM_MATRIX, ccp4_map_write_symm_matrix,
 
   for (i=0; i != *nsym ; ++i) {
     memset(buffer,' ',80U);
-    mat4_to_symop(buffer,&buffer[80],rot+16*i);
+    for (j=0; j != 4 ; ++j) 
+      for (k=0; k != 4 ; ++k) 
+        rsm[j][k] = *(rot+16*i+j+4*k);
+    mat4_to_symop(buffer,&buffer[80],rsm);
     ccp4_cmap_set_symop(ioArray[ii]->mapfile,buffer);
   }
   /* record for FORTRAN API */
