@@ -349,16 +349,17 @@ C     dest= the link destination
       character*(*) text,dest
       integer lpt, htmlinit
       logical html,logsumm,summopen
-      character cbin*160,chtml*160,cpid*160
+      character cbin*160,chtml*160,cpid*160,pn*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
      .                 summopen
       save   /ccp4hdat/
       integer lenstr
-      external lenstr
+      external lenstr,ccppnm
+      call ccppnm(pn)
       if (html) then
        if (dest(1:1).eq.'#') then
-        write (lpt,10)dest,cpid(1:lenstr(cpid)),text
- 10     format('<a href="',a,a,'">',a,'</a>')
+        write (lpt,10)dest,pn(1:lenstr(pn)),cpid(1:lenstr(cpid)),text
+ 10     format('<a href="',a,a,a,'">',a,'</a>')
        else
         write (lpt,20)chtml(1:lenstr(chtml)),dest,text
  20     format('<a href="',a,'/',a,'">',a,'</a>')
