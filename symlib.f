@@ -795,17 +795,18 @@ C     .. Array Arguments ..
 C     ..
 C     ..
 C     .. Local Scalars ..
-      INTEGER I, NCENT, IH, IK, IL, J, NC
+      INTEGER I, NCENT, IH, IK, IL, J, NC, ISYM, ICENT
+      REAL RR,SS,PIDEG,PI2,CONV
       LOGICAL SETUP
       CHARACTER STROUT*400
 C     ..
 C     .. Local Arrays ..
-      REAL CPROJ(3,20),CPRJ(3,12),CONV,PI2
+      REAL CPROJ(3,20),CPRJ(3,12),TRANSCEN(3,12)
       INTEGER IHKL(3,12),IN(3)
       CHARACTER REFTYP(12)*7
 C     ..
 C     .. Save statement ..
-      SAVE CPROJ, NCENT, SETUP
+      SAVE CPROJ, NCENT, SETUP, TRANSCEN
 C     ..
 C     .. External Subroutines ..
       EXTERNAL PUTLIN
@@ -834,6 +835,37 @@ C
         RETURN
    20   IC = 1
       END IF
+      RETURN
+
+C     ============================
+      ENTRY CENTPHASE(HKL,CENPHS)
+c     ============================
+C     Return CENPHS - the centric phase should be CENPHS or CENPHS + pi
+
+      IF (.NOT.SETUP) 
+     +       CALL CCPERR(1,'CENTPHASE: CENTRIC not called first')
+      PIDEG = 180.0
+
+      IF (NCENT.GE.0) THEN
+        DO 60 I = 1,NCENT
+          ICENT = I
+          IF ((CPROJ(1,I)*HKL(1)+CPROJ(2,I)*HKL(2)+CPROJ(3,I)*HKL(3))
+     +        .EQ. 0.0) GO TO 70
+   60   CONTINUE
+        CALL CCPERR(1,'CENTPHASE: This is not a centric reflection!')
+        RETURN
+   70   RR = hkl(1)*TRANSCEN(1,ICENT)+hkl(2)*TRANSCEN(2,ICENT)
+     +                        +hkl(3)*TRANSCEN(3,ICENT)
+        SS = REAL(INT(RR))
+        IF (RR.GE.SS) THEN
+          CENPHS = PIDEG * (RR - SS)
+        ELSE
+          CENPHS = PIDEG * (RR - SS + 1.0)
+        ENDIF
+      ELSE
+        CALL CCPERR(1,'CENTPHASE: There are no centric zones defined!')
+      END IF
+
       RETURN
 C
 C^L
@@ -907,6 +939,7 @@ C
 C---- test whether h' k' l' equals -h -k -l
 C
         DO 40 J = 1,NSM
+          ISYM = J
           IH = IN(1)*RSM(1,1,J) + IN(2)*RSM(2,1,J) + IN(3)*RSM(3,1,J)
           IF (IH.EQ.-IN(1)) THEN
             IK = IN(1)*RSM(1,2,J) + IN(2)*RSM(2,2,J) +
@@ -926,6 +959,9 @@ C
         CPROJ(1,NCENT) = CPRJ(1,NC)
         CPROJ(2,NCENT) = CPRJ(2,NC)
         CPROJ(3,NCENT) = CPRJ(3,NC)
+        TRANSCEN(1,NCENT) = RSM(1,4,ISYM)
+        TRANSCEN(2,NCENT) = RSM(2,4,ISYM)
+        TRANSCEN(3,NCENT) = RSM(3,4,ISYM)
 C
         IF(IPRINT.GE.1) THEN
         WRITE (STROUT,FMT=6000) NCENT,REFTYP(NC)
