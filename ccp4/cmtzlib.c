@@ -221,9 +221,11 @@ MTZ *MtzGet(const char *logname, int read_refs)
     }
 
     /* DATASET line. This should present for every dataset so use to
-       increment dataset count. */
+       increment dataset count. However, if this is the base dataset,
+       don't increment as we already have it. */
     else if (ccp4_keymatch(key, "DATA")) {
-      ++nset[nxtal-1];
+      if ( token[1].value || (ntok > 2 && strcmp(token[2].fullstring,"HKL_base")) )
+        ++nset[nxtal-1];
     }
 
     /* DCELL line. */
@@ -231,7 +233,8 @@ MTZ *MtzGet(const char *logname, int read_refs)
       for (i = 0; i < 6; ++i) 
         cell[i] = (float) token[i+2].value;
       /* If old crystal but cell dimensions differ, make new crystal.
-         This is primarily for old files with no CRYSTAL cards. */
+         This is primarily for old files with no CRYSTAL cards. 
+         This test doesn't apply to base dataset. */
       if (jxtal > 0 && iiset > 0 && 
                 (cellin[jxtal][0] != cell[0] || cellin[jxtal][1] != cell[1]
               || cellin[jxtal][2] != cell[2] || cellin[jxtal][3] != cell[3]
@@ -316,13 +319,14 @@ MTZ *MtzGet(const char *logname, int read_refs)
     }
 
     else if (strncmp (mkey, "DATA",4) == 0) {
-      iset = (int) token[1].value;
-      ++nset[jxtalin[iiset]];
-      mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]]->setid = iset;
-      strcpy(mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]]->dname,"dummy");
-      if (ntok > 2) strcpy(mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]]->dname,
+      if ( token[1].value || (ntok > 2 && strcmp(token[2].fullstring,"HKL_base")) ) {
+        iset = (int) token[1].value;
+        ++nset[jxtalin[iiset]];
+        mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]]->setid = iset;
+        strcpy(mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]]->dname,"dummy");
+        if (ntok > 2) strcpy(mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]]->dname,
                               token[2].fullstring);
-
+      }
     }
 
     else if (strncmp (mkey, "DCEL",4) == 0) {
@@ -2214,13 +2218,16 @@ int MtzPut(MTZ *mtz, const char *logname)
  MtzWhdrLine(fileout,35,hdrrec);
  if (debug) printf(" MtzPut: NCOL just written \n");
 
- /* Purely for backwards compatibility */
- if (mtz->xtal[0] != NULL) {
-   sprintf(hdrrec,"CELL  %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f",mtz->xtal[0]->cell[0],
-           mtz->xtal[0]->cell[1],mtz->xtal[0]->cell[2],mtz->xtal[0]->cell[3],
-           mtz->xtal[0]->cell[4],mtz->xtal[0]->cell[5]);
-   MtzWhdrLine(fileout,65,hdrrec);
- }
+ /* Purely for backwards compatibility: output first non-zero cell as
+    global cell. */
+ for (i = 0; i < mtz->nxtal; ++i)
+   if (mtz->xtal[i]->cell[0] > 0.001) {
+     sprintf(hdrrec,"CELL  %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f",mtz->xtal[i]->cell[0],
+           mtz->xtal[i]->cell[1],mtz->xtal[i]->cell[2],mtz->xtal[i]->cell[3],
+           mtz->xtal[i]->cell[4],mtz->xtal[i]->cell[5]);
+     MtzWhdrLine(fileout,65,hdrrec);
+     break;
+   }
  if (debug) printf(" MtzPut: CELL just written \n");
 
  ccp4_lrsort(mtz, isort);
@@ -2362,10 +2369,16 @@ int MtzPut(MTZ *mtz, const char *logname)
    } else {
      numbat = mtz->n_orig_bat;
    }
+   if (debug) {
+     printf(" MtzPut: original number of batches %d \n",mtz->n_orig_bat);
+     printf(" MtzPut: total number of batches %d \n",MtzNbat(mtz));
+     printf(" MtzPut: number of batches to be written %d \n",numbat);
+   }
+
    for (i = 0; i < numbat; i += 12) {
      sprintf(hdrrec,"BATCH ");
      l = 6;
-     for (j = 0; j < 12 && 12*i+j < numbat; ++j) {
+     for (j = 0; j < 12 && i+j < numbat; ++j) {
        sprintf(hdrrec+6+6*j,"%6d",batch->num);
        l += 6;
        batch = batch->next;
@@ -2804,10 +2817,12 @@ MTZSET *MtzAddDataset(MTZ *mtz, MTZXTAL *xtl, const char *dname,
   strncpy( set->dname, dname, 64 );
   set->dname[64] = '\0';
   set->wavelength = wavelength;
-  /* make new setid */
-  for (i = x = 0; x < mtz->nxtal; x++)
+  /* new setid is one more than greatest current setid */
+  i = -1;
+  for (x = 0; x < mtz->nxtal; x++)
     for (s = 0; s < mtz->xtal[x]->nset; s++)
       if (mtz->xtal[x]->set[s]->setid > i) i = mtz->xtal[x]->set[s]->setid;
+
   set->setid = ++i;
   set->ncol = 0;
   /* create initial array of 20 pointers to columns */
