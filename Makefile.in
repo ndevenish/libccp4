@@ -374,10 +374,14 @@ $(LF)(harvlib.o) : $(srcdir)/harvlib.f
 	-rm -rf harvlib.dir; mkdir harvlib.dir
 	echo '      SUBROUTINE HARVLIB' > harvlib.dir/harvlib.$F
 	echo '      END' >> harvlib.dir/harvlib.$F
-	cd harvlib.dir && $(fsplit_dir)/fsplit $(srcdir)/harvlib.f >/dev/null && $(RMEMPTY) && \
+	if test -n "$(ccifdir)" ; then cd harvlib.dir && $(fsplit_dir)/fsplit $(srcdir)/harvlib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
-	  && $(AR) ../$(LF) *.o
+	  && $(AR) ../$(LF) *.o ; else \
+	cd harvlib.dir && $(fsplit_dir)/fsplit $(srcdir)/harv_dummy.f >/dev/null && $(RMEMPTY) && \
+	for i in `pwd`/*.$F; do \
+	  $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
+	  && $(AR) ../$(LF) *.o ; fi
 	rm -f harvlib.dir/*.o
 harvlib : harvlib.o
 	$(RANLIB) $(LF)
