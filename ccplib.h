@@ -90,8 +90,7 @@ int ccp4fyp_cleanup(int ienv, char **envname, char **envtype, char **envext,
 		    char *dir, CCP4PARSERARRAY *parser);
 
 int ccp4setenv(char *logical_name, char* value, char **envname,
-	       char **envtype, char **envext, int *ienv, int no_overwrt,
-	       char *errmsg);
+	       char **envtype, char **envext, int *ienv, int no_overwrt);
 
 int ccp4setenv_cleanup(char *file_ext, char *file_root, char *file_path,
 		       char *file_name);
