@@ -8,10 +8,14 @@
 % This is a CCP4 `part (i)' file for the purposes of copyright.  
 % See the CCP4 distribution conditions for explanation.
 
-\documentstyle[a4wide,times,noweb,makeidx]{article}
+% \documentstyle[a4wide,times,noweb,makeidx]{article}
 
-\newcommand{\ac}[1]{{\rm\normalshape\sc #1}}   % acronym
-\newcommand{\meta}[1]{\mbox{$\langle$\rm\sl #1\/$\rangle$}}
+% \newcommand{\ac}[1]{{\rm\normalshape\sc #1}}   % acronym
+
+\documentclass{article}
+\usepackage{a4wide,times,noweb,makeidx}
+\newcommand{\ac}[1]{\textsc{#1}}   % acronym
+\newcommand{\meta}[1]{\mbox{$\langle$\sl #1\/$\rangle$}}
 \newcommand{\ft}{\idx{Fortran}}
 \newcommand{\idx}[1]{#1\index{#1}}
 \newcommand{\fixme}[1]{\index{Fixme!}[{\bf Fixme!:} #1\@.]}
