@@ -1293,7 +1293,7 @@ c       call ccpdpn(31,'GETNAM','old','F',0,0)
 c	read(31,'(a)') getnam
 c	call spstrunct(getnam)
 c	close (31)
-	call getenv(filnam,getnam)
+	call ugtenv(filnam,getnam)
 	end
 	SUBROUTINE GETPDB(X,ATOM,RES,SEQ,NATM,FILNAM)
 C A subroutine to read the Protein data bank format coordinate file
