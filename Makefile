@@ -1,3 +1,5 @@
+
+
 ##########################################################################
 # Makefile for CCP4 Library                                              #
 ##########################################################################
@@ -9,61 +11,28 @@
 # number of nested loops). On system V change RANLIB to "echo" since it's 
 # not used.
 #
-#CCP4_MASTER = /nfs/dlpx1/home/xtal
-#CCP4_LIB    = /home/ccp4/lib
-#CCP4_BIN    = /pxbin
-#FCOMP       = f77
-#FFLAGS      = -L/home/ccp4/lib -Nc40 -c
-#OPTIM       = -O2
-#CCOMP       = cc
-#CFLAGS      = -I${CCP4_MASTER}/ccp4/include
-#RANLIB      = echo "ranlib"
-#SHELL       = /bin/sh
-
-
-#   Iris stuff-york
-CCP4_MASTER        = /y/programs/ccp4/xtal
-FCOMP      = f77
-CCP4_LIB        = ${CCP4_MASTER}/ccp4/lib
-CCP4_BIN        = ${CCP4_MASTER}/bin
-FFLAGS     = -c -static -vms_cc -L{$CCP4_LIB} -Nc40
-OPTIM       = -O2
-CCOMP      = cc
-CFLAGS      = -I${CCP4_MASTER}/ccp4/include
+CCP4_MASTER = /nfs/dlpx1/home/xtal
+CCP4_LIB    = /home/ccp4/lib
+CCP4_BIN    = /pxbin
+FCOMP       = f77
+FFLAGS      = -Nc40 -L/home/ccp4/lib
+OPTIM       = -O2 
+CCOMP       = cc
+CFLAGS      = -I/nfs/dlpx1/home/xtal/ccp4/include
 RANLIB      = echo "ranlib"
-SHELL      = /bin/sh
-
-#   ESV stuff-york - Fortran identical to Iris
-#CCP4_MASTER        = /y/programs/ccp4/xtal
-#FCOMP      = f77
-#CCP4_LIB        = ${CCP4_MASTER}/ccp4/lib_esv
-#CCP4_BIN        = ${CCP4_MASTER}/bin_esv
-#FFLAGS     = -c -static -vms_cc -L{$CCP4_LIB} -Nc40
-#OPTIM       = -O2
-#CCOMP      = cc
-#CFLAGS      = -DESV -I${CCP4_MASTER}/ccp4/include
-#RANLIB      = echo "ranlib"
-#SHELL      = /bin/sh
-
-#   IBM stuff-york 
-#CCP4_MASTER        = /y/programs/ccp4/xtal
-#FCOMP      = xlf
-#CCP4_LIB        = ${CCP4_MASTER}/ccp4/lib_ibm
-#CCP4_BIN        = ${CCP4_MASTER}/bin_ibm
-#FFLAGS     = -c -static -vms_cc -L{$CCP4_LIB} -Nc40
-#OPTIM       = -O2
-#CCOMP      = xlc
-#CFLAGS      =  -I${CCP4_MASTER}/ccp4/include
-#RANLIB      = echo "ranlib"
-#SHELL      = /bin/sh
-
+SHELL       = /bin/sh
 
 FTARGETS   = ccplib fftlib maplib parser rwatom rwbrook modlib mthlib \
-             frodo_maplib symlib lcflib mtzlib diskio unix
+             symlib lcflib mtzlib diskio unix frodo_maplib hlplib
 
 GRAPHICS   = plot84lib graflib graphics
 
 CTARGETS   = binsortint library ucurse
+
+help:
+	@echo "Use: make libs    - to make library libccp4.a "
+	@echo "     make binsort - to make binsort "
+	@echo "     make clean   - to clean directory "
 
 libs:	${CCP4_LIB}/libccp4.a
 
@@ -71,12 +40,13 @@ ${CCP4_LIB}/libccp4.a: ${CTARGETS} ${FTARGETS} ${GRAPHICS}
 	-${RANLIB} ${CCP4_LIB}/libccp4.a
 
 ${FTARGETS} ${GRAPHICS}:
-	-@/bin/rm -rf `expr $@ : '.*/\(.*\)' '|' $@.dir`
-	-@mkdir `expr $@ : '.*/\(.*\)' '|' $@.dir`       ; \
-	cd `expr $@ : '.*/\(.*\)' '|' $@.dir` ; fsplit $? ; \
-	${FCOMP} ${FFLAGS} ${OPTIM} *.f -lccp4           ; \
+	-@/bin/rm -rf `expr $@ : '.*/\(.*\)' '|' $@`.dir          ;
+	-@mkdir `expr $@ : '.*/\(.*\)' '|' $@`.dir                ; \
+	echo "fsplit $? ; ${FCOMP} ${FFLAGS} ${OPTIM} *.f -lccp4" ; \
+	cd `expr $@ : '.*/\(.*\)' '|' $@`.dir ; fsplit $?         ; \
+	${FCOMP} ${FFLAGS} ${OPTIM} *.f -lccp4                    ; \
 	ar r ${CCP4_LIB}/libccp4.a *.o
-	-@/bin/rm -rf `expr $@ : '.*/\(.*\)' '|' $@.dir`
+	-@/bin/rm -rf `expr $@ : '.*/\(.*\)' '|' $@`.dir
 	touch $@
 
 ${CTARGETS}:
@@ -92,17 +62,18 @@ binsort:
 clean:
 	-rm -f *.f *.o ${FTARGETS} ${CTARGETS} ${GRAPHICS}
 
+
 # Make dependencies:
 
 ccplib:		${CCP4_MASTER}/ccp4/lib/src/ccplib.for
 fftlib:		${CCP4_MASTER}/ccp4/lib/src/fftlib.for
+hlplib:         ${CCP4_MASTER}/ccp4/lib/src/hlplib.for
 maplib:		${CCP4_MASTER}/ccp4/lib/src/maplib.for
 parser:		${CCP4_MASTER}/ccp4/lib/src/parser.for
 rwatom:		${CCP4_MASTER}/ccp4/lib/src/rwatom.for
 rwbrook: 	${CCP4_MASTER}/ccp4/lib/src/rwbrook.for
 modlib:		${CCP4_MASTER}/ccp4/lib/src/modlib.for
 mthlib:		${CCP4_MASTER}/ccp4/lib/src/mthlib.for
-frodo_maplib:		${CCP4_MASTER}/ccp4/lib/src/frodo_maplib.for
 symlib:		${CCP4_MASTER}/ccp4/lib/src/symlib.for
 lcflib:		${CCP4_MASTER}/ccp4/lib/src/lcflib.for
 mtzlib:		${CCP4_MASTER}/ccp4/lib/src/mtzlib.for
@@ -114,3 +85,4 @@ graphics:	${CCP4_MASTER}/ccp4/lib/src/graphics.for
 binsortint:	${CCP4_MASTER}/ccp4/lib/src/binsortint.c
 library:	${CCP4_MASTER}/ccp4/lib/src/library.c
 ucurse:		${CCP4_MASTER}/ccp4/lib/src/ucurse.c
+frodo_maplib:	${CCP4_MASTER}/ccp4/lib/src/frodo_maplib.for
