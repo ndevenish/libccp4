@@ -299,8 +299,8 @@ SRTRET:	Return 1 record from sort
 char		*record;
 {
     register int	ret;
-# if defined (ESV) || defined (ultrix) || defined (alliant) || \
-    defined (titan)		/* guessed as BSD-ish? apart from ESV */
+# if defined (ESV) || defined (ultrix) || defined (alliant)
+    /* Ultrix guessed as BSD-ish */
     union wait *status;
 #else  /* SysVile, POSIX */
     int status;

@@ -58,10 +58,13 @@ dnl   would use a routine doing a rewind instead of REWIND on scratch files.
 dnl   There does *not* seem to be a problem with the following systems:
 dnl     irix (4.0.5) (but see below), osf/1 (1.3), concentrix 2800 (3.0),
 dnl     aix (2.3?), HPUX (9.01), SunOS (4.1.3/SunPro 2.0.1)
+dnl  I'm inclined to think _cant_unlink should be the default now...
 ifelse(_convex,1,
   [define(_cant_unlink,1)],dnl  OS 10, at least
+_titan,1,
+  [define(_cant_unlink,1)],dnl
 _irix51,1,
-  [define(_cant_unlink,1)],dnl  necessary in irix 5.1
+  [define(_cant_unlink,1)],dnl  necessary in irix 5.1 up
 _esv,1,
   [define(_cant_unlink,1)])dnl
 dnl * In the case above, we then want to open STATUS='DELETE', if 
