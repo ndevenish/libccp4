@@ -3611,7 +3611,7 @@ C
 C 
 C  Refine the superimposing Eulerian Angle'
 c
-C	WRITE(6,'(1H0)')
+C	WRITE(6,'(A)') '0'
 C	WRITE(6,*) 'Cycle of Eulerian angle refinement ',NREF
 C	WRITE(6,*) 'Superimposing matrix'
 C	WRITE(6,10) ((A(I,J),J=1,3),I=1,3)
@@ -3655,9 +3655,9 @@ c
         GOTO 50
       END IF
 
-C	WRITE(6,'(1H0)')
+C	WRITE(6,'(A)') '0'
 C	WRITE(6,*) 'That is the final rotation result.'
-C	WRITE(6,'(1H0)')
+C	WRITE(6,'(A)') '0'
       CALL ARRMC(3,1,ROHOLD,1.,ROH)
       CALL HUBER(ROH,A)
 
@@ -3737,7 +3737,7 @@ C
 C 
 C  Refine the superimposing Eulerian Angle'
 c
-C	WRITE(6,'(1H0)')
+C	WRITE(6,'(A)') '0'
 C	WRITE(6,*) 'Cycle of Eulerian angle refinement ',NREF
 C	WRITE(6,*) 'Superimposing matrix'
 C	WRITE(6,10) ((A(I,J),J=1,3),I=1,3)
@@ -3787,9 +3787,9 @@ C	WRITE(6,*)  'RMS NEW AND OLD', RMS,RMS1
       GOTO 30
       END IF
 
-C	WRITE(6,'(1H0)')
+C	WRITE(6,'(A)') '0'
 C	WRITE(6,*) 'That is the final rotation result.'
-C	WRITE(6,'(1H0)')
+C	WRITE(6,'(A)') '0'
       CALL ARRMC(3,1,ROHOLD,1.,ROH)
       CALL HUBERARC(ROH,A)
 
@@ -5143,8 +5143,8 @@ C
       WRITE(6,*) 'SIGMA (Distance(i)) /natm = ',SMEAN
       WRITE(6,*) ' i=1'
 C
-      WRITE(6,'(1H0)')
-      WRITE(6,'(1H0)')
+      WRITE(6,'(A)') '0'
+      WRITE(6,'(A)') '0'
       WRITE(6,*) 'Mol1 is superposed to Mol2.'
       WRITE(6,*) 'The matrix and the vector are:'
       WRITE(6,*) 
@@ -5160,8 +5160,8 @@ C
       CALL ARRPS(3,1,T0,B3,B3)
       CALL ARRAD(3,1,CEN1,B3,T)
 C
-      WRITE(6,'(1H0)')
-      WRITE(6,'(1H0)')
+      WRITE(6,'(A)') '0'
+      WRITE(6,'(A)') '0'
       WRITE(6,*) 
       WRITE(6,4) (A(1,J),J=1,3),T(1)
       WRITE(6,5) (A(2,J),J=1,3),T(2)
