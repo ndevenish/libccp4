@@ -30,8 +30,8 @@ C    GTPINT(N,I,NTOK,ITYP,FVALUE)
 C    GETSTR(N,STRING,NTOK,ITYP,IBEG,IEND,LINE)
 C    SBLANK(ARRAY,N1,N2)
 C    GTCFLD(NFIELD,ITEXT,NCHAR,MINC,MAXC,IGFLAG)
-C    CPYCHR(STRNGA,STRNGB,NCHAR)
-C    CMOVE(STRNGA,STRNGB,NCHAR)
+C    CPYCHR(STRINGA,STRINGB,NCHAR)
+C    CMOVE(STRINGA,STRINGB,NCHAR)
 C    CHKKEY(KEY,WORDS,NWORDS,IKEY)
 C
 C FUNCTIONS
@@ -139,7 +139,7 @@ C     .. Array Arguments ..
       CHARACTER CVALUE(*)*4
 C     ..
 C     .. Local Scalars ..
-      INTEGER IFAIL,J,K,KSTRM,LENLIN,LINLEN,LSTRM,MSTRM,N,
+      INTEGER IFAIL,J,K,KSTREAM,LENLIN,LINLEN,LSTREAM,MSTREAM,N,
      +        NITEM,ISTERR,IFGERR
       LOGICAL FIRST
       CHARACTER IAMP*1,IDASH*1,FLNAME*60,LINERR*800,LINEX*800
@@ -162,7 +162,7 @@ C     .. Save statement ..
       SAVE
 C     ..
 C     .. Data statements ..
-      DATA LSTRM/5/,KSTRM/11/,MSTRM/5/
+      DATA LSTREAM/5/,KSTREAM/11/,MSTREAM/5/
       DATA IAMP/'&'/,IDASH/'-'/,NITEM/0/
 C Comment characters
       DATA ICOMM1,ICOMM2/'#','!'/
@@ -199,7 +199,7 @@ C
       IF (LINE.NE.'    ') GO TO 30
 C
    20 CONTINUE
-      READ (LSTRM,FMT=6000,END=40) LINEX
+      READ (LSTREAM,FMT=6000,END=40) LINEX
  6000 FORMAT (A)
 C
 C
@@ -236,19 +236,21 @@ C---- Continuation line
 C
       IF (LINEX(LX:LX).EQ.'-' .OR. LINEX(LX:LX).EQ.'&') THEN
 C      
-        LINEX(LX:LX) = ' '
-        LL = LENSTR(LINE) + 1
+      LINEX(LX:LX) = ' '
+      LL = LENSTR(LINE)
 C
-        IF (FIRST) THEN
-          LINE = LINEX   // ' '
-          FIRST = .FALSE.
-        ELSE
-          LINE(LL:) = ' ' // LINEX(1:LX) // ' '
-        END IF
+C
+      IF (FIRST) THEN
+         LINE = LINEX   // ' '
+         FIRST = .FALSE.
+         GO TO 20
+      ELSE
+      LINE = LINE(1:LL) // ' ' // LINEX(1:LX) // ' '
         GO TO 20
-C
-C
       END IF
+C
+C
+       END IF
 C
 C---- Not a continuation line
 C
@@ -257,9 +259,9 @@ C
          FIRST = .FALSE.
          GO TO 30
       ELSE
-        LX = LENSTR(LINEX)
-        LL = LENSTR(LINE) + 1
-        LINE(:LL) = ' ' // LINEX(1:LX) // ' '
+      LX = LENSTR(LINEX)
+      LL = LENSTR(LINE)
+      LINE = LINE(1:LL) // ' ' // LINEX(1:LX) // ' '
       END IF
 C
 C
@@ -308,7 +310,7 @@ C
       END IF
 C
 C
-      IF (PRINT .OR. LSTRM.NE.MSTRM) THEN
+      IF (PRINT .OR. LSTREAM.NE.MSTREAM) THEN
         STROUT = ' '
         WRITE (STROUT,FMT=6002) LINE(1:LENSTR(LINE))
  6002   FORMAT (' Data line--- ',A)
@@ -336,20 +338,20 @@ C
       IF (NTOK.GT.0 .AND. ITYP(1).EQ.1 .AND.
      +    CVALUE(1) (1:1).EQ.'@') THEN
 C
-C---- Get filename if present (just '@' resets stream to MSTRM)
+C---- Get filename if present (just '@' resets stream to MSTREAM)
 C
         IF (IDEC(1).EQ.1) THEN
-          LSTRM = MSTRM
+          LSTREAM = MSTREAM
         ELSE
           FLNAME = LINE(IBEG(1)+1:IEND(1))
 C
 C---- Open file
 C
-          LSTRM = KSTRM
+          LSTREAM = KSTREAM
           IFAIL = 1
 C
 C              *********************************************
-          CALL CCPDPN(LSTRM,FLNAME,'READONLY','F',0,IFAIL)
+          CALL CCPDPN(LSTREAM,FLNAME,'READONLY','F',0,IFAIL)
 C              *********************************************
 C
           IF (IFAIL.GE.0) THEN
@@ -362,7 +364,7 @@ C
 C
 C---- Failed to open file
 C
-            LSTRM = MSTRM
+            LSTREAM = MSTREAM
           WRITE (LINERR,FMT='(A,A,A)') 
      +   ' File ',
      +    FLNAME(1:LENSTR(FLNAME)),
@@ -411,9 +413,9 @@ C
 C
 C---- End of file found, return to main input stream if not
 C
-   40 IF (LSTRM.NE.MSTRM) THEN
-        CLOSE (UNIT=LSTRM)
-        LSTRM = MSTRM
+   40 IF (LSTREAM.NE.MSTREAM) THEN
+        CLOSE (UNIT=LSTREAM)
+        LSTREAM = MSTREAM
       ELSE
         LEND = .TRUE.
       END IF
@@ -497,7 +499,6 @@ C     .. External Functions ..
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC LEN
-      SAVE DELIM,NDELM,NSPDLM,DDELIM,NDDELM,NDSDLM
 C     ..
 C     .. Data statements ..
 C
@@ -517,6 +518,7 @@ C-- Note that delimiters may be changed by a call to PARSDL (entry point)
 C
       DATA DDELIM/' ', ' ', '=',',',16*' '/
       DATA NDDELM/4/,NDSDLM/3/,NDELM/-1/
+      SAVE DELIM,NDELM,NSPDLM,DDELIM,NDDELM,NDSDLM
 C     ..
 C Setup delimiters if not done
       IF (NDELM .LT. 0) THEN
@@ -1569,7 +1571,7 @@ C
 C
 C
 C
-      SUBROUTINE CPYCHR(STRNGA,STRNGB,NCHAR)
+      SUBROUTINE CPYCHR(STRINGA,STRINGB,NCHAR)
 C     ========================================
 C
 C
@@ -1578,11 +1580,11 @@ C---- copy nc characters from character array b to a
 C
 C
       INTEGER NCHAR
-      CHARACTER*1 STRNGA(*),STRNGB(*)
+      CHARACTER*1 STRINGA(*),STRINGB(*)
 C
 C
       DO 10 I=1,NCHAR
-      STRNGA(I)=STRNGB(I)
+      STRINGA(I)=STRINGB(I)
 10    CONTINUE
 C
 C
@@ -1613,7 +1615,7 @@ C
 C
 C
 C
-      SUBROUTINE CMOVE(STRNGA,STRNGB,NCHAR)
+      SUBROUTINE CMOVE(STRINGA,STRINGB,NCHAR)
 C     =======================================
 C
 C---- copy n characters from b to a :  
@@ -1621,7 +1623,7 @@ C     (only used for character data  IN FORTRAN77
 C
 C
 C
-      CHARACTER*1 STRNGA(*),STRNGB(*)
+      CHARACTER*1 STRINGA(*),STRINGB(*)
       INTEGER NCHAR
 C
 C
@@ -1629,7 +1631,7 @@ C
 C
 C
       DO 10 I=1,NCHAR
-      STRNGA(I)=STRNGB(I)
+      STRINGA(I)=STRINGB(I)
 10    CONTINUE
 C
 C
@@ -1882,10 +1884,11 @@ C     ..
       SAVE
 C
 C
+      IF (NLINES.LT.1) NLINES = 1
       STROUT = ' '
 C
 C
-      DO 10 JDO10 = 1,MAX(NLINES,1)
+      DO 10 JDO10 = 1,NLINES
 C
 C            **************
         CALL PUTLIN(STROUT,OUTWIN)
@@ -2019,7 +2022,7 @@ C     NSYM    Number of symmetry operations (including non-primitive)
 C     NSYMP   Number of primitive symmetry operations
 C     RSYM    Symmetry matrices (4x4)
 C     
-C
+      IMPLICIT NONE
 C     
       INTEGER JTOK,NTOK
       INTEGER IBEG(NTOK),IEND(NTOK),ITYP(NTOK)
@@ -2040,14 +2043,13 @@ C---- for cases (a) & (b), this is a single field:
 C     case (c) is more than 1 field
 C     
       IF (JTOK.GT.NTOK) THEN
-         WRITE (STROUT,FMT='(A)') ' No symmetry data !!!'
+         WRITE (STROUT,FMT=*) ' No symmetry data !!!'
          CALL  PUTLIN(STROUT,'CURWIN')
       ELSE
          IF (JTOK.EQ.NTOK) THEN
             SPGNAM = ' '
             IF (NSYM.GT.0) THEN
-               WRITE (STROUT,FMT='(A)')
-     +             'Warning: symmetry already given'
+               WRITE (STROUT,FMT=*) 'Warning: symmetry already given'
                CALL  PUTLIN(STROUT,'CURWIN')
             ENDIF
 C     
@@ -2125,7 +2127,7 @@ C     batch titles o/p
 C     ORIENTATION sets MTZBPR = 2
 C     batch orientation also
 C     
-C
+      IMPLICIT NONE
 C     
       INTEGER JTOK,NTOK
       INTEGER IBEG(NTOK),IEND(NTOK),ITYP(NTOK)
@@ -2138,13 +2140,13 @@ C
       INTEGER NKEYS
       PARAMETER (NKEYS=7)
       CHARACTER*12 KEYS(NKEYS)
+      DATA KEYS/'NONE','BRIEF','HISTORY','ALL',
+     $     'NOBATCH','BATCH','ORIENTATION'/
 C     
 C     Locals
       INTEGER I,IKEY
       CHARACTER KEY*12
 C     
-      DATA KEYS/'NONE','BRIEF','HISTORY','ALL',
-     $     'NOBATCH','BATCH','ORIENTATION'/
 C     Set defaults
       MTZPRT = 1
       MTZBPR = 1
@@ -2193,7 +2195,7 @@ C
 C     CELL(1-6)  Cell dimensions.
 C     
 C     
-C
+      IMPLICIT NONE
 C     
 C     
 C     .. Scalar Arguments ..
@@ -2252,7 +2254,7 @@ C     RESMAX  Maximum resolution (in As)
 C     SMIN    Minimum resolution ( 4sin**2/lambda**2)
 C     SMAX    Maximum resolution ( 4sin**2/lambda**2)
 C     
-C
+      IMPLICIT NONE
 C     
 C     
 C     .. Scalar Arguments ..
@@ -2275,7 +2277,7 @@ C     ..
 C
 C---- Global defaults set here
 C
-        RESMAX = 100.0
+        RESMAX = 10000.0
         RESMIN = .1
 C     
 C---- Look at next field on line: this can be
@@ -2348,7 +2350,7 @@ C     On exit
 C     ILPRGI - number in array of LSPRGI whose scale has been reset
 C     SCAL - scale factor.
 C     BB   - temperature factor.
-C
+      IMPLICIT NONE
 C     
       INTEGER MCOLS
       PARAMETER (MCOLS=200)
