@@ -82,7 +82,7 @@ KEYBUF consist of NKEYS entries, each of the form:
 #endif
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
   int srtbeg_ (nkeys, keybuf, lrecl, memsize)
 #endif
 
@@ -220,7 +220,7 @@ SRTRLS:	Release one record into Sort
 #endif
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
   int srtrls_ (record)
 #endif
 
@@ -253,7 +253,7 @@ SRTMRG:	Merge - finish release phase
 #endif
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
   int srtmrg_ ()
 #endif
 
@@ -288,7 +288,7 @@ SRTRET:	Return 1 record from sort
 #endif
 
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
-    defined (ESV) || defined(__OSF1__) || defined(__osf__)
+    defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C)
   int srtret_ (record)
 #endif
 
