@@ -1156,7 +1156,7 @@ int MtzParseLabin(char *labin_line, const char prog_labels[][31],
 	}
       }
     } else {
-      printf("clkyin: run out of labels trying to match \"%s\"\n",label1);
+      printf("MtzParseLabin: run out of labels trying to match \"%s\"\n",label1);
       /* Stop here - there are no more labels to process */
       err++;
       break;
@@ -1164,7 +1164,7 @@ int MtzParseLabin(char *labin_line, const char prog_labels[][31],
 
     if (imatch == 0) {
       /* no match */
-      printf("clkyin: neither label recognised: %s %s \n",label1,label2);
+      printf("MtzParseLabin: neither label recognised: %s %s \n",label1,label2);
       err++;
     }
   }
