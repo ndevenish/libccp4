@@ -436,6 +436,15 @@ int ccp4_parse_maxmin(CCP4PARSERARRAY *parsePtr, const double max_exponent,
 
    ccp4_parse returns the number of tokens found in the line. The
    tokens are returned via the CCP4PARSERARRAY parser.
+
+   Arguments:
+
+   line   = pointer to a null-terminated string of characters,
+            forming the input to be processed. Unaltered on
+	    output.
+   parser = pointer to a CCP4PARSERARRAY structure which will
+            be used to hold the results of processing the input
+	    line.
 */
 
 int ccp4_parse(char *line, CCP4PARSERARRAY *parser)
@@ -725,6 +734,7 @@ int ccp4_parse(char *line, CCP4PARSERARRAY *parser)
    (If line is not blank then it will be processed and more input
    read in if it ends in a continuation character, or forces reading from
    an external file.)
+
    The "print" argument should be supplied as 0 to suppress echoing of the
    input lines to standard output.
 
@@ -734,6 +744,24 @@ int ccp4_parse(char *line, CCP4PARSERARRAY *parser)
 
    The function returns the number of tokens, or 0 on reaching end of file.
    On encountering an unrecoverable error ccp4_parser returns -1. 
+
+   Arguments:
+
+   line   = pointer to a null-terminated string of characters,
+            forming the input to be processed.
+	    On input can either be an empty string ("") or
+	    contain characters to be processed (see above for
+	    description).
+	    On output "line" will be overwritten with the actual
+	    input line, up to nchar characters.
+   nchars = maximum number of characters that can be read into
+            "line" i.e. the size of "line" in memory.
+   parser = pointer to a CCP4PARSERARRAY structure which will
+            be used to hold the results of processing the input
+	    line.
+   print  = flag controlling echoing of input lines to stdout.
+            print=0: suppress echoing of lines to stdout
+	    Otherwise echoing is turned on.
 */
 
 int ccp4_parser(char *line, const int nchars, CCP4PARSERARRAY *parser,
