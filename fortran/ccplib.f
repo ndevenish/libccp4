@@ -1,8 +1,8 @@
-C_BEGIN_CCPLIB
 C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
+C_BEGIN_CCPLIB
 C     These are supposedly-machine-independent low-level routines.
 C     They're actually machine-dependent at least insofar as some
 C     contain non-standard code, but they do compile with the compilers
@@ -502,7 +502,7 @@ C_BEGIN_CCPERR
 C     ===============================
 C
 C     Report error or normal termination and stop.  Also reports latest
-C     system error (at least under un*x)
+C     system error.
 C
 C     Arguments:
 C     ==========
