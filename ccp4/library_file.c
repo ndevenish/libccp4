@@ -2102,7 +2102,9 @@ long ccp4_file_tell (CCP4File *cfile)
   cfile->last_op = IRRELEVANT_OP;
 
   if (cfile->buffered && cfile->stream) {
-    fflush (cfile->stream); 
+#if !defined (_MVS)
+    fflush (cfile->stream);
+#endif	
     result = (long) ftell(cfile->stream);
   } else
 #if defined _MVS
