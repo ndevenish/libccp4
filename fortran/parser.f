@@ -43,6 +43,8 @@ C    RDCELL(ITOK,ITYPE,FVALUE,NTOK,CELL)
 C    RDRESO(ITOK,ITYPE,FVALUE,NTOK,RESMIN,RESMAX,SMIN,SMAX)
 C    RDSCAL(ITOK,LINE,IBEG,IEND,ITYP,FVALUE,NTOK,NLPRGI,LSPRGI,ILPRGI,SCAL,BB)
 C    RDRESL(ITOK,ITYPE,FVALUE,CVALUE,NTOK,RESMIN,RESMAX,SMIN,SMAX,ISTAT)
+C    RDATOMSELECT(JTOK,INAT0,INAT1,IRES0,IRES1,CHNAM,IMODE,NTOK,LINE,IBEG,
+C           IEND,ITYP,IDEC,FVALUE,IFAIL)
 C    GTTREA(N,X,LFLAG,NTOK,ITYP,FVALUE)
 C    GTTINT(N,I,LFLAG,NTOK,ITYP,FVALUE)
 C
@@ -2668,4 +2670,282 @@ C
       ELSE
          LFLAG = -1
       END IF
+      END
+C
+C_BEGIN_RDATOMSELECT
+C     ==================================================================
+      SUBROUTINE RDATOMSELECT(JTOK,INAT0,INAT1,IRES0,IRES1,CHNAM,
+     +                        IMODE,NTOK,LINE,IBEG,IEND,ITYP,IDEC,
+     +                        FVALUE,IFAIL)
+C     ==================================================================
+C
+C  Subroutine to process atom selection keyword with the following
+C  general syntax:
+C
+C    <Keywords...> ATOM <inat0> [ [TO] <inat1> ] |
+C                  RESIDUE [ALL | ONS | CA] [ CHAIN <chnam> ]
+C                  <ires0> [ [TO] <ires1> ]
+C
+C     e.g. kywd atom 1 to 100
+C          kywd residue chain A 20 to 30
+C          kywd residue all 11 32    etc...
+C
+C  To be compatible with DISTANG, CONTACT etc the ordering of the
+C  RESIDUE subarguments is flexible, eg RESIDUE 1 TO 9 CA CHAIN B
+C  is the same as RESIDUE CA CHAIN B 1 TO 9...
+C
+C  The subroutine returns the selection entered by the user and expects the
+C  calling program to deal with the results. The preceeding keywords are
+C  relevant for this subroutine
+C
+C  ARGUMENTS
+C  =========
+C
+C     JTOK    (I) INTEGER       Number of first field to interpret
+C     NTOK    (I) INTEGER       The number of fields parsed, from PARSER
+C     LINE    (I) CHARACTER*(*) Input string, from PARSER
+C     IBEG    (I) INTEGER(*)    1st column number of tokens in field
+C                               (from PARSER)
+C     IEND    (I) INTEGER(*)    Last column number of tokens in field
+C                               (from PARSER)
+C     ITYP    (I) INTEGER(*)    =0  null field
+C                               =1  character string
+C                               =2  number   (from PARSER)
+C     IDEC    (I) INTEGER(*)    Number of characters/digits in each token
+C                               (from PARSER)
+C     FVALUE  (I) REAL(*)       Array of numbers. (from PARSER)
+C
+C     INAT0   (O) INTEGER       Lower limit of atom range (-99 if not set)
+C     INAT1   (O) INTEGER       Upper limit of atom range (-99 if not set)
+C     IRES0   (O) INTEGER       Lower limit of residue range (-99 if not set)
+C     IRES1   (O) INTEGER       Upper limit of residue range (-99 if not set)
+C     CHNAM   (O) CHARACTER*1   Chain identifier (' ' if not set)
+C     IMODE (I/O) INTEGER       On entry: -1 = don't allow MODE
+C                                         any other value = allow MODE
+C                               On exit:  Type of atoms to include:
+C                                          1=ALL   2=ONS   3=CA (see eg CONTACT)
+C     IFAIL (I/O) INTEGER       On entry:  0 = suppress warnings
+C                                         -1 = print warnings
+C                               On exit:   0 = LINE parsed ok
+C                                         >0 = error occured parsing line
+C                                              (value of IFAIL is no. of bad token)
+C
+C  RETURNED VALUES
+C  ===============
+C
+C  The subroutine returns either:
+C
+C  1. first/last atom numbers, defining a range of atoms, or
+C  2. first/last residue numbers, defining a range of residues, plus
+C        (optionally) chain identifier
+C        (optionally) a MODE which specifies which type of atoms to
+C        include: all = (default) all atoms in residue range
+C                 ons = only oxygen and nitrogen atoms
+C                 ca  = only CA atoms
+C        (see CONTACT/DISTANG)
+C
+C  Unset atoms/residue numbers will be returned < 0 (i.e. -99)
+C  Unset chain identifier will be returned as a blank, i.e. ' '
+C  Mode defaults to 1 = include all types of atoms.
+C
+C_END_RDATOMSELECT
+C
+      IMPLICIT NONE
+C
+C     ..Parameters
+      INTEGER MAXTOK
+      PARAMETER (MAXTOK=20)
+C
+C     ..Scalar arguments
+      INTEGER   NTOK,JTOK,INAT0,INAT1,IRES0,IRES1,IMODE,IFAIL
+      CHARACTER LINE*80,CHNAM*1
+C
+C     ..Array arguments
+      INTEGER IBEG(MAXTOK),IEND(MAXTOK),ITYP(MAXTOK),IDEC(MAXTOK)
+      REAL    FVALUE(MAXTOK)
+C
+C     ..Local scalars
+      INTEGER ITOK,NLIMIT,TEMP
+      CHARACTER KEY*4,ERRLINE*80
+      LOGICAL LATOM,LRESI,LCHAIN,LLIMIT
+C
+C     ..Local arrays
+      INTEGER ILIMIT(2)
+C
+C     ..External subroutines/functions
+      EXTERNAL CCPUPC,CCPERR
+C
+C---- Initial checks
+C
+      IF (NTOK.GT.MAXTOK) THEN
+        ERRLINE = 'RD_KEY_SELECT: too many arguments'
+        GO TO 9010
+      END IF
+C
+      IF (JTOK.LT.1 .OR. JTOK.GT.NTOK) THEN
+        ERRLINE = 'RD_KEY_SELECT: JTOK out of range'
+        GO TO 9010
+      END IF
+C
+C---- Initialise values
+C
+      INAT0 = -99
+      INAT1 = -99
+      LATOM = .FALSE.
+      IRES0 = -99
+      IRES1 = -99
+      CHNAM = ' '
+C
+C---- IMODE
+C
+      IF (IMODE.NE.-1) IMODE = 0
+C
+C---- Flags for modes
+C
+      LATOM  = .FALSE.
+      LRESI  = .FALSE.
+      LCHAIN = .FALSE.
+      LLIMIT = .FALSE.
+      NLIMIT = 0
+      ERRLINE = ' '
+C
+C---- Step through line token at a time
+C
+      ITOK = JTOK
+C
+ 9000 CONTINUE
+      KEY  = LINE(IBEG(ITOK):IEND(ITOK))
+      CALL CCPUPC(KEY)
+C
+C---- ATOM
+C     ====
+      IF (KEY(1:4).EQ.'ATOM') THEN
+        IF (LATOM.OR.LRESI) ERRLINE = 'Multiple ATOM/RESidue keywords'
+        LATOM = .TRUE.
+C
+C---- RESIDUE
+C     =======
+      ELSE IF (KEY(1:3).EQ.'RES') THEN
+        IF (LATOM.OR.LRESI) ERRLINE = 'Multiple ATOM/RESidue keywords'
+        LRESI = .TRUE.
+C
+C---- MODE: CA / ONS / ALL
+C     ====================
+      ELSE IF (KEY(1:3).EQ.'ALL'.OR.
+     +         KEY(1:3).EQ.'ONS'.OR.
+     +         KEY(1:2).EQ.'CA') THEN
+C
+        IF (IMODE.EQ.-1)
+     +  ERRLINE = 'ALL/ONS/CA: invalid specifiers'
+        IF (.NOT.LRESI)
+     +  ERRLINE = 'ALL/ONS/CA not allowed without RESidue'
+        IF (IMODE.GT.0) ERRLINE = 'Only one of CA/ONS/ALL allowed'
+C
+        IF (KEY(1:3).EQ.'ALL') IMODE = 1
+        IF (KEY(1:3).EQ.'ONS') IMODE = 2
+        IF (KEY(1:2).EQ.'CA')  IMODE = 3
+C
+C---- CHAIN <chnam>
+C     =============
+      ELSE IF (KEY(1:4).EQ.'CHAI') THEN
+        IF (.NOT.LRESI) ERRLINE = 'CHAIN only allowed after RESidue'
+        IF (LCHAIN) ERRLINE = 'Only one CHAIN allowed per line'
+        ITOK = ITOK + 1
+        IF (ITYP(ITOK).EQ.1 .AND. IDEC(ITOK).EQ.1) THEN
+          CHNAM = LINE(IBEG(ITOK):IBEG(ITOK))
+          LCHAIN = .TRUE.
+        ELSE
+          ERRLINE = 'Chain name should be a single character'
+        END IF
+C
+C---- Number ...
+C     ==========
+C
+C     These are atom or residue limits ... Process them all together
+C     The possibilities are: 1 number, 2 numbers or 2 numbers separated
+C     by "TO"
+      ELSE IF (ITYP(ITOK).EQ.2) THEN
+        IF (.NOT.(LATOM .OR. LRESI))
+     +  ERRLINE = ' Missing ATOM or RESIDUE keyword'
+        IF (LLIMIT)
+     +  ERRLINE = ' Already read a set of atom/residue limits'
+        ILIMIT(1) = INT(FVALUE(ITOK))
+        ITOK = ITOK + 1
+        NLIMIT = NLIMIT + 1
+C
+C     Check the next argument - is it "TO"?
+        IF (ITYP(ITOK).EQ.1) THEN
+          KEY = LINE(IBEG(ITOK):IEND(ITOK))
+          CALL CCPUPC(KEY)
+          IF (KEY(1:2).EQ.'TO') THEN
+            IF(ITYP(ITOK+1).NE.2 .OR. ITOK.EQ.NTOK)
+     +      ERRLINE = 'TO should be followed by a number'
+            ITOK = ITOK + 1
+          END IF
+        END IF
+C
+C     Check if the next argument is the second limit
+        IF (ITYP(ITOK).EQ.2) THEN
+          ILIMIT(2) = INT(FVALUE(ITOK))
+          NLIMIT = NLIMIT + 1
+        ELSE
+C
+C     Otherwise, need to step back one token for next round
+          ITOK = ITOK - 1
+        END IF
+        LLIMIT = .TRUE.
+C
+C---- Check for TO out of place
+C
+      ELSE IF (KEY(1:2).EQ.'TO') THEN
+        ERRLINE = 'TO out of place'
+C
+C---- Keyword unrecognised otherwise
+C
+      ELSE
+        write(6,*)key
+        ERRLINE = 'Unrecognised subkeyword'
+      END IF
+C
+C---- Use ERRLINE to trap errors
+C
+      IF (ERRLINE.NE.' ') GO TO 9010
+C
+C---- Parse some more?
+C
+      ITOK = ITOK + 1
+      IF (ITOK.LE.NTOK) GO TO 9000
+C
+C---- Sort out the input
+C
+      IF (NLIMIT.EQ.0) THEN
+        ERRLINE = 'Atom/residue limits unspecified'
+        GO TO 9010
+      ELSE IF (NLIMIT.EQ.1) THEN
+        ILIMIT(2) = ILIMIT(1)
+      ELSE IF (ILIMIT(1).GT.ILIMIT(2)) THEN
+        TEMP = ILIMIT(1)
+        ILIMIT(1) = ILIMIT(2)
+        ILIMIT(2) = TEMP
+      END IF
+C
+      IF (LATOM) THEN
+        INAT0 = ILIMIT(1)
+        INAT1 = ILIMIT(2)
+      ELSE
+        IRES0 = ILIMIT(1)
+        IRES1 = ILIMIT(2)
+      END IF
+C
+      IF (IMODE.EQ.0) IMODE = 1
+C
+      IFAIL = 0
+      RETURN
+C
+C---- Errors come to here
+C
+ 9010 IF (IFAIL.LT.0) CALL CCPERR(2, ERRLINE)
+      IFAIL = ITOK
+      RETURN
+C
       END
