@@ -403,7 +403,13 @@ C...  MMDB open channel (need to test for failures)
 C...  MMDB error information
           CALL RBERRSTOP(1,IRET,IUNIT,1)
           ERRLIN = ' XYZOPEN: Error opening logical name '//LOGNAM
-          CALL CCPERR(1,ERRLIN(1:LENSTR(ERRLIN)))
+          IF (IFAIL .EQ. 0) THEN
+            CALL CCPERR(1,ERRLIN(1:LENSTR(ERRLIN)))
+          ELSE
+            CALL CCPERR(2,ERRLIN(1:LENSTR(ERRLIN)))
+            IFAIL = -1
+            RETURN
+          ENDIF
         ENDIF
       ENDIF
 C
