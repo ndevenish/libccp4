@@ -503,6 +503,20 @@ void ccp4spg_register_by_ccp4_num(int numspg) {
 
 }
 
+/** Fortran wrapper for ccp4spg_load_by_* functions.
+ * @param ist Obsolete parameter.
+ * @param lspgrp Spacegroup number in CCP4 convention. If set on
+ * entry, used to search for spacegroup. Returned value is that found.
+ * @param namspg_cif Spacegroup name. If set on
+ * entry, used to search for spacegroup. Returned value is the full
+ * extended Hermann Mauguin symbol.
+ * @param namspg_cifs On output, contains the spacegroup name without
+ * any spaces.
+ * @param nampg On output, the point group name.
+ * @param nsymp On output, the number of primitive symmetry operators.
+ * @param nsym On output, the total number of symmetry operators.
+ * @param rlsymmmatrx On output, the symmetry operators.
+ */
 FORTRAN_SUBR ( MSYMLB3, msymlb3,
 	       (const int *ist, int *lspgrp, fpstr namspg_cif,
 		fpstr namspg_cifs, fpstr nampg, int *nsymp, int *nsym, 
@@ -516,7 +530,7 @@ FORTRAN_SUBR ( MSYMLB3, msymlb3,
                 int *nsymp, int *nsym, float rlsymmmatrx[192][4][4]))
 {
   int i,j,k;
-  char *temp_name;
+  char *temp_name, *shortname=NULL;
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: MSYMLB3");)
 
@@ -538,16 +552,33 @@ FORTRAN_SUBR ( MSYMLB3, msymlb3,
       /* free any existing spacegroup and start again */
       if ( spacegroup ) ccp4spg_free(&spacegroup);
 
-      spacegroup = ccp4spg_load_by_spgname(temp_name);
+      spacegroup = ccp4spg_load_by_ccp4_spgname(temp_name);
 
     }
     free (temp_name);
   }
 
   if (spacegroup) {
-    *lspgrp = spacegroup->spg_ccp4_num;
+    if (spacegroup->spg_ccp4_num > 0) {
+      *lspgrp = spacegroup->spg_ccp4_num;
+    } else {
+      *lspgrp = spacegroup->spg_num;
+    }
     ccp4_CtoFString(FTN_STR(namspg_cif),FTN_LEN(namspg_cif),spacegroup->symbol_xHM);
-    ccp4_CtoFString(FTN_STR(namspg_cifs),FTN_LEN(namspg_cifs),spacegroup->symbol_old);
+    if (spacegroup->symbol_old) {
+     if (strlen(spacegroup->symbol_old) > 0) {
+      shortname = (char *) ccp4_utils_malloc(strlen(spacegroup->symbol_old)*sizeof(char));
+      ccp4spg_to_shortname(shortname,spacegroup->symbol_old);
+     }
+    } 
+    if (!shortname && spacegroup->symbol_xHM) {
+     if (strlen(spacegroup->symbol_xHM) > 0) {
+      shortname = (char *) ccp4_utils_malloc(strlen(spacegroup->symbol_xHM)*sizeof(char));
+      ccp4spg_to_shortname(shortname,spacegroup->symbol_xHM);
+     }
+    }
+    ccp4_CtoFString(FTN_STR(namspg_cifs),FTN_LEN(namspg_cifs),shortname);
+    free(shortname);
     ccp4_CtoFString(FTN_STR(nampg),FTN_LEN(nampg),spacegroup->point_group);
     *nsymp = spacegroup->nsymop_prim;
     *nsym = spacegroup->nsymop;
