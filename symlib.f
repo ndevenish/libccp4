@@ -9,98 +9,66 @@ C
 C $Date$
 C
 C 1) Subroutines for manipulating symmetry operators.
-C   
-C    invsym        msyget        msymlb        pgdefn    
-C    pgmdf         pgnlau        symfr2        symtrn 
-C    msymlb2       msymlb3       symfr3        symtr3
-C    symtr4        hklrange
+C
+C   1a) Deriving symmetry operator matrices
+C    invsym        msyget        msymlb        symfr2
+C    symtrn        msymlb2       msymlb3       symfr3
+C    symtr3        symtr4
+C
 c  Internal routines:-
 C    determ     
 C
-C 2) Subroutines for testing reflection  data.
-C    centr         centric       epsln        epslon     
-C    sysab         hkleq         centrc
+C   1b) Deriving information from symmetry operators
+C    pgdefn        pgmdf         pgnlau        patspg
+C    hklrange
 C
-C 3) Subroutines for choosing asymmetric units for reflection
-C    data.
+C 2) Subroutines for testing reflection data.
+C
+C   2a) Centric reflections
+C    centr         centric       centrc
+C
+C   2b) Epsilon zones
+C    epsln         epslon        sysab        hkleq
+C
+C 3) Subroutines for choosing asymmetric units.
+C
+C  3a) Asymmetric units for reflection data
 C    asuset       asuput         asuget  	asuphp
+C
 c  Internal routines:-
 C    prtrsm       inasu 
 C
-C 4) Subroutines for testing coordinate  data.
-C    xspecials     krot
+C  3b) Asymmetric units for choosing asymmetric units
+C    in real space consistent with FFT expectations; FFT grids etc.
+C    setlim       setgrd
 C
-C 5) Subroutines for choosing asymmetric units for Fourier
-C    maps consistent with FFT expectations; FFT grids etc.
-C    setlim        patsgp        setgrd 
 c  Internal routines:-
-C    fndsmp    factrz
+C    fndsmp       factrz
 C
-C 6) Subroutines for permuting symmetry operators, etc.
+C 4) Subroutines for testing coordinate  data.
+C    xspecials    krot
+C
+C 5) Subroutines for permuting symmetry operators, etc.
 C    prmvci        prmvcr        rotfix      
 C
-C 7) Subroutines for generating and accessing hash table.
+C 6) Subroutines for generating and accessing hash table.
 C    ccp4_hash_lookup            ccp4_hash_setup
 C    ccp4_hash_zeroit
 C
-C 8) Subroutines for calculating (sin theta/lamba)**2.0.
-C    setrsl        sthlsq        sts3r2
-C
-C 9) Miscellaneous (subroutines with exact function not clear):
-C    pstoph
+C 7) Miscellaneous subroutines.
+C    setrsl        sthlsq        sts3r4        pstoph
 C
 C_END_SYMLIB
 C_BEGIN_OUTLINE
+C
 C  Brief Description.
 C  =================
-C Part 1:
-C======================================================================
 C
-C---- SUBROUTINE SYMFR2(ICOL,I1,NS,ROT)
-C         Input ICOL - character string
-C               I1   - first character to interpret from.
+C Group 1: Subroutines for deriving and manipulating symmetry operations
+C=======================================================================
 C
-C                translates a character string  into a 4*4 matrix.
-C         On exit, ROT(4,4,NS) contains the real-space symmetry
-C                  matrices, in standard convention, ie
-C
-C                      [x']    = [s][x]
-C
-C                x'(I)=Sum(J=1,3)ROT(I,J,NS)*x(J) + ROT(I,4,NS)
-C                 ROT(I,4,NS)    contains the fractional translations
-C
-C
-C---- SUBROUTINE SYMFR3(ICOL,I1,NS,ROT,EFLAG)
-C
-C       Read and interpret symmetry operations
-C       Arguments :
-C       ICOL      (I)	CHARACTER*80    Line containing the symmetry ops
-C       I1        (I)	INTEGER         First character to look at
-C                               	(say after keyword 'SYM')
-C       NS        (I/O)	INTEGER         is the number of the first symmetry
-C                               	operation to be read, & returns with the
-C                               	number of the last one read (ie you can
-C                               	have more than one on a line!)
-C       ROT       (O)	REAL            Array (4,4,at_least_NS),
-C                               	on exit contains the real-space
-C                               	symmetry matrices, in standard
-C                               	convention, ie
-C                                 	[x']    = [s][x]
-C                     			x'(I)=Sum(J=1,3)ROT(I,J,NS)*x(J) + ROT(I,4,NS)
-C                     			ROT(I,4,NS) contains the fractional translations
-C       EFLAG     (O)	INTEGER         Error flag - on exit,
-C                                  	if 0 then OK,
-C                                  	gt 0, an error occurred.
-C
-C
-C---- SUBROUTINE INVSYM(S,ST)
-C          Input S    - 4*4 matrix
-C          Output ST  - 4*4 matrix
-C                Inverts 4*4 matrices - used here to get inverse
-C                symmetry operation for generating equivalent h k l.
-C                    ie                 [h']    = [h][St]
-C
-C                   h'(j) =Sum(I=1,3)[ h(i)*St(I,J,NS)]
+C Group 1a: Deriving symmetry operator matrices:
+C-----------------------------------------------
 C
 C---- SUBROUTINE MSYGET(IST,LSPGRP,NSYM,ROT)
 C                Get symmetry operations for space-group LSPGRP
@@ -108,7 +76,7 @@ C                from library file on stream IST, logical name SYMOP.
 C         Returns NSYM           = number of symmetry operations
 C                 ROT(4,4,NSYM)  = rotation/translation  matrices
 C
-C   SUBROUTINE MSYMLB(IST,LSPGRP,NAMSPG,NAMPG,NSYMP,NSYM,ROT)
+C---- SUBROUTINE MSYMLB(IST,LSPGRP,NAMSPG,NAMPG,NSYMP,NSYM,ROT)
 C
 C Get symmetry operations from library file
 C on stream IST, logical name SYMOP.
@@ -123,7 +91,7 @@ C   NSYMP        number of primitive symmetry operations
 C   NSYM         number of symmetry operations
 C   ROT(4,4,NSYM)  rotation/translation  matrices
 C
-C   SUBROUTINE MSYMLB2(IST,LSPGRP,NAMSPG_CIF,NAMPG,NSYMP,NSYM,ROT)
+C---- SUBROUTINE MSYMLB2(IST,LSPGRP,NAMSPG_CIF,NAMPG,NSYMP,NSYM,ROT)
 C
 C     Identical to MSYMLB, except that on output NAMSPG_CIF
 C     has correct CIF format, e.g. 'P 21 21 21'
@@ -189,6 +157,53 @@ C               only different from NSYM in non-primitive spacegroups
 C   NSYM        total number of symmetry operations
 C   RlSymmMatrx(4,4,NSYM)  Symmetry Rotation/translation  matrices
 C
+C---- SUBROUTINE SYMFR2(ICOL,I1,NS,ROT)
+C         Input ICOL - character string
+C               I1   - first character to interpret from.
+C
+C                translates a character string  into a 4*4 matrix.
+C         On exit, ROT(4,4,NS) contains the real-space symmetry
+C                  matrices, in standard convention, ie
+C
+C                      [x']    = [s][x]
+C
+C                x'(I)=Sum(J=1,3)ROT(I,J,NS)*x(J) + ROT(I,4,NS)
+C                 ROT(I,4,NS)    contains the fractional translations
+C
+C
+C---- SUBROUTINE SYMFR3(ICOL,I1,NS,ROT,EFLAG)
+C
+C       Read and interpret symmetry operations
+C       Arguments :
+C       ICOL      (I)	CHARACTER*80    Line containing the symmetry ops
+C       I1        (I)	INTEGER         First character to look at
+C                               	(say after keyword 'SYM')
+C       NS        (I/O)	INTEGER         is the number of the first symmetry
+C                               	operation to be read, & returns with the
+C                               	number of the last one read (ie you can
+C                               	have more than one on a line!)
+C       ROT       (O)	REAL            Array (4,4,at_least_NS),
+C                               	on exit contains the real-space
+C                               	symmetry matrices, in standard
+C                               	convention, ie
+C                                 	[x']    = [s][x]
+C                     			x'(I)=Sum(J=1,3)ROT(I,J,NS)*x(J) + ROT(I,4,NS)
+C                     			ROT(I,4,NS) contains the fractional translations
+C       EFLAG     (O)	INTEGER         Error flag - on exit,
+C                                  	if 0 then OK,
+C                                  	gt 0, an error occurred.
+C
+C
+C---- SUBROUTINE INVSYM(S,ST)
+C          Input S    - 4*4 matrix
+C          Output ST  - 4*4 matrix
+C                Inverts 4*4 matrices - used here to get inverse
+C                symmetry operation for generating equivalent h k l.
+C                    ie                 [h']    = [h][St]
+C
+C                   h'(j) =Sum(I=1,3)[ h(i)*St(I,J,NS)]
+C
+
 C
 C---- SUBROUTINE SYMTRN(NSM,RSM)
 C           symmetry translation from matrix back to characters
@@ -241,10 +256,13 @@ C                         coNTaining symmetry operations on input
 c      Symchs (O) CHARACTER*(*)   Array of dimension at least Nsym
 C                         coNTaining int tab char strings on output
 C
-C
 C---- SUBROUTINE DETERM(det,a)  
 C          Input A - 4*4 matrix  (real)
 C          Output DET - determinant of A.
+C
+C
+C Group 1b: Deriving information from the symmetry operations:
+C ------------------------------------------------------------
 C
 C---- SUBROUTINE PGDEFN(NAMPG,NSYMP,NSYM,RSYMT,LPRINT)
 C        Input NSYM  - number of symmetry operators. ( integer)
@@ -322,14 +340,32 @@ C     pgm3bar
 C  15 pg432   m3m        hkl:h>=0, k>=0, l>=0  with  k>=l
 C     pg4bar3m pgm3barm
 C
-C      SUBROUTINE HKLRANGE(IHRNG0,IKRNG1,IKRNG0,IKRNG1,ILRNG0,ILRNG1)
+C
+C---- SUBROUTINE PATSGP(SPGNAM, PGNAME, PATNAM, LPATSG)
+C
+C Determine Patterson spacegroup from true space-group
+C
+C On entry:
+C     SPGNAM    space-group name. Only used to determine lattice centering
+C     PGNAME    point-group name
+C
+C On exit:
+C     PATNAM    name of Patterson spacegroup
+C     LPATSG    number of Patterson spacegroup
+C
+C
+C---- SUBROUTINE HKLRANGE(IHRNG0,IKRNG1,IKRNG0,IKRNG1,ILRNG0,ILRNG1)
 C     
-C---- Return HKL ranges chosen in PGNLAUE
+C     Return HKL ranges chosen in PGNLAUE
 C     
 C       INTEGER HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
 C
-C Part 2:
+C
+C Group 2: Subroutines for testing reflection data
 C======================================================================
+C
+C Group 2a: Centric Reflections:
+C-------------------------------
 C
 C---- SUBROUTINE CENTRIC(NSM,RSMT,IPRINT)
 C       This is Randy Read's method of defining centric reflections.
@@ -366,6 +402,10 @@ C     icent fo
 C
 C  0KL  H0L  HK0  HKK  HKH  HHL  H,-2H,L
 C     (the last is needed in pg312)
+C
+C
+C Group 2b: Epsilon Zones:
+C-------------------------
 C
 C---- SUBROUTINE EPSLN(NSM,NSMP,RSMT,IPRINT)
 C
@@ -405,8 +445,13 @@ C        Returns  ISYSAB flag.
 C       Systematic absences flagged with ISYSAB = 1
 C       Only reflns with EPSI gt 1 need be considered
 C
-C Part 3:
-C======================================================================
+C
+C Group 3: Subroutines for choosing asymmetric units 
+C===================================================
+C
+C Group 3a: Subroutines for choosing asymmetric units for reflection data:
+C-------------------------------------------------------------------------
+C
 c       ASUSET  set up symmetry for ASUPUT & ASUGET, print it
 c       ASUPUT  put reflection into asymmetric unit defined in ASUSET
 c       ASUGET  recover original indices, ie reverse of ASUPUT
@@ -507,29 +552,11 @@ C
 C  The real-space symmetry matrices are applied by premultiplying them
 C  by a row vector hkl,  ie  (h'k'l') = (hkl)R
 C
-C Part 4:
-C======================================================================
 C
-C---- SUBROUTINE XSPECIALS(NSYM,RSYM,XF,YF,ZF,NSPEC)
-C        Input NSYM  - number of symmetry operators. ( integer)
-C        Input RSYM - 4*4*NSYM symmetry matrices. ( real)
-C        Input XF YF ZF - a coordinate in fractional coordinates.
-C        Output NSPEC - the multiplicity of the coordinate.
-C                       eg: NSPEC = 3 for an atom on a 3fod axis.
+C Group 3b: Subroutines for choosing asymmetric units in real space
+C           consistent with FFT expectations; FFT grids etc.
+C------------------------------------------------------------------
 C
-C---- This subroutine finds what coordinates occupy special positions
-C     ie have occupancies less than 1.0
-C     from consideration of the Symmetry Operations.
-C
-C---- INTEGER FUNCTION KROT(NS)
-C       Apply ns'th symmetry operation to jp to get lp,
-C       check if lies in asymmetric unit given by nau
-C
-C       Returns KROT=0  correct operation
-C                   =1  if not
-C
-C Part 5:
-C======================================================================
 C---- SUBROUTINE SETLIM(LSPGRP,XYZLIM)
 C
 C Set appropriate box (asymmetric unit) for spacegroup (true spacegroup)
@@ -545,17 +572,6 @@ C                  if spacegroup not recognized, returns xzylim(1,1) = -1.0
 C                  Note that the minimum limits (xyzlim(1,)) will always
 C                   = 0.0
 C
-C---- SUBROUTINE PATSGP(SPGNAM, PGNAME, PATNAM, LPATSG)
-C
-C Determine Patterson spacegroup from true space-group
-C
-C On entry:
-C     SPGNAM    space-group name. Only used to determine lattice centering
-C     PGNAME    point-group name
-C
-C On exit:
-C     PATNAM    name of Patterson spacegroup
-C     LPATSG    number of Patterson spacegroup
 C
 C---- SUBROUTINE SETGRD(NLAUE,SAMPLE,NXMIN,NYMIN,NZMIN,NX,NY,NZ)
 C
@@ -598,10 +614,32 @@ C     LOGICAL FUNCTION FACTRZ(N)
 C
 C---- Returns true if N has all prime factors .le. 19
 C
-C Part 6:
+C
+C Group 4: Subroutines for testing coordinate data
 C======================================================================
 C
-C---- ROTFIX PRMVCI PRMVCR DETERM
+C---- SUBROUTINE XSPECIALS(NSYM,RSYM,XF,YF,ZF,NSPEC)
+C        Input NSYM  - number of symmetry operators. ( integer)
+C        Input RSYM - 4*4*NSYM symmetry matrices. ( real)
+C        Input XF YF ZF - a coordinate in fractional coordinates.
+C        Output NSPEC - the multiplicity of the coordinate.
+C                       eg: NSPEC = 3 for an atom on a 3fod axis.
+C
+C---- This subroutine finds what coordinates occupy special positions
+C     ie have occupancies less than 1.0
+C     from consideration of the Symmetry Operations.
+C
+C---- INTEGER FUNCTION KROT(NS)
+C       Apply ns'th symmetry operation to jp to get lp,
+C       check if lies in asymmetric unit given by nau
+C
+C       Returns KROT=0  correct operation
+C                   =1  if not
+C
+C Group 5: Subroutines for permuting symmetry operators
+C======================================================================
+C
+C---- ROTFIX PRMVCI PRMVCR
 C
 C        Three subroutines for permuting symmetry operations
 C        They do not really belong here but they are widely used
@@ -640,7 +678,8 @@ C                       This has been modified by permuting the
 C                       Nth column by matrix PERM.
 C      See PRMVCI - real equivalent.
 C
-C Part 7:
+C
+C Group 7: Subroutines for generating and accessing a hash table:
 C======================================================================
 C
 C---- CCP4_HASH_SETUP CCP4_HASH_LOOKUP CCP4_HASH_ZEROIT
@@ -685,7 +724,7 @@ C
 C     Initialises elements of array it used in ccp4_hash_setup and
 C     ccp4_hash_lookup to zero.
 C
-C Part 8:
+C Group 7: Miscellaneous subroutines
 C======================================================================
 C
 C---- SETRSL STHLSQ STS3R4
@@ -713,9 +752,6 @@ C
 C      calculate (sin(theta)/lambda)**2 from h,k,l; coef's set by call to
 C        setrsl : good for any kind of axes
 C
-C
-C Part 9:
-C======================================================================
 C
 C---- SUBROUTINE PSTOPH (PSIX,PSIY,PSIZ,PHIX,PHIY,PHIZ,AVPHI)
 C
