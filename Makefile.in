@@ -277,10 +277,10 @@ binsort : $(srcdir)/binsort.c $(srcdir)/binsort.h
 	$(LNS) binsort ../../src/binsort
 
 # the unix-specific bits need preprocessing for different unix variants
-unix.$F : $(srcdir)/unix.m4 gdummy.$F
+unix.$F : $(srcdir)/unix.m4
 	$(M4) $(srcdir)/unix.m4 >unix.$F
 gdummy.$F : $(srcdir)/gdummy.for
-	$(LNS) $(srcdir)/gdummy.for gdummy.f
+	-rm -rf gdummy.$F; $(LNS) $(srcdir)/gdummy.for gdummy.$F
 $L(unix.o) : unix.$F gdummy.$F
 	-rm -rf unix.dir; mkdir unix.dir
 	echo '      SUBROUTINE UNIX' > unix.dir/unix.$F
