@@ -509,7 +509,7 @@ C     .. Common blocks ..
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE
+      SAVE /MTZCHR/, /MTZHDR/, /MTZLAB/, /MTZLBC/, /MTZWRC/, /MTZWRK/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -4017,7 +4017,7 @@ C     .. Common blocks ..
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE
+      SAVE /MTZCHR/, /MTZHDR/, /MTZLAB/, /MTZLBC/, /MTZWRC/, /MTZWRK/
 C     ..
 C     .. Data statements ..
       DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R',
@@ -4317,7 +4317,7 @@ C     .. Common blocks ..
 
 C     ..
 C     .. Save statement ..
-      SAVE
+      SAVE /MTZHDR/, /MTZWRK/
 C     ..
 C
 C---- First check that the MINDX is valid
