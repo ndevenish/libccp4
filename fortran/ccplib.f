@@ -8,10 +8,9 @@ C     They're actually machine-dependent at least insofar as some
 C     contain non-standard code, but they do compile with the compilers
 C     tried on unix as well as VMS.
 C
-C     fixme: tidy this up so that the endian-dependent routines (for
-C     laue) are entries with only one check on the endianness and set
-C     ind2, ind4 etc. for *2, *4 references.  also amalgamate ccppsf and
-C     fdir/fext/froot.  also add tests of these routines to testlib.
+C     fixme: the bit-twiddling should be in library.c, not here.
+C     amalgamate ccppsf and fdir/fext/froot.  also add tests of these
+C     routines to testlib.
 C
 C     ccplib.for,v 1.7 1992/09/14 18:47:13 fx Exp
 C     
