@@ -275,7 +275,7 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER I,J,KMODE,NBHDR,NCHHDR,NFILSZ
-      CHARACTER BLANK*4,FILE*255,BUFF*512
+      CHARACTER BLANK*4,FILE*255,OUTLIN*100
 C     ..
 C     .. Local Arrays ..
       REAL HEADER(256)
@@ -412,13 +412,15 @@ C---- and set first section position to same, pending symmetry
 C
         ITMSC1 = ITMHDR + 1
 C
-C---- Get and print filename
+C---- Get and print filename, also ensure write does not exceed 132.
 C
         CALL QQINQ(LSTRM(IUNIT),MAPNAM,FILE,NFILSZ)
-        WRITE (BUFF,FMT=6000) IUNIT,FILE
-        CALL QPRINT (1, BUFF)
-        BUFF = '    logical name ' // MAPNAM
-        CALL QPRINT (1, BUFF)
+        WRITE (OUTLIN,FMT=6000) IUNIT
+        OUTLIN(LENSTR(OUTLIN)+1:) = FILE
+        WRITE (LUNOUT,FMT='(/,A)') OUTLIN(1:LENSTR(OUTLIN))
+        OUTLIN = '     logical name '
+        OUTLIN(LENSTR(OUTLIN)+1:) = MAPNAM
+        WRITE (LUNOUT,FMT='(A,/)') OUTLIN(1:LENSTR(OUTLIN))
 C
       END IF
       RETURN
@@ -440,7 +442,7 @@ C
 C
 C---- Format statements
 C
- 6000 FORMAT (' File name for output map file on unit',I4,' : ',A)
+ 6000 FORMAT ('  File name for output map file on unit',I4,' : ')
  6002 FORMAT (20A4)
  6004 FORMAT (/' **MAP FILE HANDLING ERROR**')
  6006 FORMAT (/' **MWRHDL: UNIT NO. MUST BE 1 TO 12, =',I3,' **')
@@ -714,13 +716,13 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       DOUBLE PRECISION T
-      INTEGER NBHDR,NCHHDR, PLEVEL
+      INTEGER NBHDR,NCHHDR,PLEVEL
 C     ..
 C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITR, QWARCH,  MSTMST, QPRLVL
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITR, QWARCH, MSTMST, QPRLVL
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
@@ -764,7 +766,7 @@ C---- Minimum & maximum
 C
       AMIN = RHMIN
       AMAX = RHMAX
-      CALL QPRLVL (PLEVEL)
+      CALL QPRLVL(PLEVEL)
       IF(MODE.EQ.2 .AND. PLEVEL.GE.1) THEN
         WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
       ENDIF
@@ -882,8 +884,8 @@ C
       ENDIF
 C
 C---- Minimum & maximum
-C     
-      CALL QPRLVL (PLEVEL)
+C
+      CALL QPRLVL(PLEVEL)
       IF(MODE.EQ.2 .AND. PLEVEL.GE.1) THEN
         WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
       ENDIF
@@ -965,13 +967,13 @@ C     .. Arrays in Common ..
       INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ,MACHST
 C     ..
 C     .. Local Scalars ..
-      INTEGER NBHDR,NCHHDR, PLEVEL
+      INTEGER NBHDR,NCHHDR,PLEVEL
 C     ..
 C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QWARCH,QWRITR, MSTMST, QPRLVL
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWARCH,QWRITR,MSTMST,QPRLVL
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
@@ -1008,8 +1010,8 @@ C---- write map stamp to word 53
 C
 C set MAPST = 'MAP'
       CALL MSTMST(MAPST)
-      CALL QPRLVL (PLEVEL)
-      IF(MODE.EQ.2 .AND.PLEVEL.GE.1) THEN
+      CALL QPRLVL(PLEVEL)
+      IF(MODE.EQ.2 .AND. PLEVEL.GE.1) THEN
         WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
       ENDIF
 C
@@ -1236,8 +1238,7 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER I,IER,IRESLT,J,KMODE,NBHDR,NITHDR,NCHHDR,NFILSZ,NW2
-      CHARACTER FILE*255
-
+      CHARACTER FILE*255, OUTLIN*100
 C     ..
 C     .. Error and print control ..
       INTEGER IFAIL
@@ -1289,7 +1290,9 @@ C
 C     Check file exists
       IF ( .NOT. CCPEXS ( MAPNAM ) ) THEN
         IF ( IFAIL .EQ. 0 ) THEN
-          WRITE(LUNOUT,FMT=6100)MAPNAM( :LENSTR(MAPNAM))
+          OUTLIN = ' **FILE DOES NOT EXIST > '
+          OUTLIN(LENSTR(OUTLIN)+1:) = MAPNAM
+          WRITE (LUNOUT,FMT='(/,A)')OUTLIN(1:LENSTR(OUTLIN))
           CALL CCPERR(1, '**MAP FILE HANDLING ERROR**')
         ELSE
           IFAIL = -1
@@ -1303,7 +1306,7 @@ C
 
       IF (IUNIT.LT.0 .OR. IUNIT.GT.12) THEN
         IF ( IFAIL .EQ. 0 ) THEN
-          WRITE (LUNOUT,FMT=6010) IUNIT
+          WRITE (LUNOUT,FMT=6012) IUNIT
           CALL CCPERR(1, '**MAP FILE HANDLING ERROR**')
         ELSE
           IFAIL = -1
@@ -1325,10 +1328,22 @@ C---- Get and print file name
 C     
       IF ( IPRINT .NE. 0 ) THEN
         CALL QQINQ(LSTRM(IUNIT),MAPNAM,FILE,NFILSZ)
-        IF (NFILSZ.GE.0) WRITE (LUNOUT,FMT=6000) IUNIT,
-     +       FILE(1:LENSTR(FILE)),NFILSZ,MAPNAM
-        IF (NFILSZ.LT.0) WRITE (LUNOUT,FMT=6002) IUNIT,
-     +       FILE(1:LENSTR(FILE)),MAPNAM
+        IF (NFILSZ.GE.0) THEN
+          WRITE (OUTLIN,FMT=6000) IUNIT
+          OUTLIN(LENSTR(OUTLIN)+1:) = FILE
+          WRITE (LUNOUT,FMT='(/,A)') OUTLIN(1:LENSTR(OUTLIN))
+          WRITE (OUTLIN,FMT=6001) NFILSZ
+          OUTLIN(LENSTR(OUTLIN)+1:) = MAPNAM
+          WRITE (LUNOUT,FMT='(A,/)') OUTLIN(1:LENSTR(OUTLIN))
+        ENDIF
+        IF (NFILSZ.LT.0) THEN
+          WRITE (OUTLIN,FMT=6002) IUNIT
+          OUTLIN(LENSTR(OUTLIN)+1:) = FILE
+          WRITE (LUNOUT,FMT='(/,A)') OUTLIN(1:LENSTR(OUTLIN))
+          OUTLIN = '                               Logical name '
+          OUTLIN(LENSTR(OUTLIN)+1:) = MAPNAM
+          WRITE (LUNOUT,FMT='(A,/)') OUTLIN(1:LENSTR(OUTLIN))
+        ENDIF
       ENDIF
 C     
 C     dw---- Read header, modes 2 & 6 in real and integer blocks
@@ -1409,17 +1424,17 @@ C
 C---- Write out header information
 C     
       IF ( IPRINT .NE. 0 ) THEN
-        WRITE (LUNOUT,FMT=6003) NC,NR,NS,MODE,NU1,NU2,NV1,NV2,NW1,
+        WRITE (LUNOUT,FMT=6004) NC,NR,NS,MODE,NU1,NU2,NV1,NV2,NW1,
      +       NW2,NXYZ,CEL, (LXYZ(MAPCRS(I)),I=1,3)
-        IF(MODE.NE.0) WRITE (LUNOUT,FMT=6004) AMIN,AMAX,AMEAN,ARMS
-        WRITE (LUNOUT,FMT=6005) ISPG,NLAB,
+        IF(MODE.NE.0) WRITE (LUNOUT,FMT=6006) AMIN,AMAX,AMEAN,ARMS
+        WRITE (LUNOUT,FMT=6008) ISPG,NLAB,
      +       ((LABELS(I,J),I=1,20),J=1,NLAB)
       ENDIF
 C---- Copy header information for return to calling routine
 C     
 C---- Convert integer title to characters
 C     
-      WRITE (TITLE,FMT=6006) (LABELS(I,1),I=1,20)
+      WRITE (TITLE,FMT=6010) (LABELS(I,1),I=1,20)
 C     
       DO 10 I = 1,3
         IUVW(I) = MAPCRS(I)
@@ -1484,23 +1499,21 @@ C
 C
 C---- Format statements
 C
- 6000 FORMAT (/'  File name for input map file on unit',I4,' : ',A,/31X,
-     +       'file size =',I8,'  ;  logical name  ',A,/)
- 6002 FORMAT (/' File name for input map file on unit',I4,' : ',A,/31X,
-     +       'Logical name  ',A,/)
- 6003 FORMAT (/11X,'Number of columns, rows, sections ',15 ('.'),3I5,
+ 6000 FORMAT ('  File name for input map file on unit',I4,' : ')
+ 6001 FORMAT (31X,'file size =',I8,'  ;  logical name  ')
+ 6002 FORMAT (' File name for input map file on unit',I4,' : ')
+ 6004 FORMAT (/11X,'Number of columns, rows, sections ',15 ('.'),3I5,
      +       /11X,'Map mode ',40 ('.'),I5,/11X,'Start and stop points ',
      +       'on columns, rows, sections ',6I5,/11X,'Grid sampling on ',
      +       'x, y, z ',24 ('.'),3I5,/11X,'Cell dimensions ',33 ('.'),
      +       6F10.5,/11X,'Fast, medium, slow axes ',25 ('.'),3 (4X,A1))
- 6004 FORMAT (11X,'Minimum density ',33 ('.'),F12.5,/11X,'Maximum dens',
+ 6006 FORMAT (11X,'Minimum density ',33 ('.'),F12.5,/11X,'Maximum dens',
      +       'ity ',33 ('.'),F12.5,/11X,'Mean density ',36 ('.'),F12.5,
      +       /11X,'Rms deviation from mean density ',17 ('.'),F12.5)
- 6005 FORMAT (11X,'Space-group ',37 ('.'),I5,/11X,'Number of titles ',
+ 6008 FORMAT (11X,'Space-group ',37 ('.'),I5,/11X,'Number of titles ',
      +       32 ('.'),I5,//' Titles :',/10 (11X,20A4,/))
- 6006 FORMAT (20A4)
- 6010 FORMAT (/' **MRDHDR: UNIT NO. MUST BE 1 TO 12, =',I3,' **')
- 6100 FORMAT (/' **FILE DOES NOT EXIST > ' , A )
+ 6010 FORMAT (20A4)
+ 6012 FORMAT (/' **MRDHDR: UNIT NO. MUST BE 1 TO 12, =',I3,' **')
 C
       END
 C
@@ -1988,7 +2001,7 @@ C     .. External Functions ..
       EXTERNAL NBYTXX
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QSEEK,SYMFR2, QMODE, CCPERR, QREADC
+      EXTERNAL QSEEK,SYMFR2, QMODE, CCPERR, QREADC, QPRINT
 C     ..
 C     .. Common blocks ..
       COMMON /MIHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
@@ -2048,8 +2061,8 @@ C
             IF (NSYM.GE.N) THEN
 C
 C---- Print
-C             
-              CALL QPRINT (1, 'Symmetry operations: ' // LINE)
+C
+              CALL QPRINT(1, ' Symmetry operations: '//LINE)
             END IF
    20   CONTINUE
 C
@@ -2060,7 +2073,7 @@ C
         IF (MODES(IUNIT).EQ.11 .OR. MODES(IUNIT).EQ.12) 
      +      KMODE = 2
         CALL QMODE(LSTRM(IUNIT),KMODE,NCHITM(IUNIT))
-        END
+      END
 C
 C
 C_BEGIN_MSYCPY
