@@ -1256,19 +1256,21 @@ void ccp4_banner(void) {
 
   if (diag) printf("Entering ccp4_banner \n");
 
+  /* Program version number */
   if (ccp4_prog_vers(NULL) && strlen(ccp4_prog_vers(NULL))) {
-    strncpy(prog_vers_str,ccp4_prog_vers(NULL),18);
-    prog_vers_str[18]='\0';
+    sprintf(prog_vers_str,"version %-10s",ccp4_prog_vers(NULL));
   } else {
-    strncpy(prog_vers_str," ",2);
+    /* If no program version available then use the major library
+       version number */
+    sprintf(prog_vers_str,"version %-10s",CCP4_VERSION_NO);
   }
 
   printf(" \n");
   printf(" ###############################################################\n");
   printf(" ###############################################################\n");
   printf(" ###############################################################\n");
-  printf(" ### CCP4 %3s: %-18s %-18s  ##########\n", 
-	 CCP4_VERSION_NO,ccp4ProgramName(NULL),prog_vers_str);
+  printf(" ### CCP4 %3s: %-17s  %-18s: %-8s##\n", 
+	 CCP4_VERSION_NO,ccp4ProgramName(NULL),prog_vers_str,ccp4RCSDate(NULL));
   printf(" ###############################################################\n");
   printf(" User: %s  Run date: %s Run time: %s \n\n\n",
 	 ccp4_utils_username(),ccp4_utils_date(date),ccp4_utils_time(time)); 
