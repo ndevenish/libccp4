@@ -106,7 +106,7 @@ $L : $L(cciflib.o) $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	$(SHARE_LIB)
 
 test-lib : $(srcdir)/testlib.f $L(library.o) $L(library_f.o) $L(unix.o) $L(ccplib.o) \
-          $L(diskio.o)
+	$L(diskio.o)
 # titan special:
 	-(test -f /usr/lib/fortran/time.o && make '$L(time.o)') || true
 	$(RANLIB) $L
