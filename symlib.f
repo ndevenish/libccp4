@@ -2476,7 +2476,7 @@ C     .. Array Arguments ..
       REAL ROT(4,4,*)
 C     ..
 C     .. Local Scalars ..
-      REAL A,REAL,RECIP,S,T
+      REAL A,REALN,RECIP,S,T
       INTEGER I,ICOMST,IERR,IFOUND,IMAX,IP,ISL,J,K,NOP,NP,NSYM
       CHARACTER ICH*1, OUTLIN*100
 C     ..
@@ -2519,7 +2519,7 @@ C
       NS = NS - 1
    30 CONTINUE
       NS = NS + 1
-      REAL = 0.0
+      REALN = 0.0
       RECIP = 0.0
       AXIS = 0.0
       NOP = 1
@@ -2557,7 +2557,7 @@ C
           IFOUND = 1
           IF (ICH.EQ.'X' .OR. ICH.EQ.'x' .OR. ICH.EQ.'H' .OR.
      +        ICH.EQ.'h' .OR. ICH.EQ.'A' .OR. ICH.EQ.'a') THEN
-            IF (ICH.EQ.'X' .OR. ICH.EQ.'x') REAL = REAL + 1.0
+            IF (ICH.EQ.'X' .OR. ICH.EQ.'x') REALN = REALN + 1.0
             IF (ICH.EQ.'H' .OR. ICH.EQ.'h') RECIP = RECIP + 1.0
             IF (ICH.EQ.'A' .OR. ICH.EQ.'a') AXIS = AXIS + 1.0
             J = 1
@@ -2565,7 +2565,7 @@ C
             GO TO 70
           ELSE IF (ICH.EQ.'Y' .OR. ICH.EQ.'y' .OR. ICH.EQ.'K' .OR.
      +             ICH.EQ.'k' .OR. ICH.EQ.'B' .OR. ICH.EQ.'b') THEN
-            IF (ICH.EQ.'Y' .OR. ICH.EQ.'y') REAL = REAL + 1.0
+            IF (ICH.EQ.'Y' .OR. ICH.EQ.'y') REALN = REALN + 1.0
             IF (ICH.EQ.'K' .OR. ICH.EQ.'k') RECIP = RECIP + 1.0
             IF (ICH.EQ.'B' .OR. ICH.EQ.'b') AXIS = AXIS + 1.0
             J = 2
@@ -2573,7 +2573,7 @@ C
             GO TO 70
           ELSE IF (ICH.EQ.'Z' .OR. ICH.EQ.'z' .OR. ICH.EQ.'L' .OR.
      +             ICH.EQ.'l' .OR. ICH.EQ.'C' .OR. ICH.EQ.'c') THEN
-            IF (ICH.EQ.'Z' .OR. ICH.EQ.'z') REAL = REAL + 1.0
+            IF (ICH.EQ.'Z' .OR. ICH.EQ.'z') REALN = REALN + 1.0
             IF (ICH.EQ.'L' .OR. ICH.EQ.'l') RECIP = RECIP + 1.0
             IF (ICH.EQ.'C' .OR. ICH.EQ.'c') AXIS = AXIS + 1.0
             J = 3
@@ -2673,11 +2673,11 @@ C
       END IF
       NS = NS - 1
   130 NSYM = NS
-      IF (REAL.LT.3.0 .AND. RECIP.LT.3.0 .AND. AXIS.LT.3.0) IERR = 1
+      IF (REALN.LT.3.0 .AND. RECIP.LT.3.0 .AND. AXIS.LT.3.0) IERR = 1
       IF (RECIP.GE.3.0) NSYM = -NSYM
       IF (IERR.NE.1) RETURN          
   140 WRITE (6,FMT='(A,I4,2F6.1,4(/,4F10.3))') ' NSYM REAL RECIP ROT',
-     +  NSYM,REAL,RECIP, ((ROT(I,J,NS),J=1,4),I=1,4)
+     +  NSYM,REALN,RECIP, ((ROT(I,J,NS),J=1,4),I=1,4)
       CALL CCPERR(1, '**SYMMETRY OPERATOR ERROR**')
 C
 C---- Format statements
