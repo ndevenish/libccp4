@@ -158,6 +158,12 @@ C
       IF (REWRIT.EQ.'UNKNOWN') 
      +     CALL QPRINT(2, '(Q)QOPEN status changed from NEW to '
      +     //'UNKNOWN for '// LNAME)
+      IF (JSTAT.EQ.4 .AND. CCPEXS(FNAME)) THEN
+        WRITE (ERRSTR,FMT=6001)
+     +       '(Q)QOPEN NEW file already exists:',
+     +       FNAME(:MIN(100,LENSTR(FNAME)))
+        CALL CCPERR(1,ERRSTR)
+      ENDIF
 C
 C---- Open the file as requested
 C
@@ -170,11 +176,6 @@ C
       ELSE IF (IUNIT.EQ.-2) THEN
         WRITE (ERRSTR,FMT=6001) '(Q)QOPEN failed - File name:',
      +       LOGNAM (:MIN(100,LENSTR(LOGNAM)))
-        CALL CCPERR(1,ERRSTR)
-      ELSE IF (JSTAT.EQ.4 .AND. CCPEXS(FNAME)) THEN
-        WRITE (ERRSTR,FMT=6001)
-     +       '(Q)QOPEN NEW file already exists:',
-     +       FNAME(:MIN(100,LENSTR(LOGNAM)))
         CALL CCPERR(1,ERRSTR)
       END IF
 
