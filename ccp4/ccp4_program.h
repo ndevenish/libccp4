@@ -31,6 +31,7 @@ extern "C" {
 /* Maximum lengths of strings holding program names and versions */
 #define MAXLEN_PROGNAME    80
 #define MAXLEN_PROGVERSION 80
+#define MAXLEN_RCSDATE     80
 
 /*------------------------------------------------------------------*/
 
@@ -41,6 +42,8 @@ extern "C" {
 char *ccp4_prog_vers(char *progvers);
 
 char *ccp4ProgramName(const char *progname);
+
+char *ccp4RCSDate(const char *rcs_string);
 
 void ccp4ProgramTime(int init);
 

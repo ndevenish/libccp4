@@ -71,6 +71,62 @@ char *ccp4ProgramName(const char *progname)
   return programname;
 }
 
+/* ccp4RCSDate
+
+   Set or return program RCS date
+
+   If the input string is not a NULL pointer then
+   it is assumed to be an RCS string
+   This is processed to extract a date string in
+   the form "DD/MM/YY" (day/month/year), which is
+   then stored.
+
+   ccp4RCSDate always returns the currently
+   stored date string.
+*/
+char *ccp4RCSDate(const char *rcs_string)
+{
+  static char RCSDate[MAXLEN_RCSDATE]="";
+  char        tmpstr1[MAXLEN_RCSDATE],tmpstr2[3];
+  int         i;
+
+  /* Deconstruct the RCS string passed to this
+     function */
+  if (rcs_string) {
+    /* Extract useful data from RCS string for examination */
+    strncpy(tmpstr1,rcs_string,7);
+    if (strlen(tmpstr1) >= MAXLEN_RCSDATE) tmpstr1[MAXLEN_RCSDATE-1] = '\0';
+    strncpy(tmpstr2,rcs_string,3);
+    if (strlen(tmpstr2) >= 3) tmpstr2[2] = '\0';
+    if (strcmp(tmpstr1,"$Date: ") == 0) {
+      /* Raw form of RCS string (not exported) i.e.:
+	 "$Date$"
+      */
+      /* Build the date string in the form DD/MM/YY */
+      strncpy(RCSDate,rcs_string+15,2);
+      strncat(RCSDate,"/",1);
+      strncat(RCSDate,rcs_string+12,2);
+      strncat(RCSDate,"/",1);
+      strncat(RCSDate,rcs_string+9,2);
+    } else if (strlen(rcs_string) > 10 &&
+	       (strcmp(tmpstr2,"19") == 0 || strcmp(tmpstr2,"20")) ) {
+      /* RCS string after export i.e.:
+	 "2003/05/14 11:45:13 ..." */
+      /* Build the date string in the form DD/MM/YY */
+      strncpy(RCSDate,rcs_string+8,2);
+      strncat(RCSDate,"/",1);
+      strncat(RCSDate,rcs_string+5,2);
+      strncat(RCSDate,"/",1);
+      strncat(RCSDate,rcs_string+2,2);
+    } else {
+      /* Fallback */
+      strncpy(RCSDate,"",1);
+    }
+  }
+  /* Always return the stored date */
+  return RCSDate;
+}
+
 /* ccp4ProgramTime
 
    Set or print program time information
