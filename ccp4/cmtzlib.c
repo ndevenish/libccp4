@@ -2045,6 +2045,8 @@ int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[],
        if (res > 0.0) {
          if (res > mtz->xtal[i]->resmax) mtz->xtal[i]->resmax = res;
          if (res < mtz->xtal[i]->resmin) mtz->xtal[i]->resmin = res;
+         if (res > mtz->resmax_out) mtz->resmax_out = res;
+         if (res < mtz->resmin_out) mtz->resmin_out = res;
        }
       }
      }
@@ -2086,11 +2088,6 @@ int MtzPut(MTZ *mtz, const char *logname)
  }
 
  if (mtz->refs_in_memory) {
-/* reset resolution ranges for write */
-   for (i = 0; i < mtz->nxtal; ++i) {
-     mtz->xtal[i]->resmax = 0.0f;
-     mtz->xtal[i]->resmin = 999.f; }
-
    /* Write all reflections from memory - make this optional? */
    for (l = 0; l < mtz->nref; ++l) {
      icol = 0;
@@ -2179,16 +2176,13 @@ int MtzPut(MTZ *mtz, const char *logname)
       if (res > 0.0) {
         if (res > mtz->xtal[i]->resmax) mtz->xtal[i]->resmax = res;
         if (res < mtz->xtal[i]->resmin) mtz->xtal[i]->resmin = res;
+        if (res > mtz->resmax_out) mtz->resmax_out = res;
+        if (res < mtz->resmin_out) mtz->resmin_out = res;
       }
    }
   }
  }
- /* Calculate overall  resolution limits */
- for (i = 0; i < mtz->nxtal; ++i) {
-      if (mtz->xtal[i]->resmax > maxres) maxres = mtz->xtal[i]->resmax;
-      if (mtz->xtal[i]->resmin < minres) minres = mtz->xtal[i]->resmin;
- }
- sprintf(hdrrec,"RESO %-20f %-20f",minres,maxres);
+ sprintf(hdrrec,"RESO %-20f %-20f",mtz->resmin_out,mtz->resmax_out);
  MtzWhdrLine(fileout,46,hdrrec);
 
  if (debug) 
@@ -2543,6 +2537,8 @@ MTZ *MtzMalloc(int nxtal, int nset[])
   mtz->histlines = 0;
   mtz->nxtal = nxtal;
   mtz->nref = 0;
+  mtz->resmax_out = 0.0f;
+  mtz->resmin_out = 999.0f;
   mtz->refs_in_memory = 1;
   mtz->n_orig_bat = 0;
   sprintf(mtz->mnf.amnf,"NAN");

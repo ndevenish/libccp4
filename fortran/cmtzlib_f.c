@@ -1437,11 +1437,6 @@ FORTRAN_SUBR ( LWOPEN, lwopen,
      for (k = 0; k < mtzdata[*mindx-1]->xtal[i]->set[j]->ncol; ++k)
       if (mtzdata[*mindx-1]->xtal[i]->set[j]->col[k]->source)
         collookup_out[*mindx-1][++icol] = mtzdata[*mindx-1]->xtal[i]->set[j]->col[k];
-   /* for out of memory reset the min and max resolution
-      Note:  this will invalidate this information for the input file */
-   for (i = 0; i < mtzdata[*mindx-1]->nxtal; ++i) {
-     mtzdata[*mindx-1]->xtal[i]->resmax = 0.0f;
-     mtzdata[*mindx-1]->xtal[i]->resmin = 999.0f; }
  }
 
  free(temp_name);

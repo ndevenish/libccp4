@@ -148,6 +148,8 @@ typedef struct { CCP4File *filein;     /**< file for reading */
 		 int nref;             /**< number of reflections */
                  int refs_in_memory;   /**< whether reflections are held in memory */
 		 int n_orig_bat;       /**< original number of batches */
+                 float resmax_out;     /**< output file max res */
+                 float resmin_out;     /**< output file min res */
                  MNF mnf;              /**< value of missing number flag */
                  SYMGRP mtzsymm;       /**< symmetry information */
 		 MTZXTAL **xtal;       /**< crystals */
