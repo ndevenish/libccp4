@@ -967,7 +967,7 @@ C     .. Local Scalars ..
       INTEGER I,II
       CHARACTER*100 ERRLIN
       CHARACTER BROOKA*80,PDBATN*4,PDBRESN*4,PDBCHN*1,PDBID*4,
-     +          PDBRESNO*5,PDBSEGID*4,Cnums(10)*1
+     +          PDBRESNO*5,PDBSEGID*4,Cnums(13)*1
 
 C     ..
 C     .. External Routines/Functions ..
@@ -985,7 +985,8 @@ C
 C     .. Data Statements ..
       DATA ITYPE/'CRYST1','SCALE','TER   ','ATOM  ','HETATM',
      +           'ANISOU','END   '/
-      DATA Cnums /'0','1','2','3','4','5','6','7','8','9'/
+      DATA Cnums /'0','1','2','3','4','5','6','7','8','9',
+     +           '*',"'",'"'/
 C     ..
 C     .. Save ..
       SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/
@@ -1049,7 +1050,7 @@ c
         IF (ID(1:1) .EQ. ' ') THEN
           IF (ATNAM(2:2).eq.'H' .or. 
      +          (ATNAM(2:2).eq.'D' .and. ID(1:2).eq.' D') ) then
-             DO 21 LLx=1,10
+             DO 21 LLx=1,13
                IF (ATNAM(1:1).eq.Cnums(LLx))then
                  BROOKA(13:16) = ATNAM(1:4)
                  GO TO 22
