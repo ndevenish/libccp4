@@ -2929,7 +2929,7 @@ C
 C                     ************************
                  CALL LERROR(ISTAT,IFAIL,LINE)
 C                     ************************
-                 CALL CCPERR (1, 'Corrupt MTZ file?')
+                 CALL CCPERR (2, 'Corrupt MTZ file?')
               ENDIF
 C
             ELSE
