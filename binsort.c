@@ -5,7 +5,7 @@
      CCP4 licence agreement as `Part i)' software.  See the conditions
      in the CCP4 manual for a copyright statement.
      */
-#define VERSION "Z290992"                                                  /*
+#define VERSION "Z131093"                                                  /*
 
 HOW TO USE
 
@@ -67,7 +67,9 @@ as published in:
 #define T                     4
 #define P                     3
 
-/*#define FUNCPROTO   1       Good for debugging under ANSI C */
+/*#define FUNCPROTO   1        Good for debugging under ANSI C */
+/*#define ALIGNMENT  (sizeof(int))*/
+#define ALIGNMENT  (sizeof(double))
 
 
 #ifdef VAX_VMS
@@ -90,6 +92,7 @@ as published in:
 
 #    ifndef NOUNISTD		/* ESV, for instance, doesn't have it */
 #      include <unistd.h>
+#      include <malloc.h>
 #    endif
 #    ifndef  SEEK_SET
 #      if defined(ESV) && defined(SYSTYPE_BSD43)
@@ -250,14 +253,14 @@ static int              cmp_ushort_mask(
 			       );
 static int              cmproutine(
 #ifdef FUNCPROTO
-			       void            *e1,
-			       void            *e2
+			       const void      *e1,
+			       const void      *e2
 #endif /* FUNCPROTO */
 			       );
 static int              pointer_cmproutine(
 #ifdef FUNCPROTO
-			       void            *pe1,
-			       void            *pe2
+			       const void      *pe1,
+			       const void      *pe2
 #endif /* FUNCPROTO */
 			       );
 static int              fillworka(
@@ -445,9 +448,11 @@ Environment variables:\n\
 \n\
 Bugs/Features:\n\
 	Data types other then short, char were not tested well.\n\
-	Each record is alligned on LONG boundary. Some machines may\n\
-        require double. Data fields withinin record itself must be\n\
-        properly alligned, otherwise BUS ERROR is invoked.\n\
+	Each record is alligned on %d byte boundary. Some machines may\n\
+        require different alignment. In that case you must edit symbol\n\
+        ALIGNMENT in binsort.c (source file) and recompile it.\n\
+        Data fields withinin record itself must be properly aligned,\n\
+        otherwise BUS ERROR is invoked.\n\
         Binsort does not check semantics of keyvalue data.\n\
 \n\
 Notes:\n\
@@ -456,7 +461,7 @@ Notes:\n\
 \n\
 Version %s                            Good Luck\n\
                                               J. Zelinka\n\
-", workasz, scrpath, VERSION);
+", ALIGNMENT, workasz, scrpath, VERSION);
 }
 
 /*** Internal constants - do not change them ***/
@@ -523,10 +528,18 @@ char    *argv[];
   /*** Work area initialization - make a decision about record/pointer
        sort procedure NOW                                              ***/
 
-  actrecl = lrecl + ((sizeof(int)-(lrecl%sizeof(int))) % sizeof(int));
+  actrecl = lrecl + ((ALIGNMENT-(lrecl%ALIGNMENT)) % ALIGNMENT);
                           /* record allignment */
+  if (f_verbose)
+    fprintf(stderr, "binsort -- requested/aligned record length %d/%d\n",
+	    lrecl, actrecl);
+
   actworkasz = workasz - (workasz % (actrecl * 4)); /* rounded on 4 records
 						       boundary */
+  if (f_verbose)
+    fprintf(stderr, "binsort -- requested/aligned work area size %d/%d\n",
+	    workasz, actworkasz);
+
   workainrec = actworkasz / actrecl;                /* lengths in records */
   scrbufsize = actworkasz / 4;                      /* scratch file buffer */
   scrbufinrec = scrbufsize / actrecl;
@@ -774,6 +787,9 @@ fillworka()	/* returns actual number of bytes occupated in workarea */
     proterr();
   if (pw < pwe && !feof(stdin)) /* still free space and wrong input */
     proterr();
+  if (f_verbose)
+    fprintf(stderr, "binsort -- %d bytes read into work area\n",
+	    pw - (char *)workarea);
   return(pw - (char *)workarea);
 }
 
@@ -785,6 +801,8 @@ int          nrecords;
 int          recsize;
 {
   qsort((void *)workarea, nrecords, recsize, cmproutine);
+  if (f_verbose)
+    fprintf(stderr, "binsort -- %d records sorted\n", nrecords);
 }
 
 
@@ -794,6 +812,8 @@ pointer_sort(nrecords)
 int          nrecords;
 {
   qsort(pointer_area, nrecords, sizeof(void *), pointer_cmproutine);
+  if (f_verbose)
+    fprintf(stderr, "binsort -- %d records sorted\n", nrecords);
 }
 
 /*=================================================================*/
@@ -1493,7 +1513,7 @@ int     num;
     fprintf(stderr, "binsort -- scratch is not a regular file\n");
     my_exit(1);
   }
-  /* unlink(scrname);                         * delete after close !!! */
+  unlink(scrname);                         /* delete after close !!! */
   ctape->fd = fdes;                        /* file descriptor */
   ctape->truns = ctape->runlng = 0;        /* no runs on tape */
   ctape->buf = ctape->pbuf = (char *)NULL;
@@ -1631,4 +1651,3 @@ testprint()
   }
 }
 ************************/
-

@@ -1,6 +1,6 @@
 /*************************************************************************
 	binsortint.c
-	Z260193
+	Z130593
 
      This code is distributed under the terms and conditions of the
      CCP4 licence agreement as `Part i)' software.  See the conditions
@@ -36,6 +36,7 @@ For information about key type values see binsortkey.h
 #include <fcntl.h>
 #ifndef NOUNISTD		/* ESV, for instance doesn'r have it */
 #  include <unistd.h>
+#  include <malloc.h>
 #endif
 #include <stddef.h>
 
@@ -323,4 +324,3 @@ char		*record;
       return(ferror(filin));
     }
 }
-
