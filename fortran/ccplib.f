@@ -2518,7 +2518,7 @@ C
 C     .. Scalar Arguments ..
       CHARACTER*(*) VERSION
 
-      VERSION = '4.1'
+      VERSION = '4.2'
 
       END
 C
@@ -2537,7 +2537,7 @@ C
 C     .. Scalar Arguments ..
       CHARACTER*(*) PATCH_LEVEL
 
-      PATCH_LEVEL = '4.1.1'
+      PATCH_LEVEL = '4.2.a'
 
       END
 C
