@@ -1267,7 +1267,6 @@ C     .. Array arguments ..
       INTEGER ITYP(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER ISTERR,IFGERR
       CHARACTER LINERR*200
 C     ..
 C     .. External Subroutines ..
@@ -1280,11 +1279,9 @@ C
         ELSE IF (ITYP(N).EQ.1) THEN
            WRITE (LINERR,FMT='(A,I4)') 
      +    ' Illegal number in field ',N
-          ISTERR = 1
-          IFGERR = 0
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(1,0,LINERR)
 C              ****************************
 C
         END IF
@@ -2170,6 +2167,10 @@ C     .. External Subroutines ..
       EXTERNAL          GTPREA
 C     ..
 C     
+      IF (NTOK .LT. ITOK+2) THEN
+        CALL LERROR (1,0,'Cell a, b and c not given -- ignored')
+        RETURN
+      END IF
       CELL(4) = 90.0
       CELL(5) = 90.0
       CELL(6) = 90.0
@@ -2240,6 +2241,10 @@ C---- Global defaults set here
 C
         RESMAX = 10000.0
         RESMIN = .1
+        IF (NTOK.LE.ITOK) THEN
+          CALL LERROR(1,0,'Resolution missing')
+          RETURN
+        END IF
 C     
 C---- Look at next field on line: this can be
 C     read resolution limits in A, if only one treat as high
