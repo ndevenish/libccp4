@@ -496,8 +496,10 @@ C
 ccx      include 'harderiv.inc'
       include 'harshell.inc'
 C
+      INTEGER Jdo,lenstr
+C
 C     .. External Subroutines ..
-      EXTERNAL ccif_close_cif
+      EXTERNAL ccif_close_cif,lenstr
 C     ..
 C
 C
