@@ -4,7 +4,6 @@
 
 #include "chelp.h"
 
-
 #if CALL_LIKE_HPUX
   void chelp ()
 #endif
@@ -29,6 +28,7 @@
 {
   char *filename ;
   int len, i = 1, opt = DEF_OPTION;
+  void read_input_file(), show_tree(), process_file(), manipulate_tree();
   FILE *in;
 
           filename = getenv ("CHELPFILE");
@@ -37,42 +37,47 @@
                             data structures and variables */
   SCREEN_WIDTH = COLS;
   SCREEN_DEPTH = LINES - 3;
+  tree=NULL;
 
    refresh();
    endwin();
 
       if ((in = fopen (filename,"r")) == NULL)
-  {(void) fprintf (stderr,"%s: cannot open %s\n",filename);
+  {(void) fprintf (stderr,"cannot open %s\n",filename);
           exit (2);
    }
 
+#if defined (sgi) || defined (__OSF1__) || defined (__osf__)
+  setlinebuf(stdout);
+#endif
 
   switch (opt) {
-   case 0: (void) read_input_file (in);
+   case 0: read_input_file (in);
            break;
-   case 1: (void) show_tree (in);
+   case 1: show_tree (in);
            exit (0);
            break;
-   case 2: (void) process_file (in);
+   case 2: process_file (in);
            exit (0);
            break;
                     }
 
   (void) fclose (in);
 
-  (void) manipulate_tree (tree);
+  manipulate_tree (tree);
 
    } /* end of main */
 
 
 /**************************************************************************/
 
-read_input_file (fptr)     /* read the input file into the tree structure */
+void read_input_file (fptr)     /* read the input file into the tree structure */
 FILE *fptr;
 {
   char line[MAX_LINE_LEN];
   struct block *item, *clist, *flist;
   int level, c;
+  void insert_into_tree();
 
   while (!feof (fptr))
     {
@@ -102,11 +107,11 @@ FILE *fptr;
               clist->lines = item;
               clist = item;
             }
-          (void) insert_into_tree (level,flist);
+          insert_into_tree (level,flist);
         }
       else
         {
-          (void) printf ("%s: lines out of order\n");
+          (void) printf ("lines out of order\n");
           exit (3);
         }
     } /* end while */
@@ -114,7 +119,7 @@ FILE *fptr;
 
 #define XLIN      10
 
-show_tree (fptr)
+void show_tree (fptr)
 FILE *fptr;
 {
   int c, xlins = 1, sp;
@@ -164,7 +169,7 @@ FILE *fptr;
 
 /**************************************************************************/
 
-process_file (fptr)
+void process_file (fptr)
 FILE *fptr;
 {
   int c, xlins = 1;
@@ -200,7 +205,7 @@ FILE *fptr;
  * Level 2                                                                *
  **************************************************************************/
 
-insert_into_tree (level,line)            /* insert the item into the tree */
+void insert_into_tree (level,line)            /* insert the item into the tree */
 int level;                 /* level is used to indicate depth in tree */
 struct block *line;
 {
@@ -216,12 +221,12 @@ struct block *line;
     }
   else if (tree != NULL && level == 0)
     {
-      (void) printf ("%s: only one level zero allowed\n");
+      (void) printf ("only one level zero allowed\n");
       exit (4);
     }
   else if (tree == NULL && level != 0)
     {
-      (void) printf ("%s: level zero not implemented yet\n");
+      (void) printf ("level zero not implemented yet\n");
       exit (5);
     }
   else
@@ -244,18 +249,14 @@ struct block *line;
 
 /**************************************************************************/
 
-show_children (node)
+int show_children (node)
 struct list *node;
 {
   if (node == NULL) return (0);
   while (node != 0) 
     {
 
-#if defined (sgi)
-      (void) fprintf (stderr,"\t%s",node->child->item->name);
-#else
       (void) printf ("\t%s",node->child->item->name);
-#endif
 
       node = node->next;
     }
@@ -293,57 +294,47 @@ struct treenode *ptr;
 
 /**************************************************************************/
 
-manipulate_tree (ptr)
+void manipulate_tree (ptr)
 struct treenode *ptr;
 {
   struct block *info;
-  int pause;
+  int pause, get_response();
+  void list_topics();
 
   do {
+#if ! defined (VMS)
     (void) system ("clear");
+#endif
     info = ptr->item;
 
-#if defined (sgi)
-    (void) fprintf (stderr,"%s\n\n",info->name);
-#else
     (void) printf ("%s\n\n",info->name);
-#endif
 
     pause = 0;
     while (info->lines != NULL)
       {
         info = info->lines;
 
-#if defined (sgi)
-   (void) fprintf (stderr,"%s\n",info->name);
-#else
    (void) printf ("%s\n",info->name);
-#endif
 
         if ((++pause) % SCREEN_DEPTH == 0) 
           {
 
-#if defined (sgi)
-   (void) fprintf (stderr,"Press RETURN to continue ... ");
-#else
    (void) printf ("Press RETURN to continue ... ");
-#endif
 
             do {
             } while (getc (stdin) != '\n');
           }
       }
     list_topics (ptr->descendent);
-  } while  (get_response (ptr->descendent));
+  } while  (get_response (ptr->descendent) != 0);
 
-  return (0);
 } /* end of manipulate_tree */
 
 /**************************************************************************
  * Level 3                                                                *
  **************************************************************************/
 
-list_topics (ptr)
+void list_topics (ptr)
 struct list *ptr;
 
 {
@@ -368,11 +359,7 @@ struct list *ptr;
 
   if (result) 
 {
-#if defined (sgi)
- (void) fprintf (stderr,"\nFurther Information on:\n\n");
-#else
  (void) printf ("\nFurther Information on:\n\n");
-#endif
 }
 
   if ((current = ptr) != NULL) rows++;
@@ -382,20 +369,12 @@ struct list *ptr;
        {
          if (current == NULL) break;
 
-#if defined (sgi)
-  (void) fprintf (stderr,"%-*s  ",maxline,current->child->item->name);
-#else
   (void) printf ("%-*s  ",maxline,current->child->item->name);
-#endif
 
          current = current->next;
        }
 
-#if defined (sgi)
- (void) fprintf (stderr,"\n"); 
-#else
  (void) printf ("\n"); 
-#endif
 
    }
 
@@ -403,18 +382,14 @@ struct list *ptr;
 
 /**************************************************************************/
 
-get_response (ptr)
+int get_response (ptr)
 struct list *ptr;
 {
   char reply[MAX_LINE_LEN];
   int i;
   char *temp, *start;
 
-#if defined (sgi)
-  (void) fprintf (stderr,"\n\nEnter Choice: ");
-#else
   (void) printf ("\n\nEnter Choice: ");
-#endif
 
   i =  scanf ("%[^\n]s",reply);
   (void) getc (stdin);                 /* skip over the newline character */
@@ -427,7 +402,8 @@ struct list *ptr;
       temp = malloc ((unsigned) (1 + strlen (reply)));
       (void) strncpy (temp,ptr->child->item->name,strlen (reply));
       for (start = temp; *temp != '\0'; temp++) *temp = lcase (*temp);
-      if (strcmp (reply,start) == 0) 
+      i = strncmp (reply,start,strlen (reply));
+      if (i == 0) 
         {
           (void) manipulate_tree (ptr->child);
           return (1);
