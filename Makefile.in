@@ -35,7 +35,9 @@
 #   file doesn't work in AIX because it isn't in object format
 # * ar *.o into ../libccp4.a
 # * rm *.o from foo.dir (leave *.f there so you can do symbolic debug,
-#   although you then have to get the path right)
+#   although you then have to get the path right.  fixme: compile
+#   $(srcdir)/*.f to solve this problem if it doesn't make lines too
+#   long for sh...)
 
 # The following variables are expected to be set by configure:
 # top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
@@ -76,131 +78,145 @@ ranlib: ; $(RANLIB) $L
 
 $(LIBTARGETS) : ; $(MAKE) $(MFLAGS) "$L($@.o)"
 
-dummy.o: dummy.for
-	-rm -f dummy.$F
-	$(LNS) dummy.for dummy.$F
-	$(FC) -c $(FFLAGS) dummy.$F
-
 # explicit building of the real targets, sigh...
 
-$L(ccplib.o) : $(srcdir)/ccplib.for dummy.o
+$L(ccplib.o) : $(srcdir)/ccplib.for
 	-rm -rf ccplib.dir; mkdir ccplib.dir
+	echo '      SUBROUTINE CCPLIB' > ccplib.dir/ccplib.$F
+	echo '      END' >> ccplib.dir/ccplib.$F
 	cd ccplib.dir; fsplit $(srcdir)/ccplib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o ccplib.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f ccplib.dir/*.o
 
-$L(fftlib.o) : $(srcdir)/fftlib.for dummy.o
+$L(fftlib.o) : $(srcdir)/fftlib.for
 	-rm -rf fftlib.dir; mkdir fftlib.dir
+	echo '      SUBROUTINE FFTLIB' > fftlib.dir/fftlib.$F
+	echo '      END' >> fftlib.dir/fftlib.$F
 	cd fftlib.dir; fsplit $(srcdir)/fftlib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o fftlib.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f fftlib.dir/*.o
 
-$L(maplib.o) : $(srcdir)/maplib.for dummy.o
+$L(maplib.o) : $(srcdir)/maplib.for
 	-rm -rf maplib.dir; mkdir maplib.dir
+	echo '      SUBROUTINE MAPLIB' > maplib.dir/maplib.$F
+	echo '      END' >> maplib.dir/maplib.$F
 	cd maplib.dir; fsplit $(srcdir)/maplib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o maplib.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f maplib.dir/*.o
 
 $L(parser.o) : $(srcdir)/parser.for
+# NB already has PARSER.{f,o} (uppercase), but make sure there's a
+# parser.o too and don't make an extra `parser_' (or whatever) symbol
 	-rm -rf parser.dir; mkdir parser.dir
+	echo '      SUBROUTINE PRSER' > parser.dir/parser.$F
+	echo '      END' >> parser.dir/parser.$F
 	cd parser.dir; fsplit $(srcdir)/parser.for; \
-	  $(FC) -c $(FFLAGS) *.$F; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f parser.dir/*.o
 
-$L(rwbrook.o) : $(srcdir)/rwbrook.for dummy.o
+$L(rwbrook.o) : $(srcdir)/rwbrook.for
 	-rm -rf rwbrook.dir; mkdir rwbrook.dir
+	echo '      SUBROUTINE RWBROOK' > rwbrook.dir/rwbrook.$F
+	echo '      END' >> rwbrook.dir/rwbrook.$F
 	cd rwbrook.dir; fsplit $(srcdir)/rwbrook.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o rwbrook.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f rwbrook.dir/*.o
 
-$L(rwatom.o) : $(srcdir)/rwatom.for dummy.o
+$L(rwatom.o) : $(srcdir)/rwatom.for
 	-rm -rf rwatom.dir; mkdir rwatom.dir
+	echo '      SUBROUTINE RWATOM' > rwatom.dir/rwatom.$F
+	echo '      END' >> rwatom.dir/rwatom.$F
 	cd rwatom.dir; fsplit $(srcdir)/rwatom.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o rwatom.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f rwatom.dir/*.o
 
-$L(modlib.o) : $(srcdir)/modlib.for dummy.o
+$L(modlib.o) : $(srcdir)/modlib.for
 	-rm -rf modlib.dir; mkdir modlib.dir
+	echo '      SUBROUTINE MODLIB' > modlib.dir/modlib.$F
+	echo '      END' >> modlib.dir/modlib.$F
 	cd modlib.dir; fsplit $(srcdir)/modlib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o modlib.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f modlib.dir/*.o
 
-$L(mthlib.o) : $(srcdir)/mthlib.for dummy.o
+$L(mthlib.o) : $(srcdir)/mthlib.for
 	-rm -rf mthlib.dir; mkdir mthlib.dir
+	echo '      SUBROUTINE MTHLIB' > mthlib.dir/mthlib.$F
+	echo '      END' >> mthlib.dir/mthlib.$F
 	cd mthlib.dir; fsplit $(srcdir)/mthlib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o mthlib.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f mthlib.dir/*.o
 
-$L(symlib.o) : $(srcdir)/symlib.for dummy.o
+$L(symlib.o) : $(srcdir)/symlib.for
 	-rm -rf symlib.dir; mkdir symlib.dir
+	echo '      SUBROUTINE SYMLIB' > symlib.dir/symlib.$F
+	echo '      END' >> symlib.dir/symlib.$F
 	cd symlib.dir; fsplit $(srcdir)/symlib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o symlib.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f symlib.dir/*.o
 
-$L(lcflib.o) : $(srcdir)/lcflib.for dummy.o
+$L(lcflib.o) : $(srcdir)/lcflib.for
 	-rm -rf lcflib.dir; mkdir lcflib.dir
+	echo '      SUBROUTINE LCFLIB' > lcflib.dir/lcflib.$F
+	echo '      END' >> lcflib.dir/lcflib.$F
 	cd lcflib.dir; fsplit $(srcdir)/lcflib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o lcflib.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f lcflib.dir/*.o
 
-$L(mtzlib.o) : $(srcdir)/mtzlib.for dummy.o
+$L(mtzlib.o) : $(srcdir)/mtzlib.for
 	-rm -rf mtzlib.dir; mkdir mtzlib.dir
+	echo '      SUBROUTINE MTZLIB' > mtzlib.dir/mtzlib.$F
+	echo '      END' >> mtzlib.dir/mtzlib.$F
 	cd mtzlib.dir; fsplit $(srcdir)/mtzlib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o mtzlib.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f mtzlib.dir/*.o
 
-$L(diskio.o) : $(srcdir)/diskio.for dummy.o
+$L(diskio.o) : $(srcdir)/diskio.for
 	-rm -rf diskio.dir; mkdir diskio.dir
+	echo '      SUBROUTINE DISKIO' > diskio.dir/diskio.$F
+	echo '      END' >> diskio.dir/diskio.$F
 	cd diskio.dir; fsplit $(srcdir)/diskio.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o diskio.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f diskio.dir/*.o
 
-$L(hlplib.o) : $(srcdir)/hlplib.for dummy.o
+$L(hlplib.o) : $(srcdir)/hlplib.for
 	-rm -rf hlplib.dir; mkdir hlplib.dir
+	echo '      SUBROUTINE HLPLIB' > hlplib.dir/hlplib.$F
+	echo '      END' >> hlplib.dir/hlplib.$F
 	cd hlplib.dir; fsplit $(srcdir)/hlplib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o hlplib.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f hlplib.dir/*.o
 
 # fixme: change >14 characters name!
-$L(frodo_maplib.o) : $(srcdir)/frodo_maplib.f dummy.oor
+$L(frodo_maplib.o) : $(srcdir)/frodo_maplib.for
 	-rm -rf frodo_maplib.dir; mkdir frodo_maplib.dir
+	echo '      SUBROUTINE frodo_MAPLIB' > frodo_maplib.dir/frodo_maplib.$F
+	echo '      END' >> frodo_maplib.dir/frodo_maplib.$F
 	cd frodo_maplib.dir; fsplit $(srcdir)/frodo_maplib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o frodo_maplib.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f frodo_maplib.dir/*.o
 
-$L(plot84lib.o) : $(srcdir)/plot84lib.for dummy.o
+$L(plot84lib.o) : $(srcdir)/plot84lib.for
 	-rm -rf plot84lib.dir; mkdir plot84lib.dir
+	echo '      SUBROUTINE PLOT84LIB' > plot84lib.dir/plot84lib.$F
+	echo '      END' >> plot84lib.dir/plot84lib.$F
 	cd plot84lib.dir; fsplit $(srcdir)/plot84lib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o plot84lib.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f plot84lib.dir/*.o
 
-$L(graflib.o) : $(srcdir)/graflib.for dummy.o
+$L(graflib.o) : $(srcdir)/graflib.for
 	-rm -rf graflib.dir; mkdir graflib.dir
+	echo '      SUBROUTINE GRAFLIB' > graflib.dir/graflib.$F
+	echo '      END' >> graflib.dir/graflib.$F
 	cd graflib.dir; fsplit $(srcdir)/graflib.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o graflib.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f graflib.dir/*.o
 
-$L(graphics.o) : $(srcdir)/graphics.for dummy.o
+$L(graphics.o) : $(srcdir)/graphics.for
 	-rm -rf graphics.dir; mkdir graphics.dir
+	echo '      SUBROUTINE GRAPHICS' > graphics.dir/graphics.$F
+	echo '      END' >> graphics.dir/graphics.$F
 	cd graphics.dir; fsplit $(srcdir)/graphics.for; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o graphics.o ; \
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f graphics.dir/*.o
 
 $L(gdummy.o) : $(srcdir)/gdummy.for
@@ -237,12 +253,13 @@ binsort : $(srcdir)/binsort.c $(incdir)/binsort.h
 	$(LNS) binsort ../../src/binsort
 
 # the unix-specific bits need preprocessing for different unix variants
-$L(unix.o) : $(srcdir)/unix.m4 dummy.o
+$L(unix.o) : $(srcdir)/unix.m4
 	$(M4) $(srcdir)/unix.m4 >unix.$F
 	-rm -rf unix.dir; mkdir unix.dir
+	echo '      SUBROUTINE UNIX' > unix.dir/unix.$F
+	echo '      END' >> unix.dir/unix.$F
 	cd unix.dir; fsplit ../unix.$F; \
-	  $(FC) -c $(FFLAGS) *.$F; cp ../dummy.o unix.o ;\
-	  $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f unix.dir/*.o
 
 # testbed for library.c:
