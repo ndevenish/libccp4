@@ -109,8 +109,11 @@ C UGTENV - Get value of env. variable
 C UGTIUD - Get user id - it's name
 C UISATT - Is file a terminal?
 C CCPSPW - Spawns a new process to run shell command
-C CEXIT - 
-C hciftime - 
+C CEXIT  - Trivial interface to system dependent EXIT routine 
+C TTSEND - Write string to terminal with various carriage control
+C     options
+C UGTARG - Get command-line argument
+C hciftime - Time in cif format
 C
 C Functions:
 C
