@@ -242,12 +242,12 @@ C----- Line overflow
         WRITE (6, FMT='(A,I5,A/(A))') ' *** WARNING - More than ',
      .       LINLEN,' characters in (continued) line ***',
      .       ' *** Parsing truncated line ***',LINEX(1:LX)
-        WRITE (LINERR, FMT='(A,I5,A/(A))') ' *** WARNING - More than ',
-     .       LINLEN,' characters in (continued) line ***',
-     .       ' *** Parsing truncated line ***',LINEX(1:LX)
-        ISTERR = 1
-        IFGERR = 0
-        CALL LERROR(ISTERR,IFGERR,LINERR)
+CCC        WRITE (LINERR, FMT='(A,I5,A/(A))') ' *** WARNING - More than ',
+CCC     .       LINLEN,' characters in (continued) line ***',
+CCC     .       ' *** Parsing truncated line ***',LINEX(1:LX)
+CCC        ISTERR = 1
+CCC        IFGERR = 0
+CCC        CALL LERROR(ISTERR,IFGERR,LINERR)
 C---- Reset LX to truncate line
         LX = LX - NINCHR + LINLEN
       ENDIF
@@ -302,6 +302,8 @@ C
 C
 C
         IF (LINE(LENLIN:LENLIN).NE.' ') THEN
+          CALL CCPERR (1,
+     +         '  *** PARSER needs a terminating space ****')
           WRITE (6,FMT='(A)') 
      +  '  *** WARNING - PARSER likes a terminating space ****'
           WRITE (LINERR,FMT='(A)') 
@@ -312,7 +314,8 @@ C
 C              ****************************
           CALL LERROR(ISTERR,IFGERR,LINERR)
 C              ****************************
-C
+C         NB this format is no good for internal writes, but we never
+C         get here with the ccperr call above
           WRITE (LINERR,FMT='(A,/,4x,A)') 
      +      '  ***  This line may not be parsed correctly ***',
      +      LINE(1:120)
@@ -824,9 +827,6 @@ C
    80   CONTINUE
 C
 C
-          WRITE (6,FMT='(A,I4,A)') 
-     +    '  ***** WARNING - MORE THAN ',NITEM,
-     +    ' ITEMS IN THIS LINE - IGNORING THE REST****'
           WRITE (LINERR,FMT='(A,I4,A)') 
      +    '  ***** WARNING - MORE THAN ',NITEM,
      +    ' ITEMS IN THIS LINE - IGNORING THE REST****'
@@ -964,10 +964,8 @@ C
           IFGERR = 0
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
-      CALL CCPERR(1,' STOP IN PARSER 7788')
+C          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL CCPERR(1, LINERR)
 C
 C
       END
@@ -1077,10 +1075,8 @@ C
           IFGERR = 1
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
-          call ccperr(1,' stop in parser 7766')
+C          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL CCPERR(1, LINERR)
       ELSE
 C
           DO 10 I = N1,N2
@@ -1144,11 +1140,7 @@ C
           ISTERR = 2
           IFGERR = 1
 C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
-          caLL CCPERR(1,' stop in parser 7755')
+          CALL CCPERR (1, LINERR)
       END IF
 C
 C
