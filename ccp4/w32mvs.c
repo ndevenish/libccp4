@@ -12,10 +12,13 @@ char *ccp4_utils_username(void)
   return NULL;
 }
 
-float __stdcall ETIME(float tarray[2]); 
+//float __stdcall ETIME(float tarray[2]); 
 
 float ccp4_utils_etime (float tarray[2])
 {
-	return ETIME(tarray);
+  //return ETIME(tarray);
+  tarray[0] = 0;
+  tarray[1] = 0;
+  return 0;
 }
 #endif
