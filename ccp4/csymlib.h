@@ -576,6 +576,15 @@ int all_factors_le_19(const int n);
  */
 int get_grid_sample(const int minsmp, const int nmul, const float sample);
 
+/** Check for consistency between cell dimensions and spacegroup. Latter
+ * is identified from symmetry operators.
+ * @param nsym No. of symmetry operators.
+ * @param rsym Symmetry operators.
+ * @param cell Cell dimensions.
+ * @return 1 if they are consistent, 0 if there is a problem. 
+ */
+int ccp4spg_check_symm_cell(int nsym, float rsym[][4][4], float cell[6]);
+
 #ifdef __cplusplus
 } }
 #endif

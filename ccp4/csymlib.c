@@ -1803,3 +1803,33 @@ int ccp4spg_load_laue(CCP4SPG *spacegroup, const int nlaue)
   }
   return ierr;
 }
+
+int ccp4spg_check_symm_cell(int nsym, float rsym[][4][4], float cell[6]) {
+
+  CCP4SPG *spacegroup;
+  int i,k,l,status=0;
+  ccp4_symop *op1;
+
+  /* identify spacegroup from supplied symops */
+  op1 = (ccp4_symop *) ccp4_utils_malloc(nsym*sizeof(ccp4_symop));
+  for (i = 0; i < nsym; ++i) {
+    for (k = 0; k < 3; ++k) {
+      for (l = 0; l < 3; ++l) {
+	op1[i].rot[k][l] = rsym[i][k][l];
+      }
+      op1[i].trn[k] = rsym[i][k][3];
+    }
+  }
+  spacegroup = ccp4_spgrp_reverse_lookup(nsym,op1);
+
+  /* test cell against symmetry on case-by-case basis */
+  if (strstr(spacegroup->symbol_xHM,":R")) {
+    status = ccp4uc_is_rhombohedral(cell,0.01F);
+  } else if (strstr(spacegroup->symbol_xHM,":H")) {
+    status = ccp4uc_is_hexagonal(cell,0.01F);
+  }
+
+  free(op1);
+
+  return status;
+}
