@@ -524,7 +524,7 @@ float __stdcall ERFC(float *value)
 }
 #endif
 
-#if defined(F2C) || defined(G77)
+#if defined(F2C) 
 /* <f2c support>=                                                           */
 int exit_ (status)
      int *status;
