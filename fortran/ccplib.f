@@ -488,6 +488,7 @@ C
 C       IFAIL (I/O) INTEGER: ON INPUT     =0, STOP ON OPEN FAILURE
 C                                         =1, CONTINUE AFTER OPEN FAILURE
 C                                             (only on file not found)
+C                                         =2, CONTINUE SILENTLY AFTER OPEN FAILURE
 C                                         =-1, As 0, but silent on success
 C                                             (equivalent to negative IUN)
 C                            ON OUTPUT    UNCHANGED IF FILE OPEN OK
