@@ -164,10 +164,9 @@ C     .. Local Arrays ..
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
-      LOGICAL VAXVMS
 ifdef(_ioinit,[
       LOGICAL IOINIT])dnl
-      EXTERNAL LENSTR,VAXVMS
+      EXTERNAL LENSTR
 C     ..
 C     .. External Subroutines ..
       EXTERNAL UGERR,UGTENV
@@ -555,10 +554,12 @@ C     .. Local Arrays ..
 C     ..
 C     don't declare IDATE
 C
-      CALL IDATE(IARRAY(1),IARRAY(2),IARRAY(3))
+ifelse(_sgi,1,
+[      CALL IDATE(IARRAY(1),IARRAY(2),IARRAY(3))],dnl VMS-style
+[      CALL IDATE (IARRAY)])
       IDAY = IARRAY(2)
       IMONTH = IARRAY(1)
-C     This may or may not be necessary, depending on systen, but does no
+C     This may or may not be necessary, depending on system, but does no
 C     harm:
       IYEAR = MOD(IARRAY(3), 100)
 C
