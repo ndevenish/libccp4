@@ -2299,7 +2299,7 @@ int MtzPut(MTZ *mtz, const char *logname)
 
  if (!mtz->fileout) {
 
-   fileout = MtzOpenForWrite(logname);
+   if ( !(fileout = MtzOpenForWrite(logname)) ) return 0;
 
    if (debug) 
      printf(" MtzPut: file opened \n");
@@ -2730,6 +2730,10 @@ CCP4File *MtzOpenForWrite(const char *logname)
    filename = strdup(logname);
  }
  fileout = ccp4_file_open(filename,O_RDWR | O_TRUNC);
+ if (! fileout ) {
+   ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_CantOpenFile),"MtzOpenForWrite",NULL);
+   return NULL;
+ }
  if (debug) printf(" MtzOpenForWrite: file opened \n");
 
  /* Write initial info */

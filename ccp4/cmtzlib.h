@@ -165,13 +165,13 @@ int MtzRrefl(CCP4File *filein, int ncol, float *refldata);
  * uses file pointer in mtz struct, else uses logical name of file.
  * @param mtz pointer to MTZ struct.
  * @param logname logical name for output file or blank.
- * @return void
+ * @return 1 on success, 0 on failure
  */
 int MtzPut(MTZ *mtz, const char *logname);
 
 /** Opens a new MTZ file for writing.
  * @param logname logical name for output file.
- * @return pointer to file
+ * @return pointer to file or NULL on failure
  */
 CCP4File *MtzOpenForWrite(const char *logname);
 
@@ -217,7 +217,7 @@ MTZ *MtzMalloc(int nxtal, int nset[]);
 
 /** Frees the memory reserved for the MTZ header struct.
  * @param mtz pointer to MTZ header struct. 
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int MtzFree(MTZ *mtz);
 
@@ -231,7 +231,7 @@ MTZCOL *MtzMallocCol(MTZ *mtz, int nref);
 
 /** Frees the memory reserved for 'col'
  * @param col pointer to MTZ column.
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int MtzFreeCol(MTZCOL *col);
 
@@ -242,7 +242,7 @@ MTZBAT *MtzMallocBatch(void);
 
 /** Frees the memory reserved for 'batch'.
  * @param batch
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int MtzFreeBatch(MTZBAT *batch);
   
@@ -254,7 +254,7 @@ char *MtzCallocHist(int nhist);
 
 /** Frees the memory reserved for 'hist'.
  * @param hist
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int MtzFreeHist(char *hist);
 
@@ -290,7 +290,7 @@ int MtzSpacegroupNumber(const MTZ *mtz);
  * @param mtz pointer to MTZ struct
  * @param minres minimum resolution
  * @param maxres maximum resolution
- * @return 1 on success 
+ * @return 1 on success, 0 on failure 
  */
 int MtzResLimits(const MTZ *mtz, float *minres, float *maxres);
 
@@ -482,7 +482,7 @@ MTZCOL *MtzAddColumn(MTZ *mtz, MTZSET *set, const char *label,
 
 /** Assigns HKL columns to the base dataset.
  * @param mtz pointer to MTZ struct
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int MtzAssignHKLtoBase(MTZ *mtz);
 
@@ -496,7 +496,7 @@ int MtzAssignHKLtoBase(MTZ *mtz);
  * @param col pointer to column
  * @param crystal_name name of crystal containing dataset
  * @param dataset_name name of dataset
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],  
 	     const char dataset_name[]);
@@ -549,7 +549,7 @@ char *MtzColPath(const MTZ *mtz, const MTZCOL *col);
  * @param path Completed path.
  * @param partial Partial right-justified path
  * @param njust
- * @return 1 on success.
+ * @return 1 on success, 0 on failure.
  */
 int MtzRJustPath(char *path, const char *partial, const int njust);
 
@@ -606,7 +606,7 @@ int MtzListInputColumn(const MTZ *mtz, char clabs[][31], char ctyps[][3], int cs
  * @param ind_xtal crystal containing indices
  * @param ind_set dataset containing indices
  * @param ind_col 3 columns containing indices
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int MtzFindInd(const MTZ *mtz, int *ind_xtal, int *ind_set, int ind_col[3]);
 
@@ -621,7 +621,7 @@ float MtzInd2reso(const int in[3], const double coefhkl[6]);
 /** Generate coefhkl coefficients from given cell parameters.
  * @param cell cell dimensions to be used for resolution calculation.
  * @param coefhkl double array of 6 coefficients
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int MtzHklcoeffs(const float cell[6], double coefhkl[6]);
 
@@ -629,7 +629,7 @@ int MtzHklcoeffs(const float cell[6], double coefhkl[6]);
  * @param intbuf pointer to integer batch array
  * @param fltbuf pointer to float batch array
  * @param batch pointer to batch structure
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int MtzArrayToBatch(const int *intbuf, const float *fltbuf, MTZBAT *batch);
 
@@ -672,7 +672,7 @@ int ccp4_lrhist(const MTZ *mtz, char history[][MTZRECORDLENGTH], int nlines);
 /** Get sort order from MTZ structure.
  * @param mtz Pointer to MTZ struct.
  * @param isort Returned sort order.
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int ccp4_lrsort(const MTZ *mtz, int isort[5]);
 
@@ -687,7 +687,7 @@ int ccp4_lrbats(const MTZ *mtz, int *nbatx, int batchx[]);
 /** Get cell dimensions for a particular crystal.
  * @param xtl Pointer to crystal.
  * @param cell Output cell dimensions.
- * @return 1 on success.
+ * @return 1 on success, 0 on failure.
  */
 int ccp4_lrcell(const MTZXTAL *xtl, float cell[]);
 
@@ -753,7 +753,7 @@ MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels,
  * @param isets Dataset ID.
  * @param datcell Cell dimensions of crystal that dataset belongs to.
  * @param datwave X-ray wavelength associated with dataset.
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64], 
             char dataset_name[64], char project_name[64], int *isets, 
@@ -807,7 +807,7 @@ int ccp4_ismnf(const MTZ *mtz, const float datum);
 /** Function to print header information in traditional format.
  * @param mtz Pointer to MTZ struct
  * @param iprint Print level
- * @return 1 on success 
+ * @return 1 on success, 0 on failure 
  */
 int ccp4_lhprt(const MTZ *mtz, int iprint);
 
@@ -815,7 +815,7 @@ int ccp4_lhprt(const MTZ *mtz, int iprint);
  * to data structure hierarchy.
  * @param mtz Pointer to MTZ struct
  * @param iprint Print level
- * @return 1 on success 
+ * @return 1 on success, 0 on failure 
  */
 int ccp4_lhprt_adv(const MTZ *mtz, int iprint);
 
@@ -830,7 +830,7 @@ int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint);
 
 /** Function to print batch header data for a specified batch to stdout.
  * @param batch Pointer to requested batch.
- * @return 1 on success 
+ * @return 1 on success, 0 on failure 
  */
 int MtzPrintBatchHeader(const MTZBAT *batch);
 
@@ -839,7 +839,7 @@ int MtzPrintBatchHeader(const MTZBAT *batch);
  * @param ftitle Title string.
  * @param flag If 0 overwrite existing title, else append to
  * existing title.
- * @return 1 on success 
+ * @return 1 on success, 0 on failure 
  */
 int ccp4_lwtitl(MTZ *mtz, const char *ftitle, int flag);
 
@@ -850,7 +850,7 @@ int ccp4_lwtitl(MTZ *mtz, const char *ftitle, int flag);
  * 5 columns to be used for sorting, some of colsort[] may be NULL.
  * @param mtz Pointer to MTZ struct
  * @param colsort Array of pointers to columns.
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int MtzSetSortOrder(MTZ *mtz, MTZCOL *colsort[5]);
 
@@ -874,7 +874,7 @@ int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nli
  * @param nspgrx spacegroup number
  * @param spgrnx spacegroup name
  * @param pgnamx point group name
- * @return 1 on success 
+ * @return 1 on success, 0 on failure 
  */
 int ccp4_lwsymm(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4], 
 		char ltypex[], int nspgrx, char spgrnx[], char pgnamx[]);
@@ -908,7 +908,7 @@ MTZCOL **ccp4_lwassn(MTZ *mtz, const char labels[][31], const int nlabels,
  * @param project_name Project name
  * @param datcell Cell dimensions of crystal that dataset belongs to.
  * @param datwave X-ray wavelength associated with dataset.
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
 	const char project_name[], const float datcell[6], const float *datwave);

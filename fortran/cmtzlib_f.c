@@ -1626,7 +1626,7 @@ FORTRAN_SUBR ( LWOPEN, lwopen,
 	       (const int *mindx, fpstr filename, int filename_len))
 
 { 
-  char *temp_name;
+  char *temp_name, err_str[200];
   int nxtal=1, nset[1]={1};
   int i,j,k,icol;
 
@@ -1658,7 +1658,11 @@ FORTRAN_SUBR ( LWOPEN, lwopen,
  iwref[*mindx-1] = 0;
 
  if (!cmtz_in_memory) {
-   mtzdata[*mindx-1]->fileout = MtzOpenForWrite(temp_name);
+   if ( !(mtzdata[*mindx-1]->fileout = MtzOpenForWrite(temp_name)) ) {
+     strcpy(err_str,"LWOPEN: failed to open output file ");
+     strncat(err_str,temp_name,160);
+     ccperror(1,err_str);
+   }
 
    /* assign existing columns for output */
    /* if lwclab/lwassn are called with iappnd=0 then these are overwritten */
@@ -2807,7 +2811,8 @@ FORTRAN_SUBR ( LWCLOS, lwclos,
 
  /* fix number of reflections at the number "written out" */
  mtzdata[*mindx-1]->nref = iwref[*mindx-1];
- MtzPut(mtzdata[*mindx-1],fileout[*mindx-1]);
+ if ( !MtzPut(mtzdata[*mindx-1],fileout[*mindx-1]) )
+   ccperror(1,"LWCLOS: failed to write output file");
 
  if (getenv(fileout[*mindx-1]) != NULL) {
    fullfilename = strdup(getenv(fileout[*mindx-1]));
