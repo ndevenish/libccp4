@@ -1,5 +1,6 @@
-      INTEGER*2 IFHT,IFSTRT,IFWID,IFX0,IFY0,LENGF
-      BYTE NFONTS
+      INTEGER*2 IFHT(150,4),IFSTRT(150,4),IFWID(150,4),IFX0(150,4),
+     +     IFY0(150,4),LENGF(150,4)
+      BYTE NFONTS(4,3000,4)
       INTEGER IUNITF
       DATA IUNITF/11/
 C
@@ -7,11 +8,7 @@ C
       IFAIL = 0
       ITEROP = -IUNITF
       CALL CCPDPN (-10,'font84.ascii','OLD','F',0,IFAIL)
-      IF (IFAIL.NE.0)
-     +     CALL CCPERR(1, ' Unable to read fonts - font84.ascii')
       CALL CCPDPN (ITEROP,'font84.dat','NEW','U',80,IFAIL)
-      IF (IFAIL.NE.0)
-     +     CALL CCPERR(1, ' Unable to write fonts - font84.dat')
       READ(10,2000) IFSTRT,LENGF,IFX0,IFY0,IFWID,IFHT,NFONTS
  2000 FORMAT(10I10)
       WRITE (IUNITF) IFSTRT,LENGF,IFX0,IFY0,IFWID,IFHT,NFONTS
