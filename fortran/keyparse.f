@@ -95,9 +95,9 @@ C       matched key
         if (ntok.eq.1) then
           success(1) = .true.
           flag = .true.
-        else
-          argerr = .true.
-          call lerror (1, 0, 'No argument expected')
+C        else
+C          argerr = .true.
+C          call lerror (1, 0, 'No argument expected')
         end if
       end if
       return
