@@ -3150,8 +3150,8 @@ CDOC  disposition     (i)     CHARACTER     'RO' or 'LOOP'
       include 'cciflib.fh'
 
       integer blk_id,ncntxt,istat,istat_exp
-      character*(cfllen) catnam_in,catnam_out
-      character*(*) disposition
+      character*(cfllen) catnam_out
+      character*(*) disposition, catnam_in
       character*200 errline
 
       integer lenstr
@@ -3217,7 +3217,8 @@ CDOC
       include 'cciflib.fh'
 
       integer btype, sline, btype_exp, sline_exp
-      character*(cfllen) itmnam, ccode, pcode
+      character*(*) itmnam
+      character*(cfllen) ccode, pcode
       character*(200) errlin
 
       integer lenstr
