@@ -70,6 +70,8 @@ dnl seems to be now (Irix5).  I wonder if this is somehow to do
 dnl with stdio rather than the fortran library itself...
 _f2c,1,
   [define(_cant_unlink,1)],dnl
+_g77,1,
+  [define(_cant_unlink,1)],dnl
 _esv,1,
   [define(_cant_unlink,1)])dnl
 dnl * In the case above, we then want to open STATUS='DELETE', if 
@@ -78,7 +80,7 @@ dnl   crashes.  Irix (f77 3.4.4) tolerates the unlink but re-instates
 dnl   the file when you try to do anything with it...
 ifelse(_convex,1,
   [define(_dispose,[DISPOSE=DISP,])],
-  _sgi,1,
+_sgi,1,
   [define(_dispose,[DISPOSE=DISP,])],
 _esv,1,
   [define(_dispose,[DISPOSE=DISP,])],
