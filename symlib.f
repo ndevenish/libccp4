@@ -3575,7 +3575,7 @@ C
 C   
 C     
 C     ====================================
-      LOGICAL FUNCTION PGNLAU(NAMPG,NLAUE,LAUNAM)
+      SUBROUTINE PGNLAU(NAMPG,NLAUE,LAUNAM)
 C     ====================================
 C     
 C---- Choose Laue group from PG name.
