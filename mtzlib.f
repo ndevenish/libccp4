@@ -392,7 +392,7 @@ C
         WLUN(JDO30) = 0
  30   CONTINUE
 C Iniitialise the html flag so there are no prblems with stderr
-      CALL CCP4H_INIT_LIB()
+      CALL CCP4H_INIT_LIB(0,0)
 
       END
 C
@@ -5118,6 +5118,8 @@ C                                          (strings longer than 64 will be trunc
 C
 C     DATASET_NAME  (I)     CHARACTER      dataset name of dataset to be added
 C                                          (strings longer than 64 will be truncated)
+C
+C     DATCELL       (I)     REAL           cell dimensions of dataset to be added
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS
