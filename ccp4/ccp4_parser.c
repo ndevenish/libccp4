@@ -1389,23 +1389,16 @@ ccp4_symop symop_to_rotandtrn(const char *symchs_begin, const char *symchs_end) 
    The function returns 1 on success, 0 if there was a failure to
    generate a matrix representation.
 */
-int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
+const char *symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
 {
   int no_real =0, no_recip = 0, no_axis = 0;          /* counters */
   int col = 3, nops = 0;
-  int nsym = 0;
+  int nsym = 0, init_array = 1;
   float sign = 1.0f, value = 0.0f, value2;
   char *cp, ch;
   const char *ptr_symchs = symchs_begin;
   int j,k;                                 /* loop variables */
   int Isep = 0;                             /* parsed seperator? */
-
-  /* initialise and clear the relevant array */
-  /* use knowledge that we are using a [4][4] for rot */
-  for (j = 0 ; j !=4 ; ++j) 
-    for (k = 0; k !=4 ; ++k)
-      rot[(k << 2) +j] = 0.0f; 
-  rot[(3 << 2) +3] = 1.0f;
 
   while (ptr_symchs < symchs_end) {
     ch = *ptr_symchs;
@@ -1417,18 +1410,14 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
 	 Ignore and step on to next character */
       ++ptr_symchs;
       continue;
-    } else if (ch == '*') {
-      /* Ignore * as it will be part of e.g. a*+c*,c*,-b* */
-      ++ptr_symchs;
-      continue;
-    } else if (ch == ',') {
+    } else if (ch == ',' || ch == '*') {           
       ++ptr_symchs;
       if (value == 0.0f && col == 3) {
-	/* nothing set, this is a problem */
-	ccp4_signal(CPARSER_ERRNO(CPARSERR_SymopToMat),"symop_to_mat4",NULL);
-	return 0 ;
+        /* nothing set, this is a problem */
+        ccp4_signal(CPARSER_ERRNO(CPARSERR_SymopToMat),"symop_to_mat4",NULL);
+        return NULL ;
       } else {
-	Isep = 1;     /* drop through to evaluation*/
+        Isep = 1;     /* drop through to evaluation*/
       }
     } else if (ch == 'X' || ch == 'x') {
       no_real++, col = 0;
@@ -1463,17 +1452,17 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
     } else if (ch == 'A' || ch == 'a') {
       no_axis++, col = 0;
       if (value == 0.0f) value = sign * 1.0f;
-      ++ptr_symchs;
+      if (*++ptr_symchs == '*' && ( no_axis != 3 || no_recip )) ++ptr_symchs;
       continue;
     } else if (ch == 'B' || ch == 'b') {
       no_axis++, col = 1;
       if (value == 0.0f) value = sign * 1.0f;
-      ++ptr_symchs;
+      if (*++ptr_symchs == '*' && ( no_axis != 3 || no_recip )) ++ptr_symchs;
       continue;
     } else if (ch == 'C' || ch == 'c') {
       no_axis++, col = 2;
       if (value == 0.0f) value = sign * 1.0f;
-      ++ptr_symchs;
+      if (*++ptr_symchs == '*' && ( no_axis != 3 || no_recip )) ++ptr_symchs;
       continue;
     } else if (ch == '+' || ch == '-') {
       sign = ((ch == '+')? 1.0f : -1.0f) ;
@@ -1486,13 +1475,13 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
       if (value == 0.0f) {
 	/* error */
 	symop_to_mat4_err(symchs_begin);
-	return 0;
+	return NULL;
       }
       value2 = strtod(ptr_symchs, &cp);
       if (!value2) {
 	/* error */
 	symop_to_mat4_err(symchs_begin);
-	return 0;
+	return NULL;
       }
       /* Nb don't apply the sign to value here
 	 It will already have been applied in the previous round */
@@ -1507,9 +1496,18 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
       ++ptr_symchs;
       continue;
     }
-    
+   
+  /* initialise and clear the relevant array  (init_array == 1)*/
+  /* use knowledge that we are using a [4][4] for rot */
+  if (init_array) {
+    init_array = 0;       
+    for (j = 0 ; j !=4 ; ++j)
+      for (k = 0; k !=4 ; ++k)
+        rot[(((nsym << 2) + k ) << 2) +j] = 0.0f;
+     rot[(((nsym << 2 ) + 3 )  << 2) +3] = 1.0f;
+  }
+ 
     /* value to be entered in rot */
-    
     rot[(((nsym << 2) + nops) << 2) + col] = value;
 
     /* have we passed a operator seperator */
@@ -1517,12 +1515,13 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
       Isep = 0;
       ++nops;
       sign = 1.0f;
+      if (nops == 3 ) { ++nsym; nops=0 ; init_array = 1; }
     }
 
     /* reset for next cycle */
     col = 3;
     value = 0.0f;
-
+    no_recip = 0, no_axis = 0, no_real = 0;
   }
 
   /* Tidy up last value */
@@ -1531,11 +1530,11 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
   if (nops<2) {
     /* Processed fewer than 3 operators, raise an error */
     symop_to_mat4_err(symchs_begin);
-    return 0;
+    return NULL;
   }
 
   /* Return with success */
-  return 1;
+  return ptr_symchs;
 }
 
 /* Internal function: report error from symop_to_mat4_err */
