@@ -91,7 +91,6 @@ static int HeaderReturn(const CMMFile *mfile, char *title, int *mode,
 {
   int tmp_array[3];
   char *tmp_label;
-  double dmean,drms;
 
   if (ccp4_cmap_number_label(mfile)) 
     if ((tmp_label = ccp4_cmap_get_label(mfile,0)) != NULL)
@@ -109,7 +108,7 @@ static int HeaderReturn(const CMMFile *mfile, char *title, int *mode,
   *nr_end = *nr_start + tmp_array[1] -1;
   *nsecs = tmp_array[2];
 
-  ccp4_cmap_get_mapstats(mfile,min,max,&dmean,&drms);
+  ccp4_cmap_get_mapstats(mfile,min,max,mean,rms);
 
   ccp4_cmap_get_order(mfile,order);
   ccp4_cmap_get_grid(mfile,grid);
