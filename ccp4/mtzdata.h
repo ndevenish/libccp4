@@ -86,7 +86,8 @@ typedef struct bathead { int num;              /**< batch number */
 					  2) */
                  int nbsetid;          /**< dataset id - should be pointer? */
                  float cell[6];        /**< cell dimensions */
-		 float umat[9];        /**< orientation matrix U */
+		 float umat[9];        /**< orientation matrix U in Fortranic order,
+                                         i.e. U(1,1), U(2,1) ... */
 		 float phixyz[2][3];   /**< missetting angles at beginning and
 					  end of oscillation */
 		 float crydat[12];     /**< mosaicity */

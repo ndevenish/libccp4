@@ -1662,11 +1662,15 @@ int MtzPrintBatchHeader(MTZBAT *batch) {
     strcpy(string2,"                                  ");
   }    
   printf("   %s %9.4f %9.4f %9.4f \n   %s %9.4f %9.4f %9.4f \n   %s %9.4f %9.4f %9.4f \n",
-         string1,batch->umat[0],batch->umat[1],batch->umat[2],
-         string2,batch->umat[3],batch->umat[4],batch->umat[5],
-         "                                  ",batch->umat[6],batch->umat[7],batch->umat[8]);
-  if (batch->misflg) {
-  printf("   %s %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n",
+         string1,batch->umat[0],batch->umat[3],batch->umat[6],
+         string2,batch->umat[1],batch->umat[4],batch->umat[7],
+         "                                  ",batch->umat[2],batch->umat[5],batch->umat[8]);
+  if (batch->misflg == 1) {
+    printf("   %s %6.2f %6.2f %6.2f\n",
+         "Missetting angles PhiX PhiY PhiZ..",
+         batch->phixyz[0][0],batch->phixyz[0][1],batch->phixyz[0][2]);
+  } else if (batch->misflg > 1) {
+    printf("   %s %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n",
          "Missetting angles PhiX PhiY PhiZ..",
          batch->phixyz[0][0],batch->phixyz[0][1],batch->phixyz[0][2],
          batch->phixyz[1][0],batch->phixyz[1][1],batch->phixyz[1][2]);
