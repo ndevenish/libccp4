@@ -59,6 +59,7 @@
 /* Returns the absolute value of x. */
 
 /* Used to be 'static const LONG' but const declaration gives trouble on HPs */
+#ifndef SKIP_SETBITS
 static LONG setbits[33] =
                          {0x00000000L, 0x00000001L, 0x00000003L, 0x00000007L,
 			  0x0000000FL, 0x0000001FL, 0x0000003FL, 0x0000007FL,
@@ -74,6 +75,7 @@ static LONG setbits[33] =
    to the following macro:
      #define setbits(n) (((n) == 32) : ((1L << (n)) - 1) : (-1L)) 
    Indexing the const array should usually be slightly faster. */
+#endif
 
 #define shift_left(x, n)  (((x) & setbits[32 - (n)]) << (n))
 /* This macro is included because the C standard does not properly define a 

@@ -130,10 +130,20 @@ void v2pack_longimage_f(LONG *img, LONG *x, LONG *y, LONG *filename);
    Version 2 images! */
 
 void pack_wordimage_c(WORD *img, int x, int y, char *filename);
-/* Pack image 'img', containing 'x * y' WORD-sized pixels into 'filename'. */
+/* Pack image 'img', containing 'x * y' WORD-sized pixels into 'filename'. 
+   Opens file and wraps pack_wordimage_copen() */
+ 
+void pack_wordimage_copen(WORD *img, int x, int y, FILE *packfile);
+/* Pack image 'img', containing 'x * y' WORD-sized pixels into open file
+   'packfile'. */
 
 void pack_longimage_c(LONG *img, int x, int y, char *filename);
-/* Pack image 'img', containing 'x * y' LONG-sized pixels into 'filename'. */
+/* Pack image 'img', containing 'x * y' LONG-sized pixels into 'filename'. 
+   Opens file and wraps pack_long_image_copen()*/
+
+void pack_longimage_copen(LONG *img, int x, int y, FILE *packfile);
+/* Pack image 'img', containing 'x * y' LONG-sized pixels into open file
+   'packfile'. */
 
 LONG *diff_words(WORD *img, int x, int y, LONG *diffs, LONG done);
 /* Calculates the difference of WORD-sized pixels of an image with the 
@@ -351,12 +361,12 @@ void mirror_longimg(LONG *img, LONG *x, LONG *y);
 /******************************************************************************/
 
 #if defined (PROTOTYPE)
-  void pack_wordimage_c(WORD *img, int x, int y, char *filename)
+  void pack_wordimage_copen(WORD *img, int x, int y, FILE *packfile)
 #else
-  void pack_wordimage_c(img, x, y, filename)
+  void pack_wordimage_copen(img, x, y, packfile)
   WORD *img;
   int x, y;
-  char *filename;
+  FILE *packfile;
 #endif
 /* Pack image 'img', containing 'x * y' WORD-sized pixels into 'filename'. */
 
@@ -365,47 +375,60 @@ void mirror_longimg(LONG *img, LONG *x, LONG *y);
   LONG *diffs = buffer;
   LONG *end = diffs - 1;
   LONG done = 0;
-  FILE *packfile;
 #if !defined (PROTOTYPE)
   LONG *diff_words();
   int bits();
   void pack_chunk();
 #endif
 
-  packfile = fopen(filename, "a");
-  if (packfile == NULL)
-  { fprintf(stderr,"The file %s cannot be created!\n   ...giving up...\n", 
-	    filename);
-    exit(1);}
-  else
-  { fprintf(packfile, PACKIDENTIFIER, x, y);
-    while (done < (x * y))
-    { end = diff_words(img, x, y, buffer, done);
-      done += (end - buffer) + 1;
-      diffs = buffer;
-      while (diffs <= end)
-      { packsiz = 0;
-        chunksiz = 1;
-        nbits = bits(diffs, 1);
-        while (packsiz == 0)
-        { if (end <= (diffs + chunksiz * 2))
-	    packsiz = chunksiz;
+  fprintf(packfile, PACKIDENTIFIER, x, y);
+  while (done < (x * y))
+  { end = diff_words(img, x, y, buffer, done);
+    done += (end - buffer) + 1;
+    diffs = buffer;
+    while (diffs <= end)
+    { packsiz = 0;
+      chunksiz = 1;
+      nbits = bits(diffs, 1);
+      while (packsiz == 0)
+      { if (end <= (diffs + chunksiz * 2))
+          packsiz = chunksiz;
+        else
+        { next_nbits = bits(diffs + chunksiz, chunksiz); 
+          tot_nbits = 2 * max(nbits, next_nbits);
+          if (tot_nbits >= (nbits + next_nbits + 6))
+            packsiz = chunksiz;
           else
-	  { next_nbits = bits(diffs + chunksiz, chunksiz); 
-	    tot_nbits = 2 * max(nbits, next_nbits);
-	    if (tot_nbits >= (nbits + next_nbits + 6))
-	      packsiz = chunksiz;
-	    else
-            { nbits = tot_nbits;
-	      if (chunksiz == 64)
-	        packsiz = 128;
-	      else
-	        chunksiz *= 2;}}}
-        pack_chunk(diffs, packsiz, nbits / packsiz, packfile);
-        diffs += packsiz;}}
+          { nbits = tot_nbits;
+            if (chunksiz == 64)
+              packsiz = 128;
+            else
+              chunksiz *= 2;}}}
+       pack_chunk(diffs, packsiz, nbits / packsiz, packfile);
+       diffs += packsiz;}}
     pack_chunk(NULL, 0, 0, packfile);
-    fclose(packfile);}}
+}
 
+
+#if defined (PROTOTYPE)
+  void pack_wordimage_c(WORD *img, int x, int y, char *filename)
+#else
+  void pack_wordimage_c(img, x, y, filename)
+  WORD *img;
+  int x, y;
+  char *filename;
+#endif
+{
+  FILE *packfile = fopen(filename, "a");
+  if (packfile == NULL) {
+    fprintf(stderr,"The file %s cannot be created!\n   ...giving up...\n",
+          filename);
+    exit(1);
+  } else {
+    pack_wordimage_copen(img, x, y, packfile);
+    fclose(packfile);
+  }
+}
 
 
 /******************************************************************************/
@@ -471,46 +494,38 @@ void mirror_longimg(LONG *img, LONG *x, LONG *y);
 /******************************************************************************/
 
 #if defined (PROTOTYPE)
-  void pack_longimage_c(LONG *img, int x, int y, char *filename)
+  void pack_longimage_copen(LONG *img, int x, int y, FILE *packfile)
 #else
-  void pack_longimage_c(img, x, y, filename)
+  void pack_longimage_copen(img, x, y, packfile)
   LONG *img;
   int x, y;
-  char *filename;
+  FILE *packfile;
 #endif
 /* Pack image 'img', containing 'x * y' LONG-sized pixels into 'filename'. */
-
 { int chunksiz, packsiz, nbits, next_nbits, tot_nbits;
   LONG buffer[DIFFBUFSIZ];
   LONG *diffs = buffer;
   LONG *end = diffs - 1;
   LONG done = 0;
-  FILE *packfile;
 #if !defined (PROTOTYPE)
   LONG *diff_longs();
   int bits();
   void pack_chunk();
 #endif
 
-  packfile = fopen(filename, "a");
-  if (packfile == NULL)
-  { fprintf(stderr,"The file %s cannot be created!\n   ...giving up...\n", 
-	    filename);
-    exit(1);}
-  else
-  { fprintf(packfile, PACKIDENTIFIER, x, y);
-    while (done < (x * y))
-    { end = diff_longs(img, x, y, buffer, done);
-      done += (end - buffer) + 1;
-      diffs = buffer;
-      while (diffs <= end)
-      { packsiz = 0;
-        chunksiz = 1;
-        nbits = bits(diffs, 1);
-        while (packsiz == 0)
-        { if (end <= (diffs + chunksiz * 2))
-	    packsiz = chunksiz;
-          else
+  fprintf(packfile, PACKIDENTIFIER, x, y);
+  while (done < (x * y))
+  { end = diff_longs(img, x, y, buffer, done);
+    done += (end - buffer) + 1;
+    diffs = buffer;
+    while (diffs <= end)
+    { packsiz = 0;
+      chunksiz = 1;
+      nbits = bits(diffs, 1);
+      while (packsiz == 0)
+      { if (end <= (diffs + chunksiz * 2))
+          packsiz = chunksiz;
+        else
 	  { next_nbits = bits(diffs + chunksiz, chunksiz); 
 	    tot_nbits = 2 * max(nbits, next_nbits);
 	    if (tot_nbits >= (nbits + next_nbits + 6))
@@ -524,8 +539,29 @@ void mirror_longimg(LONG *img, LONG *x, LONG *y);
         pack_chunk(diffs, packsiz, nbits / packsiz, packfile);
         diffs += packsiz;}}
     pack_chunk(NULL, 0, 0, packfile);
-    fclose(packfile);}}
+}
 
+
+#if defined (PROTOTYPE)
+  void pack_longimage_c(LONG *img, int x, int y, char *filename)
+#else
+  void pack_longimage_c(img, x, y, filename)
+  LONG *img;
+  int x, y;
+  char *filename;
+#endif
+/* Pack image 'img', containing 'x * y' LONG-sized pixels into 'filename'. */
+{
+  FILE *packfile = fopen(filename, "a");
+  if (packfile == NULL)
+  { fprintf(stderr,"The file %s cannot be created!\n   ...giving up...\n", 
+	    filename);
+    exit(1);}
+  else
+  { pack_longimage_copen(img, x, y, packfile);
+    fclose(packfile);
+  }
+}
 
 
 /******************************************************************************/
@@ -546,7 +582,7 @@ void mirror_longimg(LONG *img, LONG *x, LONG *y);
   LONG *end = diffs - 1;
   LONG done = 0;
   FILE *packfile;
-#if !defined (PROTOTYPES)
+#if !defined (PROTOTYPE)
   LONG *diff_longs();
   int v2bits();
   void v2pack_chunk();
@@ -802,7 +838,9 @@ void mirror_longimg(LONG *img, LONG *x, LONG *y);
     pack_longs(descriptor, 2, &buffree, &bitmark, 3);
     pack_longs(lng, nmbr, &buffree, &bitmark, bitsize);}
   else
-  { fwrite(buffer, sizeof(BYTE), (buffree - buffer) + 1, packfile);
+  { int len=buffree-buffer;
+    if (bitmark!=0) len++;
+    fwrite(buffer, sizeof(BYTE), len, packfile);
     free((void *) buffer);
     buffer = NULL;}}
 
@@ -850,7 +888,9 @@ void mirror_longimg(LONG *img, LONG *x, LONG *y);
     pack_longs(descriptor + 1, 1, &buffree, &bitmark, 4);
     pack_longs(lng, nmbr, &buffree, &bitmark, bitsize);}
   else
-  { fwrite(buffer, sizeof(BYTE), (buffree - buffer) + 1, packfile);
+  { int len=buffree-buffer;
+    if (bitmark!=0) len++;
+    fwrite(buffer, sizeof(BYTE), len, packfile);
     free((void *) buffer);
     buffer = NULL;}}
 
@@ -1053,7 +1093,7 @@ void mirror_longimg(LONG *img, LONG *x, LONG *y);
    read is assumed to be the first BYTE of the packed image. */
 
 { int valids = 0, spillbits = 0, usedbits, total = x * y;
-  LONG window = 0L, spill, pixel = 0, nextint, bitnum, pixnum;
+  LONG window = 0L, spill = 0, pixel = 0, nextint, bitnum, pixnum;
   static int bitdecode[8] = {0, 4, 5, 6, 7, 8, 16, 32};
 
   while (pixel < total)
@@ -1125,7 +1165,7 @@ void mirror_longimg(LONG *img, LONG *x, LONG *y);
    read is assumed to be the first BYTE of the packed image. */
 
 { int valids = 0, spillbits = 0, usedbits, total = x * y;
-  LONG window = 0L, spill, pixel = 0, nextint, bitnum, pixnum;
+  LONG window = 0L, spill = 0, pixel = 0, nextint, bitnum, pixnum;
   static int bitdecode[16] = {0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
                               16, 32};
 
@@ -1198,7 +1238,7 @@ void mirror_longimg(LONG *img, LONG *x, LONG *y);
    read is assumed to be the first BYTE of the packed image. */
 
 { int valids = 0, spillbits = 0, usedbits, total = x * y;
-  LONG window = 0L, spill, pixel = 0, nextint, bitnum, pixnum;
+  LONG window = 0L, spill = 0, pixel = 0, nextint, bitnum, pixnum;
   static int bitdecode[8] = {0, 4, 5, 6, 7, 8, 16, 32};
 
   while (pixel < total)
@@ -1269,7 +1309,7 @@ void mirror_longimg(LONG *img, LONG *x, LONG *y);
    read is assumed to be the first BYTE of the packed image. */
 
 { int valids = 0, spillbits = 0, usedbits, total = x * y;
-  LONG window = 0L, spill, pixel = 0, nextint, bitnum, pixnum;
+  LONG window = 0L, spill = 0, pixel = 0, nextint, bitnum, pixnum;
   static int bitdecode[16] = {0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
                               16, 32};
 
