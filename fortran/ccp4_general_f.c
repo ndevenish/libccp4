@@ -97,10 +97,11 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
   /* turn on line buffering for stdout from C (don't think this affects
      Fortran side). This ensures we get library messages, but will slow
      things down. Is this what we want? */
-  if(ccp4_utils_outbuf())
-    ccp4_utils_print("OUTBUF:Can't turn off output buffering");
+  /*if(ccp4_utils_outbuf())
+    ccp4_utils_print("OUTBUF:Can't turn off output buffering"); */
   /* Turn off any buffering on input. This allows mized C and Fortran
      reading of stdin */
+  FORTRAN_CALL(OUTBUF,outbuf,(),(),());
   if(ccp4_utils_noinpbuf())
     ccp4_utils_print("NOINPBUF:Can't turn off input buffering");
 
