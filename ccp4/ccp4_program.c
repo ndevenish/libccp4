@@ -29,7 +29,9 @@ char *ccp4_prog_vers(char *progvers)
       programversion[i] = progvers[i];
       ++i;
     }
-    programversion[MAXLEN_PROGVERSION-1] = '\0';
+    if (i == MAXLEN_PROGVERSION) {
+      programversion[MAXLEN_PROGVERSION-1] = '\0';
+    }
   }
   return programversion;
 }
@@ -58,7 +60,9 @@ char *ccp4ProgramName(char *progname)
       programname[i] = progname[i];
       ++i;
     }
-    programname[MAXLEN_PROGNAME-1] = '\0';
+    if (i == MAXLEN_PROGNAME) {
+      programname[MAXLEN_PROGNAME-1] = '\0';
+    }
   }
   return programname;
 }
