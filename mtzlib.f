@@ -2651,6 +2651,7 @@ C     .. Intrinsic Functions
       LOGICAL BIOMOL
 C     ..
 C     .. External Functions ..
+      LOGICAL QISNAN
       REAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
@@ -2780,7 +2781,9 @@ C     interpret them
 C
             IF(.NOT. BIOMOL)THEN
               DO 10 JDO10 = 1,NCOLS(MINDEX)
-                IF(ADATA(JDO10).LT.-0.99E+10) ADATA(JDO10) = 0.0
+                IF (.NOT.QISNAN(ADATA(JDO10))) THEN
+                  IF(ADATA(JDO10).LT.-0.99E+10) ADATA(JDO10) = 0.0
+                ENDIF
    10         CONTINUE
             ENDIF
 
@@ -4978,6 +4981,7 @@ C     .. Local Scalars ..
       CHARACTER LINE*400
 C     ..
 C     .. External Functions ..
+      LOGICAL  QISNAN
       REAL     LSTLSQ
       EXTERNAL LSTLSQ
 C     ..
@@ -5039,11 +5043,13 @@ C
 C---- Update the column ranges
 C
       DO 10 JDO10 = 1,NCOLW(MINDX)
-        IF (ADATA(JDO10).NE.MDFBIG) THEN
-          IF (ADATA(JDO10).LT.WRANGE(1,JDO10,MINDX)) 
+        IF (.NOT.QISNAN(ADATA(JDO10))) THEN
+          IF (ADATA(JDO10).NE.MDFBIG) THEN
+            IF (ADATA(JDO10).LT.WRANGE(1,JDO10,MINDX)) 
      +                        WRANGE(1,JDO10,MINDX) = ADATA(JDO10)
-          IF (ADATA(JDO10).GT.WRANGE(2,JDO10,MINDX)) 
+            IF (ADATA(JDO10).GT.WRANGE(2,JDO10,MINDX)) 
      +                        WRANGE(2,JDO10,MINDX) = ADATA(JDO10)
+          END IF
         END IF
    10   CONTINUE
 C
