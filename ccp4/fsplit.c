@@ -102,7 +102,7 @@ char **argv;
 	int nflag,		/* 1 if got name of subprog., 0 otherwise */
 		retval,
 		i;
-	char name[20],
+	char name[200],
 		*extrptr = extrbuf;
 
 	/*  scan -e options */
