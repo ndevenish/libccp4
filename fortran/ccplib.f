@@ -58,7 +58,8 @@ C      CCPUFL    Supress underflow messages
 C      CCPUPC    Convert a string to upper case
 C      CCPVRS    Print program version number and date header
 C      CCPZBI    Sets an array of bytes to zero
-C      CCPZI     Set 'n' words of an array to zero using a simple loop
+C      CCPZI     Set 'n' words of an integer array to zero using a simple loop
+C      CCPZR     Set 'n' words of a real array to zero using a simple loop
 C      FDIR      Returns the directory part of a file name
 C      FEXTN     Returns the extension of a file name
 C      FROOT     Returns the root of a file name
@@ -115,8 +116,8 @@ C     Arrange to call subroutine ROUTNE with N array arguments each of
 C     length LENGTH (i) and type indicated by TYPE (i): 'i' == integer,
 C     'r' == real, 'd' == double precision, 'c'==complex.  TYPE elements
 C     may have either case.
-C     Consider `call ccpalc (fred, 3, types, lens)' with types = ['i',
-C     'r', 'c']  and lens = [1000, 2000, 3000].  This effectively does
+C     Consider `call ccpalc (fred, 3, types, lens)' with types = (/'i',
+C     'r', 'c'/)  and lens = (/1000, 2000, 3000/).  This effectively does
 C        call fred (1000, arr1, 2000, arr2, 3000, arr3)
 C     with
 C        subroutine fred (n1, foo, n2, bar, n3, baz)
@@ -124,6 +125,9 @@ C        integer n1, n2, n3, foo (n1)
 C        real bar (n2)
 C        complex baz (n3)
 C        ...
+C     Obviously all communication with ROUTNE must be by COMMON (or,
+C     possibly, extra ENTRYs).  The allocated memory is freed on return
+C     from ROUTNE.
 
 C
 C Arguments:
@@ -175,6 +179,8 @@ C     variable (logical) names from which integer values are read.  The
 C     lengths default to values from LENDEF.
 C     This is a convenient interface to CCPALC to allow configuring of
 C     the memory requirements on the command line where appropriate.
+C     This may be useful if the memory requirements can't be determined
+C     initially and it's necessary to guess.
 C
 C Arguments:
 C ==========
@@ -660,7 +666,7 @@ C     (avoid VMS `Message number 00000000')
         IF (ERRBUF .NE. ' ' .AND.
      +       ERRBUF.NE.'Message number 00000000') THEN
           CALL QPRINT(0,
-     +         'Last system error message (not necessarily relevant):')
+     +         'Last system error message:')
           CALL QPRINT(0,ERRBUF)
         ENDIF
       ENDIF
@@ -669,13 +675,13 @@ C     (avoid VMS `Message number 00000000')
       IF (VAXVMS()) THEN
         IF (ISTAT.EQ.0) THEN
 C         success
-          CALL EXIT(1)
+          CALL CEXIT(1)
         ELSE
 C         FOR$_NOTFORSPE, "Not a FORTRAN-specific error"
-          CALL EXIT(1605644)
+          CALL CEXIT(1605644)
         ENDIF
       ELSE
-        CALL EXIT(ABS(ISTAT))
+        CALL CEXIT(ABS(ISTAT))
       ENDIF
       STOP
       END
@@ -2378,16 +2384,38 @@ C
 C
 C
 C_BEGIN_CCPZI
-      SUBROUTINE CCPZI (ARR1,NUM)
+      SUBROUTINE CCPZI (IARR1,NUM)
+C     ===========================
+C
+C  This routine assigns zero to IARR1 using NUM words
+C
+C Arguments:
+C
+C    IARR1 (O)   INTEGER ARRAY(*): array to be zeroed
+C     NUM (I)   INTEGER: Number of words
+C_END_CCPZI
+C
+C  Arguments ..........
+      INTEGER NUM, IARR1(*)
+C
+      INTEGER J
+C
+      DO 10 J=1,NUM
+   10 IARR1(J)=0
+      END
+C
+C
+C_BEGIN_CCPZR
+      SUBROUTINE CCPZR (ARR1,NUM)
 C     ===========================
 C
 C  This routine assigns zero to ARR1 using NUM words
 C
 C Arguments:
 C
-C    ARR1 (O)   INTEGER or REAL ARRAY(*): array to be zeroed
+C    ARR1 (O)   REAL ARRAY(*): array to be zeroed
 C     NUM (I)   INTEGER: Number of words
-C_END_CCPZI
+C_END_CCPZR
 C
 C  Arguments ..........
       INTEGER NUM
