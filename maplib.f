@@ -1,7 +1,7 @@
 C
 C---- F77MSUB.FOR                               30/10/86    JWC
 C
-C
+C $Date$
 C
 C
 C---- Version 2.1  Fortran 77 version
@@ -2147,6 +2147,7 @@ C     .. Common blocks ..
       COMMON /MIHDR/JUNKI(55),NLABI,LABELI(20,10),JUNKI2(12,11)
       COMMON /MOHDR/JUNKO(55),NLABO,LABELO(20,10),JUNKO3(3)
 C     ..
+      SAVE /MIHDR/, /MOHDR/
 C
 C
       DO 20 J = 1,NLABI
@@ -2198,6 +2199,7 @@ C     ..
 C     .. Common blocks ..
       COMMON /MOHDR/JUNKO(55),NLABO,LABELO(20,10),JUNKO3(3)
 C     ..
+      SAVE /MOHDR/
 C
 C
       NLABO = MAX(NLABO,NT)
