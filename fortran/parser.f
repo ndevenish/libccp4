@@ -669,8 +669,8 @@ C
                 IF (NUMBER) THEN
                   ITYP(N) = 2
                   FVALUE(N) = VALUE*SIGN
-CCC                  IF (OPER.GT.0) FVALUE(N) = DOCALC(FVALUE(N),OPER,
-CCC     +                SIGN0*VALUE0)
+                  IF (OPER.GT.0) FVALUE(N) = DOCALC(FVALUE(N),OPER,
+     +                SIGN0*VALUE0)
                   IDEC(N) = 100*IDOT + NPLACE
                 ELSE
 C
@@ -763,17 +763,20 @@ CCCC
 CCCC---- Find + - * / e as operators
 CCCC
 CCC                  ELSE IF (J.GE.11 .AND. J.LE.15) THEN
-CCCC
-CCCC---- Do not allow 2 operators
-CCCC
-CCC                    IF (OPRATR) NUMBER = .FALSE.
-CCC                    VALUE0 = VALUE
-CCC                    SIGN0 = SIGN
-CCC                    OPER = J - 10
-CCC                    VALUE = 0.0
-CCC                    SIGN = 1.0
-CCC                    IDOT = 0
-CCC                    OPRATR = .TRUE.
+C                   treat `e' as an operator.  former use of operators
+C                   to do arithmetic between numbers is disallowed
+                  ELSE IF (J.EQ.15) THEN
+C
+C---- Do not allow 2 operators
+C
+                    IF (OPRATR) NUMBER = .FALSE.
+                    VALUE0 = VALUE
+                    SIGN0 = SIGN
+                    OPER = J - 10
+                    VALUE = 0.0
+                    SIGN = 1.0
+                    IDOT = 0
+                    OPRATR = .TRUE.
 C
 C---- Find a decimal point
 C       decimal point
