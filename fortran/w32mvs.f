@@ -1061,7 +1061,7 @@ c
 c
       character ciftime*(*)
 c
-      character cdate*8,ctime*9,czone*5
+      character cdate*8,ctime*10,czone*5
       integer ivalues(8)
 c
 c ... check if the argument can hold 25 characters
