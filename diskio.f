@@ -183,7 +183,7 @@ C
      +     //'UNKNOWN for '// LNAME)
       IF (JSTAT.EQ.4 .AND. CCPEXS(FNAME)) THEN
         ERRSTR = ' (Q)QOPEN NEW file already exists: '
-        ERRSTR(LENSTR(ERRSTR)+1:) = FNAME
+        ERRSTR(LENSTR(ERRSTR)+2:) = FNAME
         CALL CCPERR(1,ERRSTR)
       ENDIF
 C
@@ -197,7 +197,7 @@ C
         CALL CCPERR(1,' (Q)QOPEN failed - no streams left')
       ELSE IF (IUNIT.EQ.-2) THEN
         ERRSTR = ' (Q)QOPEN failed - File name: '
-        ERRSTR(LENSTR(ERRSTR)+1:) = LOGNAM
+        ERRSTR(LENSTR(ERRSTR)+2:) = LOGNAM
         CALL CCPERR (-1,ERRSTR)
       END IF
 

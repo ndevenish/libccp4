@@ -416,10 +416,10 @@ C---- Get and print filename, also ensure write does not exceed 132.
 C
         CALL QQINQ(LSTRM(IUNIT),MAPNAM,FILE,NFILSZ)
         WRITE (OUTLIN,FMT=6000) IUNIT
-        OUTLIN(LENSTR(OUTLIN)+1:) = FILE
+        OUTLIN(LENSTR(OUTLIN)+2:) = FILE
         WRITE (LUNOUT,FMT='(/,A)') OUTLIN(1:LENSTR(OUTLIN))
         OUTLIN = '     logical name '
-        OUTLIN(LENSTR(OUTLIN)+1:) = MAPNAM
+        OUTLIN(LENSTR(OUTLIN)+2:) = MAPNAM
         WRITE (LUNOUT,FMT='(A,/)') OUTLIN(1:LENSTR(OUTLIN))
 C
       END IF
@@ -1291,7 +1291,7 @@ C     Check file exists
       IF ( .NOT. CCPEXS ( MAPNAM ) ) THEN
         IF ( IFAIL .EQ. 0 ) THEN
           OUTLIN = ' **FILE DOES NOT EXIST > '
-          OUTLIN(LENSTR(OUTLIN)+1:) = MAPNAM
+          OUTLIN(LENSTR(OUTLIN)+2:) = MAPNAM
           WRITE (LUNOUT,FMT='(/,A)')OUTLIN(1:LENSTR(OUTLIN))
           CALL CCPERR(1, '**MAP FILE HANDLING ERROR**')
         ELSE
@@ -1330,18 +1330,18 @@ C
         CALL QQINQ(LSTRM(IUNIT),MAPNAM,FILE,NFILSZ)
         IF (NFILSZ.GE.0) THEN
           WRITE (OUTLIN,FMT=6000) IUNIT
-          OUTLIN(LENSTR(OUTLIN)+1:) = FILE
+          OUTLIN(LENSTR(OUTLIN)+2:) = FILE
           WRITE (LUNOUT,FMT='(/,A)') OUTLIN(1:LENSTR(OUTLIN))
           WRITE (OUTLIN,FMT=6001) NFILSZ
-          OUTLIN(LENSTR(OUTLIN)+1:) = MAPNAM
+          OUTLIN(LENSTR(OUTLIN)+2:) = MAPNAM
           WRITE (LUNOUT,FMT='(A,/)') OUTLIN(1:LENSTR(OUTLIN))
         ENDIF
         IF (NFILSZ.LT.0) THEN
           WRITE (OUTLIN,FMT=6002) IUNIT
-          OUTLIN(LENSTR(OUTLIN)+1:) = FILE
+          OUTLIN(LENSTR(OUTLIN)+2:) = FILE
           WRITE (LUNOUT,FMT='(/,A)') OUTLIN(1:LENSTR(OUTLIN))
           OUTLIN = '                               Logical name '
-          OUTLIN(LENSTR(OUTLIN)+1:) = MAPNAM
+          OUTLIN(LENSTR(OUTLIN)+2:) = MAPNAM
           WRITE (LUNOUT,FMT='(A,/)') OUTLIN(1:LENSTR(OUTLIN))
         ENDIF
       ENDIF
