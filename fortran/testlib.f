@@ -47,7 +47,7 @@ C
       I = 0
       CALL CCPDPN(LUNOUT,'PRINTER','PRINTER','F',0,I)
       IF (I.NE.0) CALL CCPERR(1,'Can''t open printer stream')
-      CALL CCPVRS(6,'TESLIB',RCSDAT('$DATE'))
+      CALL CCPVRS(6,'TESLIB',RCSDAT('$DATE$'))
 C
 C---- Other initialisations
 C
