@@ -1013,7 +1013,7 @@ int ccp4_lwbsetid(MTZ *mtz, MTZBAT *batch, const char xname[], const char dname[
 /* float PhaseProb(float phase, float hla, float hlb, float hlc, float hld,
 		BOOLEAN centric); */
 /* Returns the probability of `phase` (expressed in radians) as determined by
-   the Hendrickson-Lattmann coefficients `hla`, `hlb`, `hlc` and `hld`. If
+   the Hendrickson-Lattman coefficients `hla`, `hlb`, `hlc` and `hld`. If
    `centric == TRUE`, the coefficients describe a centric distribution. */
 
 #ifdef __cplusplus
