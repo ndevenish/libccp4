@@ -50,6 +50,28 @@ static MTZBAT *rbat[MFILES];
 static int nbatw[MFILES] = {0};
 static double coefhkl[MFILES][6] = {0};
 
+/* Utility function for checking subroutine input 
+   rwmode = 1 for read file, 2 for write file ... */
+int MtzCheckSubInput(const int mindx, const char *subname, const int rwmode) {
+
+ if (mindx <= 0 || mindx > MFILES) {
+   printf("Error in %s: mindx %d out of range!\n",subname,mindx);
+   return 1;
+ }
+
+ if (rwmode == 1 && rlun[mindx-1] == 0) {
+   printf("Error in %s: mindx %d not open for read!\n",subname,mindx);
+   return 1;
+ }
+
+ if (rwmode == 2 && wlun[mindx-1] == 0) {
+   printf("Error in %s: mindx %d not open for write!\n",subname,mindx);
+   return;
+ }
+
+ return 0;
+}
+
 /* Dummy call for backwards compatibility */
 FORTRAN_SUBR ( MTZINI, mtzini,
                ( ),
@@ -137,15 +159,7 @@ FORTRAN_SUBR ( LRTITL, lrtitl,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRTITL");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRTITL",1)) return;
 
   ccp4_lrtitl(mtzdata[*mindx-1], ftitle, (size_t *) len);
 
@@ -161,15 +175,7 @@ FORTRAN_SUBR ( LRHIST, lrhist,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRHIST");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRHIST",1)) return;
 
  *nlines = ccp4_lrhist(mtzdata[*mindx-1], hstrng);
 
@@ -194,15 +200,7 @@ FORTRAN_SUBR ( LRINFO, lrinfo,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRINFO");)
 
-  if (*mindx <= 0 || *mindx > MFILES) {
-    printf("Error: mindx out of range!\n");
-    return;
-  }
-
-  if (rlun[*mindx-1] == 0) {
-    printf("Error: mindx not open for read!\n");
-    return;
-  }
+ if (MtzCheckSubInput(*mindx,"LRINFO",1)) return;
 
   ccp4_CtoFString(FTN_STR(versnx),FTN_LEN(versnx),MTZVERSN);
   *ncolx = MtzNumActiveCol(mtzdata[*mindx-1]);
@@ -234,15 +232,7 @@ FORTRAN_SUBR ( LRNCOL, lrncol,
 {
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRNCOL");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRNCOL",1)) return;
 
  *ncolx = MtzNumActiveCol(mtzdata[*mindx-1]);
 
@@ -262,15 +252,7 @@ FORTRAN_SUBR ( LRNREF, lrnref,
 {
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRNREF");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRNREF",1)) return;
 
  *nreflx = MtzNref(mtzdata[*mindx-1]);
 
@@ -285,15 +267,7 @@ FORTRAN_SUBR ( LRSORT, lrsort,
 {
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRSORT");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRSORT",1)) return;
 
   ccp4_lrsort(mtzdata[*mindx-1], sortx);
 
@@ -314,15 +288,7 @@ FORTRAN_SUBR ( LRBATS, lrbats,
 {
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRBATS");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lrbats: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error in lrbats: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRBATS",1)) return;
 
   ccp4_lrbats(mtzdata[*mindx-1], nbatx, batchx);
 
@@ -341,15 +307,7 @@ FORTRAN_SUBR ( LRCLAB, lrclab,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRCLAB");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRCLAB",1)) return;
 
   *ncol = MtzListColumn(mtzdata[*mindx-1], cclabs, cctyps, ccsetid);
 
@@ -391,15 +349,7 @@ FORTRAN_SUBR ( LRCLID, lrclid,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRCLID");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRCLID",1)) return;
 
   *ncol = MtzListColumn(mtzdata[*mindx-1], cclabs, cctyps, csetid);
 }
@@ -413,15 +363,7 @@ FORTRAN_SUBR ( LRCELL, lrcell,
 {
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRCELL");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRCELL",1)) return;
 
   ccp4_lrcell(mtzdata[*mindx-1]->xtal[0], cell);
 
@@ -436,15 +378,7 @@ FORTRAN_SUBR ( LRRSOL, lrrsol,
 {
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRRSOL");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRRSOL",1)) return;
 
   MtzResLimits(mtzdata[*mindx-1], minres, maxres);
 
@@ -464,15 +398,7 @@ FORTRAN_SUBR ( LRSYMI, lrsymi,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRSYMI");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRSYMI",1)) return;
 
   ccp4_lrsymi(mtzdata[*mindx-1], nsympx, ltypex_temp, nspgrx, spgrnx_temp, pgnamx_temp);
 
@@ -494,15 +420,7 @@ FORTRAN_SUBR ( LRSYMM, lrsymm,
 {
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRSYMM");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRSYMM",1)) return;
 
   ccp4_lrsymm(mtzdata[*mindx-1], nsymx, rsymx);
 
@@ -682,15 +600,8 @@ FORTRAN_SUBR ( LRASSN, lrassn,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRASSN");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRASSN",1)) return;
 
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
   label = (char *) ccp4_utils_malloc((*nlprgi)*31*sizeof(char));
   type = (char *) ccp4_utils_malloc((*nlprgi)*3*sizeof(char));
 
@@ -779,15 +690,7 @@ FORTRAN_SUBR ( LRIDC, lridc,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRIDC");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRIDC",1)) return;
 
   ccp4_lridx(mtzdata[*mindx-1], cxname, cdname, cpname, isets, datcell, 
       datwave, ndatasets);
@@ -837,15 +740,7 @@ FORTRAN_SUBR ( LRID, lrid,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRID");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRID",1)) return;
 
   ccp4_lridx(mtzdata[*mindx-1], cxname, cdname, cpname, isets, datcell, 
       datwave, ndatasets);
@@ -888,15 +783,7 @@ FORTRAN_SUBR ( LRSEEK, lrseek,
 
  CMTZLIB_DEBUG(puts("CMTZLIB_F: LRSEEK");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lrseek: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error in lrseek: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRSEEK",1)) return;
 
  /* lrrefl / lrreff will increment this */
  irref[*mindx-1] = *nrefl - 1;
@@ -913,24 +800,25 @@ FORTRAN_SUBR ( LRREFL, lrrefl,
 	       (const int *mindx, float *resol, float adata[], ftn_logical *eof),
 	       (const int *mindx, float *resol, float adata[], ftn_logical *eof))
 {
- int ieof;
+ int ieof,biomol,mindex;
 
  /*  CMTZLIB_DEBUG(puts("CMTZLIB_F: LRREFL");) */
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lrrefl: mindx out of range!\n");
-   return;
+ /* BIOMOL compatibility */
+ if (*mindx > 1000) {
+   biomol = 1;
+   mindex = *mindx - 1000;
+ } else {
+   biomol = 0;
+   mindex = *mindx;
  }
 
- if (rlun[*mindx-1] == 0) {
-   printf("Error in lrrefl: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(mindex,"LRREFL",1)) return;
 
- ndatmss[*mindx-1] = MtzNumActiveCol(mtzdata[*mindx-1]);
+ ndatmss[mindex-1] = MtzNumActiveCol(mtzdata[mindex-1]);
 
- ++irref[*mindx-1];
- ieof = ccp4_lrrefl(mtzdata[*mindx-1], resol, adata, logmss[*mindx-1], irref[*mindx-1]);
+ ++irref[mindex-1];
+ ieof = ccp4_lrrefl(mtzdata[mindex-1], resol, adata, logmss[mindex-1], irref[mindex-1]);
  if (ieof) {
    *eof = FORTRAN_LOGICAL_TRUE;
  } else {
@@ -945,31 +833,32 @@ FORTRAN_SUBR ( LRREFF, lrreff,
 	       (const int *mindx, float *resol, float adata[], ftn_logical *eof),
 	       (const int *mindx, float *resol, float adata[], ftn_logical *eof))
 {
- int i,ieof,mcol;
+ int i,ieof,mcol,biomol,mindex;
 
   /*   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRREFF");) */
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lrreff: mindx %d out of range!\n",*mindx);
-   return;
+ /* BIOMOL compatibility */
+ if (*mindx > 1000) {
+   biomol = 1;
+   mindex = *mindx - 1000;
+ } else {
+   biomol = 0;
+   mindex = *mindx;
  }
 
- if (rlun[*mindx-1] == 0) {
-   printf("Error in lrreff: mindx %d not open for read!\n",*mindx);
-   return;
- }
+ if (MtzCheckSubInput(mindex,"LRREFF",1)) return;
 
  /* get maximum number of columns to read */
  for (i = MCOLUMNS; i >= 0; --i) 
-   if (collookup[*mindx-1][i]) {
+   if (collookup[mindex-1][i]) {
      mcol = i+1;
      break;
    }
- ndatmss[*mindx-1] = mcol;
+ ndatmss[mindex-1] = mcol;
 
- ++irref[*mindx-1];
- ieof = ccp4_lrreff(mtzdata[*mindx-1], resol, adata, logmss[*mindx-1], 
-             collookup[*mindx-1], mcol, irref[*mindx-1]);
+ ++irref[mindex-1];
+ ieof = ccp4_lrreff(mtzdata[mindex-1], resol, adata, logmss[mindex-1], 
+             collookup[mindex-1], mcol, irref[mindex-1]);
  if (ieof) {
    *eof = FORTRAN_LOGICAL_TRUE;
  } else {
@@ -985,15 +874,7 @@ FORTRAN_SUBR ( LRREFM, lrrefm,
 {
  int i;
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lrrefm: mindx %d out of range!\n",*mindx);
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error in lrrefm: mindx %d not open for read!\n",*mindx);
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRREFM",1)) return;
 
   for (i = 0; i < ndatmss[*mindx-1]; ++i) {
    if (logmss[*mindx-1][i]) {
@@ -1013,15 +894,7 @@ FORTRAN_SUBR ( LHPRT, lhprt,
 {
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LHPRT");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LHPRT",1)) return;
  
  ccp4_lhprt(mtzdata[*mindx-1], *iprint);
 
@@ -1035,15 +908,7 @@ FORTRAN_SUBR ( LHPRT_ADV, lhprt_adv,
 {
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LHPRT_ADV");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LHPRT_ADV",1)) return;
  
  ccp4_lhprt_adv(mtzdata[*mindx-1], *iprint);
 
@@ -1063,15 +928,7 @@ FORTRAN_SUBR ( LRBAT, lrbat,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRBAT");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRBAT",1)) return;
 
  if (mtzdata[*mindx-1]->nbat <= 0) {
    printf("Error: file on mindx is not a multi-record file! \n");
@@ -1147,15 +1004,7 @@ FORTRAN_SUBR ( LRBRES, lrbres,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRBRES");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRBRES",1)) return;
 
  if (mtzdata[*mindx-1]->nbat <= 0) {
    printf("Error: file on mindx is not a multi-record file! \n");
@@ -1196,15 +1045,7 @@ FORTRAN_SUBR ( LRBTIT, lrbtit,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRBTIT");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRBTIT",1)) return;
 
  if (mtzdata[*mindx-1]->nbat <= 0) {
    printf("Error: file on mindx is not a multi-record file! \n");
@@ -1242,15 +1083,7 @@ FORTRAN_SUBR ( LRBSCL, lrbscl,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRBSCL");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lrbscl: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error in lrbscl: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRBSCL",1)) return;
 
  if (mtzdata[*mindx-1]->nbat <= 0) {
    printf("Error in lrbscl: file on mindx is not a multi-record file! \n");
@@ -1299,15 +1132,7 @@ FORTRAN_SUBR ( LRBSETID, lrbsetid,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRBSETID");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
-
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRBSETID",1)) return;
 
  if (mtzdata[*mindx-1]->nbat <= 0) {
    printf("Error: file on mindx is not a multi-record file! \n");
@@ -1338,15 +1163,8 @@ FORTRAN_SUBR ( LRREWD, lrrewd,
 	       (const int *mindx))
 
 { 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
 
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRREWD",1)) return;
  
  irref[*mindx-1] = 0;
  /* Position file at start of reflections */
@@ -1408,15 +1226,8 @@ FORTRAN_SUBR ( LRCLOS, lrclos,
 	       (const int *mindx))
 
 { 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error: mindx out of range!\n");
-   return;
- }
 
- if (rlun[*mindx-1] == 0) {
-   printf("Error: mindx not open for read!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LRCLOS",1)) return;
  
  rlun[*mindx-1] = 0;
  if (wlun[*mindx-1] == 0) {
@@ -1494,15 +1305,7 @@ FORTRAN_SUBR ( LWTITL, lwtitl,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWTITL");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwtitl: mindx out of range!\n");
-   return;
- }
-
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwtitl: mindx not open for write!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWTITL",2)) return;
 
  temp_title = ccp4_FtoCString(FTN_STR(ftitle), FTN_LEN(ftitle));
 
@@ -1527,15 +1330,7 @@ FORTRAN_SUBR ( LWSORT, lwsort,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWSORT");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwsort: mindx out of range!\n");
-   return;
- }
-
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwsort: mindx not open for write!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWSORT",2)) return;
 
  for (i = 0; i < 5; ++i) {
    sortorder[*mindx-1][i] = sortx[i];
@@ -1563,15 +1358,7 @@ FORTRAN_SUBR ( LWHIST, lwhist,
 {
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWHIST");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwhist: mindx out of range!\n");
-   return;
- }
-
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwhist: mindx not open for write!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWHIST",2)) return;
 
  MtzAddHistory(mtzdata[*mindx-1], hstrng, *nlines);
 
@@ -1637,15 +1424,7 @@ FORTRAN_SUBR ( LWID, lwid,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWID");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwid: mindx out of range!\n");
-   return;
- }
-
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwid: mindx not open for write!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWID",2)) return;
 
  temp_pname = ccp4_FtoCString(FTN_STR(project_name), FTN_LEN(project_name));
  temp_dname = ccp4_FtoCString(FTN_STR(dataset_name), FTN_LEN(dataset_name));
@@ -1682,15 +1461,7 @@ FORTRAN_SUBR ( LWIDC, lwidc,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWIDC");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwidc: mindx out of range!\n");
-   return;
- }
-
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwidc: mindx not open for write!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWIDC",2)) return;
 
  temp_pname = ccp4_FtoCString(FTN_STR(project_name), FTN_LEN(project_name));
  temp_dname = ccp4_FtoCString(FTN_STR(dataset_name), FTN_LEN(dataset_name));
@@ -1725,15 +1496,7 @@ FORTRAN_SUBR ( LWCELL, lwcell,
 
  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWCELL");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwcell: mindx out of range!\n");
-   return;
- }
-
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwcell: mindx not open for write!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWCELL",2)) return;
 
  mtz = mtzdata[*mindx-1];
  if (mtz->nxtal == 0) {
@@ -1764,15 +1527,8 @@ FORTRAN_SUBR ( LWIDAS, lwidas,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWIDAS");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwidas: mindx out of range!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWIDAS",2)) return;
 
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwidas: mindx not open for write!\n");
-   return;
- }
   project_name = (char *) ccp4_utils_malloc((*nlprgo)*(pname_len+1)*sizeof(char));
   crystal_name = (char *) ccp4_utils_malloc((*nlprgo)*(pname_len+1)*sizeof(char));
   dataset_name = (char *) ccp4_utils_malloc((*nlprgo)*(dname_len+1)*sizeof(char));
@@ -1831,15 +1587,7 @@ FORTRAN_SUBR ( LWSYMM, lwsymm,
 
  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWSYMM");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwsymm: mindx out of range!\n");
-   return;
- }
-
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwsymm: mindx not open for write!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWSYMM",2)) return;
 
  temp_ltypex = ccp4_FtoCString(FTN_STR(ltypex), FTN_LEN(ltypex));
  temp_spgrnx = ccp4_FtoCString(FTN_STR(spgrnx), FTN_LEN(spgrnx));
@@ -1853,9 +1601,17 @@ FORTRAN_SUBR ( LWSYMM, lwsymm,
 
 }
 
-/* Fortran wrapper for ccp4_lwassn */
-/* First this updates labels from user_label_out if set by lkyout,
-   then sets collookup_out array of pointers to columns */
+/** Fortran wrapper to assign columns of output MTZ file. 
+ * First this updates labels from user_label_out if set by lkyout,
+ * then sets collookup_out array of pointers to columns.
+ * @param mindx MTZ file index.
+ * @param lsprgo array of output labels
+ * @param nlprgo number of output labels
+ * @param ctprgo array of output column types
+ * @param iappnd if = 0 replace all existing columns, else if = 1 "append" to 
+ *   existing columns. Note that columns are appended to the relevant datasets
+ *   and are not therefore necessarily at the end of the list of columns.
+ */
 FORTRAN_SUBR ( LWASSN, lwassn,
 	       (const int *mindx, fpstr lsprgo, const int *nlprgo, fpstr ctprgo, int *iappnd,
                       int lsprgo_len, int ctprgo_len),
@@ -1869,15 +1625,8 @@ FORTRAN_SUBR ( LWASSN, lwassn,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWASSN");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwassn: mindx out of range!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWASSN",2)) return;
 
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwassn: mindx not open for write!\n");
-   return;
- }
   label = (char *) ccp4_utils_malloc((*nlprgo)*31*sizeof(char));
   type = (char *) ccp4_utils_malloc((*nlprgo)*3*sizeof(char));
 
@@ -1952,15 +1701,8 @@ FORTRAN_SUBR ( LWCLAB, lwclab,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWCLAB");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwclab: mindx out of range!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWCLAB",2)) return;
 
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwclab: mindx not open for write!\n");
-   return;
- }
   label = (char *) ccp4_utils_malloc((*nlprgo)*31*sizeof(char));
   type = (char *) ccp4_utils_malloc((*nlprgo)*3*sizeof(char));
 
@@ -2027,15 +1769,7 @@ FORTRAN_SUBR ( LWBAT, lwbat,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWBAT");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwbat: mindx out of range!\n");
-   return;
- }
-
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwbat: mindx not open for write!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWBAT",2)) return;
 
  /* No check on mtzdata[*mindx-1]->nbat  It might be 0 if this is the
     first batch written. */
@@ -2082,15 +1816,7 @@ FORTRAN_SUBR ( LWBTIT, lwbtit,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWBTIT");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwbtit: mindx out of range!\n");
-   return;
- }
-
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwbtit: mindx not open for write!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWBTIT",2)) return;
 
  /* No check on mtzdata[*mindx-1]->nbat  It might be 0 if this is the
     first batch written. */
@@ -2133,15 +1859,7 @@ FORTRAN_SUBR ( LWBSCL, lwbscl,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWBSCL");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwbscl: mindx out of range!\n");
-   return;
- }
-
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwbscl: mindx not open for write!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWBSCL",2)) return;
 
  /* No check on mtzdata[*mindx-1]->nbat  It might be 0 if this is the
     first batch written. */
@@ -2184,15 +1902,7 @@ FORTRAN_SUBR ( LWBSETID, lwbsetid,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWBSETID");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwbsetid: mindx out of range!\n");
-   return;
- }
-
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwbsetid: mindx not open for write!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWBSETID",2)) return;
 
  /* No check on mtzdata[*mindx-1]->nbat  It might be 0 if this is the
     first batch written. */
@@ -2347,15 +2057,7 @@ FORTRAN_SUBR ( LWREFL, lwrefl,
 {
  /*  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWREFL");) */
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwrefl: mindx out of range!\n");
-   return;
- }
-
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwrefl: mindx not open for write!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWREFL",2)) return;
 
  ++iwref[*mindx-1];
  ccp4_lwrefl(mtzdata[*mindx-1],adata,collookup_out[*mindx-1],
@@ -2373,15 +2075,7 @@ FORTRAN_SUBR ( LWCLOS, lwclos,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWCLOS");)
 
- if (*mindx <= 0 || *mindx > MFILES) {
-   printf("Error in lwclos: mindx out of range!\n");
-   return;
- }
-
- if (wlun[*mindx-1] == 0) {
-   printf("Error in lwclos: mindx not open for write!\n");
-   return;
- }
+ if (MtzCheckSubInput(*mindx,"LWCLOS",2)) return;
 
  /* fix number of reflections at the number "written out" */
  mtzdata[*mindx-1]->nref = iwref[*mindx-1];
