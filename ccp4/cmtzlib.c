@@ -2462,8 +2462,13 @@ int MtzWrefl(CCP4File *fileout, int ncol, float *refldata) {
 MTZ *MtzMalloc(int nxtal, int nset[])
 
 { MTZ *mtz;
-  int i,j;
+  int i,j,itime[3];
   float zerocell[6]={0.0};
+  char dummy_xname[17];
+
+  ccp4_utils_itime(itime);
+  sprintf(dummy_xname,"NULL_xname%2.2d%2.2d%2.2d",itime[0],itime[1],itime[2]);
+  dummy_xname[16]='\0';
 
   /* Allocate main header and symmetry */
   mtz = (MTZ *) ccp4_utils_malloc(sizeof(MTZ));
@@ -2480,7 +2485,7 @@ MTZ *MtzMalloc(int nxtal, int nset[])
   } else {
     for (i = 0; i < nxtal; ++i) {
       /* This adds mtz->xtal[i] */
-      if ( ! MtzAddXtal(mtz,"NULL_xname","NULL_pname",zerocell) ) return NULL;
+      if ( ! MtzAddXtal(mtz,dummy_xname,"NULL_pname",zerocell) ) return NULL;
       mtz->xtal[i]->nset = 0;
       for (j = 0; j < nset[i]; ++j) {
         /* This adds mtz->xtal[i]->set[j] */
