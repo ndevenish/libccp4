@@ -477,7 +477,7 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER IEND,IERR,IFAIL,II,IST,ISTAT,JDO10,JDO20,JDO30,
-     +        JDO50,JDO60,JDO90,JDO100,JDO110,JLENG,IFLAG
+     +        JDO50,JDO55,JDO60,JDO90,JDO100,JDO110,JLENG,IFLAG
       CHARACTER CWORK*30,LINE*400,STROUT*400
 C     ..
 C     .. External Functions .. 
@@ -545,6 +545,7 @@ C
 C---- First loop over user input labels and assign them to file labels
 C     If NLUSRI(MINDX)=0 then this loop is never executed
 C
+        IERR = 0
         DO 70 JDO50 = 1,NLPRGI
           CWORK = LSUSRI(MINDX,JDO50)
           IF ((NLUSRI(MINDX).GT.0) .AND. (CWORK.NE.' ')) THEN
@@ -1890,7 +1891,7 @@ C     .. Local Scalars ..
       INTEGER BATFLG,EFLAG,ENDLOP,IER,ISTAT,ITEND,IUNIN,JDO10,JDO55,
      +        JDO100,JDO110,JDO120,JDO130,JDO140,JDO150,JDO190,JDO20,
      +        JDO200,JDO30,JDO40,JDO50,JDO60,JDO80,JDO90,NBATRF,NCOLR,
-     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT,NSETD,IFLAG
+     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT,NSETD,IFLAG,I
       LOGICAL LEND
       CHARACTER KEY*4,MKEY*4,LINE*80,LINE2*400,STROUT*400
 C     ..
@@ -2688,7 +2689,7 @@ C     .. Scalar Arguments ..
       CHARACTER LINE* (*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER IER
+      INTEGER IER,ISTAT
       CHARACTER ELINE*80
 C     ..
 C     .. External Subroutines ..
@@ -4291,7 +4292,7 @@ C     .. Arrays in Common ..
       LOGICAL SORTB,DATMSS,VAL_SET
 C     ..
 C     .. Local Scalars ..
-      INTEGER IFAIL,ISTAT,JDO40,JDO50,IREFSET
+      INTEGER IFAIL,ISTAT,JDO40,JDO50,IREFSET,LSTART
       CHARACTER LINE*400,PNAMEL*64,DNAMEL*64
 C     ..
 C     .. External Functions ..
@@ -4577,7 +4578,7 @@ C
 C.. Local variables
       INTEGER BSETID
       CHARACTER LINE*400
-
+      INTEGER ISTAT,IFAIL,JDO50,I,J
       REAL RNWRDS(MBLENG)
       EQUIVALENCE (NWORDS, RNWRDS)
 C
@@ -4745,7 +4746,7 @@ C
 C
 C.. Local variables
       CHARACTER LINE*400
-
+      INTEGER ISTAT,IFAIL,I,J
       REAL RNWRDS(MBLENG)
       EQUIVALENCE (NWORDS, RNWRDS)
 
@@ -5132,7 +5133,7 @@ C     .. Scalar Arguments ..
       CHARACTER*(*) PNAME(*),XNAME(*),DNAME(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER ISET,ISTAT,IFAIL
+      INTEGER ISET,ISTAT,IFAIL,I
       CHARACTER LINE*400
 C
 C---- First check that the MINDX is valid
@@ -5200,6 +5201,7 @@ C     .. Arguments ..
 C     ..
 C     .. Local  ..
       CHARACTER*64 CRYSTAL_NAME
+      INTEGER I
       REAL DATCELL(6),DATWAVE
 
       CRYSTAL_NAME = ' '
@@ -5308,8 +5310,9 @@ C     .. Scalar Arguments ..
       CHARACTER PROJECT_NAME*(*),CRYSTAL_NAME*(*),DATASET_NAME*(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER ISET,ISTAT,IFAIL,JDO50,MAXSETID
+      INTEGER ISET,ISTAT,IFAIL,JDO50,MAXSETID,LENSTR,I
       CHARACTER LINE*400
+      EXTERNAL LENSTR
 C
 C---- First check that the MINDX is valid
 C
@@ -5969,6 +5972,7 @@ C     .. Local Scalars ..
      +        ISET,IDSET,NREDUND,IBAT,BSETID
       CHARACTER LINE*400, STROUT*80
       LOGICAL VS
+      REAL VAL_MAGIC
 C     ..
 C     .. Local Arrays ..
       INTEGER WINDEX(MBATCH)
@@ -6582,7 +6586,7 @@ C     ====================================
       SUBROUTINE LWHSTL (MINDX,EXTRA)
 C     ====================================
 C
-C     Write a single line of hstory information to an MTZ file with
+C     Write a single line of history information to an MTZ file with
 C     index MINDX indicating that it was output from the program whose
 C     name was previously set with CCPVRS (/CCPRCS) at the
 C     current date and time.  EXTRA is more information to append to the
@@ -6609,9 +6613,10 @@ C
       CALL CCPDAT (DATE)
       CALL UTIME (TIME)
 C     Use a largeish buffer and truncate it later if necessary
+      BUFFER = ' '
       WRITE (BUFFER, 10) PROG(:MAX(LENSTR(PROG),1)), DATE, TIME
       BUFFER(LENSTR(BUFFER)+2:) = EXTRA(:MAX(LENSTR(EXTRA),1))
-      HIST (1) = BUFFER
+      HIST (1) = BUFFER(1:80)
  10   FORMAT ('From ',A,', ',A,' ',A)
       CALL LWHIST (MINDX, HIST, 1)
       RETURN
@@ -6666,7 +6671,7 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,IUNIN,JDO10,JDO20,JDO30,JDO40,JDO50,JDO55,
-     +        JDO60,JDO70,JDO80,NITEM
+     +        JDO60,JDO70,JDO80,NITEM,I
       CHARACTER LINE*400
 C     ..
 C     .. Local Arrays ..
@@ -8897,7 +8902,7 @@ C     .. Arrays in Common ..
 
 C     ..
 C     .. Local Scalars ..
-      INTEGER IFAIL,IMAX,IMIN,IPR,ISTAT,JDO10,JDO20,JDO30,JJ
+      INTEGER IFAIL,IMAX,IMIN,IPR,ISTAT,JDO10,JDO20,JDO30,JJ,I
       LOGICAL SORTED,VAL_SET
       CHARACTER CTEMP*1,LINE*400,STROUT*800
       REAL RESMIN,RESMAX
