@@ -3,10 +3,6 @@
    printable LaTeX can be produced by `noweave' if you have those
    tools.  The noweb system is available in
    anonymous@bellcore.com:pub/norman at the time of writing. */
-#if F2C
-/* #  define KNOWN_MACHINE */
-#  define CALL_LIKE_SUN 1
-#else
 #if defined (_AIX)
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_HPUX 1
@@ -36,10 +32,6 @@
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_HPUX 1
 #endif
-#if defined (iris)
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_IRIS 1
-#endif
 #ifdef __sgi   /* in ANSI mode */
 #  ifndef sgi
 #    define sgi
@@ -54,10 +46,11 @@
 #   define sun               /* don't know whether it's defined or not */
 #  endif
 #endif
-#if defined (sun)
+#if defined (sun) || defined (__sun)
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_SUN 1
-#  ifndef __STDC__
+#  if !defined(__STDC__) || defined(__GNUC__)
+     extern char *sys_errlist [];
 #    define strerror(i) sys_errlist[i] /* k&r compiler doesn't have it */
 #  endif
 #endif
@@ -73,7 +66,10 @@
 #if defined (VMS)
 #  define KNOWN_MACHINE
 #endif
-#endif /* F2C */
+#if defined(F2C) || defined(G77)
+#  undef CALL_LIKE_SUN
+#  define CALL_LIKE_SUN 1
+#endif
 #if ! defined (KNOWN_MACHINE)
   #error System type is not known -- see the Installation Guide
 #else
@@ -109,7 +105,8 @@
 #include <errno.h>
 #include <ctype.h>
 
-#if defined(_AIX) || defined (__hpux) /* would do no harm on others, though */
+#if defined(_AIX) || defined (__hpux) || defined(f2c) ||\
+    defined(G77) /* would do no harm on others, though */
 #  include <time.h>
 #endif
 #define MAXFLEN       500       /* the maximum length of a filename in CCP4 */
@@ -200,6 +197,7 @@ typedef unsigned int uint32;
 #endif
 typedef float float32;
 typedef unsigned char uint8;
+/* typedef signed char sint8; */ /* not K&R ? */
 static char rcsid[] = "$Id$";
 static int initialised =  0;    /* flag to initialise data and file streams */
 #if defined(__DECC) && defined(VMS)
@@ -245,7 +243,9 @@ static uint16 nativeFT = NATIVEFT; /* machine float type */
 union float_uint_uchar {
     float32 f;
     uint32 i;
-    uint8 c[4]; };
+    uint8 c[4];
+/*    sint8 s[4]; */
+  };
 static int
     Iconvert[MAXFILES],         /* integer convserion needed on read*/
     Fconvert[MAXFILES];         /* real convserion needed on read*/
@@ -261,7 +261,7 @@ char *message;
 {
   int mone = -1, zero = 0;
 #if CALL_LIKE_HPUX
-  extern void ccperr(), qprint ();
+  extern void ccperr();
 
   ccperr (&mone, message, (int) strlen(message));
 #endif
@@ -294,10 +294,38 @@ char *message;
 
   ccperr_ (&mone, message, (int) strlen(message));
 #endif
-#if CALL_LIKE_IRIS
-  extern fortran ccperr_();
+ }
+static void cqprint (message)
+char *message;
+{
+  int zero = 0;
+#if CALL_LIKE_HPUX
+  extern void qprint();
 
-  (void) ccperr_ ((int) strlen(message), &mone, message);
+  qprint (&zero, message, (int) strlen(message));
+#endif
+#if CALL_LIKE_STARDENT
+  extern void QPRINT();
+  struct Str_Desc str;
+
+  str.Str_length = (int) strlen(message);
+  str.Str_pointer = message;
+  QPRINT (&zero, &str);
+#endif
+#if defined (VMS)
+  extern void QPRINT();
+  struct dsc$descriptor_s str;
+
+  str.dsc$a_pointer = message;
+  str.dsc$w_length = (int) strlen(message);
+  str.dsc$b_dtype = DSC$K_DTYPE_T;
+  str.dsc$b_class = DSC$K_CLASS_S;
+  QPRINT (&zero, &str);
+#endif
+#if CALL_LIKE_SUN
+  extern void qprint_();
+
+  qprint_ (&zero, message, (int) strlen(message));
 #endif
  }
 static void vaxF2ieeeF(buffer, size)
@@ -490,11 +518,6 @@ int size;
   char *str;
   int  Lstr;
 #endif
-#if CALL_LIKE_IRIS
-  fortran ustenv_ (Lstr, str, result)
-  char *str;
-  int  Lstr;
-#endif
 int *result;
 {
   size_t Length;
@@ -511,7 +534,9 @@ int *result;
 #endif
   name[Length] = '\0'; 
 #if defined (sgi) || defined (sun) || defined (__hpux) || \
-    defined(_AIX) || defined(ultrix) || defined (__OSF1__) || defined (__osf__)
+    defined(_AIX) || defined(ultrix) || defined (__OSF1__) || \
+    defined (__osf__) || defined (__FreeBSD__) || defined (linux) || \
+    defined (titan)
       /* putenv is the POSIX.1, draft 3 proposed mechanism */
       /* ESV seems to have it in the SysVile universe */
   temp = (char *) malloc (MAXFLEN);
@@ -549,11 +574,6 @@ int *result;
   char *filename;
   int  Lfilename;
 #endif
-#if CALL_LIKE_IRIS
-  fortran cunlink_ (Lfilename, filename)
-  char *filename;
-  int  Lfilename;
-#endif
 {
   size_t Length;
   char tempfile[MAXFLEN];
@@ -572,7 +592,7 @@ int *result;
 #  endif
   tempfile[Length] = '\0';
   if (unlink (tempfile) != 0)
-  fatal("CUNLINK: Can't unlink");
+    cqprint("CUNLINK: Can't unlink");
 #endif /* VMS */
 }
 #ifndef VMS                     /* we'll use the Fortran version in VMS*/
@@ -585,14 +605,11 @@ int *result;
 #if CALL_LIKE_SUN
   void ccpal1_ (routne, n, type, length) 
 #endif
-#if CALL_LIKE_IRIS
-  fortran ccpal1_ (routne, n, type, length)
-#endif
   void (* routne) ();
   int *n, type[], length[];
 {
-  int i, size, *leng[10];
-  void *pointer[10];
+  int i, size, *leng[13];
+  void *pointer[13];
 
   for (i=0; i<*n; i++) {
     switch (type[i]) {
@@ -604,6 +621,8 @@ int *result;
       size = 2*item_sizes[2]; break; /* double */
     case 4:
       size = 2*item_sizes[2]; break; /* complex */
+    case 5:
+      size = item_sizes[1]; break; /* bytes (logical or integer *1) */
     }
     pointer[i+1] = malloc (size*length[i]);
     if (pointer[i+1] == NULL) fatal ("CCPALC: can't allocate memory");
@@ -653,6 +672,29 @@ int *result;
                 leng[7], pointer[7], leng[8], pointer[8],
                 leng[9], pointer[9]);
     break;
+  case 10:
+    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
+                leng[3], pointer[3], leng[4], pointer[4],
+                leng[5], pointer[5], leng[6], pointer[6],
+                leng[7], pointer[7], leng[8], pointer[8],
+                leng[9], pointer[9], leng[10], pointer[10]);
+    break;
+  case 11:
+    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
+                leng[3], pointer[3], leng[4], pointer[4],
+                leng[5], pointer[5], leng[6], pointer[6],
+                leng[7], pointer[7], leng[8], pointer[8],
+                leng[9], pointer[9], leng[10], pointer[10],
+                leng[11], pointer[11]);
+    break;
+  case 12:
+    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
+                leng[3], pointer[3], leng[4], pointer[4],
+                leng[5], pointer[5], leng[6], pointer[6],
+                leng[7], pointer[7], leng[8], pointer[8],
+                leng[9], pointer[9], leng[10], pointer[10],
+                leng[11], pointer[11], leng[12], pointer[12]);
+    break;
   }
   for (i=0; i<*n; i++)
     free (pointer[i+1]);
@@ -673,11 +715,6 @@ int *result;
 #endif
 #if CALL_LIKE_SUN
   void copen_ (iunit, filename, istat, Lfilename)
-  char *filename;
-  int  Lfilename;
-#endif
-#if CALL_LIKE_IRIS
-  fortran copen_ (iunit, Lfilename, filename, istat)
   char *filename;
   int  Lfilename;
 #endif
@@ -765,9 +802,6 @@ int  *iunit, *istat;
 #if CALL_LIKE_SUN
   void qrarch_ (iunit, ipos, ireslt)
 #endif
-#if CALL_LIKE_IRIS
-  fortran qrarch_ (iunit, ipos, ireslt)
-#endif
   int *ipos, *ireslt, *iunit;
 {
   uint16 fileFT, fileIT;        /* float and integer machine types of file */
@@ -822,9 +856,6 @@ int  *iunit, *istat;
 #if CALL_LIKE_SUN
   void qwarch_ (iunit, ipos)
 #endif
-#if CALL_LIKE_IRIS
-  fortran qwarch_ (iunit, ipos)
-#endif
   int *ipos, *iunit;
 {
   unsigned char mtstring[4];    /* machine stamp */
@@ -852,9 +883,6 @@ int  *iunit, *istat;
 #if CALL_LIKE_SUN
   void qclose_ (iunit)
 #endif
-#if CALL_LIKE_IRIS
-  fortran qclose_ (iunit)
-#endif
 
 int *iunit;
 {
@@ -877,9 +905,6 @@ int *iunit;
 #if CALL_LIKE_SUN
   void qmode_ (iunit, mode, size)
 #endif
-#if CALL_LIKE_IRIS
-  fortran qmode_ (iunit, mode, size)
-#endif
 
 int *iunit, *mode, *size;
 {
@@ -901,9 +926,6 @@ int *iunit, *mode, *size;
 #endif
 #if CALL_LIKE_SUN
   void qread_ (iunit, buffer, nitems, result)
-#endif
-#if CALL_LIKE_IRIS
-  fortran qread_ (iunit, buffer, nitems, result)
 #endif
 
 uint8 * buffer;
@@ -1104,17 +1126,16 @@ int *iunit, *nitems, *result;
   int Lbuffer;
   char * buffer;
 #endif
-#if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
+#ifdef VMS
   void QREADC (iunit, buffer, result)
   struct dsc$descriptor_s *buffer;
 #endif
+#if CALL_LIKE_STARDENT
+  void QREADC (iunit, buffer, result)
+  struct Str_Desc *buffer;
+#endif
 #if CALL_LIKE_SUN
   void qreadc_ (iunit, buffer, result, Lbuffer)
-  int Lbuffer;
-  char * buffer;
-#endif
-#if CALL_LIKE_IRIS
-  fortran qreadc_ (Lbuffer, iunit, buffer, result)
   int Lbuffer;
   char * buffer;
 #endif
@@ -1164,9 +1185,6 @@ int *iunit, *result;
 #if CALL_LIKE_SUN
   void qwrite_ (iunit, buffer, nitems)
 #endif
-#if CALL_LIKE_IRIS
-  fortran qwrite_ (iunit, buffer, nitems)
-#endif
 uint8 * buffer;
 int *iunit, *nitems;
 {
@@ -1190,17 +1208,16 @@ int *iunit, *nitems;
   int Lbuffer;
   char * buffer;
 #endif
-#if defined (VMS) || CALL_LIKE_STARDENT
+#if defined (VMS)
   void QWRITC (iunit, buffer)
   struct dsc$descriptor_s *buffer;
 #endif
+#if defined CALL_LIKE_STARDENT
+  void QWRITC (iunit, buffer)
+  struct Str_Desc *buffer;
+#endif
 #if CALL_LIKE_SUN
   void qwritc_ (iunit, buffer, Lbuffer)
-  int Lbuffer;
-  char * buffer;
-#endif
-#if CALL_LIKE_IRIS
-  fortran qwritc_ (Lbuffer, iunit, nitems)
   int Lbuffer;
   char * buffer;
 #endif
@@ -1243,9 +1260,6 @@ int *iunit;
 #if CALL_LIKE_SUN
   void qseek_ (iunit, irec, iel, lrecl)
 #endif
-#if CALL_LIKE_IRIS
-  fortran qseek_ (iunit, irec, iel, lrecl)
-#endif
 
 int *iunit, *irec, *iel, *lrecl;
 {
@@ -1271,9 +1285,6 @@ int *iunit, *irec, *iel, *lrecl;
 #if CALL_LIKE_SUN
   void qback_ (iunit, lrecl)
 #endif
-#if CALL_LIKE_IRIS
-  fortran qback_ (iunit, lrecl)
-#endif
 
 int *iunit, *lrecl;
 {
@@ -1297,9 +1308,6 @@ int *iunit, *lrecl;
 #endif
 #if CALL_LIKE_SUN
   void qskip_ (iunit, lrecl)
-#endif
-#if CALL_LIKE_IRIS
-  fortran qskip_ (iunit, lrecl)
 #endif
 
 int *iunit, *lrecl;
@@ -1332,11 +1340,6 @@ int *iunit, *lrecl;
 #endif
 #if CALL_LIKE_SUN
   void cqinq_ (istrm, filnam, length, len_filnam)
-  char *filnam;
-  int len_filnam;
-#endif
-#if CALL_LIKE_IRIS
-  fortran cqinq_ (istrm, len_filnam, filnam, length)
   char *filnam;
   int len_filnam;
 #endif
@@ -1400,9 +1403,6 @@ int *istrm, *length;
 #if CALL_LIKE_SUN
   void qlocate_ (iunit, locate)
 #endif
-#if CALL_LIKE_IRIS
-  fortran qlocate_ (iunit, locate)
-#endif
 
 int *iunit, *locate;
 {
@@ -1413,14 +1413,16 @@ int *iunit, *locate;
     *locate = (int) ftell (file_stream[*iunit]) / file_bytes_per_item[*iunit];
 }
 #ifdef _AIX
-void idate (d, m, y)
-     int *y, *m, *d;
+void idate (iarray)
+     int iarray[3];
 {
      struct tm *lt;
      time_t tim;
      tim = time(NULL);
      lt = localtime(&tim);
-     *y = lt->tm_year + 1000; *m = lt->tm_mon; *d = lt->tm_mday;
+     iarray[0] = lt->tm_mday;
+     iarray[1] = lt->tm_mon;
+     iarray[2] = lt->tm_year + 1900;
 }
 #endif
 #if defined (__hpux) || defined (_AIX)
@@ -1485,13 +1487,140 @@ float etime (tarray)
 }
 
 #endif  /* AIX || HPUX */
+#if defined(F2C) || defined(G77)
+int exit_ (status)
+     int *status;
+{
+  f_exit ();                    /* may or may not be registered with
+                                   exit, depending on the C libraries
+                                   capabilities, but is idempotent */
+  exit (*status);
+}
+
+int time_ ()
+{
+  return (int) time (NULL);
+}
+
+int getpid_ ()
+{
+  return (int) getpid ();
+}
+
+/* following are from libI77/fio.h */
+#define MXUNIT 100
+typedef int flag;
+typedef struct
+{       FILE *ufd;      /*0=unconnected*/
+        char *ufnm;
+        long uinode;
+        int udev;
+        int url;        /*0=sequential*/
+        flag useek;     /*true=can backspace, use dir, ...*/
+        flag ufmt;
+        flag uprnt;
+        flag ublnk;
+        flag uend;
+        flag uwrt;      /*last io was write*/
+        flag uscrtch;
+} unit;
+extern unit f__units[];
+#define TRUE_ (1)
+#define FALSE_ (0)
+#define err(f,m,s) {if(f) errno= m; else f__fatal(m,s); return(m);}
+/* end of fio.h extract */
+
+int isatty_ (lunit)
+     int *lunit;
+{
+  if (*lunit>=MXUNIT || *lunit<0)
+    err(1,101,"isatty");
+  /* f__units is a table of descriptions for the unit numbers (defined
+     in io.h) with file descriptors rather than streams */
+  return (isatty(fileno((f__units[*lunit]).ufd)) ? TRUE_ : FALSE_);
+}
+
+int idate_ (iarray)
+     int iarray[3];
+{
+     struct tm *lt;
+     time_t tim;
+     tim = time(NULL);
+     lt = localtime(&tim);
+     iarray[0] = lt->tm_mday;
+     iarray[1] = lt->tm_mon;
+     iarray[2] = lt->tm_year + 1900;
+     return 0;
+}
+
+int gerror_ (str, Lstr)
+char *str;
+int  Lstr;
+{
+  int i;
+
+  if (errno == 0) {             /* Avoid `Error 0' or some such message */
+    for (i=1; Lstr; i++)
+      str[i] = ' ';
+  } else {
+    (void) strncpy (str, strerror (errno), Lstr);
+    for (i = strlen (str); i < Lstr; i++) str[i] = ' ';  /* pad with spaces */
+  }
+  return 0;
+}
+
+int ierrno_ () {
+  return errno;
+}
+
+int itime_ (array)
+     int array[3];
+{
+     struct tm *lt;
+     time_t tim;
+     tim = time(NULL);
+     lt = localtime(&tim);
+     array[0] = lt->tm_hour; array[1] = lt->tm_min; array[2] = lt->tm_sec;
+}
+
+static long clk_tck = 0;
+
+float etime_ (tarray)
+     float tarray[2];
+{
+  struct tms buffer;
+  time_t utime, stime;
+  if (! clk_tck) clk_tck = sysconf(_SC_CLK_TCK);
+  (void) times(&buffer);
+  tarray[0] = (float) buffer.tms_utime / (float)clk_tck;
+  tarray[1] = (float) buffer.tms_stime / (float)clk_tck;
+  return (tarray[0]+tarray[1]);
+}
+int /* integer */ ibset_ (a, b)
+     int /* integer */ *a, *b;
+{
+  return (*a) | 1<<(*b);
+}
+
+int /* integer */ ibclr_ (a, b)
+     int /* integer */ *a, *b;
+{
+  return (*a) & ~(1<<(*b));
+}
+
+int /* logical */ btest_ (a, b)
+     int /* integer */ *a, *b;
+{
+  return ((((unsigned long) *a)>>(*b)))&1 ? TRUE_ : FALSE_;
+}
+#endif  /* F2C || g77 */
 #if CALL_LIKE_HPUX
   void cnan (real)
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
   void CNAN (real)
 #endif
-#if CALL_LIKE_SUN || CALL_LIKE_IRIS
+#if CALL_LIKE_SUN
   void cnan_ (real)
 #endif
   union float_uint_uchar *real;
@@ -1519,9 +1648,6 @@ float etime (tarray)
 #if CALL_LIKE_SUN
   int cisnan_ (real)
 #endif
-#if CALL_LIKE_IRIS
-  int cisnan_ (real)
-#endif
   union float_uint_uchar *real;
 {
     switch (nativeFT) {
@@ -1545,9 +1671,6 @@ float etime (tarray)
 #if CALL_LIKE_SUN
   void ccpbml_ (ncols, cols)
 #endif
-#if CALL_LIKE_IRIS
-  fortran ccpbml_ (ncols, cols)
-#endif
   int *ncols;
   union float_uint_uchar cols[];
 {
@@ -1564,9 +1687,6 @@ float etime (tarray)
 #endif
 #if CALL_LIKE_SUN
   void ccpwrg_ (ncols, cols, wminmax)
-#endif
-#if CALL_LIKE_IRIS
-  fortran ccpwrg_ (ncols, cols, wminmax)
 #endif
   int *ncols;
   float wminmax[];

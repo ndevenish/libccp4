@@ -12,7 +12,7 @@ C     .. Local Scalars ..
      +        IYEAR,IYES,J,LDUM,LUN,LUNIN,LUNOUT,NREC
       CHARACTER ERRSTR*40,HANDLE* (LSTR),NAME1* (LSTR),NAME2* (LSTR),
      +          ENVNAM* (120),USRNAM* (LSTR),UDATE* (LSTR),
-     +          USRTIM* (LSTR),REPLY* (LSTR),TSTNAM*(LSTR)
+     +          USRTIM* (LSTR),REPLY* (LSTR),TSTNAM*(LSTR),FOO*3
 C     ..
 C     .. Local Arrays ..
       REAL BUFFER(LBUF)
@@ -25,7 +25,7 @@ C     .. External Functions ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPERR,CCPFYP,NOCRLF,QCLOSE,QMODE,QOPEN,QQINQ,QREAD,
-     +         QSEEK,QWRITE,SRAND,UBYTES,UCPUTM,UGERR,UGTENV,UGTUID,
+     +         QSEEK,QWRITE,UBYTES,UCPUTM,UGERR,UGTENV,UGTUID,
      +         UIDATE,UISATT,USTIME,UTIME,CCPRCS,CCPDPN
 C     ..
 C     .. Intrinsic Functions ..
@@ -269,6 +269,7 @@ C     written to it first)
       CALL CCPDPN (LUN,'FOO','SCRATCH','F',0,I)
       WRITE (LUN,'(A)') 'foo'
       REWIND (LUN,ERR=170)
+      READ (LUN,'(A)') FOO
       CALL CCPERR(0,'Normal Termination')
  170  CALL CCPERR (1,'Can''t rewind scratch file')
 90    CALL CCPERR(1,'*** EOF ERROR ***')
