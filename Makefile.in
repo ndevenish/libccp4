@@ -286,7 +286,7 @@ $(LF)(parser.o) : $(srcdir)/parser.f
 	fi
 	cd parser.dir && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
+	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f parser.dir/*.o
 parser : parser.o
