@@ -1286,3 +1286,8 @@ C     save the old mode and change to bytes
 C     restore mode
       CALL QMODE (IUNIT,OLDMODE,MITEM)
       END
+
+      SUBROUTINE CUNLINK (FILE)
+C     Dummy version -- can't unlink VMS files
+      CHARACTER *(*) FILE
+      END
