@@ -421,11 +421,13 @@ FORTRAN_SUBR ( PGDEFN, pgdefn,
   }
   /* first, identify spacegroup from supplied symops */
   spacegroup = ccp4_spgrp_reverse_lookup(*nsym,op1);
+  free(op1);
+
+  if (!spacegroup) ccperror(1,"Fatal error in PGDEFN");
 
   ccp4_CtoFString(FTN_STR(nampg),FTN_LEN(nampg),spacegroup->point_group);
   *nsymp = spacegroup->nsymop_prim;
 
-  free(op1);
 }
 
 
@@ -952,6 +954,8 @@ void ccp4spg_register_by_ccp4_num(int numspg) {
 
    spacegroup = ccp4spg_load_by_ccp4_num(numspg);
 
+   if (!spacegroup) ccperror(1,"Fatal error in ccp4spg_register_by_ccp4_num");
+
 }
 
 void ccp4spg_register_by_symops(int nops, float rsm[][4][4]) {
@@ -977,6 +981,8 @@ void ccp4spg_register_by_symops(int nops, float rsm[][4][4]) {
   spacegroup = ccp4_spgrp_reverse_lookup(nops,op1);
 
   free(op1);
+
+  if (!spacegroup) ccperror(1,"Fatal error in ccp4spg_register_by_symops");
 }
 
 /** Fortran wrapper for ccp4spg_load_by_* functions.
