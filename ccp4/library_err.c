@@ -112,6 +112,7 @@ static const char *const csym_errlist[] =
     "Cannot find SYMINFO file - no symmetry information", /* 2 = CSYMERR_NoSyminfoFile */
     "Pointer to spacegroup structure is NULL",   /* 3 = CSYMERR_NullSpacegroup */
     "ASU definition not found for this spacegroup", /* 4 = CSYMERR_NoAsuDefined */
+    "Undefined Laue code for this spacegroup",   /* 5 = CSYMERR_NoLaueCodeDefined */
   };
 
 static const char *const cgen_errlist[] =
