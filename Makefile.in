@@ -6,6 +6,9 @@
 # Usage: make                 - to make the library in this directory
 #        make <module>        - to make that particular module
 #        make install         - to copy the results into binary directory
+#        make clean           - remove object files and other intermediate files
+#        make realclean       - as clean, plus all compiled libraries;
+#                               allows you to start afresh
 #        make test            - to compile and run the library testbed
 
 # The following <module>'s are available:
@@ -95,10 +98,11 @@ CMAPOBJS = cmap_accessor.o cmap_close.o cmap_data.o cmap_header.o \
 CSYMOBJS = csymlib.o 
 CUCOBJS = ccp4_unitcell.o
 FINTERFACEOBJS = cmtzlib_f.o csymlib_f.o ccp4_parser_f.o library_f.o \
-                ccp4_diskio_f.o ccp4_general_f.o ccp4_unitcell_f.o cmaplib_f.o
+                ccp4_diskio_f.o ccp4_general_f.o ccp4_unitcell_f.o cmaplib_f.o \
+                binsortint.o
 FORTRANOBJS =  $(LF)(parser.o) $(LF)(fftlib.o) $(LF)(lgglib.o) $(LF)(libhtml.o) \
                $(LF)(modlib.o) $(LF)(plotsubs.o) $(LF)(plot84lib.o) \
-               $(LF)(pxxml.o) $(LF)(ccplib.o) $(LF)(unix.o) $(LF)(sorting_main.o) \
+               $(LF)(pxxml.o) $(LF)(ccplib.o) $(LF)(unix.o) \
                $(LF)(rwbrook.o) $(CIFLIBOBJS) $(LF)(harvlib.o) \
                $(LF)(keyparse.o) $(LF)(pack_f.o) $(LF)(pack_c.o)
 CMTZPYOBJS = cmtzlib_python_wrap.o
@@ -124,7 +128,7 @@ $(LC) : $(CORELIBOBJS) $(CGENERALOBJS) $(CUCOBJS) $(CMTZOBJS) $(CMAPOBJS) $(CSYM
 	$(RANLIB) $@
 
 $(LF) : $(FORTRANOBJS) $(FINTERFACEOBJS)
-# this is slight overkill, but we only what to archive objects from
+# this is slight overkill, but we only want to archive objects from
 # FINTERFACEOBJS. Those from FORTRANOBJS are passed through fsplit first
 	$(AR) $(LF) $(FINTERFACEOBJS)
 	$(RANLIB) $@
@@ -411,6 +415,7 @@ $(LF)(pack_f.o):   $(srcdir)/pack_f.f
 pack:   $(LF)(pack_c.o) $(LF)(pack_f.o)
 	$(RANLIB) $(LF) 
 
+# This is a potential replacement for binsortint but is not included at the moment
 $(LF)(sorting_main.o) : $(srcdir)/sorting_main.f
 	-rm -rf sorting_main.dir; mkdir sorting_main.dir
 	echo '      SUBROUTINE SORTING_MAIN' > sorting_main.dir/sorting_main.$F
@@ -594,6 +599,7 @@ cmap_stats.o:     $(srcdir)/cmap_stats.c $(srcdir)/cmaplib.h \
 cmap_symop.o:     $(srcdir)/cmap_symop.c $(srcdir)/cmaplib.h \
                   $(srcdir)/cmap_errno.h
 cmaplib_f.o:      $(srcdir)/cmaplib_f.c $(srcdir)/cmaplib.h
+binsortint.o:     $(srcdir)/binsortint.c $(srcdir)/binsort.h
 csymlib.o:        $(srcdir)/csymlib.c $(srcdir)/csymlib.h
 csymlib_f.o:      $(srcdir)/csymlib_f.c $(srcdir)/csymlib.h
 ccp4_unitcell.o:  $(srcdir)/ccp4_unitcell.c $(srcdir)/ccp4_unitcell.h
