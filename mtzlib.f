@@ -8595,7 +8595,7 @@ C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,IMAX,IMIN,IPR,ISTAT,JDO10,JDO20,JDO30,JJ
       LOGICAL SORTED,VAL_SET
-      CHARACTER CTEMP*1,LINE*400,STROUT*400
+      CHARACTER CTEMP*1,LINE*400,STROUT*800
       REAL RESMIN,RESMAX
 C     ..
 C     .. Local Arrays ..
@@ -9944,12 +9944,12 @@ C
 C     MINDX     (I)     INTEGER         indicates which MTZ file - 1 index
 C                                       points to both input and output files
 C
-C     ADATA      (I)     REAL            array of dimension at least NCOL
+C     ADATA     (O)     REAL            array of dimension at least NCOL
 C     					containing the reflection record  with
 C     					"missing" values set  to VAL_MAGICA
 C
 C
-C     NCOL       (I)	INTEGER         Array size of ADATA
+C     NCOL      (I)	INTEGER         Array size of ADATA
 C
 C
 C
