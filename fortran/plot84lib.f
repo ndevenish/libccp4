@@ -1755,7 +1755,7 @@ C     .. Scalars in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER I,IEND,ISTART,NCHAR,NPOINT
-      CHARACTER ASTER*1,BLANK*1
+      CHARACTER BLANK*1
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC INDEX,LEN
@@ -1768,7 +1768,7 @@ C
       SAVE
 C
 C     .. Data statements ..
-      DATA ASTER,BLANK/'*',' '/
+      DATA BLANK/' '/
 C     ..
 C
 C
@@ -4806,8 +4806,7 @@ C     .. Local Arrays ..
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
-      LOGICAL CCPONL
-      EXTERNAL LENSTR,CCPONL
+      EXTERNAL LENSTR
 C     ..
 C     .. External Subroutines ..
       EXTERNAL GSLVCK,GSRFNT,GSSTYL,GSXENV
@@ -5081,8 +5080,8 @@ C     .. External Subroutines ..
       EXTERNAL GSBFTM,GSSUSP,GSXYTM
 C     ..
 C     .. External Functions ..
-      LOGICAL CCPONL,VAXVMS
-      EXTERNAL CCPONL,VAXVMS
+      LOGICAL VAXVMS
+      EXTERNAL VAXVMS
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC CHAR
@@ -6987,7 +6986,7 @@ C     .. Local Scalars ..
      +        NOUT,NSCAFL,NSEC,NSET,NSTART,NSYMB,NTERM
       CHARACTER*1 HCHAR 
       LOGICAL PRINT
-      CHARACTER CHAR1*1,GO*4,KEYWF*4,WORD*4,BLANK75*75,BLANK80*80,
+      CHARACTER CHAR1*1,GO*4,KEYWF*4,WORD*4,BLANK80*80,
      +   FILNAM*80,LISFIL*80,GSFIL*80,TEXT*80,TITLE*80,KEYWRD*1005
 C     ..
 C     .. Local Arrays ..
@@ -7065,7 +7064,7 @@ C     .. Data statements ..
       DATA (KEY5(JJJ),JJJ=121,130)/'HAIR','CMFL','LINE','TERM','    ',
      +     '    ','    ','    ','    ','    '/
       DATA (KEY5(JJJ),JJJ=131,200)/70*'    '/
-      DATA BLANK80/' '/,BLANK75/' '/
+      DATA BLANK80/' '/
       DATA KARRAY/1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.,13.,
      +    14.,15.,16.,112*0./
 C
@@ -8647,8 +8646,6 @@ C     ..
 C     .. Local Scalars ..
       INTEGER IUNITF
 C     ..
-c     LOGICAL CCPONL
-c     EXTERNAL CCPONL
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
       COMMON /GSFNT/IFSTRT(150,4),LENGF(150,4),IFX0(150,4),
@@ -8834,8 +8831,8 @@ C     .. Scalars in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER I,ICOL,IOPRNT,JB5,KBIT,MCOUNT,NBITS,NBITS1,NCNT1,NLEN,
-     +        NPACK,NBYTE,BYTE1
-      CHARACTER*1 ZERO,NBIT0,PLUS,HASH,CR,ENQ,ESC,FF,
+     +        NPACK,NBYTE
+      CHARACTER*1 ZERO,NBIT0,PLUS,HASH,ENQ,ESC,FF,
      +     FS,GS,HT,LF,RS,SUB,US,VT
       CHARACTER OUTLIN*40
 C     ..
@@ -8853,7 +8850,7 @@ C
       SAVE
 C
 C     .. Data statements ..
-      DATA BYTE1/1/,PLUS/'+'/,HASH/'#'/,XBIT/16,8,4,2,1/
+      DATA PLUS/'+'/,HASH/'#'/,XBIT/16,8,4,2,1/
 C
       ZERO = CHAR(0)
       NBIT0 = CHAR(0)
@@ -9252,8 +9249,8 @@ C     .. Arrays in Common ..
       CHARACTER*1 NFONTS
 C     ..
 C     .. Local Scalars ..
-      REAL CHORGX,CHORGY,CUORGX,CUORGY,DXCHAR,DYCHAR,XCHOLD,XCOFF,XCOLD,
-     +     XORIG,YCHOLD,YCOFF,YCOLD,YORIG
+      REAL CHORGX,CHORGY,CUORGX,CUORGY,DXCHAR,DYCHAR,XCHOLD,XCOFF,
+     +     XORIG,YCHOLD,YCOFF,YORIG
       INTEGER I,NLENG
 C     ..
 C     .. Local Arrays ..
@@ -9962,11 +9959,9 @@ C     .. Scalars in Common ..
       INTEGER ICOLOR,IUNITR,IXMAX,IXMIN,IYMAX,IYMIN,LINWT,LUNIN,LUNOUT,
      +        MCNTFL,MDEVIC,MDIREC,MIXCOL,MOUT,MPIC,MSCAFL,NPICS,NREC
       CHARACTER PASWRD*8,TITLEH*80
-      LOGICAL*4 DEVCON,INITON
-      CHARACTER FILNAM*80,TITLE*80
 C     ..
 C     .. Arrays in Common ..
-      REAL ISPARE(15),MSPARE(68)
+      REAL SPARE1,SPARE2
       INTEGER BRICKS
 C     ..
 C     .. Local Scalars ..
@@ -9977,7 +9972,7 @@ C     .. Local Scalars ..
      +        ITINT,IUNIT,IX,IXOLD,IY,IYOLD,JBYMAX,JBYMIN,JX,JXOLD,JY,
      +        JYMAX,JYMIN,JYOLD,KEOF,KKEOF,LL,MAXDTX,MAXLNY,MPAGES,
      +        MSKIP,NBACK,NBPG,NBXOFF,NBXWID,NDOT,NFORM,NLINPG,NLINU,
-     +        NLINY,NLNSKP,NMARGY,NPAGES,NPLOT,NREAD,NSKIP
+     +        NLINY,NLNSKP,NMARGY,NPAGES,NPLOT,NREAD
       LOGICAL FIRST,IRET,START,STCOL
       CHARACTER CLRBRK*512
 C     ..
@@ -10514,7 +10509,7 @@ C     ..
 C     .. Scalars in Common ..
       REAL DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,DWLIMX,DWLIMY
       INTEGER ICOLOR,IUNITR,IXMAX,IXMIN,IYMAX,IYMIN,LINWT,LUNIN,LUNOUT,
-     +        MCNTFL,MDEVIC,MDIREC,MIXCOL,MOUT,MPIC,MSCAFL,NPICS,NREC
+     +        MCNTFL,MDEVIC,MDIREC,MIXCOLOR,MOUT,MPIC,MSCAFL,NPICS,NREC
       CHARACTER PASWRD*8,TITLEH*80
 C     ..
 C     .. Arrays in Common ..
