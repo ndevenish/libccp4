@@ -137,7 +137,7 @@ C     .. Local Arrays ..
 C     ..
 C     .. Local Scalars ..
       INTEGER JSTAT
-      CHARACTER ERRSTR*255,REWRIT* (ISIZE),USRNAM* (ISIZE),
+      CHARACTER ERRSTR*255,REWRIT* (ISIZE),
      +     FNAME* (ISTRLN),LNAME* (ISTRLN)
       LOGICAL LNONAM
 C     ..
@@ -209,15 +209,16 @@ C
         CALL CCPERR (-1,ERRSTR)
       END IF
 
+      CALL QPRINT(1,' ')
+      WRITE (ERRSTR,'(1X,A,I2,A,A)') '(Q)QOPEN: file opened on unit ',
+     +   IUNIT,'      Status: ',MODES(JSTAT)
+      CALL QPRINT(1,ERRSTR)
       call ccp4h_summary_beg()
-      CALL UGTUID(USRNAM)
-      WRITE (ERRSTR,'(1X,A,I2)') '(Q)QOPEN allocated # ',IUNIT
-      CALL QPRINT(1,ERRSTR)
-      ERRSTR = 'User:   '//USRNAM//' Logical Name: '//LNAME
-      CALL QPRINT(1,ERRSTR)
-      ERRSTR = 'Status: '//MODES(JSTAT)//' Filename: '//FNAME
+      ERRSTR = 'Logical Name: '//LNAME(1:LENSTR(LNAME))//
+     +    '      Filename: '//FNAME(1:LENSTR(FNAME))
       CALL QPRINT(1,ERRSTR)
       call ccp4h_summary_end()
+      CALL QPRINT(1,' ')
       END
 C
 C

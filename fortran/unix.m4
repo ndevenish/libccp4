@@ -355,11 +355,13 @@ C         soft failure
         WRITE (ERRSTR,FMT=6000) FRM,ST,IUN
         CALL QPRINT (1, ' ')
         CALL QPRINT (1, ERRSTR)
+        call ccp4h_summary_beg()
         ERRSTR = 'Logical name: '
         ERRSTR (15:) = LOGNAM
         L = MIN(LENSTR (ERRSTR) + 1, LEN (ERRSTR))
-        ERRSTR (L:) = ', Full name: ' // NAMFIL
+        ERRSTR (L:) = ', Filename: ' // NAMFIL
         CALL QPRINT (1, ERRSTR)
+        call ccp4h_summary_end()
         CALL QPRINT (1, ' ')
  6000 FORMAT (A,3X,A,' file opened on unit ',I3)
       ENDIF 
