@@ -579,7 +579,8 @@ int *result;
 #endif
   name[Length] = '\0'; 
 #if defined (sgi) || defined (sun) || defined (__hpux) || \
-    defined(_AIX) || defined(ultrix) || defined (__OSF1__) || defined (__osf__)
+    defined(_AIX) || defined(ultrix) || defined (__OSF1__) || \
+    defined (__osf__) || defined (__FreeBSD__) || defined (linux)
       /* putenv is the POSIX.1, draft 3 proposed mechanism */
       /* ESV seems to have it in the SysVile universe */
   temp = (char *) malloc (MAXFLEN);
@@ -1552,6 +1553,12 @@ int /* integer */ ibset_ (a, b)
      int /* integer */ *a, *b;
 {
   return (*a) | 1<<(*b);
+}
+
+int /* integer */ ibclr_ (a, b)
+     int /* integer */ *a, *b;
+{
+  return (*a) & ~(1<<(*b));
 }
 
 int /* logical */ btest_ (a, b)
