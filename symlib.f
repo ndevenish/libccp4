@@ -5818,7 +5818,8 @@ C
       ELSEIF (NMPG.EQ.'321'  .AND. SPGNAM(1:1).EQ.'P') THEN
          LPATSG = 164
          PATNAM = 'P-3m1'
-      ELSEIF (NMPG(1:2).EQ.'32'  .AND. SPGNAM(1:1).EQ.'H') THEN
+      ELSEIF ((NMPG(1:2).EQ.'32'.OR.NMPG.EQ.'-3m'.OR.NMPG.EQ.'3BARM') 
+     +             .AND. SPGNAM(1:1).EQ.'H') THEN
          LPATSG = 166
          PATNAM = 'H-3m'
       ELSEIF (NMPG(1:2).EQ.'32'  .AND. SPGNAM(1:1).EQ.'R') THEN
