@@ -1100,6 +1100,8 @@ int ccp4_file_read (CCP4File *cfile, uint8 *buffer, size_t nitems)
      input) is performed, however, the input operation fails with the
      misleading error EBADF.
 
+     This is placed in type-specific read routines:
+
   if (cfile->last_op == WRITE_OP)  
     if (ccp4_file_raw_seek(cfile,0L,SEEK_CUR) == -1) {
       ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_read", NULL);
@@ -1108,7 +1110,7 @@ int ccp4_file_read (CCP4File *cfile, uint8 *buffer, size_t nitems)
   
   switch (cfile->mode) {
   case BYTE:
-    result = ccp4_file_raw_read(cfile, (char *) buffer, nitems);
+    result = ccp4_file_readchar(cfile, (char *) buffer, nitems);
     break;
   case INT16:
     result = ccp4_file_readshort(cfile, buffer, nitems);
@@ -1575,7 +1577,7 @@ int ccp4_file_write (CCP4File *cfile, const uint8 *buffer, size_t nitems)
 
   switch (cfile->mode) {
   case BYTE:
-    result = ccp4_file_raw_write(cfile, (const char *) buffer, nitems);
+    result = ccp4_file_writechar(cfile, (const char *) buffer, nitems);
     break;
   case INT16:
     result = ccp4_file_writeshort(cfile, (const char *) buffer, nitems);
