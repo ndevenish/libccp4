@@ -235,7 +235,7 @@ $(CSYMPLPACKAGE): $(CSYMOBJS) $(CORELIBOBJS) $(CSYMPLOBJS)
 # C library
 
 $(MMDBOBJS): 
-	$(CCPP) $(CPPFLAGS) -I$(mmdbsrcdir) -c $(mmdbsrcdir)/`basename $@ .o`.cpp
+	$(CXX) $(CXXFLAGS) -I$(mmdbsrcdir) -c $(mmdbsrcdir)/`basename $@ .o`.cpp
 
 $(CORELIBOBJS) $(CGENERALOBJS) $(CMTZOBJS) $(CMAPOBJS) $(CUCOBJS) \
             $(CSYMOBJS) $(FINTERFACEOBJS) $(UMTZOBJS) $(MMTZOBJS): 
@@ -245,11 +245,11 @@ $(CMTZPYOBJS) $(CMAPPYOBJS) $(CSYMPYOBJS):
 	$(CC) $(CFLAGS) -I$(srcdir) -I$(PYTHON_INCLUDE) -c $(srcdir)/`basename $@ .o`.c
 
 $(MMDBPYOBJS): 
-	$(CCPP) $(CPPFLAGS) -I$(mmdbsrcdir) -I$(PYTHON_INCLUDE) \
+	$(CXX) $(CXXFLAGS) -I$(mmdbsrcdir) -I$(PYTHON_INCLUDE) \
             -c $(mmdbsrcdir)/`basename $@ .o`.cpp
 
 $(MMDBTCLOBJS): 
-	$(CCPP) $(CPPFLAGS) -I$(mmdbsrcdir) -I$(TCL_INCLUDE) \
+	$(CXX) $(CXXFLAGS) -I$(mmdbsrcdir) -I$(TCL_INCLUDE) \
             -c $(mmdbsrcdir)/`basename $@ .o`.cpp
 
 $(CMTZTCLOBJS) $(CMAPTCLOBJS) $(CSYMTCLOBJS): 
