@@ -18,7 +18,7 @@ C     .. Local Arrays ..
       REAL BUFFER(LBUF)
 C     ..
 C     .. External Functions ..
-      LOGICAL LITEND,VAXVMS, QISNAN
+      LOGICAL LITEND,VAXVMS, WIMMVS, QISNAN
       REAL RANU
       INTEGER CCPNUN
       EXTERNAL LITEND,VAXVMS, QISNAN, RANU, CCPNUN
@@ -107,6 +107,12 @@ C
       IF (VAXVMS()) REPLY = 'Yes'
       WRITE (LUNOUT,FMT=6002) ' VAXVMS',REPLY,'Is this VMS?'
 C
+C---- WINMVS
+C
+      REPLY = 'No'
+      IF (WINMVS()) REPLY = 'Yes'
+      WRITE (LUNOUT,FMT=6002) ' WINMVS',REPLY,'Is this Win NT et al?'
+C
 C---- UBYTES
 C
       CALL UBYTES(IBYTE,HANDLE)
@@ -117,7 +123,7 @@ C
 C---- LITEND
 C
       REPLY = 'Big'
-      IF (LITEND()) REPLY = 'Little'
+      IF (LITEND(IDUM)) REPLY = 'Little'
       WRITE (LUNOUT,FMT=6002) ' LITEND',REPLY,'Big/Little end machine'
 CCCC
 CCCC---- URENAM
@@ -215,7 +221,7 @@ C
 C
 C---- Do random reads & writes on the file
 C
-      CALL UGTENV('PROMPT',ENVNAM)
+      CALL UGTENV('NUMRECORD',ENVNAM)
       IF (ENVNAM.EQ.' ') THEN
         DO 40 I = 1,ILOOP
           NREC = NINT(100.*RANU(ISEED) + 1.)
@@ -259,7 +265,6 @@ C
           ENDIF
         GOTO 50
       ENDIF
-
    60 CALL QCLOSE (LUN)
       CALL CUNLINK ('DISKIO')
 C     Now check we can open and close a scratch file
@@ -268,10 +273,11 @@ C     Now check we can open and close a scratch file
 C     and can we rewind a scratch file?  (make sure something's been
 C     written to it first)
       I = 0
-      CALL CCPDPN (LUN,'FOO','SCRATCH','F',0,I)
+      CALL CCPDPN (LUN,'FOOEY','SCRATCH','F',0,I)
       WRITE (LUN,'(A)') 'foo'
       REWIND (LUN,ERR=170)
       READ (LUN,'(A)') FOO
+      WRITE (LUNOUT, *) 'contents of temp file: ', FOO
       CALL CCPERR(0,'Normal Termination')
  170  CALL CCPERR (1,'Can''t rewind scratch file')
 90    CALL CCPERR(1,'*** EOF ERROR ***')
