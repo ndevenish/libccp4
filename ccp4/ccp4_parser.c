@@ -1365,7 +1365,7 @@ ccp4_symop symop_to_rotandtrn(const char *symchs_begin, const char *symchs_end) 
 
   float rsm[4][4];
 
-  symop_to_mat4(symchs_begin, symchs_end, rsm);
+  symop_to_mat4(symchs_begin, symchs_end, rsm[0]);
   return (mat4_to_rotandtrn(rsm));
 
 }
