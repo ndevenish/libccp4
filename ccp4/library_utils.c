@@ -479,7 +479,7 @@ char *ccp4_utils_joinfilenames(char *dir, char *file)
 
 void ccp4_utils_idate (int iarray[3])
 {
-     struct tm *lt;
+     struct tm *lt=NULL;
      time_t tim;
      tim = time(NULL);
      lt = localtime(&tim);
