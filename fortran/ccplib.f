@@ -446,6 +446,7 @@ C---- Format statements
 C
  6000 FORMAT (I2,'/',I2,'/',I2)
 C
+      IF (CALDAT(7:7) .EQ. ' ') CALDAT(7:7) = '0'
       END
 C
 C
