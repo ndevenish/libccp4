@@ -193,6 +193,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
 	    /* op1 are requested operators and op2 are from SYMINFO file */
             if (ccp4_spgrp_equal(nsym1,op1,nsym2,op2)) {
               if (debug) printf(" ops match for sg %d ! \n",sg_num);
+              free(op2);
               break;
             }
 	    free(op2);
