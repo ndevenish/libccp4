@@ -2708,6 +2708,7 @@ MTZBAT *MtzMallocBatch()
     ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_AllocFail),"MtzMallocBatch",NULL);
     return NULL;
   }
+  batch->next = NULL;
 
   return(batch);
 }
