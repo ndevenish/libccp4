@@ -250,7 +250,7 @@ C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL
       INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
-      CHARACTER*80 LOGUNIT,BROOK*1,WBROOK*1,WBROOK1*1
+      CHARACTER*80 LOGUNIT,BROOK*1,WBROOK*1,WBROOK1*1, BRKSPGRP*11
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Scalars ..
@@ -282,6 +282,7 @@ C     .. Common Blocks ..
       COMMON /RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
       COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
+      COMMON /RBRKSPGRP/BRKSPGRP
 C     ..
 C     .. Equivalences ..
       EQUIVALENCE (IRTYPE,BROOK(1)),(IE,BROOK(5)),(BROOKA,BROOK(1))
@@ -389,8 +390,8 @@ C
           ELSE IF (IRTYPE.EQ.'CRYS') THEN
             ITYP=1
             IFCRYS=.TRUE.
-
-            READ(BROOKA,FMT='(6X,3F9.3,3F7.2)')CELL
+            BRKSPGRP = ' '
+            READ(BROOKA,FMT='(6X,3F9.3,3F7.2,1x,a11)')CELL,BRKSPGRP
 
             CALL RBFROR
             IF(NCODE.EQ.0)NCODE=1
@@ -2498,6 +2499,32 @@ C
       DO 1 I=1,6
 1       RCEL(I) = CELLAS(I) 
       RETURN
+      END
+C
+C
+C
+      SUBROUTINE RBSPGRP(SPGRP)
+C     ============================
+C
+C_BEGIN_RBSPGRP
+C
+C      SUBROUTINE SUBROUTINE RBSPGRP(SPGRP)
+C
+C Returns spacegrpup from pdb
+C
+C PARAMETERS
+C     SPGRP (O) (CHARACTER*11) 
+C
+C Common blocks
+C
+C      COMMON /RBRKSPGRP/BRKSPGRP
+C
+C_END_RBSPGRP
+C
+      CHARACTER SPGRP*(*)
+      CHARACTER BRKSPGRP*11
+      COMMON /RBRKSPGRP/BRKSPGRP
+      SPGRP = BRKSPGRP
       END
 C
 C
