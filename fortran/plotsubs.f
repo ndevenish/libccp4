@@ -1,3 +1,11 @@
+C
+C     plotsubs.f
+C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part 1' (Annex 2) software.
+C     A copy of the CCP4 licence can be obtained by writing to the
+C     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
+C
       SUBROUTINE PLTAXS(VWPORT,XLOW,XHIGH,NXTICK,NXSTCK,LXTICK,XLABEL,
      .                         YLOW,YHIGH,NYTICK,NYSTCK,LYTICK,YLABEL)
 C     ================================================================

@@ -1,3 +1,12 @@
+/*
+     pack_c.c: (de)compress diffraction image files
+     Copyright (C) 1995  Jan P Abrahams
+
+     This code is distributed under the terms and conditions of the
+     CCP4 licence agreement as `Part 1' (Annex 2) software.
+     A copy of the CCP4 licence can be obtained by writing to the
+     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

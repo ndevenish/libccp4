@@ -1,4 +1,11 @@
 C
+C     modlib.f: grab-bag of mathematical functions
+C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part 1' (Annex 2) software.
+C     A copy of the CCP4 licence can be obtained by writing to the
+C     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
+C
 C  cross.f        dot.f          ea06c.f      ea08c.f     ea09c.f
 C  fa01as.f       fa01bs.f       fa01cs.f     fa01ds.f    fm02ad.f
 C  icross.f       idot.f         iminv3       match.f     matmul.f

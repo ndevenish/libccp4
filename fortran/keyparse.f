@@ -1,4 +1,12 @@
 C
+C     keyparse.f: high-level interface to CCP4 parser functions
+C     Copyright (C) 1995  Dave Love, Kevin Cowtan
+C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part 1' (Annex 2) software.
+C     A copy of the CCP4 licence can be obtained by writing to the
+C     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
+C
 C     A simplified interface to the %$!$#@$ (so-called) parser:
 C
 C     The idea is to call a routine (MEMOPARSE) to read a keyworded line
