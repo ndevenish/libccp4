@@ -75,7 +75,7 @@ int MtzCheckSubInput(const int mindx, const char *subname, const int rwmode) {
 
  if (rwmode == 2 && wlun[mindx-1] == 0) {
    printf("Error in %s: mindx %d not open for write!\n",subname,mindx);
-   return;
+   return 1;
  }
 
  return 0;
@@ -973,8 +973,11 @@ FORTRAN_SUBR ( LRREFF, lrreff,
 
  if (MtzCheckSubInput(mindex,"LRREFF",1)) return;
 
- /* get maximum number of columns to read */
- for (i = MCOLUMNS; i >= 0; --i) 
+ /* Get maximum number of columns to read
+    This is done by cycling backwards through the array until
+    we find the first active column
+ */
+ for (i = (MCOLUMNS-1); i >= 0; --i) 
    if (collookup[mindex-1][i]) {
      mcol = i+1;
      break;
