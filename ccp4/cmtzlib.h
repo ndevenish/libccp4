@@ -430,7 +430,7 @@ int MtzParseLabin(char *labin_line, const char prog_labels[][31],
 /* Returns the number of program labels matched */
 
 MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels, 
-		const char types[][3]);
+		char types[][3]);
 /* Assigns labels in lsprgi to file mtz, and returns pointers to columns */
 
 /** Report information on a particular dataset. This represents the

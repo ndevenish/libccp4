@@ -1029,7 +1029,7 @@ int MtzParseLabin(char *labin_line, const char prog_labels[][31],
 }
 
 MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels, 
-             const char types[][3]) 
+             char types[][3]) 
 
 /* Assigns labels in array labels to file mtz, and returns pointers to columns */
 /* Note, this is different from old lrassn, in that any conversion from
@@ -1054,9 +1054,20 @@ MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels,
        if (strcmp(types[ilab],"Y") == 0 && strcmp(label,"M/ISYM") == 0)
          strcpy(label,"M_ISYM");
        col = MtzColLookup(mtz,label);
-       if (col != NULL && strncmp(col->type,types[ilab],1) != 0) {
-         printf("From ccp4_lrassn: warning: expected type %s does not match file type %s!\n", 
+       if (col != NULL) {
+
+	 /* if requested type is blank, return actual type */
+         if (!strcmp(types[ilab],"")) {
+           if (strcmp(col->type,"")) {
+             strcpy(types[ilab],col->type);
+	   } else {
+             strcpy(types[ilab],"R");
+	   }
+
+	 } else if (strncmp(col->type,types[ilab],1) != 0) {
+           printf("From ccp4_lrassn: warning: expected type %s does not match file type %s!\n", 
              types[ilab],col->type);
+	 }
        }
 
        lookup[ilab] = col;
