@@ -1619,7 +1619,7 @@
  X,Y,Z
  -Y,X-Y,Z+2/3
  Y-X,-X,Z+1/3
-146 9 3 R3 PG3 TRIGONAL 'R 3'
+146 9 3 H3 PG3 TRIGONAL 'H 3'
  X,Y,Z
  -Y,X-Y,Z
  Y-X,-X,Z
@@ -1629,6 +1629,10 @@
  X+1/3,Y+2/3,Z+2/3
  -Y+1/3,X-Y+2/3,Z+2/3
  Y-X+1/3,-X+2/3,Z+2/3
+1146 3 3 R3 PG3 TRIGONAL 'R 3'
+ X,Y,Z
+ Z,X,Y
+ Y,Z,X
 147 6 6 P-3 PG3bar TRIGONAL 'P -3'
  X,Y,Z 
  -Y,X-Y,Z 
@@ -1636,7 +1640,7 @@
  -X,-Y,-Z
  Y,Y-X,-Z
  X-Y,X,-Z
-148 18 6 R-3 PG3bar TRIGONAL 'R -3'
+148 18 6 H-3 PG3bar TRIGONAL 'H -3'
  X,Y,Z 
  -Y,X-Y,Z 
  Y-X,-X,Z
@@ -1655,6 +1659,13 @@
  1/3-X,2/3-Y,2/3-Z
  1/3+Y,2/3+Y-X,2/3-Z
  1/3+X-Y,2/3+X,2/3-Z
+1148 6 6 R-3 PG3bar TRIGONAL 'R -3'
+ X,Y,Z
+ Z,X,Y
+ Y,Z,X
+ -X,-Y,-Z
+ -Z,-X,-Y
+ -Y,-Z,-X
 149 6 6 P312 PG312 TRIGONAL 'P 3 1 2'
  X,Y,Z
  -Y,X-Y,Z
@@ -1697,7 +1708,7 @@
  Y,X,-Z
  X-Y,-Y,1/3-Z
  -X,Y-X,2/3-Z
-155 18 6 R32 PG32 TRIGONAL 'R 3 2'
+155 18 6 H32 PG321 TRIGONAL 'H 3 2'
  X,Y,Z
  -Y,X-Y,Z
  Y-X,-X,Z
@@ -1716,6 +1727,13 @@
  1/3+Y,2/3+X,2/3-Z
  1/3+X-Y,2/3-Y,2/3-Z 
  1/3-X,2/3+Y-X,2/3-Z
+1155 6 6 R32 PG32 TRIGONAL 'R 3 2'
+ X,Y,Z
+ Z,X,Y
+ Y,Z,X
+ -Y,-X,-Z
+ -X,-Z,-Y
+ -Z,-Y,-X
 156 6 6 P3m1 PG3m1 TRIGONAL 'P 3 m 1'
  X,Y,Z 
  -Y,X-Y,Z 
@@ -1744,7 +1762,7 @@
  Y,X,1/2+Z
  X-Y,-Y,1/2+Z
  -X,Y-X,1/2+Z
-160 18 6 R3m PG3m TRIGONAL 'R 3 m'
+160 18 6 H3m PG3m TRIGONAL 'H 3 m'
  X,Y,Z 
  -Y,X-Y,Z 
  Y-X,-X,Z
@@ -1763,7 +1781,14 @@
  1/3-Y,2/3-X,2/3+Z
  1/3+Y-X,2/3+Y,2/3+Z
  1/3+X,2/3+X-Y,2/3+Z
-161 18 6 R3c PG3m TRIGONAL 'R 3 c'
+1160 6 6 R3m PG3m TRIGONAL 'R 3 m'
+ X,Y,Z
+ Z,X,Y
+ Y,Z,X
+ Y,X,Z
+ X,Z,Y
+ Z,Y,X
+161 18 6 H3c PG3m TRIGONAL 'H 3 c'
  X,Y,Z 
  -Y,X-Y,Z 
  Y-X,-X,Z
@@ -1782,6 +1807,13 @@
  1/3-Y,2/3-X,1/6+Z
  1/3+Y-X,2/3+Y,1/6+Z
  1/3+X,2/3+X-Y,1/6+Z
+1161 6 6 R3c PG3m TRIGONAL 'R 3 c'
+ X,Y,Z
+ Z,X,Y
+ Y,Z,X
+ Y+1/2,X+1/2,Z+1/2
+ X+1/2,Z+1/2,Y+1/2
+ Z+1/2,Y+1/2,X+1/2
 162 12 12 P-31m PG3bar1m TRIGONAL 'P -3 1 2/m' 'P -3 1 m'
  X,Y,Z
  -Y,X-Y,Z
@@ -1834,7 +1866,7 @@
  -Y,-X,1/2+Z
  Y-X,Y,1/2+Z
  X,X-Y,1/2+Z
-166 36 12 R-3m PG3barm TRIGONAL 'R -3 2/m' 'R -3 m'
+166 36 12 H-3m PG3barm TRIGONAL 'H -3 2/m' 'H -3 m'
  X,Y,Z 
  -Y,X-Y,Z 
  Y-X,-X,Z
@@ -1871,7 +1903,20 @@
  1/3-Y,2/3-X,2/3+Z
  1/3+Y-X,2/3+Y,2/3+Z
  1/3+X,2/3+X-Y,2/3+Z
-167 36 12 R-3c PG3barm TRIGONAL 'R -3 2/c' 'R -3 c'
+1166 12 12 R-3m PG3barm TRIGONAL 'R -3 2/m' 'R -3 m'
+ X,Y,Z
+ Z,X,Y
+ Y,Z,X
+ -Y,-X,-Z
+ -X,-Z,-Y
+ -Z,-Y,-X
+ -X,-Y,-Z
+ -Z,-X,-Y
+ -Y,-Z,-X
+ Y,X,Z
+ X,Z,Y
+ Z,Y,X
+167 36 12 H-3c PG3barm TRIGONAL 'H -3 2/c' 'H -3 c'
  X,Y,Z 
  -Y,X-Y,Z 
  Y-X,-X,Z
@@ -1908,6 +1953,19 @@
  1/3-Y,2/3-X,1/6+Z
  1/3+Y-X,2/3+Y,1/6+Z
  1/3+X,2/3+X-Y,1/6+Z
+1167 12 12 R-3c PG3barm TRIGONAL 'R -3 2/c' 'R -3 c'
+ X,Y,Z
+ Z,X,Y
+ Y,Z,X
+ -Y+1/2,-X+1/2,-Z+1/2
+ -X+1/2,-Z+1/2,-Y+1/2
+ -Z+1/2,-Y+1/2,-X+1/2
+ -X,-Y,-Z
+ -Z,-X,-Y
+ -Y,-Z,-X
+ Y+1/2,X+1/2,Z+1/2
+ X+1/2,Z+1/2,Y+1/2
+ Z+1/2,Y+1/2,X+1/2
 168 6 6 P6 PG6 HEXAGONAL 'P 6'
  X,Y,Z 
  -Y,X-Y,Z 
