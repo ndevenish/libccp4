@@ -7585,7 +7585,7 @@ C
 C              ***********************
           CALL PUTLIN('* Cell Dimensions :','CURWIN')
           CALL BLANK('CURWIN',1)
-          WRITE (STROUT,FMT='(6F8.2)') (CELL(JJ,MINDX),JJ=1,6)
+          WRITE (STROUT,FMT='(6F9.3)') (CELL(JJ,MINDX),JJ=1,6)
           CALL PUTLIN(STROUT,'CURWIN')
           CALL BLANK('CURWIN',1)
 C              ***********************
