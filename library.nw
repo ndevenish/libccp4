@@ -241,14 +241,14 @@ apparent bugs in the DEC C RTL\@.
 #if defined (VMS)
 #  define KNOWN_MACHINE
 #endif
-@ {\tt f2c}\index{f2c@{\tt f2c}} support is currently not available
-because of the use of {\tt BYTE} in {\tt ccplib} if nothing else; it
-also misses the MIL--STD \idx{bit-twiddling intrinsics}.  Its calling
+@ {\tt f2c}\index{f2c@{\tt f2c}} misses the MIL--STD
+\idx{bit-twiddling intrinsics}.  Its calling
 convention is like \idx{Sun} only for a {\em single\/} [[CHARACTER]]
 variable in the parameter list!  {\tt g77}\index{g77@{\tt g77}} has
 (will have!)\ the same calling convention and library as {\tt f2c} but
 does support the MIL--STD intrinsics (amongst other things).  The 
-alpha-test version doesn't have {\tt BYTE} or {\tt INTEGER*1}.
+alpha-test version doesn't have a {\tt BYTE} (or {\tt INTEGER*1})
+type, so can't be used at present.
 <<identifying the platform>>=
 #if defined(F2C) || defined(G77)
 #  undef CALL_LIKE_SUN
@@ -1371,7 +1371,7 @@ void idate (iarray)
      lt = localtime(&tim);
      iarray[0] = lt->tm_mday;
      iarray[1] = lt->tm_mon;
-     iarray[2] = lt->tm_year + 100;
+     iarray[2] = lt->tm_year + 1900;
 }
 #endif
 <<AIX and HPUX support>>=
@@ -1491,16 +1491,19 @@ int isatty_ (lunit)
   return (isatty(fileno((f__units[*lunit]).ufd)) ? TRUE_ : FALSE_);
 }
 
-int idate_ (d, m, y)
-     int *y, *m, *d;
+int idate_ (iarray)
+     int iarray[3];
 {
      struct tm *lt;
      time_t tim;
      tim = time(NULL);
      lt = localtime(&tim);
-     *y = lt->tm_year + 1000; *m = lt->tm_mon; *d = lt->tm_mday;
+     iarray[0] = lt->tm_mday;
+     iarray[1] = lt->tm_mon;
+     iarray[2] = lt->tm_year + 1900;
      return 0;
 }
+
 int gerror_ (str, Lstr)
 char *str;
 int  Lstr;
@@ -1567,7 +1570,7 @@ int /* logical */ btest_ (a, b)
   return ((((unsigned long) *a)>>(*b)))&1 ? TRUE_ : FALSE_;
 }
 #endif  /* F2C || g77 */
-@ %def ibset btest
+@ %def ibset btest ibclr
 @ \section{Converting foreign binary number formats}
 
 The library is intended to allow the binary file formats (\idx{MTZ}
