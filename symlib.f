@@ -1321,7 +1321,6 @@ C     .. Array Arguments ..
       REAL ROT(4,4,*)
 C     ..
 C     .. Local Scalars ..
-      LOGICAL PRINT
       INTEGER I,IFAIL,ISG,LEND,NLIN,NLINS,NTOK,ISTERR,IFGERR
       CHARACTER KEY*4,LINE*400,LINERR*400
 C     ..
@@ -1384,7 +1383,7 @@ C
 C
 C            *******************************************************
         CALL PARSER(KEY,LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,NTOK,
-     +              LEND,PRINT)
+     +              LEND,.FALSE.)
 C            *******************************************************
 C
 C---- Fields are space group number,
