@@ -694,9 +694,14 @@ C         FOR$_NOTFORSPE, "Not a FORTRAN-specific error"
           CALL CEXIT(1605644)
         ENDIF
       ELSE
+        IF (ISTAT.NE.0) THEN
+C         duplicate message to stderr, assumed to be connected to unit 0
+          WRITE (0,*) ERRBUF
+        END IF
         CALL GETELAPSED
         CALL CEXIT(ABS(ISTAT))
       ENDIF
+C     never reached
       STOP
       END
 C
