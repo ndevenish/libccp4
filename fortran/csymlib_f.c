@@ -798,12 +798,14 @@ FORTRAN_SUBR ( CALC_ORIG_PS, calc_orig_ps,
                 int *norig, float orig[96][3], ftn_logical *lpaxisx, 
                 ftn_logical *lpaxisy, ftn_logical *lpaxisz))
 {
+  char *temp_namspg;
   int i,j,k;
   int polarx, polary, polarz;
   float crsym[192][4][4];
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: CALC_ORIG_PS");)
 
+  temp_namspg = ccp4_FtoCString(FTN_STR(namspg_cif), FTN_LEN(namspg_cif));
   for (i = 0; i < *nsym; ++i) {
     for (j = 0; j < 4; ++j) {
       for (k = 0; k < 4; ++k) {
@@ -811,11 +813,12 @@ FORTRAN_SUBR ( CALC_ORIG_PS, calc_orig_ps,
       }
     }
   }
-  *norig = ccp4spg_generate_origins(namspg_cif, *nsym, crsym, orig, &polarx, &polary, &polarz, 1);
+  *norig = ccp4spg_generate_origins(temp_namspg, *nsym, crsym, orig, &polarx, &polary, &polarz, 1);
   *lpaxisx = polarx ? FORTRAN_LOGICAL_TRUE : FORTRAN_LOGICAL_FALSE;
   *lpaxisy = polary ? FORTRAN_LOGICAL_TRUE : FORTRAN_LOGICAL_FALSE;
   *lpaxisz = polarz ? FORTRAN_LOGICAL_TRUE : FORTRAN_LOGICAL_FALSE;
 
+  free(temp_namspg);
 }
 
 static double coefhkl[6];
