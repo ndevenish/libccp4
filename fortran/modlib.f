@@ -492,7 +492,7 @@ C
 
 C Lapack variables
       LOGICAL LAPACK
-      CHARACTER*1        JOBZ, RANGE, UPLO
+      CHARACTER*1        JOBZ, LAPRANGE, UPLO
       INTEGER            INFO, NVECTORS
       REAL               ABSTOL
       INTEGER            ISUPPZ(2*N), IWORK(10*N)
@@ -506,7 +506,7 @@ C  Alternative lapack routine - only marginally tested
       LAPACK = .FALSE.
       IF (LAPACK) THEN
        IF (MV.EQ.0) JOBZ = 'V'
-       RANGE = 'A'
+       LAPRANGE = 'A'
        UPLO = 'U'
        ABSTOL = 0.0
        IA = 0
@@ -516,7 +516,7 @@ C  Alternative lapack routine - only marginally tested
            AM(J,I) = A(IA)
          ENDDO
        ENDDO
-       CALL SSYEVR(JOBZ, RANGE, UPLO, N, AM, N, 
+       CALL SSYEVR(JOBZ, LAPRANGE, UPLO, N, AM, N, 
      +   1, N, 1, N, ABSTOL, NVECTORS, EVALUES, R, 
      +   N, ISUPPZ, WORK, 26*N, IWORK, 10*N, INFO)
        IA = 0
