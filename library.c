@@ -1421,7 +1421,7 @@ void idate (iarray)
      tim = time(NULL);
      lt = localtime(&tim);
      iarray[0] = lt->tm_mday;
-     iarray[1] = lt->tm_mon;
+     iarray[1] = lt->tm_mon+1;  /* need range 1-12 */
      iarray[2] = lt->tm_year + 1900;
 }
 #endif
@@ -1548,7 +1548,7 @@ int idate_ (iarray)
      tim = time(NULL);
      lt = localtime(&tim);
      iarray[0] = lt->tm_mday;
-     iarray[1] = lt->tm_mon;
+     iarray[1] = lt->tm_mon+1;  /* need range 1-12 */
      iarray[2] = lt->tm_year + 1900;
      return 0;
 }
