@@ -218,7 +218,6 @@ static int
   void __stdcall CUNLINK (char *filename, int Lfilename);
 #endif
 
-
 #if CALL_LIKE_HPUX
   void copen (int *iunit, char *filename, int *istat, int Lfilename);
 #endif
@@ -486,16 +485,33 @@ static int
 #endif
 
 #if CALL_LIKE_HPUX
-  void hgetlimits (int *IValueNotDet, double *ValueNotDet);
+  void hgetlimits (int *IValueNotDet, float *ValueNotDet);
+  void cmkdir (const char *path, const char *cmode, int *result, int Lpath, int Lmode);
+  void cchmod (const char *path, const char *cmode, int *result, int Lpath, int Lmode);
 #endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void HGETLIMITS (int *IValueNotDet, double *ValueNotDet);
+#if defined (VMS) 
+  void HGETLIMITS (int *IValueNotDet, float *ValueNotDet);
+  void CMKDIR (struct dsc$desccriptor_s *path, struct dsc$desccriptor_s *cmode, 
+          int *result);
+  void CCHMOD (struct dsc$desccriptor_s *path, struct dsc$desccriptor_s *cmode, 
+          int *result);
+#endif
+#if CALL_LIKE_STARDENT
+  void HGETLIMITS (int *IValueNotDet, float *ValueNotDet);
+  void CMKDIR (struct Str_Desc *path, struct Str_Desc *cmode, int *result);
+  void CCHMOD (struct Str_Desc *path, struct Str_Desc *cmode, int *result);
 #endif
 #if CALL_LIKE_SUN
-  void hgetlimits_ (int *IValueNotDet, double *ValueNotDet);
+  void hgetlimits_ (int *IValueNotDet, float *ValueNotDet);
+  void cmkdir_ (const char *path, const char *cmode, int *result, int Lpath, int Lmode);
+  void cchmod_ (const char *path, const char *cmode, int *result, int Lpath, int Lmode);
 #endif
 #if CALL_LIKE_MVS
-  void __stdcall HGETLIMITS (int *IValueNotDet, double *ValueNotDet);
+  void __stdcall HGETLIMITS (int *IValueNotDet, float *ValueNotDet);
+  void __stdcall CMKDIR (const char *path, const char *cmode, int *result, 
+           int Lpath, int Lmode);
+  void __stdcall CCHMOD (const char *path, const char *cmode, int *result, 
+           int Lpath, int Lmode);
 #endif
 /****************************************************************************
 *  End of prototypes                                                        *
@@ -2219,6 +2235,7 @@ extern unit f__units[];
 #define FALSE_ (0)
 #define err(f,m,s) {if(f) errno= m; else f__fatal(m,s); return(m);}
 /* end of fio.h extract */
+
 int isatty_ (lunit)
      int *lunit;
 {
@@ -2517,23 +2534,97 @@ int __stdcall ISATTY (int *lunit)
          if (cols[i].f > wminmax[1+2*i]) wminmax[1+2*i] = cols[i].f; }
 }
 /* \subsection{Routines for Data Harvesting: {\tt subroutine hgetlimits}}    */
-/* Returns largest int and largest double as defined in <limits.h> and       */
+/* Returns largest int and largest float as defined in <limits.h> and       */
 /* <float.h>                                                                 */
 #if CALL_LIKE_HPUX
   void hgetlimits (IValueNotDet, ValueNotDet)
   int *IValueNotDet;
-  double *ValueNotDet;
+  float *ValueNotDet;
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void HGETLIMITS (int *IValueNotDet, double *ValueNotDet)
+  void HGETLIMITS (int *IValueNotDet, float *ValueNotDet)
 #endif
 #if CALL_LIKE_SUN
-  void hgetlimits_ (int *IValueNotDet, double *ValueNotDet)
+  void hgetlimits_ (int *IValueNotDet, float *ValueNotDet)
 #endif
 #if CALL_LIKE_MVS
-  void __stdcall HGETLIMITS (int *IValueNotDet, double *ValueNotDet)
+  void __stdcall HGETLIMITS (int *IValueNotDet, float *ValueNotDet)
 #endif
 {
   *IValueNotDet = INT_MAX;
-  *ValueNotDet  = DBL_MAX;
+  *ValueNotDet  = FLT_MAX;
+}
+
+#if CALL_LIKE_HPUX
+  void cmkdir (path, cmode, result, Lpath, Lmode)
+  int *result, Lpath, Lmode;
+  const char *path, *cmode;
+#endif
+#if defined (VMS)
+  void CMKDIR (struct dsc$desccriptor_s *path, struct dsc$desccriptor_s *cmode, 
+      int *result)
+#endif
+#if CALL_LIKE_STARDENT
+  void CMKDIR (struct Str_Desc *path, struct Str_Desc *cmode, int *result)
+#endif
+#if CALL_LIKE_SUN
+  void cmkdir_ (const char *path, const char *cmode, int *result, int Lpath, int Lmode)
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall CMKDIR (const char *path, const char *cmode, int *result, 
+        int Lpath, int Lmode)
+#endif
+{ size_t Length;
+  char name[MAXFLEN];
+  mode_t mode;
+
+  /* truncate path to MAXFLEN - 1 characters, MAXFLEN defined in library.h */
+  Length = (size_t) Lpath;
+  if (Length > MAXFLEN) Length = MAXFLEN - 1; 
+  (void) strncpy (name, path, Length);
+  name[Length] = '\0'; 
+
+/* Possible modes (see stat.h)
+  Currently pass 3-character string and interpret as octal.
+  Try also S_IRWXU, S_IRWXG, etc. */
+  sscanf(cmode,"%o",&mode);
+   
+  *result = mkdir(name,mode); 
+}
+
+#if CALL_LIKE_HPUX
+  void cchmod (path, cmode, result, Lpath, Lmode)
+  int *result, Lpath, Lmode;
+  const char *path, *cmode;
+#endif
+#if defined (VMS)
+  void CCHMOD (struct dsc$desccriptor_s *path, struct dsc$desccriptor_s *cmode, 
+     int *result)
+#endif
+#if CALL_LIKE_STARDENT
+  void CCHMOD (struct Str_Desc *path, struct Str_Desc *cmode, int *result)
+#endif
+#if CALL_LIKE_SUN
+  void cchmod_ (const char *path, const char *cmode, int *result, int Lpath, int Lmode)
+#endif
+#if CALL_LIKE_MVS
+  void __stdcall CCHMOD (const char *path, const char *cmode, int *result, 
+        int Lpath, int Lmode)
+#endif
+{ size_t Length;
+  char name[MAXFLEN];
+  mode_t mode;
+
+  /* truncate path to MAXFLEN - 1 characters, MAXFLEN defined in library.h */
+  Length = (size_t) Lpath;
+  if (Length > MAXFLEN) Length = MAXFLEN - 1;
+  (void) strncpy (name, path, Length);
+  name[Length] = '\0'; 
+
+/* Possible modes (see stat.h)
+  Currently pass 3-character string and interpret as octal.
+  Try also S_IRWXU, S_IRWXG, etc. */
+  sscanf(cmode,"%o",&mode);
+
+  *result = chmod(name,mode); 
 }
