@@ -8207,9 +8207,9 @@ C                ***********************
 C
           END IF
 C
-C---- The rest is only for a full header dump
+C---- Symmetry: everything for a full header dump, else just name & number
 C
-          IF ((IPRINT.EQ.3) .OR. (IPRINT.EQ.4)) THEN
+          IF (IPRINT.EQ.3) THEN
 C
 C
             IF (NSYM(MINDX).GT.0) THEN
@@ -8277,6 +8277,13 @@ C                  ************************************************
 C                  ************************************************
 C
             END IF
+          ELSE
+             WRITE (STROUT,FMT='(A,A,A,I5,A)')
+     $            '* Space group = ',
+     $            SPGNAM(MINDX)(1:LENSTR(SPGNAM(MINDX))),
+     $            '  (number ',NSPGRP(MINDX),')'
+             CALL PUTLIN(STROUT,'CURWIN')
+             CALL BLANK('CURWIN',1)
           END IF
         END IF
       END IF
