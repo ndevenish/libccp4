@@ -584,6 +584,12 @@ _hpux,1,
       EXTERNAL ISATTY
       ANSWER = 0
       IF (ISATTY(%VAL(FNUM(FLUN))) .EQ.1) ANSWER = 1],
+_xlf,1,
+[      INTEGER ISATTY
+       INTRINSIC GETFD
+      EXTERNAL ISATTY
+      ANSWER = 0
+      IF (ISATTY(%VAL(GETFD(FLUN))) .EQ. 1) ANSWER = 1],
 dnl (else)
 [      LOGICAL ISATTY
       EXTERNAL ISATTY
