@@ -27,7 +27,7 @@ C
       INTEGER NXTICK,NXSTCK,LXTICK,NYTICK,NYSTCK,LYTICK
       CHARACTER*(*) XLABEL,YLABEL
 C
-      REAL X,Y,TSIZE,WINDOW(2,2)
+      REAL X,Y,TSIZE,WINDOW(2,2),WIN1,WIN2
       INTEGER L,NLAB,IFLAG,JTICK,LENSTR
       EXTERNAL LINSUB,TXTSUB
 C
@@ -38,7 +38,10 @@ C x axis
       IF(NXTICK.GT.0) THEN
 C   Find "best" tick positions
             CALL UGLNDX(XLOW,XHIGH,NXTICK-2,NXTICK+2,
-     .          WINDOW(1,1),WINDOW(1,2),NLAB)
+     .          WIN1,WIN2,NLAB)
+C           avoid aliasing array elements
+            WINDOW (1,1) = WIN1
+            WINDOW (1,2) = WIN2
       ELSE
 C   Use given values
             NLAB=IABS(NXTICK)
@@ -70,7 +73,10 @@ C y axis
       IF(NYTICK.GT.0) THEN
 C   Find "best" tick positions
             CALL UGLNDX(YLOW,YHIGH,NYTICK-2,NYTICK+2,
-     .              WINDOW(2,1),WINDOW(2,2),NLAB)
+     .              WIN1,WIN2,NLAB)
+C           avoid aliasing array elements
+            WINDOW (2,1) = WIN1
+            WINDOW (2,2) = WIN2
       ELSE
 C   Use given values
             NLAB=IABS(NYTICK)
