@@ -166,7 +166,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   ccp4_file_setmode(filein,0);
   istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, 4);
   /* We don't test all reads, but this one should trap for e.g. truncated files */
-  if (istat == EOF || strlen(hdrrec) == 0) {
+  if (istat == EOF || hdrrec[0] == '\0') {
     ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_ReadFail),"MtzGet",NULL);
     ccp4_parse_end(parser);
     ccp4_file_close(filein);
@@ -221,7 +221,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   if (debug) 
     printf(" Read first header record with istat = %d \n",istat);
   /* We don't test all reads, but this one should trap for e.g. truncated files */
-  if (istat == EOF) {
+  if (istat == EOF || hdrrec[0] == '\0') {
     ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_ReadFail),"MtzGet",NULL);
     ccp4_parse_end(parser);
     ccp4_file_close(filein);
