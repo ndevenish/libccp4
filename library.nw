@@ -1490,12 +1490,28 @@ First an obvious one:
 \idx{MIPS} compilers define [[MIPSEL]] or [[MIPSEB]] depending on the
 mode in which the the chip operates.)  The architectures covered here
 include some R\meta{nnnn} (e.g., \idx{DECstations}), \idx{i860} and
-other \idx{Intel} chips like \idx{PCs} and \idx{Alpha}.  [OSF and
-OpenVMS define [[__alpha]], OpenVMS, only [[__ALPHA]].\index{Alpha}
+other \idx{Intel} chips like \idx{PCs} and \idx{Alpha} (sometimes!).
 <<[[#define]]s>>=
-#if defined(MIPSEL) || defined(alliant) || defined(__alpha) || defined(i386) || defined(i860)
+#if defined(MIPSEL) || defined(alliant) || defined(i386) || defined(i860)
 #  define NATIVEIT DFNTI_IBO
 #  define NATIVEFT DFNTF_LEIEEE
+#endif
+@ \idx{Alpha} \idx{VMS} is a pain: compiler switches can force
+\idx{VAX} or \ac{ieee} number formats.  Thus if we know it's an Alpha,
+we have to check for VMS and then what sort of VMS numbers.  [OSF and
+OpenVMS define [[__alpha]], OpenVMS, only [[__ALPHA]].\index{Alpha}
+<<[[#define]]s>>=
+#ifdef __alpha
+#  ifdef VMS
+#    if __IEEE_FLOAT == 1
+#      define NATIVEFT DFNTF_LEIEEE
+#    else
+#      define NATIVEFT DFNTF_VAX
+#    endif
+#  else                       /* assume OSF/1 */
+#    define NATIVEFT DFNTF_LEIEEE
+#  endif
+#  define NATIVEIT DFNTI_IBO
 #endif
 @ Big-endian \ac{ieee} includes other R\meta{nnnn} like SGI machines,
 \idx{HP} beasts (\idx{68k}-based or \idx{RISC}), \idx{RS/6000} and all

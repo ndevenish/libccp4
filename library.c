@@ -170,18 +170,31 @@
 #  define NATIVEFT DFNTF_VAX
 #  define NATIVEIT DFNTI_IBO
 #endif
-#line 1496 "library.nw"
-#if defined(MIPSEL) || defined(alliant) || defined(__alpha) || defined(i386) || defined(i860)
+#line 1495 "library.nw"
+#if defined(MIPSEL) || defined(alliant) || defined(i386) || defined(i860)
 #  define NATIVEIT DFNTI_IBO
 #  define NATIVEFT DFNTF_LEIEEE
 #endif
-#line 1505 "library.nw"
+#line 1504 "library.nw"
+#ifdef __alpha
+#  ifdef VMS
+#    if __IEEE_FLOAT == 1
+#      define NATIVEFT DFNTF_LEIEEE
+#    else
+#      define NATIVEFT DFNTF_VAX
+#    endif
+#  else                       /* assume OSF/1 */
+#    define NATIVEFT DFNTF_LEIEEE
+#  endif
+#  define NATIVEIT DFNTI_IBO
+#endif
+#line 1521 "library.nw"
 /* the VAX VMS compiler objected to splitting the following line */
 #if defined(MIPSEB) || defined(__hpux) || defined(_AIX) || defined(m68k) || defined(mc68000) || defined(sparc)
 #  define NATIVEIT DFNTI_MBO
 #  define NATIVEFT DFNTF_BEIEEE
 #endif
-#line 1512 "library.nw"
+#line 1528 "library.nw"
 #if defined(__convex__) || defined(__convexc__)
 #  define NATIVEIT DFNTI_MBO
 #  ifdef _IEEE_FLOAT_
@@ -197,7 +210,7 @@
 #ifndef NATIVEFT
   #error "Can't determine machine number format"
 #endif
-#line 1534 "library.nw"
+#line 1550 "library.nw"
 #define DFNT_UINT       0       /* unsigned int */
 #define DFNT_SINT       1       /* short int */
 #define DFNT_INT        2       /* int */
@@ -205,7 +218,7 @@
 #define DFNT_CHAR       4       /* char */
 #define DFNT_FLOAT      5       /* float */
 #define DFNT_DOUBLE     6       /* double */
-#line 1543 "library.nw"
+#line 1559 "library.nw"
 typedef unsigned short uint16;
 typedef unsigned long uint32;
 typedef float float32;
@@ -244,10 +257,10 @@ static int  file_bytes_per_item[MAXFILES];/* Pointer to disk file item size */
 static int  file_is_scratch[MAXFILES];    /* Indicates if file is 'SCRATCH' */
 static int  file_last_op [MAXFILES];    /* see man fopen rd/wr combinations */
 static int file_mode[MAXFILES];               /* diskio mode of each stream */
-#line 1528 "library.nw"
+#line 1544 "library.nw"
 static uint16 nativeIT = NATIVEIT; /* machine integer type */ 
 static uint16 nativeFT = NATIVEFT; /* machine float type */
-#line 1549 "library.nw"
+#line 1565 "library.nw"
 union float_uint_uchar {
     float32 f;
     uint32 i;
@@ -302,7 +315,7 @@ char *message;
   (void) ccperr_ ((int) strlen(message), &one, message);
 #endif
  }
-#line 1640 "library.nw"
+#line 1656 "library.nw"
 static void vaxF2ieeeF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
@@ -344,7 +357,7 @@ int size;
     buffer[i] = out;            /* copy back result */
   }
 }
-#line 1683 "library.nw"
+#line 1699 "library.nw"
 static void ieeeF2vaxF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
@@ -391,7 +404,7 @@ int size;
     buffer[i] = out;            /* copy back the result */
   }
 }
-#line 1735 "library.nw"
+#line 1751 "library.nw"
 static void convexF2ieeeF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
@@ -433,7 +446,7 @@ int size;
     buffer[i] = out;            /* copy back result */
   }
 }
-#line 1778 "library.nw"
+#line 1794 "library.nw"
 static void ieeeF2convexF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
@@ -880,7 +893,7 @@ int *iunit, *nitems, *result;
   case INT16:
     if (Iconvert[*iunit])
       
-#line 1562 "library.nw"
+#line 1578 "library.nw"
 {
 if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
     (Iconvert[*iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO)) {
@@ -897,12 +910,12 @@ else
   case INT32:
     if (Iconvert[*iunit])
       
-#line 1574 "library.nw"
+#line 1590 "library.nw"
 {
 if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
     (Iconvert[*iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO))
   
-#line 1623 "library.nw"
+#line 1639 "library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -913,7 +926,7 @@ if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1578 "library.nw"
+#line 1594 "library.nw"
 else
   fatal("QREAD: bad file integer type in conversion");
 }
@@ -922,7 +935,7 @@ else
   case FLOAT32:
     if (Fconvert[*iunit])
       
-#line 1585 "library.nw"
+#line 1601 "library.nw"
 {
 switch (Fconvert[*iunit]) {     /* get to BE IEEE */
    case DFNTF_VAX :
@@ -935,7 +948,7 @@ switch (Fconvert[*iunit]) {     /* get to BE IEEE */
      break;
    case DFNTF_LEIEEE :
      
-#line 1623 "library.nw"
+#line 1639 "library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -946,18 +959,18 @@ switch (Fconvert[*iunit]) {     /* get to BE IEEE */
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1597 "library.nw"
+#line 1613 "library.nw"
      break;
    default :
      fatal("QREAD: bad file real type in conversion");
    }
-#line 1606 "library.nw"
+#line 1622 "library.nw"
 switch (nativeFT) {
   case DFNTF_BEIEEE :
     break;                      /* done enough */
   case DFNTF_LEIEEE :
     
-#line 1623 "library.nw"
+#line 1639 "library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -968,7 +981,7 @@ switch (nativeFT) {
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1611 "library.nw"
+#line 1627 "library.nw"
     break;
   case DFNTF_CONVEXNATIVE :
     ieeeF2convexF(buffer, n);
@@ -986,7 +999,7 @@ switch (nativeFT) {
     if (Fconvert[*iunit]) {
       n = 2*n;                  /* pairs of ints */
       
-#line 1562 "library.nw"
+#line 1578 "library.nw"
 {
 if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
     (Iconvert[*iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO)) {
@@ -1005,7 +1018,7 @@ else
     if (Fconvert[*iunit]) {
       n = 2*n;                  /* pairs of reals */
       
-#line 1585 "library.nw"
+#line 1601 "library.nw"
 {
 switch (Fconvert[*iunit]) {     /* get to BE IEEE */
    case DFNTF_VAX :
@@ -1018,7 +1031,7 @@ switch (Fconvert[*iunit]) {     /* get to BE IEEE */
      break;
    case DFNTF_LEIEEE :
      
-#line 1623 "library.nw"
+#line 1639 "library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -1029,18 +1042,18 @@ switch (Fconvert[*iunit]) {     /* get to BE IEEE */
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1597 "library.nw"
+#line 1613 "library.nw"
      break;
    default :
      fatal("QREAD: bad file real type in conversion");
    }
-#line 1606 "library.nw"
+#line 1622 "library.nw"
 switch (nativeFT) {
   case DFNTF_BEIEEE :
     break;                      /* done enough */
   case DFNTF_LEIEEE :
     
-#line 1623 "library.nw"
+#line 1639 "library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -1051,7 +1064,7 @@ switch (nativeFT) {
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1611 "library.nw"
+#line 1627 "library.nw"
     break;
   case DFNTF_CONVEXNATIVE :
     ieeeF2convexF(buffer, n);
@@ -1461,7 +1474,7 @@ float etime (tarray)
 }
 
 #endif  /* AIX || HPUX */
-#line 1877 "library.nw"
+#line 1893 "library.nw"
 #if CALL_LIKE_HPUX
   float qnan ()
 #endif
@@ -1471,14 +1484,14 @@ float etime (tarray)
 #if CALL_LIKE_SUN || CALL_LIKE_IRIS
   float qnan_ ()
 #endif
-#line 1892 "library.nw"
+#line 1908 "library.nw"
 #if NATIVEFT == DFNTF_BEIEEE
 #  define NAN 0xfffa5a5a
 #endif
 #if NATIVEFT == DFNTF_LEIEEE
 #  define NAN 0x5a5afaff
 #endif
-#line 1901 "library.nw"
+#line 1917 "library.nw"
 #if NATIVEFT == DFNTF_CONVEXNATIVE
 #  define NAN 0x80000000
 #endif
@@ -1494,7 +1507,7 @@ float etime (tarray)
   NaNvalue.i = NAN;
   return NaNvalue.f;
 }
-#line 1925 "library.nw"
+#line 1941 "library.nw"
 #if CALL_LIKE_HPUX
   int cisnan (real)
 #endif
@@ -1510,7 +1523,7 @@ float etime (tarray)
   union float_uint_uchar real;
 {
     
-#line 1945 "library.nw"
+#line 1961 "library.nw"
 switch (nativeFT) {
  case DFNTF_BEIEEE :
    return (((real.i & 0x7f800000)
@@ -1522,14 +1535,14 @@ switch (nativeFT) {
             == 0x0000807f)      /* exponent all 1s */
            && ((real.i & 0xffff7f00)
                == 0));          /* non-zero fraction */
-#line 1960 "library.nw"
+#line 1976 "library.nw"
   case DFNTF_CONVEXNATIVE :
     return ((real.i & 0xff800000) == 0x80000000);      
   case DFNTF_VAX :
     return ((real.i & 0x0000ff80) == 0x00008000);
   default :
     fatal("CISNAN: bad nativeFT");  }
-#line 1940 "library.nw"
+#line 1956 "library.nw"
 }
 #line 262 "library.nw"
 #endif
