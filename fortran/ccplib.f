@@ -62,6 +62,7 @@ C                field in a word
 C      NOCRLF    write line supressing cr/lf to standard output
 C      STBITS    Set a bit field within a word to a given (unsigned)
 C                integer value
+C      HKLEQ     Are the reflection indices the equal
 C_END_CCPLIB
 C
 C
@@ -2068,4 +2069,22 @@ C
       KVAL = ISHFT(KVAL,LSB)
       IWORD = IOR(IAND(IWORD,KMSK),KVAL)
       END
+C      
+C^L
+C     ============================
+      LOGICAL FUNCTION HKLEQ(IH,KH)
+C     =============================    
+C    
+C---- Returns true if indices ih = kh
+C        
+C     .. Array Arguments ..   
+      INTEGER IH(3),KH(3)
+C     ..
 C
+      HKLEQ = .FALSE.
+C 
+      IF (IH(1).EQ.KH(1) .AND. IH(2).EQ.KH(2) .AND. 
+     +    IH(3).EQ.KH(3)) HKLEQ = .TRUE.
+C 
+      END
+C  
