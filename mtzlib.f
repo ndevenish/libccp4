@@ -51,7 +51,7 @@ C          offset with mode 6 for CONVERT stuff to work
 C
 C    REVISED:                          Thu Jan 16 11:58:07 GMT 1992
 C
-C     LWCELL resets SRANGE to dummy values (0,100) PRE
+C     LWCELL resets SRANGE to dummy values (0.00001,500.0) PRE
 C
 C     Fixed format in LRREFL/LRREFF    PRE
 C
@@ -709,8 +709,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -799,8 +799,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -1100,8 +1100,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -1190,8 +1190,6 @@ C     .. Parameters ..
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -1281,10 +1279,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
@@ -1473,10 +1469,8 @@ C     .. Parameters ..
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
       CHARACTER*10 VERSN
       PARAMETER (VERSN='MTZ:V1.1')
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -1561,8 +1555,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -1640,10 +1634,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,REFNUM
@@ -1908,8 +1900,8 @@ C
         NREFR(MINDX) = 0
         NBATCH(MINDX) = 0
         NPLABS(MINDX) = 0
-        SRANGE(1,MINDX) = 10.0
-        SRANGE(2,MINDX) = 0.0
+        SRANGE(1,MINDX) = 1.0E-05
+        SRANGE(2,MINDX) = 500.0
 C  Default values - VAL_MISS(1,..) ( File for reading) is NaN, 
 C                   VAL_MISS(2,..) ( File for writing) is Nan
         CALL QNAN(VAL_MISS(1,MINDX))
@@ -2493,10 +2485,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -2602,8 +2592,6 @@ C     .. Parameters ..
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -2828,12 +2816,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER NTYP,LTYP
-      PARAMETER (NTYP=12,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -3150,8 +3134,6 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER SIZE1
-      PARAMETER (SIZE1=20)
       INTEGER MBLENG
       PARAMETER (MBLENG=185)
       INTEGER MAXSYM
@@ -3236,10 +3218,8 @@ C     .. Parameters ..
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
       INTEGER SIZE1
       PARAMETER (SIZE1=20)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -3346,10 +3326,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -3439,12 +3417,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER NTYP,LTYP
-      PARAMETER (NTYP=12,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -3541,10 +3515,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -3636,8 +3608,6 @@ C     .. Parameters ..
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,LEN
@@ -4107,10 +4077,10 @@ C ... Arguments
       CHARACTER*(*) TBATCH
 C
 C Orientation block (dummy)
-C Lengths: MBLENG is total length of block, MBLINT, MBLREA are numbers
-C          of integers & reals
-      INTEGER MBLENG,MBLINT,MBLREA
-      PARAMETER (MBLENG=185,MBLINT=29,MBLREA=156)
+C Lengths: MBLENG is total length of block
+C  
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER RBATCH(MBLENG)
       CHARACTER*94 BTITLE
       REAL BATCH(1)
@@ -4153,10 +4123,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -4228,8 +4196,8 @@ C
 C
 C---- Set S range to dummy values - no easy way to correct them
 C
-        SRANGE(1,MINDX) = 0.0
-        SRANGE(2,MINDX) = 100.0
+        SRANGE(1,MINDX) = 1.0E-05
+        SRANGE(2,MINDX) = 500.0
 C
 C---- Print warning is this is done after reflections have been written
 C
@@ -4296,8 +4264,6 @@ C     .. Parameters ..
       PARAMETER (NTYP=12,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -4506,10 +4472,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -4527,9 +4491,6 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       CHARACTER LINE*132
-C     .. 
-C     .. Intrinsic Functions ..
-      INTRINSIC ABS
 C     ..
 C     .. External Functions ..
       LOGICAL QISNAN
@@ -5387,7 +5348,7 @@ C
           NREFW(MINDX) = 0
           NCOLW(MINDX) = 0
           NBATW(MINDX) = 0
-          WSRNGE(1,MINDX) = 10.0
+          WSRNGE(1,MINDX) = 500.0
           WSRNGE(2,MINDX) = 0.0
           SORTB(MINDX) = .FALSE.
 C
@@ -5430,8 +5391,6 @@ C     .. Parameters ..
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
       REAL MDFBIG
       PARAMETER (MDFBIG=-1.0E10)
       INTEGER MAXSYM
@@ -5590,10 +5549,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -5695,8 +5652,6 @@ C     .. Parameters ..
       PARAMETER (NTYP=12,LTYP=8)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -5851,8 +5806,6 @@ C     .. Parameters ..
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER FLAG,MINDX
@@ -6002,8 +5955,6 @@ C     .. Parameters ..
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -6598,8 +6549,8 @@ C
 C
 C
 C     .. Parameters ..
-      INTEGER MCOLS,MFILES,MFILEX
-      PARAMETER (MCOLS=200,MFILES=4,MFILEX=9)
+      INTEGER MCOLS,MFILEX
+      PARAMETER (MCOLS=200,MFILEX=9)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER NLPRGI,NTOK,MINDX
@@ -6625,7 +6576,7 @@ C     .. External Functions ..
       EXTERNAL LENSTR
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPUPC,PUTLIN,CCPERR
+      EXTERNAL PUTLIN,CCPERR
 C     ..
 C     .. Common blocks ..
       COMMON /MTZLAB/NLUSRI(MFILEX),NLUSRO(MFILEX)
@@ -6673,14 +6624,14 @@ C
             LC1 = CWORK
 C
 C                *************
-            CALL CCPUPC(CWORK)
+C-- file labels are case sensitive!!            CALL CCPUPC(CWORK)
 C                *************
 C
             CWORK2 = LINE(IBEG(JLOOP+1) :IEND(JLOOP+1))
             LC2 = CWORK2
 C
 C                **************
-            CALL CCPUPC(CWORK2)
+C-- file labels are case sinsitive!!            CALL CCPUPC(CWORK2)
 C                **************
 C
 C           first try to match file label to left of assignment
@@ -6785,8 +6736,8 @@ C              N(umber of) L(abels) USR() O(utput)
 C
 C
 C     .. Parameters ..
-      INTEGER MCOLS,MFILES,MFILEX
-      PARAMETER (MCOLS=200,MFILES=4,MFILEX=9)
+      INTEGER MCOLS,MFILEX
+      PARAMETER (MCOLS=200,MFILEX=9)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER NLPRGO,NTOK,MINDX
@@ -6949,8 +6900,8 @@ C     IBEG,IEND (I)	INTEGER         arrays from the parser, delimiters
 C                               	for each token
 C
 C     .. Parameters ..
-      INTEGER           MCOLS,MFILES
-      PARAMETER         (MCOLS=200,MFILES=4)
+      INTEGER           MCOLS
+      PARAMETER         (MCOLS=200)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER           ITOK,NLPRGI,NTOK
@@ -7141,7 +7092,7 @@ C     .. Array Arguments ..
       CHARACTER*30 LSPRGI(*)
 C     ..
 C     .. Local Scalars ..
-      CHARACTER KEY*4,LINE*80,LINE2*400
+      CHARACTER KEY*4,LINE*400,LINE2*400
       INTEGER NTOK,ISTAT,IFAIL
       LOGICAL LEND
 C     ..
@@ -7163,7 +7114,7 @@ C
         IFAIL = -1
 C
 C            ************************
-        CALL LERROR(ISTAT,IFAIL,LINE)
+        CALL LERROR(ISTAT,IFAIL,LINE2)
 C            ************************
 C
       ELSE
@@ -7184,7 +7135,7 @@ C
           ISTAT = 1
 C
 C              ************************
-          CALL LERROR(ISTAT,IFAIL,LINE)
+          CALL LERROR(ISTAT,IFAIL,LINE2)
 C              ************************
 C
           RETURN
@@ -7214,7 +7165,7 @@ C
           ISTAT = 1
 C
 C              ************************
-          CALL LERROR(ISTAT,IFAIL,LINE)
+          CALL LERROR(ISTAT,IFAIL,LINE2)
 C              ************************
 C
         END IF
@@ -8002,10 +7953,7 @@ C                            j = 1 Ydet,    = 2 Zdet
 CR    DETPAD(34)     padding for detector information
 C     
 C     
-C Lengths: MBLENG is total length of block, MBLINT, MBLREA are numbers
-C          of integers & reals
-      INTEGER MBLENG,MBLINT,MBLREA
-      PARAMETER (MBLENG=185,MBLINT=29,MBLREA=156)
+C Lengths: MBLENG is total length of block
 C     ..
 C     .. Common blocks ..
       INTEGER NWORDS,NINTGR,NREALS,IORTYP,LBCELL,MISFLG,
@@ -8795,10 +8743,8 @@ C
 C     A,B,C,ALPHA,BETA,GAMMA (I) REAL	cell parameters
 C     
 C     .. Parameters ..
-      INTEGER MFILES,MCOLS,MBATCH
-      PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,MBLINT,MBLREA
-      PARAMETER (MBLENG=185,MBLINT=29,MBLREA=156)
+      INTEGER MFILES
+      PARAMETER (MFILES=4)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
@@ -8940,10 +8886,8 @@ C     IH,IK,IL	(I)	INTEGER 	Miller indices for the reflection
 C
 C
 C     .. Parameters ..
-      INTEGER MFILES,MCOLS,MBATCH
-      PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,MBLINT,MBLREA
-      PARAMETER (MBLENG=185,MBLINT=29,MBLREA=156)
+      INTEGER MFILES
+      PARAMETER (MFILES=4)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX,IH,IK,IL
@@ -9032,10 +8976,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -9050,9 +8992,6 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER JDO10
-C     ..
-C     .. Intrinsic Functions
-      INTRINSIC ABS
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
@@ -9116,10 +9055,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER MBLENG,CBLENG
-      PARAMETER (MBLENG=185,CBLENG=70+3*8)
-      INTEGER NHISLM
-      PARAMETER (NHISLM=30)
+      INTEGER MBLENG
+      PARAMETER (MBLENG=185)
       INTEGER MAXSYM
       PARAMETER (MAXSYM=192)
 C     ..
@@ -9139,9 +9076,6 @@ C     .. Local Scalars ..
 C     ..
 C     .. External Rotuines ..
       EXTERNAL IS_MAGIC
-C     ..
-C     .. Intrinsic Functions
-      INTRINSIC ABS
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
