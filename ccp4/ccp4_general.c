@@ -1118,9 +1118,9 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
 	/* File doesn't exist/cannot be opened for reading
 	   Clean up, set message and return an error */
 	if (diag) printf("CCP4SETENV: \"%s\" cannot be opened for reading\n",file_name);
+	printf("File: \"%s\"\nCannot be opened for reading\n",file_name);
 	ccp4setenv_cleanup(file_ext,file_root,file_path,file_name);
 	ccp4_signal(CGEN_ERRNO(CGENERR_CantFindInFile),"ccp4setenv",NULL);
-	printf("File: \"%s\"\nCannot be opened for reading\n",file_name);
 	return -1;
       }
     }
