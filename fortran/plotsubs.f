@@ -479,6 +479,25 @@ C
       XV=X*VSCALX+ORIGX
       YV=Y*VSCALY+ORIGY
       END
+C
+      SUBROUTINE PLTTNS(X,Y,XV,YV)
+C     ============================
+C
+C Transform user X,Y to plotter XV,YV (range 0 to 1)
+C    without translation (scaling only)
+C
+C
+      REAL X,Y,XV,YV
+C
+      COMMON /PLTTRN/ ORIGX,ORIGY,VSCALX,VSCALY
+      SAVE /PLTTRN/
+      REAL ORIGX,ORIGY,VSCALX,VSCALY
+C
+      XV=X*VSCALX
+      YV=Y*VSCALY
+      RETURN
+      END
+C
       SUBROUTINE PLTWIN(VWPORT,WINDOW)
 C     ================================
 C
