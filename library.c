@@ -2647,3 +2647,69 @@ int __stdcall ISATTY (int *lunit)
      *result = -1;
    }
 #endif
+
+/* CCP4MALLOC
+   This is a wrapper for the malloc function, which adds some
+   error trapping */
+
+#if defined (PROTOTYPE)
+  void *ccp4malloc(size_t size)
+#else
+  void *ccp4malloc(size)
+  size_t size;
+#endif
+/* Wrapper for malloc function; should trap for errors */
+
+{ void *val; 
+
+  val = malloc (size);
+  if (!val && size)
+    {
+      perror ("Failure in ccp4malloc");
+      abort ();
+    }
+  return val;}
+
+/* CCP4REALLOC
+   This is a wrapper for the realloc function, which adds some
+   error trapping */
+
+#if defined (PROTOTYPE)
+  void *ccp4realloc(void *ptr, size_t size)
+#else
+  void *ccp4realloc(size)
+  void *ptr
+  size_t size;
+#endif
+
+{ void *val; 
+
+  val = realloc (ptr, size);
+  if (!val && size)
+    {
+      perror ("Failure in ccp4realloc");
+      abort ();
+    }
+  return val;}
+
+/* CCP4CALLOC
+   This is a wrapper for the calloc function, which adds some
+   error trapping */
+
+#if defined (PROTOTYPE)
+  void *ccp4calloc(size_t nelem , size_t elsize)
+#else
+  void *ccp4calloc(nelem, elsize)
+  size_t nelem
+  size_t elsize;
+#endif
+
+{ void *val; 
+
+  val = calloc (nelem, elsize);
+  if (!val && elsize)
+    {
+      perror ("Failure in ccp4calloc");
+      abort ();
+    }
+  return val;}
