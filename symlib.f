@@ -3938,13 +3938,13 @@ CC
 C  1978 CHANGED TO FIT N.ISAACS
 C  INCLUDE 0 0 L,  HK0 K.LT.0 H.GE.-K     HKL H.GE.0 K.LT.0
 CC
-      IF(J)7,505,505
-505   IF(K)510,510,7
-510   IF(L)7,515,520
-515   IF(K)516,7,7
-516   IF(J+K)7,5,5
-520   IF(J-K)521,5,521
-521   IF(K)5,7,7
+CCC      IF(J)7,505,505
+CCC505   IF(K)510,510,7
+CCC510   IF(L)7,515,520
+CCC515   IF(K)516,7,7
+CCC516   IF(J+K)7,5,5
+CCC520   IF(J-K)521,5,521
+CCC521   IF(K)5,7,7
 C
 C  Corresponds to Data reduction unique set for  pg3
 C  9 pg3     3bar      hkl:h>=0, k>0  00l:l>0         143..
