@@ -19,16 +19,17 @@
 #ifndef __CCP4_Parser__
 #define __CCP4_Parser__
 
-/* Macro to make C functions callable from C++
-*/
+/* note order: these must be outside CCP4 namespace */
+#include <stdio.h>
+#include"ccp4_lib.h"
+#include"ccp4_spg.h"
+
+/* Macro to make C functions callable from C++ */
 #ifdef  __cplusplus
 namespace CCP4 {
 extern "C" {
 #endif
 
-#include <stdio.h>
-#include"ccp4_lib.h"
-#include"ccp4_spg.h"
 static char rcsidhhh[] = "$Id$";
 
 /*------------------------------------------------------------------*/
