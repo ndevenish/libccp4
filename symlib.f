@@ -751,11 +751,12 @@ C
      +     ' 0k-k','-h 2h 0','2h -h 0','hhh','hkl'/
       DATA IHKL/1,0,0, 0,2,0, 0,0,2, 1,1,0, 1,0,1, 0,1,1, 1,-1,0,
      +         1,0,-1, 0,1,-1, -1,2,0, 2,-1,0, 1,1,1, 1,2,3/
-      DATA EPZNE/0.0,500.0,1.0, 1.0,0.0,500.0, 1.0,500.0,0.0,
-     +           1.0,-1.0,500.0, 1.0,500.0,-1.0, 500.0,1.0,-1.0,
-     +           1.0,1.0,500.0,  1.0,500.0, 1.0, 500.0,1.0, 1.0,
-     +           2.0,1.0,500.0,  1.0,2.0, 500.0, 1.0,500.0,-501.0, 
-     +           0.0,0.0,0.0/
+       DATA EPZNE/
+     +       0.0,500.0,  1.0,   1.0,  0.0,500.0,     1.0,500.0,   0.0,
+     +       1.0, -1.0,500.0,   1.0,500.0, -1.0,   500.0,  1.0,  -1.0,
+     +       1.0,  1.0,500.0,   1.0,500.0,  1.0,   500.0,  1.0,   1.0,
+     +       2.0,  1.0,500.0,   1.0,  2.0,500.0,     1.0,500.0,-501.0, 
+     +       0.0,  0.0,  0.0/
 C     ..
 C
 C---- Now works for all symms. Theory: specify 2 vectors perpendicular
@@ -3304,8 +3305,16 @@ C     ..
       CHARACTER LOCNAM*12
       INTEGER LENSTR
       EXTERNAL LENSTR
+      INTEGER HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
+      COMMON/HKLLMS/HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
 C     ..
 C     
+      HRNG0 = -9999
+      KRNG0 = -9999
+      LRNG0 = -9999
+      HRNG1 =  9999
+      KRNG1 =  9999
+      LRNG1 =  9999
       NLAUE = 0
       LOCNAM = NAMPG
 C     be case-insensitive
@@ -3320,14 +3329,24 @@ C     Cubic
 C     14 pg23   pgm3bar - Laue m3
 C     15 pg432  pg4bar3m pgm3barm - Laue m3m
 C     
+C  14 pg23    m3         hkl:h>=0, k>=0, l>=0 with l>=h,  k>=h
+C     pgm3bar
       IF (LOCNAM.EQ.'23'
      +     .OR.LOCNAM.EQ.'M3BAR') THEN
         NLAUE = 14
         LAUNAM = 'm3bar'
+        HRNG0 = 0
+        KRNG0 = 0
+        LRNG0 = 0
+C  15 pg432   m3m        hkl:h>=0, k>=0, l>=0  with  k>=l
+C     pg4bar3m pgm3barm
       ELSE IF (LOCNAM.EQ.'432'
      +       .OR.LOCNAM.EQ.'4BAR3M'
      +       .OR.LOCNAM.EQ.'M3BARM') THEN
         NLAUE = 15
+        HRNG0 = 0
+        KRNG0 = 0
+        LRNG0 = 0
         LAUNAM = 'm3barm'
 C       
 C----   8 pg422 pg4mm pg4bar2m pg4barm2 - Laue 4/mmm
@@ -3337,13 +3356,21 @@ C       if h = k  l>=0
 C       Space group numbers :   150-152-154
 C       13 pg622 pg6mm pg6bar2m pg6barm2 pg6/mmm - Laue 6/mmm
 C       
+C   8 pg422   4/mmm       hkl:h>=0, k>=0, l>=0            89..
+C     pg4mm pg4bar2m pg4barm2 pg4/mmm
       ELSE IF (LOCNAM.EQ.'422'
      +       .OR. LOCNAM.EQ.'4/MMM'
      +       .OR.LOCNAM.EQ.'4MM'
      +       .OR.LOCNAM.EQ.'4BAR2M'
      +       .OR.LOCNAM.EQ.'4BARM2') THEN
+        HRNG0 = 0
+        KRNG0 = 0
+        LRNG0 = 0
         NLAUE = 8
         LAUNAM = '4/mmm'
+C  11 pg321   3bar1m     hkl:h>=0, k>=0 with k<=h for all l.
+C     pg31m pg3bar1m      if h = k  l>=0
+C           Space group numbers :   150-152-154
       ELSE IF (LOCNAM.EQ.'321'
      +       .OR.LOCNAM.EQ.'32'
      +       .OR.LOCNAM.EQ.'3M1'
@@ -3351,42 +3378,61 @@ C
      +       .OR. LOCNAM.EQ.'3BARM'
      +       .OR.LOCNAM.EQ.'3M') THEN
         NLAUE = 11
+        HRNG0 = 0
+        KRNG0 = 0
         LAUNAM = '3barm'
+C  13 pg622   6/mmm       hkl:h>=0, k>=0, l>=0 with h>=k 177..
+C     pg6mm pg6barm2 pg6bar2m  pg 6/mmm
       ELSE IF (LOCNAM.EQ.'622'
      +       .OR.LOCNAM.EQ.'6MM'
      +       .OR.LOCNAM.EQ.'6BAR2M'
      +       .OR.LOCNAM.EQ.'6BARM2'
      +       .OR.LOCNAM.EQ.'6/MMM') THEN
         NLAUE = 13
+        HRNG0 = 0
+        KRNG0 = 0
+        LRNG0 = 0
         LAUNAM = '6/mmm'
 C       
-C----   6 pg222  pgmm2 pgmmm - Laue mmm   
-C       hkl:h>=0, k>=0, l>=0            16 ...
 C       10 pg312  pg31m pg3bar1m - Laue 3bar1m 
 C       hkl:h>=0, k>=0 with k<=h for all l.
 C       if k = 0  l>=0
 C       Space group numbers :   149-151-153
 C       
+C  10 pg312   3/m        hkl:h>=0, k>=0 with k<=h for all l.
+C     pg32 pg3m pg3m1 pg3barm1 if k = 0  l>=0
+C           Space group numbers :   149-151-153 157 159 162 163
       ELSE IF (LOCNAM.EQ.'312'
      +       .OR.LOCNAM.EQ.'31M'
      +       .OR.LOCNAM.EQ.'3BAR1M') THEN
         NLAUE = 10
+        HRNG0 = 0
+        KRNG0 = 0
         LAUNAM = '3bar1m'
+C   6 pg222   mmm        hkl:h>=0, k>=0, l>=0            16 ...
+C     pgmm2 pgmmm
       ELSE IF (LOCNAM.EQ.'222'
      +       .OR.LOCNAM.EQ.'MMM'
      +       .OR.LOCNAM.EQ.'MM2'
      +       .OR.LOCNAM.EQ.'2MM'
      +       .OR.LOCNAM.EQ.'M2M') THEN
         NLAUE = 6
+        HRNG0 = 0
+        KRNG0 = 0
+        LRNG0 = 0
         LAUNAM = 'mmm'
 C       
 C----   4 pg2 pgm pg2/m - Laue   2/m
 C       
+C   4 pg2     2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
+C     pgm pg2/m
       ELSE IF (LOCNAM.EQ.'2'
      +       .OR.LOCNAM.EQ.'2A'
      +       .OR.LOCNAM.EQ.'M'
      +       .OR.LOCNAM.EQ.'2/M') THEN
         NLAUE = 4
+        KRNG0 = 0
+        LRNG0 = 0
         LAUNAM = '2/m'
 C       
 C----   3 pg1     1bar
@@ -3394,29 +3440,65 @@ C       7 pg4    4/m
 C       9  pg3     3bar
 C       12 pg6    6/m
 C       
+C   3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
+C     pg1bar
       ELSE IF (LOCNAM.EQ.'1'
      +       .OR.LOCNAM.EQ.'1BAR') THEN
         NLAUE = 3
 C       why not `1bar' here (etc.)?
+        LRNG0 = 0
         LAUNAM = '-1'
       ELSE IF (LOCNAM.EQ.'3'
      +       .OR.LOCNAM.EQ.'3BAR') THEN
         NLAUE = 9
+        HRNG0 = 0
+        KRNG0 = 0
         LAUNAM = '-3'
+C   7 pg4     4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
+C     pg4bar pg4/m                            k>0 if h>0
       ELSE IF (LOCNAM.EQ.'4'
      +       .OR.LOCNAM.EQ.'4/M'
      +       .OR.LOCNAM.EQ.'4BAR') THEN
         NLAUE = 7
+        HRNG0 = 0
+        KRNG0 = 0
+        LRNG0 = 0
         LAUNAM = '4/m'
+C  12 pg6     6/m        hkl:h>=0, k>=0, l>=0 with k>=0 if  h=0
+C     pg6bar  6/m        and k> 0 if h>0
       ELSE IF (LOCNAM.EQ.'6'
      +       .OR.LOCNAM.EQ.'6/M'
      +       .OR.LOCNAM.EQ.'6BAR') THEN
         NLAUE = 12
         LAUNAM = '6/M'
+        HRNG0 = 0
+        KRNG0 = 0
+        LRNG0 = 0
       END IF
 C     
       IF (NLAUE.EQ.0)           CALL CCPERR(1,
      +  'You have not defined PG name properly')
+C     
+      END
+C
+C   
+C     
+C     ====================================
+      SUBROUTINE HKLRANGE(IHRNG0,IKRNG1,IKRNG0,IKRNG1,ILRNG0,ILRNG1)
+C     ====================================
+C     
+C---- Return HKL ranges chosen in PGNLAUE
+C     
+       INTEGER HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
+       COMMON/HKLLMS/HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
+C     ..
+C     
+       IHRNG0 =  HRNG0
+       IKRNG0 =  KRNG0
+       ILRNG0 =  LRNG0
+       IHRNG1 =  HRNG1
+       IKRNG1 =  KRNG1
+       ILRNG1 =  LRNG1
 C     
       END
 C
