@@ -1054,7 +1054,7 @@ c_______Check type of data item is real
       subroutine ccp4ccif_CELL2MAT(CELL,NCODE,RO,RF)
       
 CDOC  Given cell and orthogonalisation code, calculate
-CDPC  orthogonalising and fractionalising matrices
+CDOC  orthogonalising and fractionalising matrices
 CDOC
 CDOC  Arguments :
 CDOC
@@ -1169,7 +1169,7 @@ C----Now calculate RO,RF from RR.
       subroutine ccp4ccif_MAT4INV(A,AI)
 
 CDOC  Subroutine to invert 4*4 matrices for conversion between
-CDPC  fractional and orthogonal axes.
+CDOC  fractional and orthogonal axes.
 CDOC
 CDOC  Arguments :
 CDOC
