@@ -930,6 +930,51 @@ FORTRAN_SUBR ( CCP4SPG_F_LOAD_BY_OPS, ccp4spg_f_load_by_ops,
   free(op1);
 }
 
+/** Compare two sets of symmetry operators to see if they are
+ * in the same order. This is important for the consistent use
+ * of ISYM which encodes the operator position in the list.
+ * @param msym1 number of symmetry matrices passed in first list.
+ * @param rrsym1 first list of symmetry matrices.
+ * @param msym2 number of symmetry matrices passed in second list.
+ * @param rrsym2 second list of symmetry matrices.
+ * @return 1 if operator lists are equal and in the same order, 0 otherwise
+ */
+FORTRAN_FUN (int, CCP4SPG_F_EQUAL_OPS_ORDER, ccp4spg_f_equal_ops_order,
+	       (int *msym1, float rrsym1[192][4][4],int *msym2, float rrsym2[192][4][4]),
+	       (int *msym1, float rrsym1[192][4][4],int *msym2, float rrsym2[192][4][4]),
+	       (int *msym1, float rrsym1[192][4][4],int *msym2, float rrsym2[192][4][4]))
+{
+  int i,k,l,ret;
+  ccp4_symop *op1, *op2;
+
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_EQUAL_OPS_ORDER");)
+
+  op1 = (ccp4_symop *) ccp4_utils_malloc(*msym1*sizeof(ccp4_symop));
+  for (i = 0; i < *msym1; ++i) {
+    for (k = 0; k < 3; ++k) {
+      for (l = 0; l < 3; ++l)
+	op1[i].rot[k][l] = rrsym1[i][l][k];
+      op1[i].trn[k] = rrsym1[i][3][k];
+    }
+  }
+
+  op2 = (ccp4_symop *) ccp4_utils_malloc(*msym2*sizeof(ccp4_symop));
+  for (i = 0; i < *msym2; ++i) {
+    for (k = 0; k < 3; ++k) {
+      for (l = 0; l < 3; ++l)
+	op2[i].rot[k][l] = rrsym2[i][l][k];
+      op2[i].trn[k] = rrsym2[i][3][k];
+    }
+  }
+
+  ret = ccp4_spgrp_equal_order(*msym1, op1, *msym2, op2);
+
+  free(op1);
+  free(op2);
+
+  return ret;
+}
+
 /** Put reflection in asymmetric unit of spacegroup on index sindx.
  * @param sindx index of this spacegroup.
  * @param ihkl input indices.
