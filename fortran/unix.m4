@@ -799,8 +799,6 @@ C       the end.
        J = IGETARG(I, ARG, LEN(ARG))],
 [      CALL GETARG(I, ARG)])
       END
-dnl * Dummy GL stubs iff not SGI
-ifelse(_sgi,1,,include(gdummy.f))dnl
 C     
 C     =====================================================
       SUBROUTINE GETREF(KERFLG,NREAD,NSPOTS,DYNAM,MAXOMITL)
@@ -995,3 +993,45 @@ C     but it seems not to.  This works in HP-UX A.09.01.
 [      CALL EXIT (ICODE)
 ])dnl
       END
+dnl * Dummy GL stubs iff not SGI
+ifelse(_sgi,1,,
+[        subroutine gdummy
+        character *(*) char_dummy
+        entry  qreset
+          return
+        entry  reshap
+          return
+        entry  qdevic(keybd)
+          return
+        entry  winope(char_dummy,i0)
+          return
+        entry  keepas(i1,i2)
+          return
+        entry  draw2i(i3,i4)
+          return
+        entry  move2i(i5,i6)
+          return
+        entry  loadma(i7)
+          return
+        entry  gconfi
+          return
+        entry  mmode(i8)
+          return
+        entry  foregr
+          return
+        entry  getval(i9)
+          return
+        entry  color(i10)
+          return
+        entry  getsiz(r1,r2)
+          return
+cc        entry  clear this is in somewhere else in -ltermcap
+cc          return
+        entry  ortho2(r3,r4,r5,r6)
+          return
+        entry  getori(r7,r8)
+          return
+        end
+        subroutine clear
+        end
+])dnl
