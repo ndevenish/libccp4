@@ -153,7 +153,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Local Scalars ..
       INTEGER LLREC,IUN,IBYTES,ISTAT
-      CHARACTER CCNTRL*7,ST*7,FRM*12,ERRSTR*131,FULNAM*255,
+      CHARACTER CCNTRL*7,ST*7,FRM*12,ERRSTR*131,
      +     NAMFIL*255,HANDLE*5,OPNVAR*20, access*10
       INTEGER UNKNWN, SCRTCH, OLD, NEW, RDONLY, PRINTR
       PARAMETER (UNKNWN=1, SCRTCH=2, OLD=3, NEW=4, RDONLY=5, PRINTR=6)
@@ -304,7 +304,10 @@ ifelse(_cant_unlink,1,,[
 )dnl
 C
 C     Error check
- 5    IF (IOS.NE.0) THEN
+ 5    CONTINUE
+C     don't report UNKNOWN if actually SCRATCH
+      IF (ISTAT.EQ.SCRTCH) ST = 'SCRATCH'
+      IF (IOS.NE.0) THEN
         CALL UGERR(IOS,ERRSTR)
         IF (IFAIL.EQ.0) THEN
 C         hard failure
@@ -326,10 +329,8 @@ C         soft failure
         ENDIF
       ELSE
         IF (IIUN.LE.0) RETURN 
-        INQUIRE (FILE=NAMFIL,NAME=FULNAM)
-C       DJGL: why is this inquire necessary rather than using NAMFIL?
         WRITE (6,FMT=6000) FRM,ST,IUN,LOGNAM(1:LENSTR(LOGNAM)),
-     +       FULNAM(1:LENSTR(FULNAM))
+     +       NAMFIL(1:LENSTR(NAMFIL))
  6000   FORMAT (/1X,A,3X,A,' file opened on unit ',I3,/
      +       ' Logical name: ',A,', Full name: ',A,/)
       ENDIF 
