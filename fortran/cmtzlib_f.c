@@ -161,6 +161,8 @@ FORTRAN_SUBR ( LROPEN, lropen,
    fullfilename = strdup(temp_name);
  }
 
+ /* In-memory mode not tested so well. Think it might be broken for
+    some Fortran programs, e.g. when generating extra reflections. */
  if (getenv("CMTZ_IN_MEMORY")) cmtz_in_memory = 1;
 
  /* open file and read into memory */
@@ -1767,7 +1769,13 @@ FORTRAN_SUBR ( LWCELL, lwcell,
  MtzHklcoeffs(cell, coefhkl[*mindx-1]);
 }
 
-/* Fortran wrapper for MtzAssignColumn */
+/** Obsolete - use LWIDASX.
+ * @param mindx MTZ file index.
+ * @param nlprgo Number of output columns.
+ * @param pname Array of project names.
+ * @param dname Array of dataset names.
+ * @param iappnd If 0 then assign all columns, if 1 then assign appended columns.
+ */
 FORTRAN_SUBR ( LWIDAS, lwidas,
 	       (const int *mindx, int *nlprgo, fpstr pname, fpstr dname, int *iappnd,
                       int pname_len, int dname_len),
@@ -1830,12 +1838,19 @@ FORTRAN_SUBR ( LWIDAS, lwidas,
 
   /* if we are appending columns, shift collookup_out */
   istart = 0;
-  if (*iappnd == 1) istart = MtzNumActiveCol(mtzdata[*mindx-1]);
+  if (*iappnd == 1) istart = MtzNumSourceCol(mtzdata[*mindx-1]);
 
   /* get base dataset if it exists */
   baseset = MtzSetLookup(mtzdata[*mindx-1],"HKL_base/HKL_base");
 
   for (i = 0; i < *nlprgo; ++i) {
+
+    /* sanity check */
+    if (!collookup_out[*mindx-1][i+istart]) {
+      printf(" LWIDAS: severe warning - column %d does not exist. \n",i);
+      continue;
+    }
+
     if (baseset && (strcmp(collookup_out[*mindx-1][i+istart]->type,"H") == 0) ) {
       MtzAssignColumn(mtzdata[*mindx-1], collookup_out[*mindx-1][i+istart], 
           "HKL_base","HKL_base");
@@ -1852,7 +1867,13 @@ FORTRAN_SUBR ( LWIDAS, lwidas,
 
 }
 
-/* Fortran wrapper for MtzAssignColumn */
+/** Assign output columns to crystal/datasets.
+ * @param mindx MTZ file index.
+ * @param nlprgo Number of output columns.
+ * @param xname Array of crystal names for columns.
+ * @param dname Array of dataset names for columns.
+ * @param iappnd If 0 then assign all columns, if 1 then assign appended columns.
+ */
 FORTRAN_SUBR ( LWIDASX, lwidasx,
 	       (const int *mindx, int *nlprgo, fpstr xname, fpstr dname, int *iappnd,
                       int xname_len, int dname_len),
@@ -1895,12 +1916,19 @@ FORTRAN_SUBR ( LWIDASX, lwidasx,
 
   /* if we are appending columns, shift collookup_out */
   istart = 0;
-  if (*iappnd == 1) istart = MtzNumActiveCol(mtzdata[*mindx-1]);
+  if (*iappnd == 1) istart = MtzNumSourceCol(mtzdata[*mindx-1]);
 
   /* get base dataset if it exists */
   baseset = MtzSetLookup(mtzdata[*mindx-1],"HKL_base/HKL_base");
 
   for (i = 0; i < *nlprgo; ++i) {
+
+    /* sanity check */
+    if (!collookup_out[*mindx-1][i+istart]) {
+      printf(" LWIDASX: severe warning - column %d does not exist. \n",i);
+      continue;
+    }
+
     if (baseset && (strcmp(collookup_out[*mindx-1][i+istart]->type,"H") == 0) ) {
       MtzAssignColumn(mtzdata[*mindx-1], collookup_out[*mindx-1][i+istart], 
           "HKL_base","HKL_base");
@@ -1915,9 +1943,13 @@ FORTRAN_SUBR ( LWIDASX, lwidasx,
   free(dataset_name);
 }
 
-/* Fortran wrapper for MtzAssignColumn 
-   This is a simpler version of LWIDASX to assign all columns to one dataset 
-   (except for HKL which are assigned to base dataset). */
+/** Assign output columns to crystal/datasets.
+ * This is a simpler version of LWIDASX to assign all columns to one dataset 
+ * (except for HKL which are assigned to base dataset). 
+ * @param mindx MTZ file index.
+ * @param xname Crystal name for all columns.
+ * @param dname Dataset name for all columns.
+ */
 FORTRAN_SUBR ( LWIDALL, lwidall,
 	       (const int *mindx, fpstr xname, fpstr dname,
                       int xname_len, int dname_len),
@@ -2059,7 +2091,7 @@ FORTRAN_SUBR ( LWASSN, lwassn,
 
   /* if we are appending columns, shift collookup_out */
     istart = 0;
-    if (*iappnd == 1) istart = MtzNumActiveCol(mtzdata[*mindx-1]);
+    if (*iappnd == 1) istart = MtzNumSourceCol(mtzdata[*mindx-1]);
     
     /* assign new columns for output */
     colarray = ccp4_lwassn(mtzdata[*mindx-1],label,*nlprgo,type,*iappnd); 
@@ -2129,7 +2161,7 @@ FORTRAN_SUBR ( LWCLAB, lwclab,
 
   /* if we are appending columns, shift collookup_out */
   istart = 0;
-  if (*iappnd == 1) istart = MtzNumActiveCol(mtzdata[*mindx-1]);
+  if (*iappnd == 1) istart = MtzNumSourceCol(mtzdata[*mindx-1]);
 
   /* assign new columns for output */
   colarray = ccp4_lwassn(mtzdata[*mindx-1],label,*nlprgo,type,*iappnd); 
