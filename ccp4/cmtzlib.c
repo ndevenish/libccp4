@@ -137,7 +137,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   /* 1st Pass: Read ntotcol, nref, nbat and dataset info.  
      nxtal and nset are used to assign memory for MTZ structure.
      Position at top of header */
-  /* We don't test all seeks, but this one should trap for e.g. truncated files */
+  /* We don't test all seeks, but this one might trap duff files */
   if ( ccp4_file_seek(filein, hdrst-1, SEEK_SET) ) {
     ccp4_signal(CCP4_ERRLEVEL(4) | CMTZ_ERRNO(CMTZERR_ReadFail),"MtzGet",NULL);
     return NULL;
@@ -158,6 +158,12 @@ MTZ *MtzGet(const char *logname, int read_refs)
   strcpy(crystal,"dummy");
   ccp4_file_setmode(filein,0);
   istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+  /* We don't test all reads, but this one should trap for e.g. truncated files */
+  if (istat == EOF) {
+    ccp4_signal(CCP4_ERRLEVEL(4) | CMTZ_ERRNO(CMTZERR_ReadFail),"MtzGet",NULL);
+    return NULL;
+  }
+
   hdrrec[MTZRECORDLENGTH] = '\0';
   ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   while (!ccp4_keymatch(key,"END")) {
@@ -2613,7 +2619,7 @@ CCP4File *MtzOpenForWrite(const char *logname)
  } else {
    filename = strdup(logname);
  }
- fileout = ccp4_file_open(filename,O_RDWR);
+ fileout = ccp4_file_open(filename,O_RDWR | O_TRUNC);
  if (debug) printf(" MtzOpenForWrite: file opened \n");
 
  /* Write initial info */
