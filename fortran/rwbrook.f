@@ -1006,7 +1006,8 @@ C     and option for residue number treatment
 C
       JTYP=ITYP
       IF(IZ.EQ.0)FTNOT='   '
-      ALTLOC=BROOK(17)
+C      ALTLOC=BROOK(17)
+      ALTLOC=ATNAM(4:4)
       FOOTN=FTNOT
       IF(IZ.GT.0)WRITE(FOOTN,9876)IZ
 9876  FORMAT(1X,I2)
