@@ -112,7 +112,8 @@ FORTRANOBJS =  $(LF)(parser.o) $(LF)(fftlib.o) $(LF)(lgglib.o) $(LF)(libhtml.o) 
                $(LF)(modlib.o) $(LF)(plotsubs.o) $(LF)(plot84lib.o) \
                $(LF)(pxxml.o) $(LF)(ccplib.o) $(LF)(unix.o) \
                $(LF)(rwbrook.o) $(CIFLIBOBJS) $(LF)(harvlib.o) \
-               $(LF)(keyparse.o) $(LF)(pack_f.o) $(LF)(pack_c.o)
+               $(LF)(keyparse.o) $(LF)(pack_f.o) $(LF)(pack_c.o) \
+               $(LF)(dna_output.o)
 CMTZPYOBJS = cmtzlib_python_wrap.o
 CMAPPYOBJS = cmaplib_python_wrap.o
 CSYMPYOBJS = csymlib_python_wrap.o
@@ -432,6 +433,18 @@ $(LF)(keyparse.o) : $(srcdir)/keyparse.f
 	  && $(AR) ../$(LF) *.o
 	rm -f keyparse.dir/*.o
 keyparse : keyparse.o
+	$(RANLIB) $(LF)
+
+$(LF)(dna_output.o) : $(srcdir)/dna_output.f $(srcdir)/dna_header.fh
+	-rm -rf dna_output.dir; mkdir dna_output.dir
+	echo '      SUBROUTINE DNA_OUTPUT' > dna_output.dir/dna_output.$F
+	echo '      END' >> dna_output.dir/dna_output.$F
+	cd dna_output.dir && $(fsplit_dir)/fsplit $(srcdir)/dna_output.f >/dev/null && $(RMEMPTY) && \
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -I$(srcdir) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
+	  && $(AR) ../$(LF) *.o
+	rm -f dna_output.dir/*.o
+dna_output : dna_output.o
 	$(RANLIB) $(LF)
 
 #  The image (un)packing routines which were needed for mosflm and are needed
