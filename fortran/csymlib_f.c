@@ -599,9 +599,13 @@ FORTRAN_SUBR ( MSYGET, msyget,
 
 }
 
-/* Epsilon zones currently set up in ccp4spg_load_spacegroup
-   If these are not available, use lookup by symops */
-
+/** Epsilon zones currently set up in ccp4spg_load_spacegroup
+ * If these are not available, use lookup by symops.
+ * @param nsm number of symmetry operators.
+ * @param nsmp number of primitive symmetry operators.
+ * @param rsm symmetry matrices.
+ * @param iprint If iprint > 0 then a summary of epsilon zones is printed.
+ */
 FORTRAN_SUBR ( EPSLN, epsln,
 	       (const int *nsm, const int *nsmp, const float rsm[192][4][4],
 		const int *iprint),
@@ -628,6 +632,8 @@ FORTRAN_SUBR ( EPSLN, epsln,
     }
     spacegroup = ccp4_spgrp_reverse_lookup(*nsm,op1);
   }
+
+  if (spacegroup && *iprint > 0) ccp4spg_print_epsilon_zones(spacegroup);
 }
 
 FORTRAN_SUBR ( EPSLON, epslon,
@@ -668,7 +674,7 @@ FORTRAN_SUBR ( SYSAB, sysab,
  * Convention: translations are in rsm[isym][3][*]
  * @param nsm number of symmetry matrices passed.
  * @param rsm symmetry matrices.
- * @param iprint print flag.
+ * @param iprint If iprint > 0 then a summary of centric zones is printed.
  */
 FORTRAN_SUBR ( CENTRIC, centric,
 	       (const int *nsm, const float rsm[192][4][4],
@@ -696,6 +702,8 @@ FORTRAN_SUBR ( CENTRIC, centric,
     }
     spacegroup = ccp4_spgrp_reverse_lookup(*nsm,op1);
   }
+
+  if (spacegroup && *iprint > 0) ccp4spg_print_centric_zones(spacegroup);
 }
 
 FORTRAN_SUBR ( CENTR, centr,
