@@ -45,13 +45,13 @@ C     .. Parameters ..
       PARAMETER (MAXFILESOPEN=90)
 C     ..
 C     .. Variables in Common ..
-      REAL CELL,CELLAS,RF,RO,RR,VOL
+      REAL CELL,CELLAS,RF,RO,RR,VOL,ROU,RFU
       INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
       CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*15
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Scalars ..
-      INTEGER I
+      INTEGER I,J
 C     ..
 C     .. Common Blocks ..
       COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
@@ -140,14 +140,14 @@ C     .. Scalar Arguments ..
       INTEGER IUNIT
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,J
+      INTEGER I,J,IBRKFL
 C     ..
 C     .. Scalars in Common ..
       INTEGER FILESOPEN,NCODE,ITYP
       LOGICAL IFHDOUT,IFCRYS,IFSCAL,MATRIX
 C     ..
 C     .. Arrays in Common ..
-      REAL RF,RO
+      REAL RF,RO,ROU,RFU
       INTEGER UNIT,TYPE
       CHARACTER LOGUNIT*80
 C     ..
@@ -528,7 +528,7 @@ C
                    KLEN  = KLEN - 1
                  END IF
                END DO
-               BRKSPGRP = SPGCHK
+               BRKSPGRP = SPGCHK(1:15)
              END IF 
 
 C If BRKSPGRP contains "/" it is probably a Patterson group and may
@@ -866,13 +866,13 @@ C     .. Arguments ..
       INTEGER IOUT,ITER,IUNIT
 C     ..
 C     .. Variables in Common ..
-      REAL CELL,CELLAS,RF,RO,RR,VOL
-      INTEGER FILESOPEN,NCODE,TYPE,UNIT
+      REAL CELL,CELLAS,RF,RO,RR,VOL,ROU,RFU
+      INTEGER FILESOPEN,NCODE,TYPE,UNIT,ITYP
       CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*15
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Variables ..
-      INTEGER I,II
+      INTEGER I,II,J
       CHARACTER*80 ERRLIN,BROOKA,BROOKB,BROOKC
       CHARACTER*6 ITYPE(7)
 C     ..
@@ -1054,7 +1054,7 @@ C     .. Variables in Common ..
 C     ..
 C     .. Local Scalars ..
       REAL U(6),OCC,X,Y,Z
-      INTEGER I,II
+      INTEGER I,II,LLx
       CHARACTER*100 ERRLIN
       CHARACTER BROOKA*80,PDBATN*4,PDBRESN*4,PDBCHN*1,PDBID*4,
      +          PDBRESNO*5,PDBSEGID*4,Cnums(13)*1
@@ -1253,7 +1253,7 @@ C     .. Paramters ..
       PARAMETER (MAXFILESOPEN=90)
 C     ..
 C     .. Arguments ..
-      REAL U(6),BISO,X,Y,Z
+      REAL U(6),BISO,X,Y,Z,OCC
       INTEGER IUNIT
       CHARACTER*1 BFLAG,XFLAG
 C     ..
@@ -1569,6 +1569,7 @@ C     ..
 C     .. Local Scalars ..
       CHARACTER*4 ID,SEGID,RESNO
       CHARACTER*1 INSCOD,ALTCOD
+      INTEGER I
 C     ..
 C     .. Local Arrays ..
       REAL U(6)
@@ -1676,7 +1677,7 @@ C     .. Arguments ..
       CHARACTER ATNAM*4,CHNNAM*1,ID*4,RESNAM*4,SEGID*4
 C     ..
 C     .. Variables in Common ..
-      REAL CELL,CELLAS,RF,RO,RR,VOL
+      REAL CELL,CELLAS,RF,RO,RR,VOL,ROU,RFU
       INTEGER ITYP,NCODE
       CHARACTER BROOK*1,WBROOK*1,WBROOK1*1
       LOGICAL IFCRYS,IFSCAL,IFTER,MATRIX,IFHDOUT
@@ -1995,6 +1996,8 @@ C     .. Common Blocks ..
       COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
       COMMON /RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
+C
+      INTEGER I,J
 C     ..
 C     .. Save Statement ..
       SAVE /RBRKXX/,/ORTHOG/,/RBRKZZ/
@@ -2086,6 +2089,8 @@ C common blocks
 C
 C
 C
+      INTEGER LCODE
+      REAL ROO,RFF
       DIMENSION ROO(4,4),RFF(4,4)
 C
       LCODE = 0
@@ -2115,13 +2120,16 @@ C      COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX
 C      COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
 C
 C_END_RBRORF
-
+      REAL RO,RF
+      INTEGER LCODE,NCODE,ITYP
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
       COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
       SAVE /ORTHOG/, /RBRKXX/
 C
+      INTEGER II,JJ
 C
+      REAL ROO,RFF
       DIMENSION ROO(4,4),RFF(4,4)
 C
 C---- Get cofactors of 'a' in array 'c'
@@ -2170,7 +2178,8 @@ C          AI (O) (REAL(4,4))  INVERSE MATRIX
 C
 C_END_RBRINV
 C
-      REAL A(4,4),AI(4,4),C(4,4),X(3,3)
+      INTEGER II,JJ,I,I1,J,J1
+      REAL A(4,4),AI(4,4),C(4,4),X(3,3),AM,D
 C
 C---- Get cofactors of 'a' in array 'c'
 C
@@ -2252,6 +2261,9 @@ C      COMMON /RBREC/AC(6)
 C
 C_END_RBFROR
 C
+      INTEGER I
+      REAL CELL,VOL,RR,CELLAS,AC
+C
       COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /RBREC/AC(6)
       SAVE /RBRKZZ/, /RBREC/
@@ -2320,8 +2332,8 @@ C     ..
 C     .. Local Scalars ..
       REAL A,ALPH,ALPHAS,AS,B,BET,BETAS,BS,C,CONV,COSA,COSAS,COSB,COSBS,
      +     COSG,COSGS,CS,FCT,GAMM,GAMMAS,SINA,SINAS,SINB,SINBS,SING,
-     +     SINGS,SUM,V
-      INTEGER I,J,K,N,NCODE
+     +     SINGS,SUM,V,CELDEL
+      INTEGER I,J,K,N,NCODE,IWARN
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC ATAN2,COS,SIN,SQRT
@@ -2519,6 +2531,8 @@ C                             =1, Convert coordinates from orthogonal to fractio
 C
 C_END_CVFRAC2
 C
+      INTEGER ITYP,IFLAG,NCODE
+      REAL XX,YY,ZZ,RO,RF,X,Y,Z
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
       COMMON /RBRKXX/IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
@@ -2641,8 +2655,8 @@ C     .. Arguments ..
       INTEGER IFLAG
 C     ..
 C     .. Variables in Common ..
-      REAL RF,RO
-      INTEGER NCODE
+      REAL RF,RO,ROU,RFU
+      INTEGER NCODE,ITYP
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
 C     ..
 C     .. Local Variables ..
@@ -2739,6 +2753,7 @@ C      COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
 C
 C_END_RBCELL
 C
+      INTEGER I
       COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       REAL CELL,RR,VOL,CELLAS
       REAL CELLD(6), CVOL
@@ -2771,6 +2786,7 @@ C      COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
 C
 C_END_RBRCEL
 C
+      INTEGER I
       COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       REAL RCEL(6),RVOL
       REAL CELL,CELLAS,RR,VOL
@@ -2809,6 +2825,8 @@ C
       CHARACTER SPGRP*(*)
       CHARACTER BRKSPGRP*15
       INTEGER ILEN,KLEN,J
+      INTEGER LENSTR
+      EXTERNAL LENSTR
       COMMON /RBRKSPGRP/BRKSPGRP
       SPGRP = BRKSPGRP
 C
@@ -2877,6 +2895,7 @@ C
       CHARACTER*1 RESNM1
       CHARACTER*4 MAACD3(26)
       CHARACTER*1 MAACD1(26)
+      INTEGER NAACID,I
       DATA NAACID/26/
       DATA MAACD3/'ALA ','ARG ','ASN ','ASP ','CYS ','CYH ','GLN ',
      1 'GLU ','GLY ','HIS ','ILE ','LEU ','LYS ','MET ','PHE ','PRO ',
@@ -2911,8 +2930,8 @@ C
 C
 C
 C
-        SUBROUTINE RBRECIP(IH,IK,IL,S)
-C       ==============================
+      SUBROUTINE RBRECIP(IH,IK,IL,S)
+C     ==============================
 C
 C_BEGIN_BRECIP
 C
@@ -2926,6 +2945,8 @@ C                S (O) (REAL)     4SIN**2/L**2
 C
 C_END_BRECIP
 C
+      REAL AC,S
+      INTEGER IH,IK,IL
       COMMON /RBREC/AC(6)
       SAVE /RBREC/
 C
@@ -2976,12 +2997,14 @@ C     .. Array Arguments ..
       REAL A(4),B(4),CU(2),MO(2)
 C     ..
 C     .. Local Scalars ..
-      INTEGER NGauss,IOS
+      INTEGER NGauss,IOS,LID,NID
       CHARACTER ID2*6,IDIN*6
       LOGICAL OP
+C
+      INTEGER LENSTR
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPDPN,CCPERR
+      EXTERNAL CCPDPN,CCPERR,LENSTR
 C     ..
       Ifail  = -1
        IDCHK = ID
@@ -3127,8 +3150,8 @@ C     .. Agruments ..
       INTEGER ARGNCODE,IUNIT
 C     ..
 C     .. Variables in Common ..
-      REAL CELL, RO, RF, RR
-      INTEGER FILESOPEN, NCODE, TYPE, UNIT
+      REAL CELL, RO, RF, RR, VOL, CELLAS
+      INTEGER FILESOPEN, NCODE, TYPE, UNIT, ITYP
       CHARACTER*80 LOGUNIT
       CHARACTER BRKSPGRP*15
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
@@ -3234,7 +3257,7 @@ C     .. Variables in Common ..
       CHARACTER*80 LOGUNIT
 C     ..
 C     .. Locals ..
-      INTEGER II
+      INTEGER II, I
       CHARACTER OUTLIN*80,ERRLIN*80
 C     ..
 C     .. Common Blocks ..
@@ -3392,18 +3415,18 @@ C     .. Agruments ..
       INTEGER ARGNCODE,IUNIT
 C     ..
 C     .. Variables in Common ..
-      REAL CELL, RO, RF, RR
-      INTEGER FILESOPEN, NCODE, TYPE, UNIT
+      REAL CELL, RO, RF, RR, VOL, CELLAS
+      INTEGER FILESOPEN, NCODE, TYPE, UNIT, ITYP
       CHARACTER*80 LOGUNIT
       CHARACTER BRKSPGRP*15,NAMSPG_CIF*(*)
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
 C     ..
 C     .. Local Scalars ..
-      INTEGER I, II, J
+      INTEGER I, II, J, ILEN1, ILEN2, LENSTR
       CHARACTER*80 ERRLIN
 C     ..
 C     .. External Routines/Functions ..
-      EXTERNAL CCPERR,RBFROR,RBRINV
+      EXTERNAL CCPERR,RBFROR,RBRINV,LENSTR
 C     ..
 C     .. Common Blocks ..
       COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
