@@ -1,4 +1,3 @@
-
 # Makefile tail for CCP4 Library.  This will be modified by configure.
 
 # $Id$
@@ -40,8 +39,10 @@
 # SHARED_LIB_FFLAGS SHARED_LIB_CFLAGS for option shared build
 
 SHELL       = /bin/sh
+DESTDIR     = $(libdir)/..
 srcdir	    = $(top_srcdir)/lib/src
 mmdbsrcdir  = $(top_srcdir)/lib/src/mmdb
+includedir  = /include
 LIB_DIR     = .
 fsplit_dir  = $(srcdir)#directory where fsplit has been made/lives
 
@@ -123,6 +124,28 @@ MMDBTCLOBJS = mmdb_tcl_wrap.o
 CMTZPLOBJS = cmtzlib_pl_wrap.o
 CMAPPLOBJS = cmaplib_pl_wrap.o
 CSYMPLOBJS = csymlib_pl_wrap.o
+
+ccp4_HEADERS = \
+ccp4_file_err.h  ccp4_program.h   ccp4_unitcell.h  cmap_errno.h \
+cmap_stats.h     csymlib.h        library_file.h   w32mvs.h \
+ccp4_fortran.h   ccp4_spg.h       ccp4_utils.h     cmap_header.h \
+cmaplib.h        cvecmat.h        mtzdata.h        ccp4_array.h \
+ccp4_general.h   ccp4_sysdep.h    ccp4_vars.h      cmap_labels.h \
+cmaplib_f.h      overview.h       ccp4_errno.h     ccp4_parser.h \
+ccp4_types.h     cmap_data.h      cmap_skew.h      cmtzlib.h \
+library_f.h
+
+mmdb_HEADERS = \
+$(mmdbsrcdir)/bfgs_min.h $(mmdbsrcdir)/math_.h \
+$(mmdbsrcdir)/mmdb_bondmngr.h  $(mmdbsrcdir)/mmdb_cryst.h \
+$(mmdbsrcdir)/mmdb_graph.h     $(mmdbsrcdir)/mmdb_model.h     $(mmdbsrcdir)/mmdb_symop.h     $(mmdbsrcdir)/mmdb_utils.h \
+$(mmdbsrcdir)/file_.h          $(mmdbsrcdir)/mattype_.h       $(mmdbsrcdir)/mmdb_chain.h     $(mmdbsrcdir)/mmdb_defs.h \
+$(mmdbsrcdir)/mmdb_manager.h   $(mmdbsrcdir)/mmdb_rwbrook.h   $(mmdbsrcdir)/mmdb_tables.h    $(mmdbsrcdir)/mmdb_xml.h \
+$(mmdbsrcdir)/linalg_.h        $(mmdbsrcdir)/mmdb_align.h     $(mmdbsrcdir)/mmdb_cifdefs.h   $(mmdbsrcdir)/mmdb_ficif.h \
+$(mmdbsrcdir)/mmdb_mask.h      $(mmdbsrcdir)/mmdb_sbase.h     $(mmdbsrcdir)/mmdb_title.h     $(mmdbsrcdir)/random_n.h \
+$(mmdbsrcdir)/machine_.h       $(mmdbsrcdir)/mmdb_atom.h      $(mmdbsrcdir)/mmdb_coormngr.h  $(mmdbsrcdir)/mmdb_file.h \
+$(mmdbsrcdir)/mmdb_mmcif.h     $(mmdbsrcdir)/mmdb_selmngr.h   $(mmdbsrcdir)/mmdb_uddata.h    $(mmdbsrcdir)/stream_.h
+
 
 ##### Makefile targets ######
 
@@ -635,7 +658,39 @@ testlib : $(srcdir)/testlib.f  $(LF)
 # standard targets
 #
 
-install : all
+install-ccp4HEADERS: $(ccp4_HEADERS)
+	if test ! -d $(DESTDIR)$(includedir)/ccp4; then mkdir $(DESTDIR)$(includedir)/ccp4; fi
+	@list='$(ccp4_HEADERS)'; for p in $$list; do \
+       	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(includedir)/ccp4/$$f"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(includedir)/ccp4/$$f; \
+	done
+
+install-mmdbHEADERS: $(mmdb_HEADERS)
+	if test ! -d $(DESTDIR)$(includedir)/mmdb; then mkdir $(DESTDIR)$(includedir)/mmdb; fi
+	@list='$(mmdb_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(mmdbsrcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(includedir)/mmdb/$$f"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(includedir)/mmdb/$$f; \
+	done
+
+uninstall-ccp4HEADERS:
+	@list='$(ccp4_HEADERS)'; for p in $$list; do \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " rm -f $(DESTDIR)$(includedir)/ccp4/$$f"; \
+	  rm -f $(DESTDIR)$(includedir)/ccp4/$$f; \
+	done
+
+uninstall-mmdbHEADERS:
+	@list='$(mmdb_HEADERS)'; for p in $$list; do \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " rm -f $(DESTDIR)$(includedir)/mmdb/$$f"; \
+	  rm -f $(DESTDIR)$(includedir)/mmdb/$$f; \
+	done
+
+install : all install-ccp4HEADERS install-mmdbHEADERS
 	$(INSTALL_DATA) `pwd`/$(LMMDB) $(libdir)/$(LMMDB)
 	$(INSTALL_DATA) `pwd`/$(LC) $(libdir)/$(LC)
 	$(INSTALL_DATA) `pwd`/$(LF) $(libdir)/$(LF)
@@ -644,7 +699,7 @@ install : all
 	$(RANLIB) $(libdir)/$(LF)
 	$(SHARE_INST)
 
-uninstall :
+uninstall : uninstall-ccp4HEADERS uninstall-mmdbHEADERS
 	-rm -f $(libdir)/$(LMMDB) $(libdir)/$(LC) $(libdir)/$(LF)
 	if [ -f $(libdir)/libccp4f.so ] ; then rm -f $(libdir)/libccp4f.so ; fi
 	if [ -f $(libdir)/libccp4c.so ] ; then rm -f $(libdir)/libccp4c.so ; fi
