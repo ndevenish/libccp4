@@ -165,7 +165,8 @@ typedef struct bathead { int num;              /**< batch number */
 typedef struct { int spcgrp;           /**< spacegroup number */
 		 char spcgrpname[MAXSPGNAMELENGTH+1];  /**< spacegroup name */
 		 int nsym;             /**< number of symmetry operations */
-		 float sym[192][4][4]; /**< symmetry operations */
+		 float sym[192][4][4]; /**< symmetry operations 
+                                          (translations in [*][3]) */
 		 int nsymp;            /**< number of primitive symmetry ops. */
 		 char symtyp;          /**< lattice type (P,A,B,C,I,F,R) */
 		 char pgname[11];      /**< pointgroup name */

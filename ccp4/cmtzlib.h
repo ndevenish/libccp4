@@ -707,7 +707,8 @@ int ccp4_lrsymi(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx,
  * @param mtz Pointer to MTZ struct.
  * @param nsymx Number of symmetry operators held in MTZ header.
  * @param rsymx Symmetry operators as 4 x 4 matrices, in the order they
- *   are held in the MTZ header.
+ *   are held in the MTZ header. Each matrix has translations in
+ *   elements [*][3].
  * @return Number of symmetry operators.
  */
 int ccp4_lrsymm(const MTZ *mtz, int *nsymx, float rsymx[192][4][4]);
@@ -864,7 +865,8 @@ int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nli
  * @param mtz pointer to MTZ struct
  * @param nsymx number of symmetry operators
  * @param nsympx number of primitive symmetry operators
- * @param rsymx array of symmetry operators (dimensions ordered in C convention)
+ * @param rsymx array of symmetry operators (dimensions ordered in C convention,
+ *   with translations in elements [*][3])
  * @param ltypex lattice type
  * @param nspgrx spacegroup number
  * @param spgrnx spacegroup name
@@ -889,6 +891,22 @@ int ccp4_lwsymm(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4],
 MTZCOL **ccp4_lwassn(MTZ *mtz, const char labels[][31], const int nlabels, 
              const char types[][3], const int iappnd);
 
+/* Add or update a dataset in the MTZ structure. If the crystal name is
+ * not recognised, then a new crystal is created containing a single
+ * dataset. If the crystal name is recognised, then the parameters of
+ * the crystal are updated. The child dataset is then created if necessary
+ * or an existing dataset updated.
+ * Note that this function is used to update crystal parameters, as well
+ * as add crystals. If a duplicate crystal name is used by mistake, then 
+ * the old crystal parameters are lost.
+ * @param mtz pointer to MTZ struct
+ * @param crystal_name Crystal name
+ * @param dataset_name Dataset name
+ * @param project_name Project name
+ * @param datcell Cell dimensions of crystal that dataset belongs to.
+ * @param datwave X-ray wavelength associated with dataset.
+ * @return 1 on success
+ */
 int ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
 	const char project_name[], const float datcell[6], const float *datwave);
 

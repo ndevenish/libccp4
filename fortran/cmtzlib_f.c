@@ -533,19 +533,34 @@ FORTRAN_SUBR ( LRSYMI, lrsymi,
   ccp4_CtoFString(FTN_STR(pgnamx),FTN_LEN(pgnamx),pgnamx_temp);
 }
 
-/* Fortran wrapper for ccp4_lrsymm */
-/* Note reversed order for rsymx indices */
+/** Get symmetry matrices from MTZ structure.
+ * @param mindx (I) MTZ file index.
+ * @param nsymx (O) Number of symmetry operators held in MTZ header.
+ * @param rsymx (O) Symmetry operators as 4 x 4 matrices, in the order they
+ *   are held in the MTZ header. Each matrix has translations in
+ *   elements [3][*]. Note that a Fortran application will reverse
+ *   the order of indices.
+ */
 FORTRAN_SUBR ( LRSYMM, lrsymm,
 	       (int *mindx, int *nsymx, float rsymx[MAXSYM][4][4]),
 	       (int *mindx, int *nsymx, float rsymx[MAXSYM][4][4]),
 	       (int *mindx, int *nsymx, float rsymx[MAXSYM][4][4]))
 
 {
+  int i,j,k;
+  float rsym[MAXSYM][4][4];
+
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRSYMM");)
 
   if (MtzCheckSubInput(*mindx,"LRSYMM",1)) return;
 
-  ccp4_lrsymm(mtzdata[*mindx-1], nsymx, rsymx);
+  ccp4_lrsymm(mtzdata[*mindx-1], nsymx, rsym);
+
+  /* ccp4_lrsymm returns matrices in C order, so swap here */
+  for (i = 0; i < *nsymx; ++i)
+    for (j = 0; j < 4; ++j)
+      for (k = 0; k < 4; ++k) 
+        rsymx[i][j][k] = rsym[i][k][j];
 
   /* register this spacegroup with csymlib_f */
   ccp4spg_register_by_symops(mtzdata[*mindx-1]->mtzsymm.nsym,mtzdata[*mindx-1]->mtzsymm.sym);
@@ -2168,7 +2183,19 @@ FORTRAN_SUBR ( LWIDALL, lwidall,
   free(dataset_name);
 }
 
-/* Fortran wrapper for ccp4_lwsymm */
+/** Write or update symmetry information for MTZ header. 
+ * @param mindx (I) MTZ file index.
+ * @param nsymx (I) number of symmetry operators
+ * @param nsympx (I) number of primitive symmetry operators
+ * @param rsymx (I) Array of symmetry operators as 4 x 4 matrices. Each matrix 
+ *   is input with translations in elements [3][*] (i.e. reversed with respect
+ *   to the way the Fortran application sees it). This function reverses
+ *   the order before passing to ccp4_lwsymm.
+ * @param ltypex (I) lattice type
+ * @param nspgrx (I) spacegroup number
+ * @param spgrnx (I) spacegroup name
+ * @param pgnamx (I) point group name
+ */
 FORTRAN_SUBR ( LWSYMM, lwsymm,
 	       (int *mindx, int *nsymx, int *nsympx, float rsymx[MAXSYM][4][4],
                   fpstr ltypex, int *nspgrx, fpstr spgrnx, fpstr pgnamx, 
