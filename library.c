@@ -212,6 +212,7 @@
  * Global Initialised Variables                                             *
  ****************************************************************************/
 
+static char rcsid[] = "$Header$";
 static int flushf      =  0;              /* counter to flush output buffer */
 static int print_flag  = -1;            /* flag to output debug information */
 static int initialised =  0;    /* flag to initialise data and file streams */
