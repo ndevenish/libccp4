@@ -2244,3 +2244,73 @@ C
       RETURN
 C
       END
+C
+C
+C
+C     ==========================
+      LOGICAL FUNCTION FACTRZ(N)
+C     ==========================
+C
+C---- Returns true if N has all prime factors .le. 19
+C
+C     .. Parameters ..
+      INTEGER NFACT
+      PARAMETER (NFACT=8)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER N
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,NN
+C     ..
+C     .. Local Arrays ..
+      INTEGER IFACT(NFACT)
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL CCPERR
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC MOD
+C     ..
+C     .. Save statement ..
+      SAVE
+C     ..
+C     .. Data statements ..
+      DATA IFACT/2,3,5,7,11,13,17,19/
+C     ..
+C
+C
+      NN = N
+C
+C
+      DO 20 I = 1,NFACT
+   10   IF (MOD(NN,IFACT(I)).EQ.0) THEN
+C
+C---- factor found, divide & continue if required
+C
+          IF (IFACT(I).EQ.0) THEN
+C
+C                *******************************************
+            CALL CCPERR(1,' Error divide by Zero in FACTRZ')
+C                *******************************************
+C
+          END IF
+C
+C
+          NN = NN/IFACT(I)
+          IF (NN.EQ.1) THEN
+C
+C----  success
+C
+            FACTRZ = .TRUE.
+            RETURN
+          END IF
+          GO TO 10
+        END IF
+   20 CONTINUE
+C
+C---- Failure
+C
+      FACTRZ = .FALSE.
+      RETURN
+      END
