@@ -508,10 +508,10 @@ static int
 #endif
 #if CALL_LIKE_MVS
   void __stdcall HGETLIMITS (int *IValueNotDet, float *ValueNotDet);
-  void __stdcall CMKDIR (const char *path, const char *cmode, int *result, 
-           int Lpath, int Lmode);
-  void __stdcall CCHMOD (const char *path, const char *cmode, int *result, 
-           int Lpath, int Lmode);
+  void __stdcall CMKDIR (const char *path, int Lpath, const char *cmode, int Lmode, 
+           int *result);
+  void __stdcall CCHMOD (const char *path, int Lpath, const char *cmode, int Lmode,
+           int *result);
 #endif
 /****************************************************************************
 *  End of prototypes                                                        *
@@ -1751,7 +1751,7 @@ int size;
   void qreadc_ (int *iunit, char * buffer, int *result, int Lbuffer)
 #endif
 #if CALL_LIKE_MVS
-  void __stdcall QREADC (int *iunit, char * buffer, int *result, int Lbuffer)
+  void __stdcall QREADC (int *iunit, char * buffer, int Lbuffer, int *result)
 #endif
 {
   int i, n;
@@ -2555,6 +2555,7 @@ int __stdcall ISATTY (int *lunit)
   *ValueNotDet  = FLT_MAX;
 }
 
+#ifndef _MVS
 #if CALL_LIKE_HPUX
   void cmkdir (path, cmode, result, Lpath, Lmode)
   int *result, Lpath, Lmode;
@@ -2570,10 +2571,10 @@ int __stdcall ISATTY (int *lunit)
 #if CALL_LIKE_SUN
   void cmkdir_ (const char *path, const char *cmode, int *result, int Lpath, int Lmode)
 #endif
-#if CALL_LIKE_MVS
-  void __stdcall CMKDIR (const char *path, const char *cmode, int *result, 
-        int Lpath, int Lmode)
-#endif
+/*#if CALL_LIKE_MVS
+  void __stdcall CMKDIR (const char *path, int Lpath, const char *cmode, int Lmode,
+        int *result)
+#endif*/
 { size_t Length;
   char name[MAXFLEN];
   mode_t mode;
@@ -2607,10 +2608,10 @@ int __stdcall ISATTY (int *lunit)
 #if CALL_LIKE_SUN
   void cchmod_ (const char *path, const char *cmode, int *result, int Lpath, int Lmode)
 #endif
-#if CALL_LIKE_MVS
-  void __stdcall CCHMOD (const char *path, const char *cmode, int *result, 
-        int Lpath, int Lmode)
-#endif
+/*#if CALL_LIKE_MVS
+  void __stdcall CCHMOD (const char *path, int Lpath,const char *cmode, int Lmode,
+        int *result)
+#endif*/
 { size_t Length;
   char name[MAXFLEN];
   mode_t mode;
@@ -2628,3 +2629,21 @@ int __stdcall ISATTY (int *lunit)
 
   *result = chmod(name,mode); 
 }
+#else
+#  if CALL_LIKE_MVS
+   void __stdcall CMKDIR (const char *path, int Lpath, const char *cmode, int Lmode,
+         int *result)
+#  endif
+   {
+     printf("No harvesting on NT.");
+     *result = -1;
+   }
+#  if CALL_LIKE_MVS
+     void __stdcall CCHMOD (const char *path, int Lpath,const char *cmode, int Lmode,
+          int *result)
+#  endif
+   {
+     printf("No harvesting on NT.");
+     *result = -1;
+   }
+#endif
