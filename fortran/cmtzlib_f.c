@@ -148,7 +148,7 @@ FORTRAN_SUBR ( LROPEN, lropen,
 
  /* set some control variables for Fortran calls */
  irref[*mindx-1] = 0;
- if (mtzdata[*mindx-1]->nbat > 0)
+ if (mtzdata[*mindx-1]->n_orig_bat > 0)
    rbat[*mindx-1] = mtzdata[*mindx-1]->batch;
  /* calculate hkl coefficients and store in coefhkl */
  MtzHklcoeffs(mtzdata[*mindx-1]->xtal[0]->cell, coefhkl[*mindx-1]);
@@ -1055,7 +1055,7 @@ FORTRAN_SUBR ( LRBAT, lrbat,
 
  if (MtzCheckSubInput(*mindx,"LRBAT",1)) return;
 
- if (mtzdata[*mindx-1]->nbat <= 0) {
+ if (mtzdata[*mindx-1]->n_orig_bat <= 0) {
    printf("Error: file on mindx is not a multi-record file! \n");
    return;
  }
@@ -1118,7 +1118,9 @@ FORTRAN_SUBR ( LBPRT, lbprt,
   return;
 }
 
-/* Fortran wrapper for ccp4_lrbat */
+/* Set batch pointer to batch number batno. This is
+   held in the static rbat[]. If batno == 0 then
+   set rbat[] to mtz->batch */
 FORTRAN_SUBR ( LRBRES, lrbres,
 	       (const int *mindx, const int *batno),
 	       (const int *mindx, const int *batno),
@@ -1131,7 +1133,7 @@ FORTRAN_SUBR ( LRBRES, lrbres,
 
  if (MtzCheckSubInput(*mindx,"LRBRES",1)) return;
 
- if (mtzdata[*mindx-1]->nbat <= 0) {
+ if (mtzdata[*mindx-1]->n_orig_bat <= 0) {
    printf("Error: file on mindx is not a multi-record file! \n");
    return;
  }
@@ -1172,7 +1174,7 @@ FORTRAN_SUBR ( LRBTIT, lrbtit,
 
  if (MtzCheckSubInput(*mindx,"LRBTIT",1)) return;
 
- if (mtzdata[*mindx-1]->nbat <= 0) {
+ if (mtzdata[*mindx-1]->n_orig_bat <= 0) {
    printf("Error: file on mindx is not a multi-record file! \n");
    return;
  }
@@ -1189,6 +1191,9 @@ FORTRAN_SUBR ( LRBTIT, lrbtit,
  }
  if (istat == -1) 
     printf("Error: file on %d has no batch %d ! \n",*mindx,*batno);
+
+ /* advance to next batch (may be NULL) */
+ rbat[*mindx-1] = batch->next;
 
  strncpy(tbatch,cbatch,70);
 
@@ -1210,7 +1215,7 @@ FORTRAN_SUBR ( LRBSCL, lrbscl,
 
  if (MtzCheckSubInput(*mindx,"LRBSCL",1)) return;
 
- if (mtzdata[*mindx-1]->nbat <= 0) {
+ if (mtzdata[*mindx-1]->n_orig_bat <= 0) {
    printf("Error in lrbscl: file on mindx is not a multi-record file! \n");
    return;
  }
@@ -1229,6 +1234,9 @@ FORTRAN_SUBR ( LRBSCL, lrbscl,
     printf("Error: file on %d has no batch %d ! \n",*mindx,*batno);
    return;
  }
+
+ /* advance to next batch (may be NULL) */
+ rbat[*mindx-1] = batch->next;
 
  nbscal = intbatch[16];
  if (nbscal > *nbatsc) {
@@ -1259,7 +1267,7 @@ FORTRAN_SUBR ( LRBSETID, lrbsetid,
 
  if (MtzCheckSubInput(*mindx,"LRBSETID",1)) return;
 
- if (mtzdata[*mindx-1]->nbat <= 0) {
+ if (mtzdata[*mindx-1]->n_orig_bat <= 0) {
    printf("Error: file on mindx is not a multi-record file! \n");
    return;
  }
@@ -1267,7 +1275,6 @@ FORTRAN_SUBR ( LRBSETID, lrbsetid,
  batch = mtzdata[*mindx-1]->batch;
  while (batch != NULL) {
    if (*batno == batch->num) {
-     rbat[*mindx-1] = batch;
      istat = 0;
      ccp4_lrbat(batch, rbatch, cbatch, iprint); 
      break;
@@ -2037,14 +2044,14 @@ FORTRAN_SUBR ( LWBAT, lwbat,
 
  if (MtzCheckSubInput(*mindx,"LWBAT",2)) return;
 
- /* No check on mtzdata[*mindx-1]->nbat  It might be 0 if this is the
+ /* No check on mtzdata[*mindx-1]->n_orig_bat  It might be 0 if this is the
     first batch written. */
 
  /* batno = 0 is special flag to remove batch information */
  /* Used for example in SCALA to write merged file from unmerged input */
 
  if (*batno == 0) {
-   mtzdata[*mindx-1]->nbat = 0;
+   mtzdata[*mindx-1]->n_orig_bat = 0;
    MtzFreeBatch(mtzdata[*mindx-1]->batch);
    mtzdata[*mindx-1]->batch = NULL;
    return;
@@ -2054,6 +2061,8 @@ FORTRAN_SUBR ( LWBAT, lwbat,
  while (batch != NULL) {
    if (*batno == batch->num) {
      istat = 0;
+     /* match found, so overwrite original batch header */
+     --mtzdata[*mindx-1]->n_orig_bat;
      break;
    }
    batch = batch->next;
@@ -2084,14 +2093,14 @@ FORTRAN_SUBR ( LWBTIT, lwbtit,
 
  if (MtzCheckSubInput(*mindx,"LWBTIT",2)) return;
 
- /* No check on mtzdata[*mindx-1]->nbat  It might be 0 if this is the
+ /* No check on mtzdata[*mindx-1]->n_orig_bat  It might be 0 if this is the
     first batch written. */
 
  /* batno = 0 is special flag to remove batch information */
  /* Used for example in SCALA to write merged file from unmerged input */
 
  if (*batno == 0) {
-   mtzdata[*mindx-1]->nbat = 0;
+   mtzdata[*mindx-1]->n_orig_bat = 0;
    MtzFreeBatch(mtzdata[*mindx-1]->batch);
    mtzdata[*mindx-1]->batch = NULL;
    return;
@@ -2127,7 +2136,7 @@ FORTRAN_SUBR ( LWBSCL, lwbscl,
 
  if (MtzCheckSubInput(*mindx,"LWBSCL",2)) return;
 
- /* No check on mtzdata[*mindx-1]->nbat  It might be 0 if this is the
+ /* No check on mtzdata[*mindx-1]->n_orig_bat  It might be 0 if this is the
     first batch written. */
 
  batch = mtzdata[*mindx-1]->batch;
@@ -2135,6 +2144,8 @@ FORTRAN_SUBR ( LWBSCL, lwbscl,
    if (*batno == batch->num) {
      istat = 0;
      ccp4_lrbat(batch, rbatch, cbatch, iprint); 
+     /* match found, so overwrite original batch header */
+     --mtzdata[*mindx-1]->n_orig_bat;
      break;
    }
    batch = batch->next;
@@ -2169,7 +2180,7 @@ FORTRAN_SUBR ( LWBSETID, lwbsetid,
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWBSETID");)
   if (MtzCheckSubInput(*mindx,"LWBSETID",2)) return;
 
-  /* No check on mtzdata[*mindx-1]->nbat  It might be 0 if this is the
+  /* No check on mtzdata[*mindx-1]->n_orig_bat  It might be 0 if this is the
     first batch written. */
 
   temp_pname = ccp4_FtoCString(FTN_STR(project_name), FTN_LEN(project_name));
@@ -2215,7 +2226,7 @@ FORTRAN_SUBR ( LWBSETIDX, lwbsetidx,
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWBSETIDX");)
   if (MtzCheckSubInput(*mindx,"LWBSETIDX",2)) return;
 
-  /* No check on mtzdata[*mindx-1]->nbat  It might be 0 if this is the
+  /* No check on mtzdata[*mindx-1]->n_orig_bat  It might be 0 if this is the
     first batch written. */
 
   temp_xname = ccp4_FtoCString(FTN_STR(crystal_name), FTN_LEN(crystal_name));

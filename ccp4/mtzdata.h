@@ -140,7 +140,7 @@ typedef struct { CCP4File *filein;     /**< file for reading */
                  int ncol_read;        /**< number of columns from file */
 		 int nref;             /**< number of reflections */
                  int refs_in_memory;   /**< whether reflections are held in memory */
-		 int nbat;             /**< number of batches */
+		 int n_orig_bat;       /**< original number of batches */
                  MNF mnf;              /**< value of missing number flag */
                  SYMGRP mtzsymm;       /**< symmetry information */
 		 MTZXTAL **xtal;       /**< crystals */

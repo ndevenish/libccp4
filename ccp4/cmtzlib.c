@@ -271,7 +271,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   mtz->filein = filein;
   mtz->nref = nref;
   mtz->ncol_read = ntotcol;
-  mtz->nbat = nbat;
+  mtz->n_orig_bat = nbat;
   mtz->batch = NULL;
   mtz->refs_in_memory = read_refs;
 
@@ -790,7 +790,7 @@ void ccp4_lrbats(const MTZ *mtz, int *nbatx, int batchx[]) {
   int i=0;
   MTZBAT *batch;
 
-  *nbatx = mtz->nbat;
+  *nbatx = mtz->n_orig_bat;
   batch = mtz->batch;
   while (batch != NULL) {
     batchx[i++] = batch->num;
@@ -1214,10 +1214,10 @@ void ccp4_lhprt(const MTZ *mtz, int iprint) {
   }
 
   /* if new batch headers have been written, lose the old ones */
-  if (MtzNbat(mtz) > mtz->nbat) {
-    numbat = MtzNbat(mtz) - mtz->nbat;
+  if (MtzNbat(mtz) > mtz->n_orig_bat) {
+    numbat = MtzNbat(mtz) - mtz->n_orig_bat;
   } else {
-    numbat = mtz->nbat;
+    numbat = mtz->n_orig_bat;
   }
   if (numbat > 0)
     printf(" * Number of Batches = %d\n\n",numbat);
@@ -1746,7 +1746,7 @@ void ccp4_lwbat(MTZ *mtz, MTZBAT *batch, const int batno, const float *buf, cons
 
 /* write new batch information to 'batch' or if 'batch' is NULL create   */
 /* new batch header with batch number 'batno'                           */
-/* don't update mtz->nbat - input no. of batches - use MtzNbat instead */
+/* don't update mtz->n_orig_bat - input no. of batches - use MtzNbat instead */
 
 {  int i;
 
@@ -1981,11 +1981,11 @@ void MtzPut(MTZ *mtz, const char *logname)
  strncpy(hdrrec+6,mtz->title,70);
  MtzWhdrLine(fileout,76,hdrrec);
  /* if new batch headers have been written, lose the old ones */
- /* mtz->nbat is original number of batches, MtzNbat(mtz) the current */
- if (MtzNbat(mtz) == mtz->nbat) {
-   numbat = mtz->nbat;
+ /* mtz->n_orig_bat is original number of batches, MtzNbat(mtz) the current */
+ if (MtzNbat(mtz) == mtz->n_orig_bat) {
+   numbat = mtz->n_orig_bat;
  } else {
-   numbat = MtzNbat(mtz) - mtz->nbat;
+   numbat = MtzNbat(mtz) - mtz->n_orig_bat;
  }
  sprintf(hdrrec,"NCOL %8d %12d %8d",MtzNumActiveCol(mtz),mtz->nref,numbat);
  MtzWhdrLine(fileout,35,hdrrec);
@@ -2128,12 +2128,12 @@ void MtzPut(MTZ *mtz, const char *logname)
  if (MtzNbat(mtz) > 0) {
    batch = mtz->batch;
    /* if new batch headers have been written, lose the old ones */
-   if (MtzNbat(mtz) > mtz->nbat) {
-     for (i=0; i < mtz->nbat; ++i)
+   if (MtzNbat(mtz) > mtz->n_orig_bat) {
+     for (i=0; i < mtz->n_orig_bat; ++i)
        batch = batch->next;
-     numbat = MtzNbat(mtz) - mtz->nbat;
+     numbat = MtzNbat(mtz) - mtz->n_orig_bat;
    } else {
-     numbat = mtz->nbat;
+     numbat = mtz->n_orig_bat;
    }
    for (i = 0; i < numbat; i += 12) {
      sprintf(hdrrec,"BATCH ");
@@ -2165,8 +2165,8 @@ void MtzPut(MTZ *mtz, const char *logname)
  if (MtzNbat(mtz) > 0) {
    batch = mtz->batch;
    /* if new batch headers have been written, lose the old ones */
-   if (MtzNbat(mtz) > mtz->nbat)
-     for (i=0; i < mtz->nbat; ++i)
+   if (MtzNbat(mtz) > mtz->n_orig_bat)
+     for (i=0; i < mtz->n_orig_bat; ++i)
        batch = batch->next;
    sprintf(hdrrec,"MTZBATS");
    MtzWhdrLine(fileout,7,hdrrec);
@@ -2389,7 +2389,7 @@ MTZ *MtzMalloc(int nxtal, int nset[])
   mtz->nxtal = nxtal;
   mtz->nref = 0;
   mtz->refs_in_memory = 1;
-  mtz->nbat = 0;
+  mtz->n_orig_bat = 0;
   sprintf(mtz->mnf.amnf,"NAN");
   mtz->batch = NULL;
   for (i = 0; i < 5; ++i) {
@@ -2431,7 +2431,7 @@ void MtzFree(MTZ *mtz)
   }
   ccp4array_free(mtz->xtal);
 
-  if (mtz->nbat > 0) 
+  if (mtz->n_orig_bat > 0) 
     MtzFreeBatch(mtz->batch);
 
   if (mtz->hist != NULL) 
@@ -2728,8 +2728,8 @@ int MtzNbatchesInSet(const MTZ *mtz, const MTZSET *set)
   batch = mtz->batch;
 
   /* if new batch headers have been written, lose the old ones */
-  if (MtzNbat(mtz) > mtz->nbat) 
-    for (i=0; i < mtz->nbat; ++i)
+  if (MtzNbat(mtz) > mtz->n_orig_bat) 
+    for (i=0; i < mtz->n_orig_bat; ++i)
        batch = batch->next;
 
   while (batch) {
