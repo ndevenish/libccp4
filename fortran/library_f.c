@@ -1107,5 +1107,11 @@ int __stdcall ISATTY (int *lunit)
   lunit = 0 ;
   return lunit;
 }
-#endif
 
+/* erfc doesnt seem to be in Mircrosoft Visual Studdio so this is a fudge */
+float __stdcall ERFC(float *value)
+{
+  return (float) ccp4_erfc( (double) *value);
+}
+#endif
+ 
