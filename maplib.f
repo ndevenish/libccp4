@@ -374,7 +374,7 @@ C
         ARMS  = 0.0
         SUMRHO = 0.0
         SUMRH2 = 0.0
-        OFFSTR = 2.0*QOFFSET
+        OFFSTR = 2.0*QOFFST
         DO 30 I = 1,20
           DO 20 J = 1,10
             READ (BLANK,FMT=6002) LABELS(I,J)
