@@ -1756,14 +1756,14 @@ C     .. Data statements ..
 C     ..
 C
       LL = LENSTR(STROUT)
-      IF (LL.GE.133) THEN
+      IF (LL.GE.132) THEN
       LX = 1
-      LS = 132
+      LS = 131
 10    CONTINUE
       WRITE (LUNOUT,FMT=6000) STROUT(LX:LS)
       IF (LS.EQ.LL) GOTO 20
       LX = LS  + 1
-      LS = LS + 131
+      LS = LS + 130
       IF (LS.GT.LL) LS = LL
       GO TO 10
       ELSE
