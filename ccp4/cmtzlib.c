@@ -1653,8 +1653,12 @@ int ccp4_lhprt(const MTZ *mtz, int iprint) {
       if (mtz->xtal[i]->resmin < minres) minres = mtz->xtal[i]->resmin;
   }
   printf(" *  Resolution Range :\n\n");
-  printf(" %10.5f %10.5f     ( %10.3f - %10.3f A )\n\n",
+  if (maxres > 0.0) {
+    printf(" %10.5f %10.5f     ( %10.3f - %10.3f A )\n\n",
        minres,maxres,1.0/sqrt(minres),1.0/sqrt(maxres));
+  } else {
+    printf("   Not set - no crystals or reflections? \n\n");
+  }
   ccp4_lrsort(mtz, isort);
   printf(" * Sort Order :\n\n  %5d %5d %5d %5d %5d\n\n",isort[0],isort[1],isort[2],
        isort[3],isort[4]);
