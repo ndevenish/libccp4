@@ -317,7 +317,7 @@ ccp4_symop *ccp4spg_norm_trans(ccp4_symop *op);
  * Note that no changes are made to the input operators, so that operators
  * differing by an integral number of unit cell translations are considered
  * unequal. If this is not what you want, normalise the operators with 
- * ccp4spg_to_shortname first.
+ * ccp4spg_norm_trans first.
  * @param nsym1 number of symmetry operators in first list
  * @param op1 first list of symmetry operators
  * @param nsym2 number of symmetry operators in second list
