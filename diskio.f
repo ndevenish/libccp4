@@ -13,7 +13,8 @@ C Note: IUNIT is NOT A Fortran Unit number, but an internal identifier
 C
 C  The calls provided are given below:
 C
-C  CALL QQOPEN  (IUNIT,FILNAM,ISTAT)         - Open file
+C  CALL QOPEN   (IUNIT,FILNAM,ATBUTE)        - Open file
+C [CALL QQOPEN  (IUNIT,FILNAM,ISTAT)         - Open file: use QOPEN]
 C  CALL QCLOSE  (IUNIT)                      - Close file
 C  CALL QMODE   (IUNIT,MODE,NMCITM)          - Change mode
 C  CALL QREAD   (IUNIT,ARRAY,NITEMS,IER)     - Read nitems
@@ -23,12 +24,15 @@ C  CALL QBACK   (IUNIT,LRECL)                - Backspace 1 record
 C  CALL QSKIP   (IUNIT,LRECL)                - Skip 1 record
 C  CALL QQINQ   (IUNIT,LFILNM,FILNAM,LENGTH) - Get filename and length
 C  CALL QLOCATE (IUNIT,LOCATE)               - Get position in file
-C  CALL QOPEN   (IUNIT,FILNAM,ATBUTE)        - qqopen, for compatability
 C  CALL QRARCH (IUNIT, IOFFSET)              - set up number conversion
 C  CALL QWARCH (IUNIT, IOFFSET)              - write conversion info
 C
-C  QSEEK calculates the location as (IREC - 1)CLRECL + IEL. Note: as in
-C        Fortran, addressing begins at 1 for both record & el
+C  QSEEK calculates the location as (IREC - 1)*LRECL + IEL. Note: as in
+C        Fortran, addressing begins at 1 for both record & element
+C        In these files, there are no true records: the use of "record length"
+C        and "record number" in QSEEK, QSKIP, QBACK is purely notional.
+C        For QSEEK, any combination of IREC, IEL & LRECL which gives the
+C        same value of (IREC - 1)*LRECL + IEL is equivalent.
 C
 C  Where:
 C
@@ -37,17 +41,21 @@ C
 C  FILNAM = file name for the stream (should be restricted to eight
 C           characters for CCP4 programs)
 C
+C  ATBUTE = File status for opening file
+C         = 'UNKNOWN', 'SCRATCH', 'OLD', 'NEW', or 'READONLY'
+C
 C  ISTAT  = File status on opening the file:
 C           1, 'UNKNOWN'   open as 'OLD'/'NEW' check existence
 C           2, 'SCRATCH'   open as 'OLD' and delete on closing
 C           3, 'OLD'       file MUST exist or program halts
 C           4, 'NEW'       create (overwrite) new file
-C           5, 'READONLY'  self explanAtory
+C           5, 'READONLY'  self explanatory
 C
-C  NOTE: When using QQOPEN or QOPEN with ISTAT = 4 a check is made on
-C        the environment variable CCP4_OPEN - if this is set to UNKNOWN
-C        then the file is opened with attribute UNKNOWN rather than NEW
-C        to prevent overwriting files that already exist.
+C  NOTE: When using QQOPEN or QOPEN with ATBUTE = 'NEW' [ISTAT = 4],
+C        a check is made on the environment variable CCP4_OPEN - 
+C        if this is set to UNKNOWN then the file is opened with 
+C        attribute UNKNOWN rather than NEW to allow overwriting files
+C        that already exist.
 C
 C  MODE   = Access mode = 0, BYTES
 C                       = 1, SHORT INT
@@ -82,6 +90,9 @@ C======================================================================
 C_BEGIN_QQOPEN
 C
 C QQOPEN - Open a file unit
+C
+C    NOTE: the routine QOPEN (which calls QQOPEN) is to be preferred
+C          to calling QQOPEN directly
 C
 C Usage:  CALL QQOPEN  (IUNIT, LOGNAME, ISTAT)
 C         INTEGER       IUNIT, ISTAT
@@ -260,11 +271,19 @@ C Usage:  CALL QSEEK (IUNIT, IRECL, IEL, LRECL)
 C         INTEGER     IUNIT, IRECL, IEL, LRECL
 C
 C Input:  IUNIT       unit number to assign to file
-C         IRECL       record number to seek
+C         IRECL       "record number" to seek
 C         IEL         element number to seek
-C         LRECL       length of a record
+C         LRECL       length of a "record"
 C
 C Output: None
+C
+C  QSEEK calculates the location as (IREC - 1)*LRECL + IEL. Note: as in
+C        Fortran, addressing begins at 1 for both record & element
+C        In these files, there are no true records: the use of "record length"
+C        and "record number" in QSEEK, QSKIP, QBACK is purely notional.
+C        For QSEEK, any combination of IREC, IEL & LRECL which gives the
+C        same value of (IREC - 1)*LRECL + IEL is equivalent.
+C
 C_END_QSEEK
 C See library.c
 C======================================================================
