@@ -75,7 +75,7 @@ RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
 # modules to go in libccp4.a:
 LIBTARGETS = cciflib ccplib fftlib maplib parser rwbrook modlib \
            symlib lgglib harvlib mtzlib diskio unix plot84lib libhtml \
-           binsortint library plotsubs keyparse pack_f pack_c
+           binsortint library library_f plotsubs keyparse pack_f pack_c
 
 .PRECIOUS : $L # don't zap the library if a component fails
 
@@ -94,7 +94,7 @@ all :  $L
 $L : $L(cciflib.o) $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) \
 	  $L(mtzlib.o) $L(lgglib.o) $L(harvlib.o) $L(diskio.o) $L(unix.o) \
-	  $L(binsortint.o) $L(library.o) $L(plot84lib.o) \
+	  $L(binsortint.o) $L(library.o) $L(library_f.o) $L(plot84lib.o) \
 	  $L(libhtml.o) $L(plotsubs.o) $L(keyparse.o) \
 	  $L(pack_c.o) $L(pack_f.o)
 # titan special:
@@ -104,7 +104,7 @@ $L : $L(cciflib.o) $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 # maybe create shared library
 	$(SHARE_LIB)
 
-test-lib : $(srcdir)/testlib.f $L(library.o) $L(unix.o) $L(ccplib.o) \
+test-lib : $(srcdir)/testlib.f $L(library.o) $L(library_f.o) $L(unix.o) $L(ccplib.o) \
           $L(diskio.o)
 # titan special:
 	-(test -f /usr/lib/fortran/time.o && make '$L(time.o)') || true
@@ -307,10 +307,16 @@ keyparse : $L(keyparse.o)
 
 # C stuff: (these are kept as whole modules)
 
-$L(library.o) : $(srcdir)/library.c
+$L(library.o) : $(srcdir)/library.c $(srcdir)/library.h
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/library.c
 	$(AR) $L library.o && rm library.o
 library : $L(library.o)
+	$(RANLIB) $L
+
+$L(library_f.o) : $(srcdir)/library_f.c $(srcdir)/library.h $(srcdir)/library_f.h
+	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/library_f.c
+	$(AR) $L library_f.o && rm library_f.o
+library_f : $L(library_f.o)
 	$(RANLIB) $L
 
 $L(binsortint.o) : $(srcdir)/binsortint.c $(srcdir)/binsort.h
