@@ -13,6 +13,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include "ccp4_errno.h"
 #include "ccp4_fortran.h"
 #include "ccp4_parser.h"
 #include "ccp4_program.h"
@@ -24,8 +25,8 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
                (),
                (),
                ())
-{ int argc, i, arg_len=500, debug=0;
-  char **argv, arg[500];
+{ int argc, i, ierr, arg_len=500, debug=0;
+  char **argv=NULL, arg[500];
 
   /* turn on line buffering for stdout from C (don't think this affects
      Fortran side). This ensures we get library messages, but will slow
@@ -53,10 +54,11 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
     FORTRAN_CALL (GETARG, getarg, (&i,arg,arg_len), (&i,arg), (&i,arg,arg_len));
     argv[i] = ccp4_FtoCString(arg,arg_len);
     if (debug) 
-      printf("CCPFYP: comand line argument %d %s\n",i,argv[i]);
+      printf("CCPFYP: command line argument %d %s\n",i,argv[i]);
   }
 
-  ccp4fyp(argc, argv);
+  /* Do the preprocessing and return the error status */
+  ierr = ccp4fyp(argc, argv);
 
   /* Calls to ccp4_FtoCString allocate memory for argv[..]
      which needs to be explicitly freed before leaving this
@@ -69,9 +71,15 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
   /* Also need to free argv itself */
   if (argv) free(argv);
 
+  /* Now act on any errors from ccp4fyp */
+  if (ierr) {
+    /* Pass the error status and last error message to ccperror */
+    ccperror(ierr,(char*) ccp4_strerror(ccp4_errno));
+  }
+
   if (debug) 
     printf(" Leaving CCPFYP \n");
-
+  return;
 }
 
 FORTRAN_SUBR ( CCPUPC, ccpupc,
