@@ -842,7 +842,11 @@ _ifc,8,
 [
       stime = time()])
       call gmtime(stime,gmtarray)
-      call ltime(stime,tarray)
+ifelse(_AIX,1,
+[
+      call ltime_(stime,tarray)],
+[
+      call ltime(stime,tarray)])
 c
       nminutes = gmtarray(2)
       nhours = gmtarray(3)
