@@ -575,11 +575,11 @@ C     If reading in: check SCAL and CRYST1 cards
      +              THEN
         IF (.NOT.IFCRYS) THEN
           WRITE(ERRLIN,FMT='(A,A)') ' NO CRYST CARDS READ FROM ',LOGNAM
-          CALL CCPERR (2,ERRLIN)
+          CALL CCPERR (2,ERRLIN(1:LENSTR(ERRLIN)))
         END IF
         IF (.NOT.IFSCAL) THEN
           WRITE(ERRLIN,FMT='(A,A)') ' NO SCALE CARDS READ FROM ',LOGNAM
-          CALL CCPERR (2,ERRLIN)
+          CALL CCPERR (2,ERRLIN(1:LENSTR(ERRLIN)))
         END IF
       END IF
       RETURN
