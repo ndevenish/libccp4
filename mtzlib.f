@@ -6679,11 +6679,6 @@ C
               ENDIF
    40       CONTINUE
 C
-C                ***********************
-            CALL PUTLIN(' **** Error input assignment does not match'//
-     +           ' program labels','ERRWIN')
-C                ***********************
-C
             WRITE (STROUT,FMT=
      +        '(''  Neither '',A,'' nor '',A,'' recognised'')')
      +         CWORK(1:LENSTR(CWORK)),CWORK2(1:LENSTR(CWORK2))
@@ -6698,9 +6693,10 @@ C
 C
 C                ***********************
             CALL PUTLIN(STROUT,'ERRWIN')
+            CALL CCPERR(1, 'Input column assignment does not match'//
+     +           ' program labels')
 C                ***********************
 C
-            GO TO 70
    50       NLUSRI(MINDX) = NLUSRI(MINDX) + 1
             LSUSRI(MINDX,JDO) = LC1
             SetPrgLab(JDO) = .TRUE.
@@ -6846,12 +6842,12 @@ C
    10       CONTINUE
 C
 C                ***********************
-            CALL PUTLIN(' **** Error output assignment does not match'//
-     +               ' program labels','ERRWIN')
             WRITE (STROUT,FMT=
      +        '(''  Neither '',A,'' nor '',A,'' recognised'')') CWORK(1:
      +        LENSTR(CWORK)),CWORK2(1:LENSTR(CWORK2))
             CALL PUTLIN(STROUT,'ERRWIN')
+            CALL CCPERR(1, 'Output column assignment does not match'//
+     +           ' program labels')
 C                ***********************
 C
             GO TO 40
@@ -7021,11 +7017,6 @@ C
               END IF
    30       CONTINUE
 C
-C                ***********************
-            CALL PUTLIN('**** Error input assignment does not match'//
-     +               ' program labels','ERRWIN')
-C                ***********************
-C
             WRITE (STROUT,FMT=
      +        '(''  Neither '',A,'' nor '',A,'' recognised'')')
      +        CWORK(1:LENSTR(CWORK)),CWORK2(1:LENSTR(CWORK2))
@@ -7040,9 +7031,9 @@ C
 C
 C                ***********************
             CALL PUTLIN(STROUT,'ERRWIN')
+            CALL CCPERR(1, 'Input column assignment does not match'//
+     +               ' program labels')
 C                ***********************
-C
-            GO TO 60
    40       CONTINUE
             KPOINT(JDO) = -1
             LSUSRJ(JDO) = LC1
