@@ -94,10 +94,10 @@ C_END_CCFILL
 C
 C     .. Scalar Arguments ..
       INTEGER NTIMES
-      BYTE SCAL
+      INTEGER*1 SCAL
 C     ..
 C     .. Array Arguments ..
-      BYTE ARR1(*)
+      INTEGER*1 ARR1(*)
 C     ..
 C     .. Local Scalars ..
       INTEGER N
@@ -253,8 +253,8 @@ C SPECIFICATION STATEMENTS
 C ------------------------
 C
       INTEGER IA(*)
-      BYTE IBYT(*)
-      BYTE JBYT(4)
+      INTEGER*1 IBYT(*)
+      INTEGER*1 JBYT(4)
       EQUIVALENCE (JA,JBYT(1))
       LOGICAL CALLED, LITEND
       INTEGER IND
@@ -348,9 +348,9 @@ C
 C====== Specification statements
 C
       INTEGER IA(*)
-      BYTE IB(*)
+      INTEGER*1 IB(*)
       INTEGER*2 J2(2)
-      BYTE JBYT(4)
+      INTEGER*1 JBYT(4)
       EQUIVALENCE (JA,J2(1),JBYT(1))
       LOGICAL CALLED, LITEND
       EXTERNAL LITEND
@@ -656,7 +656,7 @@ C     .. Arguments ..
       CHARACTER ERRSTR*(*)
 C     ..
 C     .. Locals ..
-      CHARACTER ERRBUF*100
+      CHARACTER ERRBUF*256
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -688,7 +688,7 @@ C     construct appropriate ERRBUF
       IF (ABS(ISTAT).LE.1) THEN
 C        report program name
          CALL CCPPNM (ERRBUF)
-         IF (LENSTR(ERRBUF) .LT. 95) THEN
+         IF (LENSTR(ERRBUF) .LT. 251) THEN
             ERRBUF (LENSTR(ERRBUF)+1:) = ': '
             ERRBUF (LENSTR(ERRBUF)+3:) = ERRSTR
          ENDIF
@@ -718,7 +718,7 @@ C           FOR$_NOTFORSPE, "Not a FORTRAN-specific error"
           ENDIF
         ELSE
 C         duplicate message to stderr, assumed to be connected to unit 0
-          IF (ISTAT.EQ.1) WRITE (0,*) ERRBUF
+          IF (ISTAT.EQ.1) WRITE (0,*) ERRBUF(1:LENSTR(ERRBUF))
           CALL GETELAPSED
           call ccp4h_pre_end()
           call ccp4h_summary_end()
@@ -1229,8 +1229,8 @@ C
 C SPECIFICATION STATEMENTS
 C ------------------------
 C
-      BYTE IA(*)
-      BYTE JBYT(4)
+      INTEGER*1 IA(*)
+      INTEGER*1 JBYT(4)
       EQUIVALENCE (JA,JBYT(1))
       LOGICAL CALLED, LITEND
       EXTERNAL LITEND
@@ -1360,8 +1360,8 @@ C SPECIFICATION STATEMENTS
 C ------------------------
 C
       INTEGER IA(*)
-      BYTE IBYT(*)
-      BYTE JBYT(4)
+      INTEGER*1 IBYT(*)
+      INTEGER*1 JBYT(4)
       EQUIVALENCE (JA,JBYT(1))
       LOGICAL CALLED, LITEND
       EXTERNAL LITEND
@@ -1590,7 +1590,7 @@ C     .. Scalar Arguments ..
       INTEGER I1,I2,NTOMOV
 C     ..
 C     .. Array Arguments ..
-      BYTE ARR1(*),ARR2(*)
+      INTEGER*1 ARR1(*),ARR2(*)
 C     ..
 C     .. Local Scalars ..
       INTEGER I,J,N
@@ -2243,8 +2243,8 @@ C
 C SPECIFICATION STATEMENTS
 C ------------------------
 C
-      BYTE IA(*)
-      BYTE JBYT(4)
+      INTEGER*1 IA(*)
+      INTEGER*1 JBYT(4)
       EQUIVALENCE (JA,JBYT(1))
       EQUIVALENCE (JA,JBYT(1))
       LOGICAL CALLED, LITEND
@@ -2390,7 +2390,7 @@ C     .. Local Scalars ..
       INTEGER IA,NB,NIH,NW
 C     ..
 C     .. Local Arrays ..
-      BYTE IBYT(4),JBYT(4)
+      INTEGER*1 IBYT(4),JBYT(4)
       INTEGER*2 JHALF(2)
 C     ..
 C     .. Intrinsic Functions ..
@@ -2688,7 +2688,7 @@ C_END_CCPZBI
 C
 C  Arguments ......
       INTEGER NUM
-      BYTE ARR1(*)
+      INTEGER*1 ARR1(*)
 C
       INTEGER J
 C
@@ -2819,7 +2819,7 @@ C    IDUM (D)   DUMMY
 C_END_LITEND
 C
          INTEGER I, IDUM
-         BYTE B(4)
+         INTEGER*1 B(4)
          EQUIVALENCE (I,B(1))
 C
 C---- Initialise B
