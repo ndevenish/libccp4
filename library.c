@@ -1894,10 +1894,10 @@ int size;
                     (size_t) n, file_stream[*iunit]);
 #  else                         /* normal */
   n = Lbuffer;
-#  endif
-#endif
   i = (int) fwrite (buffer, (size_t) item_sizes[BYTE],
                     (size_t) n, file_stream[*iunit]);
+#  endif
+#endif
   if (i != n) file_fatal ("QWRITC: i/o error (may be out of disc space): ",
                            file_name[*iunit]);
 }
