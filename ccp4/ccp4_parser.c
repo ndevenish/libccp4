@@ -484,10 +484,18 @@ int ccp4_parse(char *line, CCP4PARSERARRAY *parser)
   nulldelim = parser->nulldelim;
 
   /* Don't process any tokens already dealt with */
-  if (ntok > 0)
+  if (ntok > 0) {
     start = tokenarray[ntok-1].iend + 1;
-  else
+    /* Special case: if the last token was quoted
+       then in fact the character at this position will be
+       a quote - if so then step on another character */
+    if (charmatch(line[start],quot)) {
+      if (diag) printf("CCP4_PARSE: start character is a quote, stepping on\n");
+      start++;
+    }
+  } else {
     start = 0;
+  }
 
   /* Don't process empty lines */
   llen = strlen(line);
