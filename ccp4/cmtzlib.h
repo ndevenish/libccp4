@@ -501,7 +501,7 @@ int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint);
 
 int MtzPrintBatchHeader(MTZBAT *batch);
 
-int ccp4_lwtitl(MTZ *mtz, char ftitle[], int flag);
+int ccp4_lwtitl(MTZ *mtz, const char *ftitle, int flag);
 
 /** Sets the sort order in the MTZ header. The sort order is
  * a list of columns to be used for sorting, to be applied in

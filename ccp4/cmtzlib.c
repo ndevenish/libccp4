@@ -1601,7 +1601,7 @@ int MtzPrintBatchHeader(MTZBAT *batch) {
   return 1;
 }
 
-int ccp4_lwtitl(MTZ *mtz, char ftitle[], int flag) {
+int ccp4_lwtitl(MTZ *mtz, const char *ftitle, int flag) {
 
   size_t length;
 
