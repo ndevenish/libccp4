@@ -855,7 +855,7 @@ void ccp4spg_name_de_colon(char *name) {
     *ch1 = ' ';
     *(ch1+1) = ' ';
     ch1 = strstr(name,"R");
-    *ch1 = 'H';
+    if (ch1 != NULL) *ch1 = 'H';
   }
     
   return;
