@@ -1,17 +1,3 @@
-C
-C---- This version based on dl version removing aed subs
-C     but block data for
-ccx       COMMON /TRIKKDAT/INIT,IUNIT,PC(4),PL(6),PF(6)
-ccx       DATA INIT/0/
-ccx       moved to 
-ccx       SUBROUTINE INITRIPLOT(ISTREAM,NAME,IFLAG)
-C
-C
-C     Routines which call AED... commented out to avoid link-time
-C     problems.  (These seem to be sensitive to the order in which the
-C     library is built, or the phase of the moon :-))  DJGL 6/7/92
-C
-C     
 C       SUBROUTINE GSSTRD(TEXT,DX,DY)
 C       ERROR XCOLD and YCOLD not defined
 C
@@ -1303,7 +1289,7 @@ C     Cohen and Sutherland algorithm from foley & van dam
 C
 C     .. Scalar Arguments ..
       REAL X1,X2,Y1,Y2
-      LOGICAL ACCEPT
+      LOGICAL*1 ACCEPT
 C     ..
 C     .. Scalars in Common ..
       REAL BXMAX,BXMIN,BYMAX,BYMIN
@@ -1312,7 +1298,7 @@ C     ..
 C     .. Local Scalars ..
       REAL SMALL
       INTEGER NCODE1,NCODE2,NO4,NSWAP
-      LOGICAL DONE,INSIDE,REJECT
+      LOGICAL*1 DONE,INSIDE,REJECT
 C     ..
 C     .. Local Arrays ..
       LOGICAL*1 NOCODE(4),WCODEA(4),WCODEB(4),BT1,BT2,BT3,BT4
