@@ -259,7 +259,7 @@ C     .. Variables in Common ..
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 c  Check symmetry stuff
 C
-      integer  nsymchk,lspgrp,nsymppdbs,nsympdbs
+      integer  nsymchk,lspgrp,nsymppdbs,nsympdbs,ist
       real rsymchk(4,4,maxsym), rsympdbs(4,4,maxsym)
       character SPGRPpdb*11,NAMSPG_CIFS*20,nampg*10
 C     ..
@@ -275,9 +275,9 @@ C     .. Local Arrays ..
       CHARACTER IEC(3)*2
 C     ..
 C     .. External Functions ..
-      INTEGER LENSTR
+      INTEGER LENSTR,CCPNUN
       LOGICAL CCPEXS
-      EXTERNAL CCPEXS,LENSTR
+      EXTERNAL CCPEXS,LENSTR,CCPNUN
 C     ..
 C     .. External Routines ..
       EXTERNAL CCPDPN,CCPERR,CCPUPC,RBFROR,RBRINV,UGTENV
@@ -472,9 +472,11 @@ C
                BRKSPGRP = SPGCHK
              END IF 
 C  Read symmetry operators..
-             IF(BRKSPGRP.NE.' ')
-     +     call MSYMLB3(1,LSPGRP,BRKSPGRP,NAMSPG_CIFS,
+             IF (BRKSPGRP.NE.' ') THEN
+               IST = CCPNUN()
+               call MSYMLB3(IST,LSPGRP,BRKSPGRP,NAMSPG_CIFS,
      +                   NAMPG,NSYMPpdbs,NSYMpdbs,RSYMpdbs)
+             END IF
             CALL RBFROR
             IF(NCODE.EQ.0)NCODE=1
 
