@@ -164,7 +164,7 @@ C     .. Local Scalars ..
       INTEGER IFAIL,K,KSTREAM,LENLIN,LINLEN,LSTREAM,MSTREAM,N,
      +        NITEM
       LOGICAL FIRST, HAVLIN
-      CHARACTER FLNAME*60,LINEX*1500,LINEK1
+      CHARACTER FLNAME*60,LINEX*1500,LINEK1,SLASH*2
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -187,6 +187,7 @@ C     .. Data statements ..
       DATA NITEM/0/
 C     ..
 C
+      SLASH='\\'
       LINEX = ' '
       NINCHR = 0
       K = 1
@@ -344,7 +345,8 @@ C
       ELSE
         LINEK1 = ' '
       END IF
-      IF ((LINE(K:K).EQ.'&' .OR. LINE(K:K).EQ.'-')
+      IF ((LINE(K:K).EQ.'&' .OR. LINE(K:K).EQ.'-' 
+     +                              .OR. LINE(K:K).EQ.SLASH(1:1))
      +     .AND. LINEK1 .NE. '''' .AND. LINEK1.NE.'"') THEN
 C       zap continuation character
         LINE(K:) = ' '
