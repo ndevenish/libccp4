@@ -819,7 +819,7 @@ int ccp4_parser(char *line, const int nchars, CCP4PARSERARRAY *parser,
 		const int print)
 {
   int fromstdin=0,fromfile=0,fromapp=0,diag=0;
-  int nch,nold,continuation,first,trunc,llen;
+  int nch,nold,continuation,first,trunc,llen,buflen;
   char *linein=NULL,filename[200];
 
   /* Local parser variables */
@@ -865,10 +865,11 @@ int ccp4_parser(char *line, const int nchars, CCP4PARSERARRAY *parser,
 		   parser->ntokens,ntok);
 
   /* Set up an internal buffer for input
-     This must be the same length as the maximum string length
-     allocated for line by the calling application */
-  
-  linein = (char *) ccp4_utils_malloc((nchars+1)*sizeof(char));
+     The buffer is over-allocated (twice as long as the max string
+     length allocated for line by the calling application)
+  */
+  buflen = (nchars*2)+1;
+  linein = (char *) ccp4_utils_malloc(buflen*sizeof(char));
 
   if (!linein) {
     ccp4_signal(CPARSER_ERRNO(CPARSERR_AllocFail),"ccp4_parser",NULL);
@@ -907,14 +908,14 @@ int ccp4_parser(char *line, const int nchars, CCP4PARSERARRAY *parser,
     /* Read input from stdin a line at a time */
     if (fromstdin) {
       if (diag) printf("CCP4_PARSER: reading from stdin...\n");
-      if (!fgets(linein,nch,stdin)) {
+      if (!fgets(linein,buflen,stdin)) {
 	/* Jump out at this point if eof is reached from
 	   stdin */
 	return 0;
       }
     } else if (fromfile) {
       if (diag) printf("CCP4_PARSER: reading from external file...\n");
-      if (!fgets(linein,nch,filein)) {
+      if (!fgets(linein,buflen,filein)) {
 	/* Return to input from stdin if eof is read from
 	   the external file */
 	if (diag) printf("CCP4_PARSER: End of external file reached\n");
