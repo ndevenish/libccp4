@@ -2989,3 +2989,33 @@ C     .. External Routines ..
 
  1000 RETURN
       END
+C
+C
+C
+      SUBROUTINE RWNOHEAD()
+C     =====================
+C
+C_BEGIN_RWNOHEAD
+C
+C	This subroutine resets the logical variable IFHDOUT in the RWBROOK
+C     common block RBRKXX, and should be called once before either
+C     XYZADVANCE or WBCELL in order to prevent those routines from writing
+C     headers to an output pdb file.
+C     Effectively we are fooling the library that the header has already
+C     been written.
+C
+C_END_RWNOHEAD
+C
+C     .. Arguments in common ..
+      INTEGER ITYP
+      LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
+C
+C     .. Common blocks ..
+      COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+C
+      IFHDOUT = .TRUE.
+C
+      RETURN
+      END
+C
+C
