@@ -674,6 +674,13 @@ char *ccp4spg_to_shortname(char *shortname, const char *longname) {
 
   ch1 = longname;
   ch2 = shortname;
+
+  /* "P 1" is an exception */
+  if (!strcmp(ch1,"P 1")) {
+    strcpy(ch2,"P1");
+    return  ch2;
+  }
+
   while (*ch1 != '\0') {
     if (!strncmp(ch1," 1",2)) {
       ch1 += 2;
@@ -749,8 +756,6 @@ int ccp4spg_is_in_asu(const CCP4SPG* sp, const int h, const int k, const int l) 
   else
     return sp->asufn( h, k, l );
 }
-
-/* Put hin,kin,lin into asymmetric unit of spacegroup sp */
 
 int ccp4spg_put_in_asu(const CCP4SPG* sp, const int hin, const int kin, const int lin,
 		       int *hout, int *kout, int *lout ) {
