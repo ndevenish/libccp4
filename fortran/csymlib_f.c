@@ -321,7 +321,10 @@ FORTRAN_SUBR ( ASUSET, asuset,
   /* If we fail to find match for symops, fall back on spacegroup number. */
   if (!spacegroup ) {
     if (*numsgp > 0) {
-      spacegroup = ccp4spg_load_by_ccp4_num(*numsgp);
+      if ( ! (spacegroup = ccp4spg_load_by_ccp4_num(*numsgp)) ) {
+        printf("ASUSET: failed to load spacegroup info from SYMINFO! \n");
+        return;
+      }
     } else {
       printf("ASUSET: no spacegroup info! \n");
       return;
@@ -727,7 +730,10 @@ FORTRAN_SUBR ( SETLIM, setlim,
     /* load spacegroup if necessary */
     /* spacegroup only temporary, as setlim is not expected to
        interact with other calls */
-    tmp_spacegroup = ccp4spg_load_by_ccp4_num(*lspgrp);
+    if ( ! (tmp_spacegroup = ccp4spg_load_by_ccp4_num(*lspgrp)) ) {
+      printf("SETLIM: failed to load spacegroup info from SYMINFO! \n");
+      return;
+    }
     xyzlim[0][1] = tmp_spacegroup->mapasu_ccp4[0];
     xyzlim[1][1] = tmp_spacegroup->mapasu_ccp4[1];
     xyzlim[2][1] = tmp_spacegroup->mapasu_ccp4[2];
@@ -760,7 +766,10 @@ FORTRAN_SUBR ( SETLIM_ZERO, setlim_zero,
     /* load spacegroup if necessary */
     /* spacegroup only temporary, as setlim is not expected to
        interact with other calls */
-    tmp_spacegroup = ccp4spg_load_by_ccp4_num(*lspgrp);
+    if ( ! (tmp_spacegroup = ccp4spg_load_by_ccp4_num(*lspgrp)) ) {
+      printf("SETLIM_ZERO: failed to load spacegroup info from SYMINFO! \n");
+      return;
+    }
     xyzlim[0][1] = tmp_spacegroup->mapasu_zero[0];
     xyzlim[1][1] = tmp_spacegroup->mapasu_zero[1];
     xyzlim[2][1] = tmp_spacegroup->mapasu_zero[2];
