@@ -1046,8 +1046,9 @@ void MtzDebugHierarchy(const MTZ *mtz) {
    printf("MtzDebugHierarchy: xtal = %s, nset = %d \n",mtz->xtal[i]->xname,
               mtz->xtal[i]->nset);
    for (j = 0; j < mtz->xtal[i]->nset; ++j) {
-    printf("MtzDebugHierarchy: xtal = %s, set = %s, ncol = %d \n",mtz->xtal[i]->xname,
-              mtz->xtal[i]->set[j]->dname,mtz->xtal[i]->set[j]->ncol);
+    printf("MtzDebugHierarchy: xtal = %s, set = %s, setid = %d, ncol = %d \n",
+              mtz->xtal[i]->xname,mtz->xtal[i]->set[j]->dname,
+              mtz->xtal[i]->set[j]->setid,mtz->xtal[i]->set[j]->ncol);
      for (k = 0; k < mtz->xtal[i]->set[j]->ncol; ++k) {
       printf("MtzDebugHierarchy: col = %s (in: %d) (out: %d) \n",
               mtz->xtal[i]->set[j]->col[k]->label,
@@ -3212,13 +3213,19 @@ MTZSET *MtzAddDataset(MTZ *mtz, MTZXTAL *xtl, const char *dname,
   strncpy( set->dname, dname, 64 );
   set->dname[64] = '\0';
   set->wavelength = wavelength;
-  /* new setid is one more than greatest current setid */
-  i = -1;
-  for (x = 0; x < mtz->nxtal; x++)
-    for (s = 0; s < mtz->xtal[x]->nset; s++)
-      if (mtz->xtal[x]->set[s]->setid > i) i = mtz->xtal[x]->set[s]->setid;
 
-  set->setid = ++i;
+  /* New setid is one more than greatest current setid.
+     It must be at least 1, unless it is the base dataset setid=0. */
+  if (!strcmp(set->dname,"HKL_base")) {
+    set->setid = 0;
+  } else {
+    i = 0;
+    for (x = 0; x < mtz->nxtal; x++)
+      for (s = 0; s < mtz->xtal[x]->nset; s++)
+        if (mtz->xtal[x]->set[s]->setid > i) i = mtz->xtal[x]->set[s]->setid;
+    set->setid = ++i;
+  }
+
   set->ncol = 0;
   /* create initial array of 20 pointers to columns */
   ccp4array_new_size(set->col,20);
