@@ -286,11 +286,14 @@ FORTRAN_SUBR ( LRNCOL, lrncol,
 
 }
 
-/** Fortran wrapper to function returning number of reflections.
- * In fact, it returns current number of reflections on MINDX
- * rather than number read in.
+/** Returns the current reflection number from an
+ *  MTZ file opened for read. Files are normally read sequentially,
+ *  the number returned is the number of the *NEXT* reflection
+ *  record to be read. If you are going to jump about the file
+ *  with LRSEEK then use this to record the current position before
+ *  you start, so that it can be restored afterwards, if required.
  * @param mindx MTZ file index
- * @param nreflx Number of reflections.
+ * @param nreflx the reflection record number of the next reflection to be read
  */
 FORTRAN_SUBR ( LRNREF, lrnref,
 	       (int *mindx, int *nreflx),
@@ -302,8 +305,7 @@ FORTRAN_SUBR ( LRNREF, lrnref,
 
  if (MtzCheckSubInput(*mindx,"LRNREF",1)) return;
 
- *nreflx = MtzNref(mtzdata[*mindx-1]);
-
+  *nreflx = irref[*mindx-1] + 1;
 }
 
 /* Fortran wrapper for ccp4_lrsort */
