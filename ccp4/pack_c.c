@@ -56,7 +56,7 @@
 /* Some general defines: */
 
 
-#define PACKIDENTIFIER "\nCCP4 packed image, X: %04ld, Y: %04ld\n"
+#define PACKIDENTIFIER "\nCCP4 packed image, X: %04d, Y: %04d\n"
 /* This string defines the start of a packed image. An image file is scanned
    until this string is encountered, the size of the unpacked image is 
    determined from the values of X and Y (which are written out as formatted
@@ -83,8 +83,11 @@
 #define WORD short int
 /* WORD is a two-byte integer. */
 
-#define LONG long int
+#define LONG int
 /* LONG is a four byte integer. */
+/* Dave Love 5/7/94: using `int' gets you 4 bytes on the 32-bit Unix
+   (and VAX) systems I know of and also on (64-bit) OSF/1 Alphas which
+   have 64-bit longs.  (This definition previously used `long'.) */
 
 
 
