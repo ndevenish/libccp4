@@ -599,12 +599,15 @@ C
                 IF (NUMBER) THEN
                   ITYP(N) = 2
                   FVALUE(N) = VALUE*SIGN
-CCC                  IF (OPER.GT.0) FVALUE(N) = DOCALC(FVALUE(N),OPER,
-CCC     +                SIGN0*VALUE0)
                   IF (OPER.EQ.1) THEN
-                    FVALUE(N) = FVALUE(N) - SIGN0*VALUE0
+C                   unary +
+                    FVALUE(N) = FVALUE(N) + SIGN0*VALUE0
                   ELSE IF (OPER.EQ.2) THEN
+C                   unary -
                     FVALUE(N) = FVALUE(N) - SIGN0*VALUE0
+                  ELSE IF (OPER.EQ.5) THEN
+C                   exponent
+                    FVALUE(N) = SIGN0*VALUE0*10.0**FVALUE(N)
                   END IF
                   IDEC(N) = 100*IDOT + NPLACE
                 ELSE
@@ -1388,60 +1391,6 @@ CCC      IF (N.LE.NTOK .AND. ITYP(N).NE.0) STRING = LINE(IBEG(N):IEND(N))
 CCC      END
 CCCC
 CCCC
-CCCC_BEGIN_DOCALC
-CCCC     =======================================
-CCC      REAL FUNCTION DOCALC(VALUE,OPER,VALUE0)
-CCCC     =======================================
-CCCC Do simple arithmetic on two arguments
-CCCC
-CCCC--- Arguments:
-CCCC
-CCCC VALUE  (I) REAL     Value of first argument
-CCCC
-CCCC OPER   (I) INTEGER  =1 add
-CCCC                     =2 subtract
-CCCC                     =3 mutliply
-CCCC                     =4 divide
-CCCC                     =5 evaluate VALUE0 * 10**VALUE
-CCCC
-CCCC VALUE0 (I) REAL     Value of second argument
-CCCC
-CCCC NB. This subroutine not currently used in any CCCP4 programs. WRR, Sep 1993
-CCCC
-CCCC_END_DOCALC
-CCCC     .. Scalar Arguments ..
-CCC      REAL                 VALUE,VALUE0
-CCC      INTEGER              OPER
-CCCC     ..
-CCCC     .. Local Scalars ..
-CCC      INTEGER              DIVIDE,EENOTN,MINUS,MULT,PLUS
-CCCC     ..
-CCCC     .. Intrinsic Functions ..
-CCC      INTRINSIC            ABS
-CCCC     ..
-CCCC     .. Data statements ..
-CCC      DATA                 PLUS,MINUS,MULT,DIVIDE,EENOTN/1,2,3,4,5/
-CCCC     ..
-CCCC
-CCCC
-CCC      IF (OPER.EQ.PLUS) DOCALC = VALUE0 + VALUE
-CCC      IF (OPER.EQ.MINUS) DOCALC = VALUE0 - VALUE
-CCC      IF (OPER.EQ.MULT) DOCALC = VALUE0*VALUE
-CCCC
-CCCC
-CCC      IF (OPER.EQ.DIVIDE) THEN
-CCC          IF (VALUE.NE.0.0) DOCALC = VALUE0/VALUE
-CCC          IF (VALUE.EQ.0.0) DOCALC = 0.0
-CCC      END IF
-CCCC
-CCCC
-CCC      IF (OPER.EQ.EENOTN) THEN
-CCC          IF (ABS(VALUE).LE.76.0) DOCALC = VALUE0* (10.0**VALUE)
-CCC          IF (ABS(VALUE).GT.76.0) DOCALC = 0.0
-CCC      END IF
-CCCC
-CCCC
-CCC      END
 C
 C_BEGIN_SBLANK
 C     ==============================
