@@ -5315,7 +5315,7 @@ C---- First check that the MINDX is valid
 C
       IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
         WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
-     +    'From LWID : Index',MINDX,
+     +    'From LWIDX : Index',MINDX,
      +    ' is out of range (allowed 1..',MFILES,')'
         ISTAT = 2
         IFAIL = -1
@@ -5368,6 +5368,172 @@ C     New dataset to be added to header
       IF (DATWAVE.GT.0.0) THEN
         DWAVEL(ISET,MINDX) = DATWAVE
       ENDIF
+      END
+C
+C     ====================================================
+      SUBROUTINE LWIDRENAME(MINDX,PROJECT_NAME_OLD,
+     +     DATASET_NAME_OLD,PROJECT_NAME_NEW,DATASET_NAME_NEW)
+C     ====================================================
+C
+C---- Subroutine to rename a dataset. The information is changed
+C     in the COMMON block /HARCHA/ and so will affect subsequent
+C     calls which use this information.
+C     If the _OLD dataset is not found, the routine returns. To
+C     add new datasets, use LWIDC.
+C
+C---- Arguments :
+C
+C     MINDX         (I)	    INTEGER        indicates which MTZ file - 1 index
+C                                          points to both input and output files
+C
+C     PROJECT_NAME_OLD  (I) CHARACTER      old project name of dataset
+C                                          (strings longer than 64 will be truncated)
+C
+C     DATASET_NAME_OLD  (I) CHARACTER      old dataset name of dataset
+C                                          (strings longer than 64 will be truncated)
+C
+C     PROJECT_NAME_NEW  (I) CHARACTER      new project name of dataset
+C                                          (strings longer than 64 will be truncated)
+C
+C     DATASET_NAME_NEW  (I) CHARACTER      new dataset name of dataset
+C                                          (strings longer than 64 will be truncated)
+C
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS
+      PARAMETER (MFILES=4,MCOLS=500)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
+
+      INCLUDE 'mtzlib.fh'
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER MINDX
+      CHARACTER PROJECT_NAME_OLD*(*),DATASET_NAME_OLD*(*),
+     +          PROJECT_NAME_NEW*(*),DATASET_NAME_NEW*(*)
+C     ..
+      CHARACTER*64 CRYSTAL_NAME_OLD,CRYSTAL_NAME_NEW
+C
+
+      CRYSTAL_NAME_OLD = ' '
+      CRYSTAL_NAME_NEW = ' '
+      CALL LWIDRENAMEX(MINDX,PROJECT_NAME_OLD,CRYSTAL_NAME_OLD,
+     +     DATASET_NAME_OLD,PROJECT_NAME_NEW,CRYSTAL_NAME_NEW,
+     +     DATASET_NAME_NEW)
+
+      END
+C
+C     ====================================================
+      SUBROUTINE LWIDRENAMEX(MINDX,PROJECT_NAME_OLD,CRYSTAL_NAME_OLD,
+     +     DATASET_NAME_OLD,PROJECT_NAME_NEW,CRYSTAL_NAME_NEW,
+     +     DATASET_NAME_NEW)
+C     ====================================================
+C
+C---- Subroutine to rename a dataset. The information is changed
+C     in the COMMON block /HARCHA/ and so will affect subsequent
+C     calls which use this information.
+C     If the _OLD dataset is not found, the routine returns. To
+C     add new datasets, use LWIDX.
+C
+C---- Arguments :
+C
+C     MINDX         (I)	    INTEGER        indicates which MTZ file - 1 index
+C                                          points to both input and output files
+C
+C     PROJECT_NAME_OLD  (I) CHARACTER      old project name of dataset
+C                                          (strings longer than 64 will be truncated)
+C
+C     CRYSTAL_NAME_OLD  (I) CHARACTER      old crystal name of dataset
+C                                          (strings longer than 64 will be truncated)
+C
+C     DATASET_NAME_OLD  (I) CHARACTER      old dataset name of dataset
+C                                          (strings longer than 64 will be truncated)
+C
+C     PROJECT_NAME_NEW  (I) CHARACTER      new project name of dataset
+C                                          (strings longer than 64 will be truncated)
+C
+C     CRYSTAL_NAME_NEW  (I) CHARACTER      new crystal name of dataset
+C                                          (strings longer than 64 will be truncated)
+C
+C     DATASET_NAME_NEW  (I) CHARACTER      new dataset name of dataset
+C                                          (strings longer than 64 will be truncated)
+C
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS
+      PARAMETER (MFILES=4,MCOLS=500)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
+
+      INCLUDE 'mtzlib.fh'
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER MINDX
+      CHARACTER PROJECT_NAME_OLD*(*),CRYSTAL_NAME_OLD*(*),
+     +          DATASET_NAME_OLD*(*),PROJECT_NAME_NEW*(*),
+     +          CRYSTAL_NAME_NEW*(*),DATASET_NAME_NEW*(*)
+C     ..
+C     .. Local Scalars ..
+      INTEGER ISET,ISTAT,IFAIL,JDO50
+      CHARACTER LINE*400
+C
+C---- First check that the MINDX is valid
+C
+      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
+        WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
+     +    'From LWIDRENAMEX : Index',MINDX,
+     +    ' is out of range (allowed 1..',MFILES,')'
+        ISTAT = 2
+        IFAIL = -1
+C
+C            ************************
+        CALL LERROR(ISTAT,IFAIL,LINE)
+C            ************************
+C
+      ENDIF
+
+C     Check if PROJECT_NAME / CRYSTAL_NAME / DATASET_NAME are too long.
+      IF (LENSTR(PROJECT_NAME_OLD).GT.64)
+     +  PROJECT_NAME_OLD = PROJECT_NAME_OLD(1:64)
+      IF (LENSTR(CRYSTAL_NAME_OLD).GT.64)
+     +  CRYSTAL_NAME_OLD = CRYSTAL_NAME_OLD(1:64)
+      IF (LENSTR(DATASET_NAME_OLD).GT.64)
+     +  DATASET_NAME_OLD = DATASET_NAME_OLD(1:64)
+      IF (LENSTR(PROJECT_NAME_NEW).GT.64)
+     +  PROJECT_NAME_NEW = PROJECT_NAME_NEW(1:64)
+      IF (LENSTR(CRYSTAL_NAME_NEW).GT.64)
+     +  CRYSTAL_NAME_NEW = CRYSTAL_NAME_NEW(1:64)
+      IF (LENSTR(DATASET_NAME_NEW).GT.64)
+     +  DATASET_NAME_NEW = DATASET_NAME_NEW(1:64)
+
+C     Check that this project/dataset already exists.
+C     N.B. datasets indentified by project/dataset pair only at this stage,
+C       so don't check crystal. 
+      DO 50 JDO50 = 1,NSETW(MINDX)
+        IF (PROJECT_NAME_OLD(1:LENSTR(PROJECT_NAME_OLD)).EQ.
+     +      ENTRY_ID(JDO50,MINDX) .AND. 
+     +      DATASET_NAME_OLD(1:LENSTR(DATASET_NAME_OLD)).EQ.
+     +      DIFFRN_ID(JDO50,MINDX)) THEN
+          ISET = JDO50
+          GOTO 60
+        ENDIF
+ 50   CONTINUE
+
+C     Old dataset not found
+      WRITE(LINE,'(A,A64,A64,A)') 'From LWIDRENAMEX : dataset ',
+     +      PROJECT_NAME_OLD(1:64),DATASET_NAME_OLD(1:64),
+     +      ' not found.'
+      CALL CCPERR(2,LINE)
+      RETURN
+
+ 60   CONTINUE
+
+      ENTRY_ID(ISET,MINDX) = 
+     +    PROJECT_NAME_NEW(1:LENSTR(PROJECT_NAME_NEW))
+      CRYSTAL_ID(ISET,MINDX) = 
+     +    CRYSTAL_NAME_NEW(1:LENSTR(CRYSTAL_NAME_NEW))
+      DIFFRN_ID(ISET,MINDX) = 
+     +    DATASET_NAME_NEW(1:LENSTR(DATASET_NAME_NEW))
 
       END
 C
