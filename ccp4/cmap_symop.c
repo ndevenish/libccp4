@@ -65,7 +65,7 @@ int ccp4_cmap_seek_symop(CMMFile *mfile, int isymop, unsigned int whence)
 /*! get a symop string of 80 characters 
  \param mfile (CMMFile *)
  \param buffer (char *) array of bytes which will contain the symop string.
- This must be at least 80 characters long.
+ This must be at least 81 characters long (including space for null terminator).
  \return 1 on success, 0 if no symops, EOF on failure */
 int ccp4_cmap_get_symop(CMMFile *mfile, char *buffer)
 {

@@ -851,7 +851,7 @@ FORTRAN_SUBR( MRDHDR, mrdhdr,
   ioArrayPrint(ioArray[ii]);
   HeaderPrint(ioArray[ii]->mapfile);
 
-  strncpy(title,temp_title,MIN(strlen(temp_title),FTN_LEN(title)));
+  ccp4_CtoFString(FTN_STR(title),FTN_LEN(title),temp_title);
   /* free malloc'ed memory */
   free(temp_map);
   /* record for FORTRAN API */
@@ -1767,7 +1767,7 @@ FORTRAN_SUBR( MSYCPY, msycpy,
 	      (int *iunit, int *ounit))
 {  
   int ii,jj, nsym, i;
-  char symop[80];
+  char symop[81];
 
   if ( (ii = GetChannel(*iunit)) == MAXFILES || !ioArray[ii]->mapfile
        || (jj = GetChannel(*ounit)) == MAXFILES || !ioArray[jj]->mapfile) 
@@ -1778,8 +1778,8 @@ FORTRAN_SUBR( MSYCPY, msycpy,
   ccp4_cmap_seek_symop(ioArray[ii]->mapfile,0,SEEK_SET);
 
   for (i=0; i != nsym ; ++i) {
-    ccp4_cmap_get_symop(ioArray[ii]->mapfile, symop);
-    ccp4_cmap_set_symop(ioArray[jj]->mapfile, symop);
+    if (ccp4_cmap_get_symop(ioArray[ii]->mapfile, symop) == 1) 
+      ccp4_cmap_set_symop(ioArray[jj]->mapfile, symop);
   }
 
   last_Read = ii;
@@ -1794,7 +1794,7 @@ FORTRAN_SUBR( CCP4_MAP_COPY_SYMMETRY,
      /* see MSYCPY */
 {  
   int ii,jj, nsym, i;
-  char symop[80];
+  char symop[81];
 
   if ( (ii = GetChannel(*iunit)) == MAXFILES || !ioArray[ii]->mapfile
        || (jj = GetChannel(*ounit)) == MAXFILES || !ioArray[jj]->mapfile) 
@@ -1805,8 +1805,8 @@ FORTRAN_SUBR( CCP4_MAP_COPY_SYMMETRY,
   ccp4_cmap_seek_symop(ioArray[ii]->mapfile,0,SEEK_SET);
 
   for (i=0; i != nsym ; ++i) {
-    ccp4_cmap_get_symop(ioArray[ii]->mapfile, symop);
-    ccp4_cmap_set_symop(ioArray[jj]->mapfile, symop);
+    if (ccp4_cmap_get_symop(ioArray[ii]->mapfile, symop) == 1) 
+      ccp4_cmap_set_symop(ioArray[jj]->mapfile, symop);
   }
 
   last_Read = ii;
