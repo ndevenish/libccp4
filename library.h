@@ -177,6 +177,14 @@
 #if defined (VMS)
 #  define KNOWN_MACHINE
 #endif
+
+/* First attemt at porting to nt wsing the visual fortran and MVC++         */
+/* MVS stands for Microsoft Visual Studio - better than VMS                 */
+#if defined(_MVS) 
+#  define CALL_LIKE_MVS 1
+#  define KNOWN_MACHINE
+#endif
+
 /* {\tt f2c}\index{f2c@{\tt f2c}} misses the MIL--STD                       */
 /* \idx{bit-twiddling intrinsics}.  Its calling                             */
 /* convention is like \idx{Sun} only for a {\em single\/} [[CHARACTER]]     */
@@ -222,7 +230,12 @@
 #  define NOUNISTD
 #else
 #  include <sys/types.h>
-#  include <sys/times.h>
+#  ifndef _MVS
+#    include <sys/times.h>
+#  endif
+#  ifdef _MVS
+#    define NOUNISTD
+#  endif
 #endif
 
 #ifdef stardent                 /* who knows if this works anyhow... */
@@ -243,8 +256,10 @@
 #ifndef NOUNISTD
 #  include <unistd.h>
 #else
-#  ifndef VMS
-#    include <sys/file.h>       /* ESV, old Concentrix */ /* non-POSIX */
+#  ifndef VMS 
+#    ifndef _MVS
+#      include <sys/file.h>     /* ESV, old Concentrix */ /* non-POSIX */
+#    endif
 #  endif
 #endif
 #ifndef NOSTDLIB                /* for TitanOS 4.2, at least? */
@@ -255,7 +270,7 @@
 #include <ctype.h>
 
 #if defined(_AIX) || defined (__hpux) || defined(F2C) ||\
-    defined(G77) /* would do no harm on others, though */
+    defined(G77) || defined(_WIN32)/* would do no harm on others, though */
 #  include <time.h>
 #endif
 /* We need INT_MAX and DBL_MAX defined for routine Hgetlimits               */
