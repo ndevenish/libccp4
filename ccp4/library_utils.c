@@ -99,7 +99,7 @@ int ccp4_utils_translate_mode_float(float *out, const void *buffer, int dim, int
   unsigned char *ucp;
   unsigned short *usp;
   float *fp = out, *ufp, tmp1, tmp2;
-  register int ctr;
+  register int ctr=0;
 
   switch(mode) {
   case 0:
