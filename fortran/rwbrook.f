@@ -1493,7 +1493,7 @@ C     .. Data Statement ..
      *          'TL','PB','BI','PO','AT','RN','FR','RA','AC','TH',
      *          'PA',' U','NP','PU','AM','CM','BK','CF','ES','FM',
      *          ' D','AN'/
-      DATA IHATM/'0H','1H','2H','3H','4H','5H','6H','7H','8H','9H'/
+      DATA IHATM/'0H','1H','2H','3H','4H','5H','6H','7H','8H','HH'/
       DATA IAA/' A'/,ISP/' '/
       DATA ORTH/'A // XO, C* // ZO (STANDARD BROOKHAVEN)',
      *          'B // XO, A* // ZO',
