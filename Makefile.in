@@ -46,18 +46,11 @@
 # top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
 
 SHELL       = /bin/sh
-incdir      = $(top_srcdir)/include
 srcdir	    = $(top_srcdir)/lib/src
 L           = libccp4.a#        convenient abbreviation only
 
 INSTALL_BIN = cp# fixme: should be set by configure
 INSTALL_DATA = cp# fixme: should be set by configure
-
-# this is for the benefit of makes that don't pass variable values in
-# recursive invocations, so that you can overrise these values on the
-# command line at the top level
-MVARS = libdir=$(libdir) bindir=$(bindir) FC="$(FC)" CC="$(CC)" \
-        FFLAGS="$(FFLAGS)" CFLAGS="$(CFLAGS)" LNS="$(LNS)" M4="$(M4)" F=$F
 
 # how to add a member to an archive (second and first args
 # respectively); this might need to be set by configure:
@@ -256,19 +249,19 @@ gdummy : $L(gdummy.o)
 
 # C stuff: (these are kept as whole modules)
 
-$L(library.o) : $(srcdir)/library.c $(incdir)/machine.h \
-   $(incdir)/dfconvert.h  $(incdir)/diconvert.h
-	$(CC) $(CFLAGS) -I$(incdir) -c $(srcdir)/library.c
+$L(library.o) : $(srcdir)/library.c $(srcdir)/machine.h $(srcdir)/dfconvert.h \
+                $(srcdir)/diconvert.h
+	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/library.c
 	$(AR) $L library.o; rm library.o
 library : $L(library.o)
 
-$L(binsortint.o) : $(srcdir)/binsortint.c $(incdir)/binsort.h
-	$(CC) $(CFLAGS) -I$(incdir) -c $(srcdir)/binsortint.c
+$L(binsortint.o) : $(srcdir)/binsortint.c $(srcdir)/binsort.h
+	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/binsortint.c
 	$(AR) $L binsortint.o; rm binsortint.o
 binsortint : $L(binsortint.o)
 
 $L(ucurse.o) : $(srcdir)/ucurse.c
-	$(CC) $(CFLAGS) -c $(srcdir)/ucurse.c
+	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/ucurse.c
 	$(AR) $L ucurse.o; rm ucurse.o
 
 #
@@ -276,8 +269,8 @@ $L(ucurse.o) : $(srcdir)/ucurse.c
 #
 
 #  a program:
-binsort : $(srcdir)/binsort.c $(incdir)/binsort.h
-	$(CC) $(CFLAGS) -I$(incdir) -o $@ $(srcdir)/binsort.c
+binsort : $(srcdir)/binsort.c $(srcdir)/binsort.h
+	$(CC) $(CFLAGS) -I$(srcdir) -o $@ $(srcdir)/binsort.c
 # for testing with src directory in path:
 	-rm -f ../../src/binsort
 	$(LNS) binsort ../../src/binsort
