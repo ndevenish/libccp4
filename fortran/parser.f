@@ -839,11 +839,11 @@ C---- for cases (a) & (b), this is a single field:
 C     case (c) is more than 1 field
 C     
       SPGNAMS = ' '
+      SPGNAM = ' '
       IF (JTOK.GT.NTOK) THEN
          CALL  PUTLIN(' No symmetry data !!!','CURWIN')
       ELSE
          IF (JTOK.EQ.NTOK) THEN
-            SPGNAM = ' '
             IF (NSYM.GT.0) THEN
                CALL  PUTLIN('Warning: symmetry already given','CURWIN')
             ENDIF
@@ -886,12 +886,10 @@ C
             CALL  CCPUPC(LINE)
             CALL  SYMFR2(LINE,IBEG(JTOK),NSYM,RSYM)
             NUMSGP = 0
-            SPGNAM = ' '
             PGNAME = ' '
 C     
          END IF
       END IF
-      SPGNAM = SPGNAMS(1:LENSTR(SPGNAMS))
       END     
 C     
 C_BEGIN_RDHEAD
