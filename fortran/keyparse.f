@@ -34,6 +34,7 @@ C     Fixme: consider whether more obscure names worthwhile to avoid
 C     possible clashes.
 C
 C     Dave Love $Date$
+C     Additions by Kevin Cowtan
 C     
       subroutine memoparse (echo)
 
@@ -64,7 +65,7 @@ C     Let's not mess around...
       integer ntok
 
 C     locals 
-      logical someerr, eof, argerr, success
+      logical someerr, eof, argerr, success(maxtoks)
       integer i, k
 
       save
@@ -74,14 +75,16 @@ C     locals
       argerr = .false.
       line = ' '
 C     in case of immediate EOF:
-      success = .true.
+      success(1) = .true.
       call parser(memokey, line, ibeg, iend, ityp, fvalue, cvalue, idec,
      +     ntok, eof, echo)
 C     END == EOF always
       if (memokey.eq.'END') eof = .true.
 C     not sure if necessary:
       if (eof) memokey = ' '
-      success = .false.
+      do i=1,ntok
+       success(i) = .false.
+      enddo
       return
       
       entry parsekey (key, flag)
@@ -89,7 +92,7 @@ C     bare KEY -- set FLAG if found
       if (memokey.eq.key) then
 C       matched key
         if (ntok.eq.1) then
-          success = .true.
+          success(1) = .true.
           flag = .true.
         else
           argerr = .true.
@@ -103,7 +106,9 @@ C     KEY + rest of line -- returned in REST
       if (memokey.eq.key) then
 C       matched key
         if (ntok.gt.1) then
-          success = .true.
+          do i=1,ntok
+           success(i) = .true.
+          enddo
           rest = line (ibeg(2):iend(ntok))
         else
           argerr = .true.
@@ -119,7 +124,9 @@ C       matched key
         if (ntok.eq.2 .and. ityp (2).eq.2
      +       .and. idec (2).eq. (iend(2)-ibeg(2)+1)) then
           ival = nint (fvalue(2))
-          success = .true.
+          do i=1,2
+           success(i) = .true.
+          enddo
         else 
           argerr = .true.
           call lerror (1, 0, 'Integer argument expected')
@@ -133,7 +140,9 @@ C     KEY + real -- returned in RVAL
 C       matched key
         if (ntok.eq.2 .and. ityp (2).eq.2) then
           rval = fvalue(2)
-          success = .true.
+          do i=1,2
+           success(i) = .true.
+          enddo
         else 
           argerr = .true.
           call lerror (1, 0, 'Real argument expected')
@@ -149,7 +158,7 @@ C     KEY + upto N integers -- N reset to number found, returned in IVALS
             if (ityp (i+1).ne.2) return
             ivals (i) = nint (fvalue (i+1))
             n = i
-            success = .true.
+            success(i) = .true.
           end do
         else
           argerr = .true.
@@ -166,7 +175,7 @@ C     KEY + upto N reals -- N reset to number found, returned in RVALS
             if (ityp (i+1).ne.2) return
             rvals (i) = fvalue (i+1)
             n = i
-            success = .true.
+            success(i) = .true.
           end do
         else
           argerr = .true.
@@ -179,12 +188,15 @@ C     KEY + upto N reals -- N reset to number found, returned in RVALS
 C     KEY + subkeyword SUB -- set FLAG if found
       if (memokey.eq.key) then
 C       matched key
-       success = .true.
+       success(1) = .true.
        if (subkey.ne.' ') then
         do k=2,ntok
          memosubkey=cvalue(k)
          call ccpupc(memosubkey)
-         if (memosubkey.eq.subkey) flag=.true.
+         if (memosubkey.eq.subkey) then
+          flag=.true.
+          success(k)=.true.
+         endif
         enddo
        else
         flag=.true.
@@ -197,6 +209,7 @@ C     KEY + n'th integer after subkey -- returned in IVAL
 C     ERROR only if flag=true
       if (memokey.eq.key) then
 C  ... matched key
+       success(1) = .true.
        k=1
        if (subkey.ne.' ') then
         k=9999
@@ -208,10 +221,11 @@ C  ... matched key
        endif
        if (k.le.ntok) then
 C  .... matched subkey (if set)
+        success(k) = .true.
         if (ntok.ge.nth+k .and. ityp(nth+k).eq.2
      +    .and. idec(nth+k) .eq. (iend(nth+k)-ibeg(nth+k)+1)) then
          ival = nint (fvalue(nth+k))
-         success = .true.
+         success(nth+k) = .true.
         else if (flag) then
          argerr = .true.
          call lerror (1, 0, 'Integer sub-argument expected')
@@ -225,6 +239,7 @@ C     KEY + n'th integer after subkey -- returned in IVAL
 C     ERROR only if flag=true
       if (memokey.eq.key) then
 C  ... matched key
+       success(1) = .true.
        k=1
        if (subkey.ne.' ') then
         k=9999
@@ -236,9 +251,10 @@ C  ... matched key
        endif
        if (k.le.ntok) then
 C  .... matched subkey (if set)
+        success(k) = .true.
         if (ntok.ge.nth+k .and. ityp(nth+k).eq.2) then
          rval = fvalue(nth+k)
-         success = .true.
+         success(nth+k) = .true.
         else if (flag) then
          argerr = .true.
          call lerror (1, 0, 'Real sub-argument expected')
@@ -251,6 +267,7 @@ C  .... matched subkey (if set)
 C     KEY + n'th integer after subkey -- returned in IVAL
       if (memokey.eq.key) then
 C  ... matched key
+       success(1) = .true.
        k=1
        if (subkey.ne.' ') then
         k=9999
@@ -262,9 +279,10 @@ C  ... matched key
        endif
        if (k.le.ntok) then
 C  .... matched subkey (if set)
+        success(k) = .true.
         if (ntok.ge.nth+k .and. (ityp(nth+k).eq.1 .or. .not.flag) ) then
          rest = line(ibeg(nth+k):iend(nth+k))
-         success = .true.
+         success(nth+k) = .true.
         else if (flag) then
          argerr = .true.
          call lerror (1, 0, 'Character sub-argument expected')
@@ -277,7 +295,9 @@ C  .... matched subkey (if set)
 C     CELL -- returned in CELL
       if (memokey.eq.'CELL') then
         call rdcell (2, ityp, fvalue, ntok, cell)
-        success = .true.
+        do i=1,ntok
+         success(i) = .true.
+        enddo
       end if
       return
       
@@ -287,7 +307,9 @@ C     SYMMetry -- usual values returned
         nsym = 0
         call rdsymm(2, line, ibeg, iend, ityp, fvalue, ntok, spgnam,
      +       numsgp, pgname, nsym, nsymp, rsym)
-        success = .true.
+        do i=1,ntok
+         success(i) = .true.
+        enddo
       end if
       return
       
@@ -295,7 +317,9 @@ C     SYMMetry -- usual values returned
 C     RESOlution -- usual values returned
       if (memokey.eq.'RESO') then
         call rdreso (2, ityp, fvalue, ntok, resmin, resmax, smin, smax)
-        success = .true.
+        do i=1,ntok
+         success(i) = .true.
+        enddo
       end if
       return
       
@@ -303,7 +327,9 @@ C     RESOlution -- usual values returned
 C     LABIn -- requires mtz file number, program labels, and number of.
       if (memokey.eq.'LABI') then
         call lkyin(mtznum,prglab,nprglab,ntok,line,ibeg,iend)
-        success = .true.
+        do i=1,ntok
+         success(i) = .true.
+        enddo
       end if
       return
       
@@ -311,7 +337,9 @@ C     LABIn -- requires mtz file number, program labels, and number of.
 C     LABOut -- requires mtz file number, program labels, and number of.
       if (memokey.eq.'LABO') then
         call lkyout(mtznum,prglab,nprglab,ntok,line,ibeg,iend)
-        success = .true.
+        do i=1,ntok
+         success(i) = .true.
+        enddo
       end if
       return
       
@@ -319,10 +347,19 @@ C     LABOut -- requires mtz file number, program labels, and number of.
 C     Call at end of tests for possible 'Invalid keyword' diagnostic or
 C     abort if at EOF and had an error.  Continue processing (no EOF)
 C     if (cont).
-      if (.not.success .and. .not.argerr .and. .not.eof) then
+      if (.not.argerr .and. .not.eof) then
+       if (.not.success(1)) then
         call lerror (1, 0, 'Invalid keyword')
         someerr = .true.
-      else if (argerr) then
+       endif
+       do i=2,ntok
+        if (.not.success(i)) then
+         call lerror (1, 0, 'Invalid sub-keyword')
+         someerr = .true.
+        endif
+       enddo
+      endif
+      if (argerr) then
         someerr = .true.
       end if
       argerr = .false.
@@ -332,7 +369,9 @@ C     if (cont).
       else
         cont = .true.
       end if
-      success = .false.
+      do i=1,ntok
+       success(i) = .false.
+      enddo
       return
 
       end
