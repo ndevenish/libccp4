@@ -1475,6 +1475,34 @@ FORTRAN_SUBR ( LWIDC, lwidc,
   free(temp_dname); 
 }
 
+/* Fortran wrapper for ccp4_lwidx */
+FORTRAN_SUBR ( LWIDX, lwidx,
+	       (const int *mindx, const fpstr project_name, const fpstr crystal_name,
+		  const fpstr dataset_name, float datcell[6], float *datwave,
+                  int project_name_len, int crystal_name_len, int dataset_name_len),
+	       (const int *mindx, const fpstr project_name, const fpstr crystal_name,
+		  const fpstr dataset_name, float datcell[6], float *datwave),
+	       (const int *mindx, const fpstr project_name, int project_name_len,
+		  const fpstr crystal_name, int crystal_name_len,
+		  const fpstr dataset_name, int dataset_name_len,
+		  float datcell[6], float *datwave))
+
+{ char *temp_xname, *temp_pname, *temp_dname;
+
+ CMTZLIB_DEBUG(puts("CMTZLIB_F: LWIDX");)
+
+ if (MtzCheckSubInput(*mindx,"LWIDX",2)) return;
+
+ temp_pname = ccp4_FtoCString(FTN_STR(project_name), FTN_LEN(project_name));
+ temp_xname = ccp4_FtoCString(FTN_STR(crystal_name), FTN_LEN(crystal_name));
+ temp_dname = ccp4_FtoCString(FTN_STR(dataset_name), FTN_LEN(dataset_name));
+
+  ccp4_lwidx(mtzdata[*mindx-1], temp_xname, temp_dname, temp_pname, datcell, datwave);
+  free(temp_xname); 
+  free(temp_pname); 
+  free(temp_dname); 
+}
+
 /** Fortran wrapper to update cell of output MTZ file. Overall
  * cell is obsolete - we only store crystal cell dimensions.
  * Therefore this simply writes the cell dimensions for any
@@ -1513,7 +1541,7 @@ FORTRAN_SUBR ( LWCELL, lwcell,
  MtzHklcoeffs(cell, coefhkl[*mindx-1]);
 }
 
-/* Fortran wrapper for ccp4_lwidas */
+/* Fortran wrapper for MtzAssignColumn */
 FORTRAN_SUBR ( LWIDAS, lwidas,
 	       (const int *mindx, int *nlprgo, fpstr pname, fpstr dname, int *iappnd,
                       int pname_len, int dname_len),
@@ -1584,6 +1612,61 @@ FORTRAN_SUBR ( LWIDAS, lwidas,
   }
 
   free(project_name);
+  free(crystal_name);
+  free(dataset_name);
+
+}
+
+/* Fortran wrapper for MtzAssignColumn */
+FORTRAN_SUBR ( LWIDASX, lwidasx,
+	       (const int *mindx, int *nlprgo, fpstr xname, fpstr dname, int *iappnd,
+                      int xname_len, int dname_len),
+	       (const int *mindx, int *nlprgo, fpstr xname, fpstr dname, int *iappnd),
+	       (const int *mindx, int *nlprgo, fpstr xname, int xname_len, 
+                      fpstr dname, int dname_len, int *iappnd))
+{int i,j,k,istart;
+  char *crystal_name;
+  char *dataset_name;
+
+  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWIDASX");)
+
+  if (MtzCheckSubInput(*mindx,"LWIDASX",2)) return;
+
+  crystal_name = (char *) ccp4_utils_malloc((*nlprgo)*(xname_len+1)*sizeof(char));
+  dataset_name = (char *) ccp4_utils_malloc((*nlprgo)*(dname_len+1)*sizeof(char));
+
+  for (i = 0; i < *nlprgo; ++i) {
+    for (j = 0; j < xname_len; ++j) {
+      if (xname[xname_len*i+j] == ' ') {
+        break;
+      } else {
+       crystal_name[i*(xname_len+1)+j] = xname[xname_len*i+j];
+      }
+    }
+    crystal_name[i*(xname_len+1)+j] = '\0';
+  }
+
+  for (i = 0; i < *nlprgo; ++i) {
+    for (j = 0; j < dname_len; ++j) {
+      if (dname[dname_len*i+j] == ' ') {
+        break;
+      } else {
+        dataset_name[i*(dname_len+1)+j] = dname[dname_len*i+j];
+      }
+    }
+    dataset_name[i*(dname_len+1)+j] = '\0';
+  }
+
+  /* if we are appending columns, shift collookup_out */
+  istart = 0;
+  if (*iappnd == 1) istart = MtzNumActiveCol(mtzdata[*mindx-1]);
+
+  for (i = 0; i < *nlprgo; ++i) {
+    if (strlen(crystal_name+i*(xname_len+1)) && strlen(dataset_name+i*(dname_len+1)))
+      MtzAssignColumn(mtzdata[*mindx-1], collookup_out[*mindx-1][i+istart], 
+          crystal_name+i*(xname_len+1), dataset_name+i*(dname_len+1));
+  }
+
   free(crystal_name);
   free(dataset_name);
 }
