@@ -147,6 +147,14 @@ void ccp4spg_free(CCP4SPG **sp);
  */
 void ccp4spg_register_by_ccp4_num(int numspg);
 
+/** Look up spacegroup by set of symmetry operators and load into
+ * static storage of csymlib_f.
+ * @param nops number of symops
+ * @param rsm symmetry operators
+ * @return void
+ */
+void ccp4spg_register_by_symops(int nops, float rsm[][4][4]);
+
 /** Derive centering operators from Hall symbol (deprecated).
  * Centering operators are now read from syminfo.lib
  * @param symbol_Hall Hall symbol for spacegroup

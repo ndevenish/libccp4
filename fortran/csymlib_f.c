@@ -471,6 +471,35 @@ FORTRAN_SUBR ( CCP4SPG_F_GET_LAUE, ccp4spg_f_get_laue,
   ccp4_CtoFString(FTN_STR(launam),FTN_LEN(launam),spacegrp[*sindx-1]->laue_name);
 
 }
+/** Return ranges on H K L appropriate to spacegroup.
+ * @param sindx index of this spacegroup.
+ * @param nlaue Laue number
+ * @param launam Laue name
+ */
+FORTRAN_SUBR ( HKLRANGE, hklrange,
+               (int *ihrng0, int *ihrng1, int *ikrng0, int *ikrng1, int *ilrng0, int *ilrng1),
+               (int *ihrng0, int *ihrng1, int *ikrng0, int *ikrng1, int *ilrng0, int *ilrng1),
+               (int *ihrng0, int *ihrng1, int *ikrng0, int *ikrng1, int *ilrng0, int *ilrng1))
+{
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: HKLRANGE");)
+
+  if (!spacegroup) {
+    printf("HKLRANGE: No spacegroup loaded yet! \n");
+    return;
+  }
+
+  *ihrng0 = - (*ihrng1);
+  *ikrng0 = - (*ikrng1);
+  *ilrng0 = - (*ilrng1);
+
+  if (!ccp4spg_is_in_asu(spacegroup,*ihrng0,1,1)) *ihrng0 = 0;
+  if (!ccp4spg_is_in_asu(spacegroup,*ihrng1,1,1)) *ihrng1 = 0;
+  if (!ccp4spg_is_in_asu(spacegroup,1,*ikrng0,1)) *ikrng0 = 0;
+  if (!ccp4spg_is_in_asu(spacegroup,1,*ikrng1,1)) *ikrng1 = 0;
+  if (!ccp4spg_is_in_asu(spacegroup,1,1,*ilrng0)) *ilrng0 = 0;
+  if (!ccp4spg_is_in_asu(spacegroup,1,1,*ilrng1)) *ilrng1 = 0;
+
+}
 
 /** Return the Patterson group name and number corresponding to a spacegroup
  * identified by spacegroup name and point group name.
@@ -583,9 +612,12 @@ FORTRAN_SUBR ( ASUSET, asuset,
     printf("Reciprocal space symmetry: \n");
     printf("Space group: \"%s\" Point group: \"%s\" Laue group: \"%s\" \n",
        spacegroup->symbol_xHM,spacegroup->point_group,spacegroup->laue_name); 
-    printf("Asymmetric unit: \"%s\" \n",spacegroup->asu_descr); 
+    printf("Reference asymmetric unit: \"%s\" \n",spacegroup->asu_descr); 
+    printf("  (change of basis may be applied) \n");
     ccp4spg_print_recip_ops(spacegroup);
   }
+
+  free(op1);
 }
 
 /** Return symmetry operators and inverses, set up by ASUSET.
@@ -780,6 +812,8 @@ FORTRAN_SUBR ( CCP4SPG_F_LOAD_BY_OPS, ccp4spg_f_load_by_ops,
        spacegrp[*sindx-1]->laue_name); 
   printf("Asymmetric unit: \"%s\" \n",spacegrp[*sindx-1]->asu_descr); 
   ccp4spg_print_recip_ops(spacegrp[*sindx-1]);
+
+  free(op1);
 }
 
 /** Put reflection in asymmetric unit of spacegroup on index sindx.
@@ -908,8 +942,36 @@ void ccp4spg_register_by_ccp4_num(int numspg) {
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: ccp4spg_register_by_ccp4_num");)
 
+   /* free any existing spacegroup and start again */
+   if ( spacegroup ) ccp4spg_free(&spacegroup);
+
    spacegroup = ccp4spg_load_by_ccp4_num(numspg);
 
+}
+
+void ccp4spg_register_by_symops(int nops, float rsm[][4][4]) {
+
+  int i,k,l;
+  ccp4_symop *op1;
+
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: ccp4spg_register_by_symops");)
+
+  /* free any existing spacegroup and start again */
+  if ( spacegroup ) ccp4spg_free(&spacegroup);
+
+  /* identify spacegroup from supplied symops */
+  op1 = (ccp4_symop *) ccp4_utils_malloc(nops*sizeof(ccp4_symop));
+  for (i = 0; i < nops; ++i) {
+    for (k = 0; k < 3; ++k) {
+      for (l = 0; l < 3; ++l) {
+	op1[i].rot[k][l] = rsm[i][k][l];
+      }
+      op1[i].trn[k] = rsm[i][k][3];
+    }
+  }
+  spacegroup = ccp4_spgrp_reverse_lookup(nops,op1);
+
+  free(op1);
 }
 
 /** Fortran wrapper for ccp4spg_load_by_* functions.
@@ -1105,21 +1167,21 @@ FORTRAN_SUBR ( EPSLN, epsln,
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: EPSLN");)
 
-  if (!spacegroup) {
-    /* identify spacegroup from supplied symops */
-    op1 = (ccp4_symop *) ccp4_utils_malloc(*nsm*sizeof(ccp4_symop));
-    for (i = 0; i < *nsm; ++i) {
-      for (k = 0; k < 3; ++k) {
-        for (l = 0; l < 3; ++l) {
-	  op1[i].rot[k][l] = rsm[i][l][k];
-	}
-        op1[i].trn[k] = rsm[i][3][k];
+  /* identify spacegroup from supplied symops */
+  op1 = (ccp4_symop *) ccp4_utils_malloc(*nsm*sizeof(ccp4_symop));
+  for (i = 0; i < *nsm; ++i) {
+    for (k = 0; k < 3; ++k) {
+      for (l = 0; l < 3; ++l) {
+	op1[i].rot[k][l] = rsm[i][l][k];
       }
+      op1[i].trn[k] = rsm[i][3][k];
     }
-    spacegroup = ccp4_spgrp_reverse_lookup(*nsm,op1);
   }
+  spacegroup = ccp4_spgrp_reverse_lookup(*nsm,op1);
 
   if (spacegroup && *iprint > 0) ccp4spg_print_epsilon_zones(spacegroup);
+
+  free(op1);
 }
 
 FORTRAN_SUBR ( EPSLON, epslon,
@@ -1175,21 +1237,21 @@ FORTRAN_SUBR ( CENTRIC, centric,
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: CENTRIC");)
 
-  if (!spacegroup) {
-    /* identify spacegroup from supplied symops */
-    op1 = (ccp4_symop *) ccp4_utils_malloc(*nsm*sizeof(ccp4_symop));
-    for (i = 0; i < *nsm; ++i) {
-      for (k = 0; k < 3; ++k) {
-        for (l = 0; l < 3; ++l) {
-	  op1[i].rot[k][l] = rsm[i][l][k];
-	}
-        op1[i].trn[k] = rsm[i][3][k];
+  /* identify spacegroup from supplied symops */
+  op1 = (ccp4_symop *) ccp4_utils_malloc(*nsm*sizeof(ccp4_symop));
+  for (i = 0; i < *nsm; ++i) {
+    for (k = 0; k < 3; ++k) {
+      for (l = 0; l < 3; ++l) {
+	op1[i].rot[k][l] = rsm[i][l][k];
       }
+      op1[i].trn[k] = rsm[i][3][k];
     }
-    spacegroup = ccp4_spgrp_reverse_lookup(*nsm,op1);
   }
+  spacegroup = ccp4_spgrp_reverse_lookup(*nsm,op1);
 
   if (spacegroup && *iprint > 0) ccp4spg_print_centric_zones(spacegroup);
+
+  free(op1);
 }
 
 FORTRAN_SUBR ( CENTR, centr,
