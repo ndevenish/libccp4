@@ -216,9 +216,9 @@ C     ..
         LENG (I) = CCPE2I (LENGTH (I), LENDEF (I))
  10   CONTINUE
       IF (PRINT) THEN
-        WRITE (LUNSTO(), '(/
+        WRITE (LUNSTO(1), '(/
      +       '' Memory allocation (logical name, type, elements):'')')
-        WRITE (LUNSTO(), '(3X, A, 1X, A, 3X, I10)')
+        WRITE (LUNSTO(1), '(3X, A, 1X, A, 3X, I10)')
      +       (LENGTH (I), TYPE (I), LENG (I), I=1,N)
       ENDIF
       CALL CCPALC (ROUTNE, N, TYPE, LENG)
