@@ -398,7 +398,7 @@ static int NumberToSymop(char **symchs_begin, int spacegroup)
   for (i = 0; i < nsym; ++i)
     rotandtrn_to_symop(*symchs_begin+n_byt_symop*i, (*symchs_begin)+n_byt_symop*(i+1), spg->symop[i]);
 
-  ccp4spg_free(spg);
+  ccp4spg_free(&spg);
   
   return nsym;
 } 
