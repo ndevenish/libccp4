@@ -520,14 +520,15 @@ C
 C
       IF (ISTAT.NE.0) THEN
         CALL UGERR(0,ERRBUF)
-        IF (ERRBUF .NE. ' ') THEN
+C     (avoid VMS `Message number 00000000')
+        IF (ERRBUF .NE. ' ' .AND.
+     +       ERRBUF.NE.'Message number 00000000') THEN
           CALL QPRINT(0,'Last system error message:')
           CALL QPRINT(0,ERRBUF)
         ENDIF
       ENDIF
       CALL QPRINT(0,ERRSTR)
       CALL GETELAPSED
-C     (avoid VMS `Message number 00000000')
       IF (VAXVMS()) THEN
         IF (ISTAT.EQ.0) THEN
 C         success
@@ -1762,7 +1763,11 @@ C     =======================================
       CALL USTENV(LINE(1:LENSTR(LINE)),ISTAT)
 C     =======================================
       IF (ISTAT.NE.0) THEN
-        ERRSTR = 'Cannot create environment variable '
+        IF (VAX) THEN
+          ERRSTR = 'Cannot create environment variable '
+        ELSE
+          ERRSTR = 'Cannot create logical name '
+        ENDIF
         ERRSTR(36:) = LNAME
         CALL CCPERR(1,ERRSTR)
       END IF
