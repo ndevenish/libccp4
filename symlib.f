@@ -1851,20 +1851,6 @@ C     ..
 C
       NTOK = 0
       NSYM = 0
-C  Remove all spaces from SG name
-C
-      ILEN = LENSTR(NAMSPG_CIF)
-         NAMSPG_CIFS = NAMSPG_CIF(1:1)
-
-         IF(ILEN.GE.2) THEN
-          J = 1
-          DO I = 2,ILEN
-           IF( NAMSPG_CIF(I:I).NE.' ') THEN
-            NAMSPG_CIFS = NAMSPG_CIFS(1:J)//NAMSPG_CIF(J:J)
-            J = J + 1
-           END IF
-          END DO 
-         END IF
 C
    10 CONTINUE
 C
@@ -1939,6 +1925,20 @@ C----- Reset space group name to longest on offer
           LSPGRP = ISG
           NAMSPG_CIF = NAMSAV
 C
+C  Remove all spaces from SG name
+C
+      ILEN = LENSTR(NAMSPG_CIF)
+         NAMSPG_CIFS = NAMSPG_CIF(1:1)
+
+         IF(ILEN.GE.2) THEN
+          J = 1
+          DO I = 2,ILEN
+           IF( NAMSPG_CIF(I:I).NE.' ') THEN
+            NAMSPG_CIFS = NAMSPG_CIFS(1:J)//NAMSPG_CIF(I:I)
+            J = J + 1
+           END IF
+          END DO 
+         END IF
 C
 C---- Space-group found, convert NLIN lines of
 C     symmetry operators to matrices
