@@ -11,18 +11,18 @@
 # number of nested loops). On system V change RANLIB to "echo" since it's 
 # not used.
 #
-CCP4_MASTER = /nfs/dlpx1/home/xtal
-CCP4_LIB    = /home/ccp4/lib
+CCP4_MASTER = /nfs/dlpx1/ccpdisk/xtal
+CCP4_LIB    = /ccpdisk/ccp4/lib
 CCP4_BIN    = /pxbin
 FCOMP       = f77
-FFLAGS      = -Nc40 -L/home/ccp4/lib
-OPTIM       = -O2 
+FFLAGS      = -Nc40 -L/ccpdisk/ccp4/lib
+OPTIM       = -g3
 CCOMP       = cc
-CFLAGS      = -I/nfs/dlpx1/home/xtal/ccp4/include
+CFLAGS      = -I/nfs/dlpx1/ccpdisk/xtal/ccp4/include
 RANLIB      = echo "ranlib"
 SHELL       = /bin/sh
 
-FTARGETS   = ccplib fftlib maplib parser rwatom rwbrook modlib mthlib \
+FTARGETS   = ccplib fftlib maplib parser rwatom rwbrook modlib \
              symlib lcflib mtzlib diskio unix frodo_maplib hlplib
 
 GRAPHICS   = plot84lib graflib graphics
@@ -37,30 +37,34 @@ help:
 libs:	${CCP4_LIB}/libccp4.a
 
 ${CCP4_LIB}/libccp4.a: ${CTARGETS} ${FTARGETS} ${GRAPHICS}
-	-${RANLIB} ${CCP4_LIB}/libccp4.a
+	${RANLIB} ${CCP4_LIB}/libccp4.a
 
 ${FTARGETS} ${GRAPHICS}:
-	-@/bin/rm -rf `expr $@ : '.*/\(.*\)' '|' $@`.dir          ;
-	-@mkdir `expr $@ : '.*/\(.*\)' '|' $@`.dir                ; \
-	echo "fsplit $? ; ${FCOMP} ${FFLAGS} ${OPTIM} *.f -lccp4" ; \
-	cd `expr $@ : '.*/\(.*\)' '|' $@`.dir ; fsplit $?         ; \
-	${FCOMP} ${FFLAGS} ${OPTIM} *.f -lccp4                    ; \
+	-/bin/rm -rf $@.dir
+	mkdir $@.dir
+	cd $@.dir ; fsplit $?         ; \
+	${FCOMP} ${FFLAGS} -c ${OPTIM} *.f -lccp4  ; \
 	ar r ${CCP4_LIB}/libccp4.a *.o
-	-@/bin/rm -rf `expr $@ : '.*/\(.*\)' '|' $@`.dir
+	-/bin/rm -rf $@.dir
 	touch $@
 
 ${CTARGETS}:
-	-@/bin/rm -f *.o
+	/bin/rm -f *.o
 	${CCOMP} -c ${CFLAGS} $?
 	ar r ${CCP4_LIB}/libccp4.a *.o
-	-@/bin/rm -f *.o
+	/bin/rm -f *.o
 	touch $@
 
 binsort:
 	${CCOMP} ${CFLAGS} $@.c -o ${CCP4_BIN}/$@
 
+testlib:
+	ln testlib.for testlib.f
+	$(FCOMP) $(FFLAGS) $(OPTIM) -o testlib testlib.f -lccp4
+	rm testlib.f
+
 clean:
-	-rm -f *.f *.o ${FTARGETS} ${CTARGETS} ${GRAPHICS}
+	-rm -f *.f *.o ${FTARGETS} ${CTARGETS} ${GRAPHICS} testlib
 
 
 # Make dependencies:
@@ -73,7 +77,6 @@ parser:		${CCP4_MASTER}/ccp4/lib/src/parser.for
 rwatom:		${CCP4_MASTER}/ccp4/lib/src/rwatom.for
 rwbrook: 	${CCP4_MASTER}/ccp4/lib/src/rwbrook.for
 modlib:		${CCP4_MASTER}/ccp4/lib/src/modlib.for
-mthlib:		${CCP4_MASTER}/ccp4/lib/src/mthlib.for
 symlib:		${CCP4_MASTER}/ccp4/lib/src/symlib.for
 lcflib:		${CCP4_MASTER}/ccp4/lib/src/lcflib.for
 mtzlib:		${CCP4_MASTER}/ccp4/lib/src/mtzlib.for
@@ -86,3 +89,4 @@ binsortint:	${CCP4_MASTER}/ccp4/lib/src/binsortint.c
 library:	${CCP4_MASTER}/ccp4/lib/src/library.c
 ucurse:		${CCP4_MASTER}/ccp4/lib/src/ucurse.c
 frodo_maplib:	${CCP4_MASTER}/ccp4/lib/src/frodo_maplib.for
+testlib:	${CCP4_MASTER}/ccp4/lib/src/testlib.for
