@@ -1933,6 +1933,7 @@ C  occurances)
 C  e.g. "C 1 21 1" -> "C2"
 C  but  "P 31 2 1" -> "P3121"
 C
+      CALL CCPUPC(NAMSPG_CIF)
       ILEN = LENSTR(NAMSPG_CIF)
 C
       NAMSPG_CIFS = NAMSPG_CIF(1:1)
