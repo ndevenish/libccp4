@@ -5916,13 +5916,13 @@ C---- If datasets but no DCELL, default it to CELL
                 DCELL(I,JDO25,MINDX) = CELL(I,MINDX)
               ENDDO
             ENDIF
-            WRITE (LINE,FMT='(A7,1X,I7,1X,6F10.4)') 
+            WRITE (LINE,FMT='(A5,3X,I7,1X,6F10.4)') 
      +          'DCELL',SET_ID(JDO25,MINDX),
      +          (DCELL(I,JDO25,MINDX),I=1,6)
             CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C---- Only write wavelength if it has been set
             IF (DWAVEL(JDO25,MINDX).GT.0.0) THEN
-              WRITE (LINE,FMT='(A7,1X,I7,1X,F10.5)') 
+              WRITE (LINE,FMT='(A6,2X,I7,1X,F10.5)') 
      +          'DWAVEL',SET_ID(JDO25,MINDX),
      +          DWAVEL(JDO25,MINDX)
               CALL QWRITC(WLUN(MINDX),LINE(1:80))
