@@ -37,10 +37,11 @@ For information about key type values see binsortkey.h
 #include <stdlib.h>
 #ifndef NOUNISTD		/* ESV, for instance doesn't have it */
 #  include <unistd.h>
-#else
-#  include <sys/types.h>	/* necessary on Titan, at least */
 #endif
 #include <stddef.h>
+#include <sys/wait.h>
+#include <sys/types.h>		/* necessary on Titan, at least, and
+				   for POSIX wait */
 
 static int	fildesout[2],	/* file descriptors for "r" & "w" access */
 		fildesin[2];
@@ -87,10 +88,6 @@ KEYBUF consist of NKEYS entries, each of the form:
 
 #if defined (alliant) || defined (sun) || defined (solbourne)
   int srtbeg_ (nkeys, keybuf, lrecl, memsize)
-#endif
-
-#if defined (iris)
-  fortran srtbeg_ (nkeys, keybuf, lrecl, memsize)
 #endif
 
 int     	*keybuf;	/* keys description */
@@ -231,10 +228,6 @@ SRTRLS:	Release one record into Sort
   int srtrls_ (record)
 #endif
 
-#if defined (iris)
-  fortran srtrls_ (record)
-#endif
-
 char		*record;
 {
   register unsigned long ret;
@@ -266,10 +259,6 @@ SRTMRG:	Merge - finish release phase
 
 #if defined (alliant) || defined (sun) || defined (solbourne)
   int srtmrg_ ()
-#endif
-
-#if defined (iris)
-  fortran srtmrg_ ()
 #endif
 
 {
@@ -307,26 +296,34 @@ SRTRET:	Return 1 record from sort
   int srtret_ (record)
 #endif
 
-#if defined (iris)
-  fortran srtret_ (record)
-#endif
-
 char		*record;
 {
     register int	ret;
+# if defined (ESV) || defined (ultrix) || defined (ardent) || \
+    defined (titan) || defined (stardent) /* guessed as BSD-ish? apart from ESV */
+    union wait *status;
+#else  /* SysVile, POSIX */
+    int status;
+#endif
 
     if ((ret = fread(record, sizeof(char), recl, filin)) == recl)
       return(0);
-    else if (feof(filin) && ret == 0) {	/* ensure record not truncated */
+    /* else EOF or read error */
+    if ((int) wait (&status) < 0) { /* some error with sub-process */
       fclose(filin);
-      return(-1);
+      return (255);
     }
-    else {
-      ret=ferror(filin);
-      if (ret != 0) {
-	perror("Sort routine SRTRET: ");
-	return (ret);
-      } else			/* e.g. premature EOF */
-	return (256);
+    if (feof(filin) && status == 0
+	&& ret == 0) {		/* ensure record not truncated */
+      fclose(filin);
+      return(-1);		/* normal EOF */
     }
+    fclose(filin);
+    if (status != 0)
+      return (status);		/* sub-process abended */
+    ret=ferror(filin);
+    if (ret != 0) {
+      return (ret);
+    } else			/* e.g. premature EOF */
+      return (255);
 }
