@@ -273,6 +273,10 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
     spacegroup->chb[i][j] = sg_chb[i][j];
    }
   }
+  if (debug)
+    for (k = 0; k < 3; ++k) 
+      printf("chb: %f %f %f\n",spacegroup->chb[k][0],
+           spacegroup->chb[k][1],spacegroup->chb[k][2]);
 
   /* symmetry operators */
   spacegroup->nsymop_prim = sg_nsymp;
@@ -794,6 +798,7 @@ ccp4_symop *ccp4spg_norm_trans(ccp4_symop *op) {
     while (op->trn[i] >= 1.0) op->trn[i] -= 1.0;
   }
 
+  return op;
 }
 
 int ccp4_spgrp_equal( int nsym1, const ccp4_symop *op1, int nsym2, const ccp4_symop *op2 )
@@ -1458,6 +1463,16 @@ int ccp4spg_generate_origins(const char *namspg, const int nsym, const float rsy
     }
   }
   return norigins;
+}
+
+void ccp4spg_print_recip_spgrp(const CCP4SPG* sp)
+{
+    printf("Reciprocal space symmetry: \n");
+    printf("Space group: \"%s\" Point group: \"%s\" Laue group: \"%s\" \n",
+       sp->symbol_xHM,sp->point_group,sp->laue_name); 
+    printf("Reference asymmetric unit: \"%s\" \n",sp->asu_descr); 
+    printf("  (change of basis may be applied) \n");
+    ccp4spg_print_recip_ops(sp);
 }
 
 void ccp4spg_print_recip_ops(const CCP4SPG* sp)

@@ -500,6 +500,17 @@ int ccp4spg_generate_origins(const char *namspg, const int nsym, const float rsy
 			     float origins[][3], int *polarx, int *polary, int *polarz,
 			     const int iprint);
 
+/** Print details on reciprocal spacegroup.
+ * @param sp pointer to spacegroup
+ * @return void
+ */
+void ccp4spg_print_recip_spgrp(const CCP4SPG* sp);
+
+/** Print reciprocal symops.
+ * @param sp pointer to spacegroup
+ * @return void
+ */
+void ccp4spg_print_recip_ops(const CCP4SPG* sp);
 
 /** Convert string of type 0<=y<=1/4 to 0.0-delta, 0.25+delta, where
  * delta is set to 0.00001 Makes many assumptions about string.

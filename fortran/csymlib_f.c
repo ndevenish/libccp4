@@ -608,14 +608,7 @@ FORTRAN_SUBR ( ASUSET, asuset,
   *msymp = spacegroup->nsymop_prim;
   *mlaue = spacegroup->nlaue;
 
-  if (*lprint == FORTRAN_LOGICAL_TRUE) {
-    printf("Reciprocal space symmetry: \n");
-    printf("Space group: \"%s\" Point group: \"%s\" Laue group: \"%s\" \n",
-       spacegroup->symbol_xHM,spacegroup->point_group,spacegroup->laue_name); 
-    printf("Reference asymmetric unit: \"%s\" \n",spacegroup->asu_descr); 
-    printf("  (change of basis may be applied) \n");
-    ccp4spg_print_recip_ops(spacegroup);
-  }
+  if (*lprint == FORTRAN_LOGICAL_TRUE) ccp4spg_print_recip_spgrp(spacegroup);
 
   free(op1);
 }
@@ -806,12 +799,7 @@ FORTRAN_SUBR ( CCP4SPG_F_LOAD_BY_OPS, ccp4spg_f_load_by_ops,
     return;
   }
 
-  printf("Reciprocal space symmetry: \n");
-  printf("Space group: \"%s\" Point group: \"%s\" Laue group: \"%s\" \n",
-       spacegrp[*sindx-1]->symbol_xHM,spacegrp[*sindx-1]->point_group,
-       spacegrp[*sindx-1]->laue_name); 
-  printf("Asymmetric unit: \"%s\" \n",spacegrp[*sindx-1]->asu_descr); 
-  ccp4spg_print_recip_ops(spacegrp[*sindx-1]);
+  ccp4spg_print_recip_spgrp(spacegrp[*sindx-1]);
 
   free(op1);
 }
