@@ -551,7 +551,7 @@ int ccp4_lrtitl(const MTZ *mtz, char *title);
  * @param history
  * @return 
  */
-int ccp4_lrhist(const MTZ *mtz, char history[][MTZRECORDLENGTH]);
+int ccp4_lrhist(const MTZ *mtz, char history[][MTZRECORDLENGTH], int nlines);
 
 /** Get sort order from MTZ structure.
  * @param mtz Pointer to MTZ struct.
