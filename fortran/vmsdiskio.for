@@ -1363,7 +1363,7 @@ C     data address directly, without calling STR$ANALYZE_SDESC.)
       INTEGER IUNIT, NITEMS, RESULT, MODE, OLDMODE, NMODE(NCMAX), MITEM
       CHARACTER BUFFER*(*)
       COMMON /DISKIO_MODES_/ MAXNC, NMODE
-      IF (IUNIT.GT.MAXNC .OR. IUNIT.LT.0)
+      IF (IUNIT.GT.MAXNC .OR. IUNIT.LT.1)
      +     CALL CCPERR (1, 'QREADC: Bad unit number')
 C     save the old mode and change to bytes
       OLDMODE = NMODE (IUNIT)
@@ -1379,7 +1379,7 @@ C     restore mode
       INTEGER IUNIT, NITEMS, RESULT, MODE, OLDMODE, NMODE(NCMAX), MITEM
       CHARACTER BUFFER*(*)
       COMMON /DISKIO_MODES_/ MAXNC, NMODE
-      IF (IUNIT.GT.MAXNC .OR. IUNIT.LT.0)
+      IF (IUNIT.GT.MAXNC .OR. IUNIT.LT.1)
      +     CALL CCPERR (1, 'QREADC: Bad unit number')
 C     save the old mode and change to bytes
       OLDMODE = NMODE (IUNIT)
