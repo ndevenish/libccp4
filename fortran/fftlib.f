@@ -2143,3 +2143,104 @@ C
       RETURN
 C
       END
+C
+C     =============================================
+      SUBROUTINE FNDSMP(MINSMP, NMUL, SAMPLE, NSAMPL)
+C     =============================================
+C
+C----  Find suitable grid sample, approximately = SAMPLE/2 * maximum index,
+C     with required factor, & no prime factor .gt. 19
+C
+C  On entry:
+C     MINSMP     minimum sample, approximately 2 * maximum index
+C     NMUL       required factor
+C     SAMPLE     desired sample factor, ie if = 1.0 (minimum), try to
+C                get sample close to MINSMP
+C
+C  On exit:
+C     nsampl     grid sample
+C                if MINSMP<=0, nsampl=nmul
+C
+CC      implicit none
+C
+C     .. Scalar Arguments ..
+      INTEGER MINSMP,NMUL,NSAMPL
+      REAL SAMPLE
+C     ..
+C     .. Local Scalars ..
+      REAL R1MAX,R1MIN,R2MAX,R2MIN
+      INTEGER N
+C     ..
+C     .. External Functions ..
+      LOGICAL FACTRZ
+      EXTERNAL FACTRZ
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC NINT,REAL
+C     ..
+C     .. Save statement ..
+      SAVE
+C     ..
+C     .. Data statements ..
+C
+C---- This routine makes 2 attempts at finding a suitable factor:-
+C     1) searching downwards from r1max*MINSMP to r1min*MINSMP
+C     2) searching upwards from r2min*MINSMP to r2max*MINSMP
+C
+      DATA R1MIN,R1MAX/1.0, 1.6/
+      DATA R2MIN,R2MAX/1.4, 4.0/
+C     ..
+C
+C----  Check MINSMP <= 0, if so set NSAMPL = NMUL
+      IF (MINSMP .LE. 0) THEN
+         NSAMPL = NMUL
+         RETURN
+      ENDIF
+C
+C---- Set search limits
+      IF (SAMPLE .GE. 1.0) THEN
+         R1MAX = SAMPLE
+         R2MIN = MAX(1.0, SAMPLE*0.95)
+      ENDIF
+C----  Start with multiple of nmul
+C
+      N = NINT(REAL(MINSMP)*R1MAX/REAL(NMUL))*NMUL
+C
+C---- Function factrz returns .true.
+C     if number has all prime factors .le. 19
+C
+   10 IF (FACTRZ(N)) THEN
+C
+C---- OK suitable sample interval found, accept it
+C
+        NSAMPL = N
+        RETURN
+      END IF
+C
+C---- decrement trial value & continue if still in range
+C
+      N = N - NMUL
+      IF (REAL(N)/REAL(MINSMP).GT.R1MIN) GO TO 10
+C
+C---- Now try 2nd search if 1st unsuccesfull
+C
+      N = NINT(REAL(MINSMP)*R2MIN/REAL(NMUL))*NMUL
+   20 IF (FACTRZ(N)) THEN
+C
+C---- OK suitable sample interval found, accept it
+C
+        NSAMPL = N
+        RETURN
+      END IF
+C
+C---- increment trial value & continue if still in range
+C
+      N = N + NMUL
+      IF (REAL(N)/REAL(MINSMP).LT.R2MAX) GO TO 20
+C
+C---- Failed
+C
+      NSAMPL = -1
+      RETURN
+C
+      END
