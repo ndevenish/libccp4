@@ -379,7 +379,7 @@ char            *record;
     register size_t	ret;
     int reterr;
 
-    int status;
+    int status=0;
 
     if ((ret = fread(record, sizeof(char), recl, filin)) == recl) {
       return(0);
