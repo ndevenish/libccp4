@@ -1029,114 +1029,62 @@ C     .. Array Arguments ..
       REAL ROT(4,4,*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IFAIL,ISG,LDUM,NLIN,ISTERR,IFGERR
+      INTEGER I,IFAIL,ISG,NLIN,ISTERR,IFGERR
       CHARACTER LINE*80,LINERR*200
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPOPN,SYMFR2,LERROR
+      EXTERNAL CCPOPN,SYMFR2,LERROR,QPRLVL
 C     ..
-C
-C---- Open symmetry file
-C
-      IFAIL = 1
-      CALL CCPOPN(IST,'SYMOP',5,1,LDUM,IFAIL)
-      IF (IFAIL.LT.0) THEN
-C
-C---- Error conditions
-C
-          WRITE (LINERR,FMT='(A)')
-     + ' **SYMMETRY FILE ERROR**'
-          ISTERR = 1
-          IFGERR = 0
-C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
-          WRITE (LINERR,FMT='(A)')
-     +    ' **MSYGET: ERROR In opening symop file**'
-          ISTERR = 1
-          IFGERR = 0
-C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
+      IFAIL = 0
+C     Open symmetry file.  Print file-opening noise only if the
+C     `debugging level' has been set greater than the default (1).
+      CALL QPRLVL(I)
+      IF (I.GT.1) THEN
+        CALL CCPOPN(IST,'SYMOP',5,1,0,IFAIL)
       ELSE
-        NSYM = 0
-   10   CONTINUE
+        CALL CCPOPN(-IST,'SYMOP',5,1,0,IFAIL)
+      END IF
+      NSYM = 0
+C
+ 10   CONTINUE
 C
 C---- Find correct space-group in file.
 C     Each space-group has header line of space-group number,
 C     number of lines of symmetry operations
 C
-        READ (IST,FMT=*,END=30) ISG,NLIN
-        IF (ISG.EQ.LSPGRP) THEN
-          GO TO 40
-        ELSE
+      READ (IST,FMT=*,END=30) ISG,NLIN
+      IF (ISG.EQ.LSPGRP) THEN
+        GO TO 40
+      ELSE
 C
 C---- Skip NLIN lines
 C
-          DO 20 I = 1,NLIN
-            READ (IST,FMT=*)
-   20     CONTINUE
+        DO 20 I = 1,NLIN
+          READ (IST,FMT=*)
+ 20     CONTINUE
 C
-          GO TO 10
-        END IF
-   30   CONTINUE
-           WRITE (LINERR,FMT='(A)')
-     + ' **SYMMETRY FILE ERROR**'
-          ISTERR = 1
-          IFGERR = 0
+C       try again
+        GO TO 10
+      END IF
 C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
-          WRITE (LINERR,FMT='(A,A,I5,A)')
-     + ' **MSYGET: NO SYMMETRY information for SPACE GROUP ',
-     + ' Number',LSPGRP,' in SYMOP file**'
-C
-          ISTERR = 1
-          IFGERR = 0
-C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
-        GO TO 60
+ 30   CONTINUE
+      WRITE (LINERR,FMT='(A,A,I5,A)')
+     +     ' **MSYGET: No symmetry information for space group ',
+     +     ' number',LSPGRP,' in SYMOP file**'
+      CALL LERROR(2,-1,LINERR)
 C
 C---- Space-group found,
 C     convert NLIN lines of symmetry operators to matrices
 C
-   40   CONTINUE
+ 40   CONTINUE
 C
-        DO 50 I = 1,NLIN
-          READ (IST,FMT=6000) LINE
-C
-C---- Convert line to matrices
-C
-          NSYM = NSYM + 1
-C
-C              ***********************
-          CALL SYMFR2(LINE,1,NSYM,ROT)
-C              ***********************
-C
-   50   CONTINUE
-C
-        REWIND IST
-        RETURN
-      END IF
-C
-   60 CONTINUE
-C
-C              ****************************
-          CALL LERROR(2,-1,'**SYMMETRY FILE ERROR**')
-C              ****************************
-C
-C---- Format statements
-C
- 6000 FORMAT (A)
+      DO 50 I = 1,NLIN
+        READ (IST,FMT='(A)') LINE
+C       Convert line to matrices
+        NSYM = NSYM + 1
+        CALL SYMFR2(LINE,1,NSYM,ROT)
+ 50   CONTINUE
+      CLOSE(IST)
 C
       END
 C
@@ -1194,162 +1142,101 @@ C     .. Local Arrays ..
       CHARACTER CVALUE(NPARSE)*4
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPDPN,CCPUPC,PARSER,SYMFR2,LERROR,LENSTR
+      EXTERNAL CCPDPN,CCPUPC,PARSER,SYMFR2,LERROR,LENSTR,QPRLVL
       INTEGER LENSTR
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC NINT
 C     ..
-C
-C---- Open symmetry file
-C
-      IFAIL = 1
-C
-C          ******************************************
-      CALL CCPDPN(IST,'SYMOP','READONLY','F',0,IFAIL)
-C          ******************************************
-C
-      IF (IFAIL.LT.0) THEN
-C
-C---- Error conditions
-C
-          WRITE (LINERR,FMT='(A,A)')
-     +   ' **SYMMETRY FILE ERROR**',
-     +   ' **MSYMLB: Error in opening SYMOP FILE**'
-          ISTERR = 1
-          IFGERR = 0
-C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
+      IFAIL = 0
+C     Open symmetry file.  Print file-opening noise only if the
+C     `debugging level' has been set greater than the default (1).
+      CALL QPRLVL(I)
+      IF (I.GT.1) THEN
+        CALL CCPOPN(IST,'SYMOP',5,1,0,IFAIL)
       ELSE
+        CALL CCPOPN(-IST,'SYMOP',5,1,0,IFAIL)
+      END IF
 C
-        NTOK = 0
-        NSYM = 0
-   10   CONTINUE
+      NTOK = 0
+      NSYM = 0
+C
+   10 CONTINUE
 C
 C---- Find correct space-group in file.
 C     Each space-group has header line of space-group number,
 C     number of line of symmetry operations for non-primitive
 C     and primitive cells.
 C
-        READ (IST,FMT='(A)',END=30) LINE
-C
-C---- Ignore blank or comment lines
-        IF (LENSTR(LINE) .EQ. 0 .OR. LINE(:1) .EQ. '!') GO TO 10
-C
-C            ************
-        CALL CCPUPC(LINE)
-C            ************
-C
-        NTOK = NPARSE
-C
-C            *******************************************************
-        CALL PARSER(KEY,LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,NTOK,
-     +              LEND,.FALSE.)
-C            *******************************************************
+      READ (IST,FMT='(A)',ERR=30,END=30) LINE
+      CALL CCPUPC(LINE)
+      NTOK = NPARSE
+      CALL PARSE(KEY,LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,NTOK)
 C
 C---- Fields are space group number,
 C                number of lines,
 C                number of lines in primitive cell symmetry,
 C                spacegroup name
 C
-        IF (ITYP(1).NE.2 .OR. ITYP(2).NE.2 .OR. ITYP(3).NE.2) THEN
-          GO TO 70
-        ELSE
-          ISG = NINT(FVALUE(1))
-          NLIN = NINT(FVALUE(2))
-          NLINS = NINT(FVALUE(3))
-          IF (LSPGRP.GT.0) THEN
+      IF (ITYP(1).NE.2 .OR. ITYP(2).NE.2 .OR. ITYP(3).NE.2)
+     +     CALL LERROR(2,-1,'MSYMLB: Error in format of SYMOP file: '
+     +     // LINE)
+      ISG = NINT(FVALUE(1))
+      NLIN = NINT(FVALUE(2))
+      NLINS = NINT(FVALUE(3))
+      IF (LSPGRP.GT.0) THEN
 C
 C---- Check for spacegroup number given
 C
-            IF (LSPGRP.EQ.ISG) GO TO 40
+        IF (LSPGRP.EQ.ISG) GO TO 40
 C
 C---- Check for spacegroup name given
 C
-          ELSE IF (NAMSPG.EQ.LINE(IBEG(4) :IEND(4))) THEN
-            GO TO 40
-          END IF
+      ELSE IF (NAMSPG.EQ.LINE(IBEG(4) :IEND(4))) THEN
+        GO TO 40
+      END IF
 C
 C---- Not this one, skip NLIN lines
 C
-          DO 20 I = 1,NLIN
-            READ (IST,FMT=*)
-   20     CONTINUE
+      DO 20 I = 1,NLIN
+        READ (IST,FMT=*)
+ 20   CONTINUE
+C     try again
+      GO TO 10
 C
-          GO TO 10
-        END IF
-   30   CONTINUE
-          WRITE (LINERR,FMT='(A,A,A)')
-     +   ' **SYMMETRY FILE ERROR**',
-     +   ' **MSYMLB: NO SYMMETRY information for space group in ',
-     +   'SYMOP file**'
-          ISTERR = 1
-          IFGERR = 0
-C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
-        GO TO 80
+ 40   CONTINUE
 C
 C---- Space-group found, convert NLIN lines of
 C     symmetry operators to matrices
 C
-   40   LSPGRP = ISG
-        NAMSPG = LINE(IBEG(4) :IEND(4))
-        NAMPG = LINE(IBEG(5) :IEND(5))
+      LSPGRP = ISG
+      NAMSPG = LINE(IBEG(4) :IEND(4))
+      NAMPG = LINE(IBEG(5) :IEND(5))
 C
-        DO 50 I = 1,NLINS
+      DO 50 I = 1,NLINS
+        READ (IST,FMT='(A)') LINE
+C       Convert line to matrices
+        NSYM = NSYM + 1
+        CALL SYMFR2(LINE,1,NSYM,ROT)
+ 50   CONTINUE
+C
+      NSYMP = NSYM
+      IF (NLIN.GT.NLINS) THEN
+        DO 60 I = NLINS + 1,NLIN
           READ (IST,FMT='(A)') LINE
-C
-C---- Convert line to matrices
-C
+C         Convert line to matrices
           NSYM = NSYM + 1
-C
-C              ***********************
           CALL SYMFR2(LINE,1,NSYM,ROT)
-C              ***********************
-C
-   50   CONTINUE
-C
-        NSYMP = NSYM
-C
-        IF (NLIN.GT.NLINS) THEN
-C
-          DO 60 I = NLINS + 1,NLIN
-            READ (IST,FMT='(A)') LINE
-C
-C---- Convert line to matrices
-C
-            NSYM = NSYM + 1
-C
-C                ***********************
-            CALL SYMFR2(LINE,1,NSYM,ROT)
-C                ***********************
-C
-   60     CONTINUE
-        END IF
-C
-        CLOSE (IST)
-        RETURN
-C
-   70   CONTINUE
-C
-C              ****************************
-          CALL LERROR(1,0,'**MSYMLB: Error in format of SYMOP FILE**')
-C              ****************************
-C
+ 60     CONTINUE
       END IF
 C
-   80 CONTINUE
+      CLOSE (IST)
 C
-C              ****************************
-          CALL LERROR(2,-1,'**SYMMETRY FILE ERROR**')
-C              ****************************
-C
+ 30   CONTINUE
+      WRITE (LINERR,FMT='(A,A,I5,A)')
+     +     'MSYGET: No symmetry information for space group ',
+     +     ' number',LSPGRP,' in SYMOP file'
+      CALL LERROR(2,-1,LINERR)
       END
 C
 C
