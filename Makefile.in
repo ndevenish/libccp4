@@ -74,7 +74,7 @@ RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
 
 # modules to go in libccp4.a:
 LIBTARGETS = ccplib fftlib maplib parser rwbrook modlib \
-           symlib lcflib mtzlib diskio unix plot84lib \
+           symlib mtzlib diskio unix plot84lib \
            binsortint library plotsubs keyparse
 
 .PRECIOUS : $L # don't zap the library if a component fails
@@ -92,7 +92,7 @@ LIBTARGETS = ccplib fftlib maplib parser rwbrook modlib \
 all :  $L $(MAYBEMOSFLM)
 
 $L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
-	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) $L(lcflib.o) \
+	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) \
 	  $L(mtzlib.o) $L(diskio.o) $L(unix.o) \
 	  $L(binsortint.o) $L(library.o) \
 	  $L(plot84lib.o) $L(plotsubs.o) $L(keyparse.o)
@@ -206,18 +206,6 @@ $L(symlib.o) : $(srcdir)/symlib.f
           && $(AR) ../$L *.o
 	rm -f symlib.dir/*.o
 symlib : $L(symlib.o)
-	$(RANLIB) $L
-
-$L(lcflib.o) : $(srcdir)/lcflib.f
-	-rm -rf lcflib.dir; mkdir lcflib.dir
-	echo '      SUBROUTINE LCFLIB' > lcflib.dir/lcflib.$F
-	echo '      END' >> lcflib.dir/lcflib.$F
-	cd lcflib.dir && fsplit $(srcdir)/lcflib.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
-          && $(AR) ../$L *.o
-	rm -f lcflib.dir/*.o
-lcflib : $L(lcflib.o)
 	$(RANLIB) $L
 
 $L(mtzlib.o) : $(srcdir)/mtzlib.f
@@ -346,7 +334,7 @@ unix : $L(unix.o)
 
 #  The image (un)packing routines which are needed for mosflm and may be 
 #  generally useful, but not built by default
-$L(pack_c.o):	$(srcdir)/pack_c.c
+$L(pack_c.o):	$(srcdir)/pack_c.c $(srcdir)/pack_c.h
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/pack_c.c
 	$(AR) $L pack_c.o && rm pack_c.o
 $L(pack_f.o):	$(srcdir)/pack_f.f
