@@ -33,6 +33,7 @@ C UGTARG - Get command-line argument
 C GETREF - Abstracted from abscale since it has BYTE declaration.
 C CCPSPW - Spawns a new process to run DCL command
 C CCPAL1 - Support for CCPALC interface
+C CEXIT  - Trivial interface to EXIT
 C
 C
 C     ================================                         
@@ -1431,4 +1432,9 @@ C     are in range
         ISTAT = LIB$FREE_VM (SIZES(TYPE (I))*LENGTH(I), POINTER(I))
         IF (.NOT.ISTAT) CALL CCPERR (-1, 'CCPALC: can''t free memory')
       ENDDO
+      END
+C
+      SUBROUTINE CEXIT (ICODE)
+C     trivial interface to system-dependent EXIT routine
+      CALL EXIT (ICODE)
       END
