@@ -62,95 +62,6 @@
 
 /******************************************************************************/
 
-/* Some general defines: */
-
-
-#define PACKIDENTIFIER "\nCCP4 packed image, X: %04d, Y: %04d\n"
-/* This string defines the start of a packed image. An image file is scanned
-   until this string is encountered, the size of the unpacked image is 
-   determined from the values of X and Y (which are written out as formatted
-   ascii numbers), and the packed image is expected to start immediately after
-   the null-character ending the string. */
-
-#define V2IDENTIFIER "\nCCP4 packed image V2, X: %04d, Y: %04d\n"
-/* This string defines the start of a packed image. An image file is scanned
-   until this string is encountered, the size of the unpacked image is 
-   determined from the values of X and Y (which are written out as formatted
-   ascii numbers), and the packed image is expected to start immediately after
-   the null-character ending the string. */
-
-#define PACKBUFSIZ BUFSIZ
-/* Size of internal buffer in which the packed array is stored during transit
-   form an unpacked image to a packed image on disk. It is set to the size
-   used by the buffered io-routines given in <stdio.h>, but it could be 
-   anything. */
-
-#define DIFFBUFSIZ 16384L
-/* Size of the internal buffer in which the differences between neighbouring 
-   pixels are stored prior to compression. The image is therefore compressed 
-   in DIFFBUFSIZ chunks. Decompression does not need to know what DIFFBUFSIZ
-   was when the image was compressed. By increasing this value, the image
-   can be compressed into a packed image which is a few bytes smaller. Do
-   not decrease the value of DIFFBUFSIZ below 128L. */
- 
-#define BYTE char
-/* BYTE is a one byte integer. */
-
-#define WORD short int
-/* WORD is a two-byte integer. */
-
-#define LONG int
-/* LONG is a four byte integer. */
-/* Dave Love 5/7/94: using `int' gets you 4 bytes on the 32-bit Unix
-   (and VAX) systems I know of and also on (64-bit) OSF/1 Alphas which
-   have 64-bit longs.  (This definition previously used `long'.) */
-
-
-
-/******************************************************************************/
-
-/* Some usefull macros used in the code of this sourcefile: */
-
-
-#define max(x, y) (((x) > (y)) ? (x) : (y)) 
-/* Returns maximum of x and y. */
-
-#define min(x, y) (((x) < (y)) ? (x) : (y)) 
-/* Returns minimum of x and y. */
-
-#undef abs			/* avoid complaint from DEC C, at least */
-#define abs(x) (((x) < 0) ? (-(x)) : (x))
-/* Returns the absolute value of x. */
-
-static const LONG setbits[33] =
-                         {0x00000000L, 0x00000001L, 0x00000003L, 0x00000007L,
-			  0x0000000FL, 0x0000001FL, 0x0000003FL, 0x0000007FL,
-			  0x000000FFL, 0x000001FFL, 0x000003FFL, 0x000007FFL,
-			  0x00000FFFL, 0x00001FFFL, 0x00003FFFL, 0x00007FFFL,
-			  0x0000FFFFL, 0x0001FFFFL, 0x0003FFFFL, 0x0007FFFFL,
-			  0x000FFFFFL, 0x001FFFFFL, 0x003FFFFFL, 0x007FFFFFL,
-			  0x00FFFFFFL, 0x01FFFFFFL, 0x03FFFFFFL, 0x07FFFFFFL,
-			  0x0FFFFFFFL, 0x1FFFFFFFL, 0x3FFFFFFFL, 0x7FFFFFFFL,
-                          0xFFFFFFFFL};
-/* This is not a macro really, but I've included it here anyway. Upon indexing,
-   it returns a LONG with the lower (index) number of bits set. It is equivalent
-   to the following macro:
-     #define setbits(n) (((n) == 32) : ((1L << (n)) - 1) : (-1L)) 
-   Indexing the const array should usually be slightly faster. */
-
-#define shift_left(x, n)  (((x) & setbits[32 - (n)]) << (n))
-/* This macro is included because the C standard does not properly define a 
-   left shift: on some machines the bits which are pushed out at the left are
-   popped back in at the right. By masking, the macro prevents this behaviour.
-   If you are sure that your machine does not pops bits back in, you can speed
-   up the code insignificantly by taking out the masking. */
-
-#define shift_right(x, n) (((x) >> (n)) & setbits[32 - (n)])
-/* See comment on left shift. */
-
-
-
-/******************************************************************************/
 
 /* Some fortran compilers require c-functions to end with an underscore. */
 
@@ -190,6 +101,8 @@ static const LONG setbits[33] =
    front-end fortran callable C-functions are not included in the pack_c.h
    file. */
 
+
+#if defined (PROTOTYPE)
 
 /* Functions required for packing: */
 
@@ -337,17 +250,27 @@ void mirror_longimg(LONG *img, LONG *x, LONG *y);
 /* Replaces img with its mirror by interchanging rows. '*x' is the fast index,
    '*y' is the slow index. */
 
-
+#endif    /* (PROTOTYPE) */  
 
 
 /******************************************************************************/
 
-void pack_wordimage_f(WORD *img, LONG *x, LONG *y, LONG *filename)
+#if defined (PROTOTYPE)
+  void pack_wordimage_f(WORD *img, LONG *x, LONG *y, LONG *filename)
+#else
+  void pack_wordimage_f(img, x, y, filename)
+  WORD *img;
+  LONG *x, *y, *filename;
+#endif
 /* Fortran frontend of pack_wordimage_c. Because the way in which fortran
    passes strings is not defined, it passes the filename in which the
    packed image should be stored as an array of LONGs. */
 
 { char c_filename[1024];
+#if !defined (PROTOTYPE)
+  void pack_wordimage_c();
+  char *long_to_char();
+#endif
 
   pack_wordimage_c(img, (LONG) *x, (LONG) *y,
 		                           long_to_char(filename, c_filename));}
@@ -356,27 +279,46 @@ void pack_wordimage_f(WORD *img, LONG *x, LONG *y, LONG *filename)
 
 /******************************************************************************/
 
-void v2pack_wordimage_f(WORD *img, LONG *x, LONG *y, LONG *filename)
+#if defined (PROTOTYPE)
+  void v2pack_wordimage_f(WORD *img, LONG *x, LONG *y, LONG *filename)
+#else
+  void v2pack_wordimage_f(img, x, y, filename)
+  WORD *img;
+  LONG *x, *y, *filename;
+#endif
 /* Fortran frontend of pack_wordimage_c. Because the way in which fortran
    passes strings is not defined, it passes the filename in which the
    packed image should be stored as an array of LONGs. This function generates
    Version 2 images!*/
 
 { char c_filename[1024];
+#if !defined (PROTOTYPE)
+  void v2pack_wordimage_c();
+  char *long_to_char();
+#endif 
 
   v2pack_wordimage_c(img, (LONG) *x, (LONG) *y,
-		                           long_to_char(filename, c_filename));}
+                               long_to_char(filename, c_filename));}
 
 
 
 /******************************************************************************/
 
-void pack_longimage_f(LONG *img, LONG *x, LONG *y, LONG *filename)
+#if defined (PROTOTYPE)
+  void pack_longimage_f(LONG *img, LONG *x, LONG *y, LONG *filename)
+#else
+  void pack_longimage_f(img, x, y, filename)
+  LONG *img, *x, *y, *filename;
+#endif
 /* Fortran frontend of pack_longimage_c. Because the way in which fortran
    passes strings is not defined, it passes the filename in which the
    packed image should be stored as an array of LONGs. */
 
 { char c_filename[1024];
+#if !defined (PROTOTYPE)
+  void pack_longimage_c();
+  char *long_to_char();
+#endif
 
   pack_longimage_c(img, (LONG) *x, (LONG) *y,
 		                           long_to_char(filename, c_filename));}
@@ -385,22 +327,37 @@ void pack_longimage_f(LONG *img, LONG *x, LONG *y, LONG *filename)
 
 /******************************************************************************/
 
-void v2pack_longimage_f(LONG *img, LONG *x, LONG *y, LONG *filename)
+#if defined (PROTOTYPE)
+  void v2pack_longimage_f(LONG *img, LONG *x, LONG *y, LONG *filename)
+#else
+  void v2pack_longimage_f(img, x, y, filename)
+  LONG *img, *x, *y, *filename;
+#endif
 /* Fortran frontend of pack_longimage_c. Because the way in which fortran
    passes strings is not defined, it passes the filename in which the
    packed image should be stored as an array of LONGs. */
 
 { char c_filename[1024];
+#if !defined (PROTOTYPE)
+  void v2pack_longimage_c();
+  char *long_to_char();
+#endif
 
   v2pack_longimage_c(img, (LONG) *x, (LONG) *y,
-		                           long_to_char(filename, c_filename));}
+                               long_to_char(filename, c_filename));}
 
 
 
 /******************************************************************************/
 
-void pack_wordimage_c(WORD *img, int x, int y, char *filename)
-
+#if defined (PROTOTYPE)
+  void pack_wordimage_c(WORD *img, int x, int y, char *filename)
+#else
+  void pack_wordimage_c(img, x, y, filename)
+  WORD *img;
+  int x, y;
+  char *filename;
+#endif
 /* Pack image 'img', containing 'x * y' WORD-sized pixels into 'filename'. */
 
 { int chunksiz, packsiz, nbits, next_nbits, tot_nbits;
@@ -409,6 +366,11 @@ void pack_wordimage_c(WORD *img, int x, int y, char *filename)
   LONG *end = diffs - 1;
   LONG done = 0;
   FILE *packfile;
+#if !defined (PROTOTYPE)
+  LONG *diff_words();
+  int bits();
+  void pack_chunk();
+#endif
 
   packfile = fopen(filename, "a");
   if (packfile == NULL)
@@ -448,8 +410,14 @@ void pack_wordimage_c(WORD *img, int x, int y, char *filename)
 
 /******************************************************************************/
 
-void v2pack_wordimage_c(WORD *img, int x, int y, char *filename)
-
+#if defined (PROTOTYPE)
+  void v2pack_wordimage_c(WORD *img, int x, int y, char *filename)
+#else
+  void v2pack_wordimage_c(img, x, y, filename)
+  WORD *img;
+  int x, y;
+  char *filename;
+#endif
 /* Pack image 'img', containing 'x * y' WORD-sized pixels into 'filename'. */
 
 { int chunksiz, packsiz, nbits, next_nbits, tot_nbits;
@@ -458,6 +426,11 @@ void v2pack_wordimage_c(WORD *img, int x, int y, char *filename)
   LONG *end = diffs - 1;
   LONG done = 0;
   FILE *packfile;
+#if !defined (PROTOTYPE)
+  LONG *diff_words();
+  int v2bits();
+  void v2pack_chunk();
+#endif
 
   packfile = fopen(filename, "a");
   if (packfile == NULL)
@@ -497,8 +470,14 @@ void v2pack_wordimage_c(WORD *img, int x, int y, char *filename)
 
 /******************************************************************************/
 
-void pack_longimage_c(LONG *img, int x, int y, char *filename)
-
+#if defined (PROTOTYPE)
+  void pack_longimage_c(LONG *img, int x, int y, char *filename)
+#else
+  void pack_longimage_c(img, x, y, filename)
+  LONG *img;
+  int x, y;
+  char *filename;
+#endif
 /* Pack image 'img', containing 'x * y' LONG-sized pixels into 'filename'. */
 
 { int chunksiz, packsiz, nbits, next_nbits, tot_nbits;
@@ -507,6 +486,11 @@ void pack_longimage_c(LONG *img, int x, int y, char *filename)
   LONG *end = diffs - 1;
   LONG done = 0;
   FILE *packfile;
+#if !defined (PROTOTYPE)
+  LONG *diff_longs();
+  int bits();
+  void pack_chunk();
+#endif
 
   packfile = fopen(filename, "a");
   if (packfile == NULL)
@@ -546,8 +530,14 @@ void pack_longimage_c(LONG *img, int x, int y, char *filename)
 
 /******************************************************************************/
 
-void v2pack_longimage_c(LONG *img, int x, int y, char *filename)
-
+#if defined (PROTOTYPE)
+  void v2pack_longimage_c(LONG *img, int x, int y, char *filename)
+#else
+  void v2pack_longimage_c(img, x, y, filename)
+  LONG *img;
+  int x, y;
+  char *filename;
+#endif
 /* Pack image 'img', containing 'x * y' LONG-sized pixels into 'filename'. */
 
 { int chunksiz, packsiz, nbits, next_nbits, tot_nbits;
@@ -556,6 +546,11 @@ void v2pack_longimage_c(LONG *img, int x, int y, char *filename)
   LONG *end = diffs - 1;
   LONG done = 0;
   FILE *packfile;
+#if !defined (PROTOTYPES)
+  LONG *diff_longs();
+  int v2bits();
+  void v2pack_chunk();
+#endif
 
   packfile = fopen(filename, "a");
   if (packfile == NULL)
@@ -595,8 +590,14 @@ void v2pack_longimage_c(LONG *img, int x, int y, char *filename)
 
 /******************************************************************************/
 
-LONG *diff_words(WORD *word, int x, int y, LONG *diffs, LONG done)
-
+#if defined (PROTOTYPE)
+  LONG *diff_words(WORD *word, int x, int y, LONG *diffs, LONG done)
+#else
+  LONG *diff_words(word, x, y, diffs, done)
+  WORD *word;
+  int x, y;
+  LONG *diffs, done;
+#endif
 /* Calculates the difference of WORD-sized pixels of an image with the
    truncated mean value of four of its neighbours. 'x' is the number of fast
    coordinates of the image 'img', 'y' is the number of slow coordinates,
@@ -630,8 +631,13 @@ LONG *diff_words(WORD *word, int x, int y, LONG *diffs, LONG done)
 
 /******************************************************************************/
 
-LONG *diff_longs(LONG *lng, int x, int y, LONG *diffs, LONG done)
-
+#if defined (PROTOTYPE)
+  LONG *diff_longs(LONG *lng, int x, int y, LONG *diffs, LONG done)
+#else
+  LONG *diff_longs(lng, x, y, diffs, done)
+  LONG *lng, *diffs, done;
+  int x, y;
+#endif
 /* Calculates the difference of LONG-sized pixels of an image with the
    truncated mean value of four of its neighbours. 'x' is the number of fast
    coordinates of the image 'img', 'y' is the number of slow coordinates,
@@ -668,8 +674,13 @@ LONG *diff_longs(LONG *lng, int x, int y, LONG *diffs, LONG done)
 
 /******************************************************************************/
 
-int bits(LONG *chunk, int n)
-
+#if defined (PROTOTYPE)
+  int bits(LONG *chunk, int n)
+#else
+  int bits(chunk, n)
+  LONG *chunk;
+  int n;
+#endif
 /* Returns the number of bits neccesary to encode the longword-array 'chunk'
    of size 'n' The size in bits of one encoded element can be 0, 4, 5, 6, 7,
    8, 16 or 32. */
@@ -700,8 +711,13 @@ int bits(LONG *chunk, int n)
 
 /******************************************************************************/
 
-int v2bits(LONG *chunk, int n)
-
+#if defined (PROTOTYPE)
+  int v2bits(LONG *chunk, int n)
+#else
+  int v2bits(chunk, n)
+  LONG *chunk;
+  int n;
+#endif
 /* Returns the number of bits neccesary to encode the longword-array 'chunk'
    of size 'n' The size in bits of one encoded element can be 0, 3, 4, 5, 6, 7,
    8, 9, 10, 11, 12, 13, 14, 15, 16 or 32. */
@@ -748,8 +764,14 @@ int v2bits(LONG *chunk, int n)
 
 /******************************************************************************/
 
-void pack_chunk(LONG *lng, int nmbr, int bitsize, FILE *packfile)
-
+#if defined (PROTOTYPE)
+  void pack_chunk(LONG *lng, int nmbr, int bitsize, FILE *packfile)
+#else
+  void pack_chunk(lng, nmbr, bitsize, packfile)
+  LONG *lng;
+  int nmbr, bitsize;
+  FILE *packfile;
+#endif
 /* Packs 'nmbr' LONGs starting at 'lng[0]' into a packed array of 'bitsize'
    sized elements. If the internal buffer in which the array is packed is full,
    it is flushed to 'file', making room for more of the packed array. If 
@@ -762,6 +784,9 @@ void pack_chunk(LONG *lng, int nmbr, int bitsize, FILE *packfile)
   static BYTE *buffer = NULL;
   static BYTE *buffree = NULL;
   static int bitmark;
+#if !defined (PROTOTYPE)
+  void pack_longs();
+#endif
 
   if (buffer == NULL)
   { buffree = buffer = (BYTE *) malloc(PACKBUFSIZ);
@@ -785,8 +810,14 @@ void pack_chunk(LONG *lng, int nmbr, int bitsize, FILE *packfile)
 
 /******************************************************************************/
 
-void v2pack_chunk(LONG *lng, int nmbr, int bitsize, FILE *packfile)
-
+#if defined (PROTOTYPE)
+  void v2pack_chunk(LONG *lng, int nmbr, int bitsize, FILE *packfile)
+#else
+  void v2pack_chunk(lng, nmbr, bitsize, packfile)
+  LONG *lng;
+  int nmbr, bitsize;
+  FILE *packfile;
+#endif
 /* Packs 'nmbr' LONGs starting at 'lng[0]' into a packed array of 'bitsize'
    sized elements. If the internal buffer in which the array is packed is full,
    it is flushed to 'file', making room for more of the packed array. If 
@@ -800,6 +831,9 @@ void v2pack_chunk(LONG *lng, int nmbr, int bitsize, FILE *packfile)
   static BYTE *buffer = NULL;
   static BYTE *buffree = NULL;
   static int bitmark;
+#if !defined (PROTOTYPE)
+  void pack_longs();
+#endif
 
   if (buffer == NULL)
   { buffree = buffer = (BYTE *) malloc(PACKBUFSIZ);
@@ -824,8 +858,14 @@ void v2pack_chunk(LONG *lng, int nmbr, int bitsize, FILE *packfile)
 
 /******************************************************************************/
 
-void pack_longs(LONG *lng, int n, BYTE **target, int *bit, int size)
-
+#if defined (PROTOTYPE)
+  void pack_longs(LONG *lng, int n, BYTE **target, int *bit, int size)
+#else
+   void pack_longs(lng, n, target, bit, size)
+   LONG *lng;
+   int n, *bit, size;
+   BYTE **target;
+#endif
 /* Pack 'n' WORDS, starting with 'lng[0]' into the packed array 'target'. The 
    elements of such a packed array do not obey BYTE-boundaries, but are put one 
    behind the other without any spacing. Only the 'bitsiz' number of least 
@@ -869,12 +909,22 @@ void pack_longs(LONG *lng, int n, BYTE **target, int *bit, int size)
 
 /******************************************************************************/
 
-void readpack_word_f(WORD *img, LONG *filename)
+#if defined (PROTOTYPE)
+  void readpack_word_f(WORD *img, LONG *filename)
+#else
+  void readpack_word_f(img, filename)
+  WORD *img;
+  LONG *filename;
+#endif
 /* Fortran frontend of readpack_word_c. Because the way in which fortran
    passes strings is not defined, it passes the filename in which the
    packed image should be stored as an array of LONGs. */
 
 { char c_filename[1024];
+#if !defined (PROTOTYPE)
+  void readpack_word_c();
+  char *long_to_char();
+#endif
 
   readpack_word_c(img, long_to_char(filename, c_filename));}
 
@@ -882,12 +932,21 @@ void readpack_word_f(WORD *img, LONG *filename)
 
 /******************************************************************************/
 
-void readpack_long_f(LONG *img, LONG *filename)
+#if defined (PROTOTYPE)
+  void readpack_long_f(LONG *img, LONG *filename)
+#else
+  void readpack_long_f(img, filename)
+  LONG *img, *filename;
+#endif
 /* Fortran frontend of readpack_long_c. Because the way in which fortran
    passes strings is not defined, it passes the filename in which the
    packed image should be stored as an array of LONGs. */
 
 { char c_filename[1024];
+#if !defined (PROTOTYPE)
+  void readpack_long_c();
+  char *long_to_char();
+#endif
 
   readpack_long_c(img, long_to_char(filename, c_filename));}
 
@@ -895,8 +954,13 @@ void readpack_long_f(LONG *img, LONG *filename)
 
 /******************************************************************************/
 
-void readpack_word_c(WORD *img, char *filename)
-
+#if defined (PROTOTYPE)
+  void readpack_word_c(WORD *img, char *filename)
+#else
+  void readpack_word_c(img, filename)
+  WORD *img;
+  char *filename;
+#endif
 /* Unpacks packed image from 'filename' into the WORD-array 'img'. Scans the
    file defined by 'filename' until the PACKIDENTIFIER is found, then unpacks
    starting from there. */
@@ -904,6 +968,10 @@ void readpack_word_c(WORD *img, char *filename)
 { FILE *packfile;
   int x = 0, y = 0, i = 0, c = 0, version = 0;
   char header[BUFSIZ];
+#if !defined (PROTOTYPE)
+  void unpack_word();
+  void v2unpack_word();
+#endif
 
   packfile = fopen(filename, "r");
   if (packfile == NULL)
@@ -929,8 +997,13 @@ void readpack_word_c(WORD *img, char *filename)
 
 /******************************************************************************/
 
-void readpack_long_c(LONG *img, char *filename)
-
+#if defined (PROTOTYPE)
+  void readpack_long_c(LONG *img, char *filename)
+#else
+  void readpack_long_c(img, filename)
+  LONG *img;
+  char *filename;
+#endif
 /* Unpacks packed image from 'filename' into the LONG-array 'img'. Scans the
    file defined by 'filename' until the PACKIDENTIFIER is found, then unpacks
    starting from there. */
@@ -938,6 +1011,10 @@ void readpack_long_c(LONG *img, char *filename)
 { FILE *packfile;
   int x = 0, y = 0, i = 0, c = 0, version = 0;
   char header[BUFSIZ];
+#if !defined (PROTOTYPE)
+  void unpack_long();
+  void v2unpack_long();
+#endif
 
   packfile = fopen(filename, "r");
   if (packfile == NULL)
@@ -963,8 +1040,14 @@ void readpack_long_c(LONG *img, char *filename)
 
 /******************************************************************************/
 
-void unpack_word(FILE *packfile, int x, int y, WORD *img)
-
+#if defined (PROTOTYPE)
+  void unpack_word(FILE *packfile, int x, int y, WORD *img)
+#else
+  void unpack_word(packfile, x, y, img)
+  FILE *packfile;
+  int x, y;
+  WORD *img;
+#endif
 /* Unpacks a packed image into the WORD-array 'img'. The image is stored
    in 'packfile'. The file should be properly positioned: the first BYTE
    read is assumed to be the first BYTE of the packed image. */
@@ -1029,8 +1112,14 @@ void unpack_word(FILE *packfile, int x, int y, WORD *img)
 
 /******************************************************************************/
 
-void v2unpack_word(FILE *packfile, int x, int y, WORD *img)
-
+#if defined (PROTOTYPE)
+  void v2unpack_word(FILE *packfile, int x, int y, WORD *img)
+#else
+   void v2unpack_word(packfile, x, y, img)
+   FILE *packfile;
+   int x, y;
+   WORD *img;
+#endif
 /* Unpacks a packed image into the WORD-array 'img'. The image is stored
    in 'packfile'. The file should be properly positioned: the first BYTE
    read is assumed to be the first BYTE of the packed image. */
@@ -1096,8 +1185,14 @@ void v2unpack_word(FILE *packfile, int x, int y, WORD *img)
 
 /******************************************************************************/
 
-void unpack_long(FILE *packfile, int x, int y, LONG *img)
-
+#if defined (PROTOTYPE)
+  void unpack_long(FILE *packfile, int x, int y, LONG *img)
+#else
+  void unpack_long(packfile, x, y, img)
+  FILE *packfile;
+  int x, y;
+  LONG *img;
+#endif
 /* Unpacks a packed image into the LONG-array 'img'. The image is stored
    in 'packfile'. The file should be properly positioned: the first BYTE
    read is assumed to be the first BYTE of the packed image. */
@@ -1161,8 +1256,14 @@ void unpack_long(FILE *packfile, int x, int y, LONG *img)
 
 /******************************************************************************/
 
-void v2unpack_long(FILE *packfile, int x, int y, LONG *img)
-
+#if defined (PROTOTYPE)
+  void v2unpack_long(FILE *packfile, int x, int y, LONG *img)
+#else
+  void v2unpack_long(packfile, x, y, img)
+  FILE *packfile;
+  int x, y;
+  LONG *img;
+#endif
 /* Unpacks a packed image into the LONG-array 'img'. The image is stored
    in 'packfile'. The file should be properly positioned: the first BYTE
    read is assumed to be the first BYTE of the packed image. */
@@ -1227,13 +1328,18 @@ void v2unpack_long(FILE *packfile, int x, int y, LONG *img)
 
 /******************************************************************************/
 
-char *long_to_char(LONG *lng, char *string)
+#if defined (PROTOTYPES)
+  char *long_to_char(LONG *lng, char *string)
+#else
+  char *long_to_char(lng, string)
+  LONG *lng;
+  char *string;
+#endif
 /* Shrinks an array of LONGs into an array of chars, used in order to translate 
    an encoded string array passed by fortran into a c-type string. Returns
    'string'. */
 
 { char *s = string;
-  int i;
 
   do
     *(s++) = (char) *lng;
@@ -1244,13 +1350,18 @@ char *long_to_char(LONG *lng, char *string)
 
 /******************************************************************************/
 
-void imsiz_c(char *filename, LONG *x, LONG *y)
-
+#if defined (PROTOTYPE)
+  void imsiz_c(char *filename, LONG *x, LONG *y)
+#else
+  void imsiz_c(filename, x, y)
+  char *filename;
+  LONG *x, *y;
+#endif
 /* Determines the size of the the packed image "filename" after unpacking. The
    dimensions are returned in x and y. */
 
 { FILE *packfile;
-  int i = 0, c = 0, version = 0;
+  int i = 0, c = 0;
   char header[BUFSIZ];
 
   packfile = fopen(filename, "r");
@@ -1261,24 +1372,39 @@ void imsiz_c(char *filename, LONG *x, LONG *y)
   { while ((c != EOF) && ((*x == 0) || (*y == 0)))
     { c = i = *x = *y = 0;
       while ((++i < BUFSIZ) && (c != EOF) && (c != '\n') && (*x==0) && (*y==0)) 
-        if ((header[i] = c = getc(packfile)) == '\n')
+      { if ((header[i] = c = getc(packfile)) == '\n')
         { if (sscanf(header, PACKIDENTIFIER, x, y) == 2)
-            version = 1;
+            ;
+/*          version = 1; */  
           else if (sscanf(header, V2IDENTIFIER, x, y) == 2)
-            version = 2;}}}
-  fclose(packfile);}
+            ;
+/*          version = 2; */
+        }
+      }
+    }
+  }
+  fclose(packfile);
+}
 
 
 
 /******************************************************************************/
 
-void imsiz_f(LONG *filename, LONG *x, LONG *y)
-
+#if defined (PROTOTYPE)
+  void imsiz_f(LONG *filename, LONG *x, LONG *y)
+#else
+  void imsiz_f(filename, x, y)
+  LONG *filename, *x, *y;
+#endif
 /* Fortran frontend of imsiz_c. Because the way in which fortran
    passes strings is not defined, it passes the filename in which the
    packed image should be stored as an array of LONGs. */
 
 { char c_filename[1024];
+#if !defined (PROTOTYPE)
+  void imsiz_c();
+  char *long_to_char();
+#endif
 
   imsiz_c(long_to_char(filename, c_filename), x, y);}
 
@@ -1287,8 +1413,13 @@ void imsiz_f(LONG *filename, LONG *x, LONG *y)
 
 /******************************************************************************/
 
-void mirror_wordimg(WORD *img, LONG *x, LONG  *y)
-
+#if defined (PROTOTYPE)
+  void mirror_wordimg(WORD *img, LONG *x, LONG  *y)
+#else
+  void mirror_wordimg(img, x, y)
+  WORD *img;
+  LONG *x, *y;
+#endif
 /* Replaces img with its mirror by interchanging rows. 'x' is the fast index,
    'y' is the slow index. */
 
@@ -1306,8 +1437,12 @@ void mirror_wordimg(WORD *img, LONG *x, LONG  *y)
 
 /******************************************************************************/
 
-void mirror_longimg(LONG *img, LONG *x, LONG  *y)
-
+#if defined (PROTOTYPE)
+  void mirror_longimg(LONG *img, LONG *x, LONG  *y)
+#else
+  void mirror_longimg(img, x, y)
+  LONG *img, *x, *y;
+#endif
 /* Replaces img with its mirror by interchanging rows. 'x' is the fast index,
    'y' is the slow index. */
 
