@@ -50,8 +50,8 @@
 
 SHELL       = /bin/sh
 srcdir	    = $(top_srcdir)/lib/src
-L           = libccp4.a#        convenient abbreviation only
 LIB_DIR     = .
+L           = $(LIB_DIR)/libccp4.a#        convenient abbreviation only
 
 # The following is for the benefit of Alliant, which is the only
 # system I know where you can't use -L to specify the load path.
