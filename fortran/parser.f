@@ -236,21 +236,19 @@ C---- Continuation line
 C
       IF (LINEX(LX:LX).EQ.'-' .OR. LINEX(LX:LX).EQ.'&') THEN
 C      
-      LINEX(LX:LX) = ' '
-      LL = LENSTR(LINE)
+        LINEX(LX:LX) = ' '
+        LL = LENSTR(LINE) + 1
 C
-C
-      IF (FIRST) THEN
-         LINE = LINEX   // ' '
-         FIRST = .FALSE.
-         GO TO 20
-      ELSE
-      LINE = LINE(1:LL) // ' ' // LINEX(1:LX) // ' '
+        IF (FIRST) THEN
+          LINE = LINEX   // ' '
+          FIRST = .FALSE.
+        ELSE
+          LINE(LL:) = ' ' // LINEX(1:LX) // ' '
+        END IF
         GO TO 20
+C
+C
       END IF
-C
-C
-       END IF
 C
 C---- Not a continuation line
 C
@@ -259,9 +257,9 @@ C
          FIRST = .FALSE.
          GO TO 30
       ELSE
-      LX = LENSTR(LINEX)
-      LL = LENSTR(LINE)
-      LINE = LINE(1:LL) // ' ' // LINEX(1:LX) // ' '
+        LX = LENSTR(LINEX)
+        LL = LENSTR(LINE) + 1
+        LINE(:LL) = ' ' // LINEX(1:LX) // ' '
       END IF
 C
 C
@@ -2043,13 +2041,14 @@ C---- for cases (a) & (b), this is a single field:
 C     case (c) is more than 1 field
 C     
       IF (JTOK.GT.NTOK) THEN
-         WRITE (STROUT,FMT=*) ' No symmetry data !!!'
+         WRITE (STROUT,FMT='(A)') ' No symmetry data !!!'
          CALL  PUTLIN(STROUT,'CURWIN')
       ELSE
          IF (JTOK.EQ.NTOK) THEN
             SPGNAM = ' '
             IF (NSYM.GT.0) THEN
-               WRITE (STROUT,FMT=*) 'Warning: symmetry already given'
+               WRITE (STROUT,FMT='(A)')
+     +             'Warning: symmetry already given'
                CALL  PUTLIN(STROUT,'CURWIN')
             ENDIF
 C     
