@@ -2397,9 +2397,15 @@ C
       CALL UGTUID(UID)
       CALL UTIME(CTIME)
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
- 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.10: ',
-     +       A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
-     +       /)
+ 6000 FORMAT (
+     +     '1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.10: ',
+     +     A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
+     +     ///
+     +     ' Please reference: Collaborative Computational Project,',
+     +     ' Number 4. 1994.'/' "The CCP4 Suite: Programs for Protein',
+     +     ' Crystallography". Acta Cryst. D50, 760-763.'//
+     +     ' as well as any specific reference in the program write-up.'
+     +     //)
 C
       RETURN
 C
