@@ -55,6 +55,7 @@
 #include "ccp4_parser.h"
 #include "ccp4_vars.h"
 #include "ccp4_errno.h"
+#include "ccp4_unitcell.h"
 static char rcsid[] = "$Id$";
 
 /* stuff for error reporting */
@@ -94,7 +95,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   MTZCOL *colin[MCOLUMNS], *newcol;
   char *filename;
   char crysin[MXTALS][65],projin[MXTALS][65],crystal[65],project[65];
-  float cellin[MXTALS][6],cell[6];
+  double cellin[MXTALS][6],cell[6];
   int jxtalin[MSETS];
   char mkey[4], keyarg[76], hdrrec[MTZRECORDLENGTH+1], label[30], type[3];
   int i, j, hdrst, ntotcol, nref, ntotset=0, nbat, nhist=0, icolin;
@@ -331,18 +332,17 @@ MTZ *MtzGet(const char *logname, int read_refs)
     /* DCELL line. */
     else if (ccp4_keymatch(key, "DCEL")) {
       for (i = 0; i < 6; ++i) 
-        cell[i] = (float) token[i+2].value;
+        cell[i] = token[i+2].value;
       /* If old crystal but cell dimensions differ, make new crystal.
          This is primarily for old files with no CRYSTAL cards. 
-         This test doesn't apply to base dataset. */
+         This test doesn't apply to base dataset. 
+         Chosen tolerance is arbitrary - there is no single correct value! */
       if (jxtal > 0 && iiset > 0 && 
-                (cellin[jxtal][0] != cell[0] || cellin[jxtal][1] != cell[1]
-              || cellin[jxtal][2] != cell[2] || cellin[jxtal][3] != cell[3]
-              || cellin[jxtal][4] != cell[4] || cellin[jxtal][5] != cell[5] )) {
+	  ccp4uc_cells_differ(cellin[jxtal], cell, 0.002)) {
         if (debug) {
           printf(" MtzGet: Old crystal %d but new cell dimensions. \n",jxtal);
           for (i = 0; i < 6; ++i) 
-            printf(" %f %f \n",cellin[jxtal][i],cell[i]);
+            printf(" %lf %lf \n",cellin[jxtal][i],cell[i]);
 	}
         ++nxtal;
         if (nxtal > MXTALS) {
