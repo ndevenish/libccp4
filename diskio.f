@@ -145,8 +145,8 @@ C     .. External Subroutines ..
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
-      EXTERNAL CCPEXS, LENSTR
       LOGICAL CCPEXS
+      EXTERNAL CCPEXS, LENSTR
 C     ..
 C     .. Data statements ..
       DATA MODES/'UNKNOWN','SCRATCH','OLD','NEW','READONLY'/
@@ -176,9 +176,11 @@ C
       IF (FNAME.EQ.'/dev/null') THEN
         JSTAT = 1
       ELSE IF (FNAME.EQ.' ') THEN
-        ERRSTR = '(Q)QOPEN Logical name '//LNAME
-        ERRSTR(LENSTR(ERRSTR)+2:) = 'has not been assigned to a file'
-        CALL CCPERR(2,ERRSTR)
+        IF (.NOT. CCPEXS(LOGNAM)) THEN
+          ERRSTR = '(Q)QOPEN Logical name '//LNAME
+          ERRSTR(LENSTR(ERRSTR)+2:) = 'has not been assigned to a file'
+          CALL CCPERR(2,ERRSTR)
+        END IF
         FNAME = LNAME
       END IF
       IF (REWRIT.EQ.'UNKNOWN') 

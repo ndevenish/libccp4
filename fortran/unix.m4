@@ -166,6 +166,7 @@ C     .. Local Scalars ..
       CHARACTER CCNTRL*7,ST*7,FRM*12,ERRSTR*500,
      +     NAMFIL*255,HANDLE*5,OPNVAR*20, access*10
       INTEGER UNKNWN, SCRTCH, OLD, NEW, RDONLY, PRINTR
+      LOGICAL CCPEXS
       PARAMETER (UNKNWN=1, SCRTCH=2, OLD=3, NEW=4, RDONLY=5, PRINTR=6)
 ifdef(_ioinit,[      LOGICAL JUNK])dnl
 C     ..
@@ -179,7 +180,7 @@ ifdef(_ioinit,[
       EXTERNAL LENSTR, LUNSTO
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL UGERR,UGTENV
+      EXTERNAL UGERR,UGTENV,CCPEXS
 C     ..
 C     .. Data statements ..
 C     NB mustn't have SCRATCH in here, because result is system
@@ -221,9 +222,11 @@ C
 C     check for `logical name' referencing real file
       CALL UGTENV(LOGNAM,NAMFIL)
       IF (NAMFIL.EQ.' ') THEN
-        ERRSTR = 'CCPOPN Logical name '//LOGNAM
-        ERRSTR(LENSTR(ERRSTR)+2:) = 'has not been assigned to a file'
-        CALL CCPERR(2,ERRSTR)
+        IF (.NOT. CCPEXS(LOGNAM)) THEN
+          ERRSTR = 'CCPOPN Logical name '//LOGNAM
+          ERRSTR(LENSTR(ERRSTR)+2:) = 'has not been assigned to a file'
+          CALL CCPERR(2,ERRSTR)
+        END IF
         NAMFIL = LOGNAM
       END IF
 C     VMS null device (VMS code canonicalises /dev/null)

@@ -752,8 +752,8 @@ C     .. Local Arrays ..
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR, LUNSTO
-      LOGICAL VAXVMS
-      EXTERNAL LENSTR,VAXVMS, LUNSTO
+      LOGICAL VAXVMS,CCPEXS
+      EXTERNAL LENSTR,VAXVMS,LUNSTO,CCPEXS
 C     ..
 C     .. External Subroutines ..
       EXTERNAL UGERR,UGTENV
@@ -815,9 +815,11 @@ C
 C     check for `logical name' referencing real file
       CALL UGTENV(LOGNAM,NAMFIL)
       IF (NAMFIL.EQ.' ') THEN
-        ERRSTR = 'CCPOPN Logical name '//LOGNAM
-        ERRSTR(LENSTR(ERRSTR)+2:) = 'has not been assigned to a file'
-        CALL CCPERR(2,ERRSTR)
+        IF (.NOT. CCPEXS(LOGNAM)) THEN
+          ERRSTR = 'CCPOPN Logical name '//LOGNAM
+          ERRSTR(LENSTR(ERRSTR)+2:) = 'has not been assigned to a file'
+          CALL CCPERR(2,ERRSTR)
+        END IF
         NAMFIL = LOGNAM
       END IF
 C     Unix null device (defined as canonical if programs need it)
