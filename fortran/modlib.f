@@ -516,9 +516,9 @@ C  Alternative lapack routine - only marginally tested
            AM(J,I) = A(IA)
          ENDDO
        ENDDO
-       CALL SSYEVR(JOBZ, LAPRANGE, UPLO, N, AM, N, 
-     +   1, N, 1, N, ABSTOL, NVECTORS, EVALUES, R, 
-     +   N, ISUPPZ, WORK, 26*N, IWORK, 10*N, INFO)
+C       CALL SSYEVR(JOBZ, LAPRANGE, UPLO, N, AM, N, 
+C     +   1, N, 1, N, ABSTOL, NVECTORS, EVALUES, R, 
+C     +   N, ISUPPZ, WORK, 26*N, IWORK, 10*N, INFO)
        IA = 0
        DO I = 1,NVECTORS
          DO J = 1,I
