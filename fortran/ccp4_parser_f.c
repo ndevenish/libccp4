@@ -219,7 +219,8 @@ int fparse_delimiters(CCP4PARSERARRAY *parser, char *new_delimiters,
 
     PARSER_DEBUG({
       puts("fparse_delimiters: setting local lists");
-      printf("fparse_delimiters: new_delimiters = \"%s\"\nfparse_delimiters: new_nulldelimiters = \"%s\"\n",new_delimiters,new_nulldelimiters);
+      if (new_delimiters) printf("fparse_delimiters: new_delimiters = \"%s\"\n",new_delimiters);
+      if (new_nulldelimiters) printf("fparse_delimiters: new_nulldelimiters = \"%s\"\n",new_nulldelimiters);
     })
     /* Set the local lists of delimiters
        depending on the input */
@@ -515,17 +516,17 @@ FORTRAN_SUBR(PARSDL,parsdl,
     PARSER_DEBUG(puts("PARSDL: resetting to default delimiters");)
     fparse_delimiters(NULL,NULL,NULL);
   } else {
-    /* Check the number of special delimiters is no more than the
+    /* Check the number of new delimiters is no more than the
        number of characters actually supplied */
     if (FTN_LEN(newdlm) < *nnewdl) {
       ccperror(4,"PARSDL: too few delimiter characters supplied");
       return;
     }
     /* Extract the list of delimiter characters */
-    delim = (char *) malloc((*nspecd+1)*sizeof(char));
+    delim = (char *) malloc((*nnewdl+1)*sizeof(char));
     if (delim) {
-      strncpy(delim,newdlm,*nspecd);
-      delim[*nspecd] = '\0';
+      strncpy(delim,newdlm,*nnewdl);
+      delim[*nnewdl] = '\0';
     }
     PARSER_DEBUG(printf("PARSDL: delimiters are \"%s\"\n",delim);)
     /* Extract the list of null delimiter characters (if any) */
@@ -534,7 +535,7 @@ FORTRAN_SUBR(PARSDL,parsdl,
       nulldelim = (char *) malloc((nnulldl+1)*sizeof(char));
       if (nulldelim) {
 	strncpy(nulldelim,&(newdlm[*nspecd]),nnulldl);
-	nulldelim[nnulldl+1] = '\0';
+	nulldelim[nnulldl] = '\0';
       }
       PARSER_DEBUG(printf("PARSDL: null delimiters are \"%s\"\n",nulldelim);)
     } else {
