@@ -1154,8 +1154,7 @@ C     .. Local Arrays ..
       CHARACTER CVALUE(NPARSE)*4
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPDPN,CCPUPC,PARSE,SYMFR2,LERROR,LENSTR,QPRLVL
-      INTEGER LENSTR
+      EXTERNAL CCPOPN,CCPUPC,PARSE,SYMFR2,LERROR,QPRLVL
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC NINT
