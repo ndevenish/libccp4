@@ -19,6 +19,11 @@
 #define __CCP4_SPG__
 static char rcsidhsp[] = "$Id$";
 
+#ifdef  __cplusplus
+namespace CSym {
+extern "C" {
+#endif
+
 /* Kevin's symmetry operator */
 
 typedef struct ccp4_symop_
@@ -65,6 +70,10 @@ typedef struct ccp4_spacegroup_
   float mapasu_ccp4[3];   /* CCP4 map asu: upper limits */
 
 } CCP4SPG;
+
+#ifdef __cplusplus
+} }
+#endif
 
 #endif  /*!__CCP4_SPG__ */
 

@@ -30,6 +30,7 @@ static char rcsidhhh[] = "$Id$";
 #ifdef  __cplusplus
 namespace CCP4 {
 extern "C" {
+typedef CSym::ccp4_symop ccp4_symop;
 #endif
 
 /*------------------------------------------------------------------*/

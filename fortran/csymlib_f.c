@@ -40,7 +40,6 @@ giving the same API as the original symlib.f
 #include <math.h>
 #include "ccp4_fortran.h"
 #include "ccp4_parser.h"
-#include "ccp4_spg.h"
 #include "csymlib.h"
 #include "cmtzlib.h"
 #include "cvecmat.h"

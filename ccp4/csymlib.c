@@ -13,7 +13,6 @@
 #include <math.h>
 #include "ccp4_parser.h"
 #include "ccp4_types.h"
-#include "ccp4_spg.h"
 #include "ccp4_utils.h"
 #include "csymlib.h"
 #include "cvecmat.h"

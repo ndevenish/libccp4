@@ -41,7 +41,6 @@ giving the same API as the original mtzlib.f
 #include "ccp4_fortran.h"
 #include "ccp4_utils.h"
 #include "cmtzlib.h"
-#include "ccp4_spg.h"
 #include "csymlib.h"
 #include "ccp4_program.h"
 static char rcsid[] = "$Id$";

@@ -40,11 +40,15 @@ Information on the data structure is given in ccp4_spg.h
 #ifndef __CSymLib__
 #define __CSymLib__
 
+static char rcsidhs[] = "$Id$";
+
+/* note that definitions in ccp4_spg.h are within the CSym namespace */
+#include "ccp4_spg.h"
+
 #ifdef  __cplusplus
 namespace CSym {
 extern "C" {
 #endif
-static char rcsidhs[] = "$Id$";
 
 /** Look up spacegroup in standard setting by number and load properties.
  * @param numspg spacegroup number
