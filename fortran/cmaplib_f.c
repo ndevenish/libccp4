@@ -126,38 +126,43 @@ static int HeaderPrint(const CMMFile *mfile)
     fprintf(stderr,"WARNING: no header information to print.\n");
     return (0);}
 
-  fprintf(stdout,"\n\n     %-35s%4d       %4d       %4d\n",
-          "Number of columns, rows, sections: ",
+  /* C. Vonrhein: make the output identical to old (pre-5.0) Fortran */
+  /*              libraries                                          */
+  fprintf(stdout,"\n\n");
+  fprintf(stdout,"           Number of columns, rows, sections ...............%5d%5d%5d\n",
           mfile->map_dim[0],mfile->map_dim[1],mfile->map_dim[2]);
-  fprintf(stdout,"     %-35s%4d -%4d %4d -%4d %4d -%4d\n",
-          "Columns, rows, sections: ",
+  fprintf(stdout,"           Map mode ........................................%5d\n",
+	  mfile->data_mode);
+  fprintf(stdout,"           Start and stop points on columns, rows, sections %5d%5d%5d%5d%5d%5d\n",
           mfile->origin[0],
           mfile->origin[0]+mfile->map_dim[0] - 1,
           mfile->origin[1],
           mfile->origin[1]+mfile->map_dim[1] - 1,
           mfile->origin[2],
           mfile->origin[2]+mfile->map_dim[2] - 1);
-  fprintf(stdout,"     %-35s%4d       %4d       %4d\n",
-          "Grid sampling on x, y, z: ",
+  fprintf(stdout,"           Grid sampling on x, y, z ........................%5d%5d%5d\n",
           mfile->cell_grid[0], mfile->cell_grid[1], mfile->cell_grid[2]);
-  fprintf(stdout,"     %-35s%5d\n",
-          "Spacegroup: ", mfile->spacegroup);
-  fprintf(stdout,"     %-35s%8.3f %8.3f %8.3f\n%40s%8.3f %8.3f %8.3f\n",
-          "Cell dimensions: ",
-          mfile->cell[0], mfile->cell[1], mfile->cell[2]," ",
+  fprintf(stdout,"           Cell dimensions .................................%10.5f%10.5f%10.5f%10.5f%10.5f%10.5f\n",
+          mfile->cell[0], mfile->cell[1], mfile->cell[2],
           mfile->cell[3], mfile->cell[4], mfile->cell[5]);
-  fprintf(stdout,"     %-35s   %c  %c  %c\n",
-          "Fast, medium, slow axes: ", 
+  fprintf(stdout,"           Fast, medium, slow axes .........................    %c    %c    %c\n",
           axes[mfile->axes_order[0]],
           axes[mfile->axes_order[1]],
           axes[mfile->axes_order[2]]);
-  fprintf(stdout,"     %-35s%5d\n","Map storage mode: ",mfile->data_mode);
-  fprintf(stdout,"     %-35s%10.5f\n     %-35s%10.5f\n     %-35s%10.5f\n     %-35s%10.5f\n",
-          "Minimum density in map: ", mfile->stats.min,
-          "Maximum density in map: ", mfile->stats.max,
-          "Mean density: ", mfile->stats.mean,
-          "RMS deviation from mean density: ", mfile->stats.rms);
- 
+  fprintf(stdout,"           Minimum density .................................%12.5f\n",
+          mfile->stats.min);
+  fprintf(stdout,"           Maximum density .................................%12.5f\n",
+          mfile->stats.max);
+  fprintf(stdout,"           Mean density ....................................%12.5f\n",
+          mfile->stats.mean);
+  fprintf(stdout,"           Rms deviation from mean density .................%12.5f\n",
+          mfile->stats.rms);
+  fprintf(stdout,"           Space-group .....................................%5d\n",
+          mfile->spacegroup);
+  fprintf(stdout,"           Number of titles ................................%5d\n",
+          ccp4_cmap_number_label(mfile));
+  fprintf(stdout,"\n\n");
+
   fprintf(stdout,"     %-35s\n", "Labels: ");
   {
     int i, nlabels = ccp4_cmap_number_label(mfile);
