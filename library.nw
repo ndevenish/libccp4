@@ -432,11 +432,11 @@ originally done.\index{error reporting}
 static void fatal (message)
 char *message;
 {
-  int one = 1;
+  int mone = -1, zero = 0;
 #if CALL_LIKE_HPUX
-  extern void ccperr();
+  extern void ccperr(), qprint ();
 
-  ccperr (&one, message, (int) strlen(message));
+  ccperr (&mone, message, (int) strlen(message));
 #endif
 #if CALL_LIKE_STARDENT
   extern void CCPERR();
@@ -444,27 +444,32 @@ char *message;
 
   str.Str_length = (int) strlen(message);
   str.Str_pointer = message;
-  CCPERR (&one, &str);
+  CCPERR (&mone, &str);
 #endif
 #if defined (VMS)
   extern void CCPERR();
-   struct dsc$descriptor_s str;
+  struct dsc$descriptor_s str;
 
-   str.dsc$a_pointer = message;
-   str.dsc$w_length = (int) strlen(message);
-   str.dsc$b_dtype = DSC$K_DTYPE_T;
-   str.dsc$b_class = DSC$K_CLASS_S;
-  CCPERR (&one, &str);
+  str.dsc$a_pointer = strerror(errno, vaxc$errno);
+  str.dsc$w_length = (int) strlen(str.dsc$a_pointer);
+  str.dsc$b_dtype = DSC$K_DTYPE_T;
+  str.dsc$b_class = DSC$K_CLASS_S;
+  QPRINT (&zero, &str);
+  str.dsc$a_pointer = message;
+  str.dsc$w_length = (int) strlen(message);
+  str.dsc$b_dtype = DSC$K_DTYPE_T;
+  str.dsc$b_class = DSC$K_CLASS_S;
+  CCPERR (&mone, &str);
 #endif
 #if CALL_LIKE_SUN
   extern void ccperr_();
 
-  ccperr_ (&one, message, (int) strlen(message));
+  ccperr_ (&mone, message, (int) strlen(message));
 #endif
 #if CALL_LIKE_IRIS
   extern fortran ccperr_();
 
-  (void) ccperr_ ((int) strlen(message), &one, message);
+  (void) ccperr_ ((int) strlen(message), &mone, message);
 #endif
  }
 @ %def fatal
