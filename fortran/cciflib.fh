@@ -1,3 +1,6 @@
+
+      INTEGER MAXBLK
+      PARAMETER (MAXBLK=100)
     
 C---cfllen is string length for various dimensioning.
 C   cftxtlen is maximum total length for multi-line text.
@@ -29,6 +32,17 @@ c_______These are used to check the returned value of Status/2 from
 c      the CCIF_GET_* routines. Do this when you don't need to
 c      determine explicitly whether the value came from a
 c      loop_ or not.
-      integer ifailstat(0:3)
-      data ifailstat /-2, 0, 1, -1/
+      integer ifailstat(0:5)
+      data ifailstat /-2, 0, 1, -1, -2, -2/
+
+      INTEGER IATOM_CONTEXT,IATOM_STATUS
+      COMMON /ATOMSITE/ IATOM_CONTEXT(0:MAXBLK-1),
+     +                  IATOM_STATUS(0:MAXBLK-1)
+      INTEGER IANISOTROP_CONTEXT,IANISOTROP_SORT
+      COMMON /ANISOTROP/ IANISOTROP_CONTEXT(0:MAXBLK-1),
+     +                  IANISOTROP_SORT(0:MAXBLK-1)
+      LOGICAL LANISOTROP
+      COMMON /LCATPRESENT/ LANISOTROP(0:MAXBLK-1)
+
+      SAVE /ATOMSITE/,/ANISOTROP/,/LCATPRESENT/
  
