@@ -29,6 +29,7 @@ static char rcsid[] = "$Id$";
 #define  CSYMERR_NoSyminfoFile       2
 #define  CSYMERR_NullSpacegroup      3
 #define  CSYMERR_NoAsuDefined        4
+#define  CSYMERR_NoLaueCodeDefined   5
 
 CCP4SPG *ccp4spg_load_by_standard_num(const int numspg) 
 { 
@@ -54,7 +55,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
          const char *spgname, const int nsym1, const ccp4_symop *op1) 
 
 { CCP4SPG *spacegroup;
-  int i,j,k,l,debug=0,nsym2,symops_provided=0,ierr;
+  int i,j,k,l,debug=0,nsym2,symops_provided=0,ierr,ilaue;
   float sg_chb[4][4],limits[2],rot1[4][4],rot2[4][4];
   FILE *filein;
   char *symopfile, *ccp4dir, filerec[80];
@@ -314,25 +315,18 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   /* select ASU function (referred to default basis) from asu desc */
   /* also infer Laue and Patterson groups */
   ierr = 1;
+  ilaue = 1;
 
   if ( strcmp( sg_asu_descr, "l>0 or (l==0 and (h>0 or (h==0 and k>=0)))" ) == 0 ) {
      spacegroup->asufn = &ASU_1b;
-     spacegroup->nlaue = 3;
-     strcpy(spacegroup->laue_name,"-1");
-     spacegroup->laue_sampling[0] = 2;
-     spacegroup->laue_sampling[1] = 2;
-     spacegroup->laue_sampling[2] = 2;
+     ilaue = ccp4spg_load_laue(spacegroup,3);
      spacegroup->npatt = 2;
      strcpy(spacegroup->patt_name,"P-1");
      ierr = 0;
   }
   if ( strcmp( sg_asu_descr, "k>=0 and (l>0 or (l=0 and h>=0))" ) == 0 ) {
      spacegroup->asufn = &ASU_2_m;
-     spacegroup->nlaue = 4;
-     strcpy(spacegroup->laue_name,"2/m");
-     spacegroup->laue_sampling[0] = 2;
-     spacegroup->laue_sampling[1] = 4;
-     spacegroup->laue_sampling[2] = 2;
+     ilaue = ccp4spg_load_laue(spacegroup,4);
      if (strchr(spacegroup->symbol_Hall,'P')) {
        spacegroup->npatt = 10;
        strcpy(spacegroup->patt_name,"P2/m");
@@ -344,11 +338,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   }
   if ( strcmp( sg_asu_descr, "h>=0 and k>=0 and l>=0" ) == 0 ) {
      spacegroup->asufn = &ASU_mmm;
-     spacegroup->nlaue = 6;
-     strcpy(spacegroup->laue_name,"mmm");
-     spacegroup->laue_sampling[0] = 4;
-     spacegroup->laue_sampling[1] = 4;
-     spacegroup->laue_sampling[2] = 4;
+     ilaue = ccp4spg_load_laue(spacegroup,6);
      if (strchr(spacegroup->symbol_Hall,'P')) {
        spacegroup->npatt = 47;
        strcpy(spacegroup->patt_name,"Pmmm");
@@ -366,6 +356,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   }
   if ( strcmp( sg_asu_descr, "l>=0 and ((h>=0 and k>0) or (h=0 and k=0))" ) == 0 ) {
      spacegroup->asufn = &ASU_4_m;
+     ilaue = ccp4spg_load_laue(spacegroup,7);
      spacegroup->nlaue = 7;
      strcpy(spacegroup->laue_name,"4/m");
      spacegroup->laue_sampling[0] = 4;
@@ -382,11 +373,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   }
   if ( strcmp( sg_asu_descr, "h>=k and k>=0 and l>=0" ) == 0 ) {
      spacegroup->asufn = &ASU_4_mmm;
-     spacegroup->nlaue = 8;
-     strcpy(spacegroup->laue_name,"4/mmm");
-     spacegroup->laue_sampling[0] = 4;
-     spacegroup->laue_sampling[1] = 4;
-     spacegroup->laue_sampling[2] = 8;
+     ilaue = ccp4spg_load_laue(spacegroup,8);
      if (strchr(spacegroup->symbol_Hall,'P')) {
        spacegroup->npatt = 123;
        strcpy(spacegroup->patt_name,"P4/mmm");
@@ -398,11 +385,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   }
   if ( strcmp( sg_asu_descr, "(h>=0 and k>0) or (h=0 and k=0 and l>=0)" ) == 0 ) {
      spacegroup->asufn = &ASU_3b;
-     spacegroup->nlaue = 9;
-     strcpy(spacegroup->laue_name,"-3");
-     spacegroup->laue_sampling[0] = 6;
-     spacegroup->laue_sampling[1] = 6;
-     spacegroup->laue_sampling[2] = 6;
+     ilaue = ccp4spg_load_laue(spacegroup,9);
      if (strchr(spacegroup->symbol_Hall,'P')) {
        spacegroup->npatt = 147;
        strcpy(spacegroup->patt_name,"P-3");
@@ -417,22 +400,14 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   }
   if ( strcmp( sg_asu_descr, "h>=k and k>=0 and (k>0 or l>=0)" ) == 0 ) {
      spacegroup->asufn = &ASU_3bm;
-     spacegroup->nlaue = 10;
-     strcpy(spacegroup->laue_name,"3bar1m");
-     spacegroup->laue_sampling[0] = 6;
-     spacegroup->laue_sampling[1] = 6;
-     spacegroup->laue_sampling[2] = 6;
+     ilaue = ccp4spg_load_laue(spacegroup,10);
      spacegroup->npatt = 162;
      strcpy(spacegroup->patt_name,"P-31m");
      ierr = 0;
   }
   if ( strcmp( sg_asu_descr, "h>=k and k>=0 and (h>k or l>=0)" ) == 0 ) {
      spacegroup->asufn = &ASU_3bmx;
-     spacegroup->nlaue = 11;
-     strcpy(spacegroup->laue_name,"3barm");
-     spacegroup->laue_sampling[0] = 6;
-     spacegroup->laue_sampling[1] = 6;
-     spacegroup->laue_sampling[2] = 6;
+     ilaue = ccp4spg_load_laue(spacegroup,11);
      if (strchr(spacegroup->symbol_Hall,'P')) {
        spacegroup->npatt = 164;
        strcpy(spacegroup->patt_name,"P-3m1");
@@ -447,17 +422,14 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   }
   if ( strcmp( sg_asu_descr, "l>=0 and ((h>=0 and k>0) or (h=0 and k=0))" ) == 0 ) {
      spacegroup->asufn = &ASU_6_m;
-     spacegroup->nlaue = 12;
-     strcpy(spacegroup->laue_name,"6/m");
-     spacegroup->laue_sampling[0] = 6;
-     spacegroup->laue_sampling[1] = 6;
-     spacegroup->laue_sampling[2] = 12;
+     ilaue = ccp4spg_load_laue(spacegroup,12);
      spacegroup->npatt = 175;
      strcpy(spacegroup->patt_name,"P6/m");
      ierr = 0;
   }
   if ( strcmp( sg_asu_descr, "h>=k and k>=0 and l>=0" ) == 0 ) {
      spacegroup->asufn = &ASU_6_mmm;
+     ilaue = ccp4spg_load_laue(spacegroup,13);
      spacegroup->nlaue = 13;
      strcpy(spacegroup->laue_name,"6/mmm");
      spacegroup->laue_sampling[0] = 6;
@@ -469,11 +441,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   }
   if ( strcmp( sg_asu_descr, "h>=0 and ((l>=h and k>h) or (l=h and k=h))" ) == 0 ) {
      spacegroup->asufn = &ASU_m3b;
-     spacegroup->nlaue = 14;
-     strcpy(spacegroup->laue_name,"m3bar");
-     spacegroup->laue_sampling[0] = 4;
-     spacegroup->laue_sampling[1] = 4;
-     spacegroup->laue_sampling[2] = 4;
+     ilaue = ccp4spg_load_laue(spacegroup,14);
      if (strchr(spacegroup->symbol_Hall,'P')) {
        spacegroup->npatt = 200;
        strcpy(spacegroup->patt_name,"Pm-3");
@@ -488,11 +456,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   }
   if ( strcmp( sg_asu_descr, "k>=l and l>=h and h>=0" ) == 0 ) {
      spacegroup->asufn = &ASU_m3bm;
-     spacegroup->nlaue = 15;
-     strcpy(spacegroup->laue_name,"m3barm");
-     spacegroup->laue_sampling[0] = 8;
-     spacegroup->laue_sampling[1] = 8;
-     spacegroup->laue_sampling[2] = 8;
+     ilaue = ccp4spg_load_laue(spacegroup,15);
      if (strchr(spacegroup->symbol_Hall,'P')) {
        spacegroup->npatt = 221;
        strcpy(spacegroup->patt_name,"Pm-3m");
@@ -508,7 +472,15 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
 
   /* Raise an error if failed to match the ASU description */
   if (ierr) {
-    ccp4_signal(CSYM_ERRNO(CSYMERR_NoAsuDefined),"ccp4spg_load_spacegroup",NULL); 
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NoAsuDefined),"ccp4spg_load_spacegroup",NULL);
+    if (spacegroup) free(spacegroup);
+    return NULL;
+  }
+
+  /* Raise an error if failed to match the Laue code */
+  if (ilaue) {
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NoLaueCodeDefined),"ccp4spg_load_spacegroup",NULL);
+    if (spacegroup) free(spacegroup);
     return NULL;
   }
 
@@ -1625,4 +1597,110 @@ int get_grid_sample(const int minsmp, const int nmul, const float sample)
 
   /* failed */
   return -1;
+}
+
+int ccp4spg_load_laue(CCP4SPG *spacegroup, const int nlaue)
+{
+  int ierr = 1;
+
+  if (!spacegroup) return ierr;
+
+  if ( nlaue == 3 ) {
+     spacegroup->asufn = &ASU_1b;
+     spacegroup->nlaue = 3;
+     strcpy(spacegroup->laue_name,"-1");
+     spacegroup->laue_sampling[0] = 2;
+     spacegroup->laue_sampling[1] = 2;
+     spacegroup->laue_sampling[2] = 2;
+     ierr = 0;
+  }
+  if ( nlaue == 4 ) {
+     spacegroup->nlaue = 4;
+     strcpy(spacegroup->laue_name,"2/m");
+     spacegroup->laue_sampling[0] = 2;
+     spacegroup->laue_sampling[1] = 4;
+     spacegroup->laue_sampling[2] = 2;
+     ierr = 0;
+  }
+  if ( nlaue == 6 ) {
+     spacegroup->nlaue = 6;
+     strcpy(spacegroup->laue_name,"mmm");
+     spacegroup->laue_sampling[0] = 4;
+     spacegroup->laue_sampling[1] = 4;
+     spacegroup->laue_sampling[2] = 4;
+     ierr = 0;
+  }
+  if ( nlaue == 7 ) {
+     spacegroup->nlaue = 7;
+     strcpy(spacegroup->laue_name,"4/m");
+     spacegroup->laue_sampling[0] = 4;
+     spacegroup->laue_sampling[1] = 4;
+     spacegroup->laue_sampling[2] = 8;
+     ierr = 0;
+  }
+  if ( nlaue == 8 ) {
+     spacegroup->nlaue = 8;
+     strcpy(spacegroup->laue_name,"4/mmm");
+     spacegroup->laue_sampling[0] = 4;
+     spacegroup->laue_sampling[1] = 4;
+     spacegroup->laue_sampling[2] = 8;
+     ierr = 0;
+  }
+  if ( nlaue == 9 ) {
+     spacegroup->nlaue = 9;
+     strcpy(spacegroup->laue_name,"-3");
+     spacegroup->laue_sampling[0] = 6;
+     spacegroup->laue_sampling[1] = 6;
+     spacegroup->laue_sampling[2] = 6;
+     ierr = 0;
+  }
+  if ( nlaue == 10 ) {
+     spacegroup->nlaue = 10;
+     strcpy(spacegroup->laue_name,"3bar1m");
+     spacegroup->laue_sampling[0] = 6;
+     spacegroup->laue_sampling[1] = 6;
+     spacegroup->laue_sampling[2] = 6;
+     ierr = 0;
+  }
+  if ( nlaue == 11 ) {
+     spacegroup->nlaue = 11;
+     strcpy(spacegroup->laue_name,"3barm");
+     spacegroup->laue_sampling[0] = 6;
+     spacegroup->laue_sampling[1] = 6;
+     spacegroup->laue_sampling[2] = 6;
+     ierr = 0;
+  }
+  if ( nlaue == 12 ) {
+     spacegroup->nlaue = 12;
+     strcpy(spacegroup->laue_name,"6/m");
+     spacegroup->laue_sampling[0] = 6;
+     spacegroup->laue_sampling[1] = 6;
+     spacegroup->laue_sampling[2] = 12;
+     ierr = 0;
+  }
+  if ( nlaue == 13 ) {
+     spacegroup->nlaue = 13;
+     strcpy(spacegroup->laue_name,"6/mmm");
+     spacegroup->laue_sampling[0] = 6;
+     spacegroup->laue_sampling[1] = 6;
+     spacegroup->laue_sampling[2] = 12;
+     ierr = 0;
+  }
+  if ( nlaue == 14 ) {
+     spacegroup->nlaue = 14;
+     strcpy(spacegroup->laue_name,"m3bar");
+     spacegroup->laue_sampling[0] = 4;
+     spacegroup->laue_sampling[1] = 4;
+     spacegroup->laue_sampling[2] = 4;
+     ierr = 0;
+  }
+  if ( nlaue == 15 ) {
+     spacegroup->nlaue = 15;
+     strcpy(spacegroup->laue_name,"m3barm");
+     spacegroup->laue_sampling[0] = 8;
+     spacegroup->laue_sampling[1] = 8;
+     spacegroup->laue_sampling[2] = 8;
+     ierr = 0;
+  }
+  return ierr;
 }
