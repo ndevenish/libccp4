@@ -1461,7 +1461,11 @@ C     and option for residue number treatment
 C
       JTYP=ITYP
 C      ALTLOC=BROOK(17)
+C  ejd - This is a MESS! There are atoms like CO+2 where ATNAM(4:4) is NOT
+C an ALTLOC indicator! At least check OCC - if this = 1.0 ; there is no
+C  second conformation..
       ALTLOC=ATNAM(4:4)
+      IF( OCC.GE.0.99) ALTLOC=' '
 C     Dropped the feature of writing out atomic number where footnote
 C     should be
 CCC      FOOTN=FTNOT
