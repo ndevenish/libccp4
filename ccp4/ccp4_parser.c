@@ -321,7 +321,7 @@ int ccp4_parse_reset(CCP4PARSERARRAY *parsePtr)
 int ccp4_parse_delimiters(CCP4PARSERARRAY *parsePtr,
 			  const char *delim, const char *nulldelim)
 {
-  const char defdelim[]=" \t,=",defnulldelim[]=",=";
+  const char defdelim[]=" \t,=\r",defnulldelim[]=",=";
   char *delimPtr=NULL,*nulldelimPtr=NULL;
   int  ldelim,lnulldelim,istatus=1;
 
