@@ -2521,8 +2521,22 @@ C_END_RBSPGRP
 C
       CHARACTER SPGRP*(*)
       CHARACTER BRKSPGRP*11
+      INTEGER ILEN,KLEN,J
       COMMON /RBRKSPGRP/BRKSPGRP
       SPGRP = BRKSPGRP
+C
+C Make sure that the returned name is left-justified
+C
+      ILEN = LENSTR(SPGRP)
+      KLEN = ILEN
+C
+      DO J = 1,ILEN-1
+        IF (SPGRP(1:1) .EQ. ' ') THEN
+          SPGRP = SPGRP(2:KLEN)
+          KLEN  = KLEN - 1
+        END IF
+      END DO
+C
       END
 C
 C
