@@ -83,11 +83,11 @@ C     beginning with @<name> starts reading from a file <name> (on
 C     stream 11), until end-of-file.
 C
 C     Each logical 'card' may be continued on next line by the
-C     continuation characters '&' or '-'  at the end of the line: this
+C     continuation characters `&', `-' or `\'  at the end of the line: this
 C     character is dropped from the list returned to the calling routine.
 C
 C     Trailing comments may be present, following the
-C     character '#' or '!': any continuation character ('&' or '-')
+C     character '#' or '!': any continuation character (`&', `-'  or `\')
 C     must PRECEED the comment character -- comments can't be continued.
 C     The complete (continued) line, less any comments, is returned in
 C     LINE.  Lines containing ONLY comments (or blank) will not be
@@ -164,7 +164,7 @@ C     .. Local Scalars ..
       INTEGER IFAIL,K,KSTREAM,LENLIN,LINLEN,LSTREAM,MSTREAM,N,
      +        NITEM
       LOGICAL FIRST, HAVLIN
-      CHARACTER FLNAME*60,LINEX*1500,LINEK1,SLASH*2
+      CHARACTER FLNAME*60,LINEX*1500,LINEK1,SLASH
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -187,6 +187,7 @@ C     .. Data statements ..
       DATA NITEM/0/
 C     ..
 C
+C     NB: a compiler may or may not regard '\\' as two characters
       SLASH='\\'
       LINEX = ' '
       NINCHR = 0
@@ -346,7 +347,7 @@ C
         LINEK1 = ' '
       END IF
       IF ((LINE(K:K).EQ.'&' .OR. LINE(K:K).EQ.'-' 
-     +                              .OR. LINE(K:K).EQ.SLASH(1:1))
+     +                              .OR. LINE(K:K).EQ.SLASH)
      +     .AND. LINEK1 .NE. '''' .AND. LINEK1.NE.'"') THEN
 C       zap continuation character
         LINE(K:) = ' '
