@@ -482,7 +482,7 @@
 /*                                                                          */
 /* <[[#define]]s>=                                                          */
 /* the VAX VMS compiler objected to splitting the following line */
-#if defined(MIPSEB) || defined(__hpux) || defined(_AIX) || defined(m68k) || defined(mc68000) || defined(sparc)
+#if defined(MIPSEB) || defined(__hpux) || defined(_AIX) || defined(m68k) || defined(mc68000) || defined(sparc) || defined (__sparc__)
 #  define NATIVEIT DFNTI_MBO
 #  define NATIVEFT DFNTF_BEIEEE
 #endif
