@@ -2072,7 +2072,7 @@ C     .. Arrays in Common ..
      +        NCHITM,NCS,NR1S,NRS,NS1S,NSS,NXYZ
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IER,ISYMC,KMODE,N,NBLIN,NILINE,NLIN
+      INTEGER I,IER,ISYMC,KMODE,N,NBLIN,NILINE,NLIN,J
       CHARACTER LINE*80
 C     ..
 C     .. External Functions ..
@@ -2591,7 +2591,7 @@ C
       INTEGER FUNCTION NBYTXX(NWORD)
 C     ==============================
 C
-C---- Returms the number of machine items in nword words
+C---- Returns the number of machine items in nword words
 C     (as defined by the function ccpbyt)
 C
 C      IMPLICIT NONE
@@ -2782,7 +2782,7 @@ c
 c
 c_BEGIN_CCP4MAPIN
 c
-      subroutine ccp4mapin(iunit,name,title,map,nu1,nv1,nw1,nu2,nv2,nw2) 
+      subroutine ccp4mapin(iunit,name,title,map,nu1,nv1,nw1,nu2,nv2,nw2)
 c     ==================================================================
 c
 c CCP4MAPIN - read a ccp4 logical map and store in xyz order
