@@ -811,7 +811,8 @@ C
       INTEGER IA(*)
       INTEGER*2 I2(*)
       INTEGER*2 J2(2)
-      INTEGER*2 IEIGHT
+      INTEGER*2 IEIGHT, I255
+      PARAMETER (I255=255)
       EQUIVALENCE (JA,J2(1))
       LOGICAL CALLED, LITEND
       EXTERNAL LITEND
@@ -833,7 +834,7 @@ C
       IEIGHT = 8
       IF (SWAPB) THEN
          DO 10 I = 1,NE
-            I2(I) = IOR(IAND(ISHFT(I2(I),-IEIGHT),255),
+            I2(I) = IOR(IAND(ISHFT(I2(I),-IEIGHT),I255),
      +              ISHFT(I2(I),IEIGHT))
 10       CONTINUE
       END IF
@@ -941,7 +942,8 @@ C
       INTEGER IA(*)
       INTEGER*2 I2(*)
       INTEGER*2 J2(2)
-      INTEGER*2 IEIGHT
+      INTEGER*2 IEIGHT, I255
+      PARAMETER (I255=255)
       EQUIVALENCE (JA,J2(1))
       LOGICAL CALLED, LITEND
       EXTERNAL LITEND
@@ -976,7 +978,7 @@ C====== Swap bytes if required
 C
       IF (SWAPB) THEN
          DO 30 I = 1,NE
-            I2(I) = IOR(IAND(ISHFT(I2(I),-IEIGHT),255),
+            I2(I) = IOR(IAND(ISHFT(I2(I),-IEIGHT),I255),
      +              ISHFT(I2(I),IEIGHT))
 30       CONTINUE
       END IF
@@ -1964,7 +1966,7 @@ C
       CALL UGTUID(UID)
       CALL UTIME(CTIME)
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
- 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.1: ',
+ 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.1.4: ',
      +       A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
      +       /)
 C

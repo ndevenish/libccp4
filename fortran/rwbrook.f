@@ -788,6 +788,7 @@ C     ..
 C
 C---- Initialisations
 C
+      CELDEL = 0.0
       IF (CEL(1).GT.0.0) THEN
         IF (CELL(1).GT.0.0) THEN
           DO 101 I = 1,6

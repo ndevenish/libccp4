@@ -975,6 +975,7 @@ C
      $     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD(12),E1(3),E2(3),E3(3),
      $     GONPAD(12),SOURCE(3),S0(3),BEMDAT(25),
      $     DX1,THETA1,DETLM1(2,2),DX2,THETA2,DETLM2(2,2),DETPAD(33)
+      SAVE /MBTHDR/, /CBTHDR/
 C     
 C*** Equivalence undetermined number of scale factors to BSCALE
       REAL SCALES(16)
@@ -1069,6 +1070,7 @@ C
      $     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD(12),E1(3),E2(3),E3(3),
      $     GONPAD(12),SOURCE(3),S0(3),BEMDAT(25),
      $     DX1,THETA1,DETLM1(2,2),DX2,THETA2,DETLM2(2,2),DETPAD(33)
+      SAVE /CBTHDR/, /MBTHDR/
 C     
 C
       INTEGER ISTAT,IFAIL,I
@@ -4327,6 +4329,7 @@ C
      +     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD(12),E1(3),E2(3),E3(3),
      +     GONPAD(12),SOURCE(3),S0(3),BEMDAT(25),
      +     DX1,THETA1,DETLM1(2,2),DX2,THETA2,DETLM2(2,2),DETPAD(33)
+      SAVE /CBTHDR/, /MBTHDR/
 C     
 C*** Equivalence undetermined number of scale factors to BSCALE
       REAL SCALES(16)
@@ -4395,13 +4398,13 @@ C          of integers & reals
       INTEGER MBLENG,MBLINT,MBLREA
       PARAMETER (MBLENG=185,MBLINT=29,MBLREA=156)
       INTEGER RBATCH(MBLENG)
-      DATA RBATCH/MBLENG*0/
       CHARACTER*94 BTITLE
 C     
 C
       INTEGER ISTAT,IFAIL,I
       CHARACTER*100 LINE2
       EXTERNAL LERROR
+      DATA RBATCH/MBLENG*0/
 C
 C
 C Copy title
@@ -4528,8 +4531,8 @@ C
 C
 C---- Set S range to dummy values - no easy way to correct them
 C
-	SRANGE(1,MINDX) = 0.0
-	SRANGE(2,MINDX) = 100.0
+        SRANGE(1,MINDX) = 0.0
+        SRANGE(2,MINDX) = 100.0
 C
 C---- And setup again for the S calculation
 C
@@ -7919,7 +7922,7 @@ C     IPRINT    INTEGER         print indicator : meaning :
 C                               =1 Brief header info printed (default)
 C                               =2 As above plus history info
 C                               =3 Full header dump, symmetry, alles !
-C                               =4 Special flag for LCFDUMP only
+C                               =4 As 1 plus full symmetry 
 C                               any other value, nothing happens
 C
 C
@@ -8187,9 +8190,9 @@ C                ***********************
 C
           END IF
 C
-C---- Symmetry: everything for a full header dump, else just name & number
+C---- Symmetry: everything for =3 or =4, else just name & number
 C
-          IF (IPRINT.EQ.3) THEN
+          IF ((IPRINT.EQ.3) .OR. (IPRINT.EQ.4)) THEN
 C
 C
             IF (NSYM(MINDX).GT.0) THEN
@@ -9592,6 +9595,7 @@ C     .. Common blocks ..
       COMMON /MRCPLT/COEFHH(MFILES),COEFHK(MFILES),COEFHL(MFILES),
      +       COEFKK(MFILES),COEFKL(MFILES),COEFLL(MFILES)
 C     ..
+      SAVE /MTZWRK/, /MRCPLT/
 C     .. Data statements ..
       DATA QMIN,ZERO/5.0E-7,0.0/
       DATA DTORAD/0.01745329/

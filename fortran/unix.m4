@@ -1,5 +1,8 @@
 dnl *** This file is meant to be processed by m4 with an appropriate 
-dnl     definition for the system type to produce unix.f
+dnl     definition for the system type to produce unix.f.
+dnl     Be very careful about changing the m4-isms -- it's particularly easy 
+dnl     to introduce spurious spaces.  It would be less fragile with cpp, but
+dnl     we can't rely on being able to find it and use it with Fortran.
 dnl
 dnl $Id$
 dnl
@@ -8,13 +11,20 @@ dnl
 dnl * units for record lengths:
 ifelse(_sgi,1,
   [define(_ubytes,'WORDS')],
+dnl Changed in `DEC fortran' as opposed to (old) MIPS compiler on Ultrix:
+_dec_fortran,1,
+  [define(_ubytes,'WORDS')],
   [define(_ubytes,'BYTES')])dnl
 dnl
-dnl * fortran compiler may or may not accept READONLY specifier on OPEN:
+dnl * fortran compiler may or may not accept READONLY specifier on OPEN.
+dnl   specifying it might catch the occasional bug.
 ifelse(
 _convex,1,
   [define(_readonly,[READONLY,])],
 _sgi,1,
+  [define(_readonly,[READONLY,])],
+dnl * in Dec Fortran V3.0-2, at least, this seems to be *necessary*:
+_dec_fortran,1,
   [define(_readonly,[READONLY,])],
   [define(_readonly,)])dnl
 dnl
@@ -542,18 +552,20 @@ C     ..
 dnl there doesn't seem to be an AIX hook to translate between
 dnl            fortran units and unix stream numbers
 ifelse(_AIX,1,
-[      INTEGER ISATTY
+[      INTEGER IFLUN
+      INTEGER ISATTY
       EXTERNAL ISATTY
       ANSWER = 0
       IF (FLUN.EQ.5) THEN
-        FLUN = 0
+      IFLUN = FLUN
+        IFLUN = 0
       ELSE IF (FLUN.EQ.6) THEN
-        FLUN = 1
+        IFLUN = 1
       ELSE
         CALL CCPERR(1,'Unit number other than 5 or 6 used with'//
      +       'UISATT or ISATTY (AIX restriction)')
       ENDIF
-      IF (ISATTY(%VAL(FLUN)).EQ.1) ANSWER = 1],
+      IF (ISATTY(%VAL(IFLUN)).EQ.1) ANSWER = 1],
 _hpux,1,
 [      INTEGER ISATTY
       EXTERNAL ISATTY
