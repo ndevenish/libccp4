@@ -146,8 +146,10 @@
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_SUN 1
 #  if !defined(__STDC__) || defined(__GNUC__)
-     extern char *sys_errlist [];
-#    define strerror(i) sys_errlist[i] /* k&r compiler doesn't have it */
+#    if !defined(G77)
+      extern char *sys_errlist [];
+#     define strerror(i) sys_errlist[i] /* k&r compiler doesn't have it */
+#    endif
 #  endif
 #endif
 /* \idx{DEC} \idx{OSF/1} (\idx{Alpha}) and \idx{Ultrix} use the same        */
