@@ -156,7 +156,7 @@ int MtzNumActiveXtal(const MTZ *mtz);
  * @param mtz pointer to MTZ struct
  * @return array of pointers to crystals
  */
-MTZXTAL **MtzXtals(const MTZ *mtz);
+MTZXTAL **MtzXtals(MTZ *mtz);
 
 /** Return pointer to the ixtal'th crystal. 
  * @param mtz pointer to MTZ struct
@@ -197,7 +197,7 @@ int MtzNumActiveSetsInXtal(const MTZ *mtz, const MTZXTAL *xtal);
  * @param xtal pointer to the crystal struct
  * @return array of pointers to datasets 
  */
-MTZSET **MtzSetsInXtal(const MTZXTAL *xtal);
+MTZSET **MtzSetsInXtal(MTZXTAL *xtal);
 
 /** For a given crystal, return pointer to the iset'th dataset
  * in that crystal.
@@ -272,7 +272,7 @@ int MtzNbatchesInSet(const MTZ *mtz, const MTZSET *set);
  * @param set pointer to dataset
  * @return array of pointers to columns 
  */
-MTZCOL **MtzColsInSet(const MTZSET *set);
+MTZCOL **MtzColsInSet(MTZSET *set);
 
 /** For a given dataset, return pointer to the icol'th column
  * in that dataset.
@@ -343,7 +343,7 @@ MTZCOL *MtzColLookup(const MTZ *mtz, const char *label);
  * @param col pointer to MTZ column.
  * @return column type
  */
-char *MtzColType(const MTZCOL *col);
+char *MtzColType(MTZCOL *col);
 
 /** Print summary of current crystal/dataset/column hierarchy. This
  * is designed for debugging purposes rather than for the user.

@@ -2621,7 +2621,7 @@ int MtzNumActiveXtal(const MTZ *mtz)
   return ixtal;
 }
 
-MTZXTAL **MtzXtals(const MTZ *mtz)
+MTZXTAL **MtzXtals(MTZ *mtz)
 {
   return mtz->xtal;
 }
@@ -2646,7 +2646,7 @@ int MtzNumActiveSetsInXtal(const MTZ *mtz, const MTZXTAL *xtal)
   return iset;
 }
 
-MTZSET **MtzSetsInXtal(const MTZXTAL *xtal)
+MTZSET **MtzSetsInXtal(MTZXTAL *xtal)
 {
   return xtal->set;
 }
@@ -2681,7 +2681,7 @@ int MtzNbatchesInSet(const MTZ *mtz, const MTZSET *set)
   return ibatch;
 }
 
-MTZCOL **MtzColsInSet(const MTZSET *set)
+MTZCOL **MtzColsInSet(MTZSET *set)
 {
   return set->col;
 }
@@ -2691,7 +2691,7 @@ MTZCOL *MtzIcolInSet(const MTZSET *set, const int icol)
   return set->col[icol];
 }
 
-char *MtzColType(const MTZCOL *col)
+char *MtzColType(MTZCOL *col)
 {
   return col->type;
 }

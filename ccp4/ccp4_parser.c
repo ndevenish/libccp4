@@ -1324,7 +1324,7 @@ int doublefromstr(const char *str, const double max_exp, const double min_exp,
   return 1;
 }
 
-ccp4_symop symop_to_rotandtrn(char *symchs_begin, char *symchs_end) {
+ccp4_symop symop_to_rotandtrn(const char *symchs_begin, const char *symchs_end) {
 
   float rsm[4][4];
 
@@ -1341,13 +1341,14 @@ ccp4_symop symop_to_rotandtrn(char *symchs_begin, char *symchs_end) {
  * @param rot 4 x 4 matrix operator
  * @return number of operators converted 
  */
-int symop_to_mat4(char *symchs_begin, char *symchs_end, float *rot)
+int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
 {
   int no_real =0, no_recip = 0, no_axis = 0;          /* counters */
   int col = 3, nops = 0;
   int nsym = 0;
   float sign = 1.0f, value = 0.0f, value2;
-  char *cp, *ptr_symchs = symchs_begin, ch;
+  char *cp, ch;
+  const char *ptr_symchs = symchs_begin;
   int j,k;                                 /* loop variables */
   int Isep = 0;                             /* parsed seperator? */
 
@@ -1481,7 +1482,7 @@ int symop_to_mat4(char *symchs_begin, char *symchs_end, float *rot)
       
 }
 
-ccp4_symop mat4_to_rotandtrn(float rsm[4][4]) {
+ccp4_symop mat4_to_rotandtrn(const float rsm[4][4]) {
 
   int i,j;
   ccp4_symop symop;
@@ -1495,7 +1496,7 @@ ccp4_symop mat4_to_rotandtrn(float rsm[4][4]) {
   return (symop);
 }
 
-char *rotandtrn_to_symop(char *symchs_begin, char *symchs_end, ccp4_symop symop)
+char *rotandtrn_to_symop(char *symchs_begin, char *symchs_end, const ccp4_symop symop)
 {
   float rsm[4][4];
 
@@ -1503,7 +1504,7 @@ char *rotandtrn_to_symop(char *symchs_begin, char *symchs_end, ccp4_symop symop)
   return(mat4_to_symop(symchs_begin,symchs_end,rsm));
 }
 
-void rotandtrn_to_mat4(float rsm[4][4], ccp4_symop symop) {
+void rotandtrn_to_mat4(float rsm[4][4], const ccp4_symop symop) {
 
   int i,j;
 
@@ -1524,7 +1525,7 @@ void rotandtrn_to_mat4(float rsm[4][4], ccp4_symop symop) {
  * @param rsm 4 x 4 matrix operator
  * @return pointer to beginning of string
  */
-char *mat4_to_symop(char *symchs_begin, char *symchs_end, float rsm[4][4])
+char *mat4_to_symop(char *symchs_begin, char *symchs_end, const float rsm[4][4])
 {
   static char axiscr[] = {'X','Y','Z'};
   static char numb[] = {'0','1','2','3','4','5','6','7','8','9'};
@@ -1615,7 +1616,7 @@ char *mat4_to_symop(char *symchs_begin, char *symchs_end, float rsm[4][4])
   return ich;
 }
 
-char *mat4_to_recip_symop(char *symchs_begin, char *symchs_end, float rsm[4][4])
+char *mat4_to_recip_symop(char *symchs_begin, char *symchs_end, const float rsm[4][4])
 {
   char *symop;
   size_t lsymop;

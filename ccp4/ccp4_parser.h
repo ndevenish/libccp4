@@ -133,14 +133,14 @@ int doublefromstr(const char *str, const double max_exp, const double min_exp,
 			  double *expvaluePtr, int *expdigitsPtr);
 
 /* This is Charles' version of symfr */
-ccp4_symop symop_to_rotandtrn(char *symchs_begin, char *symchs_end);
-int symop_to_mat4(char *symchs_begin, char *symchs_end, float *rot);
-ccp4_symop mat4_to_rotandtrn(float rsm[4][4]);
+ccp4_symop symop_to_rotandtrn(const char *symchs_begin, const char *symchs_end);
+int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot);
+ccp4_symop mat4_to_rotandtrn(const float rsm[4][4]);
 /* This is Charles' version of symtr */
-char *rotandtrn_to_symop(char *symchs_begin, char *symchs_end, ccp4_symop symop);
-void rotandtrn_to_mat4(float rsm[4][4], ccp4_symop symop);
-char *mat4_to_symop(char *symchs_begin, char *symchs_end, float rsm[4][4]);
-char *mat4_to_recip_symop(char *symchs_begin, char *symchs_end, float rsm[4][4]);
+char *rotandtrn_to_symop(char *symchs_begin, char *symchs_end, const ccp4_symop symop);
+void rotandtrn_to_mat4(float rsm[4][4], const ccp4_symop symop);
+char *mat4_to_symop(char *symchs_begin, char *symchs_end, const float rsm[4][4]);
+char *mat4_to_recip_symop(char *symchs_begin, char *symchs_end, const float rsm[4][4]);
 
 #ifdef __cplusplus
 }
