@@ -24,6 +24,9 @@ CMTTCPY     ENTRY ccp4_map_copy_title
 CMTTREP     ENTRY ccp4_map_write_replace_title
 CMSPEW      ENTRY ccp4_map_write_all_section
 CMWRSEC     ENTRY ccp4_map_write_part_section
+CCCP4MAPHEAD ENTRY ccp4_map_read_header_only
+CCCP4MAPIN   ENTRY ccp4_map_read_whole_map
+CCCP4MAPOUT  ENTRY ccp4_map_write_whole_map
 C
 C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
@@ -77,6 +80,9 @@ C   26/6/92  Only print max,min etc in s/r MCLOSE, MWCLOSE and MCLOSC
 C            for mode 2.  Suppress printing of min,max etc in MRFNAM
 C            for logical*1 maps (mode 0) (Peter Brick)
 C
+C   11/11/98 Added Kevin Cowtan's "wrapper" routines CCP4MAPHEAD,
+C            CCP4MAPIN and CCP4MAPOUT.
+C
 C
 C---- EXTERNAL SUBROUTINES USED:
 C     =========================
@@ -119,6 +125,9 @@ C      SUBROUTINE MTTREP(TITLE,NT)
 C      SUBROUTINE MSKPUT(ASKWMT,ASKWTN)
 C      SUBROUTINE MODECV(X,BLINE,N,MODE)
 C      SUBROUTINE MSYWRT(IUNIT,NSYM,ROT)
+C      SUBROUTINE CCP4MAPHEAD
+C      SUBROUTINE CCP4MAPIN
+C      SUBROUTINE CCP4MAPOUT
 C
 C      INTEGER FUNCTION MSKGET(ASKWMT,ASKWTN)
 C      INTEGER FUNCTION NBYTXX(NWORD)
@@ -2641,3 +2650,334 @@ C
       ITMSC1 = NSYMBT/NCHITM + ITMHDR + 1
 C     
       END
+C
+C
+c_BEGIN_CCP4MAPHEAD
+c
+      subroutine ccp4maphead(iunit,name,nspgrp,cell,nu,nv,nw,nu1,nv1,
+     +                       nw1,nu2,nv2,nw2)
+c     ===============================================================
+c
+c CCP4MAPhead - get limits of mask from file
+c
+c---- Function: read header information from a map file. It is used to
+c     get the map limits before calling ccp4mapin.
+c
+c  Call: CALL ccp4maphead(iunit,name,nspgrp,cell,nu,nv,nw,nu1,nv1,nw1,
+c       +                 nu2,nv2,nw2)
+c
+c---- Note that This differs from ccp4_map_read_open_header_check
+c     [MRDHDS] (which it calls) in that the file is not left open but
+c     is closed (by a call to ccp4_map_read_close [MRCLOS]) before
+c     the subroutine terminates. Note also that the map limits are
+c     returned in x,y,z order rather than in fast, medium, slow order. 
+c
+c
+c---- Arguments:
+c     =========
+c
+c  iunit   (I)  Map stream number (integer)
+c  name    (I)  Logical file name (type character*8) e.g.'MAPIN'   
+c  nspgrp  (O)  Space group number (integer)
+c  cell    (O)  6 word array for cell dimensions in Angstroms and
+c               degrees (real)
+c  nu      (O)  Sampling interval along whole cell on X (integer)
+c  nv      (O)  Sampling interval along whole cell on Y (integer)
+c  nw      (O)  Sampling interval along whole cell on Z (integer)
+c  nu1     (O)  Start of map on X axis, in grid units (integer)
+c  nv1     (O)  Start of map on Y axis, in grid units (integer)
+c  nw1     (O)  Start of map on Z axis, in grid units (integer)
+c  nu2     (O)  End of map on X axis (integer)
+c  nv2     (O)  End of map on Y axis (integer)
+c  nw2     (O)  End of map on Z axis (integer)
+c
+c_END_CCP4MAPHEAD
+c
+      implicit none
+c
+      character name*8
+      integer iunit,nspgrp,nu,nv,nw,nu1,nv1,nw1,nu2,nv2,nw2
+      real cell(6)
+c
+      integer jfms(3),juvw(3),mxyz(3),m1(3),m2(3),nsec,mode
+      integer i,ifail,iprint
+      real rmin,rmax,rmean,rrms
+      character title*80
+c
+      entry ccp4_map_read_header_only(iunit,name,nspgrp,cell,nu,nv,nw,
+     +                                nu1,nv1,nw1,nu2,nv2,nw2)
+c
+c read the file headers
+      ifail=0 
+      iprint=1 
+      call ccp4_map_read_open_header_check(iunit,name,title,nsec,
+     +  jfms,mxyz,m1(3),m1(1),m2(1),m1(2),m2(2),cell,nspgrp,mode,
+     +  rmin,rmax,rmean,rrms,ifail,iprint)
+      call ccp4_map_read_close(iunit) 
+      m2(3)=m1(3)+nsec-1 
+      do 110 i=1,3 
+       juvw(jfms(i))=i 
+ 110  continue 
+      nu1=m1(juvw(1)) 
+      nu2=m2(juvw(1)) 
+      nv1=m1(juvw(2)) 
+      nv2=m2(juvw(2)) 
+      nw1=m1(juvw(3)) 
+      nw2=m2(juvw(3)) 
+      nu=mxyz(1) 
+      nv=mxyz(2) 
+      nw=mxyz(3) 
+c 
+      return 
+      end 
+c 
+c
+c_BEGIN_CCP4MAPIN
+c
+      subroutine ccp4mapin(iunit,name,title,map,nu1,nv1,nw1,nu2,nv2,nw2) 
+c     ==================================================================
+c
+c CCP4MAPIN - read a ccp4 logical map and store in xyz order
+c
+c---- Function: read whole map into an array and store in x,y,z order.
+c     The map limits are required as input to dimension the array holding
+c     the map, and can be obtained with a call to the subroutine
+c     ccp4maphead.
+c
+c  Call: CALL ccp4mapin (iunit,name,title,map,nu1,nv1,nw1,nu2,nv2,nw2)
+c
+c---- ccp4mapin is a "wrapper" subroutine which utilises calls to the
+c     following maplib routines: ccp4_map_read_open_header_check [MRDHDS],
+c                                ccp4_map_read_whole_section_as_real [MGULPR],
+c                                ccp4_map_read_close [MRCLOS].
+c
+c
+c---- Arguments:
+c     ==========
+c
+c  iunit   (I)  Map stream number (integer)
+c  name    (O)  logical file name (type character) e.g. 'MAPIN'
+c  title   (O)  Map title (type character)
+c  map     (O)  Real array of dimension (nu1:nu2,nv1:nv2,nw1:nw2)
+c               which stores the map which is read in
+c  nu1     (I)  Start of map on X axis, in grid units (integer)
+c  nv1     (I)  Start of map on Y axis, in grid units (integer)
+c  nw1     (I)  Start of map on Z axis, in grid units (integer)
+c  nu2     (I)  End of map on X axis (integer)
+c  nv2     (I)  End of map on Y axis (integer)
+c  nw2     (I)  End of map on Z axis (integer)
+c
+c_END_CCP4MAPIN
+c
+      implicit none 
+c
+      integer maxsec
+      parameter (maxsec=100000)
+c
+      integer iunit,nu1,nv1,nw1,nu2,nv2,nw2 
+      real map(nu1:nu2,nv1:nv2,nw1:nw2) 
+      character name*(*),title*(*) 
+c 
+      real lsec(0:maxsec) 
+c 
+      integer ifast,imedm,islow,lfast,lmedm,lslow,ierr,ifail,iprint 
+      integer m1(3),m2(3),ifms(3),jfms(3),juvw(3),mxyz(3) 
+      integer i,iu,iv,iw 
+      integer nsec,mode,mspgrp 
+      real cell(6),rmin,rmax,rmean,rrms 
+c
+      entry ccp4_map_read_whole_map(iunit,name,title,map,nu1,nv1,nw1,
+     +                              nu2,nv2,nw2) 
+c 
+c 
+c Note: juvw convert from fast/med/slow to u/v/w 
+c       jfms convert from u/v/w to fast/med/slow 
+c 
+c now open map header and read map, re-ordering it as necessary 
+c 
+      ifail=0 
+      iprint=0 
+      call ccp4_map_read_open_header_check(iunit,name,title,nsec,jfms,
+     +  mxyz,m1(3),m1(1),m2(1),m1(2),m2(2),cell,mspgrp,mode,rmin,rmax,
+     +  rmean,rrms,ifail,iprint) 
+      m2(3)=m1(3)+nsec-1 
+      do 110 i=1,3 
+       juvw(jfms(i))=i 
+ 110  continue 
+c check we got the right header info: 
+      if (nu1.ne.m1(juvw(1)).or.nu2.ne.m2(juvw(1)).or. 
+     +    nv1.ne.m1(juvw(2)).or.nv2.ne.m2(juvw(2)).or. 
+     +    nw1.ne.m1(juvw(3)).or.nw2.ne.m2(juvw(3))) 
+     +  call ccperr(1,'ccp4mapin - mask grid sizes are inconsistent') 
+c find out the map grid dimensions 
+      lfast=m2(1)-m1(1)+1 
+      lmedm=m2(2)-m1(2)+1 
+      lslow=m2(3)-m1(3)+1 
+c 
+      if (lfast*lmedm.gt.maxsec) 
+     +  call ccperr(1,' ccp4mapin - Map section > lsec: recompile') 
+c now read the map in the order it is on file 
+      do 200 islow=0,lslow-1 
+c get a section 
+       ierr=0 
+       call ccp4_map_read_whole_section_as_real(iunit,lsec,ierr) 
+       if (ierr.ne.0) call ccperr(1,' ccp4mapin - ccp4 read error') 
+c now sort into uvw map 
+       ifms(3)=islow+m1(3) 
+       do 190 imedm=0,lmedm-1 
+       ifms(2)=imedm+m1(2) 
+       do 190 ifast=0,lfast-1 
+       ifms(1)=ifast+m1(1) 
+        iu=ifms(juvw(1)) 
+        iv=ifms(juvw(2)) 
+        iw=ifms(juvw(3)) 
+        map(iu,iv,iw)=lsec(ifast+lfast*imedm) 
+ 190   continue 
+ 200  continue 
+c close the map file 
+      call ccp4_map_read_close(iunit) 
+c 
+      write (*,910) 
+ 910  format (/' MAP/MASK READ SUCCESSFUL'//) 
+c 
+      return 
+      end 
+c
+c
+c_BEGIN_CCP4MAPOUT
+c
+      subroutine ccp4mapout(iunit,name,title,map,nspgrp,cell,nu,nv,nw,
+     +                      nu1,nv1,nw1,nu2,nv2,nw2) 
+c     ================================================================
+c
+c CCP4MAPOUT - write a ccp4 logical map in xyz order
+c
+c---- Function: Write out a whole map in x,y,z order. 
+c
+c  Call: CALL ccpmap4out(iunit,name,title,map,nspgrp,cell,nu,nv,nw,nu1,
+c       +                nv1,nw1,nu2,nv2,nw2)
+c
+c---- ccpmap4out is a "wrapper" routine which utilises calls to the
+c     following maplib subroutines:
+c                ccp4_map_write_open_header_by_name [MWRHDL],
+c                ccp4_map_write_symm_matrix [MSYWRT],
+c                ccp4_map_write_all_section [MSPEW],
+c                ccp4_map_write_close_auto [MWCLOSE].
+c     There is also a call to the symlib routine MSYMLB.
+c
+c
+c---- Arguments:
+c     ==========
+c
+c  iunit   (I)  Map stream number (integer)
+c  name    (I)  Logical file name (type character) e.g.'MAPIN'   
+c  title   (I)  Map title (type character)
+c  map     (I)  Real array of dimension (nu1:nu2,nv1:nv2,nw1:nw2)
+c               which stores the map being written out
+c  nspgrp  (I)  Space group number (integer)
+c  cell    (I)  6 word array for cell dimensions in Angstroms and degrees (real)
+c  nu      (I)  Sampling interval along whole cell on X (integer)
+c  nv      (I)  Sampling interval along whole cell on Y (integer)
+c  nw      (I)  Sampling interval along whole cell on Z (integer)
+c  nu1     (I)  Start of map on X axis, in grid units (integer)
+c  nv1     (I)  Start of map on Y axis, in grid units (integer)
+c  nw1     (I)  Start of map on Z axis, in grid units (integer)
+c  nu2     (I)  End of map on X axis (integer)
+c  nv2     (I)  End of map on Y axis (integer)
+c  nw2     (I)  End of map on Z axis (integer)
+c
+c_END_CCP4MAPOUT
+c
+      implicit none 
+c
+      integer maxsec
+      parameter (maxsec=100000)
+c 
+      integer iunit,nspgrp,nu,nv,nw,nu1,nv1,nw1,nu2,nv2,nw2 
+      real cell(6),map(nu1:nu2,nv1:nv2,nw1:nw2) 
+      character name*(*),title*(*) 
+c 
+      real lsec(0:maxsec) 
+c 
+      integer ifast,imedm,islow,lfast,lmedm,lslow
+      integer m1(3),m2(3),ifms(3),jfms(3),juvw(3),mxyz(3) 
+      integer i,iu,iv,iw 
+      integer nsec,mode,nsym,nsymp 
+      real rsym(4,4,192)
+      character*10 namspg,nampg 
+c 
+c 
+c spacegroups with yxz=1 and zxy=2 axis ordering 
+      integer axis(230) 
+      data axis/2,2,2,2,1,1,1,1,1,2,1,1,1,1,1,2,2,2,1,2,2,1,2,207*1/ 
+c
+      entry ccp4_map_write_whole_map(iunit,name,title,map,nspgrp,cell,
+     +                               nu,nv,nw,nu1,nv1,nw1,nu2,nv2,nw2)
+c 
+c Note: juvw convert from fast/med/slow to u/v/w 
+c       jfms convert from u/v/w to fast/med/slow 
+c 
+c now open map header and read map, re-ordering it as necessary 
+c 
+      if (axis(mod(nspgrp,1000)).eq.1) then 
+       jfms(1)=2 
+       jfms(2)=1 
+       jfms(3)=3 
+      else 
+       jfms(1)=3 
+       jfms(2)=1 
+       jfms(3)=2 
+      endif 
+c 
+      do 110 i=1,3 
+       juvw(jfms(i))=i 
+ 110  continue 
+c 
+      mxyz(1)=nu 
+      mxyz(2)=nv 
+      mxyz(3)=nw 
+      m1(juvw(1))=nu1 
+      m2(juvw(1))=nu2 
+      m1(juvw(2))=nv1 
+      m2(juvw(2))=nv2 
+      m1(juvw(3))=nw1 
+      m2(juvw(3))=nw2 
+      nsec=m2(3)-m1(3)+1 
+      mode=2 
+c 
+      call msymlb(iunit,nspgrp,namspg,nampg,nsym,nsymp,rsym) 
+c 
+      call ccp4_map_write_open_header_by_name(iunit,name,title,nsec,
+     +  jfms,mxyz,m1(3),m1(1),m2(1),m1(2),m2(2),cell,nspgrp,mode) 
+      call ccp4_map_write_symm_matrix(iunit,nsym,rsym) 
+c 
+c find out the mask grid dimensions 
+      lfast=m2(1)-m1(1)+1 
+      lmedm=m2(2)-m1(2)+1 
+      lslow=m2(3)-m1(3)+1 
+c 
+      if (lfast*lmedm.gt.maxsec) 
+     +  call ccperr(1,' ccp4mapout - Mask section > lsec: recompile') 
+c now write the map in the new order 
+      do 200 islow=0,lslow-1 
+c sort onto section 
+       ifms(3)=islow+m1(3) 
+       do 190 imedm=0,lmedm-1 
+       ifms(2)=imedm+m1(2) 
+       do 190 ifast=0,lfast-1 
+       ifms(1)=ifast+m1(1) 
+        iu=ifms(juvw(1)) 
+        iv=ifms(juvw(2)) 
+        iw=ifms(juvw(3)) 
+        lsec(ifast+lfast*imedm)=map(iu,iv,iw) 
+ 190   continue 
+c write the section 
+       call ccp4_map_write_all_section(iunit,lsec) 
+ 200  continue 
+c close the map file 
+      call ccp4_map_write_close_auto(iunit) 
+c 
+      return 
+      end 
+c
+c
