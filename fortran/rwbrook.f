@@ -2669,7 +2669,7 @@ C  End of big loop. Back for smaller substring of ID.
 
       WRITE(STRING,'(A,A,A)') ' No match for atom ID ',ID2(1:1),
      +   ' giving up! '
-      CALL CCPERR(4,STRING)
+      CALL CCPERR(4,STRING(1:LENSTR(STRING)))
       IFAIL = -1
       RETURN
 C
