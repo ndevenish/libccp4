@@ -163,7 +163,10 @@ FORTRAN_SUBR ( SYMTR3, symtr3,
     for (j = 0; j < 4; ++j) 
       for (k = 0; k < 4; ++k) 
         rsym[j][k] = rsm[i][k][j];
-    mat4_to_symop(temp_symch,temp_symch+80,rsym);
+    mat4_to_symop(temp_symch,temp_symch+79,rsym);
+    /* mat4_to_symop fills temp_symch with spaces */
+    /* ccp4_CtoFString will perform strlen(temp_symch) */
+    temp_symch[79] = '\0';
     ccp4_CtoFString(FTN_STR(symchs+i*FTN_LEN(symchs)),FTN_LEN(symchs),temp_symch);
 
     if (*iprint) {
