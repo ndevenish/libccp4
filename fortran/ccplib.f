@@ -666,7 +666,7 @@ C_END_CCPERR
 C
       CHARACTER ERRSTR*(*), ERRBUF*100
       INTEGER ISTAT
-      EXTERNAL VAXVMS
+      EXTERNAL VAXVMS, CCPPNM, QPRINT, CEXIT, GETELAPSED
       LOGICAL VAXVMS
 C
 C
@@ -680,10 +680,13 @@ C     (avoid VMS `Message number 00000000')
           CALL QPRINT(0,ERRBUF)
         ENDIF
       ENDIF
-      CALL QPRINT(0,ERRSTR)
-      CALL GETELAPSED
+      CALL CCPPNM (ERRBUF)
+      ERRBUF (LENSTR(ERRBUF)+1:) = ": "
+      ERRBUF (LENSTR(ERRBUF)+2:) = ERRSTR
+      CALL QPRINT(0,ERRBUF)
       IF (VAXVMS()) THEN
         IF (ISTAT.EQ.0) THEN
+          CALL GETELAPSED
 C         success
           CALL CEXIT(1)
         ELSE
@@ -691,6 +694,7 @@ C         FOR$_NOTFORSPE, "Not a FORTRAN-specific error"
           CALL CEXIT(1605644)
         ENDIF
       ELSE
+        CALL GETELAPSED
         CALL CEXIT(ABS(ISTAT))
       ENDIF
       STOP
@@ -2363,10 +2367,11 @@ C_END_CCPVRS
 C     .. Scalar Arguments ..
 
       INTEGER ILP
-      CHARACTER PROG* (*),VDATE* (*)
+      CHARACTER PROG* (*),VDATE* (*), PNM*(*)
 C     ..
 C     .. Local Scalars ..
       CHARACTER CTIME*8,DT2*8,DT*10,PR*10,UID*20
+      SAVE PR
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -2375,6 +2380,7 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPDAT,UGTUID,UTIME
 C     ..
+      DATA PR /' '/
 C
 C---- Output heading
 C
@@ -2384,10 +2390,25 @@ C
       CALL UGTUID(UID)
       CALL UTIME(CTIME)
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
- 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.7: ',
+ 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.8: ',
      +       A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
      +       /)
 C
+      RETURN
+C
+      ENTRY CCPPNM (PNM)
+C_BEGIN_CCPPNM
+C     SUBROUTINE CCPPNM (PNM)
+C     =======================
+C
+C     Returns the program name previously set by CCPVRS (/CCPRCS).
+C     Aborts if it hasn't been set.
+C
+C     Argument:
+C         PNM (O)   CHARACTER*(*)  Program name
+C_END_CCPPNM
+      IF (PR.EQ.' ') CALL CCPERR (1, 'CCPPNM: name not set by CCPVRS')
+      PNM = PR
       END
 C
 C
