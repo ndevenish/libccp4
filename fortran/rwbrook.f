@@ -2808,6 +2808,10 @@ C          Ifail  = -1 if atom not found at all
 C                 =  0 OK
 C                 =  1 for two gaussian case that does not exist
 C
+C 20/11/2000 C. Vonrhein
+C     fixed problem with one character atom name matching
+C     (S, I and B affected)
+C
 C     .. Scalar Arguments ..
       REAL C
       INTEGER IELEC,Ifail,IWT,NG
@@ -2861,8 +2865,20 @@ C
 C
       CALL CCPUPC(IDIN)
       IF (ID2(1:NID).EQ.IDIN(1:NID)) THEN
-        Ifail = 1
-        IF (NGauss.NE.2 .OR. IDIN(6:6).NE.' ') GO TO 60
+c
+c       20/11/2000 C. Vonrhein
+c
+c       special precautions for single character atom types:
+c       skip this atom if second character is NOT '+', '-' or ' '.
+c
+        IF ((NID.NE.1).OR.( (NID.EQ.1).AND.(
+     .                      (IDIN(2:2).EQ."+").OR.
+     .                      (IDIN(2:2).EQ."-").OR.
+     .                      (IDIN(2:2).EQ." ")    )
+     .                    )) THEN
+          Ifail = 1
+          IF (NGauss.NE.2 .OR. IDIN(6:6).NE.' ') GO TO 60
+        END IF
       END IF
 C
       GO TO 10
