@@ -140,19 +140,25 @@ namespace CSym {
 extern "C" {
 #endif
 
-/** Look up spacegroup in standard setting by number and load properties.
+/** Look up spacegroup in standard setting by number, and load properties.
+ * Allocates memory for the spacegroup structure. This can be freed
+ * later by ccp4spg_free().
  * @param numspg spacegroup number
  * @return pointer to spacegroup
  */
 CCP4SPG *ccp4spg_load_by_standard_num(const int numspg); 
 
-/** Look up spacegroup by CCP4 number and load properties.
+/** Look up spacegroup by CCP4 number, and load properties.
+ * Allocates memory for the spacegroup structure. This can be freed
+ * later by ccp4spg_free().
  * @param ccp4numspg CCP4 spacegroup number
  * @return pointer to spacegroup
  */
 CCP4SPG *ccp4spg_load_by_ccp4_num(const int ccp4numspg); 
 
 /** Look up spacegroup by the extended Hermann Mauguin symbol.
+ * Allocates memory for the spacegroup structure. This can be freed
+ * later by ccp4spg_free().
  * @param spgname Spacegroup name in form of extended Hermann Mauguin symbol.
  * @return pointer to spacegroup
  */
@@ -162,12 +168,16 @@ CCP4SPG *ccp4spg_load_by_spgname(const char *spgname);
  * and is more complicated than ccp4spg_load_by_spgname. For each
  * spacegroup in syminfo.lib it checks the CCP4 spacegroup name
  * first, and then the extended Hermann Mauguin symbol.
+ * Allocates memory for the spacegroup structure. This can be freed
+ * later by ccp4spg_free().
  * @param ccp4spgname Spacegroup name.
  * @return pointer to spacegroup
  */
 CCP4SPG *ccp4spg_load_by_ccp4_spgname(const char *ccp4spgname);
 
 /** Look up spacegroup by symmetry operators and load properties.
+ * Allocates memory for the spacegroup structure. This can be freed
+ * later by ccp4spg_free().
  * @param nsym1 number of operators (including non-primitive)
  * @param op1 pointer to array of operators
  * @return pointer to spacegroup
@@ -177,6 +187,8 @@ CCP4SPG * ccp4_spgrp_reverse_lookup(const int nsym1, const ccp4_symop *op1);
 /** Look up spacegroup from SYMOP.
  *  This would not normally be called directly, but via one of
  *  the wrapping functions. 
+ *  Allocates memory for the spacegroup structure. This can be freed
+ *  later by ccp4spg_free().
  * @param numspg spacegroup number
  * @param ccp4numspg CCP4 spacegroup number
  * @param spgname Spacegroup name.
