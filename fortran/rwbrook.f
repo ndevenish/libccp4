@@ -1489,6 +1489,10 @@ C
           ENDIF
 452     CONTINUE
 C
+C     If no ID match then make sure it is empty
+C
+        ID = ' '
+C
         IF (IAT.EQ.IATM(6)) THEN
           II = 6
           GO TO 480
