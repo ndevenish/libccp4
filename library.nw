@@ -1118,11 +1118,15 @@ int *iunit, *nitems;
   if (file_last_op[*iunit] == READ_OP) {
 <<OpenVMS seek fudge>>
     if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0)
-      fatal ("QWRITE: i/o error"); }
+      fatal ("QWRITE: seek failed"); }
   file_last_op[*iunit] = WRITE_OP;
   i = (int) fwrite (buffer, (size_t) file_bytes_per_item[*iunit],
                     (size_t) *nitems, file_stream[*iunit]);
-  if (i != *nitems) fatal ("QWRITE: i/o error");
+@ We don't (necessarily?)\ get a useful system error message from
+[[fatal]] if the write fails (e.g.\ in \idx{Irix}), hance the hint
+about disc space.
+<<diskio routines>>=
+  if (i != *nitems) fatal ("QWRITE: i/o error (may be out of disc space)");
 }
 @ %def qwrite
 @ \subsection{{\tt subroutine qwritc (\meta{iunit}, \meta{buffer})}}
@@ -1158,7 +1162,7 @@ int *iunit;
   if (file_last_op[*iunit] == READ_OP) {
 <<OpenVMS seek fudge>>
     if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0)
-      fatal ("QWRITC: i/o error"); }
+      fatal ("QWRITC: seek failed"); }
   file_last_op[*iunit] = WRITE_OP;
 #if defined (VMS)
   n = buffer->dsc$w_length;
@@ -1175,7 +1179,7 @@ int *iunit;
 #endif
   i = (int) fwrite (buffer, (size_t) item_sizes[BYTE],
                     (size_t) n, file_stream[*iunit]);
-  if (i != n) fatal ("QWRITC: i/o error");
+  if (i != n) fatal ("QWRITC: i/o error (may be out of disc space)");
 }
 @ %def qwritc
 @ \subsection{{\tt subroutine qseek (\meta{iunit}, \meta{irec},
