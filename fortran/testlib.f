@@ -18,12 +18,13 @@ C     .. Local Arrays ..
       REAL BUFFER(LBUF)
 C     ..
 C     .. External Functions ..
-      LOGICAL LITEND,VAXVMS
-      EXTERNAL LITEND,VAXVMS
+      LOGICAL LITEND,VAXVMS, QISNAN
+      REAL QNAN
+      EXTERNAL LITEND,VAXVMS, QNAN, QISNAN
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPERR,CCPFYP,NOCRLF,QCLOSE,QMODE,QOPEN,QQINQ,QREAD,
-     +         QSEEK,QWRITE,SRAND,UBYTES,UCPUTM,UGERR,UGTENV,UGTUID,
+     +         QSEEK,QWRITE,UBYTES,UCPUTM,UGERR,UGTENV,UGTUID,
      +         UIDATE,UISATT,USTIME,UTIME,CCPRCS,CCPDPN
 C     ..
 C     .. Intrinsic Functions ..
@@ -93,11 +94,11 @@ C
 C
 C---- UISATT
 C
-      CALL UISATT(LUNIN,IYES)
+      CALL UISATT(LUNOUT,IYES)
       IF (IYES.EQ.0) THEN
         REPLY = 'No'
       ELSE
-        WRITE (REPLY,FMT=6004) 'Yes, ',LUNIN
+        WRITE (REPLY,FMT=6004) 'Yes, ',LUNOUT
       END IF
       WRITE (LUNOUT,FMT=6002) ' UISATT',REPLY,
      +  'are we attached to at tty? Unit number?'
@@ -145,8 +146,16 @@ C
 C
 C---- NOCRLF
 C     
-      CALL NOCRLF(' NOCRLF')
-      WRITE(LUNOUT,'(15X,A)') 'Should be on same line'
+      CALL NOCRLF('NOCRLF')
+      WRITE(LUNOUT,'(''+'',14X,A)') 'Should be on same line'
+C
+C --- QNAN/QISNAN (`magic numbers')
+C
+      IF ((.NOT.QISNAN (QNAN ())) .OR. QISNAN (1)) THEN
+        WRITE (LUNOUT,'(/'' *** QNAN/QISNAN test failed''/)')
+      ELSE
+        WRITE (LUNOUT,'('' QNAN/QISNAN test OK'')') 
+      ENDIF
 C
 C---- End of tests
 C
@@ -221,7 +230,7 @@ C
       ENDIF
 
    60 CALL QCLOSE (LUN)
-C      CALL CUNLINK ('DISKIO')
+      CALL CUNLINK ('DISKIO')
 C     Now check we can open and close a scratch file
       CALL QOPEN (LUN, 'foo.bar', 'SCRATCH')
       CALL QCLOSE (LUN)
