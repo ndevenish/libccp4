@@ -145,12 +145,12 @@ C
 C
 C---- NOCRLF
 C     
-      CALL NOCRLF('NOCRLF')
+      CALL NOCRLF(' NOCRLF')
       WRITE(LUNOUT,'(15X,A)') 'Should be on same line'
 C
 C---- End of tests
 C
-      WRITE (LUNOUT,FMT=6000) 'Now test diskio routines'
+      WRITE (LUNOUT,FMT=6000) ' Now test diskio routines'
 C
 C---- Now test the diskio stuff
 C
@@ -221,10 +221,9 @@ C
       ENDIF
 
    60 CALL QCLOSE (LUN)
-      CALL UGTENV ('DISKIO',ENVNAM)
-      IF (ENVNAM.NE.' ' ) CALL CUNLINK (ENVNAM)
+C      CALL CUNLINK ('DISKIO')
 C     Now check we can open and close a scratch file
-      CALL QOPEN (LUN, 'DISKIO', 'SCRATCH')
+      CALL QOPEN (LUN, 'foo.bar', 'SCRATCH')
       CALL QCLOSE (LUN)
       CALL CCPERR(0,'Normal Termination')
 C

@@ -14,7 +14,7 @@
 \newcommand{\meta}[1]{\mbox{$\langle$\rm\sl #1\/$\rangle$}}
 \newcommand{\ft}{\ac{fortran}}
 \newcommand{\idx}[1]{#1\index{#1}}
-\newcommand{\fixme}[1]{\index{Fixme!}[{\bf Fixme!:} #1.]}
+\newcommand{\fixme}[1]{\index{Fixme!}[{\bf Fixme!:} #1\@.]}
 
 \title{C library routines}\date{}\author{}
 
@@ -286,10 +286,10 @@ configuration makes the appropriate [[#define]] of [[NOUNISTD]].
 #  ifndef VMS
 #    include <sys/file.h>       /* ESV, old Concentrix */ /* non-POSIX */
 #  endif
-#  endif
+#endif
 
 #include <errno.h>
-#  include <ctype.h>
+#include <ctype.h>
 
 #ifdef _AIX                     /* would do no harm on others, though */
 #  include <time.h>
@@ -302,7 +302,7 @@ files limits}
 <<[[#define]]s>>=
 #define MAXFLEN       500       /* the maximum length of a filename in CCP4 */
 #define MAXFILES       10    /* maximum number of files open symultaneously */
-#define DEFSIZE         2    /* default mode access for random access files */
+#define DEFMODE         2    /* default mode access for random access files */
 @ These constants record the current i/o status of a stream (needed to
 know if an [[fseek]] is needed or not before the next i/o operation).
 <<[[#define]]s>>=
@@ -320,12 +320,6 @@ bundled \idx{SunOS} {\tt cc}.
 #  define SEEK_END 2
 #endif /* ! SEEK_SET */
 <<[[#define]]s>>=
-#if defined (VMS)
-#  define DELFILE remove
-#else
-#  define DELFILE unlink
-#endif
-
 #if defined (ardent) || defined (titan) || defined (stardent)
   struct Str_Desc {
     char *Str_pointer;
@@ -351,7 +345,7 @@ half(integer)-word complex and complex, respectively:
 <<global variables>>=
 static char rcsid[] = "$Id$";
 static int initialised =  0;    /* flag to initialise data and file streams */
-static char *file_attribute[] = {"w+", "w+", "r+", "w+", "r"};/* file modes */
+static char *file_attribute[] = {"wb+", "wb+", "rb+", "wb+", "rb"};/* file modes */
 @ Here is a table of bytes per item for the different i/o modes
 available.  Note the \idx{machine dependencies} in here.  The
 \idx{assumption} is that we have a 32-bit machine and that
@@ -371,8 +365,8 @@ static int item_sizes[] = {
                                    NB int rather than 2*short since must fit
                                    into fortran integer */
   (int) 2*sizeof (float),                    /* 4: complex (pairs of words) */
-  (int) sizeof (int),		/* 5: not used */
-  (int) sizeof (int)		/* 6: integers */
+  (int) sizeof (int),           /* 5: not used */
+  (int) sizeof (int)            /* 6: integers */
 };
 <<global variables>>=
 @ \subsection{Uninitialised variables}
@@ -382,7 +376,7 @@ static char file_name[MAXFILES][MAXFLEN];      /* Pointer to disk file name */
 static int  file_bytes_per_item[MAXFILES];/* Pointer to disk file item size */
 static int  file_is_scratch[MAXFILES];    /* Indicates if file is 'SCRATCH' */
 static int  file_last_op [MAXFILES];    /* see man fopen rd/wr combinations */
-static int file_mode[MAXFILES];	              /* diskio mode of each stream */
+static int file_mode[MAXFILES];               /* diskio mode of each stream */
 @ \section{Routines}
 
 \subsection{Internal routines}
@@ -516,6 +510,7 @@ int *result;
 This unlinks \meta{filename} from the directory.  It's intended for
 use with scratch files, so that they can be hidden when opened but
 still be available as long as they remain connected (see [[CCPOPN]]).
+This functionality doesn't seem to exist in \idx{VMS}\@.
 <<routines>>=
 #if CALL_LIKE_HPUX
   void cunlink (filename, Lfilename)
@@ -544,26 +539,29 @@ still be available as long as they remain connected (see [[CCPOPN]]).
   size_t Length;
   char tempfile[MAXFLEN];
 
-#if CALL_LIKE_STARDENT
+#ifdef VMS
+  return;                       /* can't do it */
+#else
+#  if CALL_LIKE_STARDENT
     Length = flength (filename->Str_pointer, filename->Str_length);
     if (Length > MAXFLEN) Length = MAXFLEN - 1;
     (void) strncpy (tempfile, filename->Str_pointer, Length);
-#else
-#  if ! defined (VMS)
+#  else
     Length = flength (filename, Lfilename);
     if (Length > MAXFLEN) Length = MAXFLEN - 1;
     (void) strncpy (tempfile, filename, Length);
-#  else
-    Length = flength (filename->dsc$a_pointer, filename->dsc$w_length);
-    if (Length > MAXFLEN) Length = MAXFLEN - 1;
-    (void) strncpy (tempfile, filename->dsc$a_pointer, Length);
 #  endif
-    tempfile[Length] = '\0';
-    if (DELFILE (tempfile) != 0)
-      fatal("Can\'t unlink");
-#endif
+  tempfile[Length] = '\0';
+  if (unlink (tempfile) != 0)
+  fatal("CUNLINK: Can\'t unlink");
+#endif /* VMS */
 }
-@ \subsection{{\tt subroutine copen(\meta{iunit}, \meta{filename}, \meta{istat})}}
+@ \subsection{{\tt subroutine copen(\meta{iunit}, \meta{filename},
+    \meta{istat})}}
+\fixme{Support \idx{scratch files} properly on \idx{VMS}}  At present
+they need to be [[qclose]]d to go away.  It looks as though you can
+create them with [[creat]] rather than [[fopen]] to get a temporary
+one and then connect it as old.
 <<routines>>=
 #if CALL_LIKE_HPUX
   void copen (iunit, filename, istat, Lfilename)
@@ -593,8 +591,8 @@ int  *iunit, *istat;
 {
   size_t Length;
   int i, jstat;
-  int16 fileFT, fileIT;         /* machine type stamps in file */
-  unsigned char mtstring[2];    /* machine stamp */
+  int16 fileFT=0, fileIT=0;     /* float and integer machine types of file */
+  unsigned char mtstring[2] = {0,0}; /* machine stamp */
 
   jstat = *istat;
   if (! initialised) {
@@ -603,9 +601,10 @@ int  *iunit, *istat;
     for (i = 1; i < MAXFILES; i++) {
       file_stream[i]         = NULL;
       file_name[i][0]        = '\0';
-      file_bytes_per_item[i] = item_sizes[DEFSIZE];  /* default item size */
+      file_bytes_per_item[i] = item_sizes[DEFMODE];  /* default item size */
       file_is_scratch[i]     = 0;
       file_last_op[i]        = IRRELEVANT_OP;
+      file_mode[i] = DEFMODE;
     }
     initialised = 1;
   }
@@ -633,14 +632,17 @@ int  *iunit, *istat;
 #endif
   file_name[i][Length] = '\0';
   file_last_op[i] = IRRELEVANT_OP;
-  file_bytes_per_item[i] = item_sizes[DEFSIZE]; /* default item size */
+  file_bytes_per_item[i] = item_sizes[DEFMODE]; /* default item size */
+  file_mode[i] = DEFMODE;
   file_is_scratch[i] = (jstat == 2);
   file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1]);
   if (file_stream[i] == NULL) {
     i = -2;                     /* return open failure flag */
     return; }
-  if (file_is_scratch[i] && DELFILE (file_name[i])!=0)
+#ifndef VMS                     /* VMS can't do it */
+  if (file_is_scratch[i] && unlink (file_name[i])!=0)
       fatal ("(Q)QOPEN: error unlinking scratch file");
+#endif
   <<set up number conversion for read if necessary>>
   if (fseek (file_stream[*iunit], 0L, SEEK_SET) != 0)
     fatal("(Q)QOPEN: fseek failed");
@@ -663,20 +665,20 @@ if ((*file_attribute[*istat - 1] != 'w') &&
     (fread (fileType[*iunit], (size_t) sizeof(char), (size_t) 4,
             file_stream[*iunit]) == 4))
 {
+  <<if VMS, check file type>>
   if (strncmp (fileType[*iunit],"MTZ",3) == 0) { /* MTZ file? */
-    if ((fseek (file_stream[*iunit], mt_stamp_posn, SEEK_SET) == 0)
-	&& (fread (mtstring,(size_t)  sizeof(char), (size_t) 2,
-		   file_stream[*iunit]) == 2)) {
-    } else {
-      fatal("(Q)QOPEN: can't read machine stamp in MTZ file");}
-  } else {			/* map file? */
+    if (! (fseek (file_stream[*iunit], mt_stamp_posn, SEEK_SET) == 0)
+          && (fread (mtstring,(size_t)  sizeof(char), (size_t) 2,
+                   file_stream[*iunit]) == 2))
+      fatal("(Q)QOPEN: can't read machine stamp in MTZ file");
+  } else {                      /* map file? */
     if (fseek (file_stream[*iunit], map_stamp_posn, SEEK_SET)==0 &&
-	(fread (fileType[*iunit], (size_t) sizeof(char), (size_t) 4,
-		file_stream[*iunit]) == 4) &&
-	(strncmp(fileType[*iunit],"MAP",3) == 0)) {
+        (fread (fileType[*iunit], (size_t) sizeof(char), (size_t) 4,
+                file_stream[*iunit]) == 4) &&
+        (strncmp(fileType[*iunit],"MAP",3) == 0)) {
       if (fread (mtstring, (size_t) sizeof(char), (size_t) 2,
-		 file_stream[*iunit]) != 2)
-	fatal("(Q)QOPEN: can't read machine stamp in map file");
+                 file_stream[*iunit]) != 2)
+        fatal("(Q)QOPEN: can't read machine stamp in map file");
     }
   }
 }
@@ -688,6 +690,31 @@ if (fileFT != 0 && fileFT != userFT)
      Fconvert[*iunit] = fileFT;  /* else assume native */
 if (fileIT != 0 && fileIT != userIT)
      Iconvert[*iunit] = fileIT;  /* else assume native */
+@ In \idx{VMS}, we want to avoid loads of gobbledygook from mtzlib or
+maplib if we inadvertantly try to read a file written with with the
+old assembler i/o routines.  (Perhaps mtzlib should stop on such
+errors\dots)  The old assembler library wrote fixed-length records an
+you can't do arbitrary seeks in such a file.  (Actually, it turns out
+that ftp'd files, which have 512-byte records can be read as MTZ
+files, at least.)  The value 5 of [[statbuf.st_fab_rfm]] for
+\idx{StreamLF files} was determined empirically---I couldn't find the
+documentation.
+<<if VMS, check file type>>=
+#ifdef VMS
+{
+stat_t statbuf;			/* fstat info -- see VM specifics below */
+if (fstat (fileno (file_stream[*iunit]), &statbuf) != 0)
+    fatal ("(Q)QOPEN: Can't stat input file");
+if (statbuf.st_fab_rfm != 5) {
+  errno = 0;
+  fatal ("(Q)QOPEN: input file not Stream_LF -- run convert_old");
+}
+}
+#endif
+<<header files>>=
+#ifdef VMS
+#  include <stat.h>
+#endif
 @ \subsection{{\tt subroutine qclose (\meta{iunit})}}
 Closes the \idx{diskio} file open on unit \meta{iunit}.
 <<routines>>= 
@@ -706,14 +733,26 @@ Closes the \idx{diskio} file open on unit \meta{iunit}.
 
 int *iunit;
 {
+  int l;
   if (! initialised) 
     fatal ("QCLOSE: qopen/qqopen not yet called");
-
   if (file_stream[*iunit] != NULL) {
     if (fclose (file_stream[*iunit]) == EOF) 
       fatal ("QCLOSE: failed"); /* fixme: add file name to message */
     file_stream[*iunit] = NULL;
   }
+#ifdef VMS
+  if (file_is_scratch[*iunit]) {
+    /* On VMS we couldn't unlink on open, so delete the scratch file
+       now after appending ";" to the name. */
+    l = strlen (file_name[*iunit]) + 1;
+    if (l < MAXFLEN) {
+      file_name[*iunit][l] = ';';
+      file_name[*iunit][l+1] = '\0';
+      (void) delete (file_name[*iunit]); }
+    /* else forget trying to delete it */
+  }
+#endif
   file_name[*iunit][0] = '\0';
 }
 @ \subsection{{\tt subroutine qmode (\meta{iunit}, \meta{mode},
@@ -1287,8 +1326,8 @@ other \idx{Intel} chips like \idx{PCs} and \idx{Alpha}.
 #define DFNT_CHAR       4       /* char */
 #define DFNT_FLOAT      5       /* float */
 #define DFNT_DOUBLE     6       /* double */
-#define map_stamp_posn  208L	/* machine stamp offset in map header */
-#define mt_stamp_posn   8L	/* machine stamp offset in MTZ header */
+#define map_stamp_posn  208L    /* machine stamp offset in map header */
+#define mt_stamp_posn   8L      /* machine stamp offset in MTZ header */
 <<global variables>>=
 typedef short int16;
 typedef unsigned long uint32;
@@ -1330,7 +1369,7 @@ if ((Iconvert[*iunit]==DFNTI_MBO && userIT==DFNTI_IBO) ||
     buffer[i] = buffer[i+1];
     buffer[i+1] = j; } }
 else
-  fatal("QREAD: bad file type in conversion");
+  fatal("QREAD: bad file integer type in conversion");
 }
 <<convert [[n]] long integers in [[buffer]]>>=
 {
@@ -1338,12 +1377,12 @@ if ((Iconvert[*iunit]==DFNTI_MBO && userIT==DFNTI_IBO) ||
     (Iconvert[*iunit]==DFNTI_IBO && userIT==DFNTI_MBO))
   <<byte-swap [[n]] full words in [[buffer]]>>
 else
-  fatal("QREAD: bad file type in conversion");
+  fatal("QREAD: bad file integer type in conversion");
 }
 @ \subsubsection{Converting reals}
 <<convert [[n]] reals in [[buffer]]>>=
 {
-switch (Fconvert[*iunit]) {	/* get to BE IEEE */
+switch (Fconvert[*iunit]) {     /* get to BE IEEE */
    case DFNTF_VAX :
      vaxF2ieeeF(buffer, n);
      break;   
@@ -1356,7 +1395,7 @@ switch (Fconvert[*iunit]) {	/* get to BE IEEE */
      <<byte-swap [[n]] full words in [[buffer]]>>
      break;
    default :
-     fatal("QREAD: bad file type in conversion");
+     fatal("QREAD: bad file real type in conversion");
    }
 @ We've now got a guaranteed big-endian \ac{ieee} [[buffer]].  Turn it
 into the native form if necessary.

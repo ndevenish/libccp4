@@ -80,28 +80,15 @@ LIBTARGETS = ccplib fftlib maplib parser rwatom rwbrook modlib \
 
 # probably only recognised by GNU make:
 .PHONY : all clean install $(LIBTARGETS) ranlib realclean distclean \
-         test help
+         test help test-lib uninstall tags mosflm-stuff
 
-all :  $L binsort rspslib.a $(MAYBEMOSFLM)   # NB rspslib.a isn't installed
+all :  $L binsort $(MAYBEMOSFLM)
 
 $L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) $L(rwatom.o) \
 	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) $L(lcflib.o) \
 	  $L(mtzlib.o) $L(diskio.o) $L(unix.o) \
 	  $L(binsortint.o) $L(library.o) \
 	  $L(plot84lib.o) $L(plotsubs.o)
-	$(RANLIB) $@
-
-# This stuff is used for RSPS.  Some of it could go in libccp4 at some
-# stage, authors permitting, if it was useful.  There doesn't seem much
-# point in splitting up this target.
-rspslib.a : $(srcdir)/errlib.for $(srcdir)/forlib.for $(srcdir)/veclib.for \
-            $(srcdir)/../../src/rsps_/rspsfil.inc
-	-rm -rf rspslib.dir; mkdir rspslib.dir
-	cd rspslib.dir && \
-          rm -f rspsfil.inc && $(LNS) $(srcdir)/../../src/rsps_/rspsfil.inc . && \
-          for i in errlib veclib forlib; do fsplit $(srcdir)/$$i.for; done && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$@ *.o
-	rm -f rspslib.dir/*.o
 	$(RANLIB) $@
 
 test-lib : $(srcdir)/testlib.for $L(library.o) $L(unix.o) $L(ccplib.o) \
@@ -258,21 +245,10 @@ $L(graflib.o) : $(srcdir)/graflib.for
 graflib : $L(graflib.o)
 	$(RANLIB) $L
 
-$L(lauesym.o) : $(srcdir)/lauesym.for
-	-rm -rf lauesym.dir; mkdir lauesym.dir
-	echo '      SUBROUTINE LAUESYM' > lauesym.dir/lauesym.$F
-	echo '      END' >> lauesym.dir/lauesym.$F
-	cd lauesym.dir && fsplit $(srcdir)/lauesym.for && \
-	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
-	rm -f lauesym.dir/*.o
-lauesym : $L(lauesym.o)
-	$(RANLIB) $L
-
 # C stuff: (these are kept as whole modules)
 
-$L(library.o) : $(srcdir)/library.c $(srcdir)/machine.h $(srcdir)/dfconvert.h \
-                $(srcdir)/diconvert.h
-	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/library.c
+$L(library.o) : $(srcdir)/library.c
+	$(CC) $(CFLAGS) -c $(srcdir)/library.c
 	$(AR) $L library.o && rm library.o
 library : $L(library.o)
 	$(RANLIB) $L
@@ -329,7 +305,7 @@ pack:	$L(pack_c.o) $L(pack_f.o)
 	$(RANLIB) $(L) 
 
 # testbed for library.c and some other modules:
-testlib : test-lib
+testlib : test-lib $(srcdir)/testlib.for
 	-rm -f testlib.$F; $(LNS) $(srcdir)/testlib.for testlib.$F
 	$(FC) -o testlib $(FFLAGS) testlib.$F $(LDFLAGS)
 
@@ -356,7 +332,7 @@ dist : realclean
 	-rm -f Makefile
 
 test : testlib
-	./testlib -v 3 testenv foo diskio disc.dft
+	./testlib -v 3 testenv foo
 
 tags :
 	-rm -rf tagdir; mkdir tagdir

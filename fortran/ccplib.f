@@ -394,7 +394,8 @@ C
       ENDIF
       CALL QPRINT(0,ERRSTR)
       CALL GETELAPSED
-      CALL EXIT(ISTAT)
+C     avoid VMS `Message number 00000000'
+      IF ((.NOT. VAXVMS()) .OR. ISTAT.NE.0) CALL EXIT(ISTAT)
       END
 C
 C
@@ -485,7 +486,7 @@ C     don't declare iargc
       EXTERNAL LENSTR,VAXVMS,FEXTN
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPERR,CCPUPC,UGTARG,INITFYP,QPRINT,CSETNV,UGERR,UGTENV
+      EXTERNAL CCPERR,CCPUPC,UGTARG,INITFYP,QPRINT,CSETNV,UGTENV
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC ICHAR,INDEX
