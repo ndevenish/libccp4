@@ -5,6 +5,9 @@ C     in the CCP4 manual for a copyright statement.
 C
 C     November 1998 KDC
 C     WROTE IT!
+C     Autumn 1999 SPE, AWA, MDW
+C     New routines ccp4h_init_lib, ccp4h_html_close, ccp4h_summary_beg,
+C                  ccp4h_summary_end
 C
 C    =========
 C    libhtml.f
@@ -25,6 +28,10 @@ C especially for the command input section.
 C
 C   ccp4h_init() - write initial comment to identify file
 C
+C   ccp4h_init_lib() - initialise without html output called by libs
+C
+C   ccp4h_html_close() - write html close tag
+C
 C   ccp4h_toc_beg() - write starting Contents section tags
 C
 C   ccp4h_toc_ent(char*(*) text, char*(*) dest) - write Contents entry
@@ -39,6 +46,10 @@ C     y = height of graph in pixels
 C      both can be zero, then they default to 400,300.
 C
 C   ccp4h_graph_end() - write ending JLogGraph applet tag
+C
+C   ccp4h_summary_beg() - begin summary section
+C
+C   ccp4h_summary_end() - end summary section 
 C
 C   ccp4h_pre_beg() - begin preformatted (html <pre> tag)
 C
@@ -73,28 +84,66 @@ C     level=0-6. Header size. 0= plain text
 C
       subroutine ccp4h_init()
 C   ccp4h_init() - write initial comment to identify file
-      integer lpt, idum
+      integer lpt, htmlinit
       logical html
       character cbin*160,chtml*160,cpid*160,dummy*160
-      common /ccp4hdat/lpt,html,cbin,chtml,cpid
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
       save   /ccp4hdat/
-      lpt=lunsto(idum)
+      call ccp4h_init_lib()
       call ugtenv('CBIN',cbin)
       call ugtenv('CHTML',chtml)
       call ugtenv('CCP_PROGRAM_ID',cpid)
       call ugtenv('CCP_SUPPRESS_HTML',dummy)
       html=(dummy.eq.' ')
-      if (html) write (lpt,10)
- 10   format('<html> <!-- CCP4 HTML LOGFILE -->')
+      htmlinit=1
+      if (html) then
+        call ccp4h_summary_beg()
+        write (lpt,10)
+ 10     format('<html> <!-- CCP4 HTML LOGFILE -->')
+        call ccp4h_rule()
+        call ccp4h_summary_end()
+      endif
+      return
+      end
+C
+      subroutine ccp4h_init_lib()
+C   ccp4h_init_lib() - write initial comment to identify file
+      integer lpt, idum, htmlinit
+      logical html
+      character cbin*160,chtml*160,cpid*160
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
+      save   /ccp4hdat/
+      data htmlinit/-1/
+      if (htmlinit.lt.0) then
+        lpt=lunsto(idum)
+        html=.false.
+        htmlinit=0
+      endif
+      return
+      end
+C
+      subroutine ccp4h_html_close()
+C   ccp4h_html_close() - write html close tag
+      integer lpt,htmlinit
+      logical html
+      character cbin*160,chtml*160,cpid*160
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid, htmlinit
+      save   /ccp4hdat/
+      if (html) then
+        call ccp4h_summary_beg()
+        write (lpt,10)
+ 10     format('</html>')
+        call ccp4h_summary_end()
+      endif
       return
       end
 C
       subroutine ccp4h_toc_beg()
 C   ccp4h_toc_beg() - write starting Contents section tags
-      integer lpt
+      integer lpt,htmlinit
       logical html
       character cbin*160,chtml*160,cpid*160
-      common /ccp4hdat/lpt,html,cbin,chtml,cpid
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid, htmlinit
       save   /ccp4hdat/
       call ccp4h_header('Contents','toc',2)
       if (html) write (lpt,10)
@@ -107,29 +156,31 @@ C   ccp4h_toc_ent(char*(*) text, char*(*) dest) - write Contents entry
 C     text= the link text
 C     dest= the link destination
       character*(*) text,dest
-      integer lpt
+      integer lpt,htmlinit
       logical html
-      character cbin*160,chtml*160,cpid*160
-      common /ccp4hdat/lpt,html,cbin,chtml,cpid
+      character cbin*160,chtml*160,cpid*160,pn*160
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
       save   /ccp4hdat/
       integer lenstr
-      external lenstr
+      external lenstr,ccppnm
+      call ccppnm (pn)
       if (html) then
-       write (lpt,10)dest,cpid(1:lenstr(cpid)),text
+       write (lpt,10)dest,pn(1:lenstr(pn)),
+     +    cpid(1:lenstr(cpid)),text
       else
        write (lpt,11)text
       endif
- 10   format('<li><a href="',a,a,'">',a,'</a>')
+ 10   format('<li><a href="',a,a,a,'">',a,'</a>')
  11   format(a)
       return
       end
 C
       subroutine ccp4h_toc_end()
 C   ccp4h_toc_end() - write ending Contents section tags
-      integer lpt
+      integer lpt, htmlinit
       logical html
       character cbin*160,chtml*160,cpid*160
-      common /ccp4hdat/lpt,html,cbin,chtml,cpid
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
       save   /ccp4hdat/
       if (html) write (lpt,10)
  10   format('</ul>')
@@ -142,10 +193,10 @@ C     x = width of graph in pixels
 C     y = height of graph in pixels
 C      both can be zero, then they default to 400,300.
       integer x,y,x1,y1,lenstr
-      integer lpt
+      integer lpt, htmlinit
       logical html
       character cbin*160,chtml*160,cpid*160
-      common /ccp4hdat/lpt,html,cbin,chtml,cpid
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
       save   /ccp4hdat/
       external lenstr
       x1=x
@@ -161,22 +212,52 @@ C      both can be zero, then they default to 400,300.
 C
       subroutine ccp4h_graph_end()
 C   ccp4h_graph_end() - write ending JLogGraph applet tag
-      integer lpt
+      integer lpt, htmlinit
       logical html
       character cbin*160,chtml*160,cpid*160
-      common /ccp4hdat/lpt,html,cbin,chtml,cpid
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
       save   /ccp4hdat/
       if (html) write (lpt,10)
  10   format('"><b>For inline graphs use a Java browser</b></applet>')
       return
       end
 C
-      subroutine ccp4h_pre_beg()
-C   ccp4h_pre_beg() - begin preformatted (html <pre> tag)
-      integer lpt
+      subroutine ccp4h_summary_beg()
+C   ccp4h_summary_beg() - begin summary section
+      integer lpt, htmlinit
       logical html
       character cbin*160,chtml*160,cpid*160
-      common /ccp4hdat/lpt,html,cbin,chtml,cpid
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
+      save   /ccp4hdat/
+      call ccp4h_init_lib()
+      if (html) write (lpt,10)
+ 10   format('<B><FONT COLOR="#FF0000">')
+      write (lpt,20)
+ 20   format('<!--SUMMARY_BEGIN-->')
+      return
+      end
+C
+      subroutine ccp4h_summary_end()
+C   ccp4h_summary_end() - end summary section 
+      integer lpt, htmlinit
+      logical html
+      character cbin*160,chtml*160,cpid*160
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
+      save   /ccp4hdat/
+      write (lpt,10)
+ 10   format('<!--SUMMARY_END-->')
+      if (html) write (lpt,20)
+ 20   format('</FONT></B>')
+      return
+      end
+C
+C
+      subroutine ccp4h_pre_beg()
+C   ccp4h_pre_beg() - begin preformatted (html <pre> tag)
+      integer lpt, htmlinit
+      logical html
+      character cbin*160,chtml*160,cpid*160
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
       save   /ccp4hdat/
       if (html) write (lpt,10)
  10   format('<pre>')
@@ -185,10 +266,10 @@ C   ccp4h_pre_beg() - begin preformatted (html <pre> tag)
 C
       subroutine ccp4h_pre_end()
 C   ccp4h_pre_end() - end preformatted (html <pre> tag)
-      integer lpt
+      integer lpt, htmlinit
       logical html
       character cbin*160,chtml*160,cpid*160
-      common /ccp4hdat/lpt,html,cbin,chtml,cpid
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
       save   /ccp4hdat/
       if (html) write (lpt,10)
  10   format('</pre>')
@@ -197,10 +278,10 @@ C   ccp4h_pre_end() - end preformatted (html <pre> tag)
 C
       subroutine ccp4h_rule()
 C   ccp4h_rule() - rule (html <hr> tag)
-      integer lpt
+      integer lpt, htmlinit
       logical html
       character cbin*160,chtml*160,cpid*160
-      common /ccp4hdat/lpt,html,cbin,chtml,cpid
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
       save   /ccp4hdat/
       if (html) then
        write (lpt,10)
@@ -217,10 +298,10 @@ C   ccp4h_link(char*(*) text, char*(*) dest) - link (html <a> tag)
 C     text= the link text
 C     dest= the link destination
       character*(*) text,dest
-      integer lpt
+      integer lpt, htmlinit
       logical html
       character cbin*160,chtml*160,cpid*160
-      common /ccp4hdat/lpt,html,cbin,chtml,cpid
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
       save   /ccp4hdat/
       integer lenstr
       external lenstr
@@ -244,10 +325,10 @@ C   ccp4h_link(char*(*) text, char*(*) dest) - link keyword
 C     text= the link text
 C     dest= the link destination
       character*(*) key,dest
-      integer lpt
+      integer lpt, htmlinit
       logical html
       character cbin*160,chtml*160,cpid*160
-      common /ccp4hdat/lpt,html,cbin,chtml,cpid
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
       save   /ccp4hdat/
       character kw*4,rest*120
       logical flag
@@ -277,20 +358,22 @@ C     name= header name to link to
 C     level=0-6. Header size. 0= plain text
       character*(*) text,name
       integer level,lenstr
-      integer lpt
+      integer lpt, htmlinit
       logical html
-      character cbin*160,chtml*160,cpid*160
-      common /ccp4hdat/lpt,html,cbin,chtml,cpid
+      character cbin*160,chtml*160,cpid*160,pn*160
+      common /ccp4hdat/lpt,html,cbin,chtml,cpid,htmlinit
       save   /ccp4hdat/
       character*60 underline
-      external lenstr
+      external lenstr,ccppnm
+      call ccppnm(pn)
       if (html) then
        if (level.gt.0) then
-        write (lpt,10)name,cpid(1:lenstr(cpid)),level,text,level
- 10     format(/,'<a name="',a,a,'"><h',i1,'>',a,'</h',i1,'></a>')
+        write (lpt,10)name,pn(1:lenstr(pn)),cpid(1:lenstr(cpid)),
+     +      level,text,level
+ 10     format(/,'<a name="',a,a,a,'"><h',i1,'>',a,'</h',i1,'></a>')
        else
-        write (lpt,20)name,cpid(1:lenstr(cpid)),text
- 20     format(/,'<a name="',a,a,'">',a,'</a>')
+        write (lpt,20)name,pn(1:lenstr(pn)),cpid(1:lenstr(cpid)),text
+ 20     format(/,'<a name="',a,a,a,'">',a,'</a>')
        endif
       else
        if (level.le.0) then
