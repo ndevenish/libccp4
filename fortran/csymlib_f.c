@@ -294,10 +294,14 @@ FORTRAN_SUBR ( PGNLAU, pgnlau,
                (const fpstr nampg, int nampg_len, int *nlaue, 
                 fpstr launam, int launam_len))
 {
+  char *temp_pgname;   
+
   CSYMLIB_DEBUG(puts("CSYMLIB_F: PGNLAU");)
 
-  if (!spacegroup) {
-    printf("PGNLAU: No spacegroup loaded yet! \n");
+  temp_pgname = ccp4_FtoCString(FTN_STR(nampg), FTN_LEN(nampg));
+  if (!spacegroup || !ccp4spg_pgname_equal(spacegroup->point_group,temp_pgname)) {
+    printf("PGNLAU: No spacegroup or incorrect spacegroup loaded! \n");
+    free(temp_pgname);
     return;
   }
 
@@ -308,6 +312,7 @@ FORTRAN_SUBR ( PGNLAU, pgnlau,
   *nlaue = spacegroup->nlaue;
   ccp4_CtoFString(FTN_STR(launam),FTN_LEN(launam),spacegroup->laue_name);
 
+  free(temp_pgname);
 }
 
 /** Return Laue number and name for a spacegroup onto index "sindx". 
@@ -337,6 +342,13 @@ FORTRAN_SUBR ( CCP4SPG_F_GET_LAUE, ccp4spg_f_get_laue,
 
 }
 
+/** Return the Patterson group name and number corresponding to a spacegroup
+ * identified by spacegroup name and point group name.
+ * @param spgnam On input, spacegroup name.
+ * @param pgname On input, point group name.
+ * @param patnam On return, Patterson spacegroup name.
+ * @param lpatsg On return, Patterson spacegroup number.
+ */
 FORTRAN_SUBR ( PATSGP, patsgp,
                (const fpstr spgnam, const fpstr pgname, fpstr patnam, int *lpatsg, 
                 int spgnam_len, int pgname_len, int patnam_len),
@@ -344,16 +356,35 @@ FORTRAN_SUBR ( PATSGP, patsgp,
                (const fpstr spgnam, int spgnam_len, const fpstr pgname, 
                 int pgname_len, fpstr patnam, int patnam_len, int *lpatsg))
 {
+  CCP4SPG *tmp_spacegroup;
+  char *temp_spgnam, *temp_pgname;   
+
   CSYMLIB_DEBUG(puts("CSYMLIB_F: PATSGP");)
 
-  if (!spacegroup) {
-    printf("PATSGP: No spacegroup loaded yet! \n");
-    return;
+  temp_spgnam = ccp4_FtoCString(FTN_STR(spgnam), FTN_LEN(spgnam));
+  temp_pgname = ccp4_FtoCString(FTN_STR(pgname), FTN_LEN(pgname));
+  if ( !spacegroup || !ccp4spg_name_equal(spacegroup->symbol_xHM,temp_spgnam) ||
+              !ccp4spg_pgname_equal(spacegroup->point_group,temp_pgname) ) {
+
+    /* load temporary spacegroup */
+    if ( ! (tmp_spacegroup = ccp4spg_load_by_ccp4_spgname(temp_spgnam)) ) {
+      printf("PATSGP: failed to load spacegroup info from SYMINFO! \n");
+      free(temp_spgnam);
+      free(temp_pgname);
+      return;
+    }
+    *lpatsg = tmp_spacegroup->npatt;
+    ccp4_CtoFString(FTN_STR(patnam),FTN_LEN(patnam),tmp_spacegroup->patt_name);
+    free(tmp_spacegroup); 
+
+  } else {
+
+    *lpatsg = spacegroup->npatt;
+    ccp4_CtoFString(FTN_STR(patnam),FTN_LEN(patnam),spacegroup->patt_name);
+
   }
-
-  *lpatsg = spacegroup->npatt;
-  ccp4_CtoFString(FTN_STR(patnam),FTN_LEN(patnam),spacegroup->patt_name);
-
+  free(temp_spgnam);
+  free(temp_pgname);
 }
 
 /** Set spacegroup for subsequent calls to ASUPUT, ASUGET, ASUSYM and ASUPHP.
