@@ -1,3 +1,8 @@
+C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part i)' software.  See the conditions
+C     in the CCP4 manual for a copyright statement.
+C
 C   These are supposedly-machine-independent low-level routines.
 C     They're actually machine-dependent at least insofar as some
 C     contain non-standard code, but they do compile with the compilers
@@ -50,7 +55,6 @@ C                integer
 C      CCPUFL    Supress underflow messages
 C      CCPULI    See if underline option is available
 C      CCPUPC    Convert a string to upper case
-C      CCPUPC    make string upper-case
 C      CCPVRS    Print program version number and date header
 C      CCPZBI    Sets an array of bytes to zero
 C      CCPZI     Set 'n' words of an array to zero using a simple loop
@@ -61,8 +65,8 @@ C      LENSTR    length of string to last non-space
 C      LITEND    determine endianness
 C      NBITST    Return the (unsigned) integer value held within a bit
 C                field in a word 
+C      NOCRLF    write line supressing cr/lf to standard output
 C      QPRINT    write debug messages
-C      QTYPE     returns machine type
 C      STBITS    Set a bit field within a word to a given (unsigned)
 C                integer value
 CC
@@ -298,7 +302,7 @@ C PARAMETERS
 C ==========
 C
 C         IUN (I)   UNIT NUMBER
-C      LOGNAM (I)   LOGICAL FILE NAME (UP TO 8 CHARACTERS)
+C      LOGNAM (I)   LOGICAL FILE NAME
 C      STATUS (I)   FILE STATUS FLAG  'UNKNOWN'
 C                    CHARACTER*(*)    'SCRATCH'
 C                                     'OLD'
@@ -309,6 +313,7 @@ C        TYPE (I)   FILE TYPE FLAG ='F', 'SEQUENTIAL' 'FORMATTED'
 C                                  ='U', 'SEQUENTIAL' 'UNFORMATTED'
 C                                  ='DF', 'DIRECT'     'FORMATTED'
 C                                  ='DU', 'DIRECT'     'UNFORMATTED'
+C     [STATUS and TYPE are case-insensitive]
 C        LREC (I)   RECORD LENGTH FOR DIRECT ACCESS FILE (NO. OF
 C                   CHARACTERS FOR A FORMATTED FILE OR WORDS FOR
 C                   AN UNFORMATTED FILE). NOT RELEVANT FOR A SEQUENTIAL
@@ -319,17 +324,16 @@ C                                      (only on file not found)
 C                   ON OUTPUT:    UNCHANGED IF FILE OPEN OK
 C                                 =-1, ERROR IN OPENING FILE
 C
-C I/O STATUS RETURNED IN 'IOS' IN COMMON 'CCPSTT' IF NEEDED
-C
 C     .. Scalar Arguments ..
       INTEGER IFAIL,IUN,LREC
       CHARACTER LOGNAM* (*),STATUS* (*),TYPE* (*)
 C     ..
 C     .. Local Scalars ..
       INTEGER ISTAT,ITYPE
+      CHARACTER ERRSTR*80
 C     ..
 C     .. Local Arrays ..
-      CHARACTER TYPES(4)*2,STATS(6)*8
+      CHARACTER TYPES(4)*2,STATS(6)*8, STAT*8, TYP*2
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPOPN
@@ -339,25 +343,26 @@ C     .. Data statements ..
       DATA TYPES/'F','U','DF','DU'/
 C     ..
 C
+      STAT = STATUS
+      TYP = TYPE
+      CALL CCPUPC(STAT)
+      CALL CCPUPC(TYP)
       DO 10 ISTAT = 1,6
-        IF (STATUS.EQ.STATS(ISTAT)) GO TO 20
+        IF (STAT.EQ.STATS(ISTAT)) GO TO 20
    10 CONTINUE
-      WRITE (6,FMT=6000) STATUS
-      CALL CCPERR(1,' stop 6000 IN CCPLIB')
+      WRITE (ERRSTR,FMT=6000) STATUS
+      CALL CCPERR(1,ERRSTR)
 C
    20 DO 30 ITYPE = 1,4
-        IF (TYPE.EQ.TYPES(ITYPE)) GO TO 40
+        IF (TYP.EQ.TYPES(ITYPE)) GO TO 40
    30 CONTINUE
-      WRITE (6,FMT=6002) TYPE
-      CALL CCPERR(1,' STOP 6002 IN CCPLIB')
+      WRITE (ERRSTR,FMT=6002) TYPE
+      CALL CCPERR(1,ERRSTR)
 C
    40 CALL CCPOPN(IUN,LOGNAM,ISTAT,ITYPE,LREC,IFAIL)
 C
-C---- Format statements
-C
- 6000 FORMAT (/' CCPDPN: illegal status : ',A)
- 6002 FORMAT (/' CCPDPN: illegal type: ',A)
-C
+ 6000 FORMAT ('CCPDPN: illegal status : ',A)
+ 6002 FORMAT ('CCPDPN: illegal type: ',A)
       END
 C
 C
@@ -382,14 +387,14 @@ C
 C
       IF (ISTAT.NE.0) THEN
         CALL UGERR(0,ERRBUF)
-        IF (ERRBUF .NE. ' ') WRITE(6,6000) ERRBUF(1:LENSTR(ERRBUF))
+        IF (ERRBUF .NE. ' ') THEN
+          CALL QPRINT(0,'Last system error message:')
+          CALL QPRINT(0,ERRBUF)
+        ENDIF
       ENDIF
-      WRITE(6,6000) ERRSTR(1:LENSTR(ERRSTR))
-C     fixme: implement getelapsed (or alternative) for vms
-      IF (.NOT. VAXVMS()) CALL GETELAPSED
+      CALL QPRINT(0,ERRSTR)
+      CALL GETELAPSED
       CALL EXIT(ISTAT)
-C
-6000  FORMAT (' ',A)
       END
 C
 C
@@ -473,13 +478,14 @@ C     .. Local Arrays ..
      +          EXTN(ILIMIT)* (4)
 C     ..
 C     .. External Functions ..
-      INTEGER IARGC,LENSTR
+      INTEGER LENSTR
+C     don't declare iargc
       LOGICAL VAXVMS
-      CHARACTER FEXTN* (ISTRLN)
-      EXTERNAL IARGC,LENSTR,VAXVMS,FEXTN
+      CHARACTER FEXTN* (ISTRLN), FDIR*(ISTRLN)
+      EXTERNAL LENSTR,VAXVMS,FEXTN
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPERR,CCPUPC,GETARG,INITFYP,QPRINT,SETENV,UGERR,UGTENV
+      EXTERNAL CCPERR,CCPUPC,UGTARG,INITFYP,QPRINT,CSETNV,UGERR,UGTENV
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC ICHAR,INDEX
@@ -487,7 +493,7 @@ C     ..
 C     .. Save statement ..
       SAVE
 C     .. Data statements ..
-      DATA ICOUNT/0/,IHELP/1/,DINIT/.TRUE./,EINIT/.TRUE./,EXEC/0/,
+      DATA ICOUNT/0/,IHELP/1/,DINIT/.TRUE./,EINIT/.TRUE./,
      +     RDLOGF/0/,RDENVF/0/,ILOOP/1/,IUNIT/31/,
      +     LOGFIL/'default.def'/,ENVFIL/'environ.def'/
 C     ..
@@ -501,7 +507,7 @@ C
    10 CONTINUE
       ISKIP = 1
       IF (ILOOP.LE.IARG) THEN
-        CALL GETARG(ILOOP,LINE)
+        CALL UGTARG(ILOOP,LINE)
         CALL CCPUPC(LINE)
 C
         IF (LINE(1:1).EQ.'-') THEN
@@ -511,7 +517,7 @@ C
               IF (HELP.GT.IARG) THEN
                 IHELP = 1
               ELSE
-                CALL GETARG(HELP,TEMP)
+                CALL UGTARG(HELP,TEMP)
                 IHELP = ICHAR(TEMP(1:1)) - ICHAR('0')
                 IF (IHELP.LT.0 .OR. IHELP.GT.9) IHELP = 1
               END IF
@@ -522,13 +528,13 @@ C
             ELSE IF (LINE(II:II).EQ.'D') THEN
               RDLOGF = ILOOP + ISKIP
               IF (RDLOGF.GT.IARG) CALL CCPERR(1,'Use: -d filename')
-              CALL GETARG(RDLOGF,LOGFIL)
+              CALL UGTARG(RDLOGF,LOGFIL)
               DINIT = .TRUE.
               ISKIP = ISKIP + 1
             ELSE IF (LINE(II:II).EQ.'E') THEN
               RDENVF = ILOOP + ISKIP
               IF (RDENVF.GT.IARG) CALL CCPERR(1,'Use: -e filename')
-              CALL GETARG(RDENVF,ENVFIL)
+              CALL UGTARG(RDENVF,ENVFIL)
               EINIT = .TRUE.
               ISKIP = ISKIP + 1
             ELSE
@@ -549,13 +555,7 @@ C
       IF (EINIT) THEN
         II = -1
         IF (RDENVF.GT.0) THEN
-          IF (VAX) THEN
-            IF (INDEX(ENVFIL,':').GT.0 .OR. INDEX(ENVFIL,'[').GT.0)
-     &      II = 0
-          ELSE
-            IF (INDEX(ENVFIL,'/').GT.0 .OR. INDEX(ENVFIL,'{').GT.0)
-     &      II = 0
-          ENDIF
+          IF (FDIR(ENVFIL).NE.' ') II=0
         ELSE
           CALL UGTENV('CINCL',FILNAM)
           IF (FILNAM.NE.' ') THEN
@@ -566,6 +566,8 @@ C
               II = LENSTR(FILNAM)
               IF (FILNAM(II:II).NE.'/') THEN
                 II = II + 1
+                IF (II.GT.ISTRLN) CALL CCPERR(1,
+     +               'environ path name too long')
                 FILNAM(II:II)='/'
               ENDIF
             ENDIF
@@ -586,6 +588,8 @@ C
               II = LENSTR(FILNAM)
               IF (FILNAM(II:II).NE.'/') THEN
                 II = II + 1
+                IF (II.GT.ISTRLN) CALL CCPERR(1,
+     +               'environ path name too long')
                 FILNAM(II:II)='/'
               ENDIF
             ENDIF
@@ -594,27 +598,31 @@ C
           ENDIF
         ENDIF
         FILNAM(II+1:) = ENVFIL
-        CALL QPRINT(2,'Opening file '//FILNAM(1:LENSTR(FILNAM)))
+        IF (II.GT.ISTRLN) CALL CCPERR(1, 'environ path name too long')
+        CALL QPRINT(2,'Opening file '//FILNAM)
         IFAIL=0
         IXUNIT = IUNIT
         IF (IHELP.LT.2) IXUNIT = -IUNIT
         CALL CCPDPN (IXUNIT,FILNAM,'READONLY','F',LREC,IFAIL)
    30   CONTINUE
         READ (UNIT=IUNIT,FMT=6000,END=40,ERR=80,IOSTAT=IERR) LINE
+        TEMP = LINE
+C       comments from `!' or `#' to end-of-line
         II = INDEX(LINE,'#')
-        IF (II.EQ.1) THEN
-          LINE = ' '
-        ELSEIF (II.GT.1) THEN
-          LINE(II:) = ' '
-        ENDIF
+        IF (II.NE.0) LINE(II:) = ' '
+        II = INDEX(LINE,'!')
+        IF (II.NE.0) LINE(II:) = ' '
         IF (LINE.NE.' ') THEN
           ICOUNT = ICOUNT + 1
-          IF (ICOUNT.GT.ILIMIT) CALL CCPERR(1,'No more string space')
+          IF (ICOUNT.GT.ILIMIT) CALL CCPERR(1,
+     +         'Too many logical names in environ file: '//TEMP)
           ISTART = INDEX(LINE,'=')
-          IF (ISTART.EQ.0) CALL CCPERR(1,'No = in environment type')
+          IF (ISTART.EQ.0)
+     +         CALL CCPERR(1,'Missing = in environ file: '//TEMP)
           ENAME(ICOUNT) = LINE(1:ISTART-1)
           EXTN(ICOUNT) = '.'//FEXTN(LINE)
-          IF (EXTN(ICOUNT).EQ.' ') CALL CCPERR(1,'error in extension')
+          IF (EXTN(ICOUNT).EQ.'.')
+     +         CALL CCPERR(1, 'Bad extension in environ file: '//TEMP)
           IEND = INDEX(LINE,EXTN(ICOUNT))
           ETYPE(ICOUNT) = LINE(ISTART+1:IEND-1)
         END IF
@@ -627,13 +635,7 @@ C
       IF (DINIT) THEN
         II = -1
         IF (RDLOGF.GT.0) THEN
-          IF (VAX) THEN
-            IF (INDEX(LOGFIL,':').GT.0 .OR. INDEX(LOGFIL,'[').GT.0)
-     &      II = 0
-          ELSE
-            IF (INDEX(LOGFIL,'/').GT.0 .OR. INDEX(LOGFIL,'{').GT.0)
-     &      II = 0
-          ENDIF
+          IF (FDIR(ENVFIL).NE.' ') II=0
         ELSE
           CALL UGTENV('CINCL',FILNAM)
           IF (FILNAM.NE.' ') THEN
@@ -644,6 +646,8 @@ C
               II = LENSTR(FILNAM)
               IF (FILNAM(II:II).NE.'/') THEN
                 II = II + 1
+                IF (II.GT.ISTRLN) CALL CCPERR(1,
+     +               'default.def path name too long')
                 FILNAM(II:II)='/'
               ENDIF
             ENDIF
@@ -664,6 +668,8 @@ C
               II = LENSTR(FILNAM)
               IF (FILNAM(II:II).NE.'/') THEN
                 II = II + 1
+                IF (II.GT.ISTRLN) CALL CCPERR(1,
+     +               'default.def path name too long')
                 FILNAM(II:II)='/'
               ENDIF
             ENDIF
@@ -671,29 +677,33 @@ C
             II = 0
           ENDIF
         ENDIF
+        IF (II.GT.ISTRLN) CALL CCPERR(1,
+     +       'default.def path name too long')
         FILNAM(II+1:) = LOGFIL
-        CALL QPRINT(2,'Opening file '//FILNAM(1:LENSTR(FILNAM)))
+        CALL QPRINT(2,'Opening file '//FILNAM)
         IFAIL=0
         IXUNIT = IUNIT
         IF (IHELP.LT.2) IXUNIT = -IUNIT
         CALL CCPDPN (IXUNIT,FILNAM,'READONLY','F',LREC,IFAIL)
    50   CONTINUE
         READ (UNIT=IUNIT,FMT=6000,END=60,ERR=80,IOSTAT=IERR) LINE
+        TEMP = LINE
+C       comments from `!' or `#' to end-of-line
         II = INDEX(LINE,'#')
-        IF (II.EQ.1) THEN
-          LINE = ' '
-        ELSEIF (II.GT.1) THEN
-          LINE = LINE(1:II-1)
-        ENDIF
+        IF (II.NE.0) LINE(II:) = ' '
+        II = INDEX(LINE,'!')
+        IF (II.NE.0) LINE(II:) = ' '
         IF (LINE.NE.' ') THEN
           II = INDEX(LINE,'=')
+          IF (II.EQ.0)
+     +         CALL CCPERR(1,'Missing = in defaults file: '//TEMP)
           LOGNAM = LINE(1:II-1)
           FILNAM = LINE(II+1:)
 C
-C---- here skip = .true. in subroutine setenv
-C            if logical name already exists
+C---- here skip = .true. in csetnv means don't override existing logical
+C         name (defined in environment)
 C
-          CALL SETENV(LOGNAM,FILNAM,ENAME,ETYPE,EXTN,ICOUNT,.TRUE.)
+          CALL CSETNV(LOGNAM,FILNAM,ENAME,ETYPE,EXTN,ICOUNT,.TRUE.)
         END IF
         GO TO 50
    60   CLOSE (UNIT=IUNIT)
@@ -703,22 +713,21 @@ C---- Loop through command line arguments
 C
       CALL QPRINT(2,'Processing Command Line Arguments')
       DO 70 LOOP = ILOOP,IARG,2
-        CALL GETARG(LOOP,LOGNAM)
+        CALL UGTARG(LOOP,LOGNAM)
          CALL CCPUPC(LOGNAM)
-        CALL GETARG(LOOP+1,FILNAM)
-        IF (FILNAM.EQ.' ') CALL CCPERR(1,'Use: Logical_name filename')
+        CALL UGTARG(LOOP+1,FILNAM)
+        IF (FILNAM.EQ.' ') CALL CCPERR(1,
+     +       'Use: <logical name> <filename> ...')
 C
-C---- here skip = .false. in subroutine setenv
-C            if logical name already exists as command line
-C             takes precedence
+C---- here skip = .false. in csetnv means override logical name
+C       defined in the environment
 C
-        CALL SETENV(LOGNAM,FILNAM,ENAME,ETYPE,EXTN,ICOUNT,.FALSE.)
+        CALL CSETNV(LOGNAM,FILNAM,ENAME,ETYPE,EXTN,ICOUNT,.FALSE.)
    70 CONTINUE
       CALL QPRINT(2,'End of pre-processing stage')
       RETURN
 C
-   80 CALL UGERR(IOSTAT,LINE)
-      CALL CCPERR(1,LINE)
+ 80   CALL CCPERR(1,'Error reading environ or default file')
 C
  6000 FORMAT (A)
       END
@@ -844,7 +853,8 @@ C
       INTEGER IA(*)
       INTEGER*2 I2(*)
       INTEGER*2 J2(2)
-      INTEGER*2 IEIGHT
+      INTEGER*2 IEIGHT, I255
+      PARAMETER (I255=255)
       EQUIVALENCE (JA,J2(1))
       LOGICAL CALLED, LITEND
       EXTERNAL LITEND
@@ -866,7 +876,7 @@ C
       IEIGHT = 8
       IF (SWAPB) THEN
          DO 10 I = 1,NE
-            I2(I) = IOR(IAND(ISHFT(I2(I),-IEIGHT),255),
+            I2(I) = IOR(IAND(ISHFT(I2(I),-IEIGHT),I255),
      +              ISHFT(I2(I),IEIGHT))
 10       CONTINUE
       END IF
@@ -974,7 +984,8 @@ C
       INTEGER IA(*)
       INTEGER*2 I2(*)
       INTEGER*2 J2(2)
-      INTEGER*2 IEIGHT
+      INTEGER*2 IEIGHT, I255
+      PARAMETER (I255=255)
       EQUIVALENCE (JA,J2(1))
       LOGICAL CALLED, LITEND
       EXTERNAL LITEND
@@ -1009,7 +1020,7 @@ C====== Swap bytes if required
 C
       IF (SWAPB) THEN
          DO 30 I = 1,NE
-            I2(I) = IOR(IAND(ISHFT(I2(I),-IEIGHT),255),
+            I2(I) = IOR(IAND(ISHFT(I2(I),-IEIGHT),I255),
      +              ISHFT(I2(I),IEIGHT))
 30       CONTINUE
       END IF
@@ -1344,7 +1355,7 @@ C
 C
 C
 C     =======================================================
-      SUBROUTINE SETENV(LNAME,FILNAM,ENAME,ETYPE,EXTN,ICOUNT,LSKIP)
+      SUBROUTINE CSETNV(LNAME,FILNAM,ENAME,ETYPE,EXTN,ICOUNT,LSKIP)
 C     =======================================================
 C
 C     Associate `logical name' LNAME with value FILNAM using environment
@@ -1378,7 +1389,7 @@ C     .. External Functions ..
       EXTERNAL ACCESS,GETPID,LENSTR,VAXVMS,FDIR,FEXTN,FROOT
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPERR,GETARG,QPRINT,UGTENV,USTENV
+      EXTERNAL CCPERR,UGTARG,QPRINT,UGTENV,USTENV
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC INDEX
@@ -1397,17 +1408,8 @@ C
 C---- Get program name (argv[0]), but check if we have it already
 C
       IF (PROGNM.EQ.' ') THEN
-        CALL GETARG(0,PROGNM)
-        IF (.NOT. VAX) THEN
-          IF (INDEX (PROGNM,'/').NE.0) THEN
-C           Strip leading directories
-            DO 3 II=LENSTR(PROGNM),1,-1
-              IF (PROGNM(II:II).EQ.'/') GOTO 4
- 3          CONTINUE
- 4          TMPNAM = PROGNM(II + 1:)
-            PROGNM = TMPNAM
-          ENDIF
-        ENDIF
+        CALL UGTARG(0,TMPNAM)
+        PROGNM = FROOT(TMPNAM)
       ENDIF
 C
 C---- look through list for a match (possibly abbreviated) [is this
@@ -1424,7 +1426,7 @@ C
       CALL QPRINT(2,TMPNAM)
       ICOUNT = ICOUNT + 1
       IF (ICOUNT.GT.ILIMIT)
-     +     CALL CCPERR(1,'No more string space in SETENV')
+     +     CALL CCPERR(1,'Too many logical names')
       ENAME(ICOUNT) = LNAME
       ETYPE(ICOUNT) = 'undef'
       EXTN(ICOUNT) = FEXTN(FILNAM)
@@ -1434,7 +1436,7 @@ C---- Known logical name processing
 C
    20 IF (FEXTN(FILNAM).EQ.' ') THEN
 C
-C---- Don't add extension
+C---- Add extension
 C
         IF (FILNAM.EQ.'/dev/null' .OR. FILNAM.EQ.'NL:') THEN
 C          but not if FILNAM is /dev/null or NL:
@@ -1445,14 +1447,19 @@ C          but not if FILNAM is /dev/null or NL:
         ENDIF
       ENDIF
       IF (FDIR(FILNAM).EQ.' ') THEN
-        IF (EXTN(JJ).EQ.'.lib' .OR. EXTN(JJ).EQ.'.prt' .OR.
-     +      EXTN(JJ).EQ.'.bes' .OR. EXTN(JJ).EQ.'.dic') THEN
+CCC       this didn't agree with documentation:
+CCC        IF (EXTN(JJ).EQ.'.lib' .OR. EXTN(JJ).EQ.'.prt' .OR.
+CCC     +      EXTN(JJ).EQ.'.bes' .OR. EXTN(JJ).EQ.'.dic') THEN
+        TMPNAM = FEXTN(FILNAM)
+        IF (VAX) CALL CCPLWC(TMPNAM)
+        IF (TMPNAM.EQ.'lib' .OR. TMPNAM.EQ.'prt' .OR.
+     +      TMPNAM.EQ.'bes' .OR. TMPNAM.EQ.'dic') THEN
 C         look for files without path but with standard extension in the
 C         standard place
           CALL UGTENV('CLIBD',LIBFIL)
 C         add the standard directory qualifier
           IF (VAX) THEN
-C           should we insist that VMS defines CLIBD as well as un*x?
+C           fixme: should we insist that VMS defines CLIBD as well as un*x?
             IF (LIBFIL.NE.' ') THEN
               TMPNAM = 'CLIBD:'
               TMPNAM(7:) = FILNAM
@@ -1497,9 +1504,11 @@ C         actually create <ccp4_scr>/<prognm>_.<pid>
       END IF
 333   CONTINUE
 C
-C---- Now test input files do exist
+C---- Now test input files do exist (but not for defaults, to avoid
+C     checking 40 or 50 files listed in default.def which the setup
+C     should guarantee)
 C
-      IF (ETYPE(JJ).EQ.'in') THEN
+      IF (ETYPE(JJ).EQ.'in' .AND. .NOT.LSKIP) THEN
         INQUIRE(FILE=FILNAM,EXIST=EXIST)
         IF (.NOT.EXIST) THEN
           ERRSTR = 'Cannot find file '
@@ -1520,7 +1529,7 @@ C     =======================================
         ERRSTR(36:) = LNAME
         CALL CCPERR(1,ERRSTR)
       END IF
-      CALL QPRINT(3,LINE(1:LENSTR(LINE)))
+      CALL QPRINT(3,LINE)
       END
 C
 C
@@ -1559,88 +1568,6 @@ C     ..
         NCOL = 132
       END IF
       END
-CCCC
-CCCC
-CCCC   not currently used
-CCC      SUBROUTINE CCPRNM(LOG1,LOG2)
-CCCC     ============================
-CCCC
-CCCC---- Rename file assigned to logical name LOG2 to same name as that
-CCCC     assigned to LOG1
-CCCC
-CCCC     .. Scalar Arguments ..
-CCC      CHARACTER LOG1* (*),LOG2* (*)
-CCCC     ..
-CCCC     .. Local Scalars ..
-CCC      INTEGER ISTAT,RENAME
-CCC      CHARACTER ERRSTR*100,NAME1*100,NAME2*100
-CCCC     ..
-CCCC     .. External Functions ..
-CCC      INTEGER LENSTR
-CCC      EXTERNAL LENSTR
-CCCC     ..
-CCCC     .. External Subroutines ..
-CCC      EXTERNAL UGERR,URENAM
-CCCC     ..
-CCCC---- Get file-names for both streams
-CCC      INQUIRE (FILE=LOG1,NAME=NAME1)
-CCC      INQUIRE (FILE=LOG2,NAME=NAME2)
-CCCC
-CCCC---- Rename file
-CCCC
-CCC      CALL URENAM(NAME2,NAME1,ISTAT)
-CCC      IF (ISTAT.NE.0) THEN
-CCCC
-CCCC---- Error
-CCCC
-CCC        CALL UGERR(ISTAT,ERRSTR)
-CCC        WRITE (6,FMT=6002) LOG1(1:LENSTR(LOG1)),NAME1(1:LENSTR(NAME1)),
-CCC     +    LOG2(1:LENSTR(LOG2)),NAME2(1:LENSTR(NAME2))
-CCC        WRITE (6,FMT=6004) ERRSTR(1:LENSTR(ERRSTR))
-CCC        CALL CCPERR(1, '***CCPRNM ERROR*** IN CCPLIB 6004')
-CCC      ELSE
-CCC        WRITE (6,FMT=6000) NAME2,NAME1
-CCC      END IF
-CCCC
-CCCC---- Format statements
-CCCC
-CCC 6000 FORMAT (/' File ',A,' renamed as ',A,/)
-CCC 6002 FORMAT (/' **RENAME FAILURE**',/' To   Logical name: ',A,', Full',
-CCC     +       ' name: ',A,/' From Logical name: ',A,', Full name: ',A,/)
-CCC 6004 FORMAT (' Op-system error: ',A,/)
-CCCC
-CCCC
-CCC      END
-C
-CCCC   
-CCC      SUBROUTINE CCPRVR(IUN,ITEXT,NCHMAX,IMAX,*,*)
-CCCC     ===========================================
-CCCC not currently used
-CCCC
-CCCC---- Read a variable length character record of unknown length from an
-CCCC     unformatted sequential file
-CCCC
-CCCC PARAMETERS
-CCCC ==========
-CCCC
-CCCC        IUN (I)   UNIT NUMBER FOR THE READ
-CCCC      ITEXT (O)   CHARACTER ARRAY TO HOLD THE TEXT READ
-CCCC     NCHMAX (I)   MAX. NO. OF CHARACTERS IN ITEXT
-CCCC       IMAX (O)   NO. OF CHARACTERS READ
-CCCC
-CCCC RETURN 1   END OF FILE
-CCCC RETURN 2   VARIABLE LENGTH READ OF UNKNOWN LENGTH NOT AVAILABLE
-CCCC
-CCCC ***DL CONVEX VERSION*** Function not implemented
-CCCC
-CCCC     .. Scalar Arguments ..
-CCC      INTEGER IMAX,IUN,NCHMAX
-CCCC     ..
-CCCC     .. Array Arguments ..
-CCC      CHARACTER ITEXT(NCHMAX)*1
-CCCC     ..
-CCC      RETURN 2
-CCC      END
 C
 C
 C
@@ -2039,37 +1966,13 @@ C     ==================================
       CHARACTER*(*) FUNCTION FDIR(FILNAM)
 C     ==================================
 C
-C---- Returns the directory of a file name or ' '
+C---- Returns the path (directory) of a file name or ' '
 C
-C     .. Scalar Arguments ..
       CHARACTER FILNAM* (*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER II,JJ
-C     ..
-C     .. External Functions ..
-      LOGICAL VAXVMS
-      EXTERNAL VAXVMS
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC INDEX
-C     ..
-      FDIR = ' '
-      IF (VAXVMS()) THEN
-        II = INDEX(FILNAM,']')
-      ELSE
-        II = 0
-   10   CONTINUE
-        JJ = INDEX(FILNAM(II+1:),'/')
-        IF (JJ.NE.0) THEN
-          II = II + JJ
-          GO TO 10
-        END IF
-        II = II - 1
-        IF (II.LT.0) II = 0
-      END IF
-      IF (II.NE.0) FDIR = FILNAM(1:II)
+      CHARACTER*1 NAME, TYPE, VERS
+      EXTERNAL CCPPSF
 C
+      CALL CCPPSF(FILNAM, FDIR, NAME, TYPE, VERS)
       END
 C
 C
@@ -2079,34 +1982,11 @@ C     ===================================
 C
 C---- Returns the extension of a file name or ' '
 C
-C     .. Scalar Arguments ..
       CHARACTER FILNAM* (*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER II,JJ
-C     ..
-C     .. External Functions ..
-      LOGICAL VAXVMS
-      EXTERNAL VAXVMS
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC INDEX
-C     ..
-      FEXTN = ' '
-      IF (VAXVMS()) THEN
-        II = INDEX(FILNAM,']')
-      ELSE
-        II = 0
-   10   CONTINUE
-        JJ = INDEX(FILNAM(II+1:),'/')
-        IF (JJ.NE.0) THEN
-          II = II + JJ
-          GO TO 10
-        END IF
-      END IF
-      JJ = INDEX(FILNAM(II+1:),'.')
-      IF (JJ.NE.0) FEXTN = FILNAM(II+JJ+1:)
+      CHARACTER*1 PATH, NAME, VERS
+      EXTERNAL CCPPSF
 C
+      CALL CCPPSF(FILNAM, PATH, NAME, FEXTN, VERS)
       END
 C
 C
@@ -2116,34 +1996,11 @@ C     ===================================
 C
 C---- Returns a file name minus an extension.
 C
-C     .. Scalar Arguments ..
       CHARACTER FILNAM* (*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER II,JJ
-C     ..
-C     .. External Functions ..
-      LOGICAL VAXVMS
-      EXTERNAL VAXVMS
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC INDEX
-C     ..
-      FROOT = ' '
-      IF (VAXVMS()) THEN
-        II = INDEX(FILNAM,']')
-      ELSE
-        II = 0
-   10   CONTINUE
-        JJ = INDEX(FILNAM(II+1:),'/')
-        IF (JJ.NE.0) THEN
-          II = II + JJ
-          GO TO 10
-        END IF
-      END IF
-      JJ = INDEX(FILNAM(II+1:),'.')
-      IF (JJ.NE.0) FROOT = FILNAM(1:II+JJ-1)
+      CHARACTER*1 PATH, TYPE, VERS
+      EXTERNAL CCPPSF
 C
+      CALL CCPPSF(FILNAM, PATH, FROOT, TYPE, VERS)
       END
 C
 C
@@ -2189,11 +2046,6 @@ C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC LEN
 C     ..
-C     just in case:
-      IF (STRING.EQ.' ') THEN
-        LENSTR=0
-        RETURN
-      ENDIF
       LENSTR = LEN(STRING)
  10   CONTINUE
       IF (LENSTR.NE.0) THEN
@@ -2258,9 +2110,23 @@ C
       END
 C
 C
+C     =======================
+      SUBROUTINE NOCRLF(LINE)
+C     =======================
+C
+C---- Output a line supressing cr/lf. 
+C
+      EXTERNAL LUNSTO,TTSEND
+      INTEGER LUNSTO
+      CHARACTER*(*) LINE
+      CALL TTSEND(LUNSTO(1),LINE,0)
+      END
+C
+C
 C======================================================================
 C
-C QPRINT - Set print flag
+C QPRINT - Set print flag or conditionally print MSG (less trailing
+C     blanks)
 C
 C Usage:  CALL QPRINT   (IFLAG,MSG)
 C         INTEGER       IFLAG
@@ -2276,40 +2142,43 @@ C
       SUBROUTINE QPRINT(IFLAG,MSG)
 C     ============================
 C
-C     .. Scalar Arguments ..
       INTEGER IFLAG
       CHARACTER MSG* (*)
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CPRINT
-C     ..
-      CALL CPRINT(IFLAG,MSG)
+      EXTERNAL LUNSTO, LENSTR
+      INTEGER PFLAG, LUNSTO, LENSTR
+      SAVE PFLAG
+      DATA PFLAG /-1/
 C
+      IF (PFLAG.EQ.-1) PFLAG = IFLAG
+      IF (IFLAG.LE.PFLAG) WRITE (LUNSTO(1),'(1x, A)')
+     +     MSG(1:LENSTR(MSG))
       END
 C
 C
-C======================================================================
+C SUBROUTINE 'STBITS'
+C ===================
 C
-C QTYPE - return machine type stamp
+C Set a bit field within a word to a given (unsigned) integer value
+C [for LAUE]
 C
-C Usage:  CALL QTYPE   (ISTAMP)
-C         INTEGER       ISTAMP
+      SUBROUTINE STBITS (IWORD,LSB,NBITS,IVAL)
 C
-C Output: ISTAMP - machine type stamp
-C     *** what does this mean?
+C PARAMETERS
 C
-C======================================================================
+C      IWORD (I/O)  The word in which the bits are to be set
+C        LSB (I)    The least significant bit offset for the bit field
+C      NBITS (I)    The number of bits in the bit field (must be less than
+C                   the word length)
+C       IVAL (I)    The unsigned integer value to be set in the bit
+C                   field (The user should ensure that this value will
+C                   fit within the requested bit field)
 C
-      SUBROUTINE QTYPE(ISTAMP)
-C     ========================
+C====== Set the bits
 C
-C     .. Scalar Arguments ..
-C
-      INTEGER ISTAMP
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CMTYPE
-C     ..
-      CALL CMTYPE(ISTAMP)
-C
+      KMSK = 2**NBITS - 1
+      KVAL = IVAL
+      KMSK = ISHFT(KMSK,LSB)
+      KMSK = NOT(KMSK)
+      KVAL = ISHFT(KVAL,LSB)
+      IWORD = IOR(IAND(IWORD,KMSK),KVAL)
       END
