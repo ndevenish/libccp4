@@ -58,6 +58,17 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
 
   ccp4fyp(argc, argv);
 
+  /* Calls to ccp4_FtoCString allocate memory for argv[..]
+     which needs to be explicitly freed before leaving this
+     function */
+  for (i = 0; i < argc; i++) {
+    if (argv[i]) {
+      free(argv[i]);
+    }
+  }
+  /* Also need to free argv itself */
+  if (argv) free(argv);
+
   if (debug) 
     printf(" Leaving CCPFYP \n");
 
