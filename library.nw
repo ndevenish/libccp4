@@ -387,11 +387,12 @@ indication).  I've no idea why.  However, I note that the \ac{ansi} C
 [[b]] doesn't have any effect in \ac{posix} anyway.  In \idx{VAX} C
 [[b]] means `no conversion of carriage-control information is
 attempted'.  It's not clear to me whether you want this or not.  Both
-possibilites {\em seem\/} to work OK \dots\ but not in \idx{DEC~C}\@.
+possibilites {\em seem\/} to work OK \dots\ but not in \idx{DEC~C}, at
+least in \idx{OpenVMS}\@.
 This is something to watch out for on other
 systems.\index{portability!possible problem}
 <<global variables>>=
-#if defined (__DECC)
+#if defined(__DECC) && defined(VMS)
 static char *file_attribute[] = { /* DISKIO file modes */
   "wb+",   /* 'UNKNOWN'   open as 'OLD'/'NEW' check existence */
   "wb+",   /* 'SCRATCH'   open as 'OLD' and delete on closing */
