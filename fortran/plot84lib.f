@@ -3,16 +3,6 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
-C       SUBROUTINE GSSTRD(TEXT,DX,DY)
-C       ERROR XCOLD and YCOLD not defined
-C
-C       SUBROUTINE GSTRIC(GSFIL,LISFIL,IOFLAG)
-C       ERROR NSKIP not defined
-C
-C      SUBROUTINE GSVIEW(FILNAM,NSTART,ISCALE,SCAFAC,LINSIZ,
-C     +                    NOCENT,NOPRNT,NINTER,IERR)
-C      ERROR NPRNT not defined
-C
 C
 C---- Subroutines in PLOT84.FORT
 C                    ===========
@@ -1294,43 +1284,30 @@ C     Cohen and Sutherland algorithm from foley & van dam
 C
 C     .. Scalar Arguments ..
       REAL X1,X2,Y1,Y2
-      LOGICAL*1 ACCEPT
+      LOGICAL ACCEPT
 C     ..
 C     .. Scalars in Common ..
       REAL BXMAX,BXMIN,BYMAX,BYMIN
-      INTEGER LUNIN,LUNOUT
 C     ..
 C     .. Local Scalars ..
-      REAL SMALL
-      INTEGER NCODE1,NCODE2,NO4,NSWAP
-      LOGICAL*1 DONE,INSIDE,REJECT
-C     ..
-C     .. Local Arrays ..
-      LOGICAL*1 NOCODE(4),WCODEA(4),WCODEB(4),BT1,BT2,BT3,BT4
+      INTEGER NCODE1,NCODE2,NSWAP
+      LOGICAL DONE,INSIDE,REJECT
 C     ..
 C     .. External Subroutines ..
       EXTERNAL GSCLPT,GSCLTS,GSSWLN
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC ABS
+      LOGICAL BTEST
 C     ..
 C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
       COMMON /GSCLP/BXMIN,BXMAX,BYMIN,BYMAX
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-C     .. Equivalences .. 
-ccx      logical*1 nocode(4),wcodea(4),wcodeb(4)
-ccx      integer ncode1,ncode2,no4,nswap ******** BIG-ENDIAN PROBLEM
-      equivalence (wcodea(1),ncode1), (wcodeb(1),ncode2)
-CCC      equivalence (nocode(1),no4)
 C     ..
-C     .. Data statements ..
-CCC      DATA NOCODE/4*.FALSE./
-      DATA SMALL/1.0E-20/
+      REAL SMALL
+      parameter (SMALL=1.0E-20)
+C     .. Save Statement ..
+      SAVE /GSCLP/
+C     ..
 C
       NSWAP = 1
       ACCEPT = .FALSE.
@@ -1377,25 +1354,25 @@ C---- If machine is BigEndian, need to swap byte order
 C
 C
 C
-        IF ( wcodea(1) ) THEN  
+        IF (BTEST(NCODE1,1)) THEN  
           IF (ABS(X2-X1).GT.SMALL) Y1 = Y1 + (Y2-Y1)*(BXMIN-X1)/(X2-X1)
           X1 = BXMIN
 C
 C---- "else2" "level 3" split line on right (y1 is to right)
 C
-        ELSE IF (WCODEA(2)) THEN
+        ELSE IF (BTEST(NCODE1,2)) THEN
           IF (ABS(X2-X1).GT.SMALL) Y1 = Y1 + (Y2-Y1)*(BXMAX-X1)/(X2-X1)
           X1 = BXMAX
 C
 C---- "else3" "level 3" split line at bottom (y1 is below)
 C
-        ELSE IF (WCODEA(3)) THEN
+        ELSE IF (BTEST(NCODE1,3)) THEN
           IF (ABS(Y2-Y1).GT.SMALL) X1 = X1 + (X2-X1)*(BYMIN-Y1)/(Y2-Y1)
           Y1 = BYMIN
 C
 C---- "else4" "level 3" split line at top (y1 is above)
 C
-        ELSE IF (WCODEA(4)) THEN
+        ELSE IF (BTEST(NCODE1,4)) THEN
           IF (ABS(Y2-Y1).GT.SMALL) X1 = X1 + (X2-X1)*(BYMAX-Y1)/(Y2-Y1)
           Y1 = BYMAX
 C
@@ -1423,50 +1400,32 @@ C
       SUBROUTINE GSCLPT(X,Y,NCODE,INSIDE)
 C     ====================================
 C
-C     A.D. McLachlan JUN 1984 Last updated 10 JUL 1984
-C
 C---- To test if a point is inside rectangular window
-C     BYTE codes 1=left 2=right 3=below 4=above
+C     codes for bit<>0: 1=left 2=right 3=below 4=above
 C
 C     .. Scalar Arguments ..
       REAL X,Y
       INTEGER NCODE
-      LOGICAL*1 INSIDE
+      LOGICAL INSIDE
 C     ..
 C     .. Scalars in Common ..
       REAL BXMAX,BXMIN,BYMAX,BYMIN
-      INTEGER LUNIN,LUNOUT
-C     ..
-C     .. Local Scalars ..
-      INTEGER NO4,NWCODE
-C     ..
-C     .. Local Arrays ..
-ccx      logical*1 nocode(4),wcode(4)
-      LOGICAL*1 NOCODE(4),WCODE(4),BT1,BT2,BT3,BT4
+      INTEGER IZ4B
 C     ..
 C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
       COMMON /GSCLP/BXMIN,BXMAX,BYMIN,BYMAX
+      COMMON /GSBTST/ IZ4B
 C
 C     .. Save Statement ..
 C
-      SAVE
+      SAVE /GSCLP/, /GSBTST/
 C
-C     .. Equivalences .. BIG - ENDIAN PROBLEM *****
-ccx      integer no4,nwcode
-ccx      logical*1 nocode(4),wcode(4)
-      EQUIVALENCE (NWCODE,WCODE(1)), (NO4,NOCODE(1))
-C     ..
-C     .. Data statements ..
-CCC      DATA NOCODE/4*.FALSE./
-C
-      WCODE(1) = (X.LT.BXMIN)
-      WCODE(2) = (X.GT.BXMAX)
-      WCODE(3) = (Y.LT.BYMIN)
-      WCODE(4) = (Y.GT.BYMAX)
-      NCODE = NWCODE
-      INSIDE = (NCODE.EQ.NO4)
-C
+      NCODE = IZ4B
+      IF (X.LT.BXMIN) NCODE = IBSET (NCODE, 1)
+      IF (X.GT.BXMAX) NCODE = IBSET (NCODE, 2)
+      IF (Y.LT.BYMIN) NCODE = IBSET (NCODE, 3)
+      IF (Y.GT.BYMAX) NCODE = IBSET (NCODE, 4)
+      INSIDE = NCODE.EQ.IZ4B
       END
 C
 C
@@ -1474,46 +1433,27 @@ C
       SUBROUTINE GSCLTS(REJECT,ACCEPT,NCODE1,NCODE2)
 C     ===============================================
 C
-C     A.D. McLachlan JUN 1984 Last updated 10 JUL 1984
-C
 C---- To test if line lies wholly in or out of window
 C     in cohen & sutherland test
 C
 C     .. Scalar Arguments ..
       INTEGER NCODE1,NCODE2
-      LOGICAL*1 ACCEPT,REJECT
+      LOGICAL ACCEPT,REJECT
 C     ..
 C     .. Scalars in Common ..
-      INTEGER LUNIN,LUNOUT
-C     ..
-C     .. Local Scalars ..
-      INTEGER NCDAND,NO4
-C     ..
-C     .. Local Arrays ..
-ccx      logical*1 nocode(4)
-      LOGICAL*1 NOCODE(4),BT1,BT2,BT3,BT4
-C     ..
-C     .. External Functions ..
-cc      INTEGER IAND
-cc      EXTERNAL IAND
+      INTEGER IZ4B
+C     .. Local scalars
+      INTEGER NCDAND
 C     ..
 C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-C     .. Equivalences ..
-CCC      EQUIVALENCE (NOCODE(1),NO4)
+      COMMON /GSBTST/ IZ4B
 C     ..
-C     .. Data statements ..
-CCC      DATA NOCODE/4*.FALSE./
+C     .. Save Statement ..
+      SAVE /GSBTST/
+C     ..
       NCDAND = IAND(NCODE1,NCODE2)
-CCC      NCDAND = NCODE1 .AND. NCODE2
-      REJECT = (NCDAND.NE.NO4)
-      ACCEPT = ((NCODE1.EQ.NO4) .AND. (NCODE2.EQ.NO4))
-C
+      REJECT = (NCDAND.NE.IZ4B)
+      ACCEPT = (NCODE1.EQ.IZ4B) .AND. (NCODE2.EQ.IZ4B)
       END
 C
 C
@@ -2290,7 +2230,7 @@ C     ..
 C     .. Local Scalars ..
       REAL CHORGX,CHORGY,CUORGX,CUORGY,X1,X2,XORIG,XP,Y1,Y2,YORIG,YP
       INTEGER MODE,NCODE
-      LOGICAL*1 ACCEPT,INSIDE,LSTOUT,OLDOUT
+      LOGICAL ACCEPT,INSIDE,LSTOUT,OLDOUT
 C     ..
 C     .. Local Arrays ..
       INTEGER NCTRAN(24),NSTRAN(24)
@@ -4556,8 +4496,8 @@ C     ..
 C     .. Local Scalars ..
       REAL AV,BV,CUORGX,CUORGY,CV,DETU,DV,XB,XF,XORIG,YB,YF,YORIG
       INTEGER IX,IXHIGH,IXLOW,IY,IYHIGH,IYLOW
-      INTEGER*4 NCODE
-      LOGICAL*1 INSIDE
+      INTEGER NCODE
+      LOGICAL INSIDE
 C     ..
 C     .. Local Arrays ..
       INTEGER NSTRAN(24)
@@ -4832,6 +4772,9 @@ C       IFX0,IFY0      = origin shift
 C       IFWID,IFHT     = width, height constants
 C       NFONTS         = vector coords (4 bytes for x1,y1,x2,y2)
 C
+C     <<GSBTST>> for bit testing
+C       IZ4B           = result of 4 IBSETs
+C
 C     .. Scalar Arguments ..
       INTEGER JPRINT
       CHARACTER GSNAM* (*),TITL* (*)
@@ -4846,7 +4789,7 @@ C     .. Scalars in Common ..
       INTEGER ICENTC,ICOLOR,IDRLVL,IFONT,IPRINT,IUNIT,
      +        IUNITR,IXMAX,IXMIN,IYMAX,IYMIN,KPRINT,LINWT,
      +        LUNIN,LUNOUT,MCNTFL,MDEVIC,MDIREC,MIXCOL,MOUT,MPIC,
-     +        MSCAFL,NERROR,NPICS
+     +        MSCAFL,NERROR,NPICS,IZ4B
       LOGICAL*4 DEVCON,FONTIN,ICULNK,INITON,LINMOD,UCSPAC
       CHARACTER FILNAM*80,TITLE*80
 C     ..
@@ -4911,6 +4854,7 @@ C     .. Common blocks ..
      +       IFY0(150,4),IFWID(150,4),IFHT(150,4),NFONTS(4,3000,4)
       COMMON /GSUTR/USRMAT(3,3),SCALEX,SCALEY,USANGX,USANGY,
      +       CUMAT(3,3),LINMOD,ICULNK,KPRINT
+      COMMON /GSBTST/ IZ4B
 C
 C     .. Save Statement ..
 C
@@ -4980,6 +4924,8 @@ C---- Read in font first time through
 C
       IF (.NOT.FONTIN) CALL GSRFNT
       FONTIN = .TRUE.
+C     generate word with all zero bits (exclusive or of two equal words)
+      IZ4B = IEOR (0, 0)
       RETURN
 C
       ENTRY GSTITL(TITL)
@@ -9129,7 +9075,6 @@ C     ..
 C     .. Local Scalars ..
       REAL CHORGX,CHORGY,CUORGX,CUORGY,XCOFF,XORIG,YCOFF,YORIG
       INTEGER I,IPLOT,LCHAR,LETTER,NLENG
-      CHARACTER BLANKC*1
 C     ..
 C     .. Local Arrays ..
       INTEGER NCTRAN(24),NSTRAN(24)
@@ -9181,7 +9126,7 @@ C
       DO 30 I = 1,NLENG
         LCHAR = ICHAR(TEXT(I:I))
         IF ((LCHAR.GT.31) .AND. (LCHAR.LT.127)) GO TO 20
-        TEXT(I:I) = BLANKC
+        TEXT(I:I) = ' '
    20   CONTINUE
    30 CONTINUE
 C
@@ -9790,20 +9735,10 @@ C     .. Scalar Arguments ..
       REAL X1,X2,Y1,Y2
       INTEGER NCODE1,NCODE2,NSWAP
 C     ..
-C     .. Scalars in Common ..
-      INTEGER LUNIN,LUNOUT
-C     ..
 C     .. Local Scalars ..
       REAL X,Y
       INTEGER N
 C     ..
-C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
       NSWAP = -NSWAP
       X = X1
       X1 = X2
@@ -10023,6 +9958,8 @@ C     .. Scalars in Common ..
       INTEGER ICOLOR,IUNITR,IXMAX,IXMIN,IYMAX,IYMIN,LINWT,LUNIN,LUNOUT,
      +        MCNTFL,MDEVIC,MDIREC,MIXCOL,MOUT,MPIC,MSCAFL,NPICS,NREC
       CHARACTER PASWRD*8,TITLEH*80
+      LOGICAL*4 DEVCON,INITON
+      CHARACTER FILNAM*80,TITLE*80
 C     ..
 C     .. Arrays in Common ..
       REAL ISPARE(15),MSPARE(68)
@@ -10060,7 +9997,7 @@ C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
       COMMON /GSFHD/
      + IUNITR,  NREC,   DOTMMX, DOTMMY,   IXMIN,  IXMAX,  IYMIN,
-     + IYMAX,  LINWT,  ICOLOR, MIXCOLOR, MDEVIC, MDIREC, MOUT,
+     + IYMAX,  LINWT,  ICOLOR, MIXCOL, MDEVIC, MDIREC, MOUT,
      + MPIC,   MSCAFL, MCNTFL, DWLIMX,   DWLIMY, DVXMIN, DVXMAX,
      + DVYMIN, DVYMAX, NPICS,
      + PASWRD, 
@@ -10438,10 +10375,10 @@ C
 C
 C---- skip back on paper
 C
-C###### SUBROUTINE GSTRIC(GSFIL,LISFIL,IOFLAG)
-C###### ERROR NSKIP not defined
-C
-            NBACK = - (NSKIP+IYMAX-JYMIN)/NLINPG - 1
+C           original had this, but NSKIP isn't defined.  Heaven knows
+C           what this should be:
+CCC            NBACK = - (NSKIP+IYMAX-JYMIN)/NLINPG - 1
+            NBACK = - (IYMAX-JYMIN)/NLINPG - 1
             CALL TRIFORM(NBACK)
             CALL TRIROW(-20)
             CALL TRIFORM(1)
@@ -11404,11 +11341,12 @@ C
       YCSTRT = YCSTRT - YCDOWN
       RETURN
 C
-      ENTRY GSTLNK(N)
+      ENTRY GSTLNK(NN)
 C     ================
 C
 C---- Set linking of plot transformations
 C
+      N = NN
       IF ((N.LT.0) .OR. (N.GT.1)) THEN
         IF (IPRINT.GE.1) WRITE (LUNOUT,FMT=6000) N
         N = 1
@@ -12322,14 +12260,14 @@ C     .. Scalars in Common ..
       INTEGER INIT,IUNIT,LUNIN,LUNOUT
 C     ..
 C     .. Arrays in Common ..
-      CHARACTER*1 PC(4),PF(6),PL(6)
+      CHARACTER PC*4,PF*6,PL*6
 C     ..
 C     .. Local Scalars ..
-      INTEGER J,NDO,NL,NBYTES,NMCITM
+      INTEGER J,NDO,NL,NBYTES(1),NMCITM
       CHARACTER*1 FOWARD,REVERSE
 C     ..
 C     .. Local Arrays ..
-      CHARACTER*1 BLANK(250),COLOURCH(3),LINEFEED(1)
+      CHARACTER BLANK*250,COLOURCH(3),LINEFEED
 C     ..
 C     .. External Functions ..
       LOGICAL CCPONL
@@ -12350,35 +12288,34 @@ C
       SAVE
 C
 C     .. Equivalences .. character*1 to integer
-      EQUIVALENCE (NBYTES,PC)
       DATA INIT/0/
 C
 C
 C---- Set up all needed info; note odd byte counts must actually be even
 C
       DO 99 II=1,250
-        BLANK(II) = CHAR(0)
+        BLANK(II:II) = CHAR(0)
 99    CONTINUE
       COLOURCH(1) = CHAR(16)
       COLOURCH(2) = CHAR(17)
       COLOURCH(3) = CHAR(18)
-      LINEFEED(1) = CHAR(10)
-      PC(1) = CHAR(0)
-      PC(2) = CHAR(0)
-      PC(3) = CHAR(5)
-      PC(4) = CHAR(0)
-      PF(1) = CHAR(3)
-      PF(2) = CHAR(0)
-      PF(3) = CHAR(5)
-      PF(4) = CHAR(0)
-      PF(5) = CHAR(12)
-      PF(6) = CHAR(0)
-      PL(1) = CHAR(3)
-      PL(2) = CHAR(0)
-      PL(3) = CHAR(5)
-      PL(4) = CHAR(0)
-      PL(5) = CHAR(10)
-      PL(6) = CHAR(0)
+      LINEFEED(:1) = CHAR(10)
+      PC(1:1) = CHAR(0)
+      PC(2:2) = CHAR(0)
+      PC(3:3) = CHAR(5)
+      PC(4:4) = CHAR(0)
+      PF(1:1) = CHAR(3)
+      PF(2:2) = CHAR(0)
+      PF(3:3) = CHAR(5)
+      PF(4:4) = CHAR(0)
+      PF(5:5) = CHAR(12)
+      PF(6:6) = CHAR(0)
+      PL(1:1) = CHAR(3)
+      PL(2:2) = CHAR(0)
+      PL(3:3) = CHAR(5)
+      PL(4:4) = CHAR(0)
+      PL(5:5) = CHAR(10)
+      PL(6:6) = CHAR(0)
       FOWARD = CHAR(0)
       REVERSE = CHAR(23)
 C
@@ -12403,7 +12340,7 @@ C
       ENTRY TRICOLOUR(N)
 C     ==================
 C
-      IF (N.GE.1 .AND. N.LE.3) PC(4) = COLOURCH(N)
+      IF (N.GE.1 .AND. N.LE.3) PC(4:4) = COLOURCH(N)
       RETURN
 C
       ENTRY TRIROW(NROWS)
@@ -12411,15 +12348,15 @@ C     ===================
 C
       IF (NROWS.LT.0) THEN
         NDO = -NROWS
-        PL(4) = REVERSE
+        PL(4:4) = REVERSE
         DO 10 J = 1,NDO
-          CALL QWRITI(IUNIT,PL,6)
+          CALL QWRITC(IUNIT,PL)
    10   CONTINUE
       ELSE IF (NROWS.GT.0) THEN
         NDO = NROWS
-        PL(4) = CHAR(0)
+        PL(4:4) = CHAR(0)
         DO 20 J = 1,NDO
-          CALL QWRITI(IUNIT,PL,6)
+          CALL QWRITC(IUNIT,PL)
    20   CONTINUE
       END IF
       RETURN
@@ -12429,15 +12366,15 @@ C     =====================
 C
       IF (NFORMS.LT.0) THEN
         NDO = -NFORMS
-        PF(4) = REVERSE
+        PF(4:4) = REVERSE
         DO 30 J = 1,NDO
-          CALL QWRITI(IUNIT,PF,6)
+          CALL QWRITC(IUNIT,PF)
    30   CONTINUE
       ELSE IF (NFORMS.GT.0) THEN
         NDO = NFORMS
-        PF(4) = CHAR(0)
+        PF(4:4) = CHAR(0)
         DO 40 J = 1,NDO
-          CALL QWRITI(IUNIT,PF,6)
+          CALL QWRITC(IUNIT,PF)
    40   CONTINUE
       END IF
       RETURN
@@ -12445,24 +12382,24 @@ C
       ENTRY TRIPLOT(LINE,LENGTH)
 C     ==========================
 C
-      NBYTES = LENGTH + 3
+      NBYTES (1) = LENGTH + 3
       NL = 1
-      CALL QWRITI(IUNIT,PC,4)
-      CALL QWRITI(IUNIT,LINE,LENGTH)
-      CALL QWRITI(IUNIT,LINEFEED,NL)
-      PC(4) = CHAR(0)
+      CALL QWRITI(IUNIT,NBYTES,1)
+      CALL QWRITE(IUNIT,LINE,LENGTH)
+      CALL QWRITC(IUNIT,LINEFEED)
+      PC(4:4) = CHAR(0)
       RETURN
 C
       ENTRY TRIPLOTC(LINE,LENGTH,IOFF)
 C     ================================
 C
-      NBYTES = LENGTH + IOFF + 3
+      NBYTES (1) = LENGTH + IOFF + 3
       NL = 1
-      CALL QWRITI(IUNIT,PC,4)
-      IF (IOFF.GT.0) CALL QWRITI(IUNIT,BLANK,IOFF)
-      CALL QWRITI(IUNIT,LINE,LENGTH)
-      CALL QWRITI(IUNIT,LINEFEED,NL)
-      PC(4) = CHAR(0)
+      CALL QWRITI(IUNIT,NBYTES,1)
+      IF (IOFF.GT.0) CALL QWRITC(IUNIT,BLANK)
+      CALL QWRITE(IUNIT,LINE,LENGTH)
+      CALL QWRITC(IUNIT,LINEFEED)
+      PC(4:4) = CHAR(0)
       RETURN
 C
       ENTRY CLOSETRIPLOT()
