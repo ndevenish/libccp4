@@ -1045,17 +1045,10 @@ C     .. Local Scalars ..
       CHARACTER LINE*80,LINERR*200
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPOPN,SYMFR2,LERROR,QPRLVL
+      EXTERNAL CCPDPN,SYMFR2,LERROR
 C     ..
       IFAIL = 0
-C     Open symmetry file.  Print file-opening noise only if the
-C     `debugging level' has been set greater than the default (1).
-      CALL QPRLVL(I)
-      IF (I.GT.1) THEN
-        CALL CCPOPN(IST,'SYMOP',5,1,0,IFAIL)
-      ELSE
-        CALL CCPOPN(-IST,'SYMOP',5,1,0,IFAIL)
-      END IF
+      CALL CCPDPN(IST,'SYMOP','READONLY','F',0,IFAIL)
       NSYM = 0
 C
  10   CONTINUE
@@ -1154,20 +1147,13 @@ C     .. Local Arrays ..
       CHARACTER CVALUE(NPARSE)*4
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPOPN,CCPUPC,PARSE,SYMFR2,LERROR,QPRLVL
+      EXTERNAL CCPDPN,CCPUPC,PARSE,SYMFR2,LERROR
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC NINT
 C     ..
       IFAIL = 0
-C     Open symmetry file.  Print file-opening noise only if the
-C     `debugging level' has been set greater than the default (1).
-      CALL QPRLVL(I)
-      IF (I.GT.1) THEN
-        CALL CCPOPN(IST,'SYMOP',5,1,0,IFAIL)
-      ELSE
-        CALL CCPOPN(-IST,'SYMOP',5,1,0,IFAIL)
-      END IF
+      CALL CCPDPN(IST,'SYMOP','READONLY','F',0,IFAIL)
 C
       NTOK = 0
       NSYM = 0
@@ -1967,9 +1953,6 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL INVSYM, SYMTR3, LUNSTO
       INTEGER LUNSTO
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC NINT
 C     ..
 C     .. Data statements ..
 C
@@ -4557,13 +4540,13 @@ C
       INTEGER NUMSGP
       PARAMETER (NUMSGP=89)
       REAL ONE,HALF,THRD,TWTD,SIXT,QUAR,EIGH,TWLT,ROUND,ROUND2
-      REAL ONEL,HALFL,THRDL,SIXTL,QUARL,EIGHL
+      REAL ONEL,HALFL,THRDL,SIXTL,QUARL
       PARAMETER (ROUND=0.00001, ROUND2=2.0*ROUND)
       PARAMETER (ONE=1.0+ROUND,HALF=0.5+ROUND,THRD=1./3.+ROUND,
      $     TWTD=2./3.+ROUND,SIXT=1./6.+ROUND,
      $     QUAR=0.25+ROUND,EIGH=0.125+ROUND,TWLT=1./12.+ROUND)
       PARAMETER (ONEL=ONE-ROUND2,HALFL=HALF-ROUND2,THRDL=THRD-ROUND2,
-     $     SIXTL=SIXT-ROUND2,QUARL=QUAR-ROUND2,EIGHL=EIGH-ROUND2)
+     $     SIXTL=SIXT-ROUND2,QUARL=QUAR-ROUND2)
 C
       INTEGER NSPGRP(NUMSGP)
       REAL ASULIM(3,NUMSGP)
