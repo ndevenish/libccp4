@@ -126,6 +126,10 @@ static const char *const cmtz_errlist[] =
     "Missing or incomplete dataset information in input file.", /* 16 = CMTZERR_DatasetIncomplete */
     "No architecture information in file.",      /* 17 = CMTZERR_NoArch */
     "Attempt to access unallocated dataset",     /* 18 = CMTZERR_NullDataset */
+    "Input MTZ file has incorrect version",      /* 19 = CMTZERR_BadVersion */
+    "MTZ header is corrupted: missing tokens in SYMINF record", /* 20 = CMTZERR_SYMINFIncomplete */
+    "MTZ header is corrupted: missing tokens in COLUMN record", /* 21 = CMTZERR_COLUMNIncomplete */
+    "Batch headers corrupted",                   /* 22 = CMTZERR_BadBatchHeader */
   };
 
 /* parser library errors */
