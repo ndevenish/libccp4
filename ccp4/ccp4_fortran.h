@@ -289,6 +289,32 @@ static char rcsidhh[] = "$Id$";
 
 #elif defined(CALL_LIKE_MVS)
 
+# if ( CALL_LIKE_MVS == 2 )
+
+  typedef pstr fpstr;
+
+#  define FTN_STR(s)  s
+#  define FTN_LEN(s)  s##_len
+
+#  define char_struct(s)           \
+    pstr  s;                       \
+    int   s##_len;
+#  define fill_char_struct(s,str)  \  
+    s  = str;                      \
+    s##_len = strlen(str);
+#  define init_char_struct(s,str,size)  \
+    s  = str;                      \
+    s##_len = size;
+
+#  define FORTRAN_SUBR(NAME,name,p_sun,p_stardent,p_mvs) \
+    void name##_ p_sun
+#  define FORTRAN_CALL(NAME,name,p_sun,p_stardent,p_mvs) \
+    name##_ p_sun
+#  define FORTRAN_FUN(val,NAME,name,p_sun,p_stardent,p_mvs) \
+    val name##_ p_sun
+
+# else
+
   typedef pstr fpstr;
 
 #  define FTN_STR(s)  s
@@ -310,6 +336,8 @@ static char rcsidhh[] = "$Id$";
     NAME p_mvs
 #  define FORTRAN_FUN(val,NAME,name,p_sun,p_stardent,p_mvs) \
     val __stdcall NAME p_mvs
+
+# endif
 
 #else
 

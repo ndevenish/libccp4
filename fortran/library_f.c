@@ -548,7 +548,7 @@ FORTRAN_SUBR ( CCHMOD, cchmod,
 }
 
 /* isatty doesnt seem to be in Mircrosoft Visual Studdio so this is a fudge */
-#if CALL_LIKE_MVS
+#if defined (CALL_LIKE_MVS) && (CALL_LIKE_MVS) == 1
 int __stdcall ISATTY (int *lunit)
 {
   lunit = 0 ;
@@ -560,6 +560,20 @@ float __stdcall ERFC(float *value)
 {
   return (float) ccp4_erfc( (double) *value);
 }
+
+#else
+
+int isatty_ (int *lunit)
+{
+  lunit = 0 ;
+  return lunit;
+}
+
+float erfc_ (float *value)
+{
+  return (float) ccp4_erfc( (double) *value);
+}
+
 #endif
 
 #if defined(F2C) 

@@ -100,7 +100,11 @@
 #endif
 
 #if defined(_MSC_VER) || defined (WIN32)
+# if defined (_MSC_VER) && (_MSC_VER >= 800)
+#  define CALL_LIKE_MVS 2
+# else
 #  define CALL_LIKE_MVS 1
+# endif
 #  define KNOWN_MACHINE
 #endif
 
