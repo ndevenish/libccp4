@@ -1182,15 +1182,19 @@ HDF3.3, but doing the conversion in-place.  (HDF stuff can be found on
 \subsection{`Machine stamps'}
 
 Here's how we specify the number formats for machines.  The
-`\idx{machine stamp}' is a 32-bit quantity comprising a duplicated set
+`\idx{machine stamp}' is a 32-bit quantity containing set
 of four `nibbles' (half-bytes).  Each nibble is a number specifying
 the representation of (in C terms) [[double]] ($d$), [[float]] ($f$),
-[[int]] ($i$)) and [[unsigned char]] ($c$) types.  This information is
-duplicated so that it can be read (in {\tt diskio} mode 6) and decoded
-without knowing the byte-sex to start with\footnote{According to David
-  Wild.  I don't see this---Dave Love.}.  Thus each stamp is of the form
-\[\mbox{{\tt 0x}}dficdfic\]
-and the values for the nibbles may be taken from the list (following
+[[int]] ($i$)) and [[unsigned char]] ($c$) types.  Because this stamp
+is written as an integer in {\tt mtzlib.for} and {\tt
+  maplib.for},\index{mtzlib.for@{\tt mztlib.for}}\index{maplib.for@{\tt
+    maplib.for}} it is byte-sex-dependent, sigh.  Thus each stamp is
+of the form
+\[\mbox{{\tt 0x}}dfic0000\qquad\mbox{big endian}\]
+or
+\[\mbox{{\tt 0x}}0000cifd\qquad\mbox{little endian}\]
+so that it always appears in the file as if written on a big endian
+machine.  The values for the nibbles may be taken from the list (following
 HDF):
 \begin{quote}
   \begin{tabular}{ll}
@@ -1224,16 +1228,10 @@ not all relevant:
 
 @ Here are the possibilties for the machine stamp:
 <<[[#define]]s>>=
-#if 0
-#define DFMT_BEIEEE             0x11111111 /* bigendian IEEE (canonical) */
-#define DFMT_LEIEEE             0x44414441 /* little endian IEEE */
-#define DFMT_VAX                0x22412241 /* VAX (not Alpha) */
-#define DFMT_CONVEXNATIVE       0x55115511 /* Convex without IEEE unit */
-#endif
 #define DFMT_BEIEEE             0x11110000 /* bigendian IEEE (canonical) */
 #define DFMT_LEIEEE             0x00004441 /* little endian IEEE */
 #define DFMT_VAX                0x00004122 /* VAX (not Alpha) */
-#define DFMT_VP                 0x66116611 /* IBM clone */
+#define DFMT_VP                 0x66110000 /* IBM clone */
 #define DFMT_CONVEXNATIVE       0x55110000 /* Convex without IEEE unit */
 
 @ The \idx{machine stamp} is [[DF_MT]].  Here are the definitions
