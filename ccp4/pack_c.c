@@ -56,7 +56,7 @@
 /* Some general defines: */
 
 
-#define PACKIDENTIFIER "\nCCP4 packed image, X: %04d, Y: %04d\n"
+#define PACKIDENTIFIER "\nCCP4 packed image, X: %04ld, Y: %04ld\n"
 /* This string defines the start of a packed image. An image file is scanned
    until this string is encountered, the size of the unpacked image is 
    determined from the values of X and Y (which are written out as formatted
@@ -102,8 +102,8 @@
 #define abs(x) (((x) < 0) ? (-(x)) : (x))
 /* Returns the absolute value of x. */
 
-static
-const LONG setbits[33] = {0x00000000L, 0x00000001L, 0x00000003L, 0x00000007L,
+static const LONG setbits[33] =
+                         {0x00000000L, 0x00000001L, 0x00000003L, 0x00000007L,
 			  0x0000000FL, 0x0000001FL, 0x0000003FL, 0x0000007FL,
 			  0x000000FFL, 0x000001FFL, 0x000003FFL, 0x000007FFL,
 			  0x00000FFFL, 0x00001FFFL, 0x00003FFFL, 0x00007FFFL,
