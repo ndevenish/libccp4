@@ -126,6 +126,15 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
  */
 void ccp4spg_mem_tidy(void);
 
+/** Generate symop matrices from description strings
+ *  This would not normally be called directly, but via one of
+ *  the wrapping functions SYMFR2 and SYMFR3 in the Fortran API.
+ * @param line null-terminated string containing symop descriptions
+ * @param rot array of 4x4 matrices
+ * @return number of symops read, or -1 on failure
+ */
+int symfr_driver (const char *line, float rot[][4][4]);
+
 /** Free memory associated with spacegroup.
  * @param sp pointer to spacegroup
  */
