@@ -22,11 +22,9 @@
 #define NBATCHINTEGERS 29
 #define NBATCHREALS 156
 
-#define MXTALS       10
-#define MSETSPERXTAL 10
-#define MSETS       100
-#define MCOLSPERSET  30
-#define MCOLUMNS   3000
+#define MXTALS      100
+#define MSETS      1000
+#define MCOLUMNS  10000
 
 /** MTZ column struct. */
 typedef struct { char label[31];       /**< column name as given by user */
@@ -43,7 +41,7 @@ typedef struct { int setid;            /**< Dataset id */
 		 char dname[65];       /**< Dataset name */
 		 float wavelength;     /**< Dataset wavelength */
 		 int ncol;             /**< number of columns */
-		 MTZCOL *col[MCOLSPERSET];     /**< columns */
+		 MTZCOL **col;         /**< columns */
 	       } MTZSET;
 
 /** MTZ crystal struct. */
@@ -54,7 +52,7 @@ typedef struct { int xtalid;           /**< Crystal id */
                  float resmin;         /**< Low resolution limit */
                  float resmax;         /**< High resolution limit */
 		 int nset;             /**< number of datasets */
-		 MTZSET *set[MSETSPERXTAL];      /**< datasets */
+		 MTZSET **set;         /**< datasets */
 	       } MTZXTAL;
 
 /** MTZ batch struct. */
@@ -145,7 +143,7 @@ typedef struct { CCP4File *filein;     /**< file for reading */
 		 int nbat;             /**< number of batches */
                  MNF mnf;              /**< value of missing number flag */
                  SYMGRP mtzsymm;       /**< symmetry information */
-		 MTZXTAL *xtal[MXTALS];    /**< crystals */
+		 MTZXTAL **xtal;       /**< crystals */
 		 MTZBAT *batch;        /**< first batch header */
 		 MTZCOL *order[5];     /**< sort order */
 	       } MTZ;
