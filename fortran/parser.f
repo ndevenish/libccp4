@@ -2677,6 +2677,9 @@ C     If only LOW or HIGH are given, the unset limit (ie either RESMAX, SMAX
 C     or RESMIN, SMIN) will be set to -1.0. If only one number is given,
 C     it is treated as a high resolution limit
 C
+C     If both limits are given without keywords, and both are .lt. 1.0,
+c     it is assumed that the limits are 4(sin theta/lambda)**2 rather than A
+C
 C---- Arguments:
 C
 C  ITOK   (I) INTEGER         Number of first field to interpret
@@ -2720,7 +2723,7 @@ C     ..
 C     .. Local Scalars ..
       REAL              RESTEM,STEM
       INTEGER           N, KMNMX, NSET, LFLAG, NKEYS, IKEY
-      LOGICAL           BOTH
+      LOGICAL           BOTH, KEYWRD
       CHARACTER*4 SUBKEY(2)
 C     ..
 C     .. External Subroutines ..
@@ -2742,6 +2745,7 @@ C
       KMNMX  = 1
       ISTAT  = 0
       BOTH = .TRUE.
+      KEYWRD = .FALSE.
 C     
       N  = ITOK
 C
@@ -2763,6 +2767,7 @@ C----- subkey HIGH
                KMNMX = 2
             ENDIF
             BOTH = .NOT. BOTH
+            KEYWRD = .TRUE.
          ELSE
 C Number
             RESTEM = 0.0
@@ -2777,6 +2782,7 @@ C                ******************************************
                ELSEIF (KMNMX .EQ. 2) THEN
                   RESMAX = RESTEM
                   NSET = NSET+1
+                  KMNMX  = 1
                ENDIF
             ELSE
                ISTAT = +2
@@ -2801,29 +2807,25 @@ C     high resolution limit
       ENDIF
 C     
 C---- option to read 4sin**2/lamda**2
-C     
-      IF (RESMIN .GT. 0.0) THEN
-         IF (RESMIN .LE. 1.0) THEN
-C     
+      IF (.NOT. KEYWRD .AND. NSET .EQ. 2) THEN
+         IF (RESMIN .GT. 0.0 .AND. RESMIN .LE. 1.0 .AND.
+     $       RESMAX .GT. 0.0 .AND. RESMAX .LE. 1.0) THEN
 C---- swap over SMIN and RESMIN
 C     
             SMIN = RESMIN
             RESMIN = SQRT(1.0/SMIN)
-         ELSE
-            SMIN = 1.0/RESMIN**2
+C---- swap over SMAX and RESMAX 
+            SMAX = RESMAX
+            RESMAX = SQRT(1.0/SMAX)
          END IF
       ENDIF
 C     
+      IF (RESMIN .GT. 0.0) THEN
+         SMIN = 1.0/RESMIN**2
+      END IF
+C     
       IF (RESMAX .GT. 0.0) THEN
-         IF(RESMAX .LE. 1.0) THEN
-C     
-C---- swap over SMAX and RESMAX 
-C     
-            SMAX = RESMAX
-            RESMAX = SQRT(1.0/SMAX)
-         ELSE
             SMAX = 1.0/RESMAX**2
-         ENDIF
       ENDIF
 C     
 C---- Check that they are in the correct order, if both limits read
