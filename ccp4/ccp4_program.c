@@ -77,12 +77,12 @@ char *ccp4ProgramName(char *progname)
 */
 void ccp4ProgramTime(int init)
 {
-  static int elaps0;
+  static int elaps0=0;
   static float tarray0[2];
   int elaps;
   float tarray[2];
 
-  if (init) {
+  if (init || !elaps0 ) {
     elaps0 = time(NULL);
     ccp4_utils_etime(tarray0);
   } else {
