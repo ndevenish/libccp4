@@ -11341,17 +11341,17 @@ C
       YCSTRT = YCSTRT - YCDOWN
       RETURN
 C
-      ENTRY GSTLNK(NN)
+      ENTRY GSTLNK(N)
 C     ================
 C
 C---- Set linking of plot transformations
 C
-      N = NN
-      IF ((N.LT.0) .OR. (N.GT.1)) THEN
-        IF (IPRINT.GE.1) WRITE (LUNOUT,FMT=6000) N
-        N = 1
+      NN = N
+      IF ((NN.LT.0) .OR. (NN.GT.1)) THEN
+        IF (IPRINT.GE.1) WRITE (LUNOUT,FMT=6000) NN
+        NN = 1
       END IF
-      ICLINK = N
+      ICLINK = NN
       IF (ICLINK.EQ.1) THEN
         ICULNK = .TRUE.
       ELSE
