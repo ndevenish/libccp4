@@ -2790,15 +2790,25 @@ int MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf)
 int MtzWhdrLine(CCP4File *fileout, int nitems, char buffer[]) {
 
   /* write header record to fileout. Record is filled from
-     nitems to MTZRECORDLENGTH by blanks */
+     nitems to MTZRECORDLENGTH by blanks.
+
+     If a C-style null terminator is encountered before nitems
+     are copied then the null terminator character is not
+     copied and the string is padded with blanks from that
+     point onwards */
 
  char hdrrec[MTZRECORDLENGTH];
- int i;
+ int i,j;
 
- for (i = 0; i < nitems; ++i)
+ for (i = 0; i < nitems; ++i) {
+   /* Trap for C-style null character */
+   if (buffer[i] == '\0') {
+     break;
+   }
    hdrrec[i] = buffer[i];
- for (i = nitems; i < MTZRECORDLENGTH; ++i)
-   hdrrec[i] = ' ';
+ }
+ for (j = i; j < MTZRECORDLENGTH; ++j)
+   hdrrec[j] = ' ';
 
  return (ccp4_file_writechar(fileout,hdrrec,MTZRECORDLENGTH));
 
