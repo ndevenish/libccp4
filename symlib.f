@@ -2703,7 +2703,7 @@ C          We do not allow KLASS 7 10 15 16
 C
 C                                                 (INT. TABLES)
 C       1    TRICLINIC       1_BAR (PG1)                        1
-C       2    MONOCLINIC   I  2/M (PG4) B-UNIQUE           3 -   5
+C       2    MONOCLINIC   I  2/M (PG2) B-UNIQUE           3 -   5
 C       3    ORTHORHOMBIC    MMM (PG222)                 16 -  24
 C       4    TETRAGONAL   I  4/M (PG4)                   75 -  80
 C       5    TETRAGONAL  II  4/MMM (PG422)               89 -  98
@@ -3270,7 +3270,7 @@ C
         IF (KLASS.EQ.1) THEN
           STROUT = '  TRICLINIC       1_BAR (PG1)       sgs  1 '
         ELSE IF (KLASS.EQ.2) THEN
-          STROUT = '  MONOCLINIC   I  2/M (PG4) B-UNIQUE  sgs  3 -  5'
+          STROUT = '  MONOCLINIC   I  2/M (PG2) B-UNIQUE  sgs  3 -  5'
         ELSE IF (KLASS.EQ.3) THEN
           STROUT = '  ORTHORHOMBIC    MMM (PG222)         sgs 16 - 24'
         ELSE IF (KLASS.EQ.4) THEN
