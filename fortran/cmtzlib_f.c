@@ -1425,11 +1425,6 @@ FORTRAN_SUBR ( LWOPEN, lwopen,
   mtzdata[*mindx-1] = MtzMalloc(nxtal,nset);
   mtzdata[*mindx-1]->xtal[0]->set[0]->setid = 0;
   mtzdata[*mindx-1]->refs_in_memory = cmtz_in_memory;
-  /* Change the names to be blank for xtal/dataset zero,
-     so default names supplied later e.g. by calls to lwid(x)
-     don't match up erroneously */
-  mtzdata[*mindx-1]->xtal[0]->xname[0] = '\0';
-  mtzdata[*mindx-1]->xtal[0]->set[0]->dname[0] = '\0';
  }
 
  wlun[*mindx-1] = 1;
@@ -1571,7 +1566,15 @@ FORTRAN_SUBR ( LWHSTL, lwhstl,
  free(temp_hstrng);
 }
 
-/* Fortran wrapper for ccp4_lwid */
+/** Fortran wrapper to ccp4_lwidx for writing dataset header information.
+ * As for LWIDX except crystal name is not provided, and defaults to
+ * supplied project name. Also cell and wavelength are not provided and
+ * default to zero. This exists for backwards-compatibility - use LWIDX
+ * instead.
+ * @param mindx MTZ file index.
+ * @param project_name Name of project that parent crystal belongs to.
+ * @param dataset_name Name of dataset.
+ */
 FORTRAN_SUBR ( LWID, lwid,
 	       (const int *mindx, const fpstr project_name, const fpstr dataset_name, 
                   int project_name_len, int dataset_name_len),
@@ -1608,7 +1611,16 @@ FORTRAN_SUBR ( LWID, lwid,
   free(temp_dname); 
 }
 
-/* Fortran wrapper for ccp4_lwidc */
+/** Fortran wrapper to ccp4_lwidx for writing dataset header information.
+ * As for LWIDX except crystal name is not provided, and defaults to
+ * supplied project name. This exists for backwards-compatibility - use LWIDX
+ * instead.
+ * @param mindx MTZ file index.
+ * @param project_name Name of project that parent crystal belongs to.
+ * @param dataset_name Name of dataset.
+ * @param datcell Cell dimensions of parent crystal.
+ * @param datwave Wavelength of dataset.
+ */
 FORTRAN_SUBR ( LWIDC, lwidc,
 	       (const int *mindx, const fpstr project_name, const fpstr dataset_name,
 		  float datcell[6], float *datwave,
@@ -1637,7 +1649,14 @@ FORTRAN_SUBR ( LWIDC, lwidc,
   free(temp_dname); 
 }
 
-/* Fortran wrapper for ccp4_lwidx */
+/** Fortran wrapper to ccp4_lwidx for writing dataset header information.
+ * @param mindx MTZ file index.
+ * @param project_name Name of project that parent crystal belongs to.
+ * @param crystal_name Name of parent crystal.
+ * @param dataset_name Name of dataset.
+ * @param datcell Cell dimensions of parent crystal.
+ * @param datwave Wavelength of dataset.
+ */
 FORTRAN_SUBR ( LWIDX, lwidx,
 	       (const int *mindx, const fpstr project_name, const fpstr crystal_name,
 		  const fpstr dataset_name, float datcell[6], float *datwave,
