@@ -135,9 +135,13 @@ C
 C
 C---- Remove rubbish
 C
-      ISTART = INDEX(ERRSTR,' ') + 1
-      IEND   = INDEX(ERRSTR,'!') + 1
-      ERRSTR = ERRSTR(ISTART:IEND)
+      IF (IRET .EQ. SS$_NORMAL) THEN
+        ISTART = INDEX(ERRSTR,' ') + 1
+        IEND   = INDEX(ERRSTR,'!') + 1
+        ERRSTR = ERRSTR(ISTART:IEND)
+      ELSE
+        ERRSTR = ' '
+      ENDIF
 C
 C---- Print result if appropriate
 C
