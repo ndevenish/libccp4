@@ -79,6 +79,8 @@ LIBTARGETS = $(CIFLIBTARGETS) ccplib fftlib maplib parser rwbrook modlib \
            binsortint library library_f plotsubs keyparse pack_f pack_c \
            pxxml
 
+.DEFAULT : all
+
 .PRECIOUS : $L # don't zap the library if a component fails
 
 # for some reason the SysVile make insists on re-building the `unix' target
