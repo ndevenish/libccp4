@@ -33,6 +33,38 @@ c*******************************************************************************
 c
 c
 c
+      subroutine v2pack_wordimage (data, x, y, filn)
+c     =================================
+c
+c   Pack data stored in the array DATA with dimensions x * y in file FILN.
+c
+      implicit none
+c
+      character*(*) filn
+      integer*4 x, y, j
+      integer*2 data(x, y)
+      integer*4 filnarray(1025)
+c
+c     ..
+c     .. External C-routine
+      external pack_wordimage_f
+
+      do 10, j = 1, len(filn)
+         if (filn(j:j) .ne. ' ') then
+            filnarray(j) = ichar(filn(j:j))
+         else
+            filnarray(j) = 0
+         endif
+ 10   continue
+      filnarray(len(filn) + 1) = 0
+      call v2pack_wordimage_f(data, x, y, filnarray)
+      return
+      end
+
+c*******************************************************************************
+c
+c
+c
       subroutine pack_longimage (data, x, y, filn)
 c     =================================
 c
@@ -58,6 +90,38 @@ c
  10   continue
       filnarray(len(filn) + 1) = 0
       call pack_wordimage_f(data, x, y, filnarray)
+      return
+      end
+
+c*******************************************************************************
+c
+c
+c
+      subroutine v2pack_longimage (data, x, y, filn)
+c     =================================
+c
+c   Pack data stored in the array DATA with dimensions x * y in file FILN.
+c
+      implicit none
+c
+      character*(*) filn
+      integer*4 x, y, j
+      integer*4 data(x, y)
+      integer*4 filnarray(1025)
+c
+c     ..
+c     .. External C-routine
+      external pack_longimage_f
+c
+      do 10, j = 1, len(filn)
+         if (filn(j:j) .ne. ' ') then
+            filnarray(j) = ichar(filn(j:j))
+         else
+            filnarray(j) = 0
+         endif
+ 10   continue
+      filnarray(len(filn) + 1) = 0
+      call v2pack_wordimage_f(data, x, y, filnarray)
       return
       end
 

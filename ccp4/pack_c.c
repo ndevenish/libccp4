@@ -1,9 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "pack_c.h"
 
 
-/* This file contains functions capable of compressing and decompressing 
+/* pack_c.c, version 2 (backwards compatible with earlier versions)...
+                                                    JPA, 26 June 1995
+						    jpa@mrc-lmb.cam.ac.uk
+
+   This file contains functions capable of compressing and decompressing 
    images. It is especially suited for X-ray diffraction patterns, or other 
    image formats in which orthogonal pixels contain "grey-levels" and
    vary smoothly accross the image. Clean images measured by a MAR-research
@@ -30,6 +35,10 @@
    - Three bits defining the number of bits used to encode one element of the
      chunk. The value of these three bits is used as index in a lookup table 
      to get the actual number of bits of the elements of the chunk.
+        Note: in version 2, there are four bits in this position!! This allows
+              more efficient packing of synchrotron data! The routines in this
+	      sourcefile are backwards compatible.
+	                                             JPA, 26 June 1995
    - The truncated pixel differences.
 
    To compress an image, call pack_wordimage_c() or pack_longimage_c(). These
@@ -57,6 +66,13 @@
 
 
 #define PACKIDENTIFIER "\nCCP4 packed image, X: %04d, Y: %04d\n"
+/* This string defines the start of a packed image. An image file is scanned
+   until this string is encountered, the size of the unpacked image is 
+   determined from the values of X and Y (which are written out as formatted
+   ascii numbers), and the packed image is expected to start immediately after
+   the null-character ending the string. */
+
+#define V2IDENTIFIER "\nCCP4 packed image V2, X: %04d, Y: %04d\n"
 /* This string defines the start of a packed image. An image file is scanned
    until this string is encountered, the size of the unpacked image is 
    determined from the values of X and Y (which are written out as formatted
@@ -144,7 +160,9 @@ static const LONG setbits[33] =
 #  if defined (VMS) || defined (vms) || defined (__vms) || defined (__VMS)\
       || defined (ardent) || defined (titan) || defined (stardent)
 #    define pack_wordimage_f PACK_WORDIMAGE_F
+#    define v2pack_wordimage_f V2PACK_WORDIMAGE_F
 #    define pack_longimage_f PACK_LONGIMAGE_F
+#    define v2pack_longimage_f V2PACK_LONGIMAGE_F
 #    define readpack_word_f READPACK_WORD_F
 #    define readpack_long_f READPACK_LONG_F
 #    define mirror_wordimage MIRROR_WORDIMAGE
@@ -152,7 +170,9 @@ static const LONG setbits[33] =
 #    define imsiz_f IMSIZ_F
 #  else
 #    define pack_wordimage_f pack_wordimage_f_
+#    define v2pack_wordimage_f v2pack_wordimage_f_
 #    define pack_longimage_f pack_longimage_f_
+#    define v2pack_longimage_f v2pack_longimage_f_
 #    define readpack_word_f readpack_word_f_
 #    define readpack_long_f readpack_long_f_
 #    define mirror_wordimage mirror_wordimage_
@@ -164,8 +184,11 @@ static const LONG setbits[33] =
 /******************************************************************************/
 
 /* Prototypes of the functions in this sourcefile, as required by the ANSI 
-   standard. They can be put in a "pack.h" file if you want to refer to them 
-   in other C programs. */
+   standard. The pack_c.h file contains the functions other routines might
+   call. Here are functions which will are not really usefull for image
+   processing programmes, and which are used locally in this file. Also 
+   front-end fortran callable C-functions are not included in the pack_c.h
+   file. */
 
 
 /* Functions required for packing: */
@@ -176,10 +199,22 @@ void pack_wordimage_f(WORD *img, LONG *x, LONG *y, LONG *filename);
    passes strings is not defined, it passes the filename in which the
    packed image should be stored as an array of LONGs. */
 
+void v2pack_wordimage_f(WORD *img, LONG *x, LONG *y, LONG *filename);
+/* Fortran frontend of pack_wordimage_c. Because the way in which fortran
+   passes strings is not defined, it passes the filename in which the
+   packed image should be stored as an array of LONGs. This function generates
+   Version 2 images! */
+
 void pack_longimage_f(LONG *img, LONG *x, LONG *y, LONG *filename);
 /* Fortran frontend of pack_longimage_c. Because the way in which fortran
    passes strings is not defined, it passes the filename in which the
    packed image should be stored as an array of LONGs. */
+
+void v2pack_longimage_f(LONG *img, LONG *x, LONG *y, LONG *filename);
+/* Fortran frontend of pack_longimage_c. Because the way in which fortran
+   passes strings is not defined, it passes the filename in which the
+   packed image should be stored as an array of LONGs. This function generates
+   Version 2 images! */
 
 void pack_wordimage_c(WORD *img, int x, int y, char *filename);
 /* Pack image 'img', containing 'x * y' WORD-sized pixels into 'filename'. */
@@ -210,11 +245,23 @@ int bits(LONG *chunk, int n);
    of size 'n' The size in bits of one encoded element can be 0, 4, 5, 6, 7, 
    8, 16 or 32. */
 
+int v2bits(LONG *chunk, int n);
+/* Returns the number of bits neccesary to encode the longword-array 'chunk'
+   of size 'n' The size in bits of one encoded element can be 0, 3, 4, 5, 6, 7, 
+   8, 9, 10, 11, 12, 13, 14, 15, 16 or 32. */
+
 void pack_chunk(LONG *lng, int nmbr, int bitsize, FILE *file);
 /* Packs 'nmbr' LONGs starting at 'lng[0]' into a packed array of 'bitsize'
    sized elements. If the internal buffer in which the array is packed is full,
    it is flushed to 'file', making room for more of the packed array. If 
    ('lng == NULL'), the buffer is flushed aswell. */
+
+void v2pack_chunk(LONG *lng, int nmbr, int bitsize, FILE *file);
+/* Packs 'nmbr' LONGs starting at 'lng[0]' into a packed array of 'bitsize'
+   sized elements. If the internal buffer in which the array is packed is full,
+   it is flushed to 'file', making room for more of the packed array. If 
+   ('lng == NULL'), the buffer is flushed aswell. This is a new function
+   included in version 2, but not existing in version 1! */
 
 void pack_longs(LONG *lng, int n, BYTE **target, int *bit, int size);
 /* Pack 'n' WORDS, starting with 'lng[0]' into the packed array 'target'. The 
@@ -240,25 +287,27 @@ void readpack_long_f(LONG *img, LONG *filename);
    passes strings is not defined, it passes the filename in which the
    packed image should be stored as an array of LONGs. */
 
-void readpack_word_c(WORD *img, char *filename);
-/* Unpacks packed image from 'filename' into the WORD-array 'img'. Scans the
-   file defined by 'filename' until the PACKIDENTIFIER is found, then unpacks
-   starting from there. */
-
-void readpack_long_c(LONG *img, char *filename);
-/* Unpacks packed image from 'filename' into the LONG-array 'img'. Scans the
-   file defined by 'filename' until the PACKIDENTIFIER is found, then unpacks
-   starting from there. */
-
 void unpack_word(FILE *packfile, int x, int y, WORD *img);
 /* Unpacks a packed image into the WORD-array 'img'. The image is stored
    in 'packfile'. The file should be properly positioned: the first BYTE 
    read is assumed to be the first BYTE of the packed image. */
 
+void v2unpack_word(FILE *packfile, int x, int y, WORD *img);
+/* Unpacks a packed image into the WORD-array 'img'. The image is stored
+   in 'packfile'. The file should be properly positioned: the first BYTE
+   read is assumed to be the first BYTE of the packed image. This function 
+   reads Version 2 packed images! */
+
 void unpack_long(FILE *packfile, int x, int y, LONG *img);
 /* Unpacks a packed image into the LONG-array 'img'. The image is stored
    in 'packfile'. The file should be properly positioned: the first BYTE 
    read is assumed to be the first BYTE of the packed image. */
+
+void v2unpack_long(FILE *packfile, int x, int y, LONG *img);
+/* Unpacks a packed image into the LONG-array 'img'. The image is stored
+   in 'packfile'. The file should be properly positioned: the first BYTE
+   read is assumed to be the first BYTE of the packed image. This function 
+   reads Version 2 packed images! */
 
 
 
@@ -275,11 +324,6 @@ void imsiz_f(LONG *filename, LONG *x, LONG *y);
 /* Fortran frontend of imsiz_c. Because the way in which fortran
    passes strings is not defined, it passes the filename in which the
    packed image should be stored as an array of LONGs. */
-
-void imsiz_c(char *filename, LONG *x, LONG *y);
-/* Determines the size of the the packed image "filename" after unpacking. The
-   dimensions are returned in x and y. */
-
 
 
 
@@ -312,6 +356,21 @@ void pack_wordimage_f(WORD *img, LONG *x, LONG *y, LONG *filename)
 
 /******************************************************************************/
 
+void v2pack_wordimage_f(WORD *img, LONG *x, LONG *y, LONG *filename)
+/* Fortran frontend of pack_wordimage_c. Because the way in which fortran
+   passes strings is not defined, it passes the filename in which the
+   packed image should be stored as an array of LONGs. This function generates
+   Version 2 images!*/
+
+{ char c_filename[1024];
+
+  v2pack_wordimage_c(img, (LONG) *x, (LONG) *y,
+		                           long_to_char(filename, c_filename));}
+
+
+
+/******************************************************************************/
+
 void pack_longimage_f(LONG *img, LONG *x, LONG *y, LONG *filename)
 /* Fortran frontend of pack_longimage_c. Because the way in which fortran
    passes strings is not defined, it passes the filename in which the
@@ -320,6 +379,20 @@ void pack_longimage_f(LONG *img, LONG *x, LONG *y, LONG *filename)
 { char c_filename[1024];
 
   pack_longimage_c(img, (LONG) *x, (LONG) *y,
+		                           long_to_char(filename, c_filename));}
+
+
+
+/******************************************************************************/
+
+void v2pack_longimage_f(LONG *img, LONG *x, LONG *y, LONG *filename)
+/* Fortran frontend of pack_longimage_c. Because the way in which fortran
+   passes strings is not defined, it passes the filename in which the
+   packed image should be stored as an array of LONGs. */
+
+{ char c_filename[1024];
+
+  v2pack_longimage_c(img, (LONG) *x, (LONG) *y,
 		                           long_to_char(filename, c_filename));}
 
 
@@ -338,33 +411,87 @@ void pack_wordimage_c(WORD *img, int x, int y, char *filename)
   FILE *packfile;
 
   packfile = fopen(filename, "a");
-  fprintf(packfile, PACKIDENTIFIER, x, y);
-  while (done < (x * y))
-  { end = diff_words(img, x, y, buffer, done);
-    done += (end - buffer) + 1;
-    diffs = buffer;
-    while (diffs <= end)
-    { packsiz = 0;
-      chunksiz = 1;
-      nbits = bits(diffs, 1);
-      while (packsiz == 0)
-      { if (end <= (diffs + chunksiz * 2))
-	  packsiz = chunksiz;
-        else
-	{ next_nbits = bits(diffs + chunksiz, chunksiz); 
-	  tot_nbits = 2 * max(nbits, next_nbits);
-	  if (tot_nbits >= (nbits + next_nbits + 6))
+  if (packfile == NULL)
+  { fprintf(stderr,"The file %s cannot be created!\n   ...giving up...\n", 
+	    filename);
+    exit(1);}
+  else
+  { fprintf(packfile, PACKIDENTIFIER, x, y);
+    while (done < (x * y))
+    { end = diff_words(img, x, y, buffer, done);
+      done += (end - buffer) + 1;
+      diffs = buffer;
+      while (diffs <= end)
+      { packsiz = 0;
+        chunksiz = 1;
+        nbits = bits(diffs, 1);
+        while (packsiz == 0)
+        { if (end <= (diffs + chunksiz * 2))
 	    packsiz = chunksiz;
-	  else
-          { nbits = tot_nbits;
-	    if (chunksiz == 64)
-	      packsiz = 128;
+          else
+	  { next_nbits = bits(diffs + chunksiz, chunksiz); 
+	    tot_nbits = 2 * max(nbits, next_nbits);
+	    if (tot_nbits >= (nbits + next_nbits + 6))
+	      packsiz = chunksiz;
 	    else
-	      chunksiz *= 2;}}}
-      pack_chunk(diffs, packsiz, nbits / packsiz, packfile);
-      diffs += packsiz;}}
-  pack_chunk(NULL, 0, 0, packfile);
-  fclose(packfile);}
+            { nbits = tot_nbits;
+	      if (chunksiz == 64)
+	        packsiz = 128;
+	      else
+	        chunksiz *= 2;}}}
+        pack_chunk(diffs, packsiz, nbits / packsiz, packfile);
+        diffs += packsiz;}}
+    pack_chunk(NULL, 0, 0, packfile);
+    fclose(packfile);}}
+
+
+
+/******************************************************************************/
+
+void v2pack_wordimage_c(WORD *img, int x, int y, char *filename)
+
+/* Pack image 'img', containing 'x * y' WORD-sized pixels into 'filename'. */
+
+{ int chunksiz, packsiz, nbits, next_nbits, tot_nbits;
+  LONG buffer[DIFFBUFSIZ];
+  LONG *diffs = buffer;
+  LONG *end = diffs - 1;
+  LONG done = 0;
+  FILE *packfile;
+
+  packfile = fopen(filename, "a");
+  if (packfile == NULL)
+  { fprintf(stderr,"The file %s cannot be created!\n   ...giving up...\n", 
+	    filename);
+    exit(1);}
+  else
+  { fprintf(packfile, V2IDENTIFIER, x, y);
+    while (done < (x * y))
+    { end = diff_words(img, x, y, buffer, done);
+      done += (end - buffer) + 1;
+      diffs = buffer;
+      while (diffs <= end)
+      { packsiz = 0;
+        chunksiz = 1;
+        nbits = v2bits(diffs, 1);
+        while (packsiz == 0)
+        { if (end <= (diffs + chunksiz * 2))
+	    packsiz = chunksiz;
+          else
+	  { next_nbits = v2bits(diffs + chunksiz, chunksiz); 
+	    tot_nbits = 2 * max(nbits, next_nbits);
+	    if (tot_nbits >= (nbits + next_nbits + 7))
+	      packsiz = chunksiz;
+	    else
+            { nbits = tot_nbits;
+	      if (chunksiz == 64)
+	        packsiz = 128;
+	      else
+	        chunksiz *= 2;}}}
+        v2pack_chunk(diffs, packsiz, nbits / packsiz, packfile);
+        diffs += packsiz;}}
+    v2pack_chunk(NULL, 0, 0, packfile);
+    fclose(packfile);}}
 
 
 
@@ -382,33 +509,87 @@ void pack_longimage_c(LONG *img, int x, int y, char *filename)
   FILE *packfile;
 
   packfile = fopen(filename, "a");
-  fprintf(packfile, PACKIDENTIFIER, x, y);
-  while (done < (x * y))
-  { end = diff_longs(img, x, y, buffer, done);
-    done += (end - buffer) + 1;
-    diffs = buffer;
-    while (diffs <= end)
-    { packsiz = 0;
-      chunksiz = 1;
-      nbits = bits(diffs, 1);
-      while (packsiz == 0)
-      { if (end <= (diffs + chunksiz * 2))
-	  packsiz = chunksiz;
-        else
-	{ next_nbits = bits(diffs + chunksiz, chunksiz); 
-	  tot_nbits = 2 * max(nbits, next_nbits);
-	  if (tot_nbits >= (nbits + next_nbits + 6))
+  if (packfile == NULL)
+  { fprintf(stderr,"The file %s cannot be created!\n   ...giving up...\n", 
+	    filename);
+    exit(1);}
+  else
+  { fprintf(packfile, PACKIDENTIFIER, x, y);
+    while (done < (x * y))
+    { end = diff_longs(img, x, y, buffer, done);
+      done += (end - buffer) + 1;
+      diffs = buffer;
+      while (diffs <= end)
+      { packsiz = 0;
+        chunksiz = 1;
+        nbits = bits(diffs, 1);
+        while (packsiz == 0)
+        { if (end <= (diffs + chunksiz * 2))
 	    packsiz = chunksiz;
-	  else
-          { nbits = tot_nbits;
-	    if (chunksiz == 64)
-	      packsiz = chunksiz * 2;
+          else
+	  { next_nbits = bits(diffs + chunksiz, chunksiz); 
+	    tot_nbits = 2 * max(nbits, next_nbits);
+	    if (tot_nbits >= (nbits + next_nbits + 6))
+	      packsiz = chunksiz;
 	    else
-	      chunksiz *= 2;}}}
-      pack_chunk(diffs, packsiz, nbits / packsiz, packfile);
-      diffs += packsiz;}}
-  pack_chunk(NULL, 0, 0, packfile);
-  fclose(packfile);}
+            { nbits = tot_nbits;
+	      if (chunksiz == 64)
+	        packsiz = chunksiz * 2;
+	      else
+	        chunksiz *= 2;}}}
+        pack_chunk(diffs, packsiz, nbits / packsiz, packfile);
+        diffs += packsiz;}}
+    pack_chunk(NULL, 0, 0, packfile);
+    fclose(packfile);}}
+
+
+
+/******************************************************************************/
+
+void v2pack_longimage_c(LONG *img, int x, int y, char *filename)
+
+/* Pack image 'img', containing 'x * y' LONG-sized pixels into 'filename'. */
+
+{ int chunksiz, packsiz, nbits, next_nbits, tot_nbits;
+  LONG buffer[DIFFBUFSIZ];
+  LONG *diffs = buffer;
+  LONG *end = diffs - 1;
+  LONG done = 0;
+  FILE *packfile;
+
+  packfile = fopen(filename, "a");
+  if (packfile == NULL)
+  { fprintf(stderr,"The file %s cannot be created!\n   ...giving up...\n", 
+	    filename);
+    exit(1);}
+  else
+  { fprintf(packfile, V2IDENTIFIER, x, y);
+    while (done < (x * y))
+    { end = diff_longs(img, x, y, buffer, done);
+      done += (end - buffer) + 1;
+      diffs = buffer;
+      while (diffs <= end)
+      { packsiz = 0;
+        chunksiz = 1;
+        nbits = v2bits(diffs, 1);
+        while (packsiz == 0)
+        { if (end <= (diffs + chunksiz * 2))
+	    packsiz = chunksiz;
+          else
+	  { next_nbits = v2bits(diffs + chunksiz, chunksiz); 
+	    tot_nbits = 2 * max(nbits, next_nbits);
+	    if (tot_nbits >= (nbits + next_nbits + 7))
+	      packsiz = chunksiz;
+	    else
+            { nbits = tot_nbits;
+	      if (chunksiz == 64)
+	        packsiz = chunksiz * 2;
+	      else
+	        chunksiz *= 2;}}}
+        v2pack_chunk(diffs, packsiz, nbits / packsiz, packfile);
+        diffs += packsiz;}}
+    v2pack_chunk(NULL, 0, 0, packfile);
+    fclose(packfile);}}
 
 
 
@@ -509,7 +690,55 @@ int bits(LONG *chunk, int n)
     size = 7 * n;
   else if (maxsize < 128)
     size = 8 * n;
-  else if (maxsize < 65536)
+  else if (maxsize < 32768)
+    size = 16 * n;
+  else
+    size = 32 * n;
+  return(size);}
+
+
+
+/******************************************************************************/
+
+int v2bits(LONG *chunk, int n)
+
+/* Returns the number of bits neccesary to encode the longword-array 'chunk'
+   of size 'n' The size in bits of one encoded element can be 0, 3, 4, 5, 6, 7,
+   8, 9, 10, 11, 12, 13, 14, 15, 16 or 32. */
+
+{ int size, maxsize, i;
+
+  for (i = 1, maxsize = abs(chunk[0]); i < n; ++i)
+    maxsize = max(maxsize, abs(chunk[i]));
+  if (maxsize == 0)
+    size = 0;
+  else if (maxsize < 4)
+    size = 3 * n;
+  else if (maxsize < 8)
+    size = 4 * n;
+  else if (maxsize < 16)
+    size = 5 * n;
+  else if (maxsize < 32)
+    size = 6 * n;
+  else if (maxsize < 64)
+    size = 7 * n;
+  else if (maxsize < 128)
+    size = 8 * n;
+  else if (maxsize < 256)
+    size = 9 * n;
+  else if (maxsize < 512)
+    size = 10 * n;
+  else if (maxsize < 1024)
+    size = 11 * n;
+  else if (maxsize < 2048)
+    size = 12 * n;
+  else if (maxsize < 4096)
+    size = 13 * n;
+  else if (maxsize < 8192)
+    size = 14 * n;
+  else if (maxsize < 16384)
+    size = 15 * n;
+  else if (maxsize < 32768)
     size = 16 * n;
   else
     size = 32 * n;
@@ -546,6 +775,45 @@ void pack_chunk(LONG *lng, int nmbr, int bitsize, FILE *packfile)
       buffer[0] = buffree[0];
       buffree = buffer;}
     pack_longs(descriptor, 2, &buffree, &bitmark, 3);
+    pack_longs(lng, nmbr, &buffree, &bitmark, bitsize);}
+  else
+  { fwrite(buffer, sizeof(BYTE), (buffree - buffer) + 1, packfile);
+    free((void *) buffer);
+    buffer = NULL;}}
+
+
+
+/******************************************************************************/
+
+void v2pack_chunk(LONG *lng, int nmbr, int bitsize, FILE *packfile)
+
+/* Packs 'nmbr' LONGs starting at 'lng[0]' into a packed array of 'bitsize'
+   sized elements. If the internal buffer in which the array is packed is full,
+   it is flushed to 'file', making room for more of the packed array. If 
+   ('lng == NULL'), the buffer is flushed aswell. This is a new function
+   included in version 2, but not existing in version 1! */
+
+{ static LONG bitsize_encode[33] = {0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8,
+                                    9, 10, 11, 12, 13, 14, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15};
+  LONG descriptor[2], i, j;
+  static BYTE *buffer = NULL;
+  static BYTE *buffree = NULL;
+  static int bitmark;
+
+  if (buffer == NULL)
+  { buffree = buffer = (BYTE *) malloc(PACKBUFSIZ);
+    bitmark = 0;}
+  if (lng != NULL)
+  { for (i = nmbr, j = 0; i > 1; i /= 2, ++j);
+    descriptor[0] = j;
+    descriptor[1] = bitsize_encode[bitsize];
+    if ((buffree - buffer) > (PACKBUFSIZ - (130 * 4)))
+    { fwrite(buffer, sizeof(BYTE), buffree - buffer, packfile);
+      buffer[0] = buffree[0];
+      buffree = buffer;}
+    pack_longs(descriptor, 1, &buffree, &bitmark, 3);
+    pack_longs(descriptor + 1, 1, &buffree, &bitmark, 4);
     pack_longs(lng, nmbr, &buffree, &bitmark, bitsize);}
   else
   { fwrite(buffer, sizeof(BYTE), (buffree - buffer) + 1, packfile);
@@ -634,12 +902,12 @@ void readpack_word_c(WORD *img, char *filename)
    starting from there. */
 
 { FILE *packfile;
-  int x = 0, y = 0, i = 0, c = 0;
+  int x = 0, y = 0, i = 0, c = 0, version = 0;
   char header[BUFSIZ];
 
   packfile = fopen(filename, "r");
   if (packfile == NULL)
-    printf("%s does not exist.", filename);
+    printf("%s does not exist.\n", filename);
   else
   { header[0] = '\n';
     header[1] = 0;
@@ -647,8 +915,14 @@ void readpack_word_c(WORD *img, char *filename)
     { c = i = x = y = 0;
       while ((++i < BUFSIZ) && (c != EOF) && (c != '\n') && (x==0) && (y==0)) 
 	if ((header[i] = c = getc(packfile)) == '\n')
-	  sscanf(header, PACKIDENTIFIER, &x, &y);}
-    unpack_word(packfile, x, y, img);
+	{ if (sscanf(header, PACKIDENTIFIER, &x, &y) == 2)
+	    version = 1;
+	  else if (sscanf(header, V2IDENTIFIER, &x, &y) == 2)
+	    version = 2;}}
+    if (version == 1)
+      unpack_word(packfile, x, y, img);
+    else if (version == 2)
+      v2unpack_word(packfile, x, y, img);
     fclose(packfile);}}
 
 
@@ -662,7 +936,7 @@ void readpack_long_c(LONG *img, char *filename)
    starting from there. */
 
 { FILE *packfile;
-  int x = 0, y = 0, i = 0, c = 0;
+  int x = 0, y = 0, i = 0, c = 0, version = 0;
   char header[BUFSIZ];
 
   packfile = fopen(filename, "r");
@@ -675,8 +949,14 @@ void readpack_long_c(LONG *img, char *filename)
     { c = i = x = y = 0;
       while ((++i < BUFSIZ) && (c != EOF) && (c != '\n') && (x==0) && (y==0)) 
 	if ((header[i] = c = getc(packfile)) == '\n')
-	  sscanf(header, PACKIDENTIFIER, &x, &y);}
-    unpack_long(packfile, x, y, img);
+	{ if (sscanf(header, PACKIDENTIFIER, &x, &y) == 2)
+	    version = 1;
+	  else if (sscanf(header, V2IDENTIFIER, &x, &y) == 2)
+	    version = 2;}}
+    if (version == 1)
+      unpack_long(packfile, x, y, img);
+    else if (version == 2)
+      v2unpack_long(packfile, x, y, img);
     fclose(packfile);}}
 
 
@@ -749,6 +1029,73 @@ void unpack_word(FILE *packfile, int x, int y, WORD *img)
 
 /******************************************************************************/
 
+void v2unpack_word(FILE *packfile, int x, int y, WORD *img)
+
+/* Unpacks a packed image into the WORD-array 'img'. The image is stored
+   in 'packfile'. The file should be properly positioned: the first BYTE
+   read is assumed to be the first BYTE of the packed image. */
+
+{ int valids = 0, spillbits = 0, usedbits, total = x * y;
+  LONG window = 0L, spill, pixel = 0, nextint, bitnum, pixnum;
+  static int bitdecode[16] = {0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
+                              16, 32};
+
+  while (pixel < total)
+  { if (valids < 7) 
+    { if (spillbits > 0)
+      { window |= shift_left(spill, valids);
+	valids += spillbits;
+	spillbits = 0;}
+      else
+      { spill = (LONG) getc(packfile);
+	spillbits = 8;}}
+    else
+    { pixnum = 1 << (window & setbits[3]);
+      window = shift_right(window, 3);
+      bitnum = bitdecode[window & setbits[4]];
+      window = shift_right(window, 4);
+      valids -= 7;
+      while ((pixnum > 0) && (pixel < total))
+      { if (valids < bitnum)
+	{ if (spillbits > 0)
+	  { window |= shift_left(spill, valids);
+	    if ((32 - valids) > spillbits)
+	    { valids += spillbits;
+	      spillbits = 0;}
+	    else
+	    { usedbits = 32 - valids;
+	      spill = shift_right(spill, usedbits);
+	      spillbits -= usedbits;
+	      valids = 32;}}
+	  else
+	  { spill = (LONG) getc(packfile);
+	    spillbits = 8;}}
+        else
+	{ --pixnum;
+	  if (bitnum == 0)
+            nextint = 0;
+	  else
+	  { nextint = window & setbits[bitnum];
+	    valids -= bitnum;
+	    window = shift_right(window, bitnum);
+	    if ((nextint & (1 << (bitnum - 1))) != 0)
+	      nextint |= ~setbits[bitnum];}
+ 	  if (pixel > x)
+	  { img[pixel] = (WORD) (nextint + 
+				      (img[pixel-1] + img[pixel-x+1] + 
+                                       img[pixel-x] + img[pixel-x-1] + 2) / 4);
+	    ++pixel;}
+	  else if (pixel != 0)
+	  { img[pixel] = (WORD) (img[pixel - 1] + nextint);
+	    ++pixel;}
+	  else
+	    img[pixel++] = (WORD) nextint;}}}}}
+
+
+
+
+/******************************************************************************/
+
 void unpack_long(FILE *packfile, int x, int y, LONG *img)
 
 /* Unpacks a packed image into the LONG-array 'img'. The image is stored
@@ -756,7 +1103,7 @@ void unpack_long(FILE *packfile, int x, int y, LONG *img)
    read is assumed to be the first BYTE of the packed image. */
 
 { int valids = 0, spillbits = 0, usedbits, total = x * y;
-  LONG window = 0L, spill, pixel, nextint, bitnum, pixnum;
+  LONG window = 0L, spill, pixel = 0, nextint, bitnum, pixnum;
   static int bitdecode[8] = {0, 4, 5, 6, 7, 8, 16, 32};
 
   while (pixel < total)
@@ -774,7 +1121,73 @@ void unpack_long(FILE *packfile, int x, int y, LONG *img)
       bitnum = bitdecode[window & setbits[3]];
       window = shift_right(window, 3);
       valids -= 6;
-      while (pixnum > 0)
+      while ((pixnum > 0) && (pixel < total))
+      { if (valids < bitnum)
+	{ if (spillbits > 0)
+	  { window |= shift_left(spill, valids);
+	    if ((32 - valids) > spillbits)
+	    { valids += spillbits;
+	      spillbits = 0;}
+	    else
+	    { usedbits = 32 - valids;
+	      spill = shift_right(spill, usedbits);
+	      spillbits -= usedbits;
+	      valids = 32;}}
+	  else
+	  { spill = (LONG) getc(packfile);
+	    spillbits = 8;}}
+        else
+	{ --pixnum;
+	  if (bitnum == 0)
+            nextint = 0;
+	  else
+	  { nextint = window & setbits[bitnum];
+	    valids -= bitnum;
+	    window = shift_right(window, bitnum);
+	    if ((nextint & (1 << (bitnum - 1))) != 0)
+	      nextint |= ~setbits[bitnum];}
+	  if (pixel > x)
+	  { img[pixel] = (LONG) (nextint + 
+				      (img[pixel-1] + img[pixel-x+1] + 
+                                       img[pixel-x] + img[pixel-x-1] + 2) / 4);
+	    ++pixel;}
+	  else if (pixel != 0)
+	  { img[pixel] = (LONG) (img[pixel - 1] + nextint);
+	    ++pixel;}
+	  else
+	    img[pixel++] = (LONG) nextint;}}}}}
+
+
+
+/******************************************************************************/
+
+void v2unpack_long(FILE *packfile, int x, int y, LONG *img)
+
+/* Unpacks a packed image into the LONG-array 'img'. The image is stored
+   in 'packfile'. The file should be properly positioned: the first BYTE
+   read is assumed to be the first BYTE of the packed image. */
+
+{ int valids = 0, spillbits = 0, usedbits, total = x * y;
+  LONG window = 0L, spill, pixel = 0, nextint, bitnum, pixnum;
+  static int bitdecode[16] = {0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
+                              16, 32};
+
+  while (pixel < total)
+  { if (valids < 7) 
+    { if (spillbits > 0)
+      { window |= shift_left(spill, valids);
+	valids += spillbits;
+	spillbits = 0;}
+      else
+      { spill = (LONG) getc(packfile);
+	spillbits = 8;}}
+    else
+    { pixnum = 1 << (window & setbits[3]);
+      window = shift_right(window, 3);
+      bitnum = bitdecode[window & setbits[4]];
+      window = shift_right(window, 4);
+      valids -= 7;
+      while ((pixnum > 0) && (pixel < total))
       { if (valids < bitnum)
 	{ if (spillbits > 0)
 	  { window |= shift_left(spill, valids);
@@ -837,18 +1250,22 @@ void imsiz_c(char *filename, LONG *x, LONG *y)
    dimensions are returned in x and y. */
 
 { FILE *packfile;
-  int i = 0, c = 0;
+  int i = 0, c = 0, version = 0;
   char header[BUFSIZ];
 
   packfile = fopen(filename, "r");
   header[0] = '\n';
   header[1] = 0;
   *x = *y = 0;
-  while ((c != EOF) && ((*x == 0) || (*y == 0)))
-  { c = i = *x = *y = 0;
-    while ((++i < BUFSIZ) && (c != EOF) && (c != '\n') && (*x==0) && (*y==0)) 
-      if ((header[i] = c = getc(packfile)) == '\n')
-	sscanf(header, PACKIDENTIFIER, x, y);}
+  if (packfile != NULL)
+  { while ((c != EOF) && ((*x == 0) || (*y == 0)))
+    { c = i = *x = *y = 0;
+      while ((++i < BUFSIZ) && (c != EOF) && (c != '\n') && (*x==0) && (*y==0)) 
+        if ((header[i] = c = getc(packfile)) == '\n')
+        { if (sscanf(header, PACKIDENTIFIER, x, y) == 2)
+            version = 1;
+          else if (sscanf(header, V2IDENTIFIER, x, y) == 2)
+            version = 2;}}}
   fclose(packfile);}
 
 
