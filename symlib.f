@@ -3348,6 +3348,8 @@ C
 C
 C
       DO 30 N = 1,NSYM
+C---- Clear all repeat counts
+        NREPP(N) = 0
         DO 20 J = 1,4
           DO 10 I = 1,4
             RJUNK(I,J,N) = RSMT(I,J,N)
@@ -3417,7 +3419,7 @@ C---- If nrepet = 4 you must have FACE centring. (icentr = 4)
 C
         IF (NREPET.EQ.4) ICENTR = 4
 C
-C---- If nrepet = 3 you must have Rhombehedral centring. (icentr = 3)
+C---- If nrepet = 3 you must have Rhombehedral centring. (icentr = 6)
 C
         IF (NREPET.EQ.3) ICENTR = 6
 C
@@ -3430,11 +3432,7 @@ C
 C
 C
         DO 100 N = 1,NSYM
-          IF (RSMT(4,4,N).NE.0) THEN
-            ISYM = NORIG(N)
-          ELSE
-            ISYM = NREPP(N)*NSYMP + NORIG(N)
-          END IF
+          ISYM = NREPP(N)*NSYMP + NORIG(N)
 C
           DO 90 J = 1,4
             DO 80 I = 1,4
@@ -3444,7 +3442,6 @@ C
 C
 C---- Reset rsmt(4,4,...) = 1.0
 C
-C - EJD - this is an error           RSMT(4,4,ISYM) = 1.0
           RSMT(4,4,N) = 1.0
   100   CONTINUE
       END IF
