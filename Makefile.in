@@ -27,17 +27,20 @@
 # routine of a name already in the library and other routines from
 # that module are called.  Thus most of the targets are built like
 # this; for module foo:
-# * rm any existing foo.dir and create a new one
-# * cd into foo.dir and fsplit the source file into it
-# * compile .o files from *.f
-# * make a dummy `sentinel' file foo.o if there isn't already a
-#   routine foo in the library.  The original tactic of using an empty
-#   file doesn't work in AIX because it isn't in object format
-# * ar *.o into ../libccp4.a
+#
+# * rm any existing foo.dir and create a new one;
+# * cd into foo.dir and fsplit the source file into it;
+# * compile .o files from *.f;
+# * establish a dummy `sentinel' file foo.o in the library.  This
+#   seems perferable to me to leaving sentinel files around in the
+#   source directory.  (The sentinel is made last to avoid problems if
+#   the make is interrupted.)  My original tactic of using an empty
+#   file doesn't work in AIX because it isn't in object format ;
+# * ar *.o into ../libccp4.a;
 # * rm *.o from foo.dir (leave *.f there so you can do symbolic debug,
 #   although you then have to get the path right.  fixme: compile
 #   $(srcdir)/<dir>/*.f to solve this problem if it doesn't make lines
-#   too long for sh...)
+#   too long for sh...).
 
 # The following variables are expected to be set by configure:
 # top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
@@ -84,8 +87,6 @@ test-lib: $(srcdir)/testlib.for $L(library.o) $L(unix.o) $L(ccplib.o) \
           $L(diskio.o)
 	$(RANLIB) $L
 
-$(LIBTARGETS) : ; $(MAKE) $(MFLAGS) $(MVARS) "$L($@.o)"
-
 # explicit building of the real targets, sigh...
 
 $L(ccplib.o) : $(srcdir)/ccplib.for
@@ -95,6 +96,7 @@ $L(ccplib.o) : $(srcdir)/ccplib.for
 	cd ccplib.dir; fsplit $(srcdir)/ccplib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f ccplib.dir/*.o
+ccplib : $L(ccplib.o)
 
 $L(fftlib.o) : $(srcdir)/fftlib.for
 	-rm -rf fftlib.dir; mkdir fftlib.dir
@@ -103,6 +105,7 @@ $L(fftlib.o) : $(srcdir)/fftlib.for
 	cd fftlib.dir; fsplit $(srcdir)/fftlib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f fftlib.dir/*.o
+fftlib : $L(fftlib.o)
 
 $L(maplib.o) : $(srcdir)/maplib.for
 	-rm -rf maplib.dir; mkdir maplib.dir
@@ -111,6 +114,7 @@ $L(maplib.o) : $(srcdir)/maplib.for
 	cd maplib.dir; fsplit $(srcdir)/maplib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f maplib.dir/*.o
+maplib : $L(maplib.o)
 
 $L(parser.o) : $(srcdir)/parser.for
 	-rm -rf parser.dir; mkdir parser.dir
@@ -122,6 +126,7 @@ $L(parser.o) : $(srcdir)/parser.for
 	fi
 	cd parser.dir; $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f parser.dir/*.o
+parser : $L(parser.o)
 
 $L(rwbrook.o) : $(srcdir)/rwbrook.for
 	-rm -rf rwbrook.dir; mkdir rwbrook.dir
@@ -130,6 +135,7 @@ $L(rwbrook.o) : $(srcdir)/rwbrook.for
 	cd rwbrook.dir; fsplit $(srcdir)/rwbrook.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f rwbrook.dir/*.o
+rwbrook : $L(rwbrook.o)
 
 $L(rwatom.o) : $(srcdir)/rwatom.for
 	-rm -rf rwatom.dir; mkdir rwatom.dir
@@ -138,6 +144,7 @@ $L(rwatom.o) : $(srcdir)/rwatom.for
 	cd rwatom.dir; fsplit $(srcdir)/rwatom.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f rwatom.dir/*.o
+rwatom : $L(rwatom.o)
 
 $L(modlib.o) : $(srcdir)/modlib.for
 	-rm -rf modlib.dir; mkdir modlib.dir
@@ -146,6 +153,7 @@ $L(modlib.o) : $(srcdir)/modlib.for
 	cd modlib.dir; fsplit $(srcdir)/modlib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f modlib.dir/*.o
+modlib : $L(modlib.o)
 
 $L(mthlib.o) : $(srcdir)/mthlib.for
 	-rm -rf mthlib.dir; mkdir mthlib.dir
@@ -154,6 +162,7 @@ $L(mthlib.o) : $(srcdir)/mthlib.for
 	cd mthlib.dir; fsplit $(srcdir)/mthlib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f mthlib.dir/*.o
+mthlib : $L(mthlib.o)
 
 $L(symlib.o) : $(srcdir)/symlib.for
 	-rm -rf symlib.dir; mkdir symlib.dir
@@ -162,6 +171,7 @@ $L(symlib.o) : $(srcdir)/symlib.for
 	cd symlib.dir; fsplit $(srcdir)/symlib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f symlib.dir/*.o
+symlib : $L(symlib.o)
 
 $L(lcflib.o) : $(srcdir)/lcflib.for
 	-rm -rf lcflib.dir; mkdir lcflib.dir
@@ -170,6 +180,7 @@ $L(lcflib.o) : $(srcdir)/lcflib.for
 	cd lcflib.dir; fsplit $(srcdir)/lcflib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f lcflib.dir/*.o
+lcflib : $L(lcflib.o)
 
 $L(mtzlib.o) : $(srcdir)/mtzlib.for
 	-rm -rf mtzlib.dir; mkdir mtzlib.dir
@@ -178,6 +189,7 @@ $L(mtzlib.o) : $(srcdir)/mtzlib.for
 	cd mtzlib.dir; fsplit $(srcdir)/mtzlib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f mtzlib.dir/*.o
+mtzlib : $L(mtzlib.o)
 
 $L(diskio.o) : $(srcdir)/diskio.for
 	-rm -rf diskio.dir; mkdir diskio.dir
@@ -186,6 +198,7 @@ $L(diskio.o) : $(srcdir)/diskio.for
 	cd diskio.dir; fsplit $(srcdir)/diskio.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f diskio.dir/*.o
+diskio : $L(diskio.o)
 
 $L(hlplib.o) : $(srcdir)/hlplib.for
 	-rm -rf hlplib.dir; mkdir hlplib.dir
@@ -194,6 +207,7 @@ $L(hlplib.o) : $(srcdir)/hlplib.for
 	cd hlplib.dir; fsplit $(srcdir)/hlplib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f hlplib.dir/*.o
+hlplib : $L(hlplib.o)
 
 # fixme: change >14 characters name!
 $L(frodo_maplib.o) : $(srcdir)/frodo_maplib.for
@@ -203,6 +217,7 @@ $L(frodo_maplib.o) : $(srcdir)/frodo_maplib.for
 	cd frodo_maplib.dir; fsplit $(srcdir)/frodo_maplib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f frodo_maplib.dir/*.o
+frodo_maplib : $L(frodo_maplib.o)
 
 $L(plot84lib.o) : $(srcdir)/plot84lib.for
 	-rm -rf plot84lib.dir; mkdir plot84lib.dir
@@ -211,6 +226,7 @@ $L(plot84lib.o) : $(srcdir)/plot84lib.for
 	cd plot84lib.dir; fsplit $(srcdir)/plot84lib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f plot84lib.dir/*.o
+plot84lib : $L(plot84lib.o)
 
 $L(graflib.o) : $(srcdir)/graflib.for
 	-rm -rf graflib.dir; mkdir graflib.dir
@@ -219,6 +235,7 @@ $L(graflib.o) : $(srcdir)/graflib.for
 	cd graflib.dir; fsplit $(srcdir)/graflib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f graflib.dir/*.o
+graflib : $L(graflib.o)
 
 $L(graphics.o) : $(srcdir)/graphics.for
 	-rm -rf graphics.dir; mkdir graphics.dir
@@ -227,6 +244,7 @@ $L(graphics.o) : $(srcdir)/graphics.for
 	cd graphics.dir; fsplit $(srcdir)/graphics.for; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f graphics.dir/*.o
+graphics : $L(graphics.o)
 
 $L(gdummy.o) : $(srcdir)/gdummy.for
 	-rm -rf gdummy.dir; mkdir gdummy.dir
@@ -234,6 +252,7 @@ $L(gdummy.o) : $(srcdir)/gdummy.for
 	  $(FC) -c $(FFLAGS) *.$F ; \
 	  $(AR) ../$L *.o
 	rm -f gdummy.dir/*.o
+gdummy : $L(gdummy.o)
 
 # C stuff: (these are kept as whole modules)
 
@@ -241,10 +260,12 @@ $L(library.o) : $(srcdir)/library.c $(incdir)/machine.h \
    $(incdir)/dfconvert.h  $(incdir)/diconvert.h
 	$(CC) $(CFLAGS) -I$(incdir) -c $(srcdir)/library.c
 	$(AR) $L library.o; rm library.o
+library : $L(library.o)
 
 $L(binsortint.o) : $(srcdir)/binsortint.c $(incdir)/binsort.h
 	$(CC) $(CFLAGS) -I$(incdir) -c $(srcdir)/binsortint.c
 	$(AR) $L binsortint.o; rm binsortint.o
+binsortint : $L(binsortint.o)
 
 $L(ucurse.o) : $(srcdir)/ucurse.c
 	$(CC) $(CFLAGS) -c $(srcdir)/ucurse.c
@@ -270,6 +291,7 @@ $L(unix.o) : $(srcdir)/unix.m4
 	cd unix.dir; fsplit ../unix.$F; \
 	  $(FC) -c $(FFLAGS) *.$F; $(AR) ../$L *.o
 	rm -f unix.dir/*.o
+unix : $L(unix.o)
 
 # testbed for library.c and some other modules:
 testlib : test-lib
@@ -288,7 +310,7 @@ clean :
 	-rm -f core *.o *~ *.dir/*.o testlib disc.dft a.out
 
 realclean: clean
-	-rm -rf $L *.f *.c ../../src/binsort *.dir
+	-rm -rf $L *.f *.c ../../src/binsort binsort *.dir
 
 dist: realclean
 	-rm -f Makefile
