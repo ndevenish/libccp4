@@ -85,7 +85,7 @@ KEYBUF consist of NKEYS entries, each of the form:
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
     defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
     defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
-    defined (solbourne)
+    defined (solbourne) || defined(__APPLE__)
   int srtbeg_ (int *nkeys, int *keybuf, int *lrecl, int *memsize)
 
 #else
@@ -106,7 +106,7 @@ KEYBUF consist of NKEYS entries, each of the form:
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
     defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
     defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
-    defined (solbourne)
+    defined (solbourne) || defined(__APPLE__)
   int srtbeg_ (nkeys, keybuf, lrecl, memsize)
 
 #else
@@ -249,7 +249,7 @@ SRTRLS:	Release one record into Sort
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
     defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
     defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
-    defined (solbourne)
+    defined (solbourne) || defined(__APPLE__)
   int srtrls_ (char *record)
 
 #else
@@ -270,7 +270,7 @@ SRTRLS:	Release one record into Sort
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
     defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
     defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
-    defined (solbourne)
+    defined (solbourne) || defined(__APPLE__)
   int srtrls_ (record)
 
 #else
@@ -306,7 +306,7 @@ SRTMRG:	Merge - finish release phase
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
     defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
     defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
-    defined (solbourne)
+    defined (solbourne) || defined(__APPLE__)
   int srtmrg_ ()
 
 #else
@@ -342,7 +342,7 @@ SRTRET:	Return 1 record from sort
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
     defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
     defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
-    defined (solbourne)
+    defined (solbourne) || defined(__APPLE__)
   int srtret_ (char *record)
 
 #else
@@ -363,7 +363,7 @@ SRTRET:	Return 1 record from sort
 #if defined (__convex__) || defined (ultrix) || defined (sgi) || \
     defined (ESV) || defined(__OSF1__) || defined(__osf__) || defined(F2C) || \
     defined(G77) || defined(linux) || defined (alliant) || defined (sun) || \
-    defined (solbourne)
+    defined (solbourne) || defined(__APPLE__)
   int srtret_ (record)
 
 #else
