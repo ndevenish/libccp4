@@ -60,6 +60,7 @@ binsort:
 	${CCOMP} ${CFLAGS} $@.c -o ${CCP4_BIN}/$@
 
 testlib:
+	-rm -f testlib.f
 	ln testlib.for testlib.f
 	$(FCOMP) $(FFLAGS) $(OPTIM) -o testlib testlib.f -lccp4
 	rm testlib.f
