@@ -54,7 +54,7 @@ RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
 
 # define the final library files
 
-L           = $(LIB_DIR)/libnewccp4.a
+L           = $(LIB_DIR)/libccp4.a
 LCMTZ       = $(LIB_DIR)/libcmtz.a
 LCMAP       = $(LIB_DIR)/libcmap.a
 LCSYM       = $(LIB_DIR)/libcsym.a
@@ -96,7 +96,7 @@ FINTERFACEOBJS = cmtzlib_f.o csymlib_f.o ccp4_parser_f.o library_f.o \
                 ccp4_diskio_f.o ccp4_general_f.o ccp4_unitcell_f.o cmaplib_f.o
 FORTRANOBJS =  $L(parser.o) $L(fftlib.o) $L(lgglib.o) $L(libhtml.o) $L(modlib.o) \
                $L(plotsubs.o) $L(plot84lib.o) $L(pxxml.o) $L(ccplib.o) $L(unix.o) \
-               $L(sortlib.o) $L(rwbrook.o) $(CIFLIBOBJS) $L(harvlib.o) $L(keyparse.o)
+               $L(sorting_main.o) $L(rwbrook.o) $(CIFLIBOBJS) $L(harvlib.o) $L(keyparse.o)
 CMTZPYOBJS = cmtzlib_python_wrap.o
 CMAPPYOBJS = cmaplib_python_wrap.o
 CSYMPYOBJS = csymlib_python_wrap.o
@@ -111,15 +111,17 @@ CSYMPLOBJS = csymlib_pl_wrap.o
 
 ##### Makefile targets ######
 
-all:  fsplit $L $(FORTRANOBJS)
+all:  fsplit $L
 
-$L : $(MMDBOBJS) $(CORELIBOBJS) $(CGENERALOBJS) $(CUCOBJS) \
-     $(CMTZOBJS) $(CMAPOBJS) $(CSYMOBJS) $(FINTERFACEOBJS)
-	$(AR) $L $?
+$L : cobjs $(FORTRANOBJS)
 # we could presumably avoid the next two steps if we haven't changed anything
 	$(RANLIB) $@
 # maybe create shared library
 	$(SHARE_LIB)
+
+cobjs: $(MMDBOBJS) $(CORELIBOBJS) $(CGENERALOBJS) $(CUCOBJS) \
+     $(CMTZOBJS) $(CMAPOBJS) $(CSYMOBJS) $(FINTERFACEOBJS)
+	$(AR) $L $?
 
 # cmtz library only
 
@@ -385,16 +387,16 @@ $L(keyparse.o) : $(srcdir)/keyparse.f
 keyparse : keyparse.o
 	$(RANLIB) $L
 
-$L(sortlib.o) : $(srcdir)/sortlib.f
-	-rm -rf sortlib.dir; mkdir sortlib.dir
-	echo '      SUBROUTINE SORTLIB' > sortlib.dir/sortlib.$F
-	echo '      END' >> sortlib.dir/sortlib.$F
-	cd sortlib.dir && $(fsplit_dir)/fsplit $(srcdir)/sortlib.f >/dev/null && $(RMEMPTY) && \
+$L(sorting_main.o) : $(srcdir)/sorting_main.f
+	-rm -rf sorting_main.dir; mkdir sorting_main.dir
+	echo '      SUBROUTINE SORTING_MAIN' > sorting_main.dir/sorting_main.$F
+	echo '      END' >> sorting_main.dir/sorting_main.$F
+	cd sorting_main.dir && $(fsplit_dir)/fsplit $(srcdir)/sorting_main.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
 	  && $(AR) ../$L *.o
-	rm -f sortlib.dir/*.o
-sortlib : sortlib.o
+	rm -f sorting_main.dir/*.o
+sorting_main : sorting_main.o
 	$(RANLIB) $L
 
 $L(plotsubs.o) : $(srcdir)/plotsubs.f
