@@ -784,9 +784,10 @@ C
 C
 C---- Format statements
 C
- 6000 FORMAT (/'   Minimum density in map  =',F15.5,'   Maximum densit',
-     +       'y         =',F15.5,'   Mean density            =',F15.5,
-     +       /'   Rms deviation from mean =',F15.5,/)
+ 6000 FORMAT (/'   Minimum density in map  =',F15.5,
+     $     '   Maximum density         =',F15.5/
+     $     '   Mean density            =',F15.5/
+     $     '   Rms deviation from mean =',F15.5,/)
 C
       END
 C
@@ -902,9 +903,10 @@ C
 C
 C---- Format statements
 C
- 6000 FORMAT (/'   Minimum density in map  =',F15.5,'   Maximum densit',
-     +       'y         =',F15.5,'   Mean density            =',F15.5,
-     +       /'   Rms deviation from mean =',F15.5,/)
+ 6000 FORMAT (/'   Minimum density in map  =',F15.5,
+     $     '   Maximum density         =',F15.5/
+     $     '   Mean density            =',F15.5/
+     $     '   Rms deviation from mean =',F15.5,/)
 C
       END
 C
@@ -1020,9 +1022,10 @@ C
 C
 C---- Format statements
 C
- 6000 FORMAT (/'   Minimum density in map  =',F15.5,'   Maximum densit',
-     +       'y         =',F15.5,'   Mean density            =',F15.5,
-     +       /'   Rms deviation from mean =',F15.5,/)
+ 6000 FORMAT (/'   Minimum density in map  =',F15.5,
+     $     '   Maximum density         =',F15.5/
+     $     '   Mean density            =',F15.5/
+     $     '   Rms deviation from mean =',F15.5,/)
 C
       END
 C
