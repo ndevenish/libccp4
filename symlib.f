@@ -3424,7 +3424,7 @@ C
       NSER4 = NSER
    10 CONTINUE
       NDX = MOD(NSER4,KPRI) + 1
-      IF (NSER4 .GT. 3*KPRI) THEN
+      IF ((NSER4-NSER) .GE. 3*KPRI) THEN
          WRITE (STROUT, '(A,I8)')
      $     ' **** Error in SETUP: overflowed hash table, size ', KPRI
          CALL PUTLIN(STROUT,'CURWIN')
