@@ -15,10 +15,10 @@ c	write(7,*) 'vem v1,v2',vem(3,v1),vem(3,v2)
 c	write(7,*) 'poimut',poimult(3,3,v1,v2)
       arc = poimult(3,3,v1,v2)/(vem(3,v1)*vem(3,v2))
 c	write(7,*) 'arc=',arc
-      if (abs(arc).gt.1) then
+      if (abs(arc).gt.1.) then
        if (abs(arc)-1.gt.1e-5) write(7,*)'Warning arccosd > 1'
-       if (arc.gt.1) arc = 1
-       if (arc.lt.-1) arc = -1
+       if (arc.gt.1.) arc = 1.
+       if (arc.lt.-1.) arc = -1.
       end if
       angle = acosd(arc)
       end
@@ -1145,12 +1145,10 @@ C
       END
       SUBROUTINE FRCINSIDE(X)
 10	CONTINUE
-      IF (X.GE.1) THEN
-      X = X-1
-      GOTO 10
-      ELSE IF (X.LT.0) THEN
-      X = X + 1.
-      GOTO 10
+      IF (X.GE.1.) THEN
+      X = MOD(X,1.) 
+      ELSE IF (X.LT.0.) THEN
+      X = MOD(X,1.) + 1.
       END IF
       END
       SUBROUTINE FRCTOANG(XYZ)
