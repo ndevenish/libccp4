@@ -814,8 +814,8 @@ C
       ITYP = 0
       RETURN 2
  1000 FORMAT('CRYST1',3F9.3,3F7.2,1x,a11)
- 2000 FORMAT( 2('SCALE',I1,4X,3F10.5,5X,'   0.00000',/),
-     $          'SCALE',I1,4X,3F10.5,5X,'   0.00000')
+ 2000 FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
+     $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
       END
 C
 C
