@@ -40,7 +40,6 @@ C UGTENV - Get value of env. variable
 C UGTIUD - Get user id - it's name
 C UIDATE - Get date in 3 integer format
 C UISATT - Is file a terminal?
-C URENAM - Rename file
 C USTIME - Get absolute time in seconds (-1 for VMS)
 C UTIME  - Get current time
 C VAXVMS - Logical function returns TRUE if VAX/VMS
@@ -525,45 +524,45 @@ ifdef(_hpux,
 [      IF (ISATTY(FLUN)) ANSWER = 1])
 C
       END
-C
-C
-C     =================================
-      SUBROUTINE URENAM(FROM,TO,STATUS)
-C     =================================
-C
-C URENAM - Rename file assigned to FROM to TO.
-C
-C Input:     NAME1, NAME2   the file names
-C
-C Output:    STATUS       =0 if ok <>0 if an error
-C
-C Arguments: CHARACTER*(*) FROM, TO
-C            INTEGER       STATUS
-C
-C Usage:     CALL URENAM (FROM,TO,STATUS)
-C
-C     .. Scalar Arguments ..
-      INTEGER STATUS
-      CHARACTER FROM* (*),TO* (*)
-C     ..
-C     .. Local Scalars ..
-      CHARACTER ERRSTR*200
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL UGERR
-C     ..
-C     .. External Functions ..
-ifdef(_hpux,
-[      INTEGER RENAME_
-      EXTERNAL RENAME_      
-      STATUS = RENAME_ (FROM(1:LENSTR(FROM))//CHAR(0),
-     +                  TO(1:LENSTR(TO))//CHAR(0))],
-[      INTEGER RENAME
-      EXTERNAL RENAME
-      STATUS = RENAME(FROM,TO)
-      IF (STATUS.NE.0) CALL UGERR(-STATUS,ERRSTR)])
-C
-      END
+CCCC
+CCCC
+CCCC     =================================
+CCC      SUBROUTINE URENAM(FROM,TO,STATUS)
+CCCC     =================================
+CCCC
+CCCC URENAM - Rename file assigned to FROM to TO.
+CCCC
+CCCC Input:     NAME1, NAME2   the file names
+CCCC
+CCCC Output:    STATUS       =0 if ok <>0 if an error
+CCCC
+CCCC Arguments: CHARACTER*(*) FROM, TO
+CCCC            INTEGER       STATUS
+CCCC
+CCCC Usage:     CALL URENAM (FROM,TO,STATUS)
+CCCC
+CCCC     .. Scalar Arguments ..
+CCC      INTEGER STATUS
+CCC      CHARACTER FROM* (*),TO* (*)
+CCCC     ..
+CCCC     .. Local Scalars ..
+CCC      CHARACTER ERRSTR*200
+CCCC     ..
+CCCC     .. External Subroutines ..
+CCC      EXTERNAL UGERR
+CCCC     ..
+CCCC     .. External Functions ..
+CCCifdef(_hpux,
+CCC[      INTEGER RENAME_
+CCC      EXTERNAL RENAME_      
+CCC      STATUS = RENAME_ (FROM(1:LENSTR(FROM))//CHAR(0),
+CCC     +                  TO(1:LENSTR(TO))//CHAR(0))],
+CCC[      INTEGER RENAME
+CCC      EXTERNAL RENAME
+CCC      STATUS = RENAME(FROM,TO)
+CCC      IF (STATUS.NE.0) CALL UGERR(-STATUS,ERRSTR)])
+CCCC
+CCC      END
 C
 C
 C     =======================
