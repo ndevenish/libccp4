@@ -236,7 +236,8 @@ MTZ *MtzGet(const char *logname, int read_refs)
     else if (ccp4_keymatch(key, "PROJ")) {
       ++iiset;
       if (iiset >= MSETS) {
-        printf("MtzGet: Maximum number of datasets exceeded! \n");
+        if (ccp4_liberr_verbosity(-1))
+          printf("MtzGet: Maximum number of datasets exceeded! \n");
         return NULL;
       }
       strcpy(project,"dummy");
@@ -254,7 +255,8 @@ MTZ *MtzGet(const char *logname, int read_refs)
       if (jxtal == -1) {
         ++nxtal;
         if (nxtal > MXTALS) {
-          printf("MtzGet: Maximum number of crystals exceeded! \n");
+          if (ccp4_liberr_verbosity(-1))
+            printf("MtzGet: Maximum number of crystals exceeded! \n");
           return NULL;
         }
         jxtalin[iiset]=nxtal-1;
@@ -282,7 +284,8 @@ MTZ *MtzGet(const char *logname, int read_refs)
         if (jxtal == -1) {
           ++nxtal;
           if (nxtal > MXTALS) {
-            printf("MtzGet: Maximum number of crystals exceeded! \n");
+            if (ccp4_liberr_verbosity(-1))
+              printf("MtzGet: Maximum number of crystals exceeded! \n");
             return NULL;
           }
           jxtalin[iiset]=nxtal-1;
@@ -319,7 +322,8 @@ MTZ *MtzGet(const char *logname, int read_refs)
 	}
         ++nxtal;
         if (nxtal > MXTALS) {
-          printf("MtzGet: Maximum number of crystals exceeded! \n");
+          if (ccp4_liberr_verbosity(-1))
+            printf("MtzGet: Maximum number of crystals exceeded! \n");
           return NULL;
         }
         jxtalin[iiset]=nxtal-1;
@@ -457,13 +461,15 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
     if (strncmp (mkey, "VERS",4) == 0) {
       if (atoi(hdrrec+10) != MTZ_MAJOR_VERSN) {
-         printf("Input MTZ file has major version %d and minor version %d \n",
+         if (ccp4_liberr_verbosity(-1))
+           printf("Input MTZ file has major version %d and minor version %d \n",
 	       atoi(hdrrec+10),atoi(hdrrec+12));
          ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_BadVersion),"MtzGet",NULL);
          return(NULL);
          }  
       if (atoi(hdrrec+12) != MTZ_MINOR_VERSN) {
-         printf("Input MTZ file has major version %d and minor version %d \n",
+         if (ccp4_liberr_verbosity(-1))
+           printf("Input MTZ file has major version %d and minor version %d \n",
 	       atoi(hdrrec+10),atoi(hdrrec+12));
          ccp4_signal(CCP4_ERRLEVEL(2) | CMTZ_ERRNO(CMTZERR_DifferentVersion),"MtzGet",NULL);
          }  
@@ -520,7 +526,8 @@ MTZ *MtzGet(const char *logname, int read_refs)
       }
       ++icolin;
       if (icolin >= MCOLUMNS) {
-        printf("MtzGet: Maximum number of columns exceeded! \n");
+        if (ccp4_liberr_verbosity(-1))
+          printf("MtzGet: Maximum number of columns exceeded! \n");
         return NULL;
       }
       strcpy(label,token[1].fullstring);
@@ -531,8 +538,10 @@ MTZ *MtzGet(const char *logname, int read_refs)
 	 Very old MTZ files may not have this value */
       if (ntok < 6) {
         if (!cset_warn) {
-          printf("Dataset id missing from COLUMN records in MTZ header. \n");
-          printf("Making default assignments. \n");
+          if (ccp4_liberr_verbosity(-1)) {
+            printf("Dataset id missing from COLUMN records in MTZ header. \n");
+            printf("Making default assignments. \n");
+	  }
           ccp4_signal(CCP4_ERRLEVEL(2) | CMTZ_ERRNO(CMTZERR_DatasetIncomplete),
                         "MtzGet", NULL);
           cset_warn = 1;
@@ -1840,7 +1849,7 @@ int ccp4_lwtitl(MTZ *mtz, const char *ftitle, int flag) {
 
   if (flag == 0) {
 
-    strncpy(mtz->title,ftitle,71);
+    strncpy(mtz->title,ftitle,70);
 
   } else {
 
@@ -1848,9 +1857,10 @@ int ccp4_lwtitl(MTZ *mtz, const char *ftitle, int flag) {
     while ((--length >= 0) && mtz->title[length] == ' ');
     if (length >= 0)
       mtz->title[++length] = ' ';
-    strncpy(mtz->title+length+1,ftitle,70-length);
+    strncpy(mtz->title+length+1,ftitle,69-length);
 
   }
+  mtz->title[70] = '\0';
 
   return 1;
 }
@@ -2482,7 +2492,8 @@ int MtzPut(MTZ *mtz, const char *logname)
        /* Check that the column type is set
 	  If it is blank then the COLUMN record will be incomplete */
        if (mtz->xtal[i]->set[j]->col[k]->type[0] == '\0') {
-	 printf("From MtzPut: column type for %s is not set, assume type R\n",
+         if (ccp4_liberr_verbosity(-1))
+  	   printf("From MtzPut: column type for %s is not set, assume type R\n",
 		mtz->xtal[i]->set[j]->col[k]->label);
 	 strncpy(mtz->xtal[i]->set[j]->col[k]->type,"R",2);
        }
