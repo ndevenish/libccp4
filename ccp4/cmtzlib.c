@@ -1086,11 +1086,6 @@ int MtzParseLabin(char *labin_line, const char prog_labels[][31],
 
 MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels, 
              char types[][3]) 
-
-/* Assigns labels in array labels to file mtz, and returns pointers to columns */
-/* Note, this is different from old lrassn, in that any conversion from
-   program labels to user labels should have been done. */
- 
 {
   int ilab;
   char label[31];
@@ -1120,9 +1115,12 @@ MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels,
              strcpy(types[ilab],"R");
 	   }
 
-	 } else if (strncmp(col->type,types[ilab],1) != 0) {
-           printf("From ccp4_lrassn: warning: expected type %s does not match file type %s!\n", 
-             types[ilab],col->type);
+	 /* check requested column type against file type. */
+	 } else if (strncmp(col->type,types[ilab],1)) {
+           printf("From ccp4_lrassn: expected type %s does not match file type %s for column %s\n", 
+             types[ilab],col->type,col->label);
+           if (!strcmp(types[ilab],"R") || !strcmp(types[ilab],"I"))
+             printf("(This may be intended for generic types R/I.) \n");
 	 }
        }
 
