@@ -294,16 +294,18 @@ C
         IF(P(1,4).NE.0.OR.P(2,4).NE.0.OR.P(3,4).NE.0)WRITE(MSG2,1008)
         GO TO 500
 C
-C---- 'ter' card found
-C
-      ELSE IF (IRTYPE.EQ.'TER ') THEN
-        ITYP=3
-        IFTER=.TRUE.
-        GO TO 450
-C
 C---- Atom/hetatm card processing
 C
-      ELSE IF (IRTYPE.EQ.'ATOM' .OR. IRTYPE.EQ.'HETA') THEN
+      ELSE IF (IRTYPE.EQ.'ATOM' .OR. IRTYPE.EQ.'HETA' .OR.
+     +       IRTYPE.EQ.'TER ') THEN
+        IF (IRTYPE.EQ.'TER ') THEN
+C
+C---- 'ter' card found
+C
+          ITYP=3
+          IFTER=.TRUE.
+          GO TO 450
+        ENDIF
         IF (IRTYPE.EQ.'ATOM') ITYP=4
         IF (IRTYPE.EQ.'HETA') ITYP=5
 400     READ(BROOKA,1005)IS,X,Y,Z,OCC,B,I
