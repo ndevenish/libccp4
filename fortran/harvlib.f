@@ -2217,7 +2217,7 @@ C
 
       IF (SigmaNat .lt. valueNotDet -1.0 .and.
      +    SigmaNat .gt. 0.01)
-     + CALL ccif_put_char('_phasing_MIR.reflns_criteria',
+     + CALL ccif_put_char('_phasing_MIR.reflns_criterion',
      +                   Criteria,ccifContext,ccifStatus)
 C
 C
