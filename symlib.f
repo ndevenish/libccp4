@@ -1828,10 +1828,8 @@ C     ..
 C
       NTOK = 0
       NSYM = 0
-         Do ISYM = 1,192
-          irchk(isym) = 0
-         END DO
 C  Remove all spaces from SG name
+C
       ILEN = LENSTR(NAMSPG_CIF)
          NAMSPG_CIFS = NAMSPG_CIF(1:1)
 
@@ -1930,18 +1928,23 @@ C       Convert line to matrices
         CALL SYMFR2(LINE,1,NSYM,RlSymmMatrx)
  50   CONTINUE
 C
-C-----Endeavor to test all sym ops form a closed group
+C-----Endeavor to test these sym ops form a closed group
+C
+      do n = 1,nsym
+        irchk(n) = 0
+      end do
 C
       DO ISYM = 1,NSYM
 C   Determinant should be +1 or -1
         CALL DETERM(DET,RlSymmMatrx(1,1,ISYM))
         if(abs(det).lt.0.5) GO TO 25 
-       DO JSYM = ISYM,NSYM
+       DO JSYM = 1,NSYM
        CALL MATMULNM(4,4,ROTCHK,RlSymmMatrx(1,1,ISYM),
      +                          RlSymmMatrx(1,1,JSYM))
 C   Check ROTCHK is also a symop
 C---- Check This RSM Matrx for rotation and translation
 C
+            IGOOD = 0
           DO 90 N = 1,NSym
             DO 95 I = 1,3
               DO 98 J = 1,4
@@ -1949,9 +1952,10 @@ C
 C
 C---- This may be needed for translation components; no harm for others.
 C
-                IDCHK = 0
-                IF(J.EQ.4)IDCHK = INT(DCHK)
-                DCHK = ABS(DCHK-IDCHK)
+                IF(J.EQ.4)
+     +          DCHK = ABS(MOD(ROTCHK(I,J) - RlSymmMatrx(I,J,N)
+     +                                                   +99.5,1.0)-0.5)
+
                 IF (DCHK.LT.0.01) GO TO 98
 C
 C---  This MTZ symm op  no good - off to check the next..
@@ -1970,7 +1974,11 @@ C
 C
 C---- If this symmetry operator is missing no point going on. Try next SG
 C
-          IF(IGOOD.EQ.0) GO TO 30
+          IF(IGOOD.EQ.0) THEN
+            Write(6,'(A,I4,A,I4,A)') '  Symm operators ', ISYM,' and',
+     +                               JSYM,' have a problem.'
+            GO TO 35
+          END IF
   80    CONTINUE
 C
 C
@@ -1978,8 +1986,9 @@ C
       END DO 
 c
 C
+C    Check all symmetry operators are equally likely to be generated 
           DO 100 N = 1,NSym
-           if(irchk(n) .eq.0 ) go to 35
+           if(irchk(n) .ne.nsym ) go to 35
  100      continue
 C
         call PGDEFN(NAMPG,NSYMP,NSYM,RlSymmMatrx,.FALSE.)
@@ -2002,8 +2011,8 @@ C
  35   CONTINUE
       WRITE (LINERR,FMT='(A,A,I5,A)')
      +     'MSYLB3: Symmetry operators are not a closed group',
-     +     ' Something wrong for space group ',
-     +     ' number',LSPGRP,' in SYMOP file'
+     +     ' Something wrong for space group number',
+     +     LSPGRP,' in SYMOP file'
       CALL LERROR(2,-1,LINERR)
       END
 C
