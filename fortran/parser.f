@@ -1946,6 +1946,7 @@ C
       INTEGER IBEG(*),IEND(*),ITYP(*)
       REAL FVALUE(*)
       CHARACTER*(*)LINE,SPGNAM,PGNAME
+      CHARACTER*20 SPGNAMS
       INTEGER NUMSGP,NSYM,NSYMP
       REAL RSYM(4,4,*)
 C     
@@ -1957,6 +1958,7 @@ C
 C---- for cases (a) & (b), this is a single field:
 C     case (c) is more than 1 field
 C     
+      SPGNAMS = ' '
       IF (JTOK.GT.NTOK) THEN
          CALL  PUTLIN(' No symmetry data !!!','CURWIN')
       ELSE
@@ -1986,7 +1988,9 @@ C     open symop on channel 24 - closed at end of reading
 C     NSYMP returns number of primitive operations
 C     
             CALL  CCPUPC(SPGNAM)
-            CALL  MSYMLB(24,NUMSGP,SPGNAM,PGNAME,NSYMP,NSYM,RSYM)
+C           CALL  MSYMLB(24,NUMSGP,SPGNAM,PGNAME,NSYMP,NSYM,RSYM)
+            CALL  MSYMLB3(24,NUMSGP,SPGNAM,SPGNAMS,PGNAME,NSYMP,NSYM,
+     +                    RSYM)
          ELSE
 C     
 C     
