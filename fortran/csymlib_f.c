@@ -35,8 +35,10 @@ static CCP4SPG *spacegroup = NULL;          /* allow more than one spacegroup ??
 
 void ccp4spg_mem_tidy(void) {
 
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: ccp4spg_mem_tidy");)
+
   /* free any existing spacegroup */
-  if ( spacegroup ) ccp4spg_free(spacegroup);
+  if ( spacegroup ) ccp4spg_free(&spacegroup);
 
 }
 
@@ -222,7 +224,7 @@ FORTRAN_SUBR ( PGDEFN, pgdefn,
   CSYMLIB_DEBUG(puts("CSYMLIB_F: PGDEFN");)
 
   /* free any existing spacegroup and start again */
-  if ( spacegroup ) ccp4spg_free(spacegroup);
+  if ( spacegroup ) ccp4spg_free(&spacegroup);
 
   op1 = (ccp4_symop *) ccp4_utils_malloc(*nsym*sizeof(ccp4_symop));
   for (i = 0; i < *nsym; ++i) {
@@ -301,7 +303,7 @@ FORTRAN_SUBR ( ASUSET, asuset,
   CSYMLIB_DEBUG(puts("CSYMLIB_F: ASUSET");)
 
   /* free any existing spacegroup and start again */
-  if ( spacegroup ) ccp4spg_free(spacegroup);
+  if ( spacegroup ) ccp4spg_free(&spacegroup);
 
   op1 = (ccp4_symop *) ccp4_utils_malloc(*msym*sizeof(ccp4_symop));
   for (i = 0; i < *msym; ++i) {
@@ -432,6 +434,8 @@ FORTRAN_SUBR ( PRTRSM, prtrsm,
 
 void ccp4spg_register_by_ccp4_num(int numspg) {
 
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: ccp4spg_register_by_ccp4_num");)
+
    spacegroup = ccp4spg_load_by_ccp4_num(numspg);
 
 }
@@ -458,7 +462,7 @@ FORTRAN_SUBR ( MSYMLB3, msymlb3,
   if (*lspgrp > 0) {
 
     /* free any existing spacegroup and start again */
-    if ( spacegroup ) ccp4spg_free(spacegroup);
+    if ( spacegroup ) ccp4spg_free(&spacegroup);
 
     spacegroup = ccp4spg_load_by_ccp4_num(*lspgrp);
 
@@ -469,7 +473,7 @@ FORTRAN_SUBR ( MSYMLB3, msymlb3,
     if (strlen(temp_name)) {
 
       /* free any existing spacegroup and start again */
-      if ( spacegroup ) ccp4spg_free(spacegroup);
+      if ( spacegroup ) ccp4spg_free(&spacegroup);
 
       spacegroup = ccp4spg_load_by_spgname(temp_name);
 
