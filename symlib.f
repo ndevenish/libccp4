@@ -3,6 +3,11 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
+C     Modifications:
+C
+C     CCB 23/4/01
+C     Hexagonal spacegroup symbols renamed H.. rather than R..
+C
       SUBROUTINE SYMLIB_OUTLINE
 
 C_BEGIN_SYMLIB
@@ -2000,18 +2005,19 @@ C
         NAMFIT = .false.
 C  Set NAMSAV to longest name ana maybe find a match to NAMSPG_CIF..
         DO 15 ITOK = 3,NTOK
-C Spacegroup name must begin P A B C F I "H " R
+C Spacegroup name must begin P A B C F I H R
           IF (LINE(IBEG(ITOK):IBEG(ITOK)).NE.'P' .AND.
      +        LINE(IBEG(ITOK):IBEG(ITOK)).NE.'A' .AND.
      +        LINE(IBEG(ITOK):IBEG(ITOK)).NE.'B' .AND.
      +        LINE(IBEG(ITOK):IBEG(ITOK)).NE.'C' .AND.
      +        LINE(IBEG(ITOK):IBEG(ITOK)).NE.'F' .AND.
      +        LINE(IBEG(ITOK):IBEG(ITOK)).NE.'I' .AND.
-     +        LINE(IBEG(ITOK):IBEG(ITOK)+1).NE.'H ' .AND.
+     +        LINE(IBEG(ITOK):IBEG(ITOK)).NE.'H' .AND.
      +        LINE(IBEG(ITOK):IBEG(ITOK)).NE.'R' ) GO to 15
-C  Ooo - get rid of CUBIC  and any PG
+C  Ooo - get rid of CUBIC, HEXAGONAL and any PG
          IF(LINE(IBEG(ITOK):IBEG(ITOK)+1).EQ.'CU' .OR.
-     +      LINE(IBEG(ITOK):IBEG(ITOK)+1).EQ.'PG' ) GO to 15
+     +      LINE(IBEG(ITOK):IBEG(ITOK)+1).EQ.'PG' .OR.
+     +      LINE(IBEG(ITOK):IBEG(ITOK)+1).EQ.'HE' ) GO to 15
 C
          LGTHCHK = MAX(NAMLGTH ,(IEND(ITOK)-IBEG(ITOK)+1))
          IF(LGTHCHK .GT. NAMLGTH ) NAMSAV = LINE(IBEG(ITOK) :IEND(ITOK))
@@ -5741,9 +5747,11 @@ C      P4/mmm  PG4/mmm
 C      I4/mmm  PG4/mmm
 C      P-3     PG3
 C      R-3     PG3
+C      H-3     PG3
 C      P-31m   PG312
 C      P-3m1   PG321
-C      R-3m    PG321
+C      R-3m    PG32(1)
+C      H-3m    PG32(1)
 C      P6/m    PG622
 C      P6/mmm  PG622
 C      Pm-3    PG23
@@ -5789,8 +5797,11 @@ C
       ELSEIF (NMPG.EQ.'3'    .AND. SPGNAM(1:1).EQ.'P') THEN
          LPATSG = 147
          PATNAM = 'P-3'
-      ELSEIF (NMPG.EQ.'3'    .AND. SPGNAM(1:1).EQ.'R') THEN
+      ELSEIF (NMPG.EQ.'3'    .AND. SPGNAM(1:1).EQ.'H') THEN
          LPATSG = 148
+         PATNAM = 'H-3'
+      ELSEIF (NMPG.EQ.'3'    .AND. SPGNAM(1:1).EQ.'R') THEN
+         LPATSG = 1148
          PATNAM = 'R-3'
       ELSEIF (NMPG.EQ.'312'  .AND. SPGNAM(1:1).EQ.'P') THEN
          LPATSG = 162
@@ -5798,8 +5809,11 @@ C
       ELSEIF (NMPG.EQ.'321'  .AND. SPGNAM(1:1).EQ.'P') THEN
          LPATSG = 164
          PATNAM = 'P-3m1'
-      ELSEIF (NMPG.EQ.'321'  .AND. SPGNAM(1:1).EQ.'R') THEN
+      ELSEIF (NMPG(1:2).EQ.'32'  .AND. SPGNAM(1:1).EQ.'H') THEN
          LPATSG = 166
+         PATNAM = 'H-3m'
+      ELSEIF (NMPG(1:2).EQ.'32'  .AND. SPGNAM(1:1).EQ.'R') THEN
+         LPATSG = 1166
          PATNAM = 'R-3m'
       ELSEIF (NMPG.EQ.'6'    .AND. SPGNAM(1:1).EQ.'P') THEN
          LPATSG = 175
@@ -6026,15 +6040,15 @@ C       93: P4222       94: P42212      95: P4322         96: P43212
      $ HALF,ONEL,QUAR, HALF,HALF,HALF, ONEL,ONEL,EIGH, ONEL,ONEL,EIGH,
 C       97: I422        98: I4122      123: P4/mmm       139: I4/mmm
      $ HALF,HALF,QUAR, HALF,ONEL,EIGH, HALF,HALF,HALF,  HALF,HALF,QUAR,
-C      143:  P3        144:  P31       145: P32          146:  R3
+C      143:  P3        144:  P31       145: P32          146:  H3
      $ TWTD,TWTD,ONEL,ONEL,ONEL,THRDL,ONEL,ONEL,THRDL, TWTD,TWTD,THRDL,
-C      147:  P-3       148:  R-3       149: P312         150:  P321
+C      147:  P-3       148:  H-3       149: P312         150:  P321
      $ TWTD,TWTD,HALF, TWTD,TWTD,SIXT, TWTD,TWTD,HALF, TWTD,TWTD,HALF,
 C      151: P3112      152: P3121      153: P3212        154: P3221
      $ ONEL, ONEL,SIXT, ONEL,ONEL,SIXT, ONEL,ONEL,SIXT, ONEL,ONEL,SIXT,
-C      155: R32        162:  P-31m     164: P-3m1
+C      155: H32        162:  P-31m     164: P-3m1
      $ TWTD,TWTD,SIXT, TWTD,HALF,HALF, twtd,thrd, one,
-C      166:  R-3m        168:  P6
+C      166:  H-3m        168:  P6
      $ TWTD,TWTD,SIXT, TWTD,HALF,ONEL,
 C      169:  P61       170:  P65       171:  P62         172:  P64
      $ ONEL,ONEL,SIXTL,ONEL,ONEL,SIXTL,ONEL,ONEL,THRDL,ONEL,ONEL,THRDL,
@@ -6325,7 +6339,7 @@ CCP4 $ HALF,ONEL,QUAR, HALF,HALF,HALF, ONEL,ONEL,EIGH, ONEL,ONEL,EIGH,
 C       97: I422        98: I4122      123: P4/mmm       139: I4/mmm
      $  HALF,HALF,QUAR, ONE,QUAR,QUAR, half,half,half,  half,half,quar,
 CCP4 $ HALF,HALF,QUAR, HALF,ONEL,EIGH, HALF,HALF,HALF,  HALF,HALF,QUAR,
-C      143:  P3        144:  P31       145: P32          146:  R3
+C      143:  P3        144:  P31       145: P32          146:  H3
      $ ONE,ONE,ONE,   ONE,ONE,THRD,   ONE,ONE,THRD,    THRD,THRD,ONE,
 CCP4 $ TWTD,TWTD,ONEL,ONEL,ONEL,THRDL,ONEL,ONEL,THRDL, TWTD,TWTD,THRDL,
 C      147:  P-3       148:  R-3       149: P312         150:  P321
@@ -6334,7 +6348,7 @@ CCP4 $ TWTD,TWTD,HALF, TWTD,TWTD,SIXT, TWTD,TWTD,HALF, TWTD,TWTD,HALF,
 C      151: P3112      152: P3121      153: P3212        154: P3221
      $ ONE,ONE,SIXT,    ONE,ONE,SIXT,   ONE,ONE,SIXT,   ONE,ONE,SIXT,
 CCP4 $ ONEL, ONEL,SIXT, ONEL,ONEL,SIXT, ONEL,ONEL,SIXT, ONEL,ONEL,SIXT,
-C      155: R32        162:  P-31m     164: P-3m1
+C      155: H32        162:  P-31m     164: P-3m1
      $ THRD,THRD,HALF, twtd,half,half, twtd,thrd, one,
 CCP4 $ TWTD,TWTD,SIXT, TWTD,HALF,HALF, TWTD,THRD, ONE,
 C      166:  R-3m        168:  P6
