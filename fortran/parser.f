@@ -223,10 +223,20 @@ C
       IF (LINE.NE.'    ') GO TO 30
 C
    20 CONTINUE
-      READ (LSTREAM,FMT=6000,END=40) LINEX
- 6000 FORMAT (A)
+      READ (LSTREAM,FMT='(A)',END=40) LINEX
+      GO TO 45
+C     End-of-file; if processing an included file switch to main input,
+C     else return
+   40 IF (LSTREAM.NE.MSTREAM) THEN
+        CLOSE (UNIT=LSTREAM)
+        LSTREAM = MSTREAM
+        READ (LSTREAM,FMT='(A)',END=40) LINEX
+      ELSE
+        LEND = .TRUE.
+        RETURN
+      END IF
+ 45   CONTINUE
       HAVLIN = .FALSE.
-C
 C
       IF(LINEX(1:1).EQ.ICOMM1 .OR. LINEX(1:1).EQ.ICOMM2) THEN
         STROUT = ' '
@@ -234,7 +244,6 @@ C
  6666   FORMAT(' Comment line--- ',A)
         GO TO 20
       END IF
-C
 C
       LX = LENSTR(LINEX)
       IF (LX.EQ.0) GO TO 20
@@ -261,20 +270,18 @@ C---- Continuation line
 C
       IF (LINEX(LX:LX).EQ.'-' .OR. LINEX(LX:LX).EQ.'&') THEN
 C      
-      LINEX(LX:LX) = ' '
-      LL = LENSTR(LINE) + 1
+        LINEX(LX:LX) = ' '
+        LL = LENSTR(LINE) + 1
 C
+        IF (FIRST) THEN
+          LINE = LINEX   // ' '
+          FIRST = .FALSE.
+        ELSE
+          LINE(LL:) = ' ' // LINEX(1:LX) // ' '
+        END IF
+        GO TO 20
 C
-      IF (FIRST) THEN
-         LINE = LINEX   // ' '
-         FIRST = .FALSE.
-      ELSE
-        LINE(LL:) = ' ' // LINEX(1:LX) // ' '
       END IF
-      GO TO 20
-C
-C
-       END IF
 C
 C---- Not a continuation line
 C
@@ -287,8 +294,6 @@ C
       LL = LENSTR(LINE) + 1
       LINE(LL:) = ' ' // LINEX(1:LX) // ' '
       END IF
-C
-C
 C
    30 LENLIN = LENSTR(LINE)
       IF (LENLIN.EQ.0) GO TO 20
@@ -305,37 +310,34 @@ C
         LENLIN = LENLIN + 1
       ELSE
 C
-C
         IF (LINE(LENLIN:LENLIN).NE.' ') THEN
-          CALL CCPERR (1,
-     +         '  *** PARSER needs a terminating space ****')
-          WRITE (6,FMT='(A)') 
-     +  '  *** WARNING - PARSER likes a terminating space ****'
-          WRITE (LINERR,FMT='(A)') 
-     +  '  *** WARNING - PARSER likes a terminating space ****'
-          ISTERR = 1
-          IFGERR = 0
-C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C         NB this format is no good for internal writes, but we never
-C         get here with the ccperr call above
-          WRITE (LINERR,FMT='(A,/,4x,A)') 
-     +      '  ***  This line may not be parsed correctly ***',
-     +      LINE(1:120)
-          ISTERR = 1
-          IFGERR = 0
-C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
+          CALL CCPERR (1, '  *** Internal error: ' //
+     +         'PARSER needs a terminating space ****')
+CCC          WRITE (6,FMT='(A)') 
+CCC     +  '  *** WARNING - PARSER likes a terminating space ****'
+CCC          WRITE (LINERR,FMT='(A)') 
+CCC     +  '  *** WARNING - PARSER likes a terminating space ****'
+CCC          ISTERR = 1
+CCC          IFGERR = 0
+CCCC
+CCCC              ****************************
+CCC          CALL LERROR(ISTERR,IFGERR,LINERR)
+CCCC              ****************************
+CCCC         NB this format is no good for internal writes, but we never
+CCCC         get here with the ccperr call above
+CCC          WRITE (LINERR,FMT='(A,/,4x,A)') 
+CCC     +      '  ***  This line may not be parsed correctly ***',
+CCC     +      LINE(1:120)
+CCC          ISTERR = 1
+CCC          IFGERR = 0
+CCCC
+CCCC              ****************************
+CCC          CALL LERROR(ISTERR,IFGERR,LINERR)
+CCCC              ****************************
+CCCC
          ENDIF
 C
-C
       END IF
-C
 C
       IF (.NOT. HAVLIN .AND. (PRINT .OR. LSTREAM.NE.MSTREAM)) THEN
         STROUT = ' '
@@ -343,7 +345,6 @@ C
  6002   FORMAT (' Data line--- ',A)
         CALL PUTLIN(STROUT,'HLPWIN')
       END IF 
-C
 C
 C          ********************************************************
       CALL PARSE(LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,N)
@@ -358,6 +359,9 @@ C
       IF (NTOK.GT.0 .AND. ITYP(1).EQ.1 ) THEN
         KEY = CVALUE(1) (1:4)
         CALL CCPUPC(KEY)
+      ELSE
+C     avoid retaining previous KEY
+        KEY = ' '
       END IF
 C
 C---- Test if first field begins '@'
@@ -392,17 +396,11 @@ C
 C---- Failed to open file
 C
             LSTREAM = MSTREAM
-          WRITE (LINERR,FMT='(A,A,A)') 
-     +   ' File ',
-     +    FLNAME(1:LENSTR(FLNAME)),
-     +  ' does not exist'
-          ISTERR = 1
-          IFGERR = 0
-C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
+            WRITE (LINERR,FMT='(A,A)') 
+     +           ' Can''t open file ', FLNAME(1:LENSTR(FLNAME))
+            ISTERR = 1
+            IFGERR = 0
+            CALL LERROR(ISTERR,IFGERR,LINERR)
             NTOK = 0
           END IF
         END IF
@@ -417,7 +415,6 @@ C
         LINE = ' '
         GO TO 20
       END IF
-C
 C
       K = IEND(NTOK)
       IF (LINE(K:K).EQ.IAMP .OR. LINE(K:K).EQ.IDASH) THEN
@@ -434,21 +431,7 @@ C
 C---- Read next line
 C
         GO TO 20
-      ELSE
-        RETURN
       END IF
-C
-C---- End of file found, return to main input stream if not
-C
-   40 IF (LSTREAM.NE.MSTREAM) THEN
-        CLOSE (UNIT=LSTREAM)
-        LSTREAM = MSTREAM
-      ELSE
-        LEND = .TRUE.
-      END IF
-C
-      RETURN
-C
 C
       END
 C            
