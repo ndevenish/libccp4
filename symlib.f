@@ -1766,6 +1766,7 @@ C
 C
       END
 C
+C_BEGIN_SYMTR3
 C
 C     ========================================
       SUBROUTINE SYMTR3(NSM,RSM,SYMCHS,IPRINT)
@@ -1784,17 +1785,18 @@ C           That is more complicated than you might think!!
 C
 C---- Arguments :
 C
-C     NSM       (I)	INTEGER         Number of Symmetry operations
+C     NSM       (I)     INTEGER         Number of Symmetry operations
 C
-C     RSM       (I)	REAL            Array of dimension (4,4,at least NSM)
-C                               	containing symmetry operations on input
+C     RSM       (I)     REAL            Array of dimension (4,4,at least NSM)
+C                                       containing symmetry operations on input
 C
-C     SYMCHS    (O)	CHARACTER*(*)   Array of dimension at least NSM
-C                               	containing int tab char strings on output
+C     SYMCHS    (O)     CHARACTER*(*)   Array of dimension at least NSM
+C                                       containing int tab char strings on output
 C
-C     IPRINT    (I)	INTEGER         Print flag
-C                               	=0 No printing
-C                               	=1 Print the int tab strings
+C     IPRINT    (I)     INTEGER         Print flag
+C                                       =0 No printing
+C                                       =1 Print the int tab strings
+C_END_SYMTR3
 C
 C     .. Scalar Arguments ..
       INTEGER IPRINT,NSM
@@ -1805,7 +1807,7 @@ C     .. Array Arguments ..
 C     ..
 C     .. Local Scalars ..
       INTEGER I1,I2,ICH,IST,ITR,JCOUNT,JDO10,JDO20,JDO30,JDO40
-      CHARACTER STROUT*400
+      CHARACTER STROUT*400,SYMCHK*80
 C     ..
 C     .. Local Arrays ..
       INTEGER NPNTR1(10),NPNTR2(10)
@@ -1835,6 +1837,7 @@ C---- Clear symchs
 C
         SYMCHS(JDO40) = ' '
         ICH = 1
+        SYMCHS(JDO40) (ICH:ICH) = '0'
 C
         DO 20 JDO20 = 1,3
 C
@@ -1845,6 +1848,7 @@ C
           DO 10 JDO10 = 1,4
 C
             IF (RSM(JDO20,JDO10,JDO40).NE.0) THEN
+              IRSM = NINT(ABS(RSM(JDO20,JDO10,JDO40)))
 C
               IF (RSM(JDO20,JDO10,JDO40).GT.0.0 .AND. IST.GT.0) THEN
                 IF (ICH.GT.LEN(SYMCHS(1)))
@@ -1864,9 +1868,13 @@ C
               IF (JDO10.NE.4) THEN
                 IF (ICH.GT.LEN(SYMCHS(1)))
      +               CALL CCPERR(1, 'SYMTR3: character array too short')
-                SYMCHS(JDO40) (ICH:ICH) = AXISCR(JDO10)
+                IF(IRSM.NE.1) WRITE(SYMCHS(JDO40) (ICH:ICH+1),'(I1,A1)')
+     +                                               IRSM, AXISCR(JDO10)
+                IF(IRSM.EQ.1) WRITE(SYMCHS(JDO40) (ICH:ICH+1),'(1X,A1)')
+     +                                                     AXISCR(JDO10)
+C                SYMCHS(JDO40) (ICH:ICH) = AXISCR(JDO10)
                 IST = 1
-                ICH = ICH + 1
+                ICH = ICH + 2
               END IF
 C
               IF (JDO10.EQ.4 .AND. RSM(JDO20,4,JDO40).NE.0) THEN
@@ -1884,12 +1892,36 @@ C
 C---- ADD COMMA  space
 C
           IF (JDO20.NE.3) THEN
+C Nothing reset into this space - advance counter
+            IF( SYMCHS(JDO40) (ICH:ICH) .EQ. '0') ICH = ICH + 1
             IF (ICH+2.GT.LEN(SYMCHS(1)))
      +           CALL CCPERR(1, 'SYMTR3: character array too short')
             SYMCHS(JDO40) (ICH:ICH+2) = ',  '
             ICH = ICH + 3
+            SYMCHS(JDO40) (ICH:ICH) = '0'
           END IF
    20   CONTINUE
+C
+C---- Get rid of spaces after - sign; get rid of first  ;
+C----- formats " - X " etc..
+C
+        LSTR = LENSTR(SYMCHS(JDO40))
+          SYMCHK = '                                   '
+          ICOUNT = 0
+          ISTART = 1
+          IF( SYMCHS(JDO40)(1:1) .EQ. ' ') ISTART = 2
+          INEG = 0
+          DO 22 ISTR = ISTART,LSTR
+            IF(INEG .EQ. -1 .AND. 
+     +       SYMCHS(JDO40)(ISTR:ISTR) .EQ. ' ') GO TO 22
+          
+            INEG = 1
+            IF(SYMCHS(JDO40)(ISTR:ISTR) .EQ. '-' ) INEG = -1
+            ICOUNT = ICOUNT + 1
+            SYMCHK(ICOUNT:ICOUNT) = SYMCHS(JDO40)(ISTR:ISTR)
+   22     CONTINUE
+
+          SYMCHS(JDO40) = SYMCHK
 C
 C---- write a message if required
 C
@@ -1913,6 +1945,8 @@ C
         END IF
    40 CONTINUE
       END
+C
+
 C
 C
 C     ==========================
