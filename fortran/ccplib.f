@@ -659,6 +659,9 @@ C     .. Intrinsic Functions ..
       INTRINSIC ABS
 C
 C
+      IF (ISTAT.LE.2) THEN
+      call ccp4h_summary_beg()
+      ENDIF
       IF (ISTAT.LT.0) THEN
         CALL UGERR(0,ERRBUF)
 C     (avoid VMS `Message number 00000000')
@@ -691,15 +694,18 @@ C     report messages and exit if appropriate
           IF (ISTAT.EQ.0) THEN
             CALL GETELAPSED
 C           success
+            call ccp4h_summary_end()
             CALL CEXIT(1)
           ELSE
 C           FOR$_NOTFORSPE, "Not a FORTRAN-specific error"
+            call ccp4h_summary_end()
             CALL CEXIT(1605644)
           ENDIF
         ELSE
 C         duplicate message to stderr, assumed to be connected to unit 0
           IF (ISTAT.EQ.1) WRITE (0,*) ERRBUF
           CALL GETELAPSED
+          call ccp4h_summary_end()
           CALL CEXIT(ISTAT)
         ENDIF
       ELSEIF (ISTAT.EQ.2) THEN
@@ -762,14 +768,14 @@ C     If the file is defined on the command line then
 C       If a directory is specified then
 C         Use the filename as is.
 C       Else if the SYS$LOGIN or HOME variable is defined then
-C         Use "SYS$LOGIN:filename" or "$HOME/filename".
+C         Use "SYS$LOGIN:filename", "$HOME/filename" or "%HOME%\filename".
 C       Else
 C         Use the filename as is (in current directory).
 C     Else
 C       If the CINCL variable is defined then
-C         Use "CINCL:filename" or "$CINCL/filename".
+C         Use "CINCL:filename", "$CINCL/filename" or "%CINCL%\filename".
 C       Else if the SYS$LOGIN or HOME variable is defined then
-C         Use "SYS$LOGIN:filename" or "$HOME/filename".
+C         Use "SYS$LOGIN:filename", "$HOME/filename" or "%HOME%\filename".
 C       Else
 C         Use the filename as is (in current directory).
 C
@@ -786,10 +792,10 @@ C     ..
 C     .. Local Scalars ..
       INTEGER HELP,IARG,ICOUNT,IEND,IERR,II,ILOOP,ISKIP,
      +        ISTART,IUNIT,LOOP,RDENVF,RDLOGF,IHELP,LREC,IFAIL
-      LOGICAL DINIT,EINIT,VAX
+      LOGICAL DINIT,EINIT,VAX, MVS
       CHARACTER FILNAM* (ISTRLN), LINE* (ISTRLN),
      +     ENVFIL* (ISTRLN), LOGFIL* (ISTRLN), LOGNAM* (ISTRLN),
-     +     TEMP* (ISTRLN)
+     +     TEMP* (ISTRLN), BKS*1
 C     ..
 C     .. Local Arrays ..
       CHARACTER ENAME(ILIMIT)* (IENV),ETYPE(ILIMIT)* (5),
@@ -798,9 +804,9 @@ C     ..
 C     .. External Functions ..
       INTEGER LENSTR
 C     don't declare iargc
-      LOGICAL VAXVMS
-      CHARACTER FEXTN* (ISTRLN), FDIR*(ISTRLN)
-      EXTERNAL LENSTR,VAXVMS,FEXTN
+      LOGICAL VAXVMS, WINMVS
+      CHARACTER FEXTN* (ISTRLN), FDIR*(ISTRLN), RTNBKS*1
+      EXTERNAL LENSTR,VAXVMS,FEXTN,WINMVS, RTNBKS
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPERR,CCPUPC,UGTARG,INITFYP,QPRINT,CSETNV,UGTENV
@@ -816,7 +822,12 @@ C     .. Data statements ..
      +     LOGFIL/'default.def'/,ENVFIL/'environ.def'/
 C     ..
       VAX = VAXVMS()
+      MVS = WINMVS()
+      BKS = RTNBKS()
       CALL INITFYP
+C
+C
+      CALL CCP4H_INIT_LIB()
 C
       IARG = IARGC()
 C
@@ -880,6 +891,14 @@ C
             IF (VAX) THEN
               FILNAM = 'CINCL:'
               II = LENSTR(FILNAM)
+            ELSEIF (MVS) THEN
+            	II = LENSTR(FILNAM)
+              IF (FILNAM(II:II).NE.BKS) THEN
+                II = II + 1
+                IF (II.GT.ISTRLN) CALL CCPERR(1,
+     +               'environ path name too long')
+                FILNAM(II:II)=BKS
+              ENDIF
             ELSE
               II = LENSTR(FILNAM)
               IF (FILNAM(II:II).NE.'/') THEN
@@ -902,6 +921,14 @@ C
             IF (VAX) THEN
               FILNAM = 'SYS$LOGIN:'
               II = LENSTR(FILNAM)
+            ELSEIF (MVS) THEN
+              II = LENSTR(FILNAM)
+              IF (FILNAM(II:II).NE.BKS) THEN
+                II = II + 1
+                IF (II.GT.ISTRLN) CALL CCPERR(1,
+     +               'environ path name too long')
+                FILNAM(II:II)=BKS
+              ENDIF
             ELSE
               II = LENSTR(FILNAM)
               IF (FILNAM(II:II).NE.'/') THEN
@@ -960,6 +987,14 @@ C
             IF (VAX) THEN
               FILNAM = 'CINCL:'
               II = LENSTR(FILNAM)
+            ELSEIF (MVS) THEN
+              II = LENSTR(FILNAM)
+              IF (FILNAM(II:II).NE.BKS) THEN
+                II = II + 1
+                IF (II.GT.ISTRLN) CALL CCPERR(1,
+     +               'default.def path name too long')
+                FILNAM(II:II)=BKS
+              ENDIF
             ELSE
               II = LENSTR(FILNAM)
               IF (FILNAM(II:II).NE.'/') THEN
@@ -982,6 +1017,14 @@ C
             IF (VAX) THEN
               FILNAM = 'SYS$LOGIN:'
               II = LENSTR(FILNAM)
+            ELSEIF (MVS) THEN
+            	II = LENSTR(FILNAM)
+              IF (FILNAM(II:II).NE.BKS) THEN
+                II = II + 1
+                IF (II.GT.ISTRLN) CALL CCPERR(1,
+     +               'default.def path name too long')
+                FILNAM(II:II)=BKS
+              ENDIF
             ELSE
               II = LENSTR(FILNAM)
               IF (FILNAM(II:II).NE.'/') THEN
@@ -1836,14 +1879,15 @@ C     .. Array Arguments ..
 C     ..
 C     .. Local Scalars ..
       INTEGER I,II,ISTAT,JJ,PROCID
-      LOGICAL VAX,EXIST
+      LOGICAL VAX,MVS,EXIST
       CHARACTER ERRSTR* (ISTRLN),LIBFIL* (ISTRLN),PROGNM* (ISTRLN),
-     +          TMPNAM* (ISTRLN),LINE* (ISTRLN),SCRFIL* (ISTRLN)
+     +          TMPNAM* (ISTRLN),LINE* (ISTRLN),SCRFIL* (ISTRLN),
+     +          BKS*(1)
 C     ..
 C     .. External Functions ..
       INTEGER GETPID,LENSTR
-      LOGICAL VAXVMS
-      CHARACTER FDIR* (ISTRLN),FEXTN* (ISTRLN),FROOT* (ISTRLN)
+      LOGICAL VAXVMS, WINMVS
+      CHARACTER FDIR* (ISTRLN),FEXTN* (ISTRLN),FROOT* (ISTRLN), RTNBKS
       EXTERNAL GETPID,LENSTR,VAXVMS,FDIR,FEXTN,FROOT
 C     ..
 C     .. External Subroutines ..
@@ -1862,6 +1906,8 @@ C
       CALL UGTENV(LNAME,TMPNAM)
       IF (TMPNAM.NE.' ' .AND. LSKIP ) RETURN
       VAX = VAXVMS()
+      MVS = WINMVS()
+      BKS = RTNBKS()
 C
 C---- Get program name (argv[0]), but check if we have it already
 C
@@ -1924,6 +1970,12 @@ C           fixme: should we insist that VMS defines CLIBD as well as un*x?
             ELSE
               TMPNAM = FILNAM
             ENDIF
+          ELSEIF (MVS) THEN
+            IF (LIBFIL.EQ.' ') CALL CCPERR(1,'CLIBD not defined')
+            II = LENSTR(LIBFIL)
+            TMPNAM = LIBFIL(:II)//BKS
+            II = II + 2
+            TMPNAM(II:) = FILNAM
           ELSE
             IF (LIBFIL.EQ.' ') CALL CCPERR(1,'CLIBD not defined')
             II = LENSTR(LIBFIL)
@@ -1942,6 +1994,10 @@ C         actually create <ccp4_scr>/<prognm>_.<pid>
             ELSE
               TMPNAM = 'CCP4_SCR:' // PROGNM
             ENDIF
+          ELSEIF (MVS) THEN
+            IF (TMPNAM.EQ.' ') CALL CCPERR(1,'CCP4_SCR not defined')
+            II = LENSTR(TMPNAM) + 1
+            TMPNAM(II:) = BKS//PROGNM
           ELSE
             IF (TMPNAM.EQ.' ') CALL CCPERR(1,'CCP4_SCR not defined')
             II = LENSTR(TMPNAM) + 1
@@ -2431,12 +2487,14 @@ C     .. External Functions ..
       EXTERNAL LENSTR, FROOT
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPDAT,UGTUID,UTIME
+      EXTERNAL CCPDAT,UGTUID,UTIME,ccp4h_summary_beg,ccp4h_summary_end
 C     ..
       DATA PR /' '/
 C
 C---- Output heading
 C
+      call ccp4h_summary_beg()
+      call ccp4h_pre_beg()
       PR = PROG
       DT = VDATE
       CALL CCPDAT(DT2)
@@ -2458,6 +2516,8 @@ C
      + ' Crystallography". Acta Cryst. D50, 760-763.',/,/,
      + ' as well as any specific reference in the program write-up.',
      + /,/)
+      call ccp4h_pre_end()
+      call ccp4h_summary_end()
 C
       RETURN
 C
