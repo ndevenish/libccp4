@@ -201,7 +201,6 @@ C
       INTEGER     MONTH,DAY,YEAR
 C
       CALL IDATE(MONTH,DAY,YEAR)
-      YEAR = MOD (YEAR, 100)
 C
       END
 C

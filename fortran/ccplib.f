@@ -440,6 +440,7 @@ C     .. External Subroutines ..
 C     ..
 C
       CALL UIDATE(IM,ID,IY)
+      IY = MOD (IY, 100)      
       WRITE (CALDAT,FMT=6000) ID,IM,IY
 C
 C---- Format statements

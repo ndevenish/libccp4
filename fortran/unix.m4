@@ -587,15 +587,13 @@ C
 ifelse(_sgi,1,
 [C     Updating 3 array elements separately would be illegal aliasing,
 C     of course
-      CALL IDATE(IDAY,IMONTH,IARRAY(3))],dnl VMS-style
+      CALL IDATE(IDAY,IMONTH,IYEAR)],dnl VMS-style
 _esv,1,
-[      CALL IDATE(IDAY,IMONTH,IARRAY(3))],
+[      CALL IDATE(IDAY,IMONTH,IYEAR)],
 [      CALL IDATE (IARRAY)
       IDAY = IARRAY(1)
-      IMONTH = IARRAY(2)])
-C     This may or may not be necessary, depending on system, but does no
-C     harm:
-      IYEAR = MOD(IARRAY(3), 100)
+      IMONTH = IARRAY(2)
+      IYEAR = IARRAY(3)])
 C
       END
 C
