@@ -471,7 +471,7 @@ char *ccp4_utils_joinfilenames(char *dir, char *file)
   strncpy(join,dir,lendir);
   join[lendir] = PATH_SEPARATOR;
   join[lendir+1] = '\0';
-  strncat(join,file,lendir);
+  strncat(join,file,lenfile);
   join[lenjoin-1] = '\0';
 
   return join;
