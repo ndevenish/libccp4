@@ -448,7 +448,8 @@ C
 C
 C---- get process name and use for argv[0]
 C
-      CALL LIB$GETJPI(JPI$_PRCNAM,,,,ARGNAM(1))
+C      CALL LIB$GETJPI(JPI$_PRCNAM,,,,ARGNAM(1))
+      CALL UGTUID(ARGNAM(1))
 C
       CALL LIB$GET_FOREIGN(CLIARG,,LENARG)
 C
