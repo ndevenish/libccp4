@@ -2758,6 +2758,11 @@ C     ===============================
 C
 C---- Returns significant string length excluding trailing spaces
 C
+C     NB: LENSTR removes trailing spaces, plus trailing "null"
+C     characters (ascii code 0) and carriage-returns (ascii code 13).
+C     Carriage-returns may be inserted by editing on non-unix
+C     systems? (PJX)
+C
 C Arguments:
 C ==========
 C
@@ -2774,7 +2779,8 @@ C     ..
  10   CONTINUE
       IF (LENSTR.NE.0) THEN
         IF(STRING(LENSTR:LENSTR).EQ.' ' .OR.
-     .       ICHAR(STRING(LENSTR:LENSTR)).EQ.0) THEN
+     .       ICHAR(STRING(LENSTR:LENSTR)).EQ.0 .OR.
+     .       ICHAR(STRING(LENSTR:LENSTR)).EQ.13) THEN
           LENSTR = LENSTR - 1
           GO TO 10
         END IF
