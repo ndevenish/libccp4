@@ -958,6 +958,7 @@ int ccp4_parser(char *line, const int nchars, CCP4PARSERARRAY *parser,
 	if (strlen(line) > 0) {
 	  if (print) printf(" Comment line--- %s\n",line);
 	  line[0] = '\0';
+          nch = nchars;
 	}
         if (fromapp) continuation = 0;
       }
