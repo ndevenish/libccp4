@@ -898,6 +898,7 @@ FORTRAN_SUBR ( SETGRD, setgrd,
     printf("SETGRD: supplied CCP4 Laue code is different from that currently stored\n");
     printf("NLAUE (supplied) = %d\n",*nlaue);
     printf("NLAUE (library)  = %d\n",spacegroup->nlaue);
+    printf("(For program FFT and certain spacegroups, this is OK.)\n");
     /* The requested Laue number is different to that for the
        current spacegroup
        Save the current Laue code and load the data for the requested code */
