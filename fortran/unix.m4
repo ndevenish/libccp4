@@ -1207,7 +1207,7 @@ c
 c ... NOTE: "i4" in the following format makes that this routine
 c           is not Year-10,000-compliant !!!
 c
- 6000 format (i4,'-',i2.2,'-',i2.2,'T',i2.2,':',i2.2,':',i2.2,a1,i2.2,
+ 6000 FORMAT (i4,'-',i2.2,'-',i2.2,'T',i2.2,':',i2.2,':',i2.2,a1,i2.2,
      +       ':',i2.2)
 c
       return
