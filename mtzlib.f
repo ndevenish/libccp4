@@ -2961,7 +2961,7 @@ C     Check "missing data" flag
             DO 10 JDO10 = 1,NCOLS(MINDEX)
               DATMSS(JDO10) =.FALSE.
               IF ((VAL_SET(1,MINDEX)))
-     +             CALL IS_MAGIC(VAL_MISS(1,MINDX),ADATA(JDO10),
+     +             CALL IS_MAGIC(VAL_MISS(1,MINDEX),ADATA(JDO10),
      +             DATMSS(JDO10))
  10         CONTINUE
 C---- Calculate resolution, only look for HKL in 1st 3 cols
@@ -4813,7 +4813,7 @@ C
 C
 C---- Resolution range
 C
-        WRITE (LINE,FMT='(A4,1X,2F8.5)') 'RESO',
+        WRITE (LINE,FMT='(A4,1X,2F12.5)') 'RESO',
      +                   WSRNGE(1,MINDX),WSRNGE(2,MINDX)
 C
 C            ******************************
@@ -7654,7 +7654,7 @@ C
 C                *************************
             CALL PUTLIN('*  Resolution Range :','CURWIN')
             CALL BLANK('CURWIN',1)
-            WRITE(STROUT,FMT='(2F10.5,6X,A,F9.3,A,F9.3,A)')
+            WRITE(STROUT,FMT='(2F12.5,6X,A,F9.3,A,F9.3,A)')
      $        (SRANGE(JJ,MINDX),JJ=1,2),'(',RESMIN,' - ',RESMAX,' A )'
             CALL PUTLIN(STROUT,'CURWIN')
             CALL BLANK('CURWIN',1)
