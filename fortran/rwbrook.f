@@ -38,6 +38,7 @@ C  WBROOK     Write a coordinate record.
 C  RWBFIN     Complete copy of input to output file
 C  CVFRAC     Convert between orthogonal and fractional coordinates
 C  RBRCEL     Returns Reciprocal cell dimensions, and reciprocal unit cell  volume
+C  RBCELL     Returns cell dimensions, and unit cell  volume
 C  RES3TO1    Find 3 character residue name from 1 character code and vice versa 
 C  RBRECIP    calculates 4SIN**2/L**2
 C
@@ -204,13 +205,20 @@ C Histidine               HIS               Water                         HOH
 C
 C 7.   ATOM IDENTIFIERS FOR AMINO ACIDS
 C                                      
-C      The atom names used follow the IUPAC-IUB rules (ref.  3)  except  that
-C the Greek letter remoteness codes are transliterated as follows:-
+C      The atom names used follow the IUPAC-IUB rules (ref.  3) except that:
+C * The Greek letter remoteness codes are transliterated as follows:
 C                                                                  
 C        alpha - A       beta - B       gamma - G       delta - D
 C        epsilon - E     zeta - Z       eta - H
 C                                              
-C Four characters are reserved for the atom names as follows:-
+C * Atoms for which soe ambiguity exists in the crystallographic
+C   results are designated A.  This will usually apply only to the
+C   terminal atoms of asparagine and glutamine and to the ring atoms
+C   of histidine.
+C
+C   The extra oxygen of the carboxyl terminal amino acid is designated OXT.
+C
+C     Four characters are reserved for the atom names as follows:
 C                                                             
 C                   1-2   Chemical symbol - right justified
 C                   3     Remoteness indicator (alphabetic)
@@ -1595,6 +1603,37 @@ C
 C---- Format statements
 C
 2001  FORMAT(' **FRACTIONAL/ORTHOGONAL MATRICES NOT SET UP**')
+      END
+C
+C
+C
+      SUBROUTINE RBCELL(CELLD,CVOL)
+C     ============================
+C
+C_BEGIN_RBCELL
+C
+C      SUBROUTINE RBCELL(CELLD,CVOL)
+C
+C Returns cell dimensions and unit cell  volume.
+C
+C PARAMETERS
+C     CELLD (O)  (REAL(6))  cell dimensions
+C     CVOL (O)  (REAL)     cell volume
+C
+C Common blocks
+C
+C      COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
+C
+C_END_RBCELL
+C
+      COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
+      REAL CELL(6),RR(3,3,6),VOL,CELLAS(6)
+      REAL CELLD(6), CVOL
+      SAVE /RBRKZZ/
+C
+      CVOL = VOL
+      DO 1 I=1,6
+1     CELLD(I) = CELL(I) 
       END
 C
 C
