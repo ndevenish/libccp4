@@ -1412,7 +1412,8 @@ void ccp4spg_print_recip_ops(const CCP4SPG* sp)
   n_in_last_row = sp->nsymop_prim % 4;
   if (n_in_last_row == 0) n_in_last_row = 4;
 
-  printf("\n Original indices for reflection hkl with symmetry number ISYM \n");
+  printf("\n Spacegroup %d \"%s\" \n",sp->spg_ccp4_num,sp->symbol_xHM);
+  printf(" Original indices for reflection hkl with symmetry number ISYM \n");
   printf("\n                              Bijvoet positive \n");
   printf("       %-18s%-18s%-18s%-18s\n","ISYM","ISYM","ISYM","ISYM");
   for (i = 0 ; i < nrow-1 ; ++i) {
