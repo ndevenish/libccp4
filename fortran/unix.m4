@@ -221,6 +221,7 @@ C
 C     check for `logical name' referencing real file
       CALL UGTENV(LOGNAM,NAMFIL)
       IF (NAMFIL.EQ.' ') NAMFIL = LOGNAM
+      END IF
 C     VMS null device (VMS code canonicalises /dev/null)
       IF (NAMFIL.EQ.'NL:' .OR. NAMFIL.EQ.'nl:') NAMFIL='/dev/null'
 C     Special case:  /dev/null should be opened UNKNOWN
@@ -715,6 +716,25 @@ C
       VAXVMS = .FALSE.
 C
       END
+C
+C
+C     =========================
+      LOGICAL FUNCTION WINMVS()
+C     =========================
+C
+C WINMVS - Windows mircrosoft Visual Studio
+C
+C Input:     none
+C
+C Returns:   .TRUE. for WINMVS, .FALSE. otherwise
+C
+C Arguments: none
+C
+C Usage:     WINMVS ()
+C
+      WINMVS = .FALSE.
+C
+      END
 C
 C
 C SUBROUTINE 'TTSEND'
@@ -1077,3 +1097,23 @@ cc          return
         subroutine clear
         end
 ])dnl
+
+C
+CA dummy function for unix
+C     =========================
+       CHARACTER FUNCTION RTNBKS()
+C     =========================
+C
+C RTNBKS - Returns a Backslash for nt as unix compilers are fussy!
+C
+C Input:     none
+C
+C Returns:   \ if WIN32 or not if unix or vms
+C
+C Arguments: none
+C
+C Usage:     RTNBKS ()
+C
+      RTNBKS=' '
+C
+      END
