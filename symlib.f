@@ -12,7 +12,7 @@ C 1) Subroutines for manipulating symmetry operators.
 C   
 C    invsym        msyget        msymlb        pgdefn    
 C    pgmdf         pgnlau        symfr2        symtrn 
-C    msymlb2      
+C    msymlb2       msymlb3
 c  Internal routines:-
 C    determ     
 C
@@ -93,6 +93,67 @@ C
 C     Identical to MSYMLB, except that on output NAMSPG_CIF
 C     has correct CIF format, e.g. 'P 21 21 21'
 C     NAMSPG_CIF should be as in _symmetry.space_group_name_H-M
+C
+C---- SUBROUTINE MSYMLB3(IST,LSPGRP,NAMSPG_CIF,NAMSPG_CIFS,
+C    +                   NAMPG,NSYMP,NSYM,RlSymmMatrx)
+C
+C     Another version of MSYMLB, with the following changes:
+C
+C   1) The routine will try first to match the assigned NAMSPG_CIF
+C      to ANY name given on the spacegroup line:
+C      It is satisfied by the first fit it finds:
+C      eg: 47 8 8 Pmmm PGmmm ORTHORHOMBIC 'P 2/m 2/m 2/m' 'P m m m'
+C      You could call the subroutine with 
+C      NAMSPG_CIF = 'Pmmm' or 'P 2/m 2/m 2/m' or 'P m m m'
+C
+C      But it will always return the LONGEST possible name. ie 'P 2/m 2/m 2/m'
+
+C   2) If there is no match to the spacegroup NAME, the space group is
+C      identified by its number.
+C      This requires that the number is UNIQUE, so alternate settings are
+C      numbered n000 + Int Tab number
+C
+C   3) The point group name is always guessed at by the SR PGDEFN
+C      and the guess on the data line is ignored.
+C
+C   4) The number of primitive symmetry operators is also determined
+C      by the SR PGDEFN. The non-primitive operators are stored in the
+C      first NSYMP symmetry matrices.
+C      and the guess on the data line is ignored.
+C
+C   5) The symmetry operators are checked to make sure they are a
+C      closed group.
+C
+C   In the library file, the header for each entry may contain
+C   Order not guaranteed, but must start with:
+C   LSPGRP   NLINS and contain either NAMSPG or NAMSPG_CIF
+C
+C      LSPGRP   NLINS   NLINP   NAMSPG  NAMPG CRYSTAL  NAMSPG_CIF
+C
+C  where  LSPGRP        spacegroup number
+C         NLINS         total number of lines of symmetry operators.
+C         NLINP         number of LINES of primitive symmetry operators
+C                       (Not used now..)
+C         NAMSPG_CIF    spacegroup name
+C         NAMPG         name of corresponding pointgroup
+C                       (Not used now..)
+C
+C On entry:
+C   IST         stream number to read file
+C   LSPGRP      spacegroup number
+C   NAMSPG or NAMSPG_CIF
+C               any acceptable spacegroup name: this will be used to 
+C                       identify the spacegroup if possible
+C Returns
+C   LSPGRP      spacegroup number
+C   NAMSPG_CIF  full spacegroup name 
+C   NAMSPG_CIFS name without any spaces
+C   NAMPG       pointgroup name ( obtained from pgdefn - not 100% reliable!)
+C   NSYMP       number of primitive symmetry operations obtained from pgdefn- 
+C               only different from NSYM in non-primitive spacegroups
+C   NSYM        total number of symmetry operations
+C   RlSymmMatrx(4,4,NSYM)  Symmetry Rotation/translation  matrices
+C
 C
 C---- SUBROUTINE SYMTRN(NSM,RSM)
 C           symmetry translation from matrix back to characters
@@ -1430,6 +1491,258 @@ C
       CALL LERROR(2,-1,LINERR)
       END
 C
+C
+C     =========================================================
+      SUBROUTINE MSYMLB3(IST,LSPGRP,NAMSPG_CIF,NAMSPG_CIFS,
+     +                   NAMPG,NSYMP,NSYM,RlSymmMatrx)
+C     =========================================================
+C
+C---- Get symmetry operations for spacegroup LSPGRP from library file
+C     on stream IST, logical name SYMOP.
+C
+C   In the library file, the header for each entry may contain
+C   Order not guaranteed, but must start with:
+C   LSPGRP   NLINS and contain either NAMSPG or NAMSPG_CIF
+C
+C      LSPGRP   NLINS   NLINP   NAMSPG  NAMPG CRYSTAL  NAMSPG_CIF
+C
+C  where  LSPGRP        spacegroup number
+C         NLINS         total number of lines of symmetry operators.
+C         NLINP         number of LINES of primitive symmetry operators
+C  Not used now..
+C         NAMSPG_CIF    spacegroup name
+C         NAMPG         name of corresponding pointgroup
+C  Not used now..
+C
+C On entry:
+C   IST         stream number to read file
+C   LSPGRP      spacegroup number
+C   NAMSPG or NAMSPG_CIF
+C               any acceptable spacegroup name: this will be used to 
+C                       identify the spacegroup if possible
+C
+C Returns
+C   LSPGRP      spacegroup number
+C   NAMSPG_CIF  full spacegroup name 
+C   NAMSPG_CIFS name without any spaces
+C   NAMPG       pointgroup name ( obtained from pgdefn - not 100% reliable!)
+C   NSYMP       number of primitive symmetry operations obtained from pgdefn- 
+C               only different from NSYM in non-primitive spacegroups
+C   NSYM        total number of symmetry operations
+C   RlSymmMatrx(4,4,NSYM)  Symmetry Rotation/translation  matrices
+C
+C     .. Parameters ..
+      INTEGER NPARSE
+      PARAMETER (NPARSE=200)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER IST,LSPGRP,NSYM,NSYMP
+      CHARACTER NAMPG* (*),NAMSPG_CIF* (*),NAMSAV*20,NAMSPG_CIFS*20
+C     ..
+C     .. Array Arguments ..
+      REAL RlSymmMatrx(4,4,*),ROTCHK(4,4)
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,IFAIL,ISG,NLIN,NTOK
+      CHARACTER LINE*400,LINERR*400
+C      INTEGER NLINS
+C     ..
+C     .. Local Arrays ..
+      REAL FVALUE(NPARSE)
+      INTEGER IBEG(NPARSE),IDEC(NPARSE),IEND(NPARSE),ITYP(NPARSE),
+     +        IRCHK(192)
+      CHARACTER CVALUE(NPARSE)*4
+      LOGICAL NAMFIT
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL CCPDPN,CCPUPC,PARSE,SYMFR2,LERROR
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC NINT
+C     ..
+      IFAIL = 0
+      CALL CCPDPN(IST,'SYMOP','READONLY','F',0,IFAIL)
+C
+      NTOK = 0
+      NSYM = 0
+         Do ISYM = 1,192
+          irchk(isym) = 0
+         END DO
+      ILEN = LENSTR(NAMSPG_CIF)
+
+C  Remove all spaces from SG name
+         NAMSPG_CIFS = NAMSPG_CIF(1:1)
+
+         IF(ILEN.GE.2) THEN
+          J = 1
+          DO I = 2,ILEN
+           IF( NAMSPG_CIF(I:I).NE.' ') THEN
+            J = J + 1
+            NAMSPG_CIFS = NAMSPG_CIFS//NAMSPG_CIF(J:J)
+           END IF
+          END DO 
+         END IF
+C
+   10 CONTINUE
+C
+C---- Find correct space-group in file.
+C     Each space-group has header line of space-group number,
+C     number of line of symmetry operations for non-primitive
+C     and primitive cells.
+C
+      READ (IST,FMT='(A)',ERR=30,END=30) LINE
+      CALL CCPUPC(LINE)
+      NTOK = -NPARSE
+      CALL PARSE(LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,NTOK)
+C
+C---- Compulsory Fields are space group number,
+C                           number of lines,
+C                spacegroup name
+
+C
+      IF (ITYP(1).NE.2 .OR. ITYP(2).NE.2 )
+     +     CALL LERROR(2,-1,'MSYMLB3: Error in format of SYMOP file: '
+     +     // LINE)
+      ISG = NINT(FVALUE(1))
+      NLIN = NINT(FVALUE(2))
+c      NLINS = NINT(FVALUE(3))
+C
+C---- Check for spacegroup name given - may be anywhere on line..
+C---- Record the longest name on the line; 
+C---- This will be returned as NAMSPG_CIF
+C
+        NAMLGTH = 1
+        NAMSAV = ' '
+        NAMFIT = .false.
+        DO 15 ITOK = 3,NTOK
+C Spacegroup name must begin P A B C F I "H " R
+          IF (LINE(IBEG(ITOK):IBEG(ITOK)).NE.'P' .AND.
+     +        LINE(IBEG(ITOK):IBEG(ITOK)).NE.'A' .AND.
+     +        LINE(IBEG(ITOK):IBEG(ITOK)).NE.'B' .AND.
+     +        LINE(IBEG(ITOK):IBEG(ITOK)).NE.'C' .AND.
+     +        LINE(IBEG(ITOK):IBEG(ITOK)).NE.'F' .AND.
+     +        LINE(IBEG(ITOK):IBEG(ITOK)).NE.'I' .AND.
+     +        LINE(IBEG(ITOK):IBEG(ITOK)+1).NE.'H ' .AND.
+     +        LINE(IBEG(ITOK):IBEG(ITOK)).NE.'R' ) GO to 15
+C  Ooo - get rid of CUBIC  and any PG
+         IF(LINE(IBEG(ITOK):IBEG(ITOK)+1).EQ.'CU' .OR.
+     +      LINE(IBEG(ITOK):IBEG(ITOK)+1).EQ.'PG' ) GO to 15
+C
+         LGTHCHK = MAX(NAMLGTH ,(IEND(ITOK)-IBEG(ITOK)+1))
+         IF(LGTHCHK .GT. NAMLGTH ) NAMSAV = LINE(IBEG(ITOK) :IEND(ITOK))
+         NAMLGTH = LGTHCHK
+         IF (NAMSPG_CIF.NE.LINE(IBEG(ITOK):IEND(ITOK)) .AND.
+     +       NAMSPG_CIFS.NE.LINE(IBEG(ITOK):IEND(ITOK))) GO TO 15
+             NAMFIT = .true.
+  15    CONTINUE
+C
+C
+C---- No name match; check for spacegroup number if given
+C
+       IF (LSPGRP.GT.0 .AND. LSPGRP.EQ.ISG) GO TO 40
+C
+C---- Not this one, skip NLIN lines
+C
+      DO 20 I = 1,NLIN
+        READ (IST,FMT=*)
+ 20   CONTINUE
+C     try again
+      GO TO 10
+C
+ 40   CONTINUE
+C----- Reset space group name to longest on offer
+          LSPGRP = ISG
+          NAMSPG_CIF = NAMSAV
+C
+C
+C---- Space-group found, convert NLIN lines of
+C     symmetry operators to matrices
+C
+C  read all sym ops at once; PGDEFN will sort out primitive and non primitive
+      DO 50 I = 1,NLIN
+        READ (IST,FMT='(A)') LINE
+C       Convert line to matrices
+        NSYM = NSYM + 1
+        CALL SYMFR2(LINE,1,NSYM,RlSymmMatrx)
+ 50   CONTINUE
+C
+C-----Endeavor to test all sym ops form a closed group
+C
+      DO ISYM = 1,NSYM
+C   Determinant should be +1 or -1
+        CALL DETERM(DET,RlSymmMatrx(1,1,ISYM))
+        if(abs(det).lt.0.5) GO TO 25 
+       DO JSYM = ISYM,NSYM
+       CALL MATMULNM(4,4,ROTCHK,RlSymmMatrx(1,1,ISYM),
+     +                          RlSymmMatrx(1,1,JSYM))
+C   Check ROTCHK is also a symop
+C---- Check This RSM Matrx for rotation and translation
+C
+          DO 90 N = 1,NSym
+            DO 95 I = 1,3
+              DO 98 J = 1,4
+                DCHK = ABS(ROTCHK(I,J) - RlSymmMatrx(I,J,N))
+C
+C---- This may be needed for translation components; no harm for others.
+C
+                IDCHK = 0
+                IF(J.EQ.4)IDCHK = INT(DCHK)
+                DCHK = ABS(DCHK-IDCHK)
+                IF (DCHK.LT.0.01) GO TO 98
+C
+C---  This MTZ symm op  no good - off to check the next..
+C
+                GO TO 90
+  98          CONTINUE
+  95        CONTINUE
+C
+C---- Found a good match - now check next ISM
+C
+            IGOOD = 1
+            irchk(n) = irchk(n) + 1
+            GO to 80
+  90      Continue
+C
+C
+C---- If this symmetry operator is missing no point going on. Try next SG
+C
+          IF(IGOOD.EQ.0) GO TO 30
+  80    CONTINUE
+C
+C
+       END DO 
+      END DO 
+c
+C
+          DO 100 N = 1,NSym
+           if(irchk(n) .eq.0 ) go to 35
+ 100      continue
+C
+        call PGDEFN(NAMPG,NSYMP,NSYM,RlSymmMatrx,.FALSE.)
+C
+      CLOSE (IST)
+      RETURN
+C
+ 25   CONTINUE
+      WRITE (LINERR,FMT='(A,A,I5,A)')
+     +     'MSYLB3: Problem with sym op - determinant ne -+1',
+     +     ' space group number',LSPGRP,' in SYMOP file'
+      CALL LERROR(2,-1,LINERR)
+C
+ 30   CONTINUE
+      WRITE (LINERR,FMT='(A,A,I5,A)')
+     +     'MSYLB3: No symmetry information for space group ',
+     +     ' number',LSPGRP,' in SYMOP file'
+      CALL LERROR(2,-1,LINERR)
+C
+ 35   CONTINUE
+      WRITE (LINERR,FMT='(A,A,I5,A)')
+     +     'MSYLB3: Symmetry operators are not a closed group',
+     +     ' Something wrong for space group ',
+     +     ' number',LSPGRP,' in SYMOP file'
+      CALL LERROR(2,-1,LINERR)
+      END
+C
 C
 C     =====================================
       SUBROUTINE PGMDF(JLASS,JCENTR,JSCREW)
@@ -1959,6 +2272,280 @@ C
 C
       END
 C
+C
+C_BEGIN_SYMFR3
+C
+C     =======================================
+      SUBROUTINE SYMFR3(ICOL,I1,NS,ROT,EFLAG)
+C     =======================================
+C
+C
+C---- Read and interpret symmetry operations
+C
+C---- Arguments :
+C
+C     ICOL      (I)	CHARACTER*80    Line containing the symmetry ops
+C
+C     I1        (I)	INTEGER         First character to look at
+C                               	(say after keyword 'SYM')
+C
+C     NS        (I/O)	INTEGER         is the number of the first symmetry
+C                               	operation to be read, & returns with the
+C                               	number of the last one read (ie you can
+C                               	have more than one on a line!)
+C
+C     ROT       (O)	REAL            Array (4,4,at_least_NS),
+C                               	on exit contains the real-space
+C                               	symmetry matrices, in standard
+C                               	convention, ie
+C                                 	[x']    = [s][x]
+C                     			x'(I)=Sum(J=1,3)ROT(I,J,NS)*x(J) + ROT(I,4,NS)
+C
+C                     			ROT(I,4,NS) contains the fractional translations
+C
+C     EFLAG     (O)	INTEGER         Error flag - on exit,
+C                                  	if 0 then OK,
+C                                  	gt 0, an error occurred.
+C
+C_END_SYMFR3
+C
+C     .. Scalar Arguments ..
+      INTEGER EFLAG,I1,NS
+      CHARACTER ICOL*80
+C     ..
+C     .. Array Arguments ..
+      REAL ROT(4,4,*)
+C     ..
+C     .. Local Scalars ..
+      REAL A,S,T
+      INTEGER I,ICOMST,IERR,IFOUND,IMAX,IP,ISL,J,JDO40,JDO50,JDO80,NOP,
+     +        NP
+      CHARACTER ICH*1
+C     ..
+C     .. Local Arrays ..
+      INTEGER NUM(10)
+      CHARACTER INUM(10)*1
+C     ..
+C     .. External Functions ..
+      INTEGER LENSTR
+      EXTERNAL LENSTR
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL BLANK,PUTLIN
+C     ..
+C     .. Data statements ..
+      DATA NUM/1,2,3,4,5,6,7,8,9,0/
+      DATA INUM/'1','2','3','4','5','6','7','8','9','0'/
+C     ..
+C
+      IMAX = 80
+      IERR = 0
+      EFLAG = 0
+C
+C---- Search for first blank to skip flag sym symtr symmetry
+C     or whatever
+C
+CCC      IF (I1.NE.1) THEN
+CCC        I1 = 1
+CCC        IF (ICOL(I1:I1).EQ.'s' .OR. ICOL(I1:I1).EQ.'S') THEN
+CCC   10     CONTINUE
+CCCC
+CCC          IF (ICOL(I1:I1).EQ.' ') THEN
+CCC            GO TO 20
+CCC          ELSE
+CCC            I1 = I1 + 1
+CCC            IF (I1.LE.80) GO TO 10
+CCC          END IF
+CCCC
+CCCC              ***********************
+CCC          CALL PUTLIN(' Error - no space between codeword SYM and ' //
+CCC     +         'first operator','ERRWIN')
+CCCC              ***********************
+CCCC
+CCC          EFLAG = EFLAG + 1
+CCC          RETURN
+CCC        END IF
+CCC      END IF
+CCCC
+CCC 20   CONTINUE
+      I = I1 - 1
+      NS = NS - 1
+   30 CONTINUE
+      NS = NS + 1
+      NOP = 1
+C
+      DO 50 JDO50 = 1,4
+        DO 40 JDO40 = 1,4
+          ROT(JDO50,JDO40,NS) = 0.0
+   40   CONTINUE
+   50 CONTINUE
+C
+      ROT(4,4,NS) = 1.0
+   60 CONTINUE
+      S = 1.0
+C
+C---- Set j=4 for translation vector
+C
+      J = 4
+      T = 0.0
+      IP = 0
+      NP = 0
+      ISL = 0
+      IFOUND = 0
+      ICOMST = 0
+   70 CONTINUE
+      I = I + 1
+C
+      IF (I.LE.IMAX) THEN
+        ICH = ICOL(I:I)
+C
+        IF (ICH.EQ.' ') THEN
+          GO TO 70
+        ELSE IF (ICH.NE.',' .AND. ICH.NE.'*') THEN
+          IFOUND = 1
+C
+          IF (ICH.EQ.'X' .OR. ICH.EQ.'x') THEN
+            J = 1
+            IF (T.EQ.0.0) T = S
+            GO TO 70
+          ELSE IF (ICH.EQ.'Y' .OR. ICH.EQ.'y') THEN
+            J = 2
+            IF (T.EQ.0.0) T = S
+            GO TO 70
+          ELSE IF (ICH.EQ.'Z' .OR. ICH.EQ.'z') THEN
+            J = 3
+            IF (T.EQ.0.0) T = S
+            GO TO 70
+          ELSE IF (ICH.EQ.'+') THEN
+            S = 1.0
+C
+            IF (T.EQ.0.0 .AND. J.EQ.4) THEN
+              GO TO 70
+            ELSE
+              GO TO 100
+            END IF
+C
+          ELSE IF (ICH.EQ.'-') THEN
+            S = -1.0
+C
+            IF (T.EQ.0.0 .AND. J.EQ.4) THEN
+              GO TO 70
+            ELSE
+              GO TO 100
+            END IF
+C
+          ELSE IF (ICH.EQ.'/') THEN
+            ISL = 1
+            GO TO 70
+          ELSE IF (ICH.EQ.'.') THEN
+            IP = 1
+            GO TO 70
+          ELSE
+C
+            DO 80 JDO80 = 1,10
+              IF (ICH.EQ.INUM(JDO80)) GO TO 90
+   80       CONTINUE
+C
+C                *********************************
+            CALL BLANK('ERRWIN',1)
+            CALL PUTLIN(' **Symmetry Operator ERROR**','ERRWIN')
+            CALL PUTLIN(' **Invalid Character...' // ICH // ' **',
+     +           'ERRWIN')
+            CALL PUTLIN(ICOL(1:LENSTR(ICOL)),'ERRWIN')
+C                **********************************
+C
+            EFLAG = EFLAG + 1
+            IERR = 1
+            GO TO 70
+   90       A = NUM(JDO80)
+C
+            IF (ISL.EQ.1) THEN
+              T = T/A
+            ELSE IF (IP.EQ.1) THEN
+              NP = NP + 1
+              T = S*A/10**NP + T
+            ELSE
+              T = 10.0*T + A*S
+            END IF
+C
+            GO TO 70
+          END IF
+        END IF
+      END IF
+C
+      IF (T.EQ.0.0 .AND. J.EQ.4) THEN
+        GO TO 110
+      ELSE
+        ICOMST = 1
+      END IF
+C
+  100 ROT(NOP,J,NS) = T
+      J = 4
+      T = 0.0
+      IP = 0
+      NP = 0
+      ISL = 0
+      IF (ICOMST.EQ.0) GO TO 70
+C
+      IF (IFOUND.EQ.0 .AND. I.LE.IMAX) THEN
+C
+C            *********************************
+        CALL BLANK('ERRWIN',1)
+        CALL PUTLIN(' **Symmetry Operator ERROR**','ERRWIN')
+        CALL PUTLIN(' **Blank Operator Field**','ERRWIN')
+        CALL PUTLIN(ICOL(1:LENSTR(ICOL)),'ERRWIN')
+C            ***********************************
+C
+      END IF
+C
+      IF (I.LE.IMAX) THEN
+        NOP = NOP + 1
+C
+        IF (NOP.LE.3) THEN
+          GO TO 60
+        ELSE
+          GO TO 30
+        END IF
+C
+      ELSE
+        GO TO 120
+      END IF
+C
+C          ***********************************
+  110 CALL BLANK('ERRWIN',1)
+      CALL PUTLIN('**Symmetry Operator ERROR**','ERRWIN')
+      CALL PUTLIN('**No Operator**','ERRWIN')
+      CALL PUTLIN(ICOL(1:LENSTR(ICOL)),'ERRWIN')
+C          ***********************************
+C
+      GO TO 140
+C
+  120 IF (NOP.NE.1 .OR. IFOUND.NE.0) THEN
+        IF (NOP.EQ.3 .AND. IFOUND.EQ.1) THEN
+          GO TO 130
+        ELSE
+          IERR = 1
+C
+C              ********************************
+          CALL BLANK('ERRWIN',1)
+          CALL PUTLIN('**Symmetry Operator ERROR**','ERRWIN')
+          CALL PUTLIN('**Last General Position is INCOMPLETE**',
+     +         'ERRWIN')
+          CALL PUTLIN(ICOL(1:LENSTR(ICOL)),'ERRWIN')
+C              *********************************
+C
+        END IF
+      END IF
+      NS = NS - 1
+ 130  IF (IERR.NE.1) RETURN
+C
+  140 CALL PUTLIN('**SYMMETRY OPERATOR ERROR**','ERRWIN')
+C
+      EFLAG = EFLAG + 1
+C
+      END
+C
+C
 C_BEGIN_SYMTR3
 C
 C     ========================================
@@ -2139,6 +2726,149 @@ C
    40 CONTINUE
       END
 C
+
+C     ========================================
+      SUBROUTINE SYMTR4(NSYM,RSM,SYMCHS)
+C     ========================================
+C
+C           symmetry translation from matrix back to characters
+C
+C           This translates the Symmetry matrices into INT TAB
+C           character strings
+C
+C           It gives the real space operations.
+C                eg     X,Y,Z
+C                eg     -Y,X-Y, Z
+C           That is more complicated than you might think!!
+C
+C---- Arguments :
+C
+C Nsym (I) INTEGER   Number of Symmetry operations
+C
+C Rsm  (I) REAL      Array of dimension (4,4,at least Nsym)
+C                    coNTaining symmetry operations on input
+C
+C Symchs (O) CHARACTER*(*)   Array of dimension at least Nsym
+C                            coNTaining int tab char strings on output
+C
+C
+C     .. Scalar Arguments ..
+      INTEGER NSYM
+C     ..
+C     .. Array Arguments ..
+      REAL RSM(4,4,*)
+      CHARACTER SYMCHS(*)*80
+C     ..
+C     .. Local Scalars ..
+      REAL PPP,RRR
+      INTEGER I1,I2,ICH,IST,ITR,Jdo10,Jdo20,Jdo40
+C     ..
+C     .. Local Arrays ..
+      INTEGER NPNTR1(10),NPNTR2(10)
+      CHARACTER AXISCR(3)*1,NUMB(9)*1
+C     ..
+C     .. External Functions ..
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC ABS,INT,LEN,NINT,REAL
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL CCPERR
+C     ..
+C     .. Data statements ..
+C
+      DATA AXISCR/'X','Y','Z'/
+      DATA NUMB/'1','2','3','4','5','6','7','8','9'/
+      DATA NPNTR1/0,1,1,1,0,1,0,2,3,5/
+      DATA NPNTR2/0,6,4,3,0,2,0,3,4,6/
+C     ..
+C
+      DO 40 Jdo40 = 1,NSYM
+C
+C---- Clear Symchs
+C
+        SYMCHS(Jdo40) = ' '
+        ICH = 1
+C
+        DO 30 Jdo20 = 1,3
+C
+C---- Ist is flag for first character of operator
+C
+          IST = 0
+C
+          DO 20 Jdo10 = 1,4
+            IF (RSM(Jdo20,Jdo10,Jdo40) .ne. 0.0) THEN
+              IF (RSM(Jdo20,Jdo10,Jdo40) .gt. 0.0 .and. 
+     +               IST .gt. 0) THEN
+                IF (ICH .gt. LEN(SYMCHS(1))) CALL CCPERR(1,
+     +              'SYMTR4: character array too short')
+                SYMCHS(Jdo40) (ICH:ICH) = '+'
+                ICH = ICH + 1
+              END IF
+C
+              IF (RSM(Jdo20,Jdo10,Jdo40) .lt. 0.0) THEN
+                IF (ICH .gt. LEN(SYMCHS(1))) CALL CCPERR(1,
+     +              'SYMTR4: character array too short')
+                SYMCHS(Jdo40) (ICH:ICH) = '-'
+                IST = 1
+                ICH = ICH + 1
+              END IF
+C
+              IF (Jdo10 .ne. 4) THEN
+                IF (ICH .gt. LEN(SYMCHS(1))) CALL CCPERR(1,
+     +              'SYMTR4: character array too short')
+                SYMCHS(Jdo40) (ICH:ICH) = AXISCR(Jdo10)
+                IST = 1
+                ICH = ICH + 1
+              END IF
+C
+C
+              IF (Jdo10 .eq. 4 .and. 
+     +               RSM(Jdo20,4,Jdo40) .ne. 0) THEN
+                ITR = ABS(INT(RSM(Jdo20,4,Jdo40)))
+                RRR = REAL(ITR)
+                IF (RRR .gt. ABS(RSM(Jdo20,4,Jdo40))-0.0001 .and.
+     +              RRR .lt. ABS(RSM(Jdo20,4,Jdo40))+0.0001) THEN
+                  write (SYMCHS(Jdo40) (ICH:ICH+2),fmt=6000) ITR
+ 6000             FORMAT (i2,' ')
+                  GO TO 10
+                END IF
+C
+C
+                RRR = ABS(RSM(Jdo20,4,Jdo40))
+                PPP = RRR
+                IF (RRR .gt. 1.0) THEN
+                  PPP = RRR - REAL(ITR)
+                  ITR = ABS(INT(RRR))
+                  write (SYMCHS(Jdo40) (ICH:ICH+2),fmt=6002) ITR
+ 6002             FORMAT (i2,' ')
+                  ICH = ICH + 3
+                END IF
+C
+C
+                ITR = NINT(ABS(PPP)*12.0)
+                I1 = NPNTR1(ITR)
+                I2 = NPNTR2(ITR)
+                IF (ICH+2 .gt. LEN(SYMCHS(1))) CALL CCPERR(1,
+     +              'SYMTR4: character array too short')
+                SYMCHS(Jdo40) (ICH:ICH+2) = NUMB(I1)//'/'//NUMB(I2)
+   10           ICH = ICH + 3
+              END IF
+            END IF
+   20     CONTINUE
+C
+C---- ADD COMMA  space
+C
+          IF (Jdo20 .ne. 3) THEN
+            IF (ICH+2 .gt. LEN(SYMCHS(1))) CALL CCPERR(1,
+     +          'SYMTR4: character array too short')
+            SYMCHS(Jdo40) (ICH:ICH+2) = ',  '
+            ICH = ICH + 3
+          END IF
+   30   CONTINUE
+   40 CONTINUE
+      END
+
 
 C
 C
