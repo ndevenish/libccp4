@@ -197,13 +197,6 @@ may vary.
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_HPUX 1
 #endif
-@ The support for old \idx{Silicon Graphics} \idx{Iris} with 68xxx
-processors is probably not functional.
-<<identifying the platform>>=
-#if defined (iris)
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_IRIS 1
-#endif
 @ \idx{Silicon Graphics} \idx{IRIX} systems \idx{Iris}es, \idx{Indigo}s,
 \idx{Crimson}s etc. (at least version 4 up) are 
 \ac{ansi}\index{ANSI C@\ac{ansi} C} and
@@ -497,11 +490,6 @@ char *message;
 
   ccperr_ (&mone, message, (int) strlen(message));
 #endif
-#if CALL_LIKE_IRIS
-  extern fortran ccperr_();
-
-  (void) ccperr_ ((int) strlen(message), &mone, message);
-#endif
  }
 @ %def fatal
 @ This prints a non-fatal [[message]] using the Fortran i/o.
@@ -538,11 +526,6 @@ char *message;
 
   qprint_ (&zero, message, (int) strlen(message));
 #endif
-#if CALL_LIKE_IRIS
-  extern fortran qprint_();
-
-  (void) qprint_ ((int) strlen(message), &zero, message);
-#endif
  }
 @ %def cqprint
 @ \section{Miscellaneous routines}
@@ -572,11 +555,6 @@ necessary to twiddle the environment strings explicitly.
 #endif
 #if CALL_LIKE_SUN
   void ustenv_ (str, result, Lstr)
-  char *str;
-  int  Lstr;
-#endif
-#if CALL_LIKE_IRIS
-  fortran ustenv_ (Lstr, str, result)
   char *str;
   int  Lstr;
 #endif
@@ -641,11 +619,6 @@ unlink isn't fatal (it's been observed, apparently spuriously).
   char *filename;
   int  Lfilename;
 #endif
-#if CALL_LIKE_IRIS
-  fortran cunlink_ (Lfilename, filename)
-  char *filename;
-  int  Lfilename;
-#endif
 {
   size_t Length;
   char tempfile[MAXFLEN];
@@ -690,11 +663,6 @@ is always called---see diskio documentation.
 #endif
 #if CALL_LIKE_SUN
   void copen_ (iunit, filename, istat, Lfilename)
-  char *filename;
-  int  Lfilename;
-#endif
-#if CALL_LIKE_IRIS
-  fortran copen_ (iunit, Lfilename, filename, istat)
   char *filename;
   int  Lfilename;
 #endif
@@ -837,9 +805,6 @@ N.B.: leaves the stream positioned just after the machine stamp.
 #if CALL_LIKE_SUN
   void qrarch_ (iunit, ipos, ireslt)
 #endif
-#if CALL_LIKE_IRIS
-  fortran qrarch_ (iunit, ipos, ireslt)
-#endif
   int *ipos, *ireslt, *iunit;
 {
   uint16 fileFT, fileIT;        /* float and integer machine types of file */
@@ -906,9 +871,6 @@ N.B.: leaves the stream positioned just after the machine stamp.
 #if CALL_LIKE_SUN
   void qwarch_ (iunit, ipos)
 #endif
-#if CALL_LIKE_IRIS
-  fortran qwarch_ (iunit, ipos)
-#endif
   int *ipos, *iunit;
 {
   unsigned char mtstring[4];    /* machine stamp */
@@ -938,9 +900,6 @@ Closes the file open on \idx{diskio} stream \meta{iunit}.
 #if CALL_LIKE_SUN
   void qclose_ (iunit)
 #endif
-#if CALL_LIKE_IRIS
-  fortran qclose_ (iunit)
-#endif
 
 int *iunit;
 {
@@ -969,9 +928,6 @@ returned as \meta{size}.
 #endif
 #if CALL_LIKE_SUN
   void qmode_ (iunit, mode, size)
-#endif
-#if CALL_LIKE_IRIS
-  fortran qmode_ (iunit, mode, size)
 #endif
 
 int *iunit, *mode, *size;
@@ -1005,9 +961,6 @@ the stream is connected to an MTZ or map file.
 #endif
 #if CALL_LIKE_SUN
   void qread_ (iunit, buffer, nitems, result)
-#endif
-#if CALL_LIKE_IRIS
-  fortran qread_ (iunit, buffer, nitems, result)
 #endif
 
 uint8 * buffer;
@@ -1094,11 +1047,6 @@ of bytes read.
   int Lbuffer;
   char * buffer;
 #endif
-#if CALL_LIKE_IRIS
-  fortran qreadc_ (Lbuffer, iunit, buffer, result)
-  int Lbuffer;
-  char * buffer;
-#endif
 
 int *iunit, *result;
 {
@@ -1149,9 +1097,6 @@ stream \meta{iunit} using the current mode.
 #if CALL_LIKE_SUN
   void qwrite_ (iunit, buffer, nitems)
 #endif
-#if CALL_LIKE_IRIS
-  fortran qwrite_ (iunit, buffer, nitems)
-#endif
 uint8 * buffer;
 int *iunit, *nitems;
 {
@@ -1189,11 +1134,6 @@ stream \meta{iunit} in byte mode.
 #endif
 #if CALL_LIKE_SUN
   void qwritc_ (iunit, buffer, Lbuffer)
-  int Lbuffer;
-  char * buffer;
-#endif
-#if CALL_LIKE_IRIS
-  fortran qwritc_ (Lbuffer, iunit, nitems)
   int Lbuffer;
   char * buffer;
 #endif
@@ -1240,9 +1180,6 @@ Seeks to element \meta{iel} in record \meta{irec} in diskio stream
 #if CALL_LIKE_SUN
   void qseek_ (iunit, irec, iel, lrecl)
 #endif
-#if CALL_LIKE_IRIS
-  fortran qseek_ (iunit, irec, iel, lrecl)
-#endif
 
 int *iunit, *irec, *iel, *lrecl;
 {
@@ -1269,9 +1206,6 @@ Backspaces one record, of length \meta{lrecl} on diskio stream \meta{iunit}.
 #endif
 #if CALL_LIKE_SUN
   void qback_ (iunit, lrecl)
-#endif
-#if CALL_LIKE_IRIS
-  fortran qback_ (iunit, lrecl)
 #endif
 
 int *iunit, *lrecl;
@@ -1305,9 +1239,6 @@ Skip forward 1 record of length \meta{lrecl} on diskio stream \meta{iunit}.
 #endif
 #if CALL_LIKE_SUN
   void qskip_ (iunit, lrecl)
-#endif
-#if CALL_LIKE_IRIS
-  fortran qskip_ (iunit, lrecl)
 #endif
 
 int *iunit, *lrecl;
@@ -1344,11 +1275,6 @@ open on diskio stream \meta{istrm}.
 #endif
 #if CALL_LIKE_SUN
   void cqinq_ (istrm, filnam, length, len_filnam)
-  char *filnam;
-  int len_filnam;
-#endif
-#if CALL_LIKE_IRIS
-  fortran cqinq_ (istrm, len_filnam, filnam, length)
   char *filnam;
   int len_filnam;
 #endif
@@ -1413,9 +1339,6 @@ Returns the current position \meta{locate} in the diskio stream \meta{iunit}.
 #endif
 #if CALL_LIKE_SUN
   void qlocate_ (iunit, locate)
-#endif
-#if CALL_LIKE_IRIS
-  fortran qlocate_ (iunit, locate)
 #endif
 
 int *iunit, *locate;
@@ -2008,7 +1931,7 @@ FUNCTION]] version of [[QNAN]] done in \ft{}.
 #if defined (VMS) || CALL_LIKE_STARDENT
   void CNAN (real)
 #endif
-#if CALL_LIKE_SUN || CALL_LIKE_IRIS
+#if CALL_LIKE_SUN
   void cnan_ (real)
 #endif
   union float_uint_uchar *real;
@@ -2052,9 +1975,6 @@ trivial interface [[QISNAN]].
   int CISNAN (real)
 #endif
 #if CALL_LIKE_SUN
-  int cisnan_ (real)
-#endif
-#if CALL_LIKE_IRIS
   int cisnan_ (real)
 #endif
   union float_uint_uchar *real;
@@ -2101,9 +2021,6 @@ which deals with a whole array \meta{cols} of length \meta{ncols}.
 #if CALL_LIKE_SUN
   void ccpbml_ (ncols, cols)
 #endif
-#if CALL_LIKE_IRIS
-  fortran ccpbml_ (ncols, cols)
-#endif
   int *ncols;
   union float_uint_uchar cols[];
 {
@@ -2128,9 +2045,6 @@ dimension range of 2, indicating minimum and maximum values respectively.
 #endif
 #if CALL_LIKE_SUN
   void ccpwrg_ (ncols, cols, wminmax)
-#endif
-#if CALL_LIKE_IRIS
-  fortran ccpwrg_ (ncols, cols, wminmax)
 #endif
   int *ncols;
   float wminmax[];
@@ -2182,9 +2096,6 @@ systems with the capability and insufficient VM\@.
 #endif
 #if CALL_LIKE_SUN
   void ccpal1_ (routne, n, type, length) 
-#endif
-#if CALL_LIKE_IRIS
-  fortran ccpal1_ (routne, n, type, length)
 #endif
   void (* routne) ();
   int *n, type[], length[];
