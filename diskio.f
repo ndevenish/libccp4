@@ -139,6 +139,7 @@ C     .. Local Scalars ..
       INTEGER JSTAT
       CHARACTER ERRSTR*255,REWRIT* (ISIZE),USRNAM* (ISIZE),
      +     FNAME* (ISTRLN),LNAME* (ISTRLN)
+      LOGICAL LNONAM
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPERR,CCPUPC,COPEN,QPRINT,UGTENV,UGTUID
@@ -171,16 +172,13 @@ C---- Check Logical Names
 C
       FNAME = ' '
       LNAME = LOGNAM
+      LNONAM = .FALSE.
       IF (LNAME.EQ.' ') LNAME = 'diskio.dft'
       CALL UGTENV(LNAME,FNAME)
       IF (FNAME.EQ.'/dev/null') THEN
         JSTAT = 1
       ELSE IF (FNAME.EQ.' ') THEN
-        IF (.NOT. CCPEXS(LOGNAM)) THEN
-          ERRSTR = '(Q)QOPEN Logical name '//LNAME
-          ERRSTR(LENSTR(ERRSTR)+2:) = 'has not been assigned to a file'
-          CALL CCPERR(2,ERRSTR)
-        END IF
+        IF (.NOT. CCPEXS(LNAME)) LNONAM = .TRUE.
         FNAME = LNAME
       END IF
       IF (REWRIT.EQ.'UNKNOWN') 
@@ -201,6 +199,11 @@ C
       IF (IUNIT.EQ.-1) THEN
         CALL CCPERR(1,' (Q)QOPEN failed - no streams left')
       ELSE IF (IUNIT.EQ.-2) THEN
+        IF (LNONAM) THEN
+          ERRSTR = '(Q)QOPEN Logical name '//LNAME
+          ERRSTR(LENSTR(ERRSTR)+2:) = 'has no associated file name'
+          CALL CCPERR(2,ERRSTR)
+        END IF
         ERRSTR = ' (Q)QOPEN failed - File name: '
         ERRSTR(LENSTR(ERRSTR)+2:) = LOGNAM
         CALL CCPERR (-1,ERRSTR)
