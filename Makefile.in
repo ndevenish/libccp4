@@ -78,7 +78,7 @@ LIBTARGETS = ccplib fftlib maplib parser rwatom rwbrook modlib \
            symlib lcflib mtzlib diskio unix plot84lib \
            binsortint library plotsubs 
 
-.PRECIOUS : $(srcdir)/library.c-dist $L # don't zap the library if a component fails
+.PRECIOUS : $L # don't zap the library if a component fails
 
 # probably only recognised by GNU make:
 .PHONY : all clean install $(LIBTARGETS) ranlib realclean distclean \
