@@ -520,6 +520,8 @@ FORTRAN_SUBR ( LKYOUT, lkyout,
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LKYOUT");)
 
+    puts("lkyout: begun");
+
  if (*mindx <= 0 || *mindx > MFILES) {
    printf("Error: mindx out of range!\n");
    return;
@@ -534,9 +536,12 @@ FORTRAN_SUBR ( LKYOUT, lkyout,
    printf("Warning from LKYOUT: no arguments to LABOUT !\n");
    return;
  }
+ puts("lkyout: pos (1)");
   label = (char *) ccp4_utils_malloc((*nlprgo)*31*sizeof(char));
+ puts("lkyout: pos (2)");
 
  temp_name = ccp4_FtoCString(FTN_STR(labin_line), FTN_LEN(labin_line));
+ puts("lkyout: pos (3)");
 
   for (i = 0; i < *nlprgo; ++i) {
     for (j = 0; j < lsprgo_len; ++j) {
@@ -548,11 +553,15 @@ FORTRAN_SUBR ( LKYOUT, lkyout,
     }
     label[i*31+j] = '\0';
   }
+ puts("lkyout: pos (4)");
  
   MtzParseLabin(temp_name,label,*nlprgo,user_label_out[*mindx-1]);
+ puts("lkyout: pos (5)");
 
  free(temp_name);
+ puts("lkyout: pos (6)");
   free(label);
+ puts("lkyout: pos (7)");
 }
 
 /* Fortran wrapper for MtzParseLabin */
