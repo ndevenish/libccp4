@@ -6274,7 +6274,8 @@ C                ************************
 C
             JLEN = ILEN
           END IF
-          TITLE(MINDX) = NTITLE(1:JLEN)
+          IF(JLEN.GE.1)TITLE(MINDX) = NTITLE(1:JLEN)
+          IF(JLEN.EQ.0)TITLE(MINDX) = ' '
         ELSE
 C
 C----    Append the new title to the old one
