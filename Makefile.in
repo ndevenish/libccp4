@@ -278,7 +278,7 @@ graflib : $L(graflib.o)
 # C stuff: (these are kept as whole modules)
 
 $L(library.o) : $(srcdir)/library.c
-	$(CC) $(CFLAGS) -c $(srcdir)/library.c
+	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/library.c
 	$(AR) $L library.o && rm library.o
 library : $L(library.o)
 	$(RANLIB) $L
@@ -343,7 +343,7 @@ testlib : test-lib $(srcdir)/testlib.f
 #
 
 install : all
-	$(INSTALL_DATA) $L $(libdir)/$L
+	$(INSTALL_DATA) `pwd`/$L $(libdir)/$L
 	$(RANLIB) $(libdir)/$L
 	$(SHARE_INST)
 
