@@ -11,7 +11,8 @@ C
 C
       IMPLICIT NONE
       INTEGER NMAX_MEM
-      PARAMETER (NMAX_MEM = 16000000)
+C     NMAX_MEM increased from 16000000 to 32000000
+      PARAMETER (NMAX_MEM = 32000000)
       INTEGER NKEYS,NRECL,KEYBUF(*),ISS
 C
 C----Common block for records to be sorted. At the moment
