@@ -673,105 +673,221 @@ FORTRAN_SUBR ( LRASSN, lrassn,
 
 }
 
+/** Fortran wrapper for ccp4_lridx.
+ * Return dataset information. Note requirement to input how much
+ * memory allocated in calling routine.
+ * @param mindx MTZ file index
+ * @param project_name
+ * @param crystal_name
+ * @param dataset_name
+ * @param isets
+ * @param datcell
+ * @param datwave
+ * @param ndatasets On input: space reserved for dataset information.
+ *  On output: number of datasets found.
+ */
+FORTRAN_SUBR ( LRIDX, lridx,
+	       (const int *mindx, fpstr project_name, 
+                  fpstr crystal_name, fpstr dataset_name,
+		  int *isets, float *datcell, float *datwave,
+                  int *ndatasets, int project_name_len, 
+                  int crystal_name_len, int dataset_name_len),
+	       (const int *mindx, fpstr project_name, 
+                  fpstr crystal_name, fpstr dataset_name,
+		  int *isets, float *datcell, float *datwave,
+                  int *ndatasets),
+	       (const int *mindx, fpstr project_name, int project_name_len, 
+	          fpstr crystal_name, int crystal_name_len,
+		  fpstr dataset_name, int dataset_name_len,
+		  int *isets, float *datcell, float *datwave,
+                  int *ndatasets))
+{
+  int i,j,k,x,d,iset;
+  char cxname[64], cdname[64], cpname[64];
+  int cisets;
+  float cdatcell[6], cdatwave;
+
+  CMTZLIB_DEBUG(puts("CMTZLIB_F: LRIDX");)
+
+  if (MtzCheckSubInput(*mindx,"LRIDX",1)) return;
+
+  /* Loop over crystals */
+  for (iset = 0, x = 0; x < mtzdata[*mindx-1]->nxtal; ++x) {
+   /* Loop over datasets for each crystal */
+   for (d = 0; d < mtzdata[*mindx-1]->xtal[x]->nset; ++d ) {
+      ccp4_lridx(mtzdata[*mindx-1], mtzdata[*mindx-1]->xtal[x]->set[d], 
+		 cxname, cdname, cpname, &cisets, cdatcell, &cdatwave);
+
+      /* check calling Fortran has assigned enough memory */
+      if (iset+1 > *ndatasets) {
+       printf("Warning in LRIDX. You have only reserved enough memory for %d datasets but there are more in the MTZ file. \n",*ndatasets);
+       printf("Only returning partial dataset information. \n");
+       *ndatasets = iset;
+       return;
+      }
+
+      for (j = 0; j < project_name_len; ++j) {
+       if (cpname[j] == '\0') {
+        for (k = j; k < project_name_len; ++k) {
+          project_name[project_name_len*iset+k] = ' ';
+        }
+        break;
+       } else {
+         project_name[project_name_len*iset+j] = cpname[j];
+       }
+      }
+
+      for (j = 0; j < crystal_name_len; ++j) {
+       if (cxname[j] == '\0') {
+        for (k = j; k < crystal_name_len; ++k) {
+          crystal_name[crystal_name_len*iset+k] = ' ';
+        }
+        break;
+       } else {
+         crystal_name[crystal_name_len*iset+j] = cxname[j];
+       }
+      }
+
+      for (j = 0; j < dataset_name_len; ++j) {
+       if (cdname[j] == '\0') {
+        for (k = j; k < dataset_name_len; ++k) {
+          dataset_name[dataset_name_len*iset+k] = ' ';
+        }
+        break;
+       } else {
+         dataset_name[dataset_name_len*iset+j] = cdname[j];
+       }
+      }
+
+      isets[iset] = cisets;
+      for (j = 0; j < 6; ++j) 
+        datcell[iset*6+j] = cdatcell[j];
+      datwave[iset] = cdatwave;
+
+      ++iset;
+   }
+  }
+  *ndatasets = iset;
+
+}
+
 /* Fortran wrapper for ccp4_lridx */
 FORTRAN_SUBR ( LRIDC, lridc,
 	       (const int *mindx, fpstr project_name, fpstr dataset_name,
-		  int isets[MSETS], float datcell[MSETS][6], float datwave[MSETS],
+		  int *isets, float *datcell, float *datwave,
                   int *ndatasets, int project_name_len, int dataset_name_len),
 	       (const int *mindx, fpstr project_name, fpstr dataset_name,
-		  int isets[MSETS], float datcell[MSETS][6], float datwave[MSETS],
+		  int *isets, float *datcell, float *datwave,
                   int *ndatasets),
 	       (const int *mindx, fpstr project_name, int project_name_len,
 		  fpstr dataset_name, int dataset_name_len,
-		  int isets[MSETS], float datcell[MSETS][6], float datwave[MSETS],
+		  int *isets, float *datcell, float *datwave,
                   int *ndatasets))
 {
-  int i,j,k;
-  char cxname[MSETS][64], cdname[MSETS][64], cpname[MSETS][64];
+  int i,j,k,x,d,iset;
+  char cxname[64], cdname[64], cpname[64];
+  int cisets;
+  float cdatcell[6], cdatwave;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRIDC");)
 
- if (MtzCheckSubInput(*mindx,"LRIDC",1)) return;
+  if (MtzCheckSubInput(*mindx,"LRIDC",1)) return;
 
-  ccp4_lridx(mtzdata[*mindx-1], cxname, cdname, cpname, isets, datcell, 
-      datwave, ndatasets);
+  /* Loop over crystals */
+  for (iset = 0, x = 0; x < mtzdata[*mindx-1]->nxtal; ++x) {
+   /* Loop over datasets for each crystal */
+   for (d = 0; d < mtzdata[*mindx-1]->xtal[x]->nset; ++d ) {
+      ccp4_lridx(mtzdata[*mindx-1], mtzdata[*mindx-1]->xtal[x]->set[d], 
+		 cxname, cdname, cpname, &cisets, cdatcell, &cdatwave);
 
-  for (i = 0; i < *ndatasets; ++i) {
-    for (j = 0; j < project_name_len; ++j) {
-      if (cpname[i][j] == '\0') {
+      for (j = 0; j < project_name_len; ++j) {
+       if (cpname[j] == '\0') {
         for (k = j; k < project_name_len; ++k) {
-          project_name[project_name_len*i+k] = ' ';
+          project_name[project_name_len*iset+k] = ' ';
         }
         break;
-      } else {
-        project_name[project_name_len*i+j] = cpname[i][j];
+       } else {
+         project_name[project_name_len*iset+j] = cpname[j];
+       }
       }
-    }
-  }
 
-  for (i = 0; i < *ndatasets; ++i) {
-    for (j = 0; j < dataset_name_len; ++j) {
-      if (cdname[i][j] == '\0') {
+      for (j = 0; j < dataset_name_len; ++j) {
+       if (cdname[j] == '\0') {
         for (k = j; k < dataset_name_len; ++k) {
-          dataset_name[dataset_name_len*i+k] = ' ';
+          dataset_name[dataset_name_len*iset+k] = ' ';
         }
         break;
-      } else {
-        dataset_name[dataset_name_len*i+j] = cdname[i][j];
+       } else {
+         dataset_name[dataset_name_len*iset+j] = cdname[j];
+       }
       }
-    }
-  }
 
+      isets[iset] = cisets;
+      for (j = 0; j < 6; ++j) 
+        datcell[iset*6+j] = cdatcell[j];
+      datwave[iset] = cdatwave;
+
+      ++iset;
+   }
+  }
+  *ndatasets = iset;
 }
 
 /* Fortran wrapper for ccp4_lridx */
 FORTRAN_SUBR ( LRID, lrid,
 	       (const int *mindx, fpstr project_name, fpstr dataset_name,
-		  int isets[MSETS], int *ndatasets, 
+		  int *isets, int *ndatasets, 
                   int project_name_len, int dataset_name_len),
 	       (const int *mindx, fpstr project_name, fpstr dataset_name,
-		  int isets[MSETS], int *ndatasets),
+		  int *isets, int *ndatasets),
 	       (const int *mindx, fpstr project_name, int project_name_len,
 		  fpstr dataset_name, int dataset_name_len,
-		  int isets[MSETS], int *ndatasets))
+		  int *isets, int *ndatasets))
 {
-  int i,j,k;
-  char cxname[MSETS][64], cdname[MSETS][64], cpname[MSETS][64];
-  float datcell[MSETS][6], datwave[MSETS];
+  int i,j,k,x,d,iset;
+  char cxname[64], cdname[64], cpname[64];
+  int cisets;
+  float cdatcell[6], cdatwave;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRID");)
 
- if (MtzCheckSubInput(*mindx,"LRID",1)) return;
+  if (MtzCheckSubInput(*mindx,"LRID",1)) return;
 
-  ccp4_lridx(mtzdata[*mindx-1], cxname, cdname, cpname, isets, datcell, 
-      datwave, ndatasets);
+  /* Loop over crystals */
+  for (iset = 0, x = 0; x < mtzdata[*mindx-1]->nxtal; ++x) {
+   /* Loop over datasets for each crystal */
+   for (d = 0; d < mtzdata[*mindx-1]->xtal[x]->nset; ++d ) {
+      ccp4_lridx(mtzdata[*mindx-1], mtzdata[*mindx-1]->xtal[x]->set[d], 
+		 cxname, cdname, cpname, &cisets, cdatcell, &cdatwave);
 
-  for (i = 0; i < *ndatasets; ++i) {
-    for (j = 0; j < project_name_len; ++j) {
-      if (cpname[i][j] == '\0') {
+      for (j = 0; j < project_name_len; ++j) {
+       if (cpname[j] == '\0') {
         for (k = j; k < project_name_len; ++k) {
-          project_name[project_name_len*i+k] = ' ';
+          project_name[project_name_len*iset+k] = ' ';
         }
         break;
-      } else {
-        project_name[project_name_len*i+j] = cpname[i][j];
+       } else {
+         project_name[project_name_len*iset+j] = cpname[j];
+       }
       }
-    }
-  }
 
-  for (i = 0; i < *ndatasets; ++i) {
-    for (j = 0; j < dataset_name_len; ++j) {
-      if (cdname[i][j] == '\0') {
+      for (j = 0; j < dataset_name_len; ++j) {
+       if (cdname[j] == '\0') {
         for (k = j; k < dataset_name_len; ++k) {
-          dataset_name[dataset_name_len*i+k] = ' ';
+          dataset_name[dataset_name_len*iset+k] = ' ';
         }
         break;
-      } else {
-        dataset_name[dataset_name_len*i+j] = cdname[i][j];
+       } else {
+         dataset_name[dataset_name_len*iset+j] = cdname[j];
+       }
       }
-    }
-  }
 
+      isets[iset] = cisets;
+
+      ++iset;
+   }
+  }
+  *ndatasets = iset;
 }
 
 /* If we are reading from memory rather than file, this simply sets irref */
