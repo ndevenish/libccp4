@@ -14,7 +14,6 @@ $   deass sys$output
 $ endif
 $ del .lis;,.obj;
 $ FORTRAN clibs:graflib.f,clibs:pack_f.f
-$ CC clibs:pack_c.c,chelp.c
-$ lib/rep ccp4_lib:libccp4.olb graflib.obj,pack_f.obj,pack_c.obj,chelp.obj 
-$ DEL graflib.obj;*,pack_f.obj;*,pack_c.obj;*,chelp.obj;*
+$ lib/rep ccp4_lib:libccp4.olb graflib.obj,pack_f.obj,pack_c.obj
+$ DEL graflib.obj;*,pack_f.obj;*,pack_c.obj;*
 $!
