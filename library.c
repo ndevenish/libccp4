@@ -491,9 +491,9 @@ static int
 #endif
 #if defined (VMS) 
   void HGETLIMITS (int *IValueNotDet, float *ValueNotDet);
-  void CMKDIR (struct dsc$desccriptor_s *path, struct dsc$desccriptor_s *cmode, 
+  void CMKDIR (struct dsc$descriptor_s *path, struct dsc$descriptor_s *cmode, 
           int *result);
-  void CCHMOD (struct dsc$desccriptor_s *path, struct dsc$desccriptor_s *cmode, 
+  void CCHMOD (struct dsc$descriptor_s *path, struct dsc$descriptor_s *cmode, 
           int *result);
 #endif
 #if CALL_LIKE_STARDENT
@@ -1744,7 +1744,7 @@ int size;
   char * buffer;
 #endif
 #ifdef VMS
-  void QREADC (int *iunit, struct dsc$desccriptor_s *buffer, int *result)
+  void QREADC (int *iunit, struct dsc$descriptor_s *buffer, int *result)
 #endif
 #if CALL_LIKE_STARDENT
   void QREADC (int *iunit, struct Str_Desc *buffer, int *result)
@@ -2566,7 +2566,7 @@ int __stdcall ISATTY (int *lunit)
   const char *path, *cmode;
 #endif
 #if defined (VMS)
-  void CMKDIR (struct dsc$desccriptor_s *path, struct dsc$desccriptor_s *cmode, 
+  void CMKDIR (struct dsc$descriptor_s *path, struct dsc$descriptor_s *cmode, 
       int *result)
 #endif
 #if CALL_LIKE_STARDENT
@@ -2611,7 +2611,7 @@ int __stdcall ISATTY (int *lunit)
   const char *path, *cmode;
 #endif
 #if defined (VMS)
-  void CCHMOD (struct dsc$desccriptor_s *path, struct dsc$desccriptor_s *cmode, 
+  void CCHMOD (struct dsc$descriptor_s *path, struct dsc$descriptor_s *cmode, 
      int *result)
 #endif
 #if CALL_LIKE_STARDENT
