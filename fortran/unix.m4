@@ -1,6 +1,8 @@
 dnl *** This file is meant to be processed by m4 with an appropriate 
 dnl     definition for the system type to produce unix.f
 dnl
+dnl $Id$
+dnl
 changequote([,])dnl * use [] as quotes rather than `'
 dnl
 dnl * units for record lengths:
