@@ -160,6 +160,7 @@ FORTRAN_SUBR ( USTENV, ustenv,
 }
 #endif
 
+#if ! defined (_MVS)
 FORTRAN_SUBR ( USTIME, ustime,
          (int *isec),
          (int *isec),
@@ -167,6 +168,7 @@ FORTRAN_SUBR ( USTIME, ustime,
 {
   *isec = time(NULL);
 }
+#endif
 
 /* \section{Miscellaneous routines}                                         */
 /* \subsection{{\tt outbuf()}}                                              */
