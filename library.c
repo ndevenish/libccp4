@@ -1537,7 +1537,22 @@ void *ccp4calloc(size_t nelem , size_t elsize)
     }
   return val;}
 
+#if defined (_MVS)
+double ccp4_erfc( double x )
+{
+  double t,z,ans;
+
+  z=fabs(x);
+  t=1.0/(1.0+0.5*z);
+  ans=t*exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+
+      t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+
+      t*(-0.82215223+t*0.17087277)))))))));
+  return  x >= 0.0 ? ans : 2.0-ans;
+}
+#endif
+
 #if defined (__APPLE__)
 void _carbon_init(int argc, char **argv) {}
 void _objcInit(void) {}
 #endif
+
