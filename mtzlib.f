@@ -2614,7 +2614,7 @@ C---- Set BIOMOL absence flags to zero if the calling program can not
 C     interpret them
 C
             IF(.NOT. BIOMOL)THEN
-              DO 20 JDO20 = 1,NCOLS(MINDEX)
+              DO 20 JDO20 = 1,NPLABS(MINDEX)
                 IF(ADATA(JDO20).LT.-0.99E+10) ADATA(JDO20) = 0.0
    20         CONTINUE
             ENDIF
