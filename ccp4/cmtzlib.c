@@ -400,12 +400,24 @@ MTZ *MtzGet(const char *logname, int read_refs)
        }
 
     else if (strncmp (mkey, "COLU",4) == 0) {
+      /* Check that there are enough tokens in the header record */
+      if (ntok < 5) {
+	printf("MTZ header is corrupted: missing tokens in COLUMN record\n");
+	return(NULL);
+      }
       ++icolin;
       strcpy(label,token[1].fullstring);
       strcpy(type,token[2].fullstring);
       min = (float) token[3].value;
       max = (float) token[4].value;
-      icset = (int) token[5].value;
+      /* Dataset id for this column
+	 Very old MTZ files may not have this value */
+      if (ntok < 6) {
+	printf("Dataset id missing from COLUMN record in MTZ header\n");
+	icset = 0;
+      } else {
+	icset = (int) token[5].value;
+      }
       /* Special trap for M/ISYM */
       if (type[0] == 'Y' && strncmp (label,"M/ISYM",6) == 0)
         strcpy(label,"M_ISYM");
