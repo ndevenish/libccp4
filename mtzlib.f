@@ -247,9 +247,7 @@ C   WBATHD      Write the batch headers to the MTZ file open for write
 C               the batch headers are written at the end of the file -
 C               called by LWCLOS
 C
-C   LRHDRL      Read one line from the header on the file (calls qread)
-C
-C   LWHDRL      Write one line to the header on the file (calls qwrite)
+C   LRHDRL      Read one line from the header on the file (calls qreadc)
 C
 C   SYMFR3      These are the only symmetry subroutines called from the
 C   SYMTR3      MTZ subroutines mark 1. They are both slight modifications
@@ -981,7 +979,7 @@ C     .. Common blocks ..
       REAL   CELL,UMAT,PHIXYZ,CRYDAT,DATUM,
      $     PHISTT,PHIEND,SCANAX,TIME1,TIME2,
      $     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD,E1,E2,E3,GONPAD,
-     $     SOURCE,S0,BEMDAT,DIVVD,
+     $     SOURCE,S0,BEMDAT,
      $     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD
       CHARACTER BTITLE*70, GONLAB*8, BTITL*94
 C     
@@ -1685,8 +1683,7 @@ C     .. Local Scalars ..
 C     ..
 C     .. Local Arrays ..
       REAL FVALUE(NPARSE)
-      INTEGER IBEG(NPARSE),IDEC(NPARSE),IEND(NPARSE),ITYP(NPARSE),
-     +     IWORD(1)
+      INTEGER IBEG(NPARSE),IDEC(NPARSE),IEND(NPARSE),ITYP(NPARSE)
       CHARACTER CTYPES(NTYP)*1,LTYPES(LTYP)*1,CVALUE(NPARSE)*4
 C     ..
 C     .. External Functions ..
@@ -1696,7 +1693,7 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL BLANK,GTPINT,GTPREA,LERROR,LHPRT,LRCLOS,LRHDRL,PARSER,
      +     PUTLIN,QMODE,QOPEN,QSEEK,RBATHD,LSTRSL,SYMFR3, QRARCH,
-     +     QREADI, QPRINT
+     +     QREADI, QPRINT, QREADC
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -1729,11 +1726,9 @@ C
         WRITE (LINE2,FMT='(A,I3,A,1X,I1,1X,A)') 
      +    'From LROPEN : Index',MINDX,
      +    ' is out of range (allowed 1..',MFILES,')'
-        ISTAT = 2
-        IFAIL = -1
 C
 C            *************************
-        CALL LERROR(ISTAT,IFAIL,LINE2)
+        CALL LERROR(2,-1,LINE2)
 C            ************************
 C
       ELSE
@@ -1750,21 +1745,18 @@ C
             WRITE (LINE2,FMT='(A,A,I3,A)')
      +        'From LROPEN : Wrong index in call, files already open',
      +        ' for read AND write on index',MINDX,'  pretty serious'
-            ISTAT = 2
-            IFAIL = -1
 C
 C                *************************
-            CALL LERROR(ISTAT,IFAIL,LINE2)
+            CALL LERROR(2,-1,LINE2)
 C                *************************
 C
           ELSE
             WRITE (LINE2,FMT='(A,A,I3,A)')
      +        'From LROPEN : Wrong index in call, file already open for'
      +        ,' read on index',MINDX,' all header info will be lost'
-            ISTAT = 1
 C
 C                *************************
-            CALL LERROR(ISTAT,IFAIL,LINE2)
+            CALL LERROR(1,1,LINE2)
 C                *************************
 C
 C---- Get rid of existing file info with LRCLOS
@@ -1780,10 +1772,9 @@ C
           WRITE (LINE2,FMT='(A,A,I3,A)')
      +      'From LROPEN : Wrong index in call, file already open for',
      +      ' write on index',MINDX,' output header may be corrupted'
-          ISTAT = 1
 C
 C              *************************
-          CALL LERROR(ISTAT,IFAIL,LINE2)
+          CALL LERROR(1,1,LINE2)
 C              *************************
 C
         END IF
@@ -1827,7 +1818,7 @@ C
         NREFR(MINDX) = 0
         NBATCH(MINDX) = 0
         NPLABS(MINDX) = 0
-        SRANGE(1,MINDX) = 0.0
+        SRANGE(1,MINDX) = 10.0
         SRANGE(2,MINDX) = 0.0
         NHISTL(MINDX) = 0
         HDRST(MINDX) = 0
@@ -1862,31 +1853,24 @@ C     Read in header records with mode=0 (bytes), except offset
 C
 C            ******************************
         CALL QSEEK(RLUN(MINDX),1,1,1)
-        CALL QREADI(RLUN(MINDX),IWORD,4,IER)
+        CALL QREADC(RLUN(MINDX),MKEY,IER)
 C            ******************************
 C
         IF (IER.NE.0) THEN
-          ISTAT = 2
-          IFAIL = -1
           WRITE (LINE2,FMT='(A,A)')
      +      'From LROPEN : Error reading 1st record of MTZ file',
      +      FILNAM(1:LENSTR(FILNAM))
 C
 C              *************************
-          CALL LERROR(ISTAT,IFAIL,LINE2)
+          CALL LERROR(2,-1,LINE2)
 C              *************************
-C
         ELSE
-          WRITE (MKEY,FMT='(A4)') IWORD(1)
-C
           IF (MKEY(1:3).NE.'MTZ') THEN
-            ISTAT = 2
-            IFAIL = -1
             WRITE (LINE2,FMT='(A,A,A)') 'From LROPEN : File ',
      +        FILNAM(1:LENSTR(FILNAM)),' is not an MTZ file'
 C
 C                *************************
-            CALL LERROR(ISTAT,IFAIL,LINE2)
+            CALL LERROR(2,-1,LINE2)
 C                *************************
 C
           ELSE
@@ -1970,11 +1954,9 @@ C                  **************************************
               IF (NBATCH(MINDX).GT.MBATCH) THEN
                  WRITE (LINE2,FMT='(A,I6)')
      +   ' From LROPEN : too many batches in file, maximum is', MBATCH
-                 ISTAT = 2
-                 IFAIL = -1
 C
 C                     *************************
-                 CALL LERROR(ISTAT,IFAIL,LINE2)
+                 CALL LERROR(2,-1,LINE2)
 C                     *************************
               ENDIF
 C
@@ -2039,10 +2021,9 @@ C
 C
               WRITE (LINE2,FMT='(A)')
      +     'From LROPEN : Unrecognised Lattice type in header, set to P'
-              ISTAT = 1
 C
 C                  *************************
-              CALL LERROR(ISTAT,IFAIL,LINE2)
+              CALL LERROR(1,1,LINE2)
 C                  *************************
 C
               LTYPE(MINDX) = 'P'
@@ -2064,10 +2045,9 @@ C
                   WRITE (LINE2,FMT='(A,A)')
      +    'From LROPEN : An error occured reading symmetry from header,'
      +              ,' No symmetry information stored'
-                  ISTAT = 1
 C
 C                      *************************
-                  CALL LERROR(ISTAT,IFAIL,LINE2)
+                  CALL LERROR(1,1,LINE2)
 C                      *************************
 C
                   NSYM(MINDX) = 0
@@ -2117,10 +2097,9 @@ C
      +          'From LROPEN : Column',NCOLR,' Label ',
      +          CLABEL(NCOLR,MINDX),'has unrecognised type (',
      +          CTYPE(NCOLR,MINDX),') - set to R'
-              ISTAT = 1
 C
 C                  *************************
-              CALL LERROR(ISTAT,IFAIL,LINE2)
+              CALL LERROR(1,1,LINE2)
 C                  *************************
 C
               CTYPE(NCOLR,MINDX) = 'R'
@@ -2151,10 +2130,9 @@ C
               ELSE IF (BATFLG.GT.0) THEN
                 WRITE (LINE2,FMT='(A)')
      +      'From LROPEN : Batch information in MTZ header inconsistent'
-                ISTAT = 1
 C
 C                    *************************
-                CALL LERROR(ISTAT,IFAIL,LINE2)
+                CALL LERROR(1,1,LINE2)
 C                    *************************
 C
                 BATFLG = -1
@@ -2169,10 +2147,9 @@ C---- illegal line, ignore it
 C
               WRITE (LINE2,FMT='(A)')
      +      'From LROPEN : Illegal keyword in MTZ header - line ignored'
-              ISTAT = 1
 C
 C                  *************************
-              CALL LERROR(ISTAT,IFAIL,LINE2)
+              CALL LERROR(1,1,LINE2)
 C                  *************************
 C
               STROUT = LINE
@@ -2197,10 +2174,9 @@ C
      +          'From LROPEN : Header indicates',NCOLS(MINDX),
      +          ' columns, but minimum allowed columns in MTZ file is',
      +          MINCOL
-              ISTAT = 1
 C
 C                  *************************
-              CALL LERROR(ISTAT,IFAIL,LINE2)
+              CALL LERROR(1,1,LINE2)
 C                  *************************
 C
             END IF
@@ -2212,10 +2188,9 @@ C
      +          'From LROPEN : Header indicates',NCOLS(MINDX),
      +          ' columns, but ',' there were',NCOLR,
      +          ' column labels in header'
-              ISTAT = 1
 C
 C                  *************************
-              CALL LERROR(ISTAT,IFAIL,LINE2)
+              CALL LERROR(1,1,LINE2)
 C                  *************************
 C
             END IF
@@ -2227,10 +2202,9 @@ C
      +          'From LROPEN : Header indicates',NSYM(MINDX),
      +          ' symmetry ops,',' but',NSYMIN,
      +          ' ops were present in header'
-              ISTAT = 1
 C
 C                  *************************
-              CALL LERROR(ISTAT,IFAIL,LINE2)
+              CALL LERROR(1,1,LINE2)
 C                  *************************
 C
             END IF
@@ -2242,10 +2216,9 @@ C
                 WRITE (LINE2,FMT='(A,I4,A,I4,A)')
      +            'From LROPEN : Header indicates',NBATCH(MINDX),
      +            ' batches, but',NBATRF,' serial numbers present'
-                ISTAT = 1
 C
 C                    *************************
-                CALL LERROR(ISTAT,IFAIL,LINE2)
+                CALL LERROR(1,1,LINE2)
 C                    *************************
 C
                 NBATCH(MINDX) = NBATRF
@@ -2303,10 +2276,9 @@ C
               WRITE (LINE2,FMT='(A,A)')
      +          'From LROPEN : Unrecognised line in MTZ file header - ',
      +          'file may be corrupt, continuing ...'
-              ISTAT = 1
 C
 C                  *************************
-              CALL LERROR(ISTAT,IFAIL,LINE2)
+              CALL LERROR(1,1,LINE2)
 C                  *************************
 C
             END IF
@@ -2314,10 +2286,9 @@ C
   190       WRITE (LINE2,FMT='(A,A)')
      +    'From LROPEN : MTZ header indicates that file is standard MTZ'
      +        ,' but there are batch headers present - ignoring them'
-            ISTAT = 1
 C
 C                *************************
-            CALL LERROR(ISTAT,IFAIL,LINE2)
+            CALL LERROR(1,1,LINE2)
 C                *************************
 C
 C---- End of MTZ header processing
@@ -2356,9 +2327,6 @@ C
 C---- MTZLIB internal subroutine to read one header record from an MTZ
 C     file open for read on unit ILUN, and place the result in the
 C     character string LINE.
-C     All the header lines are 80 characters long and written to the
-C     file in 20A4 format, so have to decode from integers to chars
-C     QMODE = 0 for the header record (ie bytes)
 C
 C---- Arguments :
 C
@@ -2372,35 +2340,23 @@ C     .. Scalar Arguments ..
       CHARACTER LINE* (*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IER,IFAIL,ISTAT
-      CHARACTER ELINE*400
-C     ..
-C     .. Local Arrays ..
-      INTEGER ILINE(20)
+      INTEGER IER
+      CHARACTER ELINE*80
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QREADI
+      EXTERNAL LERROR,QREADC
 C     ..
-C
 C          ************************
-      CALL QREADI(ILUN,ILINE,80,IER)
+      CALL QREADC(ILUN,LINE,IER)
 C          ************************
-C
       IF (IER.GT.0) THEN
-        WRITE (ELINE,FMT='(A,A,I2,A)')
-     +    'From LRHDRL : Error reading header record from MTZ file, ',
-     +    'want 20 words ,',IER,' words read'
-        ISTAT = 2
-        IFAIL = -1
-C
+        WRITE (ELINE,FMT='(A,I2)')
+     +       'From LRHDRL : Error reading header record from MTZ file, '
+     +       // 'want 80 bytes, got ',IER
 C            *************************
-        CALL LERROR(ISTAT,IFAIL,ELINE)
+        CALL LERROR(ISTAT,-1,ELINE)
 C            ************************
-C
-      ELSE
-        WRITE (LINE,FMT='(20A4)') (ILINE(I),I=1,20)
       END IF
-C
       END
 C
 C
@@ -2477,7 +2433,7 @@ C     .. External Functions ..
       REAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR, LSTLSQ, CCPERR
+      EXTERNAL LERROR, LSTLSQ, CCPERR, QREADR
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -3825,7 +3781,7 @@ C     .. Common blocks ..
       REAL   CELL,UMAT,PHIXYZ,CRYDAT,DATUM,
      +     PHISTT,PHIEND,SCANAX,TIME1,TIME2,
      +     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD,E1,E2,E3,GONPAD,
-     +     SOURCE,S0,BEMDAT
+     +     SOURCE,S0,BEMDAT,
      +     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD
       CHARACTER BTITLE*70, GONLAB*8, BTITL*94
 C     
@@ -4318,7 +4274,7 @@ C     .. Local Scalars ..
       CHARACTER LINE*400,STROUT*400
 C     ..
 C     .. Local Arrays ..
-      INTEGER WINDEX(MBATCH),IWORD(1)
+      INTEGER WINDEX(MBATCH)
       CHARACTER SYMCHS(96)*80
 C     ..
 C     .. External Functions ..
@@ -4326,8 +4282,8 @@ C     .. External Functions ..
       EXTERNAL LENSTR
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL BLANK,LERROR,LHPRT,LWHDRL,PUTLIN,QCLOSE,QSEEK,
-     +         QMODE,QWARCH,SORTUP,SYMTR3,WBATHD, QWRITI
+      EXTERNAL BLANK,LERROR,LHPRT,QWRITC,PUTLIN,QCLOSE,QSEEK,
+     +         QMODE,QWARCH,SORTUP,SYMTR3,WBATHD, QWRITI, QWRITC
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -4378,19 +4334,18 @@ C            **************************
 C
 C---- MTZ Version stamp
 C
-        WRITE (LINE,FMT='(A4,1X,A)') 'VERS',VERSN
+        LINE = 'VERS '//VERSN
 C
 C            ******************************
-        CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+        CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C            ******************************
 C
 C---- File Title
 C
-        WRITE (LINE,FMT='(A5,1X,2A)') 'TITLE',
-     +    TITLE(MINDX) (1:LENSTR(TITLE(MINDX))),'.'
+        LINE = 'TITLE ' // TITLE(MINDX) (1:LENSTR(TITLE(MINDX))) // '.'
 C
 C            ******************************
-        CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+        CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C            ******************************
 C
 C---- No. of columns, no. of refls, also copy to header, for print
@@ -4400,7 +4355,7 @@ C
      +    NBATCH(MINDX)
 C
 C            ******************************
-        CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+        CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C            ******************************
 C
         NCOLS(MINDX) = NCOLW(MINDX)
@@ -4411,7 +4366,7 @@ C
         WRITE (LINE,FMT='(A4,1X,6F10.4)') 'CELL', (CELL(I,MINDX),I=1,6)
 C
 C            ******************************
-        CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+        CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C            ******************************
 C
 C---- Sort Order
@@ -4419,7 +4374,7 @@ C
         WRITE (LINE,FMT='(A4,1X,5I4)') 'SORT', (ISORT(I,MINDX),I=1,5)
 C
 C            ******************************
-        CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+        CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C            ******************************
 C
 C---- Symmetry - convert from matrices to international tables style
@@ -4432,7 +4387,7 @@ C
      +      SPGNAM(MINDX),PGNAM(MINDX)
 C
 C              ******************************
-          CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+          CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C              ******************************
 C
           ISTAT = 0
@@ -4442,11 +4397,10 @@ C              **************************************************
 C              **************************************************
 C
           DO 10 JDO10 = 1,NSYM(MINDX)
-            WRITE (LINE,FMT='(A4,1X,A)') 'SYMM',
-     +        SYMCHS(JDO10) (1:LENSTR(SYMCHS(JDO10)))
+            LINE = 'SYMM' // SYMCHS(JDO10) (1:LENSTR(SYMCHS(JDO10)))
 C
 C                ******************************
-            CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+            CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C                ******************************
 C
    10     CONTINUE
@@ -4459,7 +4413,7 @@ C
      +                   WSRNGE(1,MINDX),WSRNGE(2,MINDX)
 C
 C            ******************************
-        CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+        CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C            ******************************
 C
         SRANGE(1,MINDX) = WSRNGE(1,MINDX)
@@ -4474,7 +4428,7 @@ C
      +      WRANGE(1,JDO20,MINDX),WRANGE(2,JDO20,MINDX)
 C
 C              ******************************
-          CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+          CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C              ******************************
 C
           CRANGE(1,JDO20,MINDX) = WRANGE(1,JDO20,MINDX)
@@ -4511,7 +4465,7 @@ C
      +          (WOMBAT(WINDEX(JDO30),MINDX),JDO30=JDO40,ENDLOP)
 C
 C                  ******************************
-              CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+              CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C                  ******************************
 C
    40       CONTINUE
@@ -4527,7 +4481,7 @@ C
      +          (BATNUM(JDO50,MINDX),JDO50=JDO60,ENDLOP)
 C
 C                  ******************************
-              CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+              CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C                  ******************************
 C
    50       CONTINUE
@@ -4537,10 +4491,10 @@ C
 C
 C---- Header end record
 C
-        WRITE (LINE,FMT='(A4)') 'END '
+        LINE = 'END '
 C
 C            ******************************
-        CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+        CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C            ******************************
 C
 C---- And now History header (which has been filled in LWHIST)
@@ -4549,13 +4503,13 @@ C
           WRITE (LINE,FMT='(A7,1X,I3)') 'MTZHIST',NHISTL(MINDX)
 C
 C              ******************************
-          CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+          CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C              ******************************
 C
           DO 60 JDO65 = 1,NHISTL(MINDX)
 C
 C                *************************************
-            CALL LWHDRL(WLUN(MINDX),HSCR(JDO65,MINDX))
+            CALL QWRITC(WLUN(MINDX),HSCR(JDO65,MINDX))
 C                *************************************
 C
    60     CONTINUE
@@ -4568,7 +4522,7 @@ C
           WRITE (LINE,FMT='(A7)') 'MTZBATS'
 C
 C              ******************************
-          CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+          CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C              ******************************
 C
           IF (NBATW(MINDX).GT.0) THEN
@@ -4606,20 +4560,14 @@ C
         WRITE (LINE,FMT='(A15)') 'MTZENDOFHEADERS'
 C
 C            ******************************
-        CALL LWHDRL(WLUN(MINDX),LINE(1:80))
+        CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C            ******************************
 C
 C---- Go back to start of file and fill up first record
 C
 C            ************************
         CALL QSEEK(WLUN(MINDX),1,1,1)
-C            ************************
-C
-        LINE(1:4) = 'MTZ '
-        READ (LINE,FMT='(A4)') IWORD
-C
-C            **********************************
-        CALL QWRITI(WLUN(MINDX),IWORD,4)
+        CALL QWRITC(WLUN(MINDX),'MTZ ')
         CALL QMODE (WLUN(MINDX),2,NITEM)
         CALL QWRITI(WLUN(MINDX),HDRST(MINDX),1)
 C       architecture info:
@@ -4654,48 +4602,6 @@ C
       END IF
 C
       END
-C
-C
-C
-C     ============================
-      SUBROUTINE LWHDRL(ILUN,LINE)
-C     ============================
-C
-C     MTZLIB internal subroutine to write one header record to an MTZ
-C     file open for write on unit ILUN
-C     All the header lines are 80 characters long and written to the
-C     file in 20A4 format, so have to encode from chars to integers
-C     QMODE is 0 for the header records (ie byte)
-C
-C---- Arguments
-C
-C     ILUN	(I)	INTEGER 	LUN on which the file is open
-C
-C     LINE	(I)	CHARACTER*(*)	Character string containing header record
-C					to be written to file
-C
-C     .. Scalar Arguments ..
-      INTEGER ILUN
-      CHARACTER LINE* (*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER I
-C     ..
-C     .. Local Arrays ..
-      INTEGER ILINE(20)
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL QWRITI
-C     ..
-C
-      READ (LINE,FMT='(20A4)') (ILINE(I),I=1,20)
-C
-C          **********************
-      CALL QWRITI(ILUN,ILINE,80)
-C          **********************
-C
-      END
-C
 C
 C
 C     =====================================
@@ -6090,7 +5996,7 @@ C     .. Local Scalars ..
       CHARACTER LINE*80
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LWHDRL,QMODE,QWRITR
+      EXTERNAL QWRITC,QMODE,QWRITR
 C     ..
 C
 C---- Here are the important EQUIVALENCE statements
@@ -6112,7 +6018,7 @@ C
       WRITE (LINE,FMT='(A,4I8)') 'BH ',BATCH,NWORDS,NINTGR,NREALS
 C
 C     ============================
-      CALL LWHDRL(ILUN,LINE(1:80))
+      CALL QWRITC(ILUN,LINE(1:80))
 C     ============================
 C
 C---- Write out batch title == 1st 70 characters of CBATCH
@@ -6125,7 +6031,7 @@ C
    10 CONTINUE
 C
 C     ============================
-      CALL LWHDRL(ILUN,LINE(1:80))
+      CALL QWRITC(ILUN,LINE(1:80))
 C     ============================
 C
 C---- If NWORDS = 0, only write out batch title
@@ -6156,7 +6062,7 @@ C
    30     CONTINUE
 C
 C         ============================
-          CALL LWHDRL(ILUN,LINE(1:80))
+          CALL QWRITC(ILUN,LINE(1:80))
 C         ============================
 C
    40   CONTINUE
