@@ -33,7 +33,8 @@
 # * make an empty `sentinel' file foo.o if there isn't already a
 #   routine foo in the library
 # * ar *.o into ../libccp4.a
-# * rm foo.dir
+# * rm *.o from foo.dir (leave *.f there so you can do symbolic debug,
+#   although you then have to get the path right)
 
 # The following variables are expected to be set by configure:
 # top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
@@ -81,91 +82,91 @@ $L(ccplib.o) : $(srcdir)/ccplib.for
 	cd ccplib.dir; fsplit $(srcdir)/ccplib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch ccplib.o; \
 	  $(AR) ../$L *.o
-	rm -r ccplib.dir
+	rm -f ccplib.dir/*.o
 
 $L(fftlib.o) : $(srcdir)/fftlib.for
 	-rm -rf fftlib.dir; mkdir fftlib.dir
 	cd fftlib.dir; fsplit $(srcdir)/fftlib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch fftlib.o; \
 	  $(AR) ../$L *.o
-	rm -r fftlib.dir
+	rm -f fftlib.dir/*.o
 
 $L(maplib.o) : $(srcdir)/maplib.for
 	-rm -rf maplib.dir; mkdir maplib.dir
 	cd maplib.dir; fsplit $(srcdir)/maplib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch maplib.o; \
 	  $(AR) ../$L *.o
-	rm -r maplib.dir
+	rm -f maplib.dir/*.o
 
 $L(parser.o) : $(srcdir)/parser.for
 	-rm -rf parser.dir; mkdir parser.dir
 	cd parser.dir; fsplit $(srcdir)/parser.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch parser.o; \
 	  $(AR) ../$L *.o
-	rm -r parser.dir
+	rm -f parser.dir/*.o
 
 $L(rwbrook.o) : $(srcdir)/rwbrook.for
 	-rm -rf rwbrook.dir; mkdir rwbrook.dir
 	cd rwbrook.dir; fsplit $(srcdir)/rwbrook.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch rwbrook.o; \
 	  $(AR) ../$L *.o
-	rm -r rwbrook.dir
+	rm -f rwbrook.dir/*.o
 
 $L(rwatom.o) : $(srcdir)/rwatom.for
 	-rm -rf rwatom.dir; mkdir rwatom.dir
 	cd rwatom.dir; fsplit $(srcdir)/rwatom.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch rwatom.o; \
 	  $(AR) ../$L *.o
-	rm -r rwatom.dir
+	rm -f rwatom.dir/*.o
 
 $L(modlib.o) : $(srcdir)/modlib.for
 	-rm -rf modlib.dir; mkdir modlib.dir
 	cd modlib.dir; fsplit $(srcdir)/modlib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch modlib.o; \
 	  $(AR) ../$L *.o
-	rm -r modlib.dir
+	rm -f modlib.dir/*.o
 
 $L(mthlib.o) : $(srcdir)/mthlib.for
 	-rm -rf mthlib.dir; mkdir mthlib.dir
 	cd mthlib.dir; fsplit $(srcdir)/mthlib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch mthlib.o; \
 	  $(AR) ../$L *.o
-	rm -r mthlib.dir
+	rm -f mthlib.dir/*.o
 
 $L(symlib.o) : $(srcdir)/symlib.for
 	-rm -rf symlib.dir; mkdir symlib.dir
 	cd symlib.dir; fsplit $(srcdir)/symlib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch symlib.o; \
 	  $(AR) ../$L *.o
-	rm -r symlib.dir
+	rm -f symlib.dir/*.o
 
 $L(lcflib.o) : $(srcdir)/lcflib.for
 	-rm -rf lcflib.dir; mkdir lcflib.dir
 	cd lcflib.dir; fsplit $(srcdir)/lcflib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch lcflib.o; \
 	  $(AR) ../$L *.o
-	rm -r lcflib.dir
+	rm -f lcflib.dir/*.o
 
 $L(mtzlib.o) : $(srcdir)/mtzlib.for
 	-rm -rf mtzlib.dir; mkdir mtzlib.dir
 	cd mtzlib.dir; fsplit $(srcdir)/mtzlib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch mtzlib.o; \
 	  $(AR) ../$L *.o
-	rm -r mtzlib.dir
+	rm -f mtzlib.dir/*.o
 
 $L(diskio.o) : $(srcdir)/diskio.for
 	-rm -rf diskio.dir; mkdir diskio.dir
 	cd diskio.dir; fsplit $(srcdir)/diskio.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch diskio.o; \
 	  $(AR) ../$L *.o
-	rm -r diskio.dir
+	rm -f diskio.dir/*.o
 
 $L(hlplib.o) : $(srcdir)/hlplib.for
 	-rm -rf hlplib.dir; mkdir hlplib.dir
 	cd hlplib.dir; fsplit $(srcdir)/hlplib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch hlplib.o; \
 	  $(AR) ../$L *.o
-	rm -r hlplib.dir
+	rm -f hlplib.dir/*.o
 
 # fixme: change >14 characters name!
 $L(frodo_maplib.o) : $(srcdir)/frodo_maplib.for
@@ -173,45 +174,45 @@ $L(frodo_maplib.o) : $(srcdir)/frodo_maplib.for
 	cd frodo_maplib.dir; fsplit $(srcdir)/frodo_maplib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch frodo_maplib.o; \
 	  $(AR) ../$L *.o
-	rm -rf frodo_maplib.dir
+	rm -f frodo_maplib.dir/*.o
 
 $L(plot84lib.o) : $(srcdir)/plot84lib.for
 	-rm -rf plot84lib.dir; mkdir plot84lib.dir
 	cd plot84lib.dir; fsplit $(srcdir)/plot84lib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch plot84lib.o; \
 	  $(AR) ../$L *.o
-	rm -r plot84lib.dir
+	rm -f plot84lib.dir/*.o
 
 $L(graflib.o) : $(srcdir)/graflib.for
 	-rm -rf graflib.dir; mkdir graflib.dir
 	cd graflib.dir; fsplit $(srcdir)/graflib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch graflib.o; \
 	  $(AR) ../$L *.o
-	rm -r graflib.dir
+	rm -f graflib.dir/*.o
 
 $L(graphics.o) : $(srcdir)/graphics.for
 	-rm -rf graphics.dir; mkdir graphics.dir
 	cd graphics.dir; fsplit $(srcdir)/graphics.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch graphics.o; \
 	  $(AR) ../$L *.o
-	rm -r graphics.dir
+	rm -f graphics.dir/*.o
 
 $L(gdummy.o) : $(srcdir)/gdummy.for
 	-rm -rf gdummy.dir; mkdir gdummy.dir
 	cd gdummy.dir; fsplit $(srcdir)/gdummy.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch gdummy.o; \
 	  $(AR) ../$L *.o
-	rm -r gdummy.dir
+	rm -f gdummy.dir/*.o
 
 # C stuff: (these are kept as whole modules)
 
 $L(library.o) : $(srcdir)/library.c $(incdir)/machine.h \
    $(incdir)/dfconvert.h  $(incdir)/diconvert.h
-	$(CC) $(CFLAGS) -c $(srcdir)/library.c
+	$(CC) $(CFLAGS) -I$(incdir) -c $(srcdir)/library.c
 	$(AR) $L library.o; rm library.o
 
 $L(binsortint.o) : $(srcdir)/binsortint.c $(incdir)/binsort.h
-	$(CC) $(CFLAGS) -c $(srcdir)/binsortint.c
+	$(CC) $(CFLAGS) -I$(incdir) -c $(srcdir)/binsortint.c
 	$(AR) $L binsortint.o; rm binsortint.o
 
 $L(ucurse.o) : $(srcdir)/ucurse.c
@@ -224,8 +225,9 @@ $L(ucurse.o) : $(srcdir)/ucurse.c
 
 #  a program:
 binsort : $(srcdir)/binsort.c $(incdir)/binsort.h
-	$(CC) $(CFLAGS) -o $@ $(srcdir)/binsort.c
+	$(CC) $(CFLAGS) -I$(incdir) -o $@ $(srcdir)/binsort.c
 # for testing with src directory in path:
+	-rm -f ../../src/binsort
 	$(LNS) binsort ../../src/binsort
 
 # the unix-specific bits need preprocessing for different unix variants
@@ -235,7 +237,7 @@ $L(unix.o) : $(srcdir)/unix.m4
 	cd unix.dir; fsplit ../unix.$F; \
 	  $(FC) -c $(FFLAGS) *.$F; touch unix.o ;\
 	  $(AR) ../$L *.o
-	rm -r unix.dir
+	rm -f unix.dir/*.o
 
 # testbed for library.c:
 testlib : $(srcdir)/testlib.for $L(library.o) $L(unix.o) $L(ccplib.o) \
@@ -252,10 +254,10 @@ install :
 	$(INSTALL_DATA) $L $(libdir)/$L
 
 clean :
-	-rm -rf core *.o *~ *.dir testlib disc.dft a.out
+	-rm -f core *.o *~ *.dir/*.o testlib disc.dft a.out
 
 realclean: clean
-	-rm -f $L *.f *.c ../../src/binsort
+	-rm -rf $L *.f *.c ../../src/binsort *.dir
 
 dist: realclean
 	-rm -f Makefile
