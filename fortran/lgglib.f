@@ -1564,11 +1564,6 @@ C	WRITE(6,*) NATM,ATOM(NATM),(X(I,NATM),I=1,3)
       CLOSE (1)
       RETURN
       END
-      subroutine header(prog)
-      character*20 prog
-c Making beautiful header. Not available yet.
-      end
-C
 C
 C *  ROH - MATRIX
 C
