@@ -102,6 +102,7 @@ static const char *const cpars_errlist[] =
     "Overflow - exponent is too big to be evaluated",  /* 7 = CPARSERR_ExpOverflow */
     "Underflow - exponent is too small to be evaluated", /* 8 = CPARSERR_ExpUnderflow */
     "Problem in mat4_to_symop",                  /* 9 = CPARSERR_MatToSymop */
+    "Failed to interpret symop string",          /* 10 = CPARSERR_SymopToMat */
   };
 
 /* symmetry library errors */
