@@ -132,7 +132,6 @@ int ccp4_utils_translate_mode_float(float *out, const void *buffer, int dim, int
     break;
   case 2:
   default:
-    ctr = 0;
     break;
   }
   
