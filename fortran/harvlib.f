@@ -2482,7 +2482,7 @@ C
 C
 C
 C        ====================================================
-         SUBROUTINE Hrefine_NparamNrestNconstr(NPARMR,NRESTR,NCONSTR)
+         SUBROUTINE Hrefine_NparNrestNconstr(NPARMR,NRESTR,NCONSTR)
 C        ====================================================
 C
 C _refine.ls_number_parameters       NPARMR
