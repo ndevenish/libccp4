@@ -2521,7 +2521,7 @@ C     .. Parameters ..
       PARAMETER (NHISLM=30)
 C     ..
 C     .. Scalar Arguments ..
-      INTEGER MINDX
+      INTEGER MINDX,MINDEX
       REAL RESOL
       LOGICAL EOF
 C     ..
@@ -2575,19 +2575,21 @@ C     .. Save statement ..
 C     ..
 C
 C---- Check if the calling program can interpret BIOMOL absence flags
+C     Use the variable MINDEX in the remainder of the routine to assure
+C     that the value of MINDX in the calling routine is not altered
 C
-      IF(MINDX.GT.1000)THEN
+      IF (MINDX.GT.1000) THEN
         BIOMOL = .TRUE.
-        MINDX  = MINDX-1000
+        MINDEX  = MINDX-1000
       ELSE
         BIOMOL = .FALSE.
       ENDIF
 C
-C---- First check that the MINDX is valid
+C---- First check that the MINDEX is valid
 C
-      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
+      IF ((MINDEX.LE.0) .OR. (MINDEX.GT.MFILES)) THEN
         WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
-     +    'From LRREFF : Index',MINDX,
+     +    'From LRREFF : Index',MINDEX,
      +    ' is out of range (allowed 1..',MFILES,')'
         ISTAT = 2
         IFAIL = -1
@@ -2599,9 +2601,9 @@ C
 C
 C---- Then check that there is a file open
 C
-      ELSE IF (RLUN(MINDX).EQ.0) THEN
+      ELSE IF (RLUN(MINDEX).EQ.0) THEN
         WRITE (LINE,FMT='(A,I3)')
-     +    'From LRREFF : There is no file open for read on index',MINDX
+     +    'From LRREFF : There is no file open for read on index',MINDEX
         ISTAT = 2
         IFAIL = -1
 C
@@ -2613,17 +2615,17 @@ C
 C
 C---- Everything OK, update the number of records read
 C
-        NREFR(MINDX) = NREFR(MINDX) + 1
+        NREFR(MINDEX) = NREFR(MINDEX) + 1
 C
 C---- If not end of file read a record and rearrange it
 C
-        IF (NREFR(MINDX).GT.NREFS(MINDX)) THEN
+        IF (NREFR(MINDEX).GT.NREFS(MINDEX)) THEN
           EOF = .TRUE.
-          NREFR(MINDX) = NREFR(MINDX) - 1
+          NREFR(MINDEX) = NREFR(MINDEX) - 1
         ELSE
 C
 C              ******************************************
-          CALL QREAD(RLUN(MINDX),BDATA,NCOLS(MINDX),IERR)
+          CALL QREAD(RLUN(MINDEX),BDATA,NCOLS(MINDEX),IERR)
 C              ******************************************
 C
           IF (IERR.GT.0) THEN
@@ -2631,7 +2633,7 @@ C
             IFAIL = -1
             WRITE (LINE,FMT='(A,I4,A,I4)')
      +        'From LRREFF : Error reading file - only',IERR,
-     +        ' words transferred, wanted',NCOLS(MINDX)
+     +        ' words transferred, wanted',NCOLS(MINDEX)
 C
 C                ************************
             CALL LERROR(ISTAT,IFAIL,LINE)
@@ -2642,19 +2644,19 @@ C
 C---- First calculate resolution, only look for HKL in 1st 3 cols
 C     regardless of lookup
 C
-            IF ((NCOLS(MINDX).GE.3).AND.(CTYPE(1,MINDX).EQ.'H')
-     +          .AND.(CTYPE(2,MINDX).EQ.'H')
-     +          .AND.(CTYPE(3,MINDX).EQ.'H')) THEN
+            IF ((NCOLS(MINDEX).GE.3).AND.(CTYPE(1,MINDEX).EQ.'H')
+     +          .AND.(CTYPE(2,MINDEX).EQ.'H')
+     +          .AND.(CTYPE(3,MINDEX).EQ.'H')) THEN
 C
               IH = BDATA(1)
               IK = BDATA(2)
               IL = BDATA(3)
-              RSOL = 4.0 * LSTLSQ(MINDX,IH,IK,IL)
+              RSOL = 4.0 * LSTLSQ(MINDEX,IH,IK,IL)
 C
 C---- Force resolution (1/d**2) to lie within range stored in header,
 C     but print warning if too far away
 C
-              RESOL = MIN(MAX(RSOL,SRANGE(1,MINDX)),SRANGE(2,MINDX))
+              RESOL = MIN(MAX(RSOL,SRANGE(1,MINDEX)),SRANGE(2,MINDEX))
               IF (ABS(RESOL-RSOL) .GT. 0.000006) THEN
                  WRITE (LINE,FMT='(2A,3I4,2A,F10.6)')
      $              'From LRREFF : S value outside range from header',
@@ -2675,9 +2677,9 @@ C
 C---- Transfer data to ADATA in LOOKUP order, if RPOINT is 0 then
 C     presume it was an optional column and set it to 0.0
 C
-            DO 10 JDO10 = 1,NPLABS(MINDX)
-              IF (RPOINT(JDO10,MINDX).GT.0) THEN
-                ADATA(JDO10) = BDATA(RPOINT(JDO10,MINDX))
+            DO 10 JDO10 = 1,NPLABS(MINDEX)
+              IF (RPOINT(JDO10,MINDEX).GT.0) THEN
+                ADATA(JDO10) = BDATA(RPOINT(JDO10,MINDEX))
               ELSE
                 ADATA(JDO10) = 0.0
               END IF
@@ -2687,7 +2689,7 @@ C---- Set BIOMOL absence flags to zero if the calling program can not
 C     interpret them
 C
             IF(.NOT. BIOMOL)THEN
-              DO 20 JDO20 = 1,NCOLS(MINDX)
+              DO 20 JDO20 = 1,NCOLS(MINDEX)
                 IF(ADATA(JDO20).LT.-0.99E+10) ADATA(JDO20) = 0.0
    20         CONTINUE
             ENDIF
@@ -2747,7 +2749,7 @@ C     .. Parameters ..
       PARAMETER (NHISLM=30)
 C     ..
 C     .. Scalar Arguments ..
-      INTEGER MINDX
+      INTEGER MINDX, MINDEX
       REAL RESOL
       LOGICAL EOF
 C     ..
@@ -2798,19 +2800,21 @@ C     .. Save statement ..
 C     ..
 C
 C---- Check if the calling program can interpret BIOMOL absence flags
+C     Use the variable MINDEX in the remainder of the routine to assure
+C     that the value of MINDX in the calling routine is not altered
 C
-      IF(MINDX.GT.1000)THEN
+      IF (MINDX.GT.1000) THEN
         BIOMOL = .TRUE.
-        MINDX  = MINDX-1000
+        MINDEX  = MINDX-1000
       ELSE
         BIOMOL = .FALSE.
       ENDIF
 C
-C---- First check that the MINDX is valid
+C---- First check that the MINDEX is valid
 C
-      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
+      IF ((MINDEX.LE.0) .OR. (MINDEX.GT.MFILES)) THEN
         WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
-     +    'From LRREFL : Index',MINDX,
+     +    'From LRREFL : Index',MINDEX,
      +    ' is out of range (allowed 1..',MFILES,')'
         ISTAT = 2
         IFAIL = -1
@@ -2822,9 +2826,9 @@ C
 C
 C---- Then check that there is a file open
 C
-      ELSE IF (RLUN(MINDX).EQ.0) THEN
+      ELSE IF (RLUN(MINDEX).EQ.0) THEN
         WRITE (LINE,FMT='(A,I3)')
-     +    'From LRREFL : There is no file open for read on index',MINDX
+     +    'From LRREFL : There is no file open for read on index',MINDEX
         ISTAT = 2
         IFAIL = -1
 C
@@ -2836,17 +2840,17 @@ C
 C 
 C---- Everything OK, update the number of records read
 C
-        NREFR(MINDX) = NREFR(MINDX) + 1
+        NREFR(MINDEX) = NREFR(MINDEX) + 1
 C
 C---- If not end of file read a record
 C
-        IF (NREFR(MINDX).GT.NREFS(MINDX)) THEN
+        IF (NREFR(MINDEX).GT.NREFS(MINDEX)) THEN
           EOF = .TRUE.
-          NREFR(MINDX) = NREFR(MINDX) - 1
+          NREFR(MINDEX) = NREFR(MINDEX) - 1
         ELSE
 C
 C              ******************************************
-          CALL QREAD(RLUN(MINDX),ADATA,NCOLS(MINDX),IERR)
+          CALL QREAD(RLUN(MINDEX),ADATA,NCOLS(MINDEX),IERR)
 C              ******************************************
 C
           IF (IERR.GT.0) THEN
@@ -2854,7 +2858,7 @@ C
             IFAIL = -1
             WRITE (LINE,FMT='(A,I4,A,I4)')
      +        'From LRREFL : Error reading file - only',IERR,
-     +        ' words transferred, wanted',NCOLS(MINDX)
+     +        ' words transferred, wanted',NCOLS(MINDEX)
 C
 C                ************************
             CALL LERROR(ISTAT,IFAIL,LINE)
@@ -2864,19 +2868,19 @@ C
 C
 C---- Calculate resolution, only look for HKL in 1st 3 cols
 C
-            IF ((NCOLS(MINDX).GE.3).AND.(CTYPE(1,MINDX).EQ.'H')
-     +          .AND.(CTYPE(2,MINDX).EQ.'H')
-     +          .AND.(CTYPE(3,MINDX).EQ.'H')) THEN
+            IF ((NCOLS(MINDEX).GE.3).AND.(CTYPE(1,MINDEX).EQ.'H')
+     +          .AND.(CTYPE(2,MINDEX).EQ.'H')
+     +          .AND.(CTYPE(3,MINDEX).EQ.'H')) THEN
 C
               IH = ADATA(1)
               IK = ADATA(2)
               IL = ADATA(3)
-              RSOL = 4.0 * LSTLSQ(MINDX,IH,IK,IL)
+              RSOL = 4.0 * LSTLSQ(MINDEX,IH,IK,IL)
 C
 C---- Force resolution (1/d**2) to lie within range stored in header,
 C     but print warning if too far away
 C
-              RESOL = MIN(MAX(RSOL,SRANGE(1,MINDX)),SRANGE(2,MINDX))
+              RESOL = MIN(MAX(RSOL,SRANGE(1,MINDEX)),SRANGE(2,MINDEX))
               IF (ABS(RESOL-RSOL) .GT. 0.000006) THEN
                  WRITE (LINE,FMT='(2A,3I4,A,F10.6)')
      $              'From LRREFL : S value outside range from header',
@@ -2898,7 +2902,7 @@ C---- Set BIOMOL absence flags to zero if the calling program can not
 C     interpret them
 C
             IF(.NOT. BIOMOL)THEN
-              DO 10 JDO10 = 1,NCOLS(MINDX)
+              DO 10 JDO10 = 1,NCOLS(MINDEX)
                 IF(ADATA(JDO10).LT.-0.99E+10) ADATA(JDO10) = 0.0
    10         CONTINUE
             ENDIF
