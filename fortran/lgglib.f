@@ -484,7 +484,7 @@ c guoguang 940616
 	is = 1
 c	WRITE(6,*)  line
 c	WRITE(6,*)  'sep ',sep
-	il = lnblnk(line)
+	il = lenstr(line)
 	do it=il,1,-1
 	 if (ichar(line(it:it)).le.31) then
 	  line(it:it) = ' '
@@ -498,7 +498,7 @@ c	WRITE(6,*)  'il',il,line(1:il)
 	if (il.eq.0) return
 10	ip = index(line(is:il),sep)
 	if (ip.eq.0) then
-	 il1 = lnblnk(line(is:il))
+	 il1 = lenstr(line(is:il))
 	 if (il1.gt.0) then
 	  do isps = is, is+il1-1
 	   if (line(isps:isps).ne.' ') then
@@ -512,7 +512,7 @@ c	WRITE(6,*)  'il',il,line(1:il)
 	 end if
 	else 
 	 if (ip.gt.1) then
-	  il1 = lnblnk(line(is:ip-2+is))
+	  il1 = lenstr(line(is:ip-2+is))
 	  if (il1.gt.0) then
 	   do isps = is, is+il1-1
 	    if (line(isps:isps).ne.' ') then
@@ -1126,7 +1126,7 @@ c file -- name of the input file
 	character*132 line
 	call ccpdpn(nin,file,'readonly','F',0,0)
 5	read(nin,'(a)',end=10) line
-	il = lnblnk(line)
+	il = lenstr(line)
 	write(nout,'(a)') line(1:il)
 	goto 5
 10	continue
@@ -1286,7 +1286,7 @@ C
 	character*(*) filnam
 c	character*80 cmd
 c	call spstrunct(filnam)
-c	il = lnblnk(filnam)
+c	il = lenstr(filnam)
 c	write(cmd,'(3a)') 'printenv ',filnam(1:il),' > GETNAM'
 cc	call system(cmd)
 c       call ccpdpn(31,'GETNAM','old','F',0,0)
@@ -1817,7 +1817,7 @@ c
 c	 write(6,*) sout(i)
 c	 if (sout(i)(1:1).eq.'+') sout(i)(1:1) = ' '
 c make the text shorter
-	 il = lnblnk(sout(i))
+	 il = lenstr(sout(i))
 	 if (il.gt.1) then
 	  iln = il
 	  do j = il-1, 1, -1
@@ -2924,7 +2924,7 @@ c      output name2 = 1cnd.pdb
 c      len2 is the length of the second word
 	character*(*) name1,name2
 c	i1 = index(name1,'.pdb')
-	i1 = lnblnk(name1)
+	i1 = lenstr(name1)
 	do i = i1, 1, -1
 	 if (name1(i:i).eq.'/') goto 20
 	end do
@@ -5077,10 +5077,10 @@ c	WRITE(6,*)  'nsp',nsp
 	if (nunit.eq.0) nunit=25
 	if (file(1:1).eq.' ') call spstrunct(file)
 	if (file(1:1).eq.' ') file='SYMOP'
-        call ccpdpn(nunit,file(1:lnblnk(file)),'READONLY','F',0,0)
+        call ccpdpn(nunit,file(1:lenstr(file)),'READONLY','F',0,0)
 10	read(nunit,'(a)',end=220) key
-	im = lnblnk(latnam)
-	in = lnblnk(key)
+	im = lenstr(latnam)
+	in = lenstr(key)
 	is = index(key(1:in),latnam(1:im))
 	if (is.eq.0) goto 10
 c	call redstrin(12,i1-1,key,npar)
@@ -5090,7 +5090,7 @@ c	if (isp.ne.nsp) goto 10
 	write(6,*) 'Space Group  >>> ',Latnam,isp
 	do i = 1, iall
 	 read(nunit,'(a)') key
-	 il = lnblnk(key)
+	 il = lenstr(key)
 	 key(il+1:il+1)='*'
 	 iend = 0
 	 if (dump)  write(6,'(1x,a)') key(1:il)
@@ -5116,7 +5116,7 @@ c	if (isp.ne.nsp) goto 10
 	1 'Total: ',i3,6x,'Rotation:',i3)
 	close (unit=nunit)
 	return
-210	WRITE(6,*)  'Error opening the SYMOP file ',FILE(1:LNBLNK(FILE))
+210	WRITE(6,*)  'Error opening the SYMOP file ',FILE(1:LENSTR(FILE))
 220	WRITE(6,*)  'Space group',latnam(1:im),
      +              ' was not found in SYMOP file'
 	nsym = 0
@@ -5127,7 +5127,7 @@ c	if (isp.ne.nsp) goto 10
 	SUBROUTINE SPSTRUNCT(STRING)
 	CHARACTER*(*) STRING
 	LENS = LEN(STRING)
-	IL = LNBLNK(STRING)
+	IL = LENSTR(STRING)
 C
 5	CONTINUE
 	ISP = INDEX(STRING(1:IL),' ')
@@ -5642,14 +5642,14 @@ c	WRITE(6,*)  'nsp',nsp
 	if (nunit.eq.0) nunit=25
 	if (file(1:1).eq.' ') call spstrunct(file)
 	if (file(1:1).eq.' ') file='SYMOP'
-        call ccpdpn(nunit,file(1:lnblnk(file)),'READONLY','F',0,0)
+        call ccpdpn(nunit,file(1:lenstr(file)),'READONLY','F',0,0)
 10	read(nunit,'(a)',end=220) key
-c	il = lnblnk(key)
+c	il = lenstr(key)
 c	i1 = index(key(1:il),'PG')
 c	if (i1.eq.0) goto 10
 c	call redstrin(12,i1-1,key,npar)
 	read(key(1:12),*,err=10,end=10) isp,iall,irot
-c	WRITE(6,*) key(1:lnblnk(key)),isp,nsp,latnam
+c	WRITE(6,*) key(1:lenstr(key)),isp,nsp,latnam
 	if (isp.ne.nsp) goto 10
 c	i1 = index(key(1:il),'PG')
 	read(key(12:80),'(a)') latnam
@@ -5659,7 +5659,7 @@ c	call spstrunct(latnam)
 	write(6,*) 'Space Group  >>> ',Latnam,isp
 	do i = 1, iall
 	 read(nunit,'(a)') key
-	 il = lnblnk(key)
+	 il = lenstr(key)
 	 key(il+1:il+1)='*'
 	 iend = 0
 	 if (dump)  write(6,'(1x,a)') key(1:il)
@@ -5685,7 +5685,7 @@ c	call spstrunct(latnam)
 	1 'Total: ',i3,6x,'Rotation:',i3)
 	close (unit=nunit)
 	return
-210	WRITE(6,*)  'Error opening the SYMOP file ',FILE(1:LNBLNK(FILE))
+210	WRITE(6,*)  'Error opening the SYMOP file ',FILE(1:LENSTR(FILE))
 220	WRITE(6,*)  'Space group',nsp,' was not found in SYMOP file'
 	nsym = 0
 	nrot = 0
