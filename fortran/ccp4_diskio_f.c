@@ -385,6 +385,34 @@ FORTRAN_SUBR ( QREADI, qreadi,
 }
 
 /**
+ * qreadi2:
+ * @iunit: io channel
+ * @buffer:
+ * @result:
+ *                                              
+ * Fills INT*2 buffer in int mode from diskio stream                      
+ * @iunit previously opened by qopen() and returns  
+ * @result} which %0 on success or %-1 on EOF.               
+ * It aborts on an i/o failure.                                         
+ * Call it with a character substring if necessary to control the number
+ * of bytes read.                                                       
+ *                                                                      
+ */
+FORTRAN_SUBR ( QREADI2, qreadi2,
+    (int *iunit, uint8* buffer, int *nitems, int *result),
+    (int *iunit, uint8* buffer, int *nitems, int *result),
+    (int *iunit, uint8* buffer, int *nitems, int *result))
+    {
+  *result = 0;
+  if ( ccp4_file_readshort (_ioChannels[*iunit]->iobj, buffer, *nitems) != *nitems) 
+    if ( ccp4_file_feof(_ioChannels[*iunit]->iobj) ) 
+      *result = -1;
+    else 
+      ccp4_signal(CCP4_ERRLEVEL(4) | CCP4_ERRNO(CIO_ReadFail),
+		  "QREADI2", NULL);
+}
+
+/**
  * qreadr:
  * @iunit:
  * @buffer:
