@@ -8,7 +8,7 @@ C     laue) are entries with only one check on the endianness and set
 C     ind2, ind4 etc. for *2, *4 references.  also amalgamate ccppsf and
 C     fdir/fext/froot.  also add tests of these routines to testlib.
 C
-C     $Id$
+C     ccplib.for,v 1.7 1992/09/14 18:47:13 fx Exp
 C     
 C      CCFILL    Set specified number of elements of byte array
 C      CCPASZ    set array size suitable for current working set
@@ -1280,9 +1280,9 @@ C
 C     ==================================
 C
 C     Interface to CCPVRS using RCS-format date e.g.,
-C     '$Date$' or its form expanded with RCS
+C     '1992/09/14 18:47:13' or its form expanded with RCS
 C     option `-kv' as for a CVS export, in which case it will have the
-C     `$Date$' stripped.
+C     `1992/09/14 18:47:13' stripped.
 C     
       CHARACTER*(*) RCSDAT, PROG
       CHARACTER*8 DATE
@@ -1295,7 +1295,7 @@ C       raw form (not exported)
         DATE(1:2) = RCSDAT(13:14)
         DATE(4:5) = RCSDAT(16:17)
         DATE(7:8) = RCSDAT(10:11)
-      ELSE IF (LEN(RCSDAT).GE.10 .AND. RCSDAT(:2).EQ.'19')
+      ELSE IF (LEN(RCSDAT).GE.10 .AND. RCSDAT(:2).EQ.'19') THEN
 C       after export
         DATE = '  /  /'
         DATE(1:2) = RCSDAT(9:10)
