@@ -323,10 +323,12 @@ FORTRAN_SUBR ( ASUSET, asuset,
     if (*numsgp > 0) {
       if ( ! (spacegroup = ccp4spg_load_by_ccp4_num(*numsgp)) ) {
         printf("ASUSET: failed to load spacegroup info from SYMINFO! \n");
+        ccperror(1,"Fatal error in ASUSET.");
         return;
       }
     } else {
       printf("ASUSET: no spacegroup info! \n");
+      ccperror(1,"Fatal error in ASUSET.");
       return;
     }
   }
@@ -692,6 +694,7 @@ FORTRAN_SUBR ( CENTR, centr,
 
   *ic = ccp4spg_is_centric(spacegroup, h, k, l);
 
+  if (*ic == -1) ccperror(1,"Fatal error in CENTR.");
 }
 
 FORTRAN_SUBR ( CENTPHASE, centphase,

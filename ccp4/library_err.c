@@ -107,6 +107,8 @@ static const char *const csym_errlist[] =
   {
     "Error 0",                                   /* 0 = CSYMERR_Ok */
     "Failed to initialise parser",               /* 1 = CSYMERR_ParserFail */
+    "Cannot find SYMINFO file - no symmetry information", /* 2 = CSYMERR_NoSyminfoFile */
+    "Pointer to spacegroup structure is NULL",   /* 3 = CSYMERR_NullSpacegroup */
   };
 
 static const char *const cgen_errlist[] =

@@ -248,7 +248,18 @@ float ccp4spg_phase_shift(const int hin, const int kin, const int lin,
 			  const float phasin, const float trans[3], const int isign);
 int ccp4spg_do_chb(const float chb[3][3]);
 void ccp4spg_set_centric_zones(CCP4SPG* sp);
+
+/** Function to determine whether or not h,k,l is a centric reflection
+ * in spacegroup "sp".
+ * @param sp pointer to spacegroup
+ * @param h input reflection index
+ * @param k input reflection index
+ * @param l input reflection index
+ * @return 1 if h,k,l is centric, 0 if not centric, and -1 if there is
+ *  an error.
+ */
 int ccp4spg_is_centric(const CCP4SPG* sp, const int h, const int k, const int l);
+
 int ccp4spg_check_centric_zone(const int nzone, const int h, const int k, const int l);
 float ccp4spg_centric_phase(const CCP4SPG* sp, const int h, const int k, const int l);
 void ccp4spg_print_centric_zones(const CCP4SPG* sp);

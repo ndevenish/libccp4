@@ -29,7 +29,8 @@ static char rcsid[] = "$Id$";
 /* error defs */
 #define  CSYMERR_Ok                  0
 #define  CSYMERR_ParserFail          1
-#define  CSYMERR_MatToSymop          2
+#define  CSYMERR_NoSyminfoFile       2
+#define  CSYMERR_NullSpacegroup      3
 
 CCP4SPG *ccp4spg_load_by_standard_num(const int numspg) 
 { 
@@ -110,6 +111,10 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   }
 
   filein = fopen(symopfile,"r");
+  if (!filein) {
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NoSyminfoFile),"ccp4spg_load_spacegroup",NULL); 
+    return NULL;
+  }
   if (debug) 
     printf(" SYMINFO file %s opened \n",symopfile);
 
@@ -620,8 +625,13 @@ int ASU_m3b  (const int h, const int k, const int l)
 int ASU_m3bm  (const int h, const int k, const int l)
   { return (h>=0 && k>=l && l>=h); }
 
-char *ccp4spg_symbol_Hall(CCP4SPG* sp) 
-  { return sp->symbol_Hall; }
+char *ccp4spg_symbol_Hall(CCP4SPG* sp) {
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_symbol_Hall",NULL); 
+    return NULL;
+  }
+  return sp->symbol_Hall; 
+}
 
 ccp4_symop ccp4_symop_invert( const ccp4_symop op1 )
 {
@@ -762,6 +772,10 @@ int ccp4spg_is_in_pm_asu(const CCP4SPG* sp, const int h, const int k, const int 
 }
 
 int ccp4spg_is_in_asu(const CCP4SPG* sp, const int h, const int k, const int l) {
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_is_in_asu",NULL); 
+    return 0;
+  }
   if ( ccp4spg_do_chb(sp->chb) ) return sp->asufn(
       (int) rint( h*sp->chb[0][0] + k*sp->chb[1][0] + l*sp->chb[2][0] ),
       (int) rint( h*sp->chb[0][1] + k*sp->chb[1][1] + l*sp->chb[2][1] ),
@@ -774,6 +788,11 @@ int ccp4spg_put_in_asu(const CCP4SPG* sp, const int hin, const int kin, const in
 		       int *hout, int *kout, int *lout ) {
 
   int i, isign;
+
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_put_in_asu",NULL); 
+    return 0;
+  }
 
   /* cycle through all primitive symmetry operations until in asu */
 
@@ -803,6 +822,11 @@ void ccp4spg_generate_indices(const CCP4SPG* sp, const int isym,
 		       int *hout, int *kout, int *lout ) {
 
   int i, jsym, isign;
+
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_generate_indices",NULL); 
+    return;
+  }
 
   jsym = (isym - 1) / 2;
   isign = (isym % 2) ? 1 : -1 ; 
@@ -851,6 +875,10 @@ void ccp4spg_set_centric_zones(CCP4SPG* sp) {
   int i,j,hnew,knew,lnew;
   int ihkl[12][3];
 
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_set_centric_zones",NULL); 
+    return;
+  }
   ihkl[0][0] = 0; ihkl[0][1] = 1; ihkl[0][2] = 2; 
   ihkl[1][0] = 1; ihkl[1][1] = 0; ihkl[1][2] = 2; 
   ihkl[2][0] = 1; ihkl[2][1] = 2; ihkl[2][2] = 0; 
@@ -890,6 +918,10 @@ int ccp4spg_is_centric(const CCP4SPG* sp, const int h, const int k, const int l)
 
   int i;
 
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_is_centric",NULL); 
+    return -1;
+  }
   /* loop over all possible centric zones */
   for (i = 0; i < 12; ++i) 
     if (sp->centrics[i]) 
@@ -938,6 +970,10 @@ float ccp4spg_centric_phase(const CCP4SPG* sp, const int h, const int k, const i
   int i,isym;
   float centric_phase;
 
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_centric_phase",NULL); 
+    return 0.0;
+  }
   /* loop over all possible centric zones */
   for (i = 0; i < 12; ++i) 
     if (sp->centrics[i]) 
@@ -958,6 +994,10 @@ void ccp4spg_print_centric_zones(const CCP4SPG* sp) {
   int i,j=0;
   char centric_zone[8];
 
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_print_centric_zones",NULL); 
+    return;
+  }
   printf("\n  ******   CENTRIC ZONES  ****** \n");
 
   /* loop over all possible centric zones */
@@ -1008,6 +1048,10 @@ void ccp4spg_set_epsilon_zones(CCP4SPG* sp) {
   int i,j,hnew,knew,lnew,neps;
   int ihkl[13][3];
 
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_set_epsilon_zones",NULL); 
+    return;
+  }
   ihkl[0][0] = 1; ihkl[0][1] = 0; ihkl[0][2] = 0; 
   ihkl[1][0] = 0; ihkl[1][1] = 2; ihkl[1][2] = 0; 
   ihkl[2][0] = 0; ihkl[2][1] = 0; ihkl[2][2] = 2; 
@@ -1051,6 +1095,10 @@ int ccp4spg_get_multiplicity(const CCP4SPG* sp, const int h, const int k, const 
 
   int i;
 
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_get_multiplicity",NULL); 
+    return 0;
+  }
   /* loop over all possible epsilon zones */
   for (i = 0; i < 13; ++i) 
     if (sp->epsilon[i]) 
@@ -1103,6 +1151,10 @@ void ccp4spg_print_epsilon_zones(const CCP4SPG* sp) {
   int i,j=0;
   char epsilon_zone[8];
 
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_print_epsilon_zones",NULL); 
+    return;
+  }
   printf("\n  ******   EPSILON ZONES -  Reflection Classes and their multiplicity ****** \n");
 
   /* loop over all possible epsilon zones */
@@ -1154,6 +1206,10 @@ int ccp4spg_is_sysabs(const CCP4SPG* sp, const int h, const int k, const int l)
   int j,hnew,knew,lnew;
   float del_phas;
 
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_is_sysabs",NULL); 
+    return -1;
+  }
   if (sp->nsymop > 1) {
    for (j = 1; j < sp->nsymop; ++j) {
     hnew = (int) rint( h*sp->invsymop[j].rot[0][0] + k*sp->invsymop[j].rot[1][0] + 
@@ -1311,6 +1367,11 @@ void ccp4spg_print_recip_ops(const CCP4SPG* sp)
   float tmp_symop[4][4];
   char rsymop[80];
 
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_print_recip_ops",NULL); 
+    return;
+  }
+
   nrow = (sp->nsymop_prim + 3)/ 4;
   n_in_last_row = sp->nsymop_prim % 4;
   if (n_in_last_row == 0) n_in_last_row = 4;
@@ -1445,6 +1506,10 @@ int range_to_limits(const char *range, float limits[2])
 void set_fft_grid(CCP4SPG* sp, const int nxmin, const int nymin, const int nzmin, 
      const float sample, int *nx, int *ny, int *nz) 
 {
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"set_fft_grid",NULL); 
+    return;
+  }
   *nx = get_grid_sample(nxmin, sp->laue_sampling[0], sample);
   *ny = get_grid_sample(nymin, sp->laue_sampling[1], sample);
   *nz = get_grid_sample(nzmin, sp->laue_sampling[2], sample);
