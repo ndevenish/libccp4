@@ -1212,7 +1212,7 @@ int *iunit, *irec, *iel, *lrecl;
   file_last_op[*iunit] = IRRELEVANT_OP;
 <<OpenVMS seek fudge>>
   if (fseek (file_stream[*iunit],position,SEEK_SET) != 0)
-    fatal ("QSEEK failed");     /* fixme: add file info */
+    fatal ("QSEEK failed -- maybe corrupt file."); /* fixme: add file info */
 }
 @ %def qseek
 @ \subsection{{\tt subroutine qback (\meta{iunit}, \meta{lrecl})}}
@@ -2039,6 +2039,68 @@ the appropriate half-word (counting from 0).
     return ((real->i & 0x0000ff80) == 0x00008000);
   default :
     fatal("CISNAN: bad nativeFT");  }
+@ \subsection{Absent data test for {\tt mtzlib}: {\tt subroutine
+    ccpbml (\meta{ncols}, \meta{cols})}}
+In {\tt mtzlib} there's a fudge for \idx{BIOMOL}-convention absence
+flags, which are re-written to zeroes.  To do the real number
+comparison, though, it's necessary to do a [[qnan]]-type test first.
+We don't want to call [[qnan]] (which calls [[cisnan]]) on every
+number in the data file, so the tests are amortised in this routine
+which deals with a whole array \meta{cols} of length \meta{ncols}.
+<<magic numbers>>=
+#define MDFBIG -1.0E10          /* BIOMOL absence flag value */
+#if CALL_LIKE_HPUX
+  void ccpbml (ncols, cols)
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void CCPBML (ncols, cols)
+#endif
+#if CALL_LIKE_SUN
+  void ccpbml_ (ncols, cols)
+#endif
+#if CALL_LIKE_IRIS
+  fortran ccpbml_ (ncols, cols)
+#endif
+  int *ncols;
+  union float_uint_uchar cols[];
+{
+  int i;
+  for (i=0; i<*ncols; i++)
+    if (cols[i].i != NAN)
+      if (cols[i].f <= MDFBIG) cols[i].f = 0.0;
+}
+@ %def ccpbml
+@ \subsection{Updating MTZ column ranges: {\tt subroutine ccpwrg
+    (\meta{ncols}, \meta{rcols}, \meta{wmin}, \meta{wmax})}}
+This is a similar fudge to [[ccpbml]] to avoid [[QISNAN]] calls in
+updating the MTZ column ranges in {\tt mtzlib}.  Note that [[wminmax]]
+actually indexes a 3-D Fortran array with the first
+dimension range of 2, indicating minimum and maximum values respectively.
+<<magic numbers>>=
+#if CALL_LIKE_HPUX
+  void ccpwrg (ncols, cols, wminmax)
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void CCPWRG (ncols, cols, wminmax)
+#endif
+#if CALL_LIKE_SUN
+  void ccpwrg_ (ncols, cols, wminmax)
+#endif
+#if CALL_LIKE_IRIS
+  fortran ccpwrg_ (ncols, cols, wminmax)
+#endif
+  int *ncols;
+  float wminmax[];
+  union float_uint_uchar cols[];
+{
+  int i;
+  for (i=0; i<*ncols; i++)
+    if (cols[i].i != NAN)
+       if (cols[i].f > MDFBIG) {
+         if (cols[i].f < wminmax[2*i]) wminmax[2*i] = cols[i].f;
+         if (cols[i].f > wminmax[1+2*i]) wminmax[1+2*i] = cols[i].f; }
+}
+@ %def ccpwrg
 @ \section{Dynamic memory allocation}
 It's nice to be able to determine array sizes at run time to avoid
 messy recompilation.  The only way effectively to get dynamic
