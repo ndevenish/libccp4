@@ -85,6 +85,8 @@ static const char *const cmtz_errlist[] =
     "Too many open files",                       /* 13 = CMTZERR_MaxFile */
     "Failed to initialise parser",               /* 14 = CMTZERR_ParserFail */
     "File not identified as MTZ",                /* 15 = CMTZERR_NotMTZ */
+    "Missing or incomplete dataset information in input file.", /* 16 = CMTZERR_DatasetIncomplete */
+    "No architecture information in file.",                /* 17 = CMTZERR_NoArch */
   };
 
 /* parser library errors */

@@ -44,12 +44,14 @@ static char rcsid[] = "$Id$";
 #define  CMTZERR_MaxFile             13
 #define  CMTZERR_ParserFail          14
 #define  CMTZERR_NotMTZ              15
+#define  CMTZERR_DatasetIncomplete   16
+#define  CMTZERR_NoArch              17
 
 MTZ *MtzGet(const char *logname, int read_refs)
 
 { MTZ *mtz;
   CCP4File *filein;
-  int istat, newproj;
+  int istat, newproj, cset_warn=0;
   MTZCOL *colin[MCOLUMNS], *newcol;
   char *filename;
   char crysin[MXTALS][65],projin[MXTALS][65],crystal[65],project[65];
@@ -94,7 +96,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
   filein = ccp4_file_open(filename,O_RDONLY);
   if (! filein ) {
-    ccp4_signal(CMTZ_ERRNO(CMTZERR_CantOpenFile),"MtzGet",NULL);
+    ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_CantOpenFile),"MtzGet",NULL);
     return NULL;
   }
 
@@ -104,12 +106,15 @@ MTZ *MtzGet(const char *logname, int read_refs)
   ccp4_file_setstamp(filein, 2);
   /* Read architecture */
   istat = ccp4_file_rarch (filein);
-  if (!istat)
-   printf(" WARNING: no architecture information in file -- assuming native. \n");
+  if (!istat) {
+   printf(" No architecture information in file -- assuming native. \n");
+   ccp4_signal(CCP4_ERRLEVEL(2) | CMTZ_ERRNO(CMTZERR_NoArch),
+                        "MtzGet", NULL);
+  }
 
   parser = ccp4_parse_start(20);
   if (parser == NULL) {
-    ccp4_signal(CMTZ_ERRNO(CMTZERR_ParserFail),"MtzGet",NULL);
+    ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_ParserFail),"MtzGet",NULL);
     return NULL;
   }
   /* Set some convenient pointers to members of the parser array */
@@ -123,7 +128,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
 
   if (!ccp4_keymatch(key,"MTZ")) {
-    ccp4_signal(CMTZ_ERRNO(CMTZERR_NotMTZ),"MtzGet",NULL);
+    ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_NotMTZ),"MtzGet",NULL);
     return(NULL);
   }
 
@@ -427,7 +432,13 @@ MTZ *MtzGet(const char *logname, int read_refs)
       /* Dataset id for this column
 	 Very old MTZ files may not have this value */
       if (ntok < 6) {
-	printf("Dataset id missing from COLUMN record in MTZ header\n");
+        if (!cset_warn) {
+          printf("Dataset id missing from COLUMN records in MTZ header. \n");
+          printf("Making default assignments. \n");
+          ccp4_signal(CCP4_ERRLEVEL(2) | CMTZ_ERRNO(CMTZERR_DatasetIncomplete),
+                        "MtzGet", NULL);
+          cset_warn = 1;
+	}
 	icset = 0;
       } else {
 	icset = (int) token[5].value;
@@ -742,7 +753,7 @@ int MtzHklcoeffs(const float cell[6], double coefhkl[6]) {
     coefhkl[i] = 0.0;
   for (i = 0; i < 6; ++i)
     if (cell[i] < 0.001) {
-      ccp4_signal(CMTZ_ERRNO(CMTZERR_Cellerr),"MtzHklcoeffs",NULL);
+      ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_Cellerr),"MtzHklcoeffs",NULL);
       return 0;
     }
 
@@ -983,7 +994,7 @@ int MtzParseLabin(char *labin_line, const char prog_labels[][31],
 
   parser = ccp4_parse_start(strlen(labin_line));
   if (parser == NULL) {
-    ccp4_signal(CMTZ_ERRNO(CMTZERR_ParserFail),"MtzParseLabin",NULL);
+    ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_ParserFail),"MtzParseLabin",NULL);
     return 0;
   }
   /* Set some convenient pointers to members of the parser array */
@@ -1702,7 +1713,7 @@ int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],
 
   if ( !mtz || !col || !crystal_name || !dataset_name || 
        !strcmp(crystal_name,"") || !strcmp(dataset_name,"") )
-      ccp4_signal(CMTZ_ERRNO(CMTZERR_ParamError),"MtzAssignColumn",NULL);
+      ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_ParamError),"MtzAssignColumn",NULL);
 
   /* if column already belongs in this dataset, do nothing and return */
   oldset = MtzColSet(mtz, col);
@@ -2445,7 +2456,7 @@ int MtzWhdrLine(CCP4File *fileout, int nitems, char buffer[]) {
 int MtzWrefl(CCP4File *fileout, int ncol, float *refldata) {
 
   if (!fileout)  {
-    ccp4_signal(CMTZ_ERRNO(CMTZERR_NoFile),"MtzWrefl",NULL);
+    ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_NoFile),"MtzWrefl",NULL);
     return 0;
   }
   return (ccp4_file_write(fileout, (uint8 *) refldata, ncol));
@@ -2461,7 +2472,7 @@ MTZ *MtzMalloc(int nxtal, int nset[])
   /* Allocate main header and symmetry */
   mtz = (MTZ *) ccp4_utils_malloc(sizeof(MTZ));
   if (mtz == NULL) {
-    ccp4_signal(CMTZ_ERRNO(CMTZERR_AllocFail),"MtzMalloc",NULL);
+    ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_AllocFail),"MtzMalloc",NULL);
     return NULL;
   }
 
@@ -2551,7 +2562,7 @@ MTZBAT *MtzMallocBatch()
 
   batch = (MTZBAT *) ccp4_utils_malloc(sizeof(MTZBAT));
   if (batch == NULL) {
-    ccp4_signal(CMTZ_ERRNO(CMTZERR_AllocFail),"MtzMallocBatch",NULL);
+    ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_AllocFail),"MtzMallocBatch",NULL);
     return NULL;
   }
 
@@ -2576,7 +2587,7 @@ MTZCOL *MtzMallocCol(MTZ *mtz, int nref)
 
   col = (MTZCOL *) ccp4_utils_malloc(sizeof(MTZCOL));
   if (col == NULL) {
-    ccp4_signal(CMTZ_ERRNO(CMTZERR_AllocFail),"MtzMallocCol",NULL);
+    ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_AllocFail),"MtzMallocCol",NULL);
     return NULL;
   }
 
@@ -2584,7 +2595,7 @@ MTZCOL *MtzMallocCol(MTZ *mtz, int nref)
   if (mtz->refs_in_memory) {
     ccp4array_new_size(col->ref,nref);
     if (col->ref == NULL) {
-      ccp4_signal(CMTZ_ERRNO(CMTZERR_AllocFail),"MtzMallocCol",NULL);
+      ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_AllocFail),"MtzMallocCol",NULL);
       return NULL;
     }
   }
@@ -2627,7 +2638,7 @@ MTZXTAL *MtzAddXtal(MTZ *mtz, const char *xname, const char *pname,
 
   xtal = (MTZXTAL *) ccp4_utils_malloc( sizeof(MTZXTAL) );
   if (! xtal ) { 
-    ccp4_signal(CMTZ_ERRNO(CMTZERR_AllocFail),"MtzAddXtal",NULL);
+    ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_AllocFail),"MtzAddXtal",NULL);
     return NULL;
   }
   /* fill out the data */
@@ -2663,7 +2674,7 @@ MTZSET *MtzAddDataset(MTZ *mtz, MTZXTAL *xtl, const char *dname,
 
   set = (MTZSET *) ccp4_utils_malloc( sizeof(MTZSET) );
   if ( ! set ) { 
-    ccp4_signal(CMTZ_ERRNO(CMTZERR_AllocFail),"MtzAddDataset",NULL);
+    ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_AllocFail),"MtzAddDataset",NULL);
     return NULL;
   }
   /* fill out the data */
@@ -2710,7 +2721,7 @@ MTZCOL *MtzAddColumn(MTZ *mtz, MTZSET *set, const char *label,
   }
   col = MtzMallocCol(mtz, nref);
   if (col == NULL) {
-    ccp4_signal(CMTZ_ERRNO(CMTZERR_AllocFail),"MtzAddColumn",NULL);
+    ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_AllocFail),"MtzAddColumn",NULL);
     return NULL;
   }
 
