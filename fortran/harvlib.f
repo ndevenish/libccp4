@@ -1020,6 +1020,10 @@ C
           FileName = FileName(1:Lenstr(FileName))//
      +               DataSetName(1:Lenstr(DataSetName))//'.'//
      +               ProgName(1:Lenstr(ProgName))
+        ELSE IF (WINMVS()) THEN
+           FileName = FileName(1:Lenstr(FileName))//'\'//
+     +          DataSetName(1:Lenstr(DataSetName))//'.'//
+     +          ProgName(1:Lenstr(ProgName))
         ELSE
           FileName = FileName(1:Lenstr(FileName))//'/'//
      +               DataSetName(1:Lenstr(DataSetName))//'.'//
