@@ -2399,7 +2399,7 @@ C
       CALL UTIME(CTIME)
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
  6000 FORMAT (
-     +     '1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.14: ',
+     +     '1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.15: ',
      +     A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
      +     ///
      +     ' Please reference: Collaborative Computational Project,',
@@ -2717,29 +2717,34 @@ C_BEGIN_QPRINT
       SUBROUTINE QPRINT(IFLAG,MSG)
 C     ============================
 C
-C QPRINT - Set print flag or conditionally print MSG (less trailing
-C     blanks)
+C     QPRINT - Conditionally print information.
+C
+C     Normally, MSG is printed iff IFLAG is not greater than the
+C     `reference' level for messages.  This reference level is set to
+C     the value of IFLAG on the first call (which won't print anything).
 C
 C Usage:  CALL QPRINT   (IFLAG,MSG)
 C         INTEGER       IFLAG
 C         CHARACTER*(*) MSG
 C
-C Input:  IFLAG         debug level 0-9 higher numbers give more output
+C Input:  IFLAG         debug level (0-9)
 C         MSG           the output message itself
 C
 C Output: None.
 C_END_QPRINT
-C
 C======================================================================
 C
-      INTEGER IFLAG
+      INTEGER IFLAG, LEVEL
       CHARACTER MSG* (*)
       EXTERNAL LUNSTO, LENSTR
       INTEGER PFLAG, LUNSTO, LENSTR, LL, LX, LS
       SAVE PFLAG
       DATA PFLAG /-1/
 C
-      IF (PFLAG.EQ.-1) PFLAG = IFLAG
+      IF (PFLAG.EQ.-1) THEN
+        PFLAG = IFLAG
+        RETURN
+      END IF
       IF (IFLAG.LE.PFLAG) THEN
         LL = LENSTR (MSG)
         IF (LL.GE.132) THEN
@@ -2762,6 +2767,16 @@ C         break lines longer than 132 characters for VMS
         END IF
  20     CONTINUE
       END IF
+      RETURN
+      
+      ENTRY QPRLVL (LEVEL)
+C_BEGIN_QPRLVL
+C     SUBROUTINE QPRLVL(LEVEL)
+C
+C     Returns the current `debug level' used by QPRINT in the integer
+C     output variable LEVEL.
+C_END_QPRLVL
+      LEVEL = PFLAG
       END
 C
 C
