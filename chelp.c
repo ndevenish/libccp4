@@ -28,7 +28,9 @@
 {
   char *filename ;
   int len, i = 1, opt = DEF_OPTION;
-  void read_input_file(), show_tree(), process_file(), manipulate_tree();
+#if defined (sgi) || defined (__OSF1__) || defined (__osf__)
+  int setlinebuf(FILE *);
+#endif
   FILE *in;
 
           filename = getenv ("CHELPFILE");
@@ -77,7 +79,6 @@ FILE *fptr;
   char line[MAX_LINE_LEN];
   struct block *item, *clist, *flist;
   int level, c;
-  void insert_into_tree();
 
   while (!feof (fptr))
     {
@@ -209,8 +210,7 @@ void insert_into_tree (level,line)            /* insert the item into the tree *
 int level;                 /* level is used to indicate depth in tree */
 struct block *line;
 {
-  struct treenode *create_node (), *temp;
-  struct list *join_node ();
+  struct treenode *temp, *tree;
 
   if (tree == NULL && level == 0) 
     {
@@ -298,8 +298,7 @@ void manipulate_tree (ptr)
 struct treenode *ptr;
 {
   struct block *info;
-  int pause, get_response();
-  void list_topics();
+  int pause;
 
   do {
 #if ! defined (VMS)
