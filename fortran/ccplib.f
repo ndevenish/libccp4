@@ -1664,7 +1664,7 @@ C
      +      EXTN(JJ).EQ.'.bes' .OR. EXTN(JJ).EQ.'.dic') THEN
           CALL UGTENV('CLIBD',LIBFIL)
           IF (VAX) THEN
-            IF (ENVFIL.NE.' ') THEN
+            IF (LIBFIL.NE.' ') THEN
                TMPNAM = 'CLIBD:' // FILNAM(1:LENSTR(FILNAM))
             ELSE
               TMPNAM = FILNAM(1:LENSTR(FILNAM))
