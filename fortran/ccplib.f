@@ -662,14 +662,18 @@ C_BEGIN_CCPERR
       SUBROUTINE CCPERR(ISTAT,ERRSTR)
 C     ===============================
 C
-C     Report error or normal termination and stop.  Also reports latest
-C     system error iff ISTAT<0.
-C
 C     Arguments:
 C     ==========
 C
-C     ISTAT (I)   INTEGER: exit status (0 for normal termination,
-C                 1 for fatal error)
+C     ISTAT (I)   INTEGER: error/warning level
+C
+C         ISTAT=0  Normal termination and stop.
+C         ISTAT=1  Fatal error and stop.
+C         ISTAT=2  Report severe warning.
+C         ISTAT=3  Report information.
+C            (ISTAT<0 also report latest system error
+C             normally only used as ISTAT=-1)
+C
 C     ERRST (I)   CHARACTER*(*): message
 C_END_CCPERR
 C
@@ -689,31 +693,53 @@ C     (avoid VMS `Message number 00000000')
           CALL QPRINT(0,ERRBUF)
         ENDIF
       ENDIF
-      CALL CCPPNM (ERRBUF)
-      IF (LENSTR(ERRBUF) .LT. 95) THEN
-        ERRBUF (LENSTR(ERRBUF)+1:) = ': '
-        ERRBUF (LENSTR(ERRBUF)+3:) = ERRSTR
-      ENDIF
-      CALL QPRINT(0,ERRBUF)
-      IF (VAXVMS()) THEN
-        IF (ISTAT.EQ.0) THEN
-          CALL GETELAPSED
-C         success
-          CALL CEXIT(1)
-        ELSE
-C         FOR$_NOTFORSPE, "Not a FORTRAN-specific error"
-          CALL CEXIT(1605644)
-        ENDIF
+      ISTAT=ABS(ISTAT)
+
+C     construct appropriate ERRBUF
+      IF (ISTAT.LE.1) THEN
+C        report program name
+         CALL CCPPNM (ERRBUF)
+         IF (LENSTR(ERRBUF) .LT. 95) THEN
+            ERRBUF (LENSTR(ERRBUF)+1:) = ': '
+            ERRBUF (LENSTR(ERRBUF)+3:) = ERRSTR
+         ENDIF
+      ELSEIF (ISTAT.EQ.2) THEN
+         ERRBUF = ' WARNING: '//ERRSTR
       ELSE
-        IF (ISTAT.NE.0) THEN
-C         duplicate message to stderr, assumed to be connected to unit 0
-          WRITE (0,*) ERRBUF
-        END IF
-        CALL GETELAPSED
-        CALL CEXIT(ABS(ISTAT))
+         ERRBUF = ERRSTR
       ENDIF
-C     never reached
-      STOP
+
+C     report messages and exit if appropriate
+      IF (ISTAT.LE.1) THEN
+        CALL QPRINT(0,ERRBUF)
+        IF (VAXVMS()) THEN
+          IF (ISTAT.EQ.0) THEN
+            CALL GETELAPSED
+C           success
+            CALL CEXIT(1)
+          ELSE
+C           FOR$_NOTFORSPE, "Not a FORTRAN-specific error"
+            CALL CEXIT(1605644)
+          ENDIF
+        ELSE
+C         duplicate message to stderr, assumed to be connected to unit 0
+          IF (ISTAT.EQ.1) WRITE (0,*) ERRBUF
+          CALL GETELAPSED
+          CALL CEXIT(ISTAT)
+        ENDIF
+      ELSEIF (ISTAT.EQ.2) THEN
+        CALL QPRINT(0,' ')
+        CALL QPRINT(0,' $TEXT:Warning: $$ comment $$ ')
+        CALL QPRINT(0,ERRBUF)
+        CALL QPRINT(0,' $$')
+      ELSE
+        CALL QPRINT(0,' ')
+        CALL QPRINT(0,' $TEXT:Information: $$ comment $$ ')
+        CALL QPRINT(0,ERRBUF)
+        CALL QPRINT(0,' $$')
+      END IF
+C
+      RETURN
       END
 C
 C
@@ -2410,10 +2436,10 @@ C
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
  6000 FORMAT (/,/,/,/,
      + '1##########################################################',/,
-     + '1##########################################################',/,
-     + '1##########################################################',/,
-     + '1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 3.2: ',A8,'##',/,
-     + '1##########################################################',/,
+     + ' ##########################################################',/,
+     + ' ##########################################################',/,
+     + ' ### CCP PROGRAM SUITE: ',A10,2X,'VERSION 3.2: ',A8,'##',/,
+     + ' ##########################################################',/,
      + ' User: ',A,'  Run date: ',A8,'  Run time:',A,
      + /,/,/,
      + ' Please reference: Collaborative Computational Project,',
@@ -2736,6 +2762,7 @@ C
 C     Normally, MSG is printed iff IFLAG is not greater than the
 C     `reference' level for messages.  This reference level is set to
 C     the value of IFLAG on the first call (which won't print anything).
+C     The first call is typically from CCPFYP.
 C
 C Usage:  CALL QPRINT   (IFLAG,MSG)
 C         INTEGER       IFLAG
