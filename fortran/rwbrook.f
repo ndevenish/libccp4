@@ -2580,7 +2580,7 @@ C
 C     .. Scalar Arguments ..
       REAL C
       INTEGER IELEC,Ifail,IWT,NG
-      CHARACTER ID*4,IDCHK*4
+      CHARACTER ID*4,IDCHK*4,STRING*200
 C     ..
 C     .. Array Arguments ..
       REAL A(4),B(4),CU(2),MO(2)
@@ -2593,9 +2593,9 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPDPN,CCPERR
 C     ..
-      Ifail  = -1
-       IDCHK = ID
-       CALL CCPUPC(IDCHK)
+
+      IDCHK = ID
+      CALL CCPUPC(IDCHK)
       ID2    = IDCHK//'  '
       NGauss = NG
 C
@@ -2618,51 +2618,60 @@ C
         REWIND 45
       END IF
 C
+C---- Search for atom identifier ID
+      IFAIL = -1
+      LID = LENSTR(ID)
+C  Big loop over possible sub-strings of ID
+      DO 25 NID = LID,1,-1
+        REWIND 45
+
+C  Small loop over lines in library file
+   10   CONTINUE
+        READ (45,FMT=6002,END=50,ERR=40) IDIN
 C
-C---- Search for identifier
-        IFAIL = -1
-        LID = LENSTR(ID)
-       DO 25 NID = LID,1,-1
-       REWIND 45
-C
-   10 CONTINUE
-      READ (45,FMT=6002,END=50,ERR=40) IDIN
-C
-      CALL CCPUPC(IDIN)
-      IF (ID2(1:NID).EQ.IDIN(1:NID)) THEN
+        CALL CCPUPC(IDIN)
+        IF (ID2(1:NID).EQ.IDIN(1:NID)) THEN
 c
 c       20/11/2000 C. Vonrhein
 c
 c       special precautions for single character atom types:
 c       skip this atom if second character is NOT '+', '-' or ' '.
 c
-        IF ((NID.NE.1).OR.( (NID.EQ.1).AND.(
+          IF ((NID.NE.1).OR.( (NID.EQ.1).AND.(
      .                      (IDIN(2:2).EQ."+").OR.
      .                      (IDIN(2:2).EQ."-").OR.
      .                      (IDIN(2:2).EQ." ")    )
      .                    )) THEN
-          Ifail = 1
-          IF (NGauss.NE.2 .OR. IDIN(6:6).NE.' ') GO TO 60
+            Ifail = 1
+            IF (NGauss.NE.2 .OR. IDIN(6:6).NE.' ') GO TO 60
+          END IF
         END IF
-      END IF
-C
-      GO TO 10
+
+C  Up for next line of library file
+        GO TO 10
 C
 C---- Error reading library file
 C
-   40 CALL CCPERR(1,'Error reading library file')
+   40   CALL CCPERR(1,'Error reading library file')
 C
 C---- No match
 C
-C---- No match
-C
-   50 CONTINUE
-      CALL CCPERR
-     +  (4,' No match for full atom ID - subtract one character ')
-        IF(NID.GT.1)ID2 = ID2(1:NID-1)//' '//ID2(NID+1:6)
-        IF(NID.GT.1)ID  = ID (1:NID-1)//'    '
+   50   CONTINUE
+        IF (NID.GT.1) THEN
+          WRITE(STRING,'(A,A,A)') ' No match for atom ID ',ID2(1:NID),
+     +     ' subtracting one character '
+          CALL CCPERR(4,STRING(1:LENSTR(STRING)))
+          ID2 = ID2(1:NID-1)//' '//ID2(NID+1:6)
+          ID  = ID (1:NID-1)//'    '
+        ENDIF
+C  End of big loop. Back for smaller substring of ID.
   25  CONTINUE
-      CALL CCPERR(1,'No match for atom ID')
+
+      WRITE(STRING,'(A,A,A)') ' No match for atom ID ',ID2(1:1),
+     +   ' giving up! '
+      CALL CCPERR(4,STRING)
+      IFAIL = -1
+      RETURN
 C
 C---- Matched atom
 C
