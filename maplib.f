@@ -1,4 +1,30 @@
 C
+CMWCLOSE    ENTRY ccp4_map_close_auto
+CMRCLOS     ENTRY ccp4_map_close_read
+CMCLOSC     ENTRY ccp4_map_close_user_mean
+CMCLOSE     ENTRY ccp4_map_close_user_sum
+CMSYCPY     ENTRY ccp4_map_copy_symmetry
+CMRFNAM     ENTRY ccp4_map_get_last_read_filename
+CMWFNAM     ENTRY ccp4_map_get_last_write_filename
+CMRDLIN     ENTRY ccp4_map_get_line_as_mode
+CMSYMOP     ENTRY ccp4_map_get_symm_matrix
+CMGULP      ENTRY ccp4_map_get_whole_section_as_mode
+CMGULPR     ENTRY ccp4_map_get_whole_section_as_real
+CMODECV     ENTRY ccp4_map_mode_to_real
+CMRDHDR     ENTRY ccp4_map_open_read_header
+CMRDHDS     ENTRY ccp4_map_open_read_header_check
+CMWRHDR     ENTRY ccp4_map_open_write_header_by_id
+CMWRHDL     ENTRY ccp4_map_open_write_header_by_name
+CMSKPUT     ENTRY ccp4_map_put_skew_info
+CMSYPUT     ENTRY ccp4_map_put_spgname
+CMSYWRT     ENTRY ccp4_map_put_symm_matrix
+CMPOSN      ENTRY ccp4_map_section_read_position
+CMPOSNW     ENTRY ccp4_map_section_write_position
+CMTTCPY     ENTRY ccp4_map_title_copy
+CMTTREP     ENTRY ccp4_map_title_replace
+CMSPEW      ENTRY ccp4_map_write_all_section 
+CMWRSEC     ENTRY ccp4_map_write_part_section
+C
 C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
@@ -175,6 +201,9 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL MWRHDL
 C     ..
+      ENTRY ccp4_map_open_write_header_by_id(
+     +          IUNIT,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,NV1,NV2,
+     +                  CELL,LSPGRP,LMODE)
 C
       CALL MWRHDL(IUNIT,'MAPOUT',TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,NV1,
      +            NV2,CELL,LSPGRP,LMODE)
@@ -305,6 +334,10 @@ C---- Number of items in header
 C
       DATA NBHDR/256/,BLANK/'    '/, FILE/' '/
 C     ..
+C
+      ENTRY ccp4_map_open_write_header_by_name
+     +       (IUNIT,MAPNAM,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
+     +                  NV1,NV2,CELL,LSPGRP,LMODE)
 C---- Check valid IUNIT
 C
       IF (IUNIT.LT.0 .OR. IUNIT.GT.12) THEN
@@ -428,6 +461,7 @@ C
 C_BEGIN_MWFNAM
 C
       ENTRY MWFNAM(FNAME)
+      ENTRY ccp4_map_get_last_write_filename(FNAME)
 C     ===================
 C
 C---- Returns filename from last file open,
@@ -525,6 +559,7 @@ C     .. Save statement ..
       SAVE /MSTRM/,/MOHDR/,/MOHSUM/
 C     ..
 C
+      ENTRY ccp4_map_write_part_section(IUNIT,X,MU,MV,IU1,IU2,IV1,IV2)
       NCOLS = IU2 - IU1 + 1
       IF (MODE.NE.2) THEN
 C
@@ -621,6 +656,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MOHDR/,/MOHSUM/
 C     ..
+      ENTRY ccp4_map_write_all_section (IUNIT,X)
 C
 C---- Number of items
 C
@@ -749,6 +785,7 @@ C---- Number of items in header
 C
       DATA NBHDR/256/
 C     ..
+      ENTRY ccp4_map_close_user_sum(IUNIT,RHMIN,RHMAX,RHMEAN,RHRMS)
 C
 C---- Calculate mean in double precision
 C
@@ -870,6 +907,7 @@ C---- Number of items in header
 C
       DATA NBHDR/256/
 C     ..
+      ENTRY ccp4_map_close_auto (IUNIT)
 C
 C---- Calculate mean
 C
@@ -994,6 +1032,7 @@ C---- Number of items in header
 C
       DATA NBHDR/256/
 C     ..
+      ENTRY ccp4_map_close_user_mean(IUNIT,RHMIN,RHMAX,RHMEAN,RHRMS)
 C
       AMEAN = RHMEAN
       ARMS = RHRMS
@@ -1081,6 +1120,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MOHDR/
 C     ..
+      ENTRY ccp4_map_section_write_position(IUNIT,JSEC)
 C
 C---- Section length in items
 C
@@ -1152,6 +1192,10 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL MRDHDS
 C     ..
+      ENTRY ccp4_map_open_read_header(IUNIT,MAPNAM,TITLE,NSEC,
+     +                  IUVW,MXYZ,NW1,NU1,NU2,
+     +                  NV1,NV2,CELL,LSPGRP,LMODE,RHMIN,RHMAX,RHMEAN,
+     +                  RHRMS)
 
       IFAIL  = 0
       IPRINT = 1
@@ -1281,6 +1325,10 @@ C     .. Data statements ..
       DATA NBHDR/256/
       DATA LXYZ/'X','Y','Z'/
 C     ..
+      ENTRY ccp4_map_open_read_header_check(IUNIT,MAPNAM,TITLE,
+     +                  NSEC,IUVW,MXYZ,NW1,NU1,NU2,
+     +                  NV1,NV2,CELL,LSPGRP,LMODE,RHMIN,RHMAX,RHMEAN,
+     +                  RHRMS,IFAIL,IPRINT)
 C
       TITLE = ' '
 
@@ -1483,6 +1531,7 @@ C
 C_BEGIN_MRFNAM
 C
       ENTRY MRFNAM(FNAME)
+      ENTRY ccp4_map_get_last_read_filename(FNAME)
 C     ===================
 C
 C---- Returns file name from last file open,
@@ -1563,6 +1612,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/
 C     ..
+      ENTRY ccp4_map_section_read_position(IUNIT,JSEC)
 C
 C---- Section length in items
 C
@@ -1629,6 +1679,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/
 C     ..
+      ENTRY ccp4_map_get_line_as_mode(IUNIT,X,IER)
 C
 C---- Size of section (elements)
 C
@@ -1688,6 +1739,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/
 C     ..
+      ENTRY ccp4_map_get_whole_section_as_mode(IUNIT,X,IER)
 C
 C---- Size of section (elements)
 C
@@ -1756,6 +1808,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/
 C     ..
+      ENTRY ccp4_map_get_whole_section_as_real(IUNIT,X,IER)
 C
       NRL = NBYTXX(500)
 C
@@ -1828,6 +1881,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/
 C     ..
+      ENTRY ccp4_map_close_read(IUNIT)
 C
       CALL QCLOSE(LSTRM(IUNIT))
 C
@@ -1891,6 +1945,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MOHDR/
 C     ..
+      ENTRY ccp4_map_put_spgname(IST,LSPGRP,IUNIT)
 C
       NCLIN = NBYTXX(20)
 C
@@ -2011,6 +2066,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/
 C     ..
+      ENTRY ccp4_map_get_symm_matrix(IUNIT,NSYM,ROT)
 C
       NBLIN = NBYTXX(20)
       NSYM = 0
@@ -2122,6 +2178,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/,/MOHDR/
 C     ..
+      ENTRY ccp4_map_copy_symmetry(IN,IOUT)
 C
       NBLIN = NBYTXX(20)
 C
@@ -2201,6 +2258,7 @@ C     .. Common blocks ..
 C     ..
       SAVE /MIHDR/, /MOHDR/
 C
+      ENTRY ccp4_map_title_copy(TITLE)
       DO 20 J = 1,NLABI
         DO 10 I = 1,20
           LABELO(I,J) = LABELI(I,J)
@@ -2252,6 +2310,7 @@ C     .. Common blocks ..
       COMMON /MOHDR/JUNKO(55),NLABO,LABELO(20,10),JUNKO3(3)
 C     ..
       SAVE /MOHDR/
+      ENTRY ccp4_map_title_replace(TITLE,NT)
 C
       NLABO = MAX(NLABO,NT)
       READ (TITLE,FMT=6000) (LABELO(I,NT),I=1,20)
@@ -2303,6 +2362,7 @@ C     .. Save statement ..
       SAVE /MOHDR/
 C     ..
 C
+      ENTRY ccp4_map_put_skew_info(ASKWMT,ASKWTN)
       LSKFLG = 1
       DO 20 I = 1,3
         DO 10 J = 1,3
@@ -2398,6 +2458,7 @@ C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
 C     ..
+      ENTRY ccp4_map_mode_to_real(X,BLINE,N,MODE)
 C
       J = 1
       IFAIL = 1
@@ -2545,6 +2606,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MOHDR/
 C     ..
+      ENTRY ccp4_map_put_symm_matrix(IUNIT,NSYM,ROT)
 C
       IF (NSYM .LE. 0 .OR. NSYM .GT. MAXSYM) THEN
          WRITE (LUNOUT, '(/A,I8/)')
