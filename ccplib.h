@@ -22,6 +22,8 @@
 #ifndef __CCPLib__
 #define __CCPLib__
 
+static char rcsidhl[] = "$Id$";
+
 #ifdef  __cplusplus
 namespace CCP4 {
 extern "C" {

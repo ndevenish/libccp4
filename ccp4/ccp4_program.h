@@ -18,11 +18,12 @@
 #ifndef __CCP4Program__
 #define __CCP4Program__
 
+static char rcsidhp[] = "$Id$";
+
 #ifdef  __cplusplus
 namespace CCP4 {
 extern "C" {
 #endif
-static char rcsidhp[] = "$Id$";
 
 #define CCP4_VERSION_NO "4.2"
 #define CCP4_PATCH_LEVEL "4.2.0"
