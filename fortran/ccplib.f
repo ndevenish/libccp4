@@ -1835,7 +1835,7 @@ C     .. Array Arguments ..
      +          EXTN(ILIMIT)* (4)
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,II,ISTAT,JJ
+      INTEGER I,II,ISTAT,JJ,PROCID
       LOGICAL VAX,EXIST
       CHARACTER ERRSTR* (ISTRLN),LIBFIL* (ISTRLN),PROGNM* (ISTRLN),
      +          TMPNAM* (ISTRLN),LINE* (ISTRLN),SCRFIL* (ISTRLN)
@@ -1955,7 +1955,8 @@ C         actually create <ccp4_scr>/<prognm>_.<pid>
           IF (VAX) THEN
             WRITE (SCRFIL,'(Z8.8)') GETPID()
           ELSE
-            WRITE (SCRFIL,'(I5.5)') GETPID()
+            PROCID = MOD(GETPID(),100000)
+            WRITE (SCRFIL,'(I5.5)') PROCID
           ENDIF
           FILNAM = TMPNAM(1:LENSTR(TMPNAM))//SCRFIL
         END IF
