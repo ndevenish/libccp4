@@ -1,10 +1,13 @@
 C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part i)' software.  See the conditions
+C     in the CCP4 manual for a copyright statement.
+C
+C
 C   ---------------- vms.for --------------------
 C   replaces vmssupport.for and is replaced by unix.for 
 C   for unix systems.
 C
-C  From: P.J. Daly <pjd@uk.ac.dl.cxa>
-C  Date: Thu, 17 Oct 91 09:57:09 +0100
 C  $Date$
 C
 C VMS.FOR
@@ -24,8 +27,10 @@ C UBYTES - Returns number of bytes per word and 'words'/'bytes'
 C          to indicate if byte handling is available
 C GETPID - Get unique process id.
 C USTENV - Create logical name.
-C NOCRLF - write line supressing cr/lf
 C TTSEND - Write string to terminal with various carriage control options
+C GETELAPSED - Print timing info for CCPERR
+C UGTARG - Get command-line argument 
+C GETREF - Abstracted from abscale since it has BYTE declaration.
 C
 C
 C     ================================                         
@@ -80,7 +85,8 @@ C     ===============================
 C
 C UGERR - Get error message string for error number in status
 C
-C Input:  STATUS - Error number (if negative then print error message)
+C Input:  STATUS - Error number (if negative then print error message,
+C     if zero, then use last error)
 C
 C Output: ERRSTR - Error message string
 C
@@ -112,7 +118,11 @@ C
 C
 C---- Get error message from system
 C
-      CALL ERRSNS (STATUS,,,,COND)
+      IF (STATUS.NE.0) THEN
+        CALL ERRSNS (STATUS,,,,COND)
+      ELSE
+        CALL ERRSNS (,,,,COND)
+      ENDIF
 C
 C---- Translate it
 C                
@@ -201,54 +211,6 @@ C
       CHARACTER*(*) CTIME
 C
       CALL TIME(CTIME)
-C
-      END
-C
-C
-C     ======================
-      SUBROUTINE USTIME(ISEC)         
-C     ======================
-C
-C USTIME - Get absolute time in seconds. (returns with -1 under VMS)
-C
-C Input:  none
-C
-C Output: SEC
-C
-C Arguments: INTEGER SEC
-C
-C Usage:     CALL USTIME(SEC)
-C
-      INTEGER ISEC            
-C
-      ISEC = -1
-C
-      END
-C
-C
-C     ======================
-      SUBROUTINE UCPUTM(SEC)
-C     ======================
-C
-C     Get CPU time in seconds
-C
-C     Parameter:
-C     REAL SEC (i/o): If sec<=0.0, initialize timer and return current
-C                     elapsed cpu time since start of execution, otherwise
-C                     return elapsed cpu since timer was initialized.
-C                     Time is in seconds.
-C
-      REAL    SEC,ELAPS,SECNDS
-      INTEGER IFLAG
-C
-      SAVE ELAPS
-C
-      IF (SEC.LT.0.0001) THEN
-        ELAPS = SECNDS(0.0)
-        SEC = ELAPS
-      ELSE
-        SEC = SECNDS(ELAPS)
-      ENDIF
 C
       END
 C
@@ -587,21 +549,6 @@ C
       ITM(2).IE = 0
       ISTAT = SYS$CRELNM(,'LNM$PROCESS',LOGNAM(:LENSTR(LOGNAM)),,ITM)
       IF (ISTAT.NE.SS$_NORMAL) IRESULT = 2
-C
-      END
-C
-C
-C
-C     ========================
-      SUBROUTINE NOCRLF (LINE)
-C     ========================
-C
-C---- Output a line supressing cr/lf
-C
-      CHARACTER*(*) LINE
-C
-      WRITE (6,99) LINE
-99    FORMAT (1X,A,$)
 C
       END
 C
@@ -1147,4 +1094,310 @@ C
 1001  FORMAT (' ',A)
 1002  FORMAT ('+',A,$)
 1003  FORMAT ('+',A)
+      END
+C
+      SUBROUTINE UGTARG(I, ARG)
+      INTEGER I
+      CHARACTER *(*) ARG
+      CALL GETARG(I, ARG)
+      END
+
+C     ========================
+      SUBROUTINE GETELAPSED
+C     ========================
+C
+C GETELAPSED - print CPU and ELAPSED times since job started.
+C
+C**** NOTE - Code is not VAX/VMS specific but will only work correctly on VAX,
+c**** because on other systems USTIME returns system time relative to arbitrary
+c**** zero, whereas in VMS.FOR USTIME has been set up to return time relative
+c**** to start of job.
+C
+      INTEGER    CPUMIN, CPUSEC, CPUTIC, JOBMIN, JOBSEC
+      REAL       CPUTIM
+C
+      CPUTIM = 0.
+      CALL UCPUTM(CPUTIM)
+      CPUTIC = NINT(100.*CPUTIM)
+      CPUMIN = CPUTIC/6000
+      CPUSEC = MOD(CPUTIC/100,60)
+      CPUTIC = MOD(CPUTIC,100)
+C
+      CALL USTIME(JOBSEC)
+      JOBMIN = JOBSEC/60
+      JOBSEC = MOD(JOBSEC,60)
+C
+      WRITE (6,'(/,A,I6,2(A,I2.2),8X,A,I6,A,I2.2)')
+     &' CPU time used:',CPUMIN,':',CPUSEC,'.',CPUTIC,
+     &'Elapsed time:',JOBMIN,':',JOBSEC
+      END
+
+      SUBROUTINE UCPUTM(CPUTIM)
+C     =========================
+C
+C     Get CPU time in seconds.
+C
+C     Argument:
+C     REAL CPUTIM (i/o): If <= 0, initialize timer and return current
+C                        elapsed cpu time since start of execution, otherwise
+C                        return elapsed cpu since timer was initialized.
+C
+C******************  VAX/VMS SPECIFIC !  *********************
+C
+      INCLUDE        '($JPIDEF)'
+      INTEGER        IOSB(2), IS, IT
+      REAL           CPUSAV, CPUTIM
+      INTEGER        SYS$GETJPIW
+C
+      STRUCTURE      /ITMLST/
+        UNION
+          MAP
+            INTEGER*2    LB,IC
+            INTEGER      IA,IR
+          ENDMAP
+          MAP
+            INTEGER      IE
+          ENDMAP
+        ENDUNION
+      ENDSTRUCTURE
+C
+      RECORD         /ITMLST/ JPI(2)
+C
+      DATA           IT /0/, CPUSAV /0./
+      SAVE           IT, CPUSAV
+C
+      IF (IT.EQ.0) THEN
+        JPI(1).LB = 4
+        JPI(1).IC = JPI$_CPUTIM
+        JPI(1).IA = %LOC(IT)
+        JPI(2).IE = 0
+      ENDIF
+C
+      IS = SYS$GETJPIW(,,,JPI,IOSB,,)
+      IF (IS) IS = IOSB(1)
+      IF (.NOT.IS) CALL LIB$SIGNAL(%VAL(IS))
+C
+      IF (CPUTIM.LE.0.) THEN
+        CPUSAV = .01*IT
+        CPUTIM = CPUSAV
+      ELSE
+        CPUTIM = .01*IT - CPUSAV
+      ENDIF
+      END
+
+C     =========================
+      SUBROUTINE USTIME(JOBTIM)         
+C     =========================
+C
+C USTIME - Get elapsed job time in seconds to nearest second.
+C
+C Argument: INTEGER JOBTIM
+C
+C
+C******************  VAX/VMS SPECIFIC !  *********************
+C
+      INCLUDE        '($JPIDEF)'
+      LOGICAL        LT
+      INTEGER        IOSB(2), IS, JOBTIM, T0(2), TN(2)
+      REAL           DT
+      INTEGER        SYS$GETJPIW, SYS$GETTIM
+C
+      STRUCTURE      /ITMLST/
+        UNION
+          MAP
+            INTEGER*2    LB,IC
+            INTEGER      IA,IR
+          ENDMAP
+          MAP
+            INTEGER      IE
+          ENDMAP
+        ENDUNION
+      ENDSTRUCTURE
+C
+      RECORD         /ITMLST/ JPI(2)
+C
+      DATA           LT /.TRUE./
+      SAVE           LT, T0
+C
+      IF (LT) THEN
+        JPI(1).LB = 8
+        JPI(1).IC = JPI$_LOGINTIM
+        JPI(1).IA = %LOC(T0)
+        JPI(2).IE = 0
+C
+        IS = SYS$GETJPIW(,,,JPI,IOSB,,)
+        IF (IS) IS = IOSB(1)
+        IF (.NOT.IS) CALL LIB$SIGNAL(%VAL(IS))
+        LT = .FALSE.
+      ENDIF
+C
+      IS = SYS$GETTIM(TN)
+      IF (.NOT.IS) CALL LIB$SIGNAL(%VAL(IS))
+C
+C==== T0 = Absolute time at job login in 10^-7 sec units (INTEGER*8).
+C==== TN = Absolute time now in 10^-7 sec units (INTEGER*8).
+C==== JOBTIM = Time difference in seconds (INTEGER*4).
+C
+      DT = REAL(TN(1)) - REAL(T0(1))
+      IF (T0(1).LT.0) DT = DT - 2.**32
+      IF (TN(1).LT.0) DT = DT + 2.**32
+      JOBTIM = NINT(1.E-7*(DT + 2.**32*(REAL(TN(2)) - REAL(T0(2)))))
+      END
+C     
+C     =====================================================
+      SUBROUTINE GETREF(KERFLG,NREAD,NSPOTS,DYNAM,MAXOMITL)
+C     =====================================================
+C
+C     [This has been abtracted from ABSCALE because of the BYTE
+C     declaration.]
+C
+        implicit none
+C     
+C     
+C     
+C     
+C     
+C     Read one reflection into common /IND/, skipping unmeasured reflections
+C     Return 1 if end of file or all N spots found
+C     Both integrated and profile fitted I's and SD's are stored, one in
+C     INTT,SD and the other in INTT2,SD2. The values in INTT,SD are used
+C     in scaling, and this is chosen on input card 1 to be either the 
+C     integrated or profile fitted value.
+C     
+C
+C This routine is probably VAX specific in its unpacking of indices
+C
+C
+C
+C---- IC format generate file variables
+C
+C
+C
+C     .. Scalar Arguments ..
+      INTEGER           NREAD,NSPOTS,KERFLG,MAXOMITL
+      LOGICAL DYNAM
+C     ..
+C     .. Scalars in Common ..
+      INTEGER           IREC,IX,IY,JGUNIT,JH,JK,JL,MND
+      LOGICAL           PROFILE
+C     ..
+C     .. Arrays in Common ..
+      REAL              SPACER(12)
+      INTEGER           INTT(3),INTT2(3),ISD(3),ISD2(3),JUNK(2)
+C     ..
+C     .. Local Scalars ..
+      INTEGER           I,ICOL,ICOL2,IER,I4INTS,I4INTP
+      BYTE              IR,IM
+C     ..
+C     .. Local Arrays ..
+cejd      INTEGER*2         IBUF(18)
+      INTEGER*2         IBUF(19)
+      BYTE              B(2)
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL          QREAD
+C     ..
+C     .. Common blocks ..
+       LOGICAL BRIEF
+       INTEGER IBRIEF
+       COMMON /BRF/ BRIEF,IBRIEF
+      COMMON      /IND/JH,JK,JL,MND,JUNK,IX,IY,SPACER,INTT,ISD,
+     +            INTT2,ISD2
+      COMMON      /INREC/JGUNIT,IREC
+      COMMON      /INTTYP/PROFILE
+C     ..
+C     .. Equivalences ..
+      EQUIVALENCE       (B(1),IBUF(4)), (B(1),IR), (B(2),IM)
+      EQUIVALENCE       (I4INTS,IBUF(7)),(I4INTP,IBUF(13))
+C     ..
+      SAVE
+C
+C
+          KERFLG = 0
+C
+C
+   10 CONTINUE
+      NREAD = NREAD + 1
+C
+C
+      IF (NREAD.GT.NSPOTS) THEN
+          GO TO 40
+      ELSE
+C
+C              *************************
+          CALL QREAD(JGUNIT,IBUF,36,IER)
+C              *************************
+C
+          IREC = IREC + 1
+          IF (IER.NE.0) THEN
+              GO TO 30
+C
+C---- If rejected, skip to next refl
+C
+CAL ALLOW IR TO HAVE VALUES 5,6
+          ELSE IF ((IR.NE.0).AND.(IR.LE.4)) THEN
+              GO TO 10
+          END IF
+      END IF
+C
+C
+      JH = IBUF(1)
+      JK = IBUF(2)
+      JL = IBUF(3)
+      MND = IM
+      IF (MND.LT.0) MND = 8
+      IX = IBUF(5)
+      IY = IBUF(6)
+C
+C---- A film intensity in ibuf(7) for integrated intensities or
+C     ibuf(13) for profile fitted intensities
+C
+      IF (PROFILE) THEN
+          ICOL = 13
+          ICOL2 = 7
+      ELSE
+          ICOL = 7
+          ICOL2 = 13
+      END IF
+C
+C
+      DO 20 I = 1,3
+          IF (DYNAM) THEN
+           ISD(I) = IBUF(ICOL+2)
+           ISD2(I) = IBUF(ICOL2+2)
+           IF (PROFILE) THEN
+             INTT(I) = I4INTP
+             INTT2(I) = I4INTS
+           ELSE
+             INTT(I) = I4INTS
+             INTT2(I) = I4INTP
+           END IF
+          ELSE
+           INTT(I) = IBUF(ICOL)
+           ISD(I) = IBUF(ICOL+1)
+           INTT2(I) = IBUF(ICOL2)
+           ISD2(I) = IBUF(ICOL2+1)
+          END IF
+C
+C---- Test for badspots (isd=-9999) change to unmeasured
+C     this will also reject overloaded reflections
+C-AL   Change this so overloads are rejected (and counted) in RDREF
+C
+       IF ( (ISD(I)   .EQ. -9999) .AND.
+     +      (INTT(I)  .NE. MAXOMITL) )       INTT(I) = -9999
+       IF ( (ISD2(I)  .EQ. -9999) .AND.
+     +      (INTT2(I) .NE. MAXOMITL) ) 
+     +                                     INTT2(I) = -9999
+C
+C
+          ICOL = ICOL + 2
+          ICOL2 = ICOL2 + 2
+   20     CONTINUE
+      RETURN
+   30 KERFLG = -1
+      RETURN 
+   40 KERFLG = -1
+      RETURN
+C
+C
       END
