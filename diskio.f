@@ -102,15 +102,15 @@ C     ..
 C     .. Local Scalars ..
       INTEGER JSTAT
       CHARACTER ERRSTR*255,REWRIT* (ISIZE),USRNAM* (ISIZE),
-     +          FNAME* (ISTRLN),LNAME* (ISTRLN)
+     +     FNAME* (ISTRLN),LNAME* (ISTRLN)
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPERR,CCPUPC,COPEN,QPRINT,UGTENV,UGTUID
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
-      EXTERNAL LENSTR, VAXVMS
-      LOGICAL VAXVMS
+      EXTERNAL CCPEXS, LENSTR, VAXVMS
+      LOGICAL CCPEXS, VAXVMS
 C     ..
 C     .. Data statements ..
       DATA MODES/'UNKNOWN','SCRATCH','OLD','NEW','READONLY'/
@@ -142,9 +142,9 @@ C
       ELSE IF (FNAME.EQ.' ') THEN
         FNAME = LNAME
       END IF
-      IF (REWRIT(1:1).EQ.'U') CALL QPRINT(2,
-     +                            '(Q)QOPEN status changed from NEW to '
-     +                             //'UNKNOWN for '// LNAME)
+      IF (REWRIT.EQ.'UNKNOWN') 
+     +     CALL QPRINT(2, '(Q)QOPEN status changed from NEW to '
+     +     //'UNKNOWN for '// LNAME)
 C
 C---- Open the file as requested
 C
@@ -156,6 +156,10 @@ C
         CALL CCPERR(1,' (Q)QOPEN failed - no streams left')
       ELSE IF (IUNIT.EQ.-2) THEN
         WRITE (ERRSTR,FMT=6001) '(Q)QOPEN failed - File name:',LOGNAM
+        CALL CCPERR(1,ERRSTR)
+      ELSE IF (JSTAT.EQ.4 .AND. CCPEXS(FNAME)) THEN
+        WRITE (ERRSTR,FMT=6001)
+     +       '(Q)QOPEN NEW file already exists:', FNAME(:200)
         CALL CCPERR(1,ERRSTR)
       END IF
 
