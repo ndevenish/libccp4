@@ -1734,22 +1734,29 @@ int MtzSetSortOrder(MTZ *mtz, MTZCOL *colsort[5]) {
 
 int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nlines) {
 
-  int i;
-  char *newhist;
+  int i,j,numlines=0;
+  char *newhist,*ich;
 
   newhist = MtzCallocHist(mtz->histlines + nlines);
   /* write new history lines */
   for (i = 0; i < nlines; ++i) {
-    strncpy(newhist + MTZRECORDLENGTH*i,history[i],MTZRECORDLENGTH);
+   for (j = 0; j < MTZRECORDLENGTH; ++j) {
+    /* remove leading blanks and blank lines */
+    if ( *(history[i]+j) != ' ') {
+     strncpy(newhist + MTZRECORDLENGTH*i,history[i]+j,MTZRECORDLENGTH-j);
+     ++numlines;
+     break;
+    }
+   }
   }
   /* copy old history lines */
   for (i = 0; i < mtz->histlines; ++i) {
-    strncpy(newhist + MTZRECORDLENGTH*nlines + MTZRECORDLENGTH*i,
+    strncpy(newhist + MTZRECORDLENGTH*numlines + MTZRECORDLENGTH*i,
         mtz->hist + MTZRECORDLENGTH*i,MTZRECORDLENGTH);
   }
   MtzFreeHist(mtz->hist);
   mtz->hist = newhist;
-  mtz->histlines += nlines;
+  mtz->histlines += numlines;
 
   return mtz->histlines;
 }
