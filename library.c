@@ -41,8 +41,6 @@
    include files right. */
 
 #if defined (_AIX)                        /* IBM unix - models RS/6000 */
-				/* (surmised from GNU configures -- needs
-				   confirmation) */
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_HPUX 1
 #endif
@@ -433,8 +431,8 @@ long elapsed;                                   /* used to get elapsed time */
     }
 
   elapsed = (long) time (0) - elapsed;
-  minutes = (int) (elapsed / 60);
-  seconds = (int) elapsed - 60.0 * (float) minutes; 
+  minutes = (int) ((elapsed / 60) + 0.5);
+  seconds = elapsed - 60.0 * (float) minutes; 
   printf ("Elapsed: %02d:%04.2fs\n", minutes, seconds);
 #endif				/* __hpux */
 }
@@ -1303,7 +1301,8 @@ float dtime (tarray)
   utime = buffer->tms_utime; stime = buffer->tms_stime;
   tarray[0] = ((float)(utime - old_utime)) / (float)CLK_TCK;
   tarray[1] = ((float)(stime - old_stime)) / (float)CLK_TCK;
-  old_utime = utime; old_stime = stime; 
+  old_utime = utime; old_stime = stime;
+  return (tarray[0]+tarray[1]);
 }
 #endif
 
@@ -1349,9 +1348,7 @@ int Lname, Lvalue;
 {
   int i;
 
-  name[flength (name, Lname)] = (char) NULL; 
-
-  (void) strncpy (value, getenv (name), Lvalue);
+ (void) strncpy (value, getenv (name), Lvalue);
   for (i = strlen (value); i < Lvalue; i++) 
     value[i] = ' ';                                      /* pad with spaces */
 } /* End of getenv_ (name, value, lname, lvalue) */
