@@ -946,6 +946,23 @@ C
    10 ARR1(J)=0.0
       END
 
+      SUBROUTINE NOCRLF(LINE)
+C     =======================
+C
+C---- Output a line supressing cr/lf.
+C
+C Arguments:
+C ==========
+C
+C    LINE (I)   CHARACTER*(*): Line to output.
+C_END_NOCRLF
+C
+      EXTERNAL LUNSTO,TTSEND
+      INTEGER LUNSTO
+      CHARACTER*(*) LINE
+      CALL TTSEND(LUNSTO(1),LINE,0)
+      END
+
 C  Trivial function from symlib.g
 C     ============================
       LOGICAL FUNCTION HKLEQ(IH,KH)

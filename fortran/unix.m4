@@ -617,6 +617,92 @@ C     but it seems not to.  This works in HP-UX A.09.01.
 ])dnl
       END
 
+C
+C SUBROUTINE 'TTSEND'
+C ===================
+C
+C Write a string to a terminal with various carriage control options
+C [for LAUE]
+C
+      SUBROUTINE TTSEND (IUN, STR, ICC)
+C
+C Parameters:
+C
+C         IUN (I)   Unit number for the output
+C         STR (I)   The string to be output
+C         ICC (I)   = 0, no carriage control at the end of the string
+C                        (for prompts)
+C                        e.g. for routine TPROMP
+C                   = 1, normal carriage control
+C                        e.g. for routine TWRITE
+C                   = 2, no carriage control (for sending escape/control
+C                        character sequences to ANSI/T4014 terminals)
+C                        e.g. for QSCREEN graphics routines
+C                   = 3, Output line at current point on screen (no leading
+C                        line feed or carriage return - trailing does not
+C                        matter)
+C
+C Machine dependence examples: Convex   1000  FORMAT (A,$)
+C                                       1001  FORMAT (A)
+C                                       1002  FORMAT (A,$)
+C                                       1003  FORMAT (A)
+C                              
+C                              Vax      1000  FORMAT (' ',A,$)
+C                                       1001  FORMAT (' ',A)
+C                                       1002  FORMAT ('+',A,$)
+C                                       1003  FORMAT ('+',A)
+C
+C
+C====== Specification statements
+C
+      CHARACTER*(*) STR
+      CHARACTER*10 CCNTRL
+C
+C====== Write string
+C
+C     'LIST' is the equivalent of the normal Unix state
+      CCNTRL = 'LIST'
+ifdef(_carriagecontrol,[],
+[      INQUIRE(IUN _carriagecontrol)]
+)dnl
+C     in the case of systems obeying the carriagecontrol specifier, 
+C     we assume the stream has actually been opened, so that the
+C     specifier is suitably defined -- on the Alliant, for instance,
+C     it will be 'UNKNOWN' for an unopened stream (6 is pre-opened)
+C
+      IF (CCNTRL .EQ. 'FORTRAN') THEN
+C       VMS-type
+        IF (ICC.EQ.0) THEN
+          WRITE (IUN,1004) STR
+        ELSE IF (ICC.EQ.2) THEN
+          WRITE (IUN,1006) STR
+        ELSE IF (ICC.EQ.3) THEN
+          WRITE (IUN,1007) STR
+        ELSE
+          WRITE (IUN,1005) STR
+        ENDIF
+      ELSE
+        IF (ICC.EQ.0) THEN
+          WRITE (IUN,1000) STR
+        ELSE IF (ICC.EQ.2) THEN
+          WRITE (IUN,1002) STR
+        ELSE IF (ICC.EQ.3) THEN
+          WRITE (IUN,1003) STR
+        ELSE
+          WRITE (IUN,1001) STR
+        ENDIF
+      ENDIF
+C     these formats are mostly non-standard, of course...
+1000  FORMAT (A,$)
+1001  FORMAT (A)
+1002  FORMAT (A,$)
+1003  FORMAT (A)
+ 1004 FORMAT (' ',A,$)
+ 1005 FORMAT (' ',A)
+ 1006 FORMAT ('+',A,$)
+ 1007 FORMAT ('+',A)
+      END
+C
 c     ============================
       subroutine hciftime(ciftime)
 c     ============================
