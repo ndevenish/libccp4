@@ -851,7 +851,7 @@ C
 C     
 C     
 C     
-      SUBROUTINE CCPOPN(IIUN,LOGNAM,KSTAT,ITYPE,LREC,IFAIL)
+      SUBROUTINE CCPOPN14(IIUN,LOGNAM,KSTAT,ITYPE,LREC,IFAIL)
 C     ====================================================
 C     
 C---- This subroutine is used to open a file
@@ -989,7 +989,8 @@ C
                     GO TO 10
                   END IF
                 ELSE
-                  OPEN(UNIT=IUN,STATUS=ST,ACCESS='DIRECT',FORM=FRM,FILE=NAMFIL,
+                  OPEN(UNIT=IUN,STATUS=ST,ACCESS='DIRECT',FORM=FRM,
+     +                 FILE=NAMFIL,
      +                 RECL=LLREC,DISPOSE=DISPOS,IOSTAT=IOS)
 C                 
                   IF (IOS.NE.0) THEN
