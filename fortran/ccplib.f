@@ -217,8 +217,8 @@ C     ..
         LENG (I) = CCPE2I (LENGTH (I), LENDEF (I))
  10   CONTINUE
       IF (PRINT) THEN
-        WRITE (LUNSTO(1), '(/
-     +       '' Memory allocation (logical name, type, elements):'')')
+        WRITE (LUNSTO(1), 
+     +     '(/'' Memory allocation (logical name, type, elements):'')')
         WRITE (LUNSTO(1), '(3X, A, 1X, A, 3X, I10)')
      +       (LENGTH (I), TYPE (I), LENG (I), I=1,N)
       ENDIF
@@ -586,6 +586,10 @@ C     ..
 C     .. Local Arrays ..
       CHARACTER TYPES(4)*2,STATS(6)*8, STAT*8, TYP*2
 C     ..
+C     .. External Functions ..
+      INTEGER LENSTR
+      EXTERNAL LENSTR
+C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPOPN
 C     ..
@@ -601,19 +605,19 @@ C
       DO 10 ISTAT = 1,6
         IF (STAT.EQ.STATS(ISTAT)) GO TO 20
    10 CONTINUE
-      WRITE (ERRSTR,FMT=6000) STATUS
+      ERRSTR = ' CCPDPN: illegal status : '
+      ERRSTR(LENSTR(ERRSTR)+1:) = STATUS
       CALL CCPERR(1,ERRSTR)
 C
    20 DO 30 ITYPE = 1,4
         IF (TYP.EQ.TYPES(ITYPE)) GO TO 40
    30 CONTINUE
-      WRITE (ERRSTR,FMT=6002) TYPE
+      ERRSTR = ' CCPDPN: illegal type: '
+      ERRSTR(LENSTR(ERRSTR)+1:) = TYPE
       CALL CCPERR(1,ERRSTR)
 C
    40 CALL CCPOPN(IUN,LOGNAM,ISTAT,ITYPE,LREC,IFAIL)
 C
- 6000 FORMAT ('CCPDPN: illegal status : ',A)
- 6002 FORMAT ('CCPDPN: illegal type: ',A)
       END
 C
 C
@@ -632,7 +636,7 @@ C     NAME (I)    CHARACTER *(*)
 C     DEFVAL (I)  INTEGER
 C_END_CCPE2I
       CHARACTER *(*) NAME
-      CHARACTER BUFFER*80, EMESS*80
+      CHARACTER BUFFER*80, EMESS*100
       INTEGER DEFVAL, LENSTR
       EXTERNAL UGTENV, LENSTR
       CALL UGTENV (NAME, BUFFER)
@@ -642,9 +646,13 @@ C_END_CCPE2I
       ENDIF
       READ (BUFFER, '(BN,I80)', ERR=99) CCPE2I
       RETURN 
- 99   WRITE (EMESS, 10) NAME (:LENSTR (NAME)), BUFFER (:LENSTR (BUFFER))
- 10   FORMAT ('Logical name ', A, 'should represent an integer and is: '
-     +     , A)
+ 99   EMESS = ' Logical name '
+      EMESS(LENSTR(EMESS)+1:) = NAME(1:LENSTR(NAME))
+      IF(LENSTR(EMESS) .LE. 99) THEN
+        EMESS(LENSTR(EMESS)+1:) =' should represent an integer and is: '
+        IF(LENSTR(EMESS) .LE. 99) 
+     .           EMESS(LENSTR(EMESS)+1:) = BUFFER(1:LENSTR(BUFFER))
+      ENDIF
       CALL CCPERR (1, EMESS)
       END
 C
@@ -2399,7 +2407,7 @@ C
       CALL UTIME(CTIME)
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
  6000 FORMAT (
-     +     '1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.15: ',
+     +     '1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.16: ',
      +     A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
      +     ///
      +     ' Please reference: Collaborative Computational Project,',
