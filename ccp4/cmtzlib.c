@@ -166,7 +166,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   ccp4_file_setmode(filein,0);
   istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, 4);
   /* We don't test all reads, but this one should trap for e.g. truncated files */
-  if (istat == EOF || hdrrec[0] == '\0') {
+  if (istat == EOF ||  hdrrec[0] == '\0') {
     ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_ReadFail),"MtzGet",NULL);
     ccp4_parse_end(parser);
     ccp4_file_close(filein);
@@ -1902,20 +1902,16 @@ int ccp4_lwtitl(MTZ *mtz, const char *ftitle, int flag) {
   int length;
 
   if (flag == 0) {
-
     strncpy(mtz->title,ftitle,70);
 
   } else {
-
     length = (int) strlen(mtz->title);
-    while ((--length >= 0) && mtz->title[length] == ' ');
-    if (length >= 0)
+	    while ((--length >= 0) && mtz->title[length] == ' ');
+	if (length >= 0)
       mtz->title[++length] = ' ';
-    strncpy(mtz->title+length+1,ftitle,69-length);
-
+	strncpy(mtz->title+length+1,ftitle,70-length);
   }
   mtz->title[70] = '\0';
-
   return 1;
 }
 
