@@ -677,3 +677,10 @@ int isatty_(int *iunit)
   return isatty(*iunit);
 }
 #endif /* end of apple xlf support */
+
+#if defined (sun)
+int isatty_(int *iunit)
+{
+  return isatty(*iunit);
+}
+#endif
