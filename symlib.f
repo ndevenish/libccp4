@@ -1830,8 +1830,9 @@ C     .. Array Arguments ..
       REAL RlSymmMatrx(4,4,*),ROTCHK(4,4)
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IFAIL,ISG,NLIN,NTOK
+      INTEGER I,J,IFAIL,ISG,NLIN,NTOK,VALUE,IVAL
       CHARACTER LINE*400,LINERR*400
+      LOGICAL   NUMBER
 C      INTEGER NLINS
 C     ..
 C     .. Local Arrays ..
@@ -1845,19 +1846,27 @@ C     .. External Subroutines ..
       EXTERNAL CCPDPN,CCPUPC,PARSE,SYMFR2,LERROR
 C     ..
 C     .. Intrinsic Functions ..
-      INTRINSIC NINT
+      INTRINSIC NINT,ICHAR
 C     ..
+C
+C  Starting: open dictionary file with symmetry operations
       IFAIL = 0
       CALL CCPDPN(IST,'SYMOP','READONLY','F',0,IFAIL)
 C
       NTOK = 0
       NSYM = 0
-C  Remove all spaces from SG name
+C
+C----  Clean up the spacegroup name - nb. NAMSPG_CIF is the full
+C      name supplied externally but we use NAMSPG_CIFS (no spaces)
+C      internally to match against the possible names in the
+C      dictionary file - this is built from NAMSPG_CIF.
+C
+C  Remove *all* spaces from the full SG name
 C
       ILEN = LENSTR(NAMSPG_CIF)
 C
          NAMSPG_CIFS = NAMSPG_CIF(1:1)
-
+C
          IF(ILEN.GE.2) THEN
           J = 1
           DO I = 2,ILEN
@@ -1868,8 +1877,39 @@ C
           END DO 
          END IF
 C
+C  It is possible that the spacegroup "name" in NAMSPG_CIFS
+C  was actually supplied as a number
+C  This is wrong but we should check anyway ...
+C  This method will only pick up unsigned decimal integers
+C  i.e. made up of digits 0-9 only
+C
+         ILEN = LENSTR(NAMSPG_CIFS)
+         IF (ILEN.GT.0) THEN
+           NUMBER = .TRUE.
+           VALUE  = 0
+           J = 1
+           DO I = ILEN,1,-1
+             IVAL = ICHAR(NAMSPG_CIFS(I:I))
+             IF (IVAL.LT.48 .OR. IVAL.GT.57) THEN
+               NUMBER = .FALSE.
+               GO TO 10
+             ELSE
+               VALUE = VALUE + J*(IVAL-48)
+               J = J*10
+             END IF
+           END DO
+           IF (NUMBER) THEN
+             WRITE(6,FMT='(1X,A,A,A)')
+     +       'MSYMLB3: the supplied spacegroup name \"',
+     +       NAMSPG_CIFS(1:LENSTR(NAMSPG_CIFS)),'\" is an integer'
+             WRITE(LINERR,FMT='(A,I5)')
+     +       'MSYMLB3: resetting spacegroup number to ',VALUE
+             CALL CCPERR(2,LINERR)
+             LSPGRP = VALUE
+           END IF
+         END IF
+C
    10 CONTINUE
-
 C
 C---- Find correct space-group in file.
 C     Each space-group has header line of space-group number,
@@ -2042,19 +2082,26 @@ C
 C
  25   CONTINUE
       WRITE (LINERR,FMT='(A,A,I5,A)')
-     +     'MSYLB3: Problem with sym op - determinant ne -+1',
+     +     'MSYMLB3: Problem with sym op - determinant ne -+1',
      +     ' space group number',LSPGRP,' in SYMOP file'
       CALL LERROR(2,-1,LINERR)
 C
  30   CONTINUE
+      IF (LSPGRP.EQ.0) THEN
+      WRITE (LINERR,FMT='(A,A,A,A)')
+     +     'MSYMLB3: Spacegroup returned as zero - the supplied ',
+     +     'spacegroup name ',NAMSPG_CIF(1:LENSTR(NAMSPG_CIF)),
+     +     ' was not found in the SYMOP file'
+      ELSE
       WRITE (LINERR,FMT='(A,A,I5,A)')
-     +     'MSYLB3: No symmetry information for space group ',
+     +     'MSYMLB3: No symmetry information for space group ',
      +     ' number',LSPGRP,' in SYMOP file'
+      END IF
       CALL LERROR(2,-1,LINERR)
 C
  35   CONTINUE
       WRITE (LINERR,FMT='(A,A,I5,A)')
-     +     'MSYLB3: Symmetry operators are not a closed group',
+     +     'MSYMLB3: Symmetry operators are not a closed group',
      +     ' Something wrong for space group number',
      +     LSPGRP,' in SYMOP file'
       CALL LERROR(2,-1,LINERR)
