@@ -799,7 +799,7 @@ C
 C     'LIST' is the equivalent of the normal Unix state
       CCNTRL = 'LIST'
 ifdef(_carriagecontrol,[],,
-      INQUIRE(IUN,_carriagecontrol)
+[      INQUIRE(IUN,_carriagecontrol)]
 )dnl
 C     in the case of systems obeying the carriagecontrol specifier, 
 C     we assume the stream has actually been opened, so that the
