@@ -37,10 +37,10 @@
 /* CCP4 header file for Fortran interfaces */
 #include "ccp4_fortran.h"
 
-#include "ccplib.h"
-
 /* C parser header file */
 #include "ccp4_parser.h"
+#include "ccplib.h"
+
 static char rcsid[] = "$Id$";
 
 /*------------------------------------------------------------------*/
