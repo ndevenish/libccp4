@@ -598,10 +598,9 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
      environ.def */
   if (diag) printf("CCP4SETENV: looking for a match to logical name \"%s\"\n",
 		   logical_name);
+  /* compare on strlen(envname[icount]) characters, so that e.g. HKLIN1 will match */
   icount = 0;
-  while (icount<ienv && !strmatch(logical_name,envname[icount])) {
-    /* printf("%d: Logical name is \"%s\", current possibility is \"%s\"\n",
-       icount,logical_name,envname[icount]);*/
+  while (icount<ienv && strncmp(logical_name,envname[icount],strlen(envname[icount]))) {
     icount++;
   }
   if (icount == ienv) {
@@ -637,7 +636,7 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
   /* Add the appropriate file extension if none was supplied
      The exception is for /dev/null or NL: */
   if (!strmatch(value,"/dev/null") && !strmatch(value,"NL:")) {
-    if (lext < 0) {
+    if (lext <= 0) {
       /* Add extension */
       if (icount < ienv) {
 	lext = strlen(envext[icount]);
@@ -726,7 +725,7 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
     strcat(file_name,file_root);
   }
   if (diag) printf("CCP4SETENV: building filename = \"%s\"\n",file_name);
-  if (lext > -1) {
+  if (lext > 0) {
     lname = lname + lext + 1;
     file_name = (char *) realloc(file_name,sizeof(char)*(lname + 1));
     strcat(file_name,".");
