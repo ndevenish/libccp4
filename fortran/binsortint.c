@@ -61,7 +61,7 @@ KEYBUF consist of NKEYS entries, each of the form:
 	                                comparison (if 0 no mask applied)
 =======================================================*/
 
-#if defined (hewlett_packard) || defined (ibm)
+#if defined (__hpux) || defined (_AIX)
   int srtbeg (nkeys, keybuf, lrecl, memsize)
 #endif
 
@@ -185,7 +185,7 @@ SRTRLS:	Release one record into Sort
                                         errno otherwise
 =======================================================*/
 
-#if defined (hewlett_packard) || defined (ibm)
+#if defined (__hpux) || defined (_AIX)
   int srtrls (record)
 #endif
 
@@ -221,7 +221,7 @@ SRTMRG:	Merge - finish release phase
                                         errno otherwise
 =======================================================*/
 
-#if defined (hewlett_packard) || defined (ibm)
+#if defined (__hpux) || defined (_AIX)
   int srtmrg ()
 #endif
 
@@ -259,7 +259,7 @@ SRTRET:	Return 1 record from sort
 					errno otherwise
 =======================================================*/
 
-#if defined (hewlett_packard) || defined (ibm)
+#if defined (__hpux) || defined (_AIX)
   int srtret (record)
 #endif
 
