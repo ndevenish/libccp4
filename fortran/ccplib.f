@@ -55,6 +55,8 @@ C      FDIR      Returns the directory part of a file name
 C      FEXTN     Returns the extension of a file name
 C      FROOT     Returns the root of a file name
 C      LITEND    determine endianness
+C      LENSTR    length of string to last non-space ( C equiv 
+C                ccp4_utils_flength
 C      LUNSTI    Get logical unit number for input
 C      LUNSTO    Get logical unit number for output
 C      NBITST    Return the (unsigned) integer value held within a bit
@@ -1953,6 +1955,45 @@ C
           END IF
 C
         END
+C      
+C^L
+C====================================================================== 
+C                      
+C_BEGIN_LENSTR
+      INTEGER FUNCTION LENSTR(STRING)
+C     ===============================
+C      
+C---- Returns significant string length excluding trailing spaces       
+C                     
+C     NB: LENSTR removes trailing spaces, plus trailing "null"
+C     characters (ascii code 0) and carriage-returns (ascii code 13).
+C     Carriage-returns may be inserted by editing on non-unix
+C     systems? (PJX)
+C      
+C Arguments:
+C ==========
+C      
+C  STRING (I)   CHARACTER*(*): Input string
+C_END_LENSTR
+C      
+C     .. Scalar Arguments ..
+      CHARACTER STRING* (*)
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC LEN
+C     ..
+      LENSTR = LEN(STRING)
+ 10   CONTINUE
+      IF (LENSTR.NE.0) THEN
+        IF(STRING(LENSTR:LENSTR).EQ.' ' .OR.   
+     .       ICHAR(STRING(LENSTR:LENSTR)).EQ.0 .OR.
+     .       ICHAR(STRING(LENSTR:LENSTR)).EQ.13) THEN
+          LENSTR = LENSTR - 1
+          GO TO 10
+        END IF
+      END IF
+C      
+      END
 C
 C
 C FUNCTION 'LUNSTI'
