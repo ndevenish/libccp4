@@ -172,12 +172,13 @@
 #  define SEEK_END 2
 #endif /* ! SEEK_SET */
 #ifndef O_WRONLY
-#define O_RDONLY 0
-#define O_WRONLY 1
-#define O_RDWR   1<<1
-#define O_APPEND 1<<2
+#define O_RDONLY 0x0000
+#define O_WRONLY 0x0001
+#define O_RDWR   0x0002
+#define O_APPEND 0x0008
+#define O_CREAT  0x0200
 #endif
-#define O_TMP 1<<4
+#define O_TMP    0x0010
 
 #define BYTE  0
 #define INT16 1   
