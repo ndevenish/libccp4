@@ -63,6 +63,11 @@ C      NOCRLF    write line supressing cr/lf to standard output
 C      STBITS    Set a bit field within a word to a given (unsigned)
 C                integer value
 C      HKLEQ     Are the reflection indices the equal
+C      Subroutines for generating and accessing a hash table
+C      CCP4_HASH_SETUP
+C      CCP4_HASH_LOOKUP
+C      CCP4_HASH_ZEROIT
+C
 C_END_CCPLIB
 C
 C
@@ -2088,3 +2093,195 @@ C
 C 
       END
 C  
+C Group 7: Subroutines for generating and accessing a hash table:
+C======================================================================
+C 
+C---- CCP4_HASH_SETUP CCP4_HASH_LOOKUP CCP4_HASH_ZEROIT
+C   
+C         Routines and functions used to initialise, set up and access
+C         an internal look-up table. Not clear why these routines are
+C         here in particular.
+C    
+C---- SUBROUTINE CCP4_HASH_SETUP(NSER,NFIND)
+C 
+C---- This subroutine sets up a value for the function ccp4_hash_lookup
+C     when ccp4_hash_lookup(nser) is later evaluated it will return nfind
+C     this function will allow the efficient retrieval of an identifier
+C     for a large range variable (such as a crystal number).  the values
+C     of the function ccp4_hash_lookup(nser) are stored in the array
+C     it(2, kpri) where kpri is the prime number used to generate the
+C     function.
+C     The array it  lives in the common look which is shared by
+C     ccp4_hash_setup and the function ccp4_hash_lookup
+C    
+C     NOTES: A hash table is a way of storing information so that it
+C     easily be retrieved without the need for indexing or long searches.
+C     NSER is referred to as the "key", which is "hashed" (computer-
+C     science speak for "messed up") by the hashing function (in this
+C     case MOD(NSER4,KPRI) + 1) to determine where the value pair will
+C     be stored. The function LOOKUP can then search on the same basis
+C     when supplied with the key, to retreive the pair in (at most) 3
+C     calculations. Note that KPRI (the table size) MUST BE A PRIME in
+C     order for this method to work.   
+C                  
+C     IT(1, NDX) = NSER,  IT(2, NDX) = NFIND
+C    
+C---- INTEGER FUNCTION CCP4_HASH_LOOKUP(NSER)
+C
+C---- The function ccp4_hash_lookup returns the value nfind (which was
+C     input when setting up the function in the subroutine ccp4_hash_setup)
+C     for the large range variable nser.  Uses hashing. (see comments for
+C     CCP4_HASH_SETUP for description of hashing method).      
+C                       
+C---- SUBROUTINE CCP4_HASH_ZEROIT()      
+C
+C     Initialises elements of array it used in ccp4_hash_setup and
+C     ccp4_hash_lookup to zero.
+
+C^L
+C     =======================================
+      INTEGER FUNCTION CCP4_HASH_LOOKUP(NSER)
+C     =======================================
+C
+C---- The function ccp4_hash_lookup returns the value nfind (which was
+C     input when setting up the function in the subroutine ccp4_hash_setup)
+C     for the large range variable nser.  Uses hashing. (see comments for
+C     CCP4_HASH_SETUP for description of hashing method).
+C 
+      IMPLICIT NONE
+C     .. Parameter (table size: MUST BE A PRIME NUMBER)
+      INTEGER KPRI
+      PARAMETER (KPRI=5003)
+C
+C     .. Scalar Arguments ..
+      INTEGER NSER
+C     ..
+C     .. Arrays in Common ..
+      INTEGER IT
+C     ..
+C     .. Local Scalars ..
+      INTEGER NDX,NSER4
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC MOD
+C     ..
+C     .. Common blocks ..  
+      COMMON /LOOK/IT(2,KPRI)
+      SAVE /LOOK/
+C     .. 
+C
+      NSER4 = NSER
+C     
+   10 CONTINUE
+C
+      NDX = MOD(NSER4,KPRI) + 1
+      IF (NSER.NE.IT(1,NDX)) THEN
+        IF (IT(1,NDX).NE.0) THEN
+          NSER4 = NSER4 + 3
+          GO TO 10
+        END IF
+      END IF
+C 
+      CCP4_HASH_LOOKUP = IT(2,NDX)
+C
+      END
+C
+C^L
+C     ======================================
+      SUBROUTINE CCP4_HASH_SETUP(NSER,NFIND)
+C     ======================================
+C     
+C---- This subroutine sets up a value for the function ccp4_hash_lookup
+C     when ccp4_hash_lookup(nser) is later evaluated it will return nfind
+C     this function will allow the efficient retrieval of an identifier
+C     for a large range variable (such as a crystal number).  the values
+C     of the function ccp4_hash_lookup(nser) are stored in the array
+C     it(2, kpri) where kpri is the prime number used to generate the
+C     function
+C     The array it  lives in the common look which is shared by
+C     ccp4_hash_setup and the function ccp4_hash_lookup
+C
+C     NOTES: A hash table is a way of storing information so that it
+C     easily be retrieved without the need for indexing or long searches.
+C     NSER is referred to as the "key", which is "hashed" (computer-
+C     science speak for "messed up") by the hashing function (in this
+C     case MOD(NSER4,KPRI) + 1) to determine where the value pair will
+C     be stored. The function LOOKUP can then search on the same basis
+C     when supplied with the key, to retreive the pair in (at most) 3      
+C     calculations. Note that KPRI (the table size) MUST BE A PRIME in   
+C     order for this method to work.
+C
+C     IT(1, NDX) = NSER,  IT(2, NDX) = NFIND
+C 
+      IMPLICIT NONE
+C     .. Parameter (table size: MUST BE A PRIME NUMBER)
+      INTEGER KPRI
+      PARAMETER (KPRI=5003)
+C
+C     .. Scalar Arguments ..
+      INTEGER NFIND,NSER
+C     ..
+C     .. Arrays in Common ..
+      INTEGER IT
+C     ..
+C     .. Local Scalars ..
+      INTEGER NDX,NSER4
+      CHARACTER STROUT*140
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC MOD
+C     ..
+C     .. Common blocks ..  
+      COMMON /LOOK/IT(2,KPRI)
+      SAVE /LOOK/
+C     .. 
+C
+      NSER4 = NSER
+   10 CONTINUE
+      NDX = MOD(NSER4,KPRI) + 1  
+      IF ((NSER4-NSER) .GE. 3*KPRI) THEN
+         WRITE (STROUT, '(A,I8)')
+     $     ' **** Error in SETUP: overflowed hash table, size ', KPRI
+         CALL PUTLIN(STROUT,'CURWIN')
+         CALL CCPERR(1,'*** Filled hash table in SETUP ***')
+      ENDIF
+      IF (IT(1,NDX).NE.0) THEN
+        NSER4 = NSER4 + 3
+        GO TO 10
+      END IF
+C 
+      IT(1,NDX) = NSER
+      IT(2,NDX) = NFIND
+      RETURN
+      END
+C
+C^L
+C         
+C     =============================
+      SUBROUTINE CCP4_HASH_ZEROIT()
+C     =============================
+C 
+      IMPLICIT NONE
+C     .. Parameter (table size: MUST BE A PRIME NUMBER)
+      INTEGER KPRI
+      PARAMETER (KPRI=5003)
+C     
+C     .. Arrays in Common ..
+      INTEGER IT
+C     ..
+C     .. Local Scalars ..
+      INTEGER I
+C     ..
+C     ..
+C     .. Common blocks ..
+      COMMON /LOOK/IT(2,KPRI)
+      SAVE /LOOK/
+C     
+      DO 20 I = 1,KPRI
+        IT(1,I) = 0
+        IT(2,I) = 0
+   20 CONTINUE
+C     
+      END
+C
+
