@@ -45,9 +45,9 @@ C     ECHO is set to echo the parser i/p.
 
       implicit none
 C     Args
-      character*(*) key, spgnam, pgname, rest
+      character*(*) key, subkey, spgnam, pgname, rest
       logical echo, flag, cont
-      integer ival, nsym, numsgp, nsymp, n, ivals (n)
+      integer ival, nsym, numsgp, nsymp, n, ivals (n), nth
       real rval, cell (6), rsym (4,4,*), resmin, resmax, smin, smax,
      +     rvals(n)
 
@@ -57,13 +57,13 @@ C     Let's not mess around...
       parameter (maxtoks = 500, maxline=2000)
       integer ibeg(maxtoks), iend(maxtoks), ityp(maxtoks), idec(maxtoks)
       real fvalue (maxtoks)
-      character*4 cvalue (maxtoks), memokey
+      character*4 cvalue (maxtoks), memokey, memosubkey
       character line*(maxline)
       integer ntok
 
 C     locals 
       logical someerr, eof, argerr, success
-      integer i
+      integer i, k
 
       save
       data someerr, eof /2*.false./
@@ -170,6 +170,92 @@ C     KEY + upto N reals -- N reset to number found, returned in RVALS
           argerr = .true.
           call lerror (1, 0, 'Incorrect number of real arguments')
         end if
+      end if
+      return
+      
+      entry parsenthint (key, nth, ival)
+C     KEY + n'th integer after keyword -- returned in IVAL
+      if (memokey.eq.key) then
+C       matched key
+        if (ntok.ge.nth+1 .and. ityp (nth+1).eq.2
+     +       .and. idec (nth+1).eq. (iend(nth+1)-ibeg(nth+1)+1)) then
+          ival = nint (fvalue(nth+1))
+          success = .true.
+        else 
+          argerr = .true.
+          call lerror (1, 0, 'Integer argument expected')
+        end if
+      end if
+      return
+      
+      entry parsenthreal (key, nth, rval)
+C     KEY + n'th real after keyword -- returned in RVAL
+      if (memokey.eq.key) then
+C       matched key
+        if (ntok.ge.nth+1 .and. ityp (nth+1).eq.2) then
+          rval = fvalue(nth+1)
+          success = .true.
+        else 
+          argerr = .true.
+          call lerror (1, 0, 'Real argument expected')
+        end if
+      end if
+      return
+      
+      entry parsesubkey (key, subkey, flag)
+C     KEY + subkeyword SUB -- set FLAG if found
+C     as always subkey must be <= 4 chars
+      if (memokey.eq.key) then
+C       matched key
+       success = .true.
+       do k=2,ntok
+        memosubkey=cvalue(k)
+        call ccpupc(memosubkey)
+        if (memosubkey.eq.subkey) flag=.true.
+       enddo
+      end if
+      return
+      
+      entry parsesubnthint (key, subkey, nth, ival)
+C     KEY + n'th integer after subkey -- returned in IVAL
+      if (memokey.eq.key) then
+C       matched key
+       do k=2,ntok
+        memosubkey=cvalue(k)
+        call ccpupc(memosubkey)
+        if (memosubkey.eq.subkey) then
+C         matched subkey
+         if (ntok.ge.nth+k .and. ityp(nth+k).eq.2
+     +     .and. idec(nth+k) .eq. (iend(nth+k)-ibeg(nth+k)+1)) then
+          ival = nint (fvalue(nth+k))
+          success = .true.
+         else
+          argerr = .true.
+          call lerror (1, 0, 'Integer sub-argument expected')
+         endif
+        endif
+       enddo
+      end if
+      return
+      
+      entry parsesubnthreal (key, subkey, nth, rval)
+C     KEY + n'th real after subkey -- returned in RVAL
+      if (memokey.eq.key) then
+C       matched key
+       do k=2,ntok
+        memosubkey=cvalue(k)
+        call ccpupc(memosubkey)
+        if (memosubkey.eq.subkey) then
+C         matched subkey
+         if (ntok.ge.nth+k .and. ityp(nth+k).eq.2) then
+          rval = fvalue(nth+k)
+          success = .true.
+         else 
+          argerr = .true.
+          call lerror (1, 0, 'Real sub-argument expected')
+         endif
+        endif
+       enddo
       end if
       return
       
