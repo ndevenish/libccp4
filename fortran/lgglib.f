@@ -3,33 +3,6 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
-      SUBROUTINE ADDLATTIC(LATT,NSYM,SYM)
-      CHARACTER*1 LATT
-      REAL SYM(3,4,48*4)
-C This is a routine to add lattic translatin to symmetry operation matrix
-c LATT is the lattic symbol. It could be only one of the P, C, A, B, I, F, R
-c NSYM is the number of the symmetric operation:  
-c			without translation  when input
-c			with    translation  when output
-c SYM(3,4,NSYM) is the 3*4 matrix of symmetric operation
-c
-      REAL VEC(3,3)
-C
-      CALL GETLATTIC(LATT,NTRANS,VEC)
-C
-      DO 10 I =1, NTRANS
-      DO 10 J =1, NSYM
-10	CALL ARRMC(3,4,SYM(1,1,J),1.,SYM(1,1,NSYM*I+J))
-       	
-      DO 20 I =1, NTRANS
-      DO 20 J =1, NSYM
-20	CALL ARRAD(3,1,SYM(1,4,J),VEC(1,I),SYM(1,4,NSYM*I+J))
-C
-      NSYM = NSYM*(NTRANS+1)
-      DO 30 I = 1, NSYM
-      DO 30 J = 1, 3
-30	CALL FRCINSIDE(SYM(J,4,I))
-      END
       function angle(v1,v2)
 c calculate the angle between two vector v1, and v2
 c v1 v2 are the input 3*vector
