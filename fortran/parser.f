@@ -526,13 +526,15 @@ C
 C
 C----     check for comment character (not in string)
 C
-          IF (.NOT.QUOTE .AND.
-     +         (LINE(I:I).EQ.ICOMM1 .OR. LINE(I:I).EQ.ICOMM2)) THEN
-            COMMNT = .TRUE.
-C           special case; comment line:
-            IF (N.EQ.1) THEN
-              N = 0
-              RETURN
+          IF (I.LE.LINLEN) THEN
+            IF (.NOT.QUOTE .AND.
+     +           (LINE(I:I).EQ.ICOMM1 .OR. LINE(I:I).EQ.ICOMM2)) THEN
+              COMMNT = .TRUE.
+C     special case; comment line:
+              IF (N.EQ.1) THEN
+                N = 0
+                RETURN
+              END IF
             END IF
           END IF
 C
