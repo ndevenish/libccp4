@@ -1958,9 +1958,11 @@ C---- And loop over possible keywords
 C     -------------------------------
 C
 C---- VERS - version of routines which wrote the file
-C               could test versions here in the future
 C
             IF (KEY.EQ.'VERS') THEN
+              IF (LINE(IBEG(2):IEND(2)) .NE. 'MTZ:V1.1')
+     +           CALL CCPERR (1,' MTZ version ' // LINE(IBEG(2):IEND(2)) 
+     +     // ' of file incompatible with this version of the software')
               IF (IPRINT.EQ.3) THEN
 C
 C                    ***********************
