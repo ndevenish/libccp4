@@ -808,7 +808,8 @@ C     .. Parameters ..
 C     ..
 C     .. Local Scalars ..
       INTEGER HELP,IARG,ICOUNT,IEND,IERR,II,ILOOP,ISKIP,
-     +        ISTART,IUNIT,LOOP,RDENVF,RDLOGF,IHELP,LREC,IFAIL
+     +        ISTART,IUNIT,LOOP,RDENVF,RDLOGF,IHELP,LREC,IFAIL,
+     +        IHTML,ISUMM
       LOGICAL DINIT,EINIT,VAX, MVS
       CHARACTER FILNAM* (ISTRLN), LINE* (ISTRLN),
      +     ENVFIL* (ISTRLN), LOGFIL* (ISTRLN), LOGNAM* (ISTRLN),
@@ -841,10 +842,11 @@ C     ..
       VAX = VAXVMS()
       MVS = WINMVS()
       BKS = RTNBKS()
+      IHTML = 0
+      ISUMM = 0
+C
       CALL INITFYP
 C
-C
-      CALL CCP4H_INIT_LIB()
 C
       IARG = IARGC()
 C
@@ -869,6 +871,17 @@ C
               END IF
               ISKIP = ISKIP + 1
             ELSE IF (LINE(II:II).EQ.'N') THEN
+              IF (LENSTR(LINE).GE.6) THEN
+                IF (LINE(II:II+5).EQ.'NOHTML') THEN
+                  IHTML = -1
+                  ILOOP = ILOOP + 1
+                  GO TO 10
+                ELSE IF (LINE(II:II+5).EQ.'NOSUMM') THEN
+                  ISUMM = -1
+                  ILOOP = ILOOP + 1
+                  GO TO 10
+                END IF
+              END IF
               DINIT = .FALSE.
               EINIT = .FALSE.
             ELSE IF (LINE(II:II).EQ.'D') THEN
@@ -891,6 +904,10 @@ C
           GO TO 10
         END IF
       END IF
+C
+C---- Initialise html and summary tag variables
+C
+      CALL CCP4H_INIT_LIB(IHTML,ISUMM)
 C
 C---- Set up debug level
 C
