@@ -311,9 +311,7 @@ configuration makes the appropriate [[#define]] of [[NOUNISTD]].
 #    include <sys/file.h>       /* ESV, old Concentrix */ /* non-POSIX */
 #  endif
 #endif
-#ifndef VMS
-#  include <stdlib.h> 
-#endif
+#include <stdlib.h> 
 
 #include <errno.h>
 #include <ctype.h>
@@ -741,10 +739,16 @@ the caller can issue a warning.  [[Iconvert]] and [[Fconvert]] are
 used by [[qread]] to determine the type of conversion (if any) to be
 applied to integers and reals.
 
-Fudge: Ian Tickle reports old VAX files which have a machine stamp
-which is byte-flipped from the correct VAX value, although it should
-always have been zero as far as I can see.  To accommodate this, set
-the logical \idx{NATIVEMTZ} and the machine stamp won't be read.
+Fudge:\index{fudge} Ian Tickle reports old VAX files which have a machine
+stamp which is byte-flipped from the correct VAX value, although it should
+always have been zero as far as I can see.  To accommodate this, set the
+logical \idx{NATIVEMTZ} and the machine stamp won't be read for any
+input files for which [[qrarch]] is called.
+
+Extra feature: logical/environment variable [[CONVERT_FROM]] may be set to one
+of [[BEIEEE]], [[LEIEEE]], [[VAX]] or [[CONVEXNATIVE]] to avoid reading the
+machine stamp and assume the file is from the stipulated archictecture
+for all input MTZ and map files for which [[qrarch]] is called.
 
 N.B.: leaves the stream positioned just after the machine stamp.
 <<diskio routines>>=
@@ -768,16 +772,32 @@ N.B.: leaves the stream positioned just after the machine stamp.
   uint16 fileFT, fileIT;        /* float and integer machine types of file */
   unsigned char mtstring[4];    /* machine stamp */
   char *native = getenv ("NATIVEMTZ");
+  char *foreign = getenv ("CONVERT_FROM");
 
   if (native != NULL) { *ireslt = 0; return; }
+  if (foreign != NULL) {
+    if (strcmp (foreign, "BEIEEE") == 0) {
+      mtstring[0] = DFNTF_BEIEEE | (DFNTF_BEIEEE << 4);
+      mtstring[1] = 1 | (DFNTI_IBO << 4); }
+    else if (strcmp (foreign, "LEIEEE") == 0) {
+      mtstring[0] = DFNTF_LEIEEE | (DFNTF_LEIEEE << 4);
+      mtstring[1] = 1 | (DFNTI_IBO << 4); }
+    else if (strcmp (foreign, "VAX") == 0) {
+      mtstring[0] = DFNTF_VAX | (DFNTF_VAX << 4);
+      mtstring[1] = 1 | (DFNTI_IBO << 4); }
+    else if (strcmp (foreign, "CONVEXNATIVE") == 0) {
+      mtstring[0] = DFNTF_CONVEXNATIVE | (DFNTF_CONVEXNATIVE << 4);
+      mtstring[1] = 1 | (DFNTI_MBO << 4); }  
+  } else {
 <<OpenVMS seek fudge>>
-  if ((fseek (file_stream[*iunit], (size_t) ((*ipos)*item_sizes[2]),
-              SEEK_SET) != 0))
-    fatal ("QRARCH: seek failed");
-  file_last_op[*iunit] = READ_OP;
-  if (fread (mtstring, (size_t) sizeof(char), (size_t) 4,
-             file_stream[*iunit]) != 4)
-    fatal ("QRARCH: can't read machine stamp");
+    if ((fseek (file_stream[*iunit], (size_t) ((*ipos)*item_sizes[2]),
+                SEEK_SET) != 0))
+      fatal ("QRARCH: seek failed");
+    file_last_op[*iunit] = READ_OP;
+    if (fread (mtstring, (size_t) sizeof(char), (size_t) 4,
+               file_stream[*iunit]) != 4)
+      fatal ("QRARCH: can't read machine stamp");
+  }
   fileIT = (mtstring[1]>>4) & 0x0f;
   fileFT = (mtstring[0]>>4) & 0x0f;
   /* Record the need for conversion and what the file type is: */
