@@ -1943,6 +1943,8 @@ int ccp4spg_check_symm_cell(int nsym, float rsym[][4][4], float cell[6]) {
     status = ccp4uc_is_rhombohedral(cell,0.01F);
   } else if (strstr(spacegroup->symbol_xHM,":H")) {
     status = ccp4uc_is_hexagonal(cell,0.01F);
+  } else if (spacegroup->spg_num >= 168 && spacegroup->spg_num <= 194) {
+    status = ccp4uc_is_hexagonal(cell,0.01F);
   }
 
   free(op1);
