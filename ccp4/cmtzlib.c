@@ -1619,8 +1619,10 @@ void ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
     MtzAddDataset(mtz,xtl,dataset_name,*datwave);
   } else {
     /* Existing crystal - update parameters */
-    strncpy(xtl->pname,project_name,64);
-    xtl->pname[64] = '\0';
+    if (project_name && strlen(project_name) > 0) {
+      strncpy(xtl->pname,project_name,64);
+      xtl->pname[64] = '\0';
+    }
     if (datcell[0] > 0.0)
       for (i = 0; i < 6; ++i) 
         xtl->cell[i] = datcell[i];
