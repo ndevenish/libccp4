@@ -30,6 +30,11 @@ void ccp4f_mem_tidy(void) {
   ccp4spg_mem_tidy();
 }
 
+/* MVS was defaulting to assigning GETARG to be returning an int and it aint*/
+#ifdef _MVS
+ void __stdcall GETARG(int *i,char *arg,int arg_len);
+#endif
+
 FORTRAN_SUBR ( CCPFYP, ccpfyp,
                (),
                (),
