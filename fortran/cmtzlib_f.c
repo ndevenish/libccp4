@@ -444,7 +444,7 @@ FORTRAN_SUBR ( LRSYMI, lrsymi,
                   fpstr spgrnx, int spgrnx_len, fpstr pgnamx, int pgnamx_len))
 
 { 
- char ltypex_temp[2],spgrnx_temp[11], pgnamx_temp[11];
+ char ltypex_temp[2],spgrnx_temp[MAXSPGNAMELENGTH+1], pgnamx_temp[11];
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRSYMI");)
 
