@@ -482,6 +482,10 @@ C---- MV = 0 TO COMPUTE EIGENVALUES & EIGENVECTORS.
 C
 C
 c      IMPLICIT    NONE
+
+      INTEGER NMAX
+      PARAMETER (NMAX=10)
+
       REAL        A(*), R(*)
       INTEGER     N, MV
 C
@@ -495,8 +499,8 @@ C Lapack variables
       CHARACTER*1        JOBZ, LAPRANGE, UPLO
       INTEGER            INFO, NVECTORS
       REAL               ABSTOL
-      INTEGER            ISUPPZ(2*N), IWORK(10*N)
-      REAL               WORK(26*N), EVALUES(N), AM(N,N)
+      INTEGER            ISUPPZ(2*NMAX), IWORK(10*NMAX)
+      REAL               WORK(26*NMAX),EVALUES(NMAX),AM(NMAX,NMAX)
 C
 C-- FOR REAL
 C      DATA RANGE/1D-12/
@@ -505,6 +509,8 @@ C      DATA RANGE/1D-12/
 C  Alternative lapack routine - only marginally tested
       LAPACK = .FALSE.
       IF (LAPACK) THEN
+       IF (N.GT.NMAX) 
+     +    CALL CCPERR(1,'s/r EIGEN_RS_ASC: redimension NMAX!')
        IF (MV.EQ.0) JOBZ = 'V'
        LAPRANGE = 'A'
        UPLO = 'U'
