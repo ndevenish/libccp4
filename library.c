@@ -624,7 +624,7 @@ int *result;
     case 5:
       size = item_sizes[1]; break; /* bytes (logical or integer *1) */
     }
-    pointer[i+1] = malloc (size*length[i]);
+    pointer[i+1] = calloc ((size_t) length[i], (size_t) size);
     if (pointer[i+1] == NULL) fatal ("CCPALC: can't allocate memory");
     leng[i+1] = &(length[i]);   /* convenience */
   }
@@ -1581,6 +1581,7 @@ int itime_ (array)
      tim = time(NULL);
      lt = localtime(&tim);
      array[0] = lt->tm_hour; array[1] = lt->tm_min; array[2] = lt->tm_sec;
+     return 0;
 }
 
 static long clk_tck = 0;
