@@ -454,11 +454,14 @@ char *ccp4_utils_basename(char *filename)
     }
   }
   length = strlen(filename) - indx1;
-  for ( i = indx1+1; i < strlen(filename); i++ ) 
+  /* Search for extension separators must be performed backwards
+     in case filename has multiple extension separators */
+  for ( i = strlen(filename)-1; i >=indx1; i-- ) {
     if (filename[i] == EXT_SEPARATOR) {
       length = i - indx1; 
       break;
     }
+  }
   basename = ccp4_utils_malloc(length*sizeof(char));
   strncpy(basename,filename+indx1+1,length-1);
   basename[length-1]='\0';
