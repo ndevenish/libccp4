@@ -260,6 +260,7 @@ C     .. Local Scalars ..
       REAL ERROR,VOLCHK
       INTEGER I,II,IORTH,IFILTYP,J,LL
       CHARACTER BROOKA*80,ERRLIN*600,FILNAM*255,IE*2,IRTYPE*4
+      CHARACTER LFILTYP*3,LRWSTAT*5
       CHARACTER*40 ORTH(6)
 C     ..
 C     .. Local Arrays ..
@@ -306,8 +307,10 @@ C     ..
       II = 0
       IFILTYP = 1
       LL = 0
-      CALL CCPUPC(FILTYP)
-      CALL CCPUPC(RWSTAT)
+      LRWSTAT = RWSTAT
+      LFILTYP = FILTYP
+      CALL CCPUPC(LFILTYP)
+      CALL CCPUPC(LRWSTAT)
 C
 C---- If too many files opened
 C
@@ -317,7 +320,7 @@ C
 C
 C==== If the file is an INPUT file
 C
-      IF (RWSTAT(1:5) .EQ. 'INPUT') THEN
+      IF (LRWSTAT(1:5) .EQ. 'INPUT') THEN
 C
 C---- Check if file exists
 C
@@ -336,7 +339,7 @@ C
 C
 C---- Determine whether CIF or PDB
 C
-        IF (FILTYP(1:1) .EQ. ' ') THEN
+        IF (LFILTYP(1:1) .EQ. ' ') THEN
           CALL CCPDPN(IUNIT,LOGNAM,'READONLY','F',LL,IFAIL)
 c          IF (IFAIL .LT. 0) GOTO 1000
 c   10     READ (I,FMT='(A)',END=20) CHAR
@@ -357,7 +360,7 @@ c          GOTO 10
 C
 C---- If known as CIF
 C
-   30   IF (FILTYP(1:3).EQ.'CIF' .OR. IFILTYP.EQ.2) THEN
+   30   IF (LFILTYP(1:3).EQ.'CIF' .OR. IFILTYP.EQ.2) THEN
 C  Not yet ready
           FILESOPEN = FILESOPEN + 1
           LOGUNIT(FILESOPEN) = LOGNAM
@@ -366,7 +369,7 @@ C  Not yet ready
 C
 C---- If known as a PDB file
 C
-        IF (FILTYP(1:3).EQ.'PDB') THEN
+        IF (LFILTYP(1:3).EQ.'PDB') THEN
           CALL CCPDPN(IUNIT,LOGNAM,'READONLY','F',LL,IFAIL)
           IF (IFAIL .LT. 0) GOTO 1000
           FILESOPEN = FILESOPEN + 1
@@ -530,7 +533,7 @@ C
       ELSE
 
         IFILTYP = 1
-        IF (FILTYP(1:1).EQ.' ' .AND. FILESOPEN.GT.1) THEN
+        IF (LFILTYP(1:1).EQ.' ' .AND. FILESOPEN.GT.1) THEN
           IF (ABS(TYPE(1)).EQ.1 .OR. ABS(TYPE(1)).EQ.2) THEN
             IFILTYP = ABS(TYPE(1))
           ELSE
@@ -538,8 +541,8 @@ C
           ENDIF
         ENDIF
 
-        IF (FILTYP(1:3) .EQ. 'CIF') IFILTYP = 2 
-        IF (FILTYP(1:3) .EQ. 'PDB') IFILTYP = 1
+        IF (LFILTYP(1:3) .EQ. 'CIF') IFILTYP = 2 
+        IF (LFILTYP(1:3) .EQ. 'PDB') IFILTYP = 1
 C
 C---- Open output PDB file
 C
