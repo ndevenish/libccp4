@@ -463,8 +463,8 @@ C
               CALL CCPERR(2,ERRLIN)
             END IF
 
-            IF (ERROR .GT. 0.1) call ccperr(1,
-     +  ' stop in rwbrook.for - disagreement between cell and PDB file')
+            IF (ERROR .GT. 0.1.AND.IFAIL.EQ.0) call ccperr(1,
+     +  'Error in rwbrook.f - disagreement between cell and PDB file')
 
             DO 110 IORTH=1,6
               DO 120 I=1,3
@@ -3015,6 +3015,49 @@ C     .. Common blocks ..
 C
       IFHDOUT = .TRUE.
 C
+      RETURN
+      END
+C
+C
+      SUBROUTINE NUM_EXPECTED_WATERS(RESO,TEMP,FHOH,SEFHOH)
+C     =====================================================
+C
+C_BEGIN_NUM_EXPECTED_WATERS
+C
+C Arguments:
+C
+C         RESO    (I)   REAL           Resolution in A.
+C         TEMP    (I)   CHARACTER*4    'ROOM' or 'LOWT' for temperature.
+C         FHOH    (O)   REAL           Prediction of N_HOH/N_at
+C         SEFHOH  (O)   REAL           Standard error of FHOH
+C
+C     Given the resolution, this routine returns the number of water
+C     molecules expected to be determined by PX (and the associated
+C     standard error) as a fraction of the number of protein atoms,
+C     as estimated by the statistical analysis of Carugo & Bordo, 
+C     Acta Cryst D, 55, 479 (1999). Two expressions are given, one
+C     for room temperature structures and one for low temperature
+C     structures.
+C
+C_END_NUM_EXPECTED_WATERS
+C
+      CHARACTER*4 TEMP,TTEMP
+      REAL RESO,FHOH,SEFHOH
+
+      TTEMP = TEMP
+      CALL CCPUPC(TTEMP)
+      IF (TTEMP.EQ.'ROOM') THEN
+
+        FHOH = 0.301 - 0.095*RESO
+        SEFHOH = 0.092 * SQRT(0.00114 + 0.005*(RESO - 2.3)**2)
+
+      ELSEIF (TTEMP.EQ.'LOWT') THEN
+
+        FHOH = 0.334 - 0.110*RESO
+        SEFHOH = 0.043 * SQRT(0.030 + 0.167*(RESO - 2.2)**2)
+
+      ENDIF
+
       RETURN
       END
 C
