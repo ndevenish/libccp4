@@ -104,7 +104,7 @@
 #  define KNOWN_MACHINE
 #endif
 
-#if defined (linux)
+#if defined (linux) || defined (__CYGWIN__)
 #  undef CALL_LIKE_SUN
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_SUN 1
