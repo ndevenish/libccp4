@@ -130,8 +130,6 @@ FORTRAN_SUBR ( CCPERR, ccperr,
   strncpy(tmp_errstr,errstr,length);
   tmp_errstr[length]='\0';
   ccperror(*istat, tmp_errstr);
-
-  free((char *) tmp_errstr);
 }
 
 FORTRAN_SUBR ( QPRINT, qprint,
