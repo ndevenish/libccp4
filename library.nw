@@ -1027,6 +1027,7 @@ of bytes read.
 #if CALL_LIKE_HPUX
   void qreadc (iunit, buffer, result, Lbuffer)
   int Lbuffer;
+  char * buffer;
 #endif
 #if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
   void QREADC (iunit, buffer, result)
@@ -1035,13 +1036,14 @@ of bytes read.
 #if CALL_LIKE_SUN
   void qreadc_ (iunit, buffer, result, Lbuffer)
   int Lbuffer;
+  char * buffer;
 #endif
 #if CALL_LIKE_IRIS
   fortran qreadc_ (Lbuffer, iunit, buffer, result)
   int Lbuffer;
+  char * buffer;
 #endif
 
-char * buffer;
 int *iunit, *result;
 {
   int i, n;
@@ -1054,13 +1056,21 @@ int *iunit, *result;
       *result = -1;
       return; } }
   file_last_op[*iunit] = READ_OP;
-#if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
-  n = buffer->Str_length;
+#if defined (VMS)
+  n = buffer->dsc$w_length;
+  i = fread (buffer->dsc$a_pointer, (size_t) item_sizes[BYTE], 
+                (size_t) n, file_stream[*iunit]);
 #else
+#  if CALL_LIKE_STARDENT
+  n = buffer->Str_length;
+  i = fread (buffer->Str_pointer, (size_t) item_sizes[BYTE], 
+                (size_t) n, file_stream[*iunit]);
+#  else                         /* normal */
   n = Lbuffer;
-#endif
   i = fread (buffer, (size_t) item_sizes[BYTE], 
                 (size_t) n, file_stream[*iunit]);
+#  endif
+#endif
   if (i != n) {
     if (feof (file_stream[*iunit])) *result = -1;
     else *result = i;
@@ -1068,6 +1078,7 @@ int *iunit, *result;
   }
   *result = 0;
 }
+@ %def qreadc
 @ \subsection{{\tt subroutine qwrite (\meta{iunit}, \meta{buffer},
     \meta{nitems})}}
 This write \meta{nitems} items from \meta{buffer} to [[qopen]]ed
@@ -1101,6 +1112,7 @@ int *iunit, *nitems;
                     (size_t) *nitems, file_stream[*iunit]);
   if (i != *nitems) fatal ("QWRITE: i/o error");
 }
+@ %def qwrite
 @ \subsection{{\tt subroutine qwritc (\meta{iunit}, \meta{buffer})}}
 
 Writes [[CHARACTER*(*)]] \meta{buffer} to [[qopen]]ed
@@ -1109,6 +1121,7 @@ stream \meta{iunit} in byte mode.
 #if CALL_LIKE_HPUX
   void qwritc (iunit, buffer, Lbuffer)
   int Lbuffer;
+  char * buffer;
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
   void QWRITC (iunit, buffer)
@@ -1117,32 +1130,42 @@ stream \meta{iunit} in byte mode.
 #if CALL_LIKE_SUN
   void qwritc_ (iunit, buffer, Lbuffer)
   int Lbuffer;
+  char * buffer;
 #endif
 #if CALL_LIKE_IRIS
   fortran qwritc_ (Lbuffer, iunit, nitems)
   int Lbuffer;
+  char * buffer;
 #endif
-char * buffer;
 int *iunit;
 {
   int i, n;
 
   if (! initialised) 
-    fatal ("QWRITE: qopen/qqopen not yet called");
+    fatal ("QWRITC: qopen/qqopen not yet called");
   if (file_last_op[*iunit] == READ_OP) {
 <<OpenVMS seek fudge>>
     if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0)
-      fatal ("QWRITE: i/o error"); }
+      fatal ("QWRITC: i/o error"); }
   file_last_op[*iunit] = WRITE_OP;
-#if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
-  n = buffer->Str_length;
+#if defined (VMS)
+  n = buffer->dsc$w_length;
+  i = (int) fwrite (buffer->dsc$a_pointer, (size_t) item_sizes[BYTE],
+                    (size_t) n, file_stream[*iunit]);
 #else
+#  if CALL_LIKE_STARDENT
+  n = buffer->Str_length;
+  i = (int) fwrite (buffer->Str_pointer, (size_t) item_sizes[BYTE],
+                    (size_t) n, file_stream[*iunit]);
+#  else				/* normal */
   n = Lbuffer;
+#  endif
 #endif
   i = (int) fwrite (buffer, (size_t) item_sizes[BYTE],
                     (size_t) n, file_stream[*iunit]);
-  if (i != n) fatal ("QWRITE: i/o error");
+  if (i != n) fatal ("QWRITC: i/o error");
 }
+@ %def qwritc
 @ \subsection{{\tt subroutine qseek (\meta{iunit}, \meta{irec},
     \meta{iel}, \meta{lrecl})}}
 Seeks to element \meta{iel} in record \meta{irec} in diskio stream
@@ -2002,6 +2025,121 @@ the appropriate half-word.
     return ((real.i & 0x0000ff80) == 0x00008000);
   default :
     fatal("CISNAN: bad nativeFT");  }
+@ \section{Dynamic memory allocation}
+It's nice to be able to determine array sizes at run time to avoid
+messy recompilation.  The only way effectively to get dynamic
+allocation in Fortran77 reasonably portably is to do the allocation,
+e.g.\ in C, and invoke the Fortran routine passed as a parameter with
+pointers to the allocated memory which it will treat as arrays.  If we
+want to allow more than one array, it's more tricky.
+
+\subsection{{\tt subroutine ccpalc (\meta{routne}, \meta{n}.
+    \meta{type}, \meta{length})}}
+Arranges to call subroutine \meta{routne} with \meta{n} array
+arguments.  Each has a type indicated by \meta{type}$(i)$ and a length
+given by \meta{length}($i$).  \meta{type} is a character array with
+values {\tt 'i'}, {\tt 'r'}, {\tt 'd'}, {\tt 'c'} inidcating {\tt
+  INTEGER}, {\tt REAL}, {\tt DOUBLE PRECISION} and {\tt COMPLEX}
+respectively.
+
+Consider {\tt call ccpalc (fred, 3, types, lens)} with {\tt
+  types}$=$['i', 'r', 'c'] and {\tt lens}$=$[1000, 2000, 3000].  This
+effectively does 
+\begin{verbatim}call fred (1000, arr1, 2000, arr2, 3000, arr3)\end{verbatim}
+with
+\begin{verbatim}
+subroutine fred (foo, n1, bar, n2, baz, n3)
+integer n1, n2, n3, foo (n1)
+real bar (n2)
+complex baz (n3)
+\end{verbatim}
+
+Actually, it's not immediately clear what all the Fortran/C
+conventions are for passing [[CHARACTER]] arrays, so we'll arrange a
+higher-level interface and have [[types]] here just numeric.  The
+Fortran will also do argument validation.  Also the rules for passing
+external routines as arguments aren't clear---assume the obvious way.
+<<miscellaneous routines>>=
+#if CALL_LIKE_HPUX
+  void ccpal1 (routne, n, type, length)
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void CCPAL1 (routne, n, type, length)
+#endif
+#if CALL_LIKE_SUN
+  void ccpal1_ (routne, n, type, length) 
+#endif
+#if CALL_LIKE_IRIS
+  fortran ccpal1_ (routne, n, type, length)
+#endif
+  void * routne ();
+  int *n, type[], length[];
+{
+  int i, size, *leng[10];
+  void *pointer[10];
+
+  for (i=0; i<*n; i++) {
+    switch (type[i]) {
+    case 1:
+      size = item_sizes[1]; break; /* integer */
+    case 2:
+      size = item_sizes[2]; break; /* real */
+    case 3:
+      size = 2*item_sizes[2]; break; /* double */
+    case 4:
+      size = 2*item_sizes[2]; break; /* complex */
+    }
+    pointer[i+1] = malloc (size*length[i]);
+    if (pointer[i+1] == NULL) fatal ("CCPALC: can't allocate memory");
+    leng[i+1] = &(length[i]);	/* convenience */
+  }
+  switch (*n) {
+  case 1:
+    (* routne) (leng[1], pointer[1]);
+    break;
+  case 2:
+    (* routne) (leng[1], pointer[1], leng[2], pointer[2]);
+    break;
+  case 3:
+    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
+		leng[3], pointer[3]);
+    break;
+  case 4:
+    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
+		leng[3], pointer[3], leng[4], pointer[4]);
+    break;
+  case 5:
+    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
+		leng[3], pointer[3], leng[4], pointer[4],
+		leng[5], pointer[5]);
+    break;
+  case 6:
+    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
+		leng[3], pointer[3], leng[4], pointer[4],
+		leng[5], pointer[5], leng[6], pointer[6]);
+    break;
+  case 7:
+    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
+		leng[3], pointer[3], leng[4], pointer[4],
+		leng[5], pointer[5], leng[6], pointer[6],
+		leng[7], pointer[7]);
+    break;
+  case 8:
+    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
+		leng[3], pointer[3], leng[4], pointer[4],
+		leng[5], pointer[5], leng[6], pointer[6],
+		leng[7], pointer[7], leng[8], pointer[8]);
+    break;
+  case 9:
+    (* routne) (leng[1], pointer[1], leng[2], pointer[2],
+		leng[3], pointer[3], leng[4], pointer[4],
+		leng[5], pointer[5], leng[6], pointer[6],
+		leng[7], pointer[7], leng[8], pointer[8],
+		leng[9], pointer[9]);
+    break;
+  }
+}
+@ %def ccpal1
 @ \section{Chunk list} 
 Underlined entries indicate the definitions.
 Indexing is by chunk.\bigskip
