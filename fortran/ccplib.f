@@ -376,6 +376,8 @@ C     ERRST (I)   message
 C     
       CHARACTER ERRSTR*(*), ERRBUF*100
       INTEGER ISTAT
+      EXTERNAL VAXVMS
+      LOGICAL VAXVMS
 C
 C
       IF (ISTAT.NE.0) THEN
@@ -383,7 +385,8 @@ C
         IF (ERRBUF .NE. ' ') WRITE(6,6000) ERRBUF(1:LENSTR(ERRBUF))
       ENDIF
       WRITE(6,6000) ERRSTR(1:LENSTR(ERRSTR))
-      CALL GETELAPSED
+C     fixme: implement getelapsed (or alternative) for vms
+      IF (.NOT. VAXVMS()) CALL GETELAPSED
       CALL EXIT(ISTAT)
 C
 6000  FORMAT (' ',A)
