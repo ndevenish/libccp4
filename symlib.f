@@ -1029,7 +1029,7 @@ C     .. Array Arguments ..
       REAL ROT(4,4,*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IFAIL,ISG,NLIN,ISTERR,IFGERR
+      INTEGER I,IFAIL,ISG,NLIN
       CHARACTER LINE*80,LINERR*200
 C     ..
 C     .. External Subroutines ..
@@ -1133,8 +1133,8 @@ C     .. Array Arguments ..
       REAL ROT(4,4,*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IFAIL,ISG,LEND,NLIN,NLINS,NTOK,ISTERR,IFGERR
-      CHARACTER KEY*4,LINE*400,LINERR*400
+      INTEGER I,IFAIL,ISG,NLIN,NLINS,NTOK
+      CHARACTER LINE*400,LINERR*400
 C     ..
 C     .. Local Arrays ..
       REAL FVALUE(NPARSE)
@@ -1142,7 +1142,7 @@ C     .. Local Arrays ..
       CHARACTER CVALUE(NPARSE)*4
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPDPN,CCPUPC,PARSER,SYMFR2,LERROR,LENSTR,QPRLVL
+      EXTERNAL CCPDPN,CCPUPC,PARSE,SYMFR2,LERROR,LENSTR,QPRLVL
       INTEGER LENSTR
 C     ..
 C     .. Intrinsic Functions ..
@@ -1170,8 +1170,8 @@ C     and primitive cells.
 C
       READ (IST,FMT='(A)',ERR=30,END=30) LINE
       CALL CCPUPC(LINE)
-      NTOK = NPARSE
-      CALL PARSE(KEY,LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,NTOK)
+      NTOK = -NPARSE
+      CALL PARSE(LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,NTOK)
 C
 C---- Fields are space group number,
 C                number of lines,
@@ -1231,6 +1231,7 @@ C         Convert line to matrices
       END IF
 C
       CLOSE (IST)
+      RETURN
 C
  30   CONTINUE
       WRITE (LINERR,FMT='(A,A,I5,A)')
