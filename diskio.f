@@ -5,42 +5,50 @@ C     in the CCP4 manual for a copyright statement.
 C
 C     $Id$
 C     
-C_BEGIN_CCPLIB
 C A set of Fortran subroutines to perform random access I/O on various
 C data items (including bytes). Uses the C functions fopen, fclose,
 C fread, fwrite, fseek, ftell, etc - by calling routines in library.c
+C
+C Note: many of the routines have been moved directly to library.c.  
+C       Their information is retained in this header for historical
+C       reasons only.
+C
 C Note: IUNIT is NOT A Fortran Unit number, but an internal identifier
 C
 C  The calls provided are given below:
 C
 C  CALL QOPEN   (IUNIT,FILNAM,ATBUTE)        - Open file
 C [CALL QQOPEN  (IUNIT,FILNAM,ISTAT)         - Open file: use QOPEN]
-C  CALL QCLOSE  (IUNIT)                      - Close file
-C  CALL QMODE   (IUNIT,MODE,NMCITM)          - Change mode
-C  CALL QREAD   (IUNIT,ARRAY,NITEMS,IER)     - Read nitems
+C  call qclose  (int *iunit)                 - Close file (library.c)
+C  call qmode   (int *iunit,int *mode, int *nmcitm)          
+C                                            - Change mode (library.c)
+C  call qread   (int *iunit, * array,init *nitems, int *ier)     
+C                                            - Read nitems (library.c)
 C  CALL QREADI  (IUNIT,ARRAY,NITEMS,IER)     - Read nitems into integer array
 C  CALL QREADR  (IUNIT,ARRAY,NITEMS,IER)     - Read nitems into real array
 C  CALL QREADQ  (IUNIT,ARRAY,NITEMS,IER)     - Read nitems into complex array
-C  CALL QREADC  (IUNIT,CHAR,IER)             - Read bytes into character var.
-C  CALL QWRITE  (IUNIT,ARRAY,NITEMS)         - Write nitems
+C  call qreadc  (int *iunit,char *buffer, int *ier (, int *nitems)) 
+C                                            - Read bytes into character var.
+C  call qwrite  (int *iunit, *array, int *nitems) 
+C                                            - Write nitems (library.c)
 C  CALL QWRITI  (IUNIT,ARRAY,NITEMS)         - Write nitems from integer array
 C  CALL QWRITR  (IUNIT,ARRAY,NITEMS)         - Write nitems from real array
 C  CALL QWRITQ  (IUNIT,ARRAY,NITEMS)         - Write nitems from complex array
-C  CALL QWRITC  (IUNIT,CHAR)                 - Write bytes from character var.
-C  CALL QSEEK   (IUNIT,IREC,IEL,LRECL)       - Move to irec,iel
-C  CALL QBACK   (IUNIT,LRECL)                - Backspace 1 record
-C  CALL QSKIP   (IUNIT,LRECL)                - Skip 1 record
+C  call qwritc  (int *iunit,char *buffer (,int *nitems)
+C                                            - Write bytes from 
+C                                              character var. (library.c)
+C  call qseek   (int *iunit,int *irec, int *iel, int *lrecl)  
+C                                            - Move to irec,iel (library.c)
+C  call qback   (int *iunit,int *lrec        - Backspace 1 record (library.c)
+C  CALL qskip   (int *iunit,int *lrecl)      - Skip 1 record (library.c)
 C  CALL QQINQ   (IUNIT,LFILNM,FILNAM,LENGTH) - Get filename and length
-C  CALL QLOCATE (IUNIT,LOCATE)               - Get position in file
-C  CALL QRARCH (IUNIT, IOFFSET)              - set up number conversion
-C  CALL QWARCH (IUNIT, IOFFSET)              - write conversion info
-C
-C  QSEEK calculates the location as (IREC - 1)*LRECL + IEL. Note: as in
-C        Fortran, addressing begins at 1 for both record & element
-C        In these files, there are no true records: the use of "record length"
-C        and "record number" in QSEEK, QSKIP, QBACK is purely notional.
-C        For QSEEK, any combination of IREC, IEL & LRECL which gives the
-C        same value of (IREC - 1)*LRECL + IEL is equivalent.
+C  call qlocate (int *iunit, int *locate)    - Get position in file (library.c)
+C  call qrarch  (int *iunit, int *ioffset, int *ier)
+C                                            - set up number conversion 
+C                                              (library.c)
+C  call qwarch (int *iunit, int *ioffset)    - write conversion info (library.c)
+C  VAL= QISNAN (VALUE)                       - return logical result for magic number
+C  call qnan (union float_uint_uchar *value) - return magic number (library.c)
 C
 C  Where:
 C
@@ -96,7 +104,56 @@ C
 C     Author: David Agard (Phil Evans and John Campbell)
 C     Modified: For Unix/F77 using words (and bytes if available) (John Campbell)
 C     Modified: For ccp ascii header system implemented (Jan Zelinka)
-C_END_CCPLIB
+C======================================================================
+C_BEGIN_QOPEN
+C
+C QOPEN - Open a file unit
+C
+C Usage:  CALL QOPEN   (IUNIT, LOGNAME, ATBUTE)
+C         INTEGER       IUNIT
+C         CHARACTER*(*) LOGNAME, ATBUTE
+C
+C Input:  IUNIT         unit number number to assign to file
+C         LOGNAME       Logical name of file to open
+C         ATBUTE        File status = 'UNKNOWN', 'SCRATCH', 'OLD',
+C                                     'NEW', or 'READONLY'
+C
+C Output: None.
+C
+C Comment: Calls QQOPEN
+C
+C_END_QOPEN
+C======================================================================
+C
+      SUBROUTINE QOPEN(IUNIT,LOGNAM,ATBUTA)
+C     =====================================
+C
+C     .. Scalar Arguments ..
+      INTEGER IUNIT
+      CHARACTER ATBUTA* (*),LOGNAM* (*)
+C     ..
+C     .. Local Scalars ..
+      INTEGER ISTAT
+      CHARACTER FOO*80
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL QQOPEN, CCPUPC
+C     ..
+      ISTAT = 0
+      CALL CCPUPC(ATBUTA)
+      IF (ATBUTA(:1).EQ.'U') ISTAT = 1
+      IF (ATBUTA(:1).EQ.'S') ISTAT = 2
+      IF (ATBUTA(:1).EQ.'O') ISTAT = 3
+      IF (ATBUTA(:1).EQ.'N') ISTAT = 4
+      IF (ATBUTA(:1).EQ.'R') ISTAT = 5
+      IF (ISTAT.EQ.0) THEN
+        FOO = ATBUTA
+        CALL CCPERR(1,'Bad attribute in QOPEN: '//FOO)
+      ENDIF
+C
+      CALL QQOPEN(IUNIT,LOGNAM,ISTAT)
+      END
+C
 C
 C======================================================================
 C_BEGIN_QQOPEN
@@ -118,6 +175,9 @@ C Output: IUNIT         Integer handle assigned to file. If negative
 C                       the following error conditions occurred:
 C                       -1 No more streams left
 C                       -2 Could not open the file
+C
+C Comment: calls C library routine COPEN
+C          extended to include HTML tags in output
 C
 C_END_QQOPEN
 C======================================================================
@@ -220,53 +280,10 @@ C
       call ccp4h_summary_end()
       CALL QPRINT(1,' ')
       END
+
 C
-C
+C^L
 C======================================================================
-C_BEGIN_QCLOSE
-C
-C QCLOSE - Close file unit
-C
-C Usage:  CALL QCLOSE (IUNIT)
-C         INTEGER      IUNIT
-C
-C Input:  IUNIT        unit number assigned to file
-C
-C Output: None.
-C_END_QCLOSE
-C See library.c
-C======================================================================
-C_BEGIN_QMODE
-C
-C QMODE - Set mode for file access
-C
-C Usage:  CALL QMODE (IUNIT, MODE, NMCITM)
-C         INTEGER     IUNIT, MODE, NMCITM
-C
-C Input:  IUNIT       unit number to assign to file
-C         MODE        mode to switch into: 0 (BYTES), 1 (SMALL INTEGER),
-C                                          2 (WORDS), 3 (SHORT COMPLEX),
-C                                          4 (COMPLEX) 6 (INTEGER)
-C
-C Output: NMCITM      number of bytes per item on this machine.
-C_END_QMODE
-C See library.c
-C======================================================================
-C_BEGIN_QREAD
-C
-C QREAD - Read from IUNIT into BUFFER, NITEMS items
-C
-C Usage:  CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
-C         INTEGER     IUNIT, NITEMS, RESULT
-C         REAL        BUFFER
-C
-C Input:  IUNIT       unit number assigned to file
-C         NITEMS      number of items (item size set by QMODE)
-C
-C Output: RESULT      0 (no error), -1 (EOF) or number of items read
-C         BUFFER      holds the items read
-C_END_QREAD
-C See library.c
 C_BEGIN_QREADI
 C
 C QREADI - Read from IUNIT into BUFFER, NITEMS items
@@ -309,35 +326,28 @@ C
 C Output: RESULT      0 (no error), -1 (EOF) or number of items read
 C         BUFFER      holds the items read
 C_END_QREADQ
-C_BEGIN_QREADC
-C
-C QREADC - Read bytes from IUNIT to fill BUFFER
-C
-C Usage:  CALL QREADC (IUNIT,BUFFER,RESULT)
-C         INTEGER     IUNIT, RESULT
-C         CHARACTER*(*) BUFFER
-C
-C Input:  IUNIT       unit number assigned to file
-C
-C Output: RESULT      0 (no error), -1 (EOF) or number of items read
-C         BUFFER      holds the items read.  If necessary, use a substring
-C                     of the CHARACTER variable
-C_END_QREADC
 C======================================================================
-C_BEGIN_QWRITE
+C     for correct typing of qread calls
+      SUBROUTINE QREADI (IUNIT,BUFFER,NITEMS,RESULT)
+      INTEGER IUNIT, NITEMS, RESULT
+      INTEGER BUFFER(*)
+      CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
+      END
+
+      SUBROUTINE QREADQ (IUNIT,BUFFER,NITEMS,RESULT)
+      INTEGER IUNIT, NITEMS, RESULT
+      COMPLEX BUFFER(*)
+      CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
+      END
+
+      SUBROUTINE QREADR (IUNIT,BUFFER,NITEMS,RESULT)
+      INTEGER IUNIT, NITEMS, RESULT
+      REAL BUFFER(*)
+      CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
+      END
 C
-C QWRITE - Write to IUNIT from BUFFER, NITEMS items
-C
-C Usage:  CALL QWRITE (IUNIT,BUFFER,NITEMS)
-C         INTEGER      IUNIT, NITEMS
-C         REAL         BUFFER
-C
-C Input:  IUNIT        unit number assigned to file
-C         NITEMS       number of items (item size set by QMODE)
-C         BUFFER       holds the items to write
-C
-C Output: None.
-C_END_QWRITE
+C^L
+C======================================================================
 C_BEGIN_QWRITI
 C
 C QWRITI - Write to IUNIT from BUFFER, NITEMS items
@@ -380,73 +390,25 @@ C         BUFFER       holds the items to write
 C
 C Output: None.
 C_END_QWRITQ
-C_BEGIN_QWRITEC
-C
-C QWRITEC - Write BUFFER to IUNIT
-C
-C Usage:  CALL QWRITEC (IUNIT,BUFFER)
-C         INTEGER      IUNIT, NITEMS
-C         CHARACTER*(*) BUFFER
-C
-C Input:  IUNIT        unit number assigned to file
-C         BUFFER       holds the items to write.  If necessary, use a
-C                      substring of the CHARACTER variable
-C
-C Output: None.
-C_END_QWRITEC
-C See library.c
 C======================================================================
-C_BEGIN_QSEEK
-C
-C QSEEK - Position a file pointer in a IUNIT
-C
-C Usage:  CALL QSEEK (IUNIT, IRECL, IEL, LRECL)
-C         INTEGER     IUNIT, IRECL, IEL, LRECL
-C
-C Input:  IUNIT       unit number to assign to file
-C         IRECL       "record number" to seek
-C         IEL         element number to seek
-C         LRECL       length of a "record"
-C
-C Output: None
-C
-C  QSEEK calculates the location as (IREC - 1)*LRECL + IEL. Note: as in
-C        Fortran, addressing begins at 1 for both record & element
-C        In these files, there are no true records: the use of "record length"
-C        and "record number" in QSEEK, QSKIP, QBACK is purely notional.
-C        For QSEEK, any combination of IREC, IEL & LRECL which gives the
-C        same value of (IREC - 1)*LRECL + IEL is equivalent.
-C
-C_END_QSEEK
-C See library.c
-C======================================================================
-C_BEGIN_QBACK
-C
-C QBACK - skip back 1 record of length LRECL
-C
-C Usage:  CALL QBACK (IUNIT,LRECL)
-C         INTEGER     IUNIT, LRECL
-C
-C Input:  IUNIT       unit number assigned to file
-C         LRECL       length of a record in items
-C
-C Output: None
-C_END_QBACK
-C See library.c
-C======================================================================
-C_BEGIN_QSKIP
-C
-C QSKIP - skip forward 1 record of length LRECL
-C
-C Usage:  CALL QSKIP (IUNIT,LRECL)
-C         INTEGER     IUNIT, LRECL
-C
-C Input:  IUNIT       unit number assigned to file
-C         LRECL       length of a record in items
-C
-C Output: None
-C_END_QSKIP
-C See library.c
+C     for correct typing of qwrite calls
+      SUBROUTINE QWRITR (IUNIT,BUFFER,NITEMS)
+      INTEGER      IUNIT, NITEMS
+      REAL         BUFFER(*)
+      CALL QWRITE (IUNIT,BUFFER,NITEMS)
+      END
+
+      SUBROUTINE QWRITI (IUNIT,BUFFER,NITEMS)
+      INTEGER      IUNIT, NITEMS
+      INTEGER      BUFFER(*)
+      CALL QWRITE (IUNIT,BUFFER,NITEMS)
+      END
+
+      SUBROUTINE QWRITQ (IUNIT,BUFFER,NITEMS)
+      INTEGER      IUNIT, NITEMS
+      COMPLEX      BUFFER(*)
+      CALL QWRITE (IUNIT,BUFFER,NITEMS)
+      END
 C
 C
 C======================================================================
@@ -467,7 +429,6 @@ C         LENGTH        file size or -1 if no file
 C
 C_END_QQINQ
 C======================================================================
-C
       SUBROUTINE QQINQ(IUNIT,LFN,FILNAM,LENGTH)
 C     =========================================
 C
@@ -495,148 +456,7 @@ C     ..
 C
       END
 C
-C
-C======================================================================
-C_BEGIN_QLOCATE
-C
-C QLOCATE - return current position in file (measured in items)
-C
-C Usage:  CALL QLOCATE (IUNIT,LOCATE)
-C         INTEGER       IUNIT,LOCATE
-C
-C Input:  IUNIT         stream to check
-C
-C Output: LOCATE        Current position in file or -1 for no file
-C_END_QLOCATE
-C See library.c
-C
-C======================================================================
-C_BEGIN_QOPEN
-C
-C QOPEN - Open a file unit
-C
-C Usage:  CALL QOPEN   (IUNIT, LOGNAME, ATBUTE)
-C         INTEGER       IUNIT
-C         CHARACTER*(*) LOGNAME, ATBUTE
-C
-C Input:  IUNIT         unit number number to assign to file
-C         LOGNAME       Logical name of file to open
-C         ATBUTE        File status = 'UNKNOWN', 'SCRATCH', 'OLD',
-C                                     'NEW', or 'READONLY'
-C
-C Output: None.
-C_END_QOPEN
-C
-C======================================================================
-C
-      SUBROUTINE QOPEN(IUNIT,LOGNAM,ATBUTA)
-C     =====================================
-C
-C     .. Scalar Arguments ..
-      INTEGER IUNIT
-      CHARACTER ATBUTA* (*),LOGNAM* (*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER ISTAT
-      CHARACTER FOO*80
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL QQOPEN, CCPUPC
-C     ..
-      ISTAT = 0
-      CALL CCPUPC(ATBUTA)
-      IF (ATBUTA(:1).EQ.'U') ISTAT = 1
-      IF (ATBUTA(:1).EQ.'S') ISTAT = 2
-      IF (ATBUTA(:1).EQ.'O') ISTAT = 3
-      IF (ATBUTA(:1).EQ.'N') ISTAT = 4
-      IF (ATBUTA(:1).EQ.'R') ISTAT = 5
-      IF (ISTAT.EQ.0) THEN
-        FOO = ATBUTA
-        CALL CCPERR(1,'Bad attribute in QOPEN: '//FOO)
-      ENDIF
-C
-      CALL QQOPEN(IUNIT,LOGNAM,ISTAT)
-      END
-C======================================================================
-C_BEGIN_QRARCH
-C
-C QRARCH - set up number conversion
-C
-C Usage:  CALL QRARCH   (IUNIT, IOFFSET, IRESLT)
-C         INTEGER       IUNIT, IOFFSET, IRESLT
-C
-C Input:  IUNIT         unit number number to assign to file
-C         IOFFSET       offset in words at which to find architecture
-C                       information
-C
-C Output: IRESLT        fileFT + (16*fileIT) (see library C code)
-C                       Zero if the stamp isn't present.
-C
-C     Reads the `machine stamp' giving information about the
-C     architecture with which the file was written and arranges to
-C     translate a foreign format to native with QREAD, dependent on the
-C     current diskio mode.
-C
-C_END_QRARCH
-C======================================================================
-C
-C======================================================================
-C_BEGIN_QWARCH
-C
-C QWARCH - set up number conversion
-C
-C Usage:  CALL QWARCH   (IUNIT, IOFFSET)
-C         INTEGER       IUNIT, IOFFSET
-C
-C Input:  IUNIT         unit number number to assign to file
-C         IOFFSET       offset in words at which to write architecture
-C                       information
-C
-C Output: None.
-C
-C     Writes the `machine stamp' giving information about the
-C     architecture with which the file was written and which is used by
-C     QRARCH
-C
-C_END_QWARCH
-C======================================================================
-
-C     for correct typing of qread/write calls
-      SUBROUTINE QREADI (IUNIT,BUFFER,NITEMS,RESULT)
-      INTEGER IUNIT, NITEMS, RESULT
-      INTEGER BUFFER(*)
-      CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
-      END
-
-      SUBROUTINE QREADQ (IUNIT,BUFFER,NITEMS,RESULT)
-      INTEGER IUNIT, NITEMS, RESULT
-      COMPLEX BUFFER(*)
-      CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
-      END
-
-      SUBROUTINE QREADR (IUNIT,BUFFER,NITEMS,RESULT)
-      INTEGER IUNIT, NITEMS, RESULT
-      REAL BUFFER(*)
-      CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
-      END
-
-      SUBROUTINE QWRITR (IUNIT,BUFFER,NITEMS)
-      INTEGER      IUNIT, NITEMS
-      REAL         BUFFER(*)
-      CALL QWRITE (IUNIT,BUFFER,NITEMS)
-      END
-
-      SUBROUTINE QWRITI (IUNIT,BUFFER,NITEMS)
-      INTEGER      IUNIT, NITEMS
-      INTEGER      BUFFER(*)
-      CALL QWRITE (IUNIT,BUFFER,NITEMS)
-      END
-
-      SUBROUTINE QWRITQ (IUNIT,BUFFER,NITEMS)
-      INTEGER      IUNIT, NITEMS
-      COMPLEX      BUFFER(*)
-      CALL QWRITE (IUNIT,BUFFER,NITEMS)
-      END
+C^L
 C======================================================================
 C_BEGIN_QISNAN
 C
@@ -659,17 +479,4 @@ C======================================================================
       EXTERNAL CISNAN
       QISNAN = CISNAN (VALUE) .NE. 0
       END
-C======================================================================
-C_BEGIN_QNAN
-C
-C QNAN - return canonical `magic number'
-C
-C Usage:  SUBROUTINE QNAN (VALUE)
-C Output: VALUE         REAL `magic' value
-C
-C     Returns a `magic number' which can be used to indicate the absence
-C     of data in an MTZ file.  In the current implementation, this is a
-C     NaN in IEEE or Rop on a VAX or Convex native.
-C
-C_END_QNAN
-C======================================================================
+
