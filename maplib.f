@@ -743,7 +743,7 @@ C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QTYPE,QWRITE           
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITE, QWARCH          
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
@@ -791,10 +791,6 @@ C
         WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
       ENDIF
 C
-C---- Get machine type stamp (word 54)
-C
-      CALL QTYPE(MACHST(1))
-C
 C---- write map stamp to word 53
 C set MAPST = 'MAP'
       CALL MSTMST(MAPST)
@@ -804,6 +800,8 @@ C
       CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
       CALL QSEEK(LSTRM(IUNIT),1,1,1)
       CALL QWRITE(LSTRM(IUNIT),HEADER,NBHDR)
+C     architecture stamp at the right position:
+      CALL QWARCH (LSTRM (IUNIT), 53)
 C
 C---- Close file
 C
@@ -867,7 +865,7 @@ C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QTYPE,QWRITE           
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITE           
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
@@ -913,10 +911,6 @@ C
         WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
       ENDIF
 C
-C---- Get machine type stamp (word 54)
-C
-      CALL QTYPE(MACHST(1))
-C
 C---- write map stamp to word 53 
 C
 C set MAPST = 'MAP'
@@ -927,6 +921,8 @@ C
       CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
       CALL QSEEK(LSTRM(IUNIT),1,1,1)
       CALL QWRITE(LSTRM(IUNIT),HEADER,NBHDR)
+C     architecture stamp at the right position:
+      CALL QWARCH (LSTRM (IUNIT), 53)
 C
 C---- Close file
 C
@@ -1000,7 +996,7 @@ C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QTYPE,QWRITE           
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWARCH,QWRITE           
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
@@ -1037,10 +1033,6 @@ C
       AMIN = RHMIN
       AMAX = RHMAX
 C
-C---- Get machine type stamp (word 54)
-C
-      CALL QTYPE(MACHST(1))
-C
 C---- write map stamp to word 53 
 C
 C set MAPST = 'MAP'
@@ -1054,6 +1046,8 @@ C
       CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
       CALL QSEEK(LSTRM(IUNIT),1,1,1)
       CALL QWRITE(LSTRM(IUNIT),HEADER,NBHDR)
+C     architecture stamp at the right position:
+      CALL QWARCH (LSTRM (IUNIT), 53)
 C
 C---- Close file
 C
@@ -1300,7 +1294,7 @@ C
       CHARACTER LXYZ(3)*1
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QMODE,QQINQ,QOPEN,QREAD,QSEEK,LENSTR
+      EXTERNAL QMODE,QQINQ,QOPEN,QREAD,QSEEK,LENSTR,QRARCH
       INTEGER LENSTR
       LOGICAL CCPEXS
 C     ..
@@ -1362,6 +1356,9 @@ C
 C---- Open file
 C
         CALL QOPEN(LSTRM(IUNIT),MAPNAM,'RO')
+C       set up transparent numbers if necessary:
+        CALL QRARCH (LSTRM (IUNIT), 53)
+        CALL QSEEK (LSTRM (IUNIT), 1, 1, 1)
 C
 C---- Get and print file name
 C

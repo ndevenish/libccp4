@@ -1745,7 +1745,7 @@ C     .. External Functions ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL BLANK,GTPINT,GTPREA,LERROR,LHPRT,LRCLOS,LRHDRL,PARSER,
-     +         PUTLIN,QMODE,QOPEN,QREAD,QSEEK,RBATHD,LSTRSL,SYMFR3
+     +     PUTLIN,QMODE,QOPEN,QREAD,QSEEK,RBATHD,LSTRSL,SYMFR3, QRARCH
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -1845,6 +1845,8 @@ C     The reflection records are written with mode=2, words/reals
 C
 C            ************************
         CALL QOPEN(IUNIN,FILNAM,'RO')
+C       set up transparent numbers if necessary:
+        CALL QRARCH (IUNIN,2)
         CALL QMODE(IUNIN,0,NITEM)
 C            ************************
 C
@@ -1912,6 +1914,7 @@ C     and go to the start of the header records
 C     Read in header records with mode=0 (bytes), except offset
 C
 C            ******************************
+        CALL QSEEK(RLUN(MINDX),1,1,1)
         CALL QREAD(RLUN(MINDX),IWORD,4,IER)
 C            ******************************
 C
@@ -4392,7 +4395,7 @@ C     .. External Functions ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL BLANK,LERROR,LHPRT,LWHDRL,PUTLIN,QCLOSE,QSEEK,QWRITE,
-     +         QMODE,QTYPE,SORTUP,SYMTR3,WBATHD
+     +         QMODE,QWARCH,SORTUP,SYMTR3,WBATHD
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -4699,18 +4702,12 @@ C
         LINE(1:4) = 'MTZ '
         READ (LINE,FMT='(A4)') IWORD
 C
-C---- Get the machine stamp
-C
-C            *************
-        CALL QTYPE(MSTAMP(1))
-C            *************
-C
 C            **********************************
         CALL QWRITE(WLUN(MINDX),IWORD,4)
         CALL QMODE (WLUN(MINDX),2,NITEM)
         CALL QWRITE(WLUN(MINDX),HDRST(MINDX),1)
-        CALL QMODE (WLUN(MINDX),6,NITEM)
-        CALL QWRITE(WLUN(MINDX),MSTAMP,1)
+C       architecture info:
+        CALL QWARCH(WLUN(MINDX),2)
 C            **********************************
 C
 C---- Output information
