@@ -1,3 +1,34 @@
+AD  - This file contains the following information:
+AD  - BEWARE: This file has a FIXED FORMAT!
+AD   This contains for each element:
+AD              ID     
+AD              IWT    IELEC C
+AD              A(4)
+AD              B(4)
+AD              CU(2)  MO(2) 
+AD 
+AD 
+AD Formfactor:  a1*exp(-b1*s*s) + a2*exp(-b2*s*s) + a3*exp(-b3*s*s)
+AD                                                + a4*exp(-b4*s*s) +  c
+AD    This is applicable at CuKa wavelength.
+AD 
+AD             This is the 5 Gaussian approximation
+AD          Ref: Int.Tab. vol 4 pp. 99-101 (Table 2.2B) for values a1-a4, b1-b4,c
+AD 
+AD              ID     atom identifier
+AD              IWT    atomic weight
+AD              IELEC  number of electrons
+AD              C      coefficient for structure factor calculation
+AD              A(4)   coefficient for structure factor calculation
+AD              B(4)   coefficient for structure factor calculation
+AD              CU(2)  delta F' and delta F'' for Cu
+AD              MO(2)  delta F' and delta F'' for Mo
+AD  Example:
+AD U+6
+AD         92        86       13.166500
+AD        34.850899       22.758400       14.009900        1.214570
+AD         0.507079        2.890300       13.176700       25.201700
+AD        -5.359000       13.409000      -10.673000        9.653999
 H     
          1         1        0.003038
         0.493002        0.322912        0.140191        0.040810
