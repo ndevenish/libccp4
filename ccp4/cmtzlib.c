@@ -851,8 +851,9 @@ void MtzDebugHierarchy(const MTZ *mtz) {
     printf("MtzDebugHierarchy: xtal = %s, set = %s, ncol = %d \n",mtz->xtal[i]->xname,
               mtz->xtal[i]->set[j]->dname,mtz->xtal[i]->set[j]->ncol);
      for (k = 0; k < mtz->xtal[i]->set[j]->ncol; ++k) {
-      printf("MtzDebugHierarchy: col = %s (%d) \n",
+      printf("MtzDebugHierarchy: col = %s (in: %d) (out: %d) \n",
               mtz->xtal[i]->set[j]->col[k]->label,
+              mtz->xtal[i]->set[j]->col[k]->source,
               mtz->xtal[i]->set[j]->col[k]->active);
      }
    }
@@ -1104,7 +1105,7 @@ void ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64],
 
 int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int iref) {
 
-  int i,j,k,icol;
+  int i,j,k;
   int ind[3],ixtal=0;
   unsigned int colin;
   float refldata[MCOLUMNS];
@@ -1119,20 +1120,18 @@ int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int i
     MtzRrefl( mtz->filein, mtz->ncol_read, refldata);
   }
 
-  icol = -1;
  /* Loop over all columns in the MTZ struct, and select those which
     derive from the input file. */
   for (i = 0; i < mtz->nxtal; ++i) {
     for (j = 0; j < mtz->xtal[i]->nset; ++j) {
      for (k = 0; k < mtz->xtal[i]->set[j]->ncol; ++k) {
        if (colin = mtz->xtal[i]->set[j]->col[k]->source) {
-         ++icol;
          if (mtz->refs_in_memory) {
-           adata[icol] = mtz->xtal[i]->set[j]->col[k]->ref[iref-1];
+           adata[colin - 1] = mtz->xtal[i]->set[j]->col[k]->ref[iref-1];
          } else {
-           adata[icol] = refldata[colin - 1];
+           adata[colin - 1] = refldata[colin - 1];
 	 }
-         logmss[icol] = ccp4_ismnf(mtz, adata[icol]);
+         logmss[colin - 1] = ccp4_ismnf(mtz, adata[colin - 1]);
        }
      }
     }
@@ -1871,6 +1870,22 @@ void ccp4_lwbsetid(MTZ *mtz, MTZBAT *batch, const char xname[], const char dname
     }
   }
   printf("From ccp4_lwbsetid: warning: dataset id not found!\n");
+
+}
+
+int MtzDeleteRefl(MTZ *mtz, int iref)
+
+{
+  int i,j,k;
+
+  /* only possible if reflections in memory */
+  if (mtz->refs_in_memory) {
+    for (i = 0; i < mtz->nxtal; ++i) 
+     for (j = 0; j < mtz->xtal[i]->nset; ++j) 
+      for (k = 0; k < mtz->xtal[i]->set[j]->ncol; ++k) 
+        ccp4array_delete_ordered(mtz->xtal[i]->set[j]->col[k]->ref,iref);
+    --mtz->nref;
+  }
 
 }
 
