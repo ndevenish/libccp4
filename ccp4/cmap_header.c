@@ -46,6 +46,7 @@
 #include <stdarg.h>
 #include "cmaplib.h"
 #include "cmap_errno.h"
+#include "cmap_skew.h"
 
 /*! Internal: read header from file and fill CMMFile struct.
   Called after file is opened for read.
