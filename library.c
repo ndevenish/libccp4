@@ -78,7 +78,7 @@
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_SUN 1
 #endif
-#line 251 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 252 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #ifndef VMS
 #  if defined (vms) || defined (__vms) || defined (__VMS)
 #    define VMS
@@ -88,15 +88,15 @@
 #  define KNOWN_MACHINE
 #endif
 #endif /* F2C */
-#line 266 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 267 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if ! defined (KNOWN_MACHINE)
   #error System type is not known -- see the Installation Guide
 #else
-#line 288 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 289 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
 #endif
-#line 292 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 293 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #include <stdio.h>
 
 #if defined (VMS)
@@ -113,9 +113,9 @@
 #else
 #  include <stddef.h>
 #endif
-#line 311 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 312 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #include <string.h>
-#line 315 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 316 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #ifndef NOUNISTD
 #  include <unistd.h>
 #else
@@ -131,21 +131,21 @@
 #if defined(_AIX) || defined (__hpux) /* would do no harm on others, though */
 #  include <time.h>
 #endif
-#line 336 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 337 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #define MAXFLEN       500       /* the maximum length of a filename in CCP4 */
 #define MAXFILES       10    /* maximum number of files open symultaneously */
 #define DEFMODE         2    /* default mode access for random access files */
-#line 342 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 343 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #define IRRELEVANT_OP   0
 #define READ_OP         1
 #define WRITE_OP        2
-#line 351 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 352 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #ifndef SEEK_SET
 #  define SEEK_SET 0
 #  define SEEK_CUR 1
 #  define SEEK_END 2
 #endif /* ! SEEK_SET */
-#line 357 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 358 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (ardent) || defined (titan) || defined (stardent)
   struct Str_Desc {
     char *Str_pointer;
@@ -153,14 +153,14 @@
     int id;
   };
 #endif
-#line 370 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 371 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #define BYTE  0
 #define INT16 1   
 #define INT32 6
 #define FLOAT32 2
 #define COMP32  3
 #define COMP64  4
-#line 1528 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1529 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 /* class info codes for int */
 #define DFNTI_MBO       1       /* Motorola byte order 2's compl */
 #define DFNTI_IBO       4       /* Intel byte order 2's compl */
@@ -170,17 +170,17 @@
 #define DFNTF_VAX       2       /* Vax format */
 #define DFNTF_CONVEXNATIVE 5    /* Convex native floats */
 #define DFNTF_LEIEEE    4       /* little-endian IEEE format */
-#line 1546 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1547 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (VAX) || defined (vax) /* gcc seems to use vax */
 #  define NATIVEFT DFNTF_VAX
 #  define NATIVEIT DFNTI_IBO
 #endif
-#line 1557 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1558 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined(MIPSEL) || defined(alliant) || defined(i386) || defined(i860)
 #  define NATIVEIT DFNTI_IBO
 #  define NATIVEFT DFNTF_LEIEEE
 #endif
-#line 1566 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1567 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #ifdef __alpha
 #  ifdef VMS
 #    if __IEEE_FLOAT == 1
@@ -193,13 +193,13 @@
 #  endif
 #  define NATIVEIT DFNTI_IBO
 #endif
-#line 1583 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1584 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 /* the VAX VMS compiler objected to splitting the following line */
 #if defined(MIPSEB) || defined(__hpux) || defined(_AIX) || defined(m68k) || defined(mc68000) || defined(sparc)
 #  define NATIVEIT DFNTI_MBO
 #  define NATIVEFT DFNTF_BEIEEE
 #endif
-#line 1590 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1591 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined(__convex__) || defined(__convexc__)
 #  define NATIVEIT DFNTI_MBO
 #  ifdef _IEEE_FLOAT_
@@ -215,7 +215,7 @@
 #ifndef NATIVEFT
   #error "Can't determine machine number format"
 #endif
-#line 1612 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1613 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #define DFNT_UINT       0       /* unsigned int */
 #define DFNT_SINT       1       /* short int */
 #define DFNT_INT        2       /* int */
@@ -223,15 +223,15 @@
 #define DFNT_CHAR       4       /* char */
 #define DFNT_FLOAT      5       /* float */
 #define DFNT_DOUBLE     6       /* double */
-#line 1621 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1622 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 typedef unsigned short uint16;
 typedef unsigned long uint32;
 typedef float float32;
 typedef unsigned char uint8;
-#line 380 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 381 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 static char rcsid[] = "$Id$";
 static int initialised =  0;    /* flag to initialise data and file streams */
-#line 393 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 394 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (__DECC)
 static char *file_attribute[] = { /* DISKIO file modes */
   "wb+",   /* 'UNKNOWN'   open as 'OLD'/'NEW' check existence */
@@ -248,7 +248,7 @@ static char *file_attribute[] = {
   "r"     /* 'READONLY'  self explanatory */
 #endif
 };                                                                      
-#line 416 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 417 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 static int item_sizes[] = {
   (int) sizeof (char),                                          /* 0: bytes */
 #if defined (sgi)
@@ -265,17 +265,17 @@ static int item_sizes[] = {
   (int) sizeof (int),           /* 5: not used */
   (int) sizeof (int)            /* 6: integers */
 };
-#line 435 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 436 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 static FILE *file_stream[MAXFILES];                 /* Pointer to disk file */
 static char file_name[MAXFILES][MAXFLEN];      /* Pointer to disk file name */
 static int  file_bytes_per_item[MAXFILES];/* Pointer to disk file item size */
 static int  file_is_scratch[MAXFILES];    /* Indicates if file is 'SCRATCH' */
 static int  file_last_op [MAXFILES];    /* see man fopen rd/wr combinations */
 static int file_mode[MAXFILES];               /* diskio mode of each stream */
-#line 1606 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1607 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 static uint16 nativeIT = NATIVEIT; /* machine integer type */ 
 static uint16 nativeFT = NATIVEFT; /* machine float type */
-#line 1627 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1628 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 union float_uint_uchar {
     float32 f;
     uint32 i;
@@ -283,7 +283,7 @@ union float_uint_uchar {
 static int
     Iconvert[MAXFILES],         /* integer convserion needed on read*/
     Fconvert[MAXFILES];         /* real convserion needed on read*/
-#line 449 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 450 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 static size_t flength (s, len)
 char *s;
 int len;
@@ -291,7 +291,7 @@ int len;
   while (s[--len] == ' ');
   return (++len);
 }
-#line 460 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 461 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 static void fatal (message)
 char *message;
 {
@@ -336,7 +336,7 @@ char *message;
   (void) ccperr_ ((int) strlen(message), &mone, message);
 #endif
  }
-#line 1718 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1719 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 static void vaxF2ieeeF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
@@ -378,7 +378,7 @@ int size;
     buffer[i] = out;            /* copy back result */
   }
 }
-#line 1761 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1762 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 static void ieeeF2vaxF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
@@ -425,7 +425,7 @@ int size;
     buffer[i] = out;            /* copy back the result */
   }
 }
-#line 1813 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1814 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 static void convexF2ieeeF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
@@ -467,7 +467,7 @@ int size;
     buffer[i] = out;            /* copy back result */
   }
 }
-#line 1856 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1857 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 static void ieeeF2convexF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
@@ -515,9 +515,9 @@ int size;
     buffer[i] = out;            /* copy back the result */
   }
 }
-#line 517 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 518 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if ! defined (VMS)
-#line 521 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 522 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void ustenv (str, result, Lstr)
   char *str;
@@ -572,9 +572,9 @@ int *result;
   *result = setenv (name, value, 1);
 #endif
 }
-#line 519 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 520 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #endif
-#line 582 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 583 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void cunlink (filename, Lfilename)
   char *filename;
@@ -619,7 +619,7 @@ int *result;
   fatal("CUNLINK: Can't unlink");
 #endif /* VMS */
 }
-#line 2059 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 2063 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #ifndef VMS                     /* we'll use the Fortran version in VMS*/
 #if CALL_LIKE_HPUX
   void ccpal1 (routne, n, type, length)
@@ -703,7 +703,7 @@ int *result;
     free (pointer[i+1]);
 }
 #endif /* VMS */
-#line 634 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 635 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void copen (iunit, filename, istat, Lfilename)
   char *filename;
@@ -774,7 +774,7 @@ int  *iunit, *istat;
   file_bytes_per_item[i] = item_sizes[DEFMODE]; /* default item size */
   file_mode[i] = DEFMODE;
   file_is_scratch[i] = (jstat == 2);
-#line 725 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 726 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #ifdef VMS
   if (file_is_scratch[i])
     file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1],
@@ -793,16 +793,16 @@ int  *iunit, *istat;
     *iunit = -2;                /* return open failure flag */
     return; }
   Iconvert[i] = Fconvert[i] = 0;
-#line 1250 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1251 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 744 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 745 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
   if (fseek (file_stream[*iunit], 0L, SEEK_SET) != 0)
     fatal("(Q)QOPEN: fseek failed");
   *iunit = i;
 }
-#line 784 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 785 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void qrarch (iunit, ipos, ireslt)
 #endif
@@ -840,11 +840,11 @@ int  *iunit, *istat;
       mtstring[0] = DFNTF_CONVEXNATIVE | (DFNTF_CONVEXNATIVE << 4);
       mtstring[1] = 1 | (DFNTI_MBO << 4); }  
   } else {
-#line 1250 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1251 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 822 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 823 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
     if ((fseek (file_stream[*iunit], (size_t) ((*ipos)*item_sizes[2]),
                 SEEK_SET) != 0))
       fatal ("QRARCH: seek failed");
@@ -862,7 +862,7 @@ int  *iunit, *istat;
     Iconvert[*iunit] = fileIT;  /* else assume native */
   *ireslt = fileFT + (16*fileIT);
 }
-#line 853 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 854 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void qwarch (iunit, ipos)
 #endif
@@ -881,11 +881,11 @@ int  *iunit, *istat;
   int *ipos, *iunit;
 {
   unsigned char mtstring[4];    /* machine stamp */
-#line 1250 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1251 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 872 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 873 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
   if (fseek (file_stream[*iunit], (size_t) ((*ipos)*item_sizes[2]),
              SEEK_SET) != 0)
     fatal ("QWARCH: seek failed");
@@ -898,7 +898,7 @@ int  *iunit, *istat;
              file_stream[*iunit]) != 4)
     fatal ("QWARCH: can't write machine stamp");
 }
-#line 888 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 889 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void qclose (iunit)
 #endif
@@ -924,7 +924,7 @@ int *iunit;
   }
   file_name[*iunit][0] = '\0';
 }
-#line 920 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 921 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void qmode (iunit, mode, size)
 #endif
@@ -950,7 +950,7 @@ int *iunit, *mode, *size;
   *size = file_bytes_per_item[*iunit];       /* return number of bytes/item */
   file_mode[*iunit] = *mode;
 }
-#line 956 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 957 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void qread (iunit, buffer, nitems, result)
 #endif
@@ -972,11 +972,11 @@ int *iunit, *nitems, *result;
   if (! initialised) 
     fatal ("QREAD: qopen/qqopen not yet called");
   if (file_last_op[*iunit] == WRITE_OP) {
-#line 1250 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1251 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 978 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 979 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
     if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0) {
       /**result = -1;*/
       fatal ("QREAD: seek error");
@@ -996,14 +996,14 @@ int *iunit, *nitems, *result;
   *result = 0;
   n = *nitems;
   
-#line 1000 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1001 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
   switch (file_mode[*iunit]) {
   case BYTE:
     break;
   case INT16:
     if (Iconvert[*iunit])
       
-#line 1640 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1641 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 {
 if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
     (Iconvert[*iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO)) {
@@ -1015,17 +1015,17 @@ if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
 else
   fatal("QREAD: bad file integer type in conversion");
 }
-#line 1006 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1007 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
     break;
   case INT32:
     if (Iconvert[*iunit])
       
-#line 1652 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1653 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 {
 if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
     (Iconvert[*iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO))
   
-#line 1701 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1702 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -1036,16 +1036,16 @@ if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1656 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1657 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 else
   fatal("QREAD: bad file integer type in conversion");
 }
-#line 1010 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1011 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
     break;
   case FLOAT32:
     if (Fconvert[*iunit])
       
-#line 1663 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1664 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 {
 switch (Fconvert[*iunit]) {     /* get to BE IEEE */
    case DFNTF_VAX :
@@ -1058,7 +1058,7 @@ switch (Fconvert[*iunit]) {     /* get to BE IEEE */
      break;
    case DFNTF_LEIEEE :
      
-#line 1701 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1702 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -1069,18 +1069,18 @@ switch (Fconvert[*iunit]) {     /* get to BE IEEE */
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1675 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1676 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
      break;
    default :
      fatal("QREAD: bad file real type in conversion");
    }
-#line 1684 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1685 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 switch (nativeFT) {
   case DFNTF_BEIEEE :
     break;                      /* done enough */
   case DFNTF_LEIEEE :
     
-#line 1701 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1702 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -1091,7 +1091,7 @@ switch (nativeFT) {
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1689 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1690 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
     break;
   case DFNTF_CONVEXNATIVE :
     ieeeF2convexF(buffer, n);
@@ -1103,13 +1103,13 @@ switch (nativeFT) {
     fatal("QREAD: bad native real type in conversion");
   }
 }
-#line 1014 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1015 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
     break;
   case COMP32:
     if (Fconvert[*iunit]) {
       n = 2*n;                  /* pairs of ints */
       
-#line 1640 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1641 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 {
 if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
     (Iconvert[*iunit]==DFNTI_IBO && nativeIT==DFNTI_MBO)) {
@@ -1121,14 +1121,14 @@ if ((Iconvert[*iunit]==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
 else
   fatal("QREAD: bad file integer type in conversion");
 }
-#line 1019 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1020 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
     }
     break;
   case COMP64:
     if (Fconvert[*iunit]) {
       n = 2*n;                  /* pairs of reals */
       
-#line 1663 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1664 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 {
 switch (Fconvert[*iunit]) {     /* get to BE IEEE */
    case DFNTF_VAX :
@@ -1141,7 +1141,7 @@ switch (Fconvert[*iunit]) {     /* get to BE IEEE */
      break;
    case DFNTF_LEIEEE :
      
-#line 1701 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1702 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -1152,18 +1152,18 @@ switch (Fconvert[*iunit]) {     /* get to BE IEEE */
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1675 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1676 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
      break;
    default :
      fatal("QREAD: bad file real type in conversion");
    }
-#line 1684 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1685 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 switch (nativeFT) {
   case DFNTF_BEIEEE :
     break;                      /* done enough */
   case DFNTF_LEIEEE :
     
-#line 1701 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1702 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 {
   char j;
   for (i=0; i < n*4; i+=4) {
@@ -1174,7 +1174,7 @@ switch (nativeFT) {
     buffer[i+1] = buffer[i+2];
     buffer[i+2] =j; }
 }
-#line 1689 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1690 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
     break;
   case DFNTF_CONVEXNATIVE :
     ieeeF2convexF(buffer, n);
@@ -1186,15 +1186,15 @@ switch (nativeFT) {
     fatal("QREAD: bad native real type in conversion");
   }
 }
-#line 1025 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1026 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
     }
     break;
   default:
     fatal ("QREAD: Bad mode");
   }
-#line 997 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 998 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 }
-#line 1039 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1040 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void qreadc (iunit, buffer, result, Lbuffer)
   int Lbuffer;
@@ -1222,11 +1222,11 @@ int *iunit, *result;
   if (! initialised) 
     fatal ("QREAD: qopen/qqopen not yet called");
   if (file_last_op[*iunit] == WRITE_OP) {
-#line 1250 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1251 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 1067 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1068 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
     if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0) {
       *result = -1;
       return; } }
@@ -1253,7 +1253,7 @@ int *iunit, *result;
   }
   *result = 0;
 }
-#line 1099 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1100 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void qwrite (iunit, buffer, nitems)
 #endif
@@ -1274,20 +1274,20 @@ int *iunit, *nitems;
   if (! initialised) 
     fatal ("QWRITE: qopen/qqopen not yet called");
   if (file_last_op[*iunit] == READ_OP) {
-#line 1250 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1251 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 1120 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1121 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
     if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0)
       fatal ("QWRITE: seek failed"); }
   file_last_op[*iunit] = WRITE_OP;
   i = (int) fwrite (buffer, (size_t) file_bytes_per_item[*iunit],
                     (size_t) *nitems, file_stream[*iunit]);
-#line 1129 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1130 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
   if (i != *nitems) fatal ("QWRITE: i/o error (may be out of disc space)");
 }
-#line 1137 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1138 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void qwritc (iunit, buffer, Lbuffer)
   int Lbuffer;
@@ -1314,11 +1314,11 @@ int *iunit;
   if (! initialised) 
     fatal ("QWRITC: qopen/qqopen not yet called");
   if (file_last_op[*iunit] == READ_OP) {
-#line 1250 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1251 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 1164 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1165 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
     if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0)
       fatal ("QWRITC: seek failed"); }
   file_last_op[*iunit] = WRITE_OP;
@@ -1339,7 +1339,7 @@ int *iunit;
                     (size_t) n, file_stream[*iunit]);
   if (i != n) fatal ("QWRITC: i/o error (may be out of disc space)");
 }
-#line 1190 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1191 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void qseek (iunit, irec, iel, lrecl)
 #endif
@@ -1362,15 +1362,15 @@ int *iunit, *irec, *iel, *lrecl;
   position = (long) ((*lrecl)*(*irec - 1) + (*iel - 1));
   position *= (long) file_bytes_per_item[*iunit];
   file_last_op[*iunit] = IRRELEVANT_OP;
-#line 1250 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1251 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 1213 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1214 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
   if (fseek (file_stream[*iunit],position,SEEK_SET) != 0)
     fatal ("QSEEK failed");     /* fixme: add file info */
 }
-#line 1220 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1221 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void qback (iunit, lrecl)
 #endif
@@ -1392,15 +1392,15 @@ int *iunit, *lrecl;
     fatal ("QBACK: qopen/qqopen not yet called");
   position = ftell (file_stream[*iunit]) - (*lrecl)*file_bytes_per_item[*iunit];
   file_last_op[*iunit] = IRRELEVANT_OP;
-#line 1250 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1251 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 1242 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1243 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
   if (fseek (file_stream[*iunit], position, SEEK_SET) != 0)
     fatal ("QBACK failed");     /* fixme: add file info */
 }
-#line 1256 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1257 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void qskip (iunit, lrecl)
 #endif
@@ -1423,15 +1423,15 @@ int *iunit, *lrecl;
   position = ftell (file_stream[*iunit]) +
     (*lrecl)*file_bytes_per_item[*iunit];
   file_last_op[*iunit] = IRRELEVANT_OP;
-#line 1250 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1251 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 1279 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1280 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
   if (fseek (file_stream[*iunit],position,SEEK_SET) != 0)
     fatal ("QSKIP failed");     /* fixme: add file info */
 }
-#line 1288 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1289 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void cqinq (istrm, filnam, length, len_filnam)
   char *filnam; 
@@ -1497,18 +1497,18 @@ int *istrm, *length;
     if (fflush (file_stream[*iunit]) != 0) fatal ("QQINQ: flush failed");
 #endif
     position = ftell (file_stream[*iunit]);   /* remember current position */
-#line 1250 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1251 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-#line 1354 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1355 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
     (void) fseek (file_stream[*iunit],0L,SEEK_END); /* seek EOF */
     *length = (int) ftell (file_stream[*iunit]); /* get file size */
     if (fseek (file_stream[*iunit],position,SEEK_SET) != 0) /* seek position */
       fatal ("QQINQ: seek failed"); /* fixme: add file info */
   }
 }
-#line 1364 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1365 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void qlocate (iunit, locate)
 #endif
@@ -1530,7 +1530,7 @@ int *iunit, *locate;
   if (file_stream[*iunit] != NULL)
     *locate = (int) ftell (file_stream[*iunit]) / file_bytes_per_item[*iunit];
 }
-#line 1391 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1392 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #ifdef _AIX
 void idate (d, m, y)
      int *y, *m, *d;
@@ -1542,7 +1542,7 @@ void idate (d, m, y)
      *y = lt->tm_year + 1000; *m = lt->tm_mon; *d = lt->tm_mday;
 }
 #endif
-#line 1403 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1404 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if defined (__hpux) || defined (_AIX)
 void gerror (str, Lstr)
 char *str;
@@ -1605,7 +1605,7 @@ float etime (tarray)
 }
 
 #endif  /* AIX || HPUX */
-#line 1953 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1954 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   void cnan (real)
 #endif
@@ -1616,11 +1616,11 @@ float etime (tarray)
   void cnan_ (real)
 #endif
   union float_uint_uchar *real;
-#line 1969 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1970 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if NATIVEFT == DFNTF_BEIEEE || NATIVEFT == DFNTF_LEIEEE
 #  define NAN 0xfffa5a5a
 #endif
-#line 1975 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1976 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if NATIVEFT == DFNTF_CONVEXNATIVE
 #  define NAN 0x80000000
 #endif
@@ -1633,7 +1633,7 @@ float etime (tarray)
 {
   real->i = NAN;
 }
-#line 1996 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 1997 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #if CALL_LIKE_HPUX
   int cisnan (real)
 #endif
@@ -1649,20 +1649,20 @@ float etime (tarray)
   union float_uint_uchar *real;
 {
     
-#line 2019 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 2020 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 switch (nativeFT) {
  case DFNTF_BEIEEE :
  case DFNTF_LEIEEE :
    return ((real->i & 0x7f800000) == 0x7f800000); /* exponent all 1s */
-#line 2027 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 2028 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
   case DFNTF_CONVEXNATIVE :
     return ((real->i & 0xff800000) == 0x80000000);      
   case DFNTF_VAX :
     return ((real->i & 0x0000ff80) == 0x00008000);
   default :
     fatal("CISNAN: bad nativeFT");  }
-#line 2011 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 2012 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 }
-#line 270 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
+#line 271 "/ccpdisk/xtal/ccp4/lib/src/library.nw"
 #endif
 
