@@ -32,7 +32,7 @@ C     First subroutine to be called.
 C     Arguments: 	XMLFIleUnit : Input - No value
 C                           Output returns the file Unit number
 C               root value = eg html
-C		Ifail : same as usual! Can’t remember what it is. 
+C		Ifail : same as usual!
 C
 C     Purpose: open an XML file.
 C
@@ -337,12 +337,10 @@ c      save /ccp4xml/
 
       if (ElementName(1:lenstr(ElementName)).ne.
      $     openelements(elementnumber)) then
-        if (elementstatus(elementnumber).eq.1) then
-          write (XMLFileUnit, 135) indentline(1:elementnumber)
-          elementstatus(elementnumber)=2
-        endif
-        write (XMLFileUnit, 150) indentline(1:elementnumber),
-     $  openelements(elementnumber)(1:elementlength)
+C     if the element to close is not the open one then close 
+C     the open one - can assume its just e.g. <wibble and not
+C     <wibble> so only need a />
+        write (XMLFileUnit, 155) indentline(1:elementnumber)
         openelements(elementnumber)=' '
         elementstatus(elementnumber)=0
         elementnumber=elementnumber-1
