@@ -311,10 +311,12 @@ FORTRAN_SUBR ( CCPRCS, ccprcs,
 		                const fpstr rcsdat, int rcsdat_len))
 
 { 
-  char *tmp_prog;
+  char *tmp_prog,*tmp_rcsdat;
 
   tmp_prog = ccp4_FtoCString(FTN_STR(prog), FTN_LEN(prog));
+  tmp_rcsdat = ccp4_FtoCString(FTN_STR(rcsdat), FTN_LEN(rcsdat));
   ccp4ProgramName(tmp_prog);
+  ccp4RCSDate(tmp_rcsdat);
   ccp4_banner();
 
   free((char *) tmp_prog);
