@@ -1578,11 +1578,10 @@ int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint)
 
   if (!batch) return 0;
 
+  MtzBatchToArray(batch,intbuf,fltbuf);
   intbuf[0] = nwords;
   intbuf[1] = nintegers;
   intbuf[2] = nreals;
-
-  MtzBatchToArray(batch,intbuf,fltbuf);
 
   strncpy(charbuf,batch->title,70); 
   strncpy(charbuf+70,batch->gonlab[0],8); 
