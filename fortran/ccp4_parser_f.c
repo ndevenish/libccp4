@@ -39,7 +39,7 @@
 
 /* C parser header file */
 #include "ccp4_parser.h"
-#include "ccplib.h"
+#include "ccp4_general.h"
 
 static char rcsid[] = "$Id$";
 

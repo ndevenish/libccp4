@@ -6,10 +6,10 @@
 
 /** @file ccp4_general.c
  *  General library functions and utilities.
- *  Peter Briggs
+ *  Peter Briggs et al
  */
 
-/*   ccplib.c
+/*   ccp4_general.c
      Peter Briggs CCP4 May 2001/Feb 2003
 
      General library functions and utilities
@@ -51,7 +51,7 @@
 #include "ccp4_fortran.h"
 #include "ccp4_utils.h"
 #include "ccp4_parser.h"
-#include "ccplib.h"
+#include "ccp4_general.h"
 #include "ccp4_program.h"
 #include "cmtzlib.h"
 #include "csymlib.h"

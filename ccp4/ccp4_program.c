@@ -15,7 +15,7 @@
 #include "ccp4_program.h"
 #include "ccp4_parser.h"
 #include "ccp4_utils.h"
-#include "ccplib.h"
+#include "ccp4_general.h"
 static char rcsid[] = "$Id$";
 
 char *ccp4_prog_vers(char *progvers) 
