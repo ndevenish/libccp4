@@ -494,7 +494,7 @@ C     *************************************************
 C     # of keys, key descriptions, fixed record length, memory (not used)
       INTEGER   NKEYS,KEYB(*),LRECL,MEMSIZE
 C
-      INTEGER      ISTAT,NORMAL,DATASIZ,LUNOUT,NFILSZ
+      INTEGER      ISTAT,NORMAL,DATASIZ,LUNSTO,LUNOUT,NFILSZ
       INTEGER      I,J,JOLD
       INTEGER*2    KEYBUF(401)
 C
@@ -503,7 +503,7 @@ C    .. External Functions ..
 C
 C     Definition of data type = single-precision floating - only this one
 C     is implemented here
-      EXTERNAL DSC$K_DTYPE_F
+      EXTERNAL DSC$K_DTYPE_F,LUNSTO
 C
 C   Things for descriptor of ADATA
       INTEGER*4    MDATA(2)
@@ -526,6 +526,7 @@ C     NORMAL return value from VMS sort subroutines
       NORMAL = 1
 C     Length of tada type i.e. 4 for REAL
       DATASIZ = 4
+      LUNOUT = LUNSTO(1)
       KEYBUF(1) = NKEYS
       DO 10 I = 1,NKEYS
          J = (I-1)*4 + 2
