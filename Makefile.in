@@ -74,7 +74,7 @@ AR          = ar r
 RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
 
 # modules to go in libccp4.a:
-LIBTARGETS = cciflib ccplib fftlib maplib parser rwbrook modlib \
+LIBTARGETS = $(CIFLIBTARGETS) ccplib fftlib maplib parser rwbrook modlib \
            symlib lgglib harvlib mtzlib diskio unix plot84lib libhtml \
            binsortint library library_f plotsubs keyparse pack_f pack_c \
            pxxml
@@ -93,7 +93,7 @@ LIBTARGETS = cciflib ccplib fftlib maplib parser rwbrook modlib \
 
 all :  $L
 
-$L : $L(cciflib.o) $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
+$L : $(CIFLIBOBJS) $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) \
 	  $L(mtzlib.o) $L(lgglib.o) $L(harvlib.o) $L(diskio.o) $L(unix.o) \
 	  $L(binsortint.o) $L(library.o) $L(library_f.o) $L(plot84lib.o) \
