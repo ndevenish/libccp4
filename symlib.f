@@ -839,7 +839,7 @@ C     ..
 C     ..
 C     .. Local Scalars ..
       INTEGER I, NCENT, IH, IK, IL, J, NC, ISYM, ICENT
-      REAL RR,SS,PIDEG,PI2,CONV
+      REAL RR,SS,PIDEG,PI2,CONV,EPS_LOC,TEST_LOC,PHASE_LOC
       LOGICAL SETUP
       CHARACTER STROUT*400
 C     ..
@@ -865,15 +865,17 @@ C
       DATA CPRJ/1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,-1.0,0.0,
      +     1.0,0.0,-1.0, 0.0,1.0,-1.0, 1.0,1.0,0.0, 1.0,0.0,1.0,
      +     0.0,1.0,1.0, 2.0,1.0,0.0, 1.0,2.0,0.0, 0.0,0.0,0.0/
-      DATA SETUP /.FALSE./
+      DATA EPS_LOC/1.0E-7/,SETUP /.FALSE./
 C     ..
 C
       IF (.NOT.SETUP) CALL CCPERR (1, 'CENTR: CENTRIC not called first')
       IC = 0
       IF (NCENT.NE.0) THEN
         DO 10 I = 1,NCENT
-          IF ((CPROJ(1,I)*HKL(1)+CPROJ(2,I)*HKL(2)+CPROJ(3,I)*HKL(3))
-     +        .EQ. 0.0) GO TO 20
+          TEST_LOC = CPROJ(1,I)*FLOAT(HKL(1))+
+     &               CPROJ(2,I)*FLOAT(HKL(2))+
+     &               CPROJ(3,I)*FLOAT(HKL(3))
+          IF (ABS(TEST_LOC).LT.EPS_LOC) GO TO 20
    10   CONTINUE
         RETURN
    20   IC = 1
@@ -892,8 +894,10 @@ C     Return CENPHS - the centric phase should be CENPHS or CENPHS + pi
       IF (NCENT.GE.0) THEN
         DO 60 I = 1,NCENT
           ICENT = I
-          IF ((CPROJ(1,I)*HKL(1)+CPROJ(2,I)*HKL(2)+CPROJ(3,I)*HKL(3))
-     +        .EQ. 0.0) GO TO 70
+          TEST_LOC = CPROJ(1,I)*FLOAT(HKL(1))+
+     &               CPROJ(2,I)*FLOAT(HKL(2))+
+     &               CPROJ(3,I)*FLOAT(HKL(3))
+          IF (ABS(TEST_LOC).LT.EPS_LOC) GO TO 70
    60   CONTINUE
         CALL CCPERR(1,'CENTPHASE: This is not a centric reflection!')
         RETURN
@@ -918,22 +922,29 @@ c     ============================
       PI2 = 8*ATAN2(1.0,1.0)
       CONV = 360.0/PI2
 C   Choose any 3 coordinates which are not rational and generate the structure factor       
-       Xtest= sqrt(2.0)
-       Ytest= sqrt(3.0)
-       Ztest= sqrt(5.0)
-       Asf = 0.0
-       Bsf = 0.0
-        DO 25 J = 1,NSM
-          Xs = RSM(1,1,J)*Xtest + RSM(1,2,J)*Ytest
-     +       + RSM(1,3,J)*Ztest + RSM(1,4,J)
-          Ys = RSM(2,1,J)*Xtest + RSM(2,2,J)*Ytest
-     +       + RSM(2,3,J)*Ztest + RSM(2,4,J)
-          Zs = RSM(3,1,J)*Xtest + RSM(3,2,J)*Ytest
-     +       + RSM(3,3,J)*Ztest + RSM(3,4,J)
-       Asf = Asf + cos(PI2*(HKL(1)*Xs +HKL(2)*Ys +HKL(3)*Zs))
-       Bsf = Bsf + sin(PI2*(HKL(1)*Xs +HKL(2)*Ys +HKL(3)*Zs))
-   25   CONTINUE
-      CENPHS = MOD( (ATAN2(Bsf,Asf)*CONV  + 360.0),180.0)
+      Xtest= sqrt(2.0)
+      Ytest= sqrt(3.0)
+      Ztest= sqrt(5.0)
+      Asf = 0.0
+      Bsf = 0.0
+      DO 25 J = 1,NSM
+        Xs = RSM(1,1,J)*Xtest + RSM(1,2,J)*Ytest
+     +     + RSM(1,3,J)*Ztest + RSM(1,4,J)
+        Ys = RSM(2,1,J)*Xtest + RSM(2,2,J)*Ytest
+     +     + RSM(2,3,J)*Ztest + RSM(2,4,J)
+        Zs = RSM(3,1,J)*Xtest + RSM(3,2,J)*Ytest
+     +     + RSM(3,3,J)*Ztest + RSM(3,4,J)
+        Asf = Asf + cos(PI2*(HKL(1)*Xs +HKL(2)*Ys +HKL(3)*Zs))
+        Bsf = Bsf + sin(PI2*(HKL(1)*Xs +HKL(2)*Ys +HKL(3)*Zs))
+   25 CONTINUE
+C
+c---Atan2 may fail when asf*asf+bsf*bsf == 0.0 with error message 
+C---division by zero.
+      PHASE_LOC = 0.0
+      IF((Asf*Asf+Bsf*Bsf).GT.0.0) PHASE_LOC = ATAN2(Bsf,Asf)
+C
+C--I don't like next line. Potential error.
+      CENPHS = MOD( (PHASE_LOC*CONV  + 360.0),180.0)
       IF(IPRINT.NE.0) THEN
         WRITE(6,'(A,3I4,F8.1,A,F8.1)')
      +  ' Centric phase possibilities',HKL,CENPHS,
@@ -983,6 +994,8 @@ C---- test whether h' k' l' equals -h -k -l
 C
         DO 40 J = 1,NSM
           ISYM = J
+C
+C---Conevrsion may have problems. Should be fixed.
           IH = IN(1)*RSM(1,1,J) + IN(2)*RSM(2,1,J) + IN(3)*RSM(3,1,J)
           IF (IH.EQ.-IN(1)) THEN
             IK = IN(1)*RSM(1,2,J) + IN(2)*RSM(2,2,J) +
@@ -1036,15 +1049,19 @@ C     .. Array Arguments ..
       REAL A(4,4)
 C     ..
 C     .. Local Scalars ..
-      REAL AM,D
+      REAL AM,D,SIGN_LOC
       INTEGER I,I1,II,J,J1,JJ
 C     ..
 C     .. Local Arrays ..
       REAL C(4,4),X(3,3)
 C     ..
 C
+C---Determinant for 4x4 matrix should be calculated directly.
+C---This way is clear but not fast.
+      SIGN_LOC = -1.0
       DO 40 II = 1,4
         DO 30 JJ = 1,4
+          SIGN_LOC = -SIGN_LOC
           I = 0
 C
           DO 20 I1 = 1,4
@@ -1064,13 +1081,13 @@ C
           AM = X(1,1)*X(2,2)*X(3,3) - X(1,1)*X(2,3)*X(3,2) +
      +         X(1,2)*X(2,3)*X(3,1) - X(1,2)*X(2,1)*X(3,3) +
      +         X(1,3)*X(2,1)*X(3,2) - X(1,3)*X(2,2)*X(3,1)
-          C(II,JJ) = (-1)** (II+JJ)*AM
+          C(II,JJ) = SIGN_LOC*AM
    30   CONTINUE
    40 CONTINUE
 C
 C---- Calculate determinant
 C
-      D = 0
+      D = 0.0
 C
       DO 50 I = 1,4
         D = A(I,1)*C(I,1) + D
@@ -1205,6 +1222,8 @@ C---- Generate symm equivs
 C
 C---- test whether h' k' l' equals h k l
 C
+C
+C--Another potential error
           DO 10 J = 2,NSMP
             IH = IN(1)*RSM(1,1,J) + IN(2)*RSM(2,1,J) +
      +           IN(3)*RSM(3,1,J)
@@ -1253,14 +1272,14 @@ C
       EPZONE(2,NEZONE) = EPZNE(2,13)
       EPZONE(3,NEZONE) = EPZNE(3,13)
 C
-            IF(IPRINT.GT.0)THEN
-            WRITE (STROUT,FMT=6000) NEZONE
-            CALL PUTLIN(STROUT,'CURWIN')
-            WRITE (STROUT,FMT=6010) REFTYP(13)
-            CALL PUTLIN(STROUT,'CURWIN')
-            WRITE (STROUT,FMT=6020)LATMUL
-            CALL PUTLIN(STROUT,'CURWIN')
-            END IF
+      IF(IPRINT.GT.0)THEN
+        WRITE (STROUT,FMT=6000) NEZONE
+        CALL PUTLIN(STROUT,'CURWIN')
+        WRITE (STROUT,FMT=6010) REFTYP(13)
+        CALL PUTLIN(STROUT,'CURWIN')
+        WRITE (STROUT,FMT=6020)LATMUL
+        CALL PUTLIN(STROUT,'CURWIN')
+      END IF
 C
       IF ((NEZONE.GT.20) .OR. (NEZONE.LT.1)) THEN
 C
@@ -1271,7 +1290,7 @@ C              ****************************
      +         'EPSLN: have to have at least one EPSILON ZONE')
 C              ****************************
 C
-      END IF
+        END IF
       END IF
 C
 C---- Fill common /sysabs/
@@ -1320,8 +1339,8 @@ C     .. Arrays in Common ..
       REAL EPZONE
 C     ..
 C     .. Local Scalars ..
-      REAL TEST
-      INTEGER I,J
+      REAL TEST,EPS_LOC
+      INTEGER I,J,IZONE
       CHARACTER LINERR*200
 C     ..
 C     .. External Subroutines ..
@@ -1332,16 +1351,19 @@ C     .. Common blocks ..
 C     ..
 C     .. Save statement ..
       SAVE
+      DATA EPS_LOC /1.0E-7/
 C     ..
 C
+      IZONE = 0
       DO 20 I = 1,NEZONE
+        IZONE = IZONE + 1
         TEST = 0.0
 C
         DO 10 J = 1,3
-          TEST = EPZONE(J,I)*IH(J) + TEST
+          TEST = EPZONE(J,I)*FLOAT(IH(J)) + TEST
    10   CONTINUE
 C
-        IF (TEST.EQ.0.0) GO TO 30
+        IF (ABS(TEST).LT.EPS_LOC) GO TO 30
    20 CONTINUE
 C
           WRITE (LINERR,FMT='(A,3I5)')
@@ -1351,7 +1373,7 @@ C              ****************************
           CALL LERROR(2,-1,LINERR)
 C              ****************************
 C
-   30 EPSI = EPZONE(4,I)
+   30 EPSI = EPZONE(4,IZONE)
       ISYSAB = 0
 C
 C                    *********************
@@ -1380,15 +1402,17 @@ C     .. Array Arguments ..
       REAL A(4,4),AI(4,4)
 C     ..
 C     .. Local Scalars ..
-      REAL AM,D
+      REAL AM,D,SIGN_LOC
       INTEGER I,I1,II,J,J1,JJ
 C     ..
 C     .. Local Arrays ..
       REAL C(4,4),X(3,3)
 C     ..
 C
+      SIGN_LOC = -1.0
       DO 40 II = 1,4
         DO 30 JJ = 1,4
+          SIGN_LOC = -SIGN_LOC
           I = 0
           DO 20 I1 = 1,4
             IF (I1.NE.II) THEN
@@ -1406,7 +1430,7 @@ C
           AM = X(1,1)*X(2,2)*X(3,3) - X(1,1)*X(2,3)*X(3,2) +
      +         X(1,2)*X(2,3)*X(3,1) - X(1,2)*X(2,1)*X(3,3) +
      +         X(1,3)*X(2,1)*X(3,2) - X(1,3)*X(2,2)*X(3,1)
-          C(II,JJ) = (-1)** (II+JJ)*AM
+          C(II,JJ) = SIGN_LOC*AM
    30   CONTINUE
    40 CONTINUE
 C
@@ -1890,8 +1914,9 @@ C  but  "P 31 2 1" -> "P3121"
 C
       ILEN = LENSTR(NAMSPG_CIF)
 C
-         NAMSPG_CIFS = NAMSPG_CIF(1:1)
-         NAMSAV = NAMSPG_CIF(1:ILEN)
+      NAMSPG_CIFS = NAMSPG_CIF(1:1)
+      NAMSAV = ' '
+      IF(ILEN.GT.0) NAMSAV = NAMSPG_CIF(1:ILEN)
 C
          IF(ILEN.GE.2) THEN
 C
@@ -2032,8 +2057,9 @@ C  but  "P 31 2 1" -> "P3121"
 C
       ILEN = LENSTR(NAMSPG_CIF)
 C
-         NAMSPG_CIFS = NAMSPG_CIF(1:1)
-         NAMSAV = NAMSPG_CIF(1:ILEN)
+      NAMSPG_CIFS = NAMSPG_CIF(1:1)
+      NAMSAV = ' '
+      IF(ILEN.GT.0) NAMSAV = NAMSPG_CIF(1:ILEN)
 C
          IF(ILEN.GE.2) THEN
 C
@@ -2095,6 +2121,9 @@ C
 C---- This may be needed for translation components; no harm for others.
 C
                 IF(J.EQ.4)
+C
+C---Is that best way of checking equavalences of matrices?
+C
      +          DCHK = ABS(MOD(ROTCHK(I,J) - RlSymmMatrx(I,J,N)
      +                                                   +99.5,1.0)-0.5)
 
@@ -2148,7 +2177,7 @@ C
       IF (LSPGRP.EQ.0) THEN
       WRITE (LINERR,FMT='(A,A,A,A)')
      +     'MSYMLB3: Spacegroup returned as zero - the supplied ',
-     +     'spacegroup name ',NAMSPG_CIF(1:LENSTR(NAMSPG_CIF)),
+     +     'spacegroup name ',NAMSPG_CIF(1:MAX(1,LENSTR(NAMSPG_CIF))),
      +     ' was not found in the SYMOP file'
       ELSE
       WRITE (LINERR,FMT='(A,A,I5,A)')
@@ -2328,8 +2357,8 @@ C
 C---- Permute
 C
       DO 10 I = 1,3
-        BV(I) = PERM(I,1)*JV(N,1) + PERM(I,2)*JV(N,2) +
-     +          PERM(I,3)*JV(N,3)
+        BV(I) = PERM(I,1)*FLOAT(JV(N,1)) + PERM(I,2)*FLOAT(JV(N,2)) +
+     +          PERM(I,3)*FLOAT(JV(N,3))
    10 CONTINUE
 C
 C---- Copy back
@@ -2626,7 +2655,7 @@ C
             WRITE (6,FMT=6000)
             WRITE (6,FMT=6002) ICH
             OUTLIN(1:) = ICOL
-            WRITE (6,FMT='(1X,A)') OUTLIN(1:LENSTR(OUTLIN))
+            WRITE (6,FMT='(1X,A)') OUTLIN(1:MAX(1,LENSTR(OUTLIN)))
             IERR = 1
             GO TO 70
    90       A = NUM(K)
@@ -2661,7 +2690,7 @@ C
         WRITE (6,FMT=6000)
         WRITE (6,FMT=6006)
         OUTLIN(1:) = ICOL
-        WRITE(6,FMT='(1X,A)') OUTLIN(1:LENSTR(OUTLIN))
+        WRITE(6,FMT='(1X,A)') OUTLIN(1:MAX(1,LENSTR(OUTLIN)))
       END IF
 C
       IF (I.LE.IMAX) THEN
@@ -2677,7 +2706,7 @@ C
   110 WRITE (6,FMT=6000)
       WRITE (6,FMT=6004)
       OUTLIN(1:) = ICOL
-      WRITE (6,FMT='(1X,A)') OUTLIN(1:LENSTR(OUTLIN))
+      WRITE (6,FMT='(1X,A)') OUTLIN(1:MAX(1,LENSTR(OUTLIN)))
       IERR = 1
       GO TO 140
   120 IF (NOP.NE.1 .OR. IFOUND.NE.0) THEN
@@ -2688,7 +2717,7 @@ C
           WRITE (6,FMT=6000)
           WRITE (6,FMT=6008)
           OUTLIN(1:) = ICOL
-          WRITE (6,FMT='(1X,A)') OUTLIN(1:LENSTR(OUTLIN))
+          WRITE (6,FMT='(1X,A)') OUTLIN(1:MAX(1,LENSTR(OUTLIN)))
         END IF
       END IF
       NS = NS - 1
@@ -2889,6 +2918,8 @@ C                *********************************
             CALL PUTLIN(' **Symmetry Operator ERROR**','ERRWIN')
             CALL PUTLIN(' **Invalid Character...' // ICH // ' **',
      +           'ERRWIN')
+C
+C---Don't know how to fix now.
             CALL PUTLIN(ICOL(1:LENSTR(ICOL)),'ERRWIN')
 C                **********************************
 C
@@ -2931,6 +2962,8 @@ C            *********************************
         CALL BLANK('ERRWIN',1)
         CALL PUTLIN(' **Symmetry Operator ERROR**','ERRWIN')
         CALL PUTLIN(' **Blank Operator Field**','ERRWIN')
+C
+C--Don't know how to fix. ICOL comes from outside
         CALL PUTLIN(ICOL(1:LENSTR(ICOL)),'ERRWIN')
 C            ***********************************
 C
@@ -3145,7 +3178,7 @@ C---- write a message if required
 C
         IF (IPRINT.EQ.1) THEN
           WRITE (STROUT,FMT='(A,I3,5X,A)') 'Symmetry',JDO40,
-     +      SYMCHS(JDO40) (1:MIN(350,LENSTR(SYMCHS(JDO40))))
+     +      SYMCHS(JDO40) (1:MIN(350,MAX(1,LENSTR(SYMCHS(JDO40)))))
 C
 C              ***********************
           CALL PUTLIN(STROUT,'CURWIN')
@@ -6208,6 +6241,7 @@ C---- Failure
 C
       FACTRZ = .FALSE.
       END
+
 C
 C
 C     ================================
@@ -6539,5 +6573,9 @@ c          ENDDO
 
       RETURN
       END
+
+
+
+
 
 
