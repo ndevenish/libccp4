@@ -3452,7 +3452,7 @@ C
           IF ((UBXMIN.GT. (UBXMAX-1.0)) .OR.
      +        (UBYMIN.GT. (UBYMAX-1.0))) THEN
             WRITE (LUNOUT,FMT=6008)
-            call ccperr(1,' stop in plot84lib.for - 6008')
+            call ccperr(1, 'plotlib: GSEWSC: NULL WINDOW ')
           END IF
 C
 C---- fixed scale floating origin
@@ -3517,7 +3517,6 @@ C
      +       4F10.4)
  6006 FORMAT (2X,'!!!GSEWSC - WARN: WINDOW TRIMMED TO FIT BOARD ',
      +       /2X,'XMIN XMAX YMIN YMAX = ',4F10.4)
- 6008 FORMAT (2X,'!!!GSEWSC: ***FATAL ERROR STOP*** - NULL WINDOW ')
 C
       END
 C
@@ -6115,7 +6114,7 @@ C
       SAVE
 C
       WRITE (LUNOUT,FMT=6000) SUBNAM,IDRLVL
-            call ccperr(1,' stop in plot84lib.for - 6000')
+            call ccperr(1,'plot84lib internal error')
 C
 C---- Format statements
 C
