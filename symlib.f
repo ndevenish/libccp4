@@ -177,9 +177,9 @@ C     pgm3bar
 C  15 pg432   m3m        hkl:h>=0, k>=0, l>=0  with  k>=l
 C     pg4bar3m pgm3barm
 C
-C---- SUBROUTINE HKLRANGE(IHRNG0,IKRNG1,IKRNG0,IKRNG1,ILRNG0,ILRNG1)
+C      SUBROUTINE HKLRANGE(IHRNG0,IKRNG1,IKRNG0,IKRNG1,ILRNG0,ILRNG1)
 C     
-C     Return HKL ranges chosen in PGNLAUE
+C---- Return HKL ranges chosen in PGNLAUE
 C     
 C       INTEGER HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
 C
@@ -1360,7 +1360,7 @@ C
      +      '  TRIGONAL    II  3_BAR (??) RHOMBOHEDRAL AXES sgs   146'
         IF (KLASS.EQ.8) WRITE (6,FMT='(//,A)')
      +      ' TRIGONAL   III  3_BAR1M (PG312)       sgs 149,151,153 '
-        IF (KLASS.EQ.9) WRITE (6,FMT='(//,A)')
+        IF (KLASS.EQ.9) WRITE (6,FMT='(//,A,A)')
      +      ' TRIGONAL    IV  3_BARM1 (PG321)HEXAGONAL AXES ',
      +      ' sgs 150,152,154,155'
         IF (KLASS.EQ.10) WRITE (6,FMT='(//,A)')
@@ -1527,8 +1527,8 @@ C
 C
 C---- Format statements
 C
- 6000 FORMAT ('  Input X used as ',A2,'    Input Y used as ',A2,'    I',
-     +       'nput IZ used as ',A2)
+ 6000 FORMAT ('  Input X used as  ',A1,'    Input Y used as  ',A1,
+     +        '    Input IZ used as  ',A1)
  6002 FORMAT (' Int Tab Symmetry ',I3,4 (5X,3F6.2))
  6004 FORMAT (' Transformed Symmetry ',I3,4 (5X,3F6.2))
 C
@@ -1565,18 +1565,22 @@ C     ..
 C     .. Local Scalars ..
       REAL A,REAL,RECIP,S,T
       INTEGER I,ICOMST,IERR,IFOUND,IMAX,IP,ISL,J,K,NOP,NP,NSYM
-      CHARACTER ICH*1
+      CHARACTER ICH*1, OUTLIN*100
 C     ..
 C     .. Local Arrays ..
       INTEGER NUM(10)
       CHARACTER INUM(10)*1
+C
+C     .. External Functions ..
+      INTEGER LENSTR
+      EXTERNAL LENSTR
 C     ..
 C     .. Data statements ..
       DATA NUM/1,2,3,4,5,6,7,8,9,0/
       DATA INUM/'1','2','3','4','5','6','7','8','9','0'/
 C     ..
 C
-      IMAX = LEN (ICOL)
+      IMAX = LENSTR(ICOL)
       IERR = 0
 C
 C---- Search for first blank to skip flag sym symtr symmetry
@@ -1681,7 +1685,9 @@ C
               IF (ICH.EQ.INUM(K)) GO TO 90
    80       CONTINUE
             WRITE (6,FMT=6000)
-            WRITE (6,FMT=6002) ICH,ICOL
+            WRITE (6,FMT=6002) ICH
+            OUTLIN(1:) = ICOL
+            WRITE (6,FMT='(1X,A)') OUTLIN(1:LENSTR(OUTLIN))
             IERR = 1
             GO TO 70
    90       A = NUM(K)
@@ -1714,7 +1720,9 @@ C
       IF (IFOUND.EQ.0 .AND. I.LE.IMAX) THEN
         IERR = 1
         WRITE (6,FMT=6000)
-        WRITE (6,FMT=6006) ICOL
+        WRITE (6,FMT=6006)
+        OUTLIN(1:) = ICOL
+        WRITE(6,FMT='(1X,A)') OUTLIN(1:LENSTR(OUTLIN))
       END IF
 C
       IF (I.LE.IMAX) THEN
@@ -1728,7 +1736,9 @@ C
         GO TO 120
       END IF
   110 WRITE (6,FMT=6000)
-      WRITE (6,FMT=6004) ICOL
+      WRITE (6,FMT=6004)
+      OUTLIN(1:) = ICOL
+      WRITE (6,FMT='(1X,A)') OUTLIN(1:LENSTR(OUTLIN))
       IERR = 1
       GO TO 140
   120 IF (NOP.NE.1 .OR. IFOUND.NE.0) THEN
@@ -1737,7 +1747,9 @@ C
         ELSE
           IERR = 1
           WRITE (6,FMT=6000)
-          WRITE (6,FMT=6008) ICOL
+          WRITE (6,FMT=6008)
+          OUTLIN(1:) = ICOL
+          WRITE (6,FMT='(1X,A)') OUTLIN(1:LENSTR(OUTLIN))
         END IF
       END IF
       NS = NS - 1
@@ -1752,10 +1764,10 @@ C
 C---- Format statements
 C
  6000 FORMAT (/' **SYMMETRY OPERATOR ERROR**')
- 6002 FORMAT (' **INVALID CHARACTER...',A1,' **',/' ',A)
- 6004 FORMAT (/' **NO OPERATOR**',/' ',A)
- 6006 FORMAT (' **BLANK OPERATOR FIELD**',/' ',A)
- 6008 FORMAT (' **LAST GENERAL POSITION IS INCOMPLETE**',/' ',A)
+ 6002 FORMAT (' **INVALID CHARACTER...',A1,' **')
+ 6004 FORMAT (/' **NO OPERATOR**')
+ 6006 FORMAT (' **BLANK OPERATOR FIELD**')
+ 6008 FORMAT (' **LAST GENERAL POSITION IS INCOMPLETE**')
 C
       END
 C
@@ -1812,7 +1824,7 @@ C     .. External Subroutines ..
       EXTERNAL PUTLIN
 C     ..
 C     .. Intrinsic Functions ..
-      INTRINSIC ABS,NINT
+      INTRINSIC ABS,MIN,NINT
 C     ..
 C     .. Data statements ..
 C
@@ -1888,7 +1900,7 @@ C---- write a message if required
 C
         IF (IPRINT.EQ.1) THEN
           WRITE (STROUT,FMT='(A,I3,5X,A)') 'Symmetry',JDO40,
-     +      SYMCHS(JDO40) (1:LENSTR(SYMCHS(JDO40)))
+     +      SYMCHS(JDO40) (1:MIN(350,LENSTR(SYMCHS(JDO40))))
 C
 C              ***********************
           CALL PUTLIN(STROUT,'CURWIN')
@@ -2771,6 +2783,10 @@ C     .. Local Arrays ..
       INTEGER IN(3),JROTS(MAXSYM),NORIG(MAXSYM),NREPP(MAXSYM),
      +     NROT(MAXSYM),NROTS(MAXSYM)
 C     ..
+C     .. External Functions ..
+      INTEGER LENSTR
+      EXTERNAL LENSTR
+C     ..
 C     .. External Subroutines ..
       EXTERNAL DETERM
       EXTERNAL PUTLIN
@@ -3166,8 +3182,9 @@ C
         WRITE (STROUT,FMT='(A,4X,I4)')
      +       '  Number of  symmetry operators         ',NSYM
         CALL PUTLIN(STROUT,'CURWIN')
-        WRITE (STROUT,FMT='(A,4X,A)')
-     +       '  The point group for these symmetry operators is ',NAMPG
+        WRITE (STROUT,FMT='(A,4X)')
+     +       '  The point group for these symmetry operators is '
+        STROUT(LENSTR(STROUT)+1:) = NAMPG
         CALL PUTLIN(STROUT,'CURWIN')
 C     
 C     
@@ -3489,12 +3506,13 @@ C
 C
 C   
 C     
-C     ====================================
-      SUBROUTINE HKLRANGE(IHRNG0,IKRNG1,IKRNG0,IKRNG1,ILRNG0,ILRNG1)
-C     ====================================
+C     ==============================================================
+      SUBROUTINE HKLRANGE(IHRNG0,IHRNG1,IKRNG0,IKRNG1,ILRNG0,ILRNG1)
+C     ==============================================================
 C     
 C---- Return HKL ranges chosen in PGNLAUE
 C     
+       INTEGER IHRNG0,IHRNG1,IKRGN0,IKRNG1,ILRNG0,ILRNG1
        INTEGER HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
        COMMON/HKLLMS/HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
 C     ..
@@ -3577,11 +3595,11 @@ C Print
       IF (LPRINT) THEN
         CALL BLANK('CURWIN',1)
         CALL PUTLIN('          Reciprocal space symmetry','CURWIN')
-        NAME = PGNAME
+        NAME(1:) = PGNAME
         L = LENSTR(NAME)
         IF (NAME(1:2) .EQ. 'PG') NAME = NAME(3:L)
         L = LENSTR(NAME)
-        I = LENSTR(SPGNAM)
+        I = MIN(20,LENSTR(SPGNAM))
         J = LENSTR(LAUNAM)
         WRITE (STROUT, 6001) 
      .         SPGNAM(1:I),NUMSGP,NAME(1:L),LAUNAM(1:J)
