@@ -6,10 +6,6 @@ C
 C
 C---- F77MSUB.FOR                               30/10/86    JWC
 C
-C $Date$
-C
-C     FIXME: remove the character MAPST in MOHDR and write out the info
-C     by packing bytes
 C
 C---- Version 2.1  Fortran 77 version
 C
@@ -44,7 +40,7 @@ C   24/2/92  new subroutine MRDHDS, like MRDHDR but with soft fail &
 C            print flag. s/r MRDHDR nor calls MRDHDS (Stefan Knight)
 C
 C   11/5/92  Changes to subroutines MRHDRS, MSYMOP, MSYCPY, MCLOSC,
-C            MCLOSE to read real, intger & character parts of header
+C            MCLOSE to read real, integer & character parts of header
 C            seperately. Allows CONVERT stuff to work (David Wild).
 C
 C   29/5/92  Same changes to MWCLOSE (D.W.)
@@ -105,16 +101,23 @@ C
 C
 C
 C
+C_BEGIN_MWRHDR
 C
       SUBROUTINE MWRHDR(IUNIT,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,NV1,NV2,
      +                  CELL,LSPGRP,LMODE)
 C     =================================================================
 C
+C
 C---- Put map header into common block /MOHDR/ and open map file on unit
 C     IUNIT with logical name 'MAPOUT'
+C 
+C  Call:  CALL MWRHDR(IUNIT,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
+C        +            NV1,NV2,CELL,LSPGRP,LMODE)
+C 
+C  Call:  CALL MWRHDL(IUNIT,MAPNAM,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
+C        +            NV1,NV2,CELL,LSPGRP,LMODE)
 C
-C The subroutines 'MWRHDR' and 'MWRHDL'
-C ====================================
+C Note on the difference between the subroutines 'MWRHDR' and 'MWRHDL'
 C 
 C---- These subroutines are used to open an output map file and 
 C     set up the header information. The actual header is only 
@@ -123,20 +126,11 @@ C     MCLOSE.  The  only  difference  between  the  two subroutines
 C     is that MWRHDR does not have a parameter for the  logical  file
 C     name for which a name of 'MAPOUT' is assumed.
 C
-C  Call:  CALL MWRHDR(IUNIT,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
-C        +            NV1,NV2,CELL,LSPGRP,LMODE)
-C 
-C  Call:  CALL MWRHDL(IUNIT,MAPNAM,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
-C        +            NV1,NV2,CELL,LSPGRP,LMODE)
 C
 C---- Parameters:
 C     ==========
 C
 C  IUNIT (I)   Map stream number
-C 
-C  MAPNAM (I)   Logical  file  name  (type  CHARACTER)  
-C               e.g.  'MAPOUT'   
-C               (This parameter only present for MWRHDL)
 C 
 C  TITLE (I)   Map title (CHARACTER*80)
 C 
@@ -171,6 +165,7 @@ C                             =4, COMPLEX REAL
 C                             =5, Treated as mode 0
 C                             =10, Bricked byte map
 C 
+C_END_MWRHDR
 C 
 C
 C
@@ -196,42 +191,82 @@ C
       END
 C
 C
+C_BEGIN_MWRHDL
 C
       SUBROUTINE MWRHDL(IUNIT,MAPNAM,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
      +                  NV1,NV2,CELL,LSPGRP,LMODE)
 C     ================================================================
 C
-C--- Put map header into common block /MOHDR/ and open map file on unit
-C    IUNIT with logical name MAPNAM
-C    NOTE that QOPEN returns an internal channel number to LSTRM(IUNIT)
-C         which is used for subsequent reference to this stream
+C
+C---- Put map header into common block /MOHDR/ and open map file on unit
+C     IUNIT with logical name 'MAPOUT'
+C 
+C  Call:  CALL MWRHDR(IUNIT,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
+C        +            NV1,NV2,CELL,LSPGRP,LMODE)
+C 
+C  Call:  CALL MWRHDL(IUNIT,MAPNAM,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
+C        +            NV1,NV2,CELL,LSPGRP,LMODE)
+C
+C Note on the difference betwenn the subroutines 'MWRHDR' and 'MWRHDL'
+C 
+C---- These subroutines are used to open an output map file and 
+C     set up the header information. The actual header is only 
+C     written to the file when the file is closed via the routine
+C     MCLOSE.  The  only  difference  between  the  two subroutines 
+C     is that MWRHDR does not have a parameter for the  logical  file
+C     name for which a name of 'MAPOUT' is assumed.
 C
 C
-C     TITLE        80 character title for map (character)
-C     NSEC         number of sections in map
-C     IUVW(3)      fast,medium,slow axes (1,2,3 for x,y,z)
-C     MXYZ(3)      sampling intervals along whole cell on x,y,z
-C     NW1          first section number
-C     NU1,NU2      limits on fast axis(grid units)
-C     NV1,NV2      limits on medium axis
-C     CELL(6)      cell dimensions, A and degrees
-C     LSPGRP       space-group number
-C     LMODE        map data mode =0 logical*1
-C                                =1 integer*2
-C                                =2 real*4
-C                                =3 complex integer*2
-C                                =4 complex real*4
-C                                =5 reset to mode 0
-C                                =10 byte bricked map
-C                                =11 bricked vector map
-C                                =12 bricked ridge-line map
+C---- Parameters:
+C     ==========
 C
+C  IUNIT (I)   Map stream number
+C 
+C  MAPNAM (I)   Logical  file  name  (type  CHARACTER)  
+C               e.g.  'MAPOUT'   
+C 
+C  TITLE (I)   Map title (CHARACTER*80)
+C 
+C  NSEC (I)   Number of sections in the map
+C 
+C  IUVW (I)   3 word array with fast, medium, slow axes 
+C             (1=X, 2=Y, 3=Z)
+C 
+C  MXYZ (I)   3 word array with sampling intervals along 
+C             whole cell on X, Y, Z
+C 
+C   NW1 (I)   No. of first section
+C 
+C   NU1 (I)   Start of section on fast axis (grid units)
+C 
+C   NU2 (I)   End of section on fast axis
+C 
+C   NV1 (I)   Start of section on medium axis
+C 
+C   NV2 (I)   End of section on medium axis
+C 
+C   CELL (I)   6 word array for cell dimensions 
+C              in Angstroms and degrees
+C 
+C   LSPGRP (I)   Space group number
+C 
+C   LMODE (I)   Map data mode =0, LOGICAL*1
+C                             =1, INTEGER*2
+C                             =2, REAL
+C                             =3, COMPLEX INTEGER*2
+C                             =4, COMPLEX REAL
+C                             =5, Treated as mode 0
+C                             =10, Bricked byte map
+C 
+C_END_MWRHDL
 C
 C      IMPLICIT NONE
 C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
+      DOUBLE PRECISION QOFFST
+      PARAMETER (QOFFST = -1.0D+10)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER IUNIT,LMODE,LSPGRP,NSEC,NU1,NU2,NV1,NV2,NW1
@@ -268,13 +303,15 @@ C     .. Common blocks ..
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
      +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
+      COMMON /MOHSUM/  SUMRHO, SUMRH2, OFFSTR
+      DOUBLE PRECISION SUMRHO, SUMRH2, OFFSTR
       COMMON /MSTRM/LSTRM(12)
 C     ..
 C     .. Equivalences ..
       EQUIVALENCE (NC,HEADER(1))
 C     ..
 C     .. Save statement ..
-      SAVE /MSTRM/,/MOHDR/,FILE
+      SAVE /MSTRM/,/MOHDR/,/MOHSUM/,FILE
 C     ..
 C     .. Data statements ..
 C
@@ -282,12 +319,6 @@ C---- Number of items in header
 C
       DATA NBHDR/256/,BLANK/'    '/
 C     ..
-C
-C
-C---- This routine is equivalent to old CCP sequential format
-C       WRITE(IUNIT) TITLE,NSEC,IUVW,NXYZ
-C
-C
 C---- Check valid IUNIT
 C
       IF (IUNIT.LT.0 .OR. IUNIT.GT.12) THEN
@@ -309,6 +340,9 @@ C
         AMAX = -99999999.0
         AMEAN = 0.0
         ARMS  = 0.0
+        SUMRHO = 0.0
+        SUMRH2 = 0.0
+        OFFSTR = QOFFST * 1.1
         DO 30 I = 1,20
           DO 20 J = 1,10
             READ (BLANK,FMT=6002) LABELS(I,J)
@@ -397,18 +431,25 @@ C
 C
 C---- Get and print filename
 C
-        CALL QQINQ(LSTRM(IUNIT),MAPNAM,FILE(1:LENSTR(FILE)),NFILSZ)
+        CALL QQINQ(LSTRM(IUNIT),MAPNAM,FILE,NFILSZ)
         WRITE (LUNOUT,FMT=6000) IUNIT,FILE(1:LENSTR(FILE)),MAPNAM
 C
       END IF
       RETURN
 C
+C_BEGIN_MWFNAM
 C
       ENTRY MWFNAM(FNAME)
 C     ===================
 C
+C
 C---- Returns filename from last file open,
 C     must be called after MWRHDR
+C 
+C  Parameters:
+C     FNAME  (O)    filename 
+C
+C_END_MWFNAM
 C
       FNAME = FILE
 C
@@ -425,23 +466,12 @@ C
       END
 C
 C
+C_BEGIN_MWRSEC
 C
       SUBROUTINE MWRSEC(IUNIT,X,MU,MV,IU1,IU2,IV1,IV2)
 C     ================================================
 C
 C---- Write part of map section X(MU,MV) to stream IUNIT
-C
-C---- Equivalent to old CCP sequential format
-C
-C      WRITE(IUNIT) ((X(I,J),I=IU1,IU2),J=IV1,IV2)
-C
-C---- The subroutine 'MWRSEC'
-C
-C 
-C---- subroutine is used to write a map section as 
-C     part of an array  to  the map file.
-C 
-C  Call:  CALL MWRSEC(IUNIT,X,MU,MV,IU1,IU2,IV1,IV2)
 C 
 C---- Parameters:
 C     ==========
@@ -467,7 +497,7 @@ C     in FORTRAN notation  as
 C
 C            ((X(I,J),I=IU1,IU2),J=IV1,IV2).
 C 
-C
+C_END_MWRSEC
 C
 C      IMPLICIT NONE
 C
@@ -475,6 +505,8 @@ C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
+      DOUBLE PRECISION QOFFST
+      PARAMETER (QOFFST = -1.0D+10)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER IU1,IU2,IUNIT,IV1,IV2,MU,MV
@@ -501,10 +533,12 @@ C     .. Common blocks ..
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
      +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
+      COMMON /MOHSUM/  SUMRHO, SUMRH2, OFFSTR
+      DOUBLE PRECISION SUMRHO, SUMRH2, OFFSTR
       COMMON /MSTRM/LSTRM(12)
 C     ..
 C     .. Save statement ..
-      SAVE /MSTRM/,/MOHDR/
+      SAVE /MSTRM/,/MOHDR/,/MOHSUM/
 C     ..
 C
 C
@@ -521,15 +555,22 @@ C
           CALL QWRITE(LSTRM(IUNIT),X(IU1,J),NCOLS)
    10   CONTINUE
 C
+        IF(MODE.EQ.2) THEN
+C If not set yet, set bias for rms deviation calculation to 1st point in map
+C This reduces rounding errors
+           IF (OFFSTR .LT. QOFFST) THEN
+              OFFSTR = X(IU1, IV1)
+           ENDIF
 C    Calculate AMEAN ARMS
-        DO 20 J = IV1,IV2
-        DO 30 I = IU1,IU2
-        IF(X(I,J) .GT.AMAX) AMAX = X(I,J)
-        IF(X(I,J) .LT.AMIN) AMIN = X(I,J)
-        AMEAN = AMEAN + X(I,J)
-        ARMS  = ARMS  + X(I,J)*X(I,J)
-30      CONTINUE
-20      CONTINUE
+           DO 20 J = IV1,IV2
+              DO 30 I = IU1,IU2
+                 IF(X(I,J) .GT.AMAX) AMAX = X(I,J)
+                 IF(X(I,J) .LT.AMIN) AMIN = X(I,J)
+                 SUMRHO = SUMRHO + X(I,J) - OFFSTR
+                 SUMRH2  = SUMRH2  + (X(I,J) - OFFSTR)**2
+ 30           CONTINUE
+ 20        CONTINUE
+        END IF
       END IF
 C
 C---- Format statements
@@ -541,17 +582,13 @@ C
       END
 C
 C
+C_BEGIN_MSPEW
 C
       SUBROUTINE MSPEW(IUNIT,X)
 C     =========================
 C
 C---- Write whole section of map to stream IUNIT.
 C     This routine is only suitable when the whole array is written
-C
-C   Equivalent to old CCP sequential format
-C      WRITE(IUNIT) X
-C
-C---- The subroutine 'MSPEW'
 C 
 C---- This subroutine writes the next whole map section. 
 C     The routine is used when the section occupies the 
@@ -561,12 +598,15 @@ C  Call:  CALL MSPEW(IUNIT,X)
 C 
 C---- Parameters:
 C     ==========
-C
 C 
 C  IUNIT (I)   Map stream number
 C 
 C     X (I)   Array holding the map section
 C 
+C_END_MSPEW
+C
+      DOUBLE PRECISION QOFFST
+      PARAMETER (QOFFST = -1.0D+10)
 C
 C     .. Scalar Arguments ..
       INTEGER IUNIT
@@ -593,10 +633,12 @@ C     .. Common blocks ..
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
      +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
+      COMMON /MOHSUM/  SUMRHO, SUMRH2, OFFSTR
+      DOUBLE PRECISION SUMRHO, SUMRH2, OFFSTR
       COMMON /MSTRM/LSTRM(12)
 C     ..
 C     .. Save statement ..
-      SAVE /MSTRM/,/MOHDR/
+      SAVE /MSTRM/,/MOHDR/,/MOHSUM/
 C     ..
 C
 C
@@ -609,31 +651,46 @@ C
 C    Calculate AMEAN ARMS - ONLY IF MAP IS REAL*4
 C
         IF(MODE.EQ.2) THEN
-          DO 20 J = 1,N
-            IF(X(J) .GT.AMAX) AMAX = X(J)
-            IF(X(J) .LT.AMIN) AMIN = X(J)
-            AMEAN = AMEAN + X(J)
-            ARMS  = ARMS  + X(J)*X(J)
-20        CONTINUE
+C If not set yet, set bias for rms deviation calculation to 1st point in map
+C This reduces rounding errors
+           IF (OFFSTR .LT. QOFFST) THEN
+              OFFSTR = X(J)
+           ENDIF
+           DO 20 J = 1,N
+              IF(X(J) .GT.AMAX) AMAX = X(J)
+              IF(X(J) .LT.AMIN) AMIN = X(J)
+              SUMRHO = SUMRHO + X(J) - OFFSTR
+              SUMRH2  = SUMRH2  + (X(J) - OFFSTR)**2
+ 20        CONTINUE
         ENDIF
 C
       END
 C
 C
 C
+      SUBROUTINE MSTMST(MAPST)
+C     ========================
+C
+C  Set integer MAPST to character string 'MAP '
+C
+      INTEGER MAPST
+C
+      CHARACTER*4 MAP
+      DATA MAP/'MAP '/
+C
+      READ (MAP, '(A4)') MAPST
+      RETURN
+      END
+C
+C
+C_BEGIN_MCLOSE
+C
       SUBROUTINE MCLOSE(IUNIT,RHMIN,RHMAX,RHMEAN,RHRMS)
 C     =================================================
 C
 C
 C---- Write out header to map file on stream IUNIT, and close it
-C
-C---- The subroutine 'MCLOSE'
-C     =======================
-C 
-C---- This subroutine writes the header records to 
-C      the output map file and closes the file.
-C 
-C  Call:  CALL MCLOSE(IUNIT,RHMIN,RHMAX,RHMEAN,RHRMS)
+C  You should normally use MWCLOSE rather than this routine
 C
 C---- Added code to write out map/machine stamp to header.  D.Wild 11/5/92
 C
@@ -655,13 +712,13 @@ C RHRMS  (I)   The sum of squares of the density values in the map
 C              (This will used internally to calculate the 
 C               rms deviation from the mean value which is then stored.)
 C
+C_END_MCLOSE
+C
 C      IMPLICIT NONE
 C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
-      CHARACTER*4 MAP
-      parameter (MAP      =  'MAP ')
 C     ..
 C     .. Scalar Arguments ..
       REAL RHMAX,RHMEAN,RHMIN,RHRMS
@@ -676,10 +733,10 @@ C     .. Arrays in Common ..
       REAL CEL,SKWMAT,SKWTRN
       INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ
       INTEGER   MACHST
-      CHARACTER*4 MAPST
+      INTEGER   MAPST
 C     ..
 C     .. Local Scalars ..
-      REAL T
+      DOUBLE PRECISION T
       INTEGER NBHDR,NCHHDR
 C     ..
 C     .. Local Arrays ..
@@ -696,6 +753,8 @@ C     .. Common blocks ..
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
      +       JUNK(15),MAPST,MACHST(1),ARMS,NLAB,LABELS(20,10),NCHITM,
      +       ITMHDR,ITMSC1
+      COMMON /MOHSUM/  SUMRHO, SUMRH2, OFFSTR
+      DOUBLE PRECISION SUMRHO, SUMRH2, OFFSTR
 
       COMMON /MSTRM/LSTRM(12)
 C     ..
@@ -703,7 +762,7 @@ C     .. Equivalences ..
       EQUIVALENCE (NC,HEADER(1))
 C     ..
 C     .. Save statement ..
-      SAVE /MSTRM/,/MOHDR/
+      SAVE /MSTRM/,/MOHDR/,/MOHSUM/
 C     ..
 C     .. Data statements ..
 C
@@ -712,12 +771,17 @@ C
       DATA NBHDR/256/
 C     ..
 C
-C---- Calculate mean
+C---- Calculate mean in double precision
 C
       T = NC*NR*NS
-      AMEAN = RHMEAN/T
-      ARMS = RHRMS/T - AMEAN*AMEAN
-      IF (ARMS.GT.0.0) ARMS = SQRT(ARMS)
+      SUMRHO = RHMEAN/T
+      AMEAN = SUMRHO
+      SUMRH2 = RHRMS/T - SUMRHO*SUMRHO
+      IF (SUMRH2.GT.0.0) THEN
+         ARMS = SQRT(SUMRH2)
+      ELSE
+         ARMS = 0.0
+      ENDIF
 C
 C---- Minimum & maximum
 C
@@ -732,8 +796,8 @@ C
       CALL QTYPE(MACHST(1))
 C
 C---- write map stamp to word 53
-C
-      MAPST  = MAP
+C set MAPST = 'MAP'
+      CALL MSTMST(MAPST)
 C
 C---- Write to header, reset mode to 2 first
 C
@@ -755,23 +819,17 @@ C
       END
 C
 C
-C
+C_BEGIN_MWCLOSE
 C
       SUBROUTINE MWCLOSE(IUNIT)
 C     =========================
 C
 C
 C---- Write out header to map file on stream IUNIT, and close it
+C  This is the recommended routine for closing a map file
 C
-C---- The subroutine 'MWCLOSE'
-C     =======================
-C 
-C---- This subroutine writes the header records to 
-C      the output map file and closes the file.
 C     The minimum, maximum, mean & rms densities are calculated 
 C     from internal sums
-C 
-C  Call:  CALL MWCLOSE(IUNIT)
 C 
 C---- Added code to write out map/machine stamp to header.  D.Wild 29/5/92
 C
@@ -780,13 +838,12 @@ C     ==========
 C 
 C  IUNIT (I)   The map stream number
 C 
+C_END_MWCLOSE
 C      IMPLICIT NONE
 C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
-      CHARACTER*4 MAP
-      parameter (MAP      =  'MAP ')
 C     ..
 C     .. Scalar Arguments ..
       REAL RHMAX,RHMEAN,RHMIN,RHRMS
@@ -796,14 +853,14 @@ C     .. Scalars in Common ..
       REAL AMAX,AMEAN,AMIN,ARMS
       INTEGER ISPG,ITMHDR,ITMSC1,LSKFLG,MODE,NC,NC1,NCHITM,NLAB,NR,NR1,
      +        NS,NS1,NSYMBT
-      CHARACTER*4 MAPST
+      INTEGER MAPST
 C     ..
 C     .. Arrays in Common ..
       REAL CEL,SKWMAT,SKWTRN
       INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ,MACHST
 C     ..
 C     .. Local Scalars ..
-      REAL T
+      DOUBLE PRECISION T
       INTEGER NBHDR,NCHHDR
 C     ..
 C     .. Local Arrays ..
@@ -820,6 +877,8 @@ C     .. Common blocks ..
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
      +       JUNK(15),MAPST,MACHST(1),ARMS,NLAB,LABELS(20,10),NCHITM,
      +       ITMHDR,ITMSC1
+      COMMON /MOHSUM/  SUMRHO, SUMRH2, OFFSTR
+      DOUBLE PRECISION SUMRHO, SUMRH2, OFFSTR
 
       COMMON /MSTRM/LSTRM(12)
 C     ..
@@ -827,7 +886,7 @@ C     .. Equivalences ..
       EQUIVALENCE (NC,HEADER(1))
 C     ..
 C     .. Save statement ..
-      SAVE /MSTRM/,/MOHDR/
+      SAVE /MSTRM/,/MOHDR/,/MOHSUM/
 C     ..
 C     .. Data statements ..
 C
@@ -839,9 +898,14 @@ C
 C---- Calculate mean
 C
       T = NC*NR*NS
-      AMEAN = AMEAN/T
-      ARMS = ARMS/T - AMEAN*AMEAN
-      IF (ARMS.GT.0.0) ARMS = SQRT(ARMS)
+      SUMRHO = SUMRHO/T
+      AMEAN = SUMRHO + OFFSTR
+      SUMRH2 = SUMRH2/T - SUMRHO*SUMRHO
+      IF (SUMRH2.GT.0.0) THEN
+         ARMS = SQRT(SUMRH2)
+      ELSE
+         ARMS = 0.0
+      ENDIF
 C
 C---- Minimum & maximum
 C
@@ -855,7 +919,8 @@ C
 C
 C---- write map stamp to word 53 
 C
-      MAPST  = MAP
+C set MAPST = 'MAP'
+      CALL MSTMST(MAPST)
 C
 C---- Write to header, reset mode to 2 first
 C
@@ -877,6 +942,7 @@ C
       END
 C
 C
+C_BEGIN_MCLOSC
 C
       SUBROUTINE MCLOSC(IUNIT,RHMIN,RHMAX,RHMEAN,RHRMS)
 C     =================================================
@@ -885,14 +951,9 @@ C
 C---- Write out header to map file on stream IUNIT, and close it
 C     This routine is identical to MCLOSE except for arguments
 C      RHMEAN, RHRMS
+C  You should normally use MWCLOSE rather than this routine
 C
 C---- It is more suitable than MCLOSE when a map file is being copied
-C
-C 
-C---- This subroutine writes the header records to 
-C      the output map file and closes the file.
-C 
-C  Call:  CALL MCLOSC(IUNIT,RHMIN,RHMAX,RHMEAN,RHRMS)
 C
 C---- Added code to write out map/machine stamp to header.  D.Wild 11/5/92
 C 
@@ -909,13 +970,13 @@ C  RHMEAN (I)   The mean density in the map
 C 
 C  RHRMS  (I)   The rms deviation from the mean value in the map
 C
+C_END_MCLOSC
+C
 C      IMPLICIT NONE
 C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
-      CHARACTER*4 MAP
-      parameter (MAP      =  'MAP ')
 C     ..
 C     .. Scalar Arguments ..
       REAL RHMAX,RHMEAN,RHMIN,RHRMS
@@ -925,7 +986,7 @@ C     .. Scalars in Common ..
       REAL AMAX,AMEAN,AMIN,ARMS
       INTEGER ISPG,ITMHDR,ITMSC1,LSKFLG,MODE,NC,NC1,NCHITM,NLAB,NR,NR1,
      +        NS,NS1,NSYMBT
-      CHARACTER*4 MAPST
+      INTEGER MAPST
 C     ..
 C     .. Arrays in Common ..
       REAL CEL,SKWMAT,SKWTRN
@@ -949,6 +1010,8 @@ C     .. Common blocks ..
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
      +       JUNK(15),MAPST,MACHST(1),ARMS,NLAB,LABELS(20,10),NCHITM,
      +       ITMHDR,ITMSC1
+      COMMON /MOHSUM/  SUMRHO, SUMRH2, OFFSTR
+      DOUBLE PRECISION SUMRHO, SUMRH2, OFFSTR
 
       COMMON /MSTRM/LSTRM(12)
 C     ..
@@ -956,7 +1019,7 @@ C     .. Equivalences ..
       EQUIVALENCE (NC,HEADER(1))
 C     ..
 C     .. Save statement ..
-      SAVE /MSTRM/,/MOHDR/
+      SAVE /MSTRM/,/MOHDR/,/MOHSUM/
 C     ..
 C     .. Data statements ..
 C
@@ -980,7 +1043,8 @@ C
 C
 C---- write map stamp to word 53 
 C
-      MAPST  = MAP
+C set MAPST = 'MAP'
+      CALL MSTMST(MAPST)
       IF(MODE.EQ.2) THEN
         WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
       ENDIF
@@ -1003,26 +1067,15 @@ C
 C
 C
       END
-
-
-
-
-
-
-
 C
 C
+C_BEGIN_MPOSNW
 C
       SUBROUTINE MPOSNW(IUNIT,JSEC)
 C     ============================
 C
 C---- Position output map before section JSEC
 C
-C---- The subroutine 'MPOSNW'
-C     ====================== 
-C
-C---- This subroutine is used to set the position in the map  
-C     file  so  that  the next section to be written is section JSEC.
 C 
 C  Call:  CALL MPOSNW(IUNIT,JSEC)
 C 
@@ -1033,6 +1086,8 @@ C   IUNIT (I)   Map stream number
 C 
 C   JSEC (I)   Position the output map before section JSEC
 C 
+C_END_MPOSNW
+C
 C      IMPLICIT NONE
 C
 C     .. Scalar Arguments ..   
@@ -1077,39 +1132,40 @@ C
       END
 C
 C
+C_BEGIN_MRDHDR
 C
       SUBROUTINE MRDHDR(IUNIT,MAPNAM,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
      +                  NV1,NV2,CELL,LSPGRP,LMODE,RHMIN,RHMAX,RHMEAN,
      +                  RHRMS)
 C     ================================================================
 C
-C---- Read map header from stream IUNIT, logical name in MAPNAM by call
-C     to MRDHDS
-
-C     Map header common
+C---- Read map header from stream IUNIT, logical name in MAPNAM
 C
+C  IUNIT    (I)    stream number
+C  MAPNAM   (I)    logical (file) name
 C---- Returns:
+C 
+C  TITLE    (O)    80 character title for map (character)
+C  NSEC     (O)    number of sections in map
+C  IUVW(3)  (O)    fast,medium,slow axes (1,2,3 for x,y,z)
+C  MXYZ(3)  (O)    sampling intervals along whole cell on x,y,z
+C  NW1      (O)    first section number
+C  NU1,NU2  (O)    limits on fast axis(grid units)
+C  NV1,NV2  (O)    limits on medium axis
+C  CELL(6)  (O)    cell dimensions, A and degrees
+C  LSPGRP   (O)    space-group number
+C  LMODE    (O)    map data mode =0 logical*1
+C                                =1 integer*2
+C                                =2 real*4
+C                                =3 complex integer*2
+C                                =4 complex real*4
+C                                =5 treated as mode 0
+C                                =10 bricked byte map
+C  RHMIN,RHMAX (O)  minimum, maximum density
+C  RHMEAN      (O)  mean density
+C  RHRMS       (O)  rms deviation from mean density
 C
-C  TITLE        80 character title for map (character)
-C  NSEC         number of sections in map
-C  IUVW(3)      fast,medium,slow axes (1,2,3 for x,y,z)
-C  MXYZ(3)      sampling intervals along whole cell on x,y,z
-C  NW1          first section number
-C  NU1,NU2      limits on fast axis(grid units)
-C  NV1,NV2      limits on medium axis
-C  CELL(6)      cell dimensions, A and degrees
-C  LSPGRP       space-group number
-C  LMODE        map data mode =0 logical*1
-C                             =1 integer*2
-C                             =2 real*4
-C                             =3 complex integer*2
-C                             =4 complex real*4
-C                             =5 treated as mode 0
-C                             =10 bricked byte map
-C  RHMIN,RHMAX  minimum, maximum density
-C  RHMEAN       mean density
-C  RHRMS        rms deviation from mean density
-C
+C_END_MRDHDR
 C
 C
 C      IMPLICIT NONE
@@ -1155,6 +1211,7 @@ C     ..
       END
 C
 C
+C_BEGIN_MRDHDS
 C
       SUBROUTINE MRDHDS(IUNIT,MAPNAM,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
      +                  NV1,NV2,CELL,LSPGRP,LMODE,RHMIN,RHMAX,RHMEAN,
@@ -1164,34 +1221,40 @@ C
 C---- Read map header from stream IUNIT, logical name in MAPNAM
 C     Map header common
 C
+C---- On entry:
+C
+C  IUNIT    (I)    stream number
+C  MAPNAM   (I)    logical (file) name
 C---- Returns:
+C 
+C  TITLE    (O)    80 character title for map (character)
+C  NSEC     (O)    number of sections in map
+C  IUVW(3)  (O)    fast,medium,slow axes (1,2,3 for x,y,z)
+C  MXYZ(3)  (O)    sampling intervals along whole cell on x,y,z
+C  NW1      (O)    first section number
+C  NU1,NU2  (O)    limits on fast axis(grid units)
+C  NV1,NV2  (O)    limits on medium axis
+C  CELL(6)  (O)    cell dimensions, A and degrees
+C  LSPGRP   (O)    space-group number
+C  LMODE    (O)    map data mode =0 logical*1
+C                                =1 integer*2
+C                                =2 real*4
+C                                =3 complex integer*2
+C                                =4 complex real*4
+C                                =5 treated as mode 0
+C                                =10 bricked byte map
+C  RHMIN,RHMAX (O)  minimum, maximum density
+C  RHMEAN      (O)  mean density
+C  RHRMS       (O)  rms deviation from mean density
 C
-C  TITLE        80 character title for map (character)
-C  NSEC         number of sections in map
-C  IUVW(3)      fast,medium,slow axes (1,2,3 for x,y,z)
-C  MXYZ(3)      sampling intervals along whole cell on x,y,z
-C  NW1          first section number
-C  NU1,NU2      limits on fast axis(grid units)
-C  NV1,NV2      limits on medium axis
-C  CELL(6)      cell dimensions, A and degrees
-C  LSPGRP       space-group number
-C  LMODE        map data mode =0 logical*1
-C                             =1 integer*2
-C                             =2 real*4
-C                             =3 complex integer*2
-C                             =4 complex real*4
-C                             =5 treated as mode 0
-C                             =10 bricked byte map
-C  RHMIN,RHMAX  minimum, maximum density
-C  RHMEAN       mean density
-C  RHRMS        rms deviation from mean density
-C  IFAIL (I/O)  ON INPUT:     =0, STOP ON ERROR
-C                             =1, RETURN ON ERROR
-C               ON OUTPUT:    UNCHANGED IF NO ERROR
-C                             =-1, ERROR 
-C  IPRINT                     = 0; silent
-C                             .ne. 0; print file name, header info etc
+C  IFAIL (I/O)  On input:     =0, stop on error
+C                             =1, return on error
+C               On output:    unchanged if no error
+C                             =-1, error 
+C  IPRINT (I)                 = 0; silent
+C                          .ne. 0; print file name, header info etc
 C
+C_END_MRDHDS
 C
 C      IMPLICIT NONE
 C
@@ -1202,7 +1265,7 @@ C     ..
 C     .. Scalar Arguments ..
       REAL RHMAX,RHMEAN,RHMIN,RHRMS
       INTEGER IUNIT,LMODE,LSPGRP,NSEC,NU1,NU2,NV1,NV2,NW1
-      CHARACTER FNAME* (*),MAPNAM* (*),TITLE* (*)
+      CHARACTER FNAME*(*),MAPNAM*(*),TITLE*(*)
 C     ..
 C     .. Array Arguments ..
       REAL CELL(6)
@@ -1483,12 +1546,17 @@ C
 
 C
 C
+C_BEGIN_MRFNAM
 C
       ENTRY MRFNAM(FNAME)
 C     ===================
 C
 C---- Returns file name from last file open,
 C     must be called after MRDHDR
+C
+C     FNAME (O)   file name of open file
+C
+C_END_MRFNAM
 C
       FNAME = FILE
 C
@@ -1519,26 +1587,23 @@ C
       END
 C
 C
+C_BEGIN_MPOSN
 C
       SUBROUTINE MPOSN(IUNIT,JSEC)
 C     ============================
 C
-C---- Position input map before section JSEC
-C
-C---- The subroutine 'MPOSN'
-C 
 C---- This subroutine is used to set the position in the map  
 C     file  so  that  the next section to be read is section JSEC.
-C 
-C Call:  CALL MPOSN(IUNIT,JSEC)
 C 
 C---- Parameters:
 C     ==========
 C 
 C  IUNIT (I)   Map stream number
 C 
-C  JSEC (I)   Position the input map before section JSEC
+C  JSEC  (I)   Position the input map before section JSEC
 C 
+C_END_MPOSN
+C
 C      IMPLICIT NONE
 C
 C     .. Scalar Arguments ..
@@ -1585,23 +1650,15 @@ C
       END
 C
 C
+C_BEGIN_MRDLIN
 C
       SUBROUTINE MRDLIN(IUNIT,X,IER)
 C     =============================
 C
 C---- Read next line of map from stream IUNIT to array X.
-C     Map is returned in same mode as on file
+C     Map is returned in same mode as on file, ie no data conversion
+C     is done (but should be REAL)
 C
-C---- Returns IER = 0  OK
-C            .ne. 0  error (end of file)
-C
-C---- The subroutine 'MRDLIN'
-C
-C---- Read the next line from an input map file. 
-C     The data  are  returned  in  the
-C     same form as that stored in the map.
-C 
-C  Call:  CALL MRDLIN(IUNIT,X,IER)
 C 
 C---- Parameters:
 C     ==========
@@ -1612,7 +1669,7 @@ C     X (O)   Array to contain the line of data read from the map
 C 
 C   IER (O)   Error flag =0, OK   non-zero, error or end of file
 C 
-C
+C_END_MRDLIN
 C
 C
 C     .. Scalar Arguments ..
@@ -1658,16 +1715,21 @@ C
       END
 C
 C
+C_BEGIN_MGULP
 C
       SUBROUTINE MGULP(IUNIT,X,IER)
 C     =============================
 C
 C---- Read next whole map section from stream IUNIT to array X.
-C     Map is returned in same mode as on file
+C     Map is returned in same mode as on file, but should be REAL
 C
-C Returns IER = 0  OK
-C            .ne. 0  error (end of file)
+C  IUNIT (I)   Map stream number
+C 
+C     X (O)   Array to contain the section of data read from the map
+C 
+C   IER (O)   Error flag =0, OK   non-zero, error or end of file
 C
+C_END_MGULP
 C
 C      IMPLICIT NONE
 C
@@ -1713,6 +1775,7 @@ C
       END
 C
 C
+C_BEGIN_MGULPR
 C
       SUBROUTINE MGULPR(IUNIT,X,IER)
 C     =============================
@@ -1722,11 +1785,13 @@ C     For map modes other than 2, array is converted to real;
 C     for complex maps (MODE = 3 or 4) the complex amplitude is
 C     returned.
 C
-C Returns IER = 0  OK
-C            .ne. 0  error (end of file)
+C  IUNIT (I)   Map stream number
+C 
+C     X (O)   Array to contain the section of data read from the map
+C 
+C   IER (O)   Error flag =0, OK   non-zero, error or end of file
 C
-C---- Map header common
-C
+C_END_MGULPR
 C
 C      IMPLICIT NONE
 C
@@ -1815,11 +1880,16 @@ C
       END
 C
 C
+C_BEGIN_MRCLOS
 C
       SUBROUTINE MRCLOS(IUNIT)
 C     ========================
 C
 C---- Close read file
+C
+C  IUNIT (I)   Map stream number
+C
+C_END_MRCLOS
 C
 C      IMPLICIT NONE
 C
@@ -1846,6 +1916,7 @@ C
       END
 C
 C
+C_BEGIN_MSYPUT
 C
       SUBROUTINE MSYPUT(IST,LSPGRP,IUNIT)
 C     ===================================
@@ -1856,6 +1927,11 @@ C     IUNIT, leaving space at head of file for NBHDR items of
 C     header record. Puts number of characters of symmetry
 C     information NSYMBT into header record in com  MOHDR.
 C
+C     IST      (I)     Fortran stream number to use to read SYMOP library
+C     LSPGRP   (I)     Spacegroup name
+C     IUNIT    (I)     Map stream number
+C
+C_END_MSYPUT
 C
 C---- Map header common
 C
@@ -1978,6 +2054,7 @@ C
       END
 C
 C
+C_BEGIN_MSYMOP
 C
       SUBROUTINE MSYMOP(IUNIT,NSYM,ROT)
 C     =================================
@@ -1987,12 +2064,11 @@ C     (after call to MRDHDR to read header).
 C     Process symmetry in lines of length NBLIN characters
 C     to convert to matrices and vectors.
 C
-C  Returns :-
-C    NSYM          Number of symmetry operations
-C    ROT(4,4,NSYM)  rotation/translation matrices
+C     IUNIT         (I)   Map stream number
+C     NSYM          (O)   Number of symmetry operations
+C     ROT(4,4,NSYM) (O)   rotation/translation matrices
 C
-C---- Map header common
-C
+C_END_MSYMOP
 C
 C      IMPLICIT NONE
 C
@@ -2139,6 +2215,7 @@ C
       END
 C
 C
+C_BEGIN_MSYCPY
 C
       SUBROUTINE MSYCPY(IN,IOUT)
 C     ==========================
@@ -2146,7 +2223,10 @@ C
 C---- Copy symmetry data from file IN to file IOUT
 C     (after calls to MRDHDR & MWRHDR)
 C
-C---- Headers from input and output files
+C     IN   (I)   Map stream number for input file
+C     IOUT (I)   Map stream number for output file
+C
+C_END_MSYCPY
 C
 C      IMPLICIT NONE
 C
@@ -2251,6 +2331,7 @@ C
       END
 C
 C
+C_BEGIN_MTTCPY
 C
       SUBROUTINE MTTCPY(TITLE)
 C     ========================
@@ -2258,6 +2339,9 @@ C
 C---- Copy all titles from previously opened input and output files
 C     adding title to end
 C
+C     TITLE   (I)     new title (character*80)
+C
+C_END_MTTCPY
 C
 C      IMPLICIT NONE
 C
@@ -2304,15 +2388,18 @@ C
       END
 C
 C
+C_BEGIN_MTTREP
 C
       SUBROUTINE MTTREP(TITLE,NT)
 C     ===========================
 C
 C---- Replace NT'th title in output file (after MWRHDR)
-C
-C
 C---- Add new title, if already 10, overwrite last one
 C
+C     TITLE    (I)    new title  (character*80)
+C     NT       (I)    title number to replace
+C
+C_END_MTTREP
 C
 C     .. Scalar Arguments ..
       INTEGER NT
@@ -2347,13 +2434,22 @@ C
       END
 C
 C
+C_BEGIN_MSKPUT
 C
       SUBROUTINE MSKPUT(ASKWMT,ASKWTN)
 C     ================================
 C
 C---- Put skew transformation into output common block
 C
+C     ASKWMT(3,3)    (I)    skew matrix S (S11, S12, etc)
+C     ASKTRN(3)      (I)    skew translation t
 C
+C  Skew transformation from orthogonal atom frame to orthogonal map frame
+C     Xo(map) = S * ( Xo(atoms) - t)
+C
+C!!! You probably shouldn't use this routine (Phil Evans, 9/93)
+C
+C_END_MSKPUT
 C     .. Array Arguments ..
       REAL ASKWMT(3,3),ASKWTN(3)
 C     ..
@@ -2393,12 +2489,21 @@ C
       END
 C
 C
+C_BEGIN_MSKGET
 C
       INTEGER FUNCTION MSKGET(ASKWMT,ASKWTN)
 C     ======================================
 C
 C---- Get skew transformation from input common block
+C!!! You probably shouldn't use this routine (Phil Evans, 9/93)
 C
+C     ASKWMT(3,3)    (I)    skew matrix S (S11, S12, etc)
+C     ASKTRN(3)      (I)    skew translation t
+C
+C  Skew transformation from orthogonal atom frame to orthogonal map frame
+C     Xo(map) = S * ( Xo(atoms) - t)
+C
+C_END_MSKGET
 C      IMPLICIT NONE
 C
 C     .. Array Arguments ..
