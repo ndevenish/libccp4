@@ -33,6 +33,8 @@ _convex,1,
   [define(_readonly,[READONLY,])],
 _sgi,1,
   [define(_readonly,[READONLY,])],
+_pgf,1,
+  [define(_readonly,[READONLY,])],
 dnl * in Dec Fortran V3.0-2, at least, this seems to be *necessary*:
 _dec_fortran,1,
   [define(_readonly,[READONLY,])],
@@ -43,6 +45,8 @@ ifelse(
 _convex,1,
   [define(_carriagecontrol,[CARRIAGECONTROL=CCNTRL,])],
 _sgi,1,
+  [define(_carriagecontrol,[CARRIAGECONTROL=CCNTRL,])],
+_lf95,1,
   [define(_carriagecontrol,[CARRIAGECONTROL=CCNTRL,])],
 _concentrix,1,
   [define(_carriagecontrol,[CARRIAGECONTROL=CCNTRL,])],
@@ -71,6 +75,8 @@ dnl with stdio rather than the fortran library itself...
 _f2c,1,
   [define(_cant_unlink,1)],dnl
 _g77,1,
+  [define(_cant_unlink,1)],dnl
+_lf95,1,
   [define(_cant_unlink,1)],dnl
 _esv,1,
   [define(_cant_unlink,1)])dnl
@@ -792,7 +798,7 @@ C====== Write string
 C
 C     'LIST' is the equivalent of the normal unix state
       CCNTRL = 'LIST'
-ifelse(_carriagecontrol,[],,
+ifdef(_carriagecontrol,[],,
       INQUIRE(IUN,_carriagecontrol)
 )dnl
 C     in the case of systems obeying the carriagecontrol specifier, 
