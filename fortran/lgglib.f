@@ -5169,7 +5169,7 @@ c
 	rms = sqrt(rms/n)
 	dmean = dmean / n
 	end 
-	SUBROUTINE STRING(NUNIT,NCHA,TXT,NPAR,cont)
+	SUBROUTINE LGG_STRING(NUNIT,NCHA,TXT,NPAR,cont)
 C A subroutine to write a string of character in unit NUNIT according 
 c to the space in the string. It is used to chang a character into 
 c parameters under help of a file NUNIT.
@@ -5607,7 +5607,7 @@ C
 5	FORMAT(1X,' X2 = (',3F10.6,' ) * ( X1 ) + (',f10.5,' )')
 C
 	END 
-	subroutine symlib(nunit,file,nsp,nsym,nrot,sym,latnam)
+	subroutine lgg_symlib(nunit,file,nsp,nsym,nrot,sym,latnam)
 c this is a subroutine which user give a space group number, it read the 
 c ccp4 symmetry libary, then it give out the symmetryc operation
 c Input
