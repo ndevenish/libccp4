@@ -34,6 +34,10 @@ are just generally useful (platform independent date).
 #include "ccp4_utils.h"
 #include "ccp4_errno.h"
 
+#if defined (__APPLE__) && __GNUC__ > 2
+#include <pwd.h>
+#endif
+
 #define CCP4_ERRNO(y) (CCP4_ERR_UTILS | (y))          
                                        
 static char rcsid[] = "$Id$";
@@ -421,8 +425,9 @@ char *ccp4_utils_username(void)
 #if ! defined (_MVS) && ! defined (_WIN32)
 #if defined (__APPLE__) && __GNUC__ > 2
 {
-  printf("No cuserid under 3.1");
-  return NULL;
+  struct passwd *passwd_struct=NULL;
+  passwd_struct = getpwuid(getuid());
+  return passwd_struct->pw_name;
 }
 #else
 { 
