@@ -55,7 +55,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   char crysin[MXTALS][65],projin[MXTALS][65],crystal[65],project[65];
   float cellin[MXTALS][6],cell[6];
   int jxtalin[MSETS];
-  char mkey[4], keyarg[76], hdrrec[MTZRECORDLENGTH], label[30], type[3];
+  char mkey[4], keyarg[76], hdrrec[MTZRECORDLENGTH+1], label[30], type[3];
   int i, j, hdrst, ntotcol, nref, ntotset=0, nbat, nhist=0, icolin;
   int ixtal, jxtal, iset, iiset, icset, nxtal=0, nset[MCOLUMNS]={0}, isym=0;
   int indhigh[3],indlow[3],isort[5],debug=0;
@@ -119,6 +119,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   ccp4_file_seek (filein, 0, SEEK_SET);
   ccp4_file_setmode(filein,0);
   istat = ccp4_file_readchar(filein, hdrrec, 4);
+  hdrrec[4] = '\0';
   ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
 
   if (!ccp4_keymatch(key,"MTZ")) {
@@ -146,6 +147,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   iiset = -1;
   ccp4_file_setmode(filein,0);
   istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+  hdrrec[MTZRECORDLENGTH] = '\0';
   ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   while (!ccp4_keymatch(key,"END")) {
 
@@ -247,6 +249,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
     }
 
     istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+    hdrrec[MTZRECORDLENGTH] = '\0';
     ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   }
 
@@ -290,6 +293,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   iiset = -1;
   ccp4_file_setmode(filein,0);
   istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+  hdrrec[MTZRECORDLENGTH] = '\0';
   ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   while (strncmp((strncpy(mkey,hdrrec,4)),"END",3) != 0) {
 
@@ -330,6 +334,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
     }
 
     istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+    hdrrec[MTZRECORDLENGTH] = '\0';
     ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   }
 
@@ -355,6 +360,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   icolin = -1;
   ccp4_file_setmode(filein,0);
   istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+  hdrrec[MTZRECORDLENGTH] = '\0';
   ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   while (strncmp((strncpy(mkey,hdrrec,4)),"END",3) != 0) {
 
@@ -462,6 +468,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
     }
 
     istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+    hdrrec[MTZRECORDLENGTH] = '\0';
     ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   }
 
@@ -476,6 +483,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
   /* Now read history if any */
   istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+  hdrrec[MTZRECORDLENGTH] = '\0';
   ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   while (!ccp4_keymatch(key,"MTZE")) {
 
@@ -494,6 +502,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
       for (ibat = 0; ibat < nbat; ++ibat) {
 
         istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+        hdrrec[MTZRECORDLENGTH] = '\0';
         ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
         if (!ccp4_keymatch(key, "BH")) {
           printf("Batch headers corrupted !!\n");
@@ -526,6 +535,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
         ccp4_file_setmode(filein,0);
 	istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH); 
+        hdrrec[MTZRECORDLENGTH] = '\0';
         ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
         if (ntok == 4) {
           strcpy(batch->gonlab[0],token[1].fullstring); 
@@ -539,6 +549,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
     }
 
     istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+    hdrrec[MTZRECORDLENGTH] = '\0';
     ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   }
 
