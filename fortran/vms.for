@@ -513,7 +513,7 @@ C---- Get INUM'th command line argument or ' ' into LINE
 C
 C     .. Parameters ..
       INTEGER MAXLEN,MAXPAR
-      PARAMETER (MAXLEN=70,MAXPAR=10)
+      PARAMETER (MAXLEN=70,MAXPAR=41)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER INUM
