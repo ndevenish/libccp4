@@ -5,7 +5,6 @@
 
 # Usage: make                 - to make the library in this directory
 #        make <module>        - to make that particular module
-#        make binsort         - for the binsort program in this directory
 #        make install         - to copy the results into binary directory
 #        make test            - to compile and run the library testbed
 
@@ -90,7 +89,7 @@ LIBTARGETS = ccplib fftlib maplib parser rwbrook modlib \
 .PHONY : all clean install $(LIBTARGETS) ranlib realclean distclean \
          test help test-lib uninstall tags mosflm-stuff
 
-all :  $L binsort $(MAYBEMOSFLM)
+all :  $L $(MAYBEMOSFLM)
 
 $L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) $L(lcflib.o) \
@@ -310,11 +309,6 @@ chelp : $L(chelp.o)
 #
 
 #  a program:
-binsort : $(srcdir)/binsort.c $(srcdir)/binsort.h
-	$(CC) $(CFLAGS) -I$(srcdir) -o $@ $(srcdir)/binsort.c
-# for testing with src directory in path:
-	-rm -f ../../src/binsort
-	test -d ../../src && $(LNS) `pwd`/binsort ../../src/binsort
 
 # the unix-specific bits need preprocessing for different unix variants
 unix.f : $(srcdir)/unix.m4 gdummy.f
@@ -360,19 +354,19 @@ testlib : test-lib $(srcdir)/testlib.f
 #
 
 install : all
-	$(INSTALL_PROGRAM) binsort $(bindir)
+	$(INSTALL_PROGRAM) $(bindir)
 	$(INSTALL_DATA) $L $(libdir)/$L
 	$(RANLIB) $(libdir)/$L
 
 unintstall :
-	-rm -f $(bindir)/binsort $(libdir)/$L
+	-rm -f $(libdir)/$L
 
 clean :
 	-rm -f core *.o *~ *.dir/*.o testlib disc.dft a.out *.orig *.rej defs.m4
 	-rm -rf tagdir
 
 realclean : clean
-	-rm -rf $L ../../src/binsort binsort *.dir TAGS unix.f Makefile
+	-rm -rf $L *.dir TAGS unix.f Makefile
 
 dist : realclean
 	-rm -f Makefile
