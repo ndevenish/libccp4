@@ -575,7 +575,7 @@ FORTRAN_SUBR ( HKLRANGE, hklrange,
   CSYMLIB_DEBUG(puts("CSYMLIB_F: HKLRANGE");)
 
   if (!spacegroup) {
-    printf("HKLRANGE: No spacegroup loaded yet! \n");
+    ccperror(2,"HKLRANGE: No spacegroup loaded yet! \n");
     return;
   }
 
@@ -776,7 +776,7 @@ FORTRAN_SUBR ( ASUSYM, asusym,
       }
     }
   } else {
-    printf("ASUSYM: No spacegroup loaded yet! \n");
+    ccperror(2,"ASUSYM: No spacegroup loaded yet! \n");
   }
 
 }
@@ -979,7 +979,7 @@ FORTRAN_FUN (int, INASU, inasu,
   CSYMLIB_DEBUG(puts("CSYMLIB_F: INASU");)
 
   if (!spacegroup) {
-    printf("INASU: No spacegroup loaded yet! \n");
+    ccperror(2,"INASU: No spacegroup loaded yet! \n");
     return 999;
   }
 
@@ -1312,7 +1312,7 @@ FORTRAN_SUBR ( EPSLON, epslon,
   CSYMLIB_DEBUG(puts("CSYMLIB_F: EPSLON");)
 
   if (!spacegroup) {
-    printf("EPSLON: No spacegroup loaded yet! \n");
+    ccperror(2,"EPSLON: No spacegroup loaded yet! \n");
     return;
   }
 
@@ -1591,6 +1591,11 @@ FORTRAN_SUBR ( SETGRD, setgrd,
                 const int *nymin, const int *nzmin, int *nx, int *ny, int *nz))
 {
   int nlaue_save = -1;
+
+  if (!spacegroup) {
+    ccperror(2,"SETGRD: No spacegroup loaded yet! \n");
+    return;
+  }
 
   if (spacegroup->nlaue != *nlaue) {
     printf("SETGRD: supplied CCP4 Laue code is different from that currently stored\n");
