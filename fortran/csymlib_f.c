@@ -15,7 +15,20 @@
  *  @section csym_f_overview Overview
 
 This library consists of a set of wrappers to the CSYM library
-giving the same API as the original symlib.f
+giving the same API as the original symlib.f For details of the
+API, see the original <a href="../symlib.html">documentation</a>.
+This document covers some peculiarities of the C implementation.
+
+ *   @section csym_f_multiple Multiple Spacegroups
+
+The set of Fortran calls which mimic the original symlib.f assume
+you are working within a single spacegroup. All calls access the
+same spacegroup data structure, in analogy with the COMMON blocks
+of symlib.f For cases where you wish to work with multiple
+spacegroups (e.g. in the program <a href="../reindex.html">REINDEX</a>,
+a different set of calls is provided (the names of which generally
+start with "CCP4SPG_F_"). These identify the spacegroup of interest
+via an index "sindx" (by analogy with the "mindx" of mtzlib).
 
  */
  
@@ -45,9 +58,11 @@ giving the same API as the original symlib.f
 #include "cvecmat.h"
 static char rcsid[] = "$Id$";
 
+#define MSPAC 4
 #define MAXSYM 192
 
 static CCP4SPG *spacegroup = NULL;          /* allow more than one spacegroup ?? */
+static CCP4SPG *spacegrp[MSPAC] = {NULL};   /* cf. Eugene's channel for rwbrook */
 
 void ccp4spg_mem_tidy(void) {
 
@@ -308,6 +323,16 @@ FORTRAN_SUBR ( PATSGP, patsgp,
 
 }
 
+/** Set spacegroup for subsequent calls to ASUPUT, ASUGET, ASUSYM and ASUPHP.
+ * @param spgnam spacegroup name
+ * @param numsgp spacegroup number
+ * @param pgname On return, point group name
+ * @param msym number of symmetry matrices passed.
+ * @param rrsym symmetry matrices (preferred method of identifying spacegroup).
+ * @param msymp On return, number of primitive symmetry operators
+ * @param mlaue On return, number of Laue group.
+ * @param lprint If true, print symmetry information.
+ */
 FORTRAN_SUBR ( ASUSET, asuset,
 	       (fpstr spgnam, int *numsgp, fpstr pgname,
                 int *msym, float rrsym[192][4][4], int *msymp,
@@ -337,7 +362,7 @@ FORTRAN_SUBR ( ASUSET, asuset,
     }
   }
 
-  /* Loading by symops ensures spacegroup as desired ordering of symops.
+  /* Loading by symops ensures spacegroup has desired ordering of symops.
      This is important for ASUGET which may use ISYM stored in MTZ file. */
   spacegroup = ccp4_spgrp_reverse_lookup(*msym,op1);
 
@@ -360,9 +385,20 @@ FORTRAN_SUBR ( ASUSET, asuset,
   *msymp = spacegroup->nsymop_prim;
   *mlaue = spacegroup->nlaue;
 
-  ccp4spg_print_recip_ops(spacegroup);
+  if (*lprint == FORTRAN_LOGICAL_TRUE) {
+    printf("Reciprocal space symmetry: \n");
+    printf("Space group: \"%s\" Point group: \"%s\" Laue group: \"%s\" \n",
+       spacegroup->symbol_xHM,spacegroup->point_group,spacegroup->laue_name); 
+    printf("Asymmetric unit: \"%s\" \n",spacegroup->asu_descr); 
+    ccp4spg_print_recip_ops(spacegroup);
+  }
 }
 
+/** Return symmetry operators and inverses, set up by ASUSET.
+ * @param rassym symmetry operators.
+ * @param rinsym inverse symmetry operators.
+ * @param nisym number of symmetry operators returned.
+ */
 FORTRAN_SUBR ( ASUSYM, asusym,
 	       (float rassym[384][4][4], float rinsym[384][4][4], int *nisym),
 	       (float rassym[384][4][4], float rinsym[384][4][4], int *nisym),
@@ -400,6 +436,11 @@ FORTRAN_SUBR ( ASUSYM, asusym,
 
 }
 
+/** Put reflection in asymmetric unit, as set up by ASUSET.
+ * @param ihkl input indices.
+ * @param jhkl output indices.
+ * @param isym symmetry operation applied (ISYM number).
+ */
 FORTRAN_SUBR ( ASUPUT, asuput,
                (const int ihkl[3], int jhkl[3], int *isym),
                (const int ihkl[3], int jhkl[3], int *isym),
@@ -416,6 +457,12 @@ FORTRAN_SUBR ( ASUPUT, asuput,
   jhkl[0] = hout; jhkl[1] = kout; jhkl[2] = lout; 
 }
 
+/** Get the original indices jkhl from input indices ihkl generated
+ * under symmetry operation isym.
+ * @param ihkl input indices.
+ * @param jhkl output indices (recovered original indices).
+ * @param isym symmetry operation to be applied (ISYM number).
+ */
 FORTRAN_SUBR ( ASUGET, asuget,
                (const int ihkl[3], int jhkl[3], const int *isym),
                (const int ihkl[3], int jhkl[3], const int *isym),
@@ -432,6 +479,13 @@ FORTRAN_SUBR ( ASUGET, asuget,
   jhkl[0] = hout; jhkl[1] = kout; jhkl[2] = lout; 
 }
 
+/** Generate phase of symmetry equivalent JHKL from that of IHKL.
+ * @param jhkl indices hkl generated in ASUPUT
+ * @param lsym symmetry number for generating JHKL
+ * @param isign 1   for I+ , -1   for I-
+ * @param phasin phase for reflection IHKL
+ * @param phasout phase for reflection JHKL
+ */
 FORTRAN_SUBR ( ASUPHP, asuphp,
                (const int jhkl[3], const int *lsym, const int *isign, 
                 const float *phasin, float *phasout),
@@ -452,6 +506,103 @@ FORTRAN_SUBR ( ASUPHP, asuphp,
   hin = jhkl[0]; kin = jhkl[1]; lin = jhkl[2];
 
   *phasout = ccp4spg_phase_shift(hin, kin, lin, *phasin, trans, *isign);
+}
+
+/** Loads a spacegroup onto index "sindx". The spacegroup is
+ * identified by the spacegroup name.
+ * @param sindx index of this spacegroup.
+ * @param namspg spacegroup name.
+ */
+FORTRAN_SUBR ( CCP4SPG_F_LOAD_BY_NAME, ccp4spg_f_load_by_name,
+	       (const int *sindx, fpstr namspg, int namspg_len),
+	       (const int *sindx, fpstr namspg),
+	       (const int *sindx, fpstr namspg, int namspg_len))
+{ 
+  char *temp_name;
+
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_LOAD_BY_NAME");)
+
+  /* free any existing spacegroup and start again */
+  if ( spacegrp[*sindx-1] ) ccp4spg_free(&spacegrp[*sindx-1]);
+
+  temp_name = ccp4_FtoCString(FTN_STR(namspg), FTN_LEN(namspg));
+  if (strlen(temp_name)) {
+    spacegrp[*sindx-1] = ccp4spg_load_by_ccp4_spgname(temp_name);
+  }
+  free (temp_name);
+}
+
+/** Loads a spacegroup onto index "sindx". The spacegroup is
+ * identified by the set of symmetry matrices.
+ * @param sindx index of this spacegroup.
+ * @param msym number of symmetry matrices passed.
+ * @param rrsym symmetry matrices.
+ */
+FORTRAN_SUBR ( CCP4SPG_F_LOAD_BY_OPS, ccp4spg_f_load_by_ops,
+	       (const int *sindx, int *msym, float rrsym[192][4][4]),
+	       (const int *sindx, int *msym, float rrsym[192][4][4]),
+	       (const int *sindx, int *msym, float rrsym[192][4][4]))
+{
+  int i,k,l;
+  ccp4_symop *op1;
+
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_LOAD_BY_OPS");)
+
+  /* free any existing spacegroup and start again */
+  if ( spacegrp[*sindx-1] ) ccp4spg_free(&spacegrp[*sindx-1]);
+
+  op1 = (ccp4_symop *) ccp4_utils_malloc(*msym*sizeof(ccp4_symop));
+  for (i = 0; i < *msym; ++i) {
+    for (k = 0; k < 3; ++k) {
+      for (l = 0; l < 3; ++l)
+	op1[i].rot[k][l] = rrsym[i][l][k];
+      op1[i].trn[k] = rrsym[i][3][k];
+    }
+  }
+
+  /* Loading by symops ensures spacegroup has desired ordering of symops.
+     This is important for ASUGET which may use ISYM stored in MTZ file. */
+  spacegrp[*sindx-1] = ccp4_spgrp_reverse_lookup(*msym,op1);
+
+  if (!spacegroup ) {
+    printf("CCP4SPG_F_LOAD_BY_OPS: no spacegroup info! \n");
+    ccperror(1,"Fatal error in CCP4SPG_F_LOAD_BY_OPS.");
+    return;
+  }
+
+  printf("Reciprocal space symmetry: \n");
+  printf("Space group: \"%s\" Point group: \"%s\" Laue group: \"%s\" \n",
+       spacegrp[*sindx-1]->symbol_xHM,spacegrp[*sindx-1]->point_group,
+       spacegrp[*sindx-1]->laue_name); 
+  printf("Asymmetric unit: \"%s\" \n",spacegrp[*sindx-1]->asu_descr); 
+  ccp4spg_print_recip_ops(spacegrp[*sindx-1]);
+}
+
+/** Put reflection in asymmetric unit of spacegroup on index sindx.
+ * @param sindx index of this spacegroup.
+ * @param ihkl input indices.
+ * @param jhkl output indices.
+ * @param isym symmetry operation applied (ISYM number).
+ */
+FORTRAN_SUBR ( CCP4SPG_F_ASUPUT, ccp4spg_f_asuput,
+               (const int *sindx, const int ihkl[3], int jhkl[3], int *isym),
+               (const int *sindx, const int ihkl[3], int jhkl[3], int *isym),
+               (const int *sindx, const int ihkl[3], int jhkl[3], int *isym))
+{
+  int hin,kin,lin,hout,kout,lout;
+
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_ASUPUT");)
+
+  if ( ! spacegrp[*sindx-1] ) {
+    printf("CCP4SPG_F_ASUPUT: No spacegroup loaded on channel %d ! \n",*sindx);
+    return;
+  }
+
+  hin = ihkl[0]; kin = ihkl[1]; lin = ihkl[2];
+
+  *isym = ccp4spg_put_in_asu(spacegrp[*sindx-1], hin, kin, lin, &hout, &kout, &lout);
+
+  jhkl[0] = hout; jhkl[1] = kout; jhkl[2] = lout; 
 }
 
 /** Test whether reflection or it's Friedel mate is in asu.
@@ -794,6 +945,27 @@ FORTRAN_SUBR ( CENTR, centr,
   *ic = ccp4spg_is_centric(spacegroup, h, k, l);
 
   if (*ic == -1) ccperror(1,"Fatal error in CENTR.");
+}
+
+FORTRAN_SUBR ( CCP4SPG_F_IS_CENTRIC, ccp4spg_f_is_centric,
+	       (const int *sindx, const int ih[3], int *ic),
+	       (const int *sindx, const int ih[3], int *ic),
+	       (const int *sindx, const int ih[3], int *ic))
+{
+  int h,k,l;
+
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_IS_CENTRIC");)
+
+  if ( ! spacegrp[*sindx-1] ) {
+    printf("CCP4SPG_F_IS_CENTRIC: No spacegroup loaded on channel %d ! \n",*sindx);
+    return;
+  }
+
+  h = ih[0]; k = ih[1]; l = ih[2]; 
+
+  *ic = ccp4spg_is_centric(spacegrp[*sindx-1], h, k, l);
+
+  if (*ic == -1) ccperror(1,"Fatal error in CCP4SPG_F_IS_CENTRIC.");
 }
 
 FORTRAN_SUBR ( CENTPHASE, centphase,
