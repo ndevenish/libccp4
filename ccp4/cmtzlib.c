@@ -205,6 +205,8 @@ MTZ *MtzGet(const char *logname, int read_refs)
   strcpy(crystal,"dummy");
   ccp4_file_setmode(filein,0);
   istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
+  if (debug) 
+    printf(" Read first header record with istat = %d \n",istat);
   /* We don't test all reads, but this one should trap for e.g. truncated files */
   if (istat == EOF) {
     ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_ReadFail),"MtzGet",NULL);
@@ -681,6 +683,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
       for (j = 0; j < ntotcol; ++j)
         colin[j]->ref[i] = refldata[j];
     }
+    free(refldata);
 
     /* Recalculate resolution limits */
 
@@ -1284,7 +1287,10 @@ int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int i
   /* If reflections not in memory, read next record from file. */
   if (!mtz->refs_in_memory) {
     refldata = (float *) ccp4_utils_malloc(mtz->ncol_read*sizeof(float));
-    if (MtzRrefl( mtz->filein, mtz->ncol_read, refldata) == EOF) return 1;
+    if (MtzRrefl( mtz->filein, mtz->ncol_read, refldata) == EOF) {
+      free(refldata);
+      return 1;
+    }
   }
 
  /* Loop over all columns in the MTZ struct, and select those which
@@ -1324,6 +1330,7 @@ int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int i
   if (*resol > mtz->xtal[ixtal]->resmax) *resol = mtz->xtal[ixtal]->resmax;
   if (*resol < mtz->xtal[ixtal]->resmin) *resol = mtz->xtal[ixtal]->resmin;
 
+  free(refldata);
   return 0;
 }
 
@@ -1345,7 +1352,10 @@ int ccp4_lrreff(const MTZ *mtz, float *resol, float adata[], int logmss[],
   /* If reflections not in memory, read next record from file. */
   if (!mtz->refs_in_memory) {
     refldata = (float *) ccp4_utils_malloc(mtz->ncol_read*sizeof(float));
-    if (MtzRrefl( mtz->filein, mtz->ncol_read, refldata) == EOF) return 1;
+    if (MtzRrefl( mtz->filein, mtz->ncol_read, refldata) == EOF) {
+      free(refldata);
+      return 1;
+    }
   }
 
   if (strncmp (mtz->mnf.amnf,"NAN",3) == 0) {
@@ -1403,6 +1413,7 @@ int ccp4_lrreff(const MTZ *mtz, float *resol, float adata[], int logmss[],
   if (*resol > mtz->xtal[ixtal]->resmax) *resol = mtz->xtal[ixtal]->resmax;
   if (*resol < mtz->xtal[ixtal]->resmin) *resol = mtz->xtal[ixtal]->resmin;
 
+  free(refldata);
   return 0;
 }
 
