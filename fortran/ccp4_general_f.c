@@ -126,7 +126,7 @@ FORTRAN_SUBR ( CCPERR, ccperr,
   int length;
   char tmp_errstr[TMP_LENGTH];
 
-  length = (FTN_LEN(errstr) < TMP_LENGTH-1) ? FTN_LEN(errstr)+1 : TMP_LENGTH-1 ; 
+  length = (FTN_LEN(errstr) < TMP_LENGTH-1) ? FTN_LEN(errstr) : TMP_LENGTH-1 ; 
   strncpy(tmp_errstr,errstr,length);
   tmp_errstr[length]='\0';
   ccperror(*istat, tmp_errstr);
