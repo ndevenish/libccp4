@@ -10,8 +10,8 @@ ifelse(_sgi,1,
 dnl
 dnl * fortran compiler may or may not accept READONLY specifier on OPEN:
 ifelse(ifdef([_convex],1)ifdef([_sgi],1),1,
-  [define(_READONLY,[READONLY,])],
-  [define(_READONLY,)])dnl
+  [define(_readonly,[READONLY,])],
+  [define(_readonly,)])dnl
 dnl
 dnl * fortran compiler may or may not accept CARRIAGECONTROL specifier on OPEN:
 ifelse(ifdef([_convex],1)ifdef([_sgi],1),1,
@@ -557,9 +557,9 @@ C       accordingly.
         LLREC = LREC*IBYTES
         IF (HANDLE.EQ.'WORDS'.AND.ITYPE.EQ.4) LLREC=LLREC/IBYTES
         IF (ISTAT.EQ.RDONLY) THEN
-C         _READONLY may be defined as null or as `READONLY,'
+C         _readonly may be defined as null or as `READONLY,'
           OPEN(UNIT=IUN,STATUS='UNKNOWN',ACCESS='DIRECT',FORM=FRM,
-     +         _READONLY
+     +         _readonly
      +         FILE=NAMFIL,RECL=LLREC,IOSTAT=IOS,ERR=5)
         ELSE
           OPEN(UNIT=IUN,STATUS='UNKNOWN',ACCESS='DIRECT',FORM=FRM,
@@ -568,7 +568,7 @@ C         _READONLY may be defined as null or as `READONLY,'
       ELSE
 C       if available, carriagecontrol='fortran' for print file, else = 
 C       'list'.  we can use ioinit instead where it's available (see e.g.
-C       sun manual). 
+C       Sun manual). 
         IF (ISTAT.EQ.PRINTR) THEN
 C         want to obey format characters in column 1
           CCNTRL = 'FORTRAN'
@@ -583,15 +583,27 @@ ifdef(_ioinit,
 [      JUNK = IOINIT(.FALSE., .FALSE., .FALSE., ' ' , .FALSE.)
 ])dnl
         END IF
-        IF (ISTAT.EQ.RDONLY .OR. FRM .EQ. 'UNFORMATTED') THEN
+        IF (FRM .EQ. 'UNFORMATTED') THEN
 C         (carriage control not relevant)
-          OPEN(UNIT=IUN, FILE=NAMFIL, STATUS=ST, ACCESS='SEQUENTIAL',
-     +         _READONLY
-     +         FORM=FRM, ERR=5, IOSTAT=IOS)
+          IF (ISTAT.EQ.RDONLY) THEN
+            OPEN(UNIT=IUN, FILE=NAMFIL, STATUS=ST, ACCESS='SEQUENTIAL',
+     +           _readonly
+     +           FORM=FRM, ERR=5, IOSTAT=IOS)
+          ELSE
+            OPEN(UNIT=IUN, FILE=NAMFIL, STATUS=ST, ACCESS='SEQUENTIAL',
+     +           FORM=FRM, ERR=5, IOSTAT=IOS)
+          ENDIF
         ELSE
-          OPEN(UNIT=IUN, FILE=NAMFIL, STATUS=ST, ACCESS='SEQUENTIAL',
-     +         _carriagecontrol
-     +         FORM=FRM, ERR=5, IOSTAT=IOS)
+          IF (ISTAT.EQ.RDONLY) THEN
+            OPEN(UNIT=IUN, FILE=NAMFIL, STATUS=ST, ACCESS='SEQUENTIAL',
+     +           _readonly
+     +           _carriagecontrol
+     +           FORM=FRM, ERR=5, IOSTAT=IOS)
+          ELSE
+            OPEN(UNIT=IUN, FILE=NAMFIL, STATUS=ST, ACCESS='SEQUENTIAL',
+     +           _carriagecontrol
+     +           FORM=FRM, ERR=5, IOSTAT=IOS)
+          ENDIF
         ENDIF
       ENDIF
 C
