@@ -1663,7 +1663,9 @@ int /* logical */ btest_ (a, b)
       case DFNTF_VAX :
         return ((real->i & 0x0000ff80) == 0x00008000);
       default :
-        fatal("CISNAN: bad nativeFT");  }
+        fatal("CISNAN: bad nativeFT");
+        return 0;                   /* avoid compiler warning */
+      }
 }
 #define MDFBIG -1.0E10          /* BIOMOL absence flag value */
 #if CALL_LIKE_HPUX

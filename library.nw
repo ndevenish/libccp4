@@ -2159,7 +2159,9 @@ the appropriate half-word (counting from 0).
   case DFNTF_VAX :
     return ((real->i & 0x0000ff80) == 0x00008000);
   default :
-    fatal("CISNAN: bad nativeFT");  }
+    fatal("CISNAN: bad nativeFT");
+    return 0;			/* avoid compiler warning */
+  }
 @ \subsection{Absent data test for {\tt mtzlib}: {\tt subroutine
     ccpbml (\meta{ncols}, \meta{cols})}}
 In {\tt mtzlib} there's a fudge for \idx{BIOMOL}-convention absence
