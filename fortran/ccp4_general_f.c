@@ -24,8 +24,8 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
                (),
                (),
                ())
-{ int argc, i, arg_len=80, debug=0;
-  char **argv, arg[80];
+{ int argc, i, arg_len=500, debug=0;
+  char **argv, arg[500];
 
   /* turn on line buffering for stdout from C (don't think this affects
      Fortran side). This ensures we get library messages, but will slow
