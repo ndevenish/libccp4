@@ -44,6 +44,7 @@
 
 # The following variables are expected to be set by configure:
 # top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
+# INSTALL_PROGRAM INSTALL_DATA
 
 SHELL       = /bin/sh
 srcdir	    = $(top_srcdir)/lib/src
@@ -57,9 +58,6 @@ LIB_DIR     = .
 # here, but can't since that would require `:=' instead of `=' and
 # confuse other makes.
 LD_PATH = . /lib /usr/lib /usr/local/lib
-
-INSTALL_BIN = cp# fixme: should be set by configure
-INSTALL_DATA = cp# fixme: should be set by configure
 
 # how to add a member to an archive (second and first args
 # respectively); this might need to be set by configure:
@@ -328,7 +326,7 @@ testlib : test-lib
 #
 
 install :
-	$(INSTALL_BIN) binsort $(bindir)
+	$(INSTALL_PROGRAM) binsort $(bindir)
 	$(INSTALL_DATA) $L $(libdir)/$L
 
 unintstall :
