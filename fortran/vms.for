@@ -32,6 +32,7 @@ C GETELAPSED - Print timing info for CCPERR
 C UGTARG - Get command-line argument 
 C GETREF - Abstracted from abscale since it has BYTE declaration.
 C CCPSPW - Spawns a new process to run DCL command
+C CCPAL1 - Support for CCPALC interface
 C
 C
 C     ================================                         
@@ -857,7 +858,10 @@ C         (carriage control not relevant)
         ENDIF
       ENDIF
 C     Error check
- 5    IF (IOS.NE.0) THEN
+ 5    CONTINUE
+C     don't report UNKNOWN if actually SCRATCH
+      IF (ISTAT.EQ.SCRTCH) ST = 'SCRATCH'
+      IF (IOS.NE.0) THEN
         CALL UGERR(IOS,ERRSTR)
         IF (IFAIL.EQ.0) THEN
 C         hard failure
@@ -1361,3 +1365,70 @@ C
        CHARACTER STRING*(*)
        CALL LIB$SPAWN(STRING)
        END
+C
+      SUBROUTINE CCPAL1 (ROUTNE, N, TYPE, LENGTH)
+C
+C     Arrange to call ROUTNE with N TYPEd array arguments of given
+C     LENGTH (see CCPALC)
+C
+      EXTERNAL ROUTNE
+      INTEGER N, TYPE (*), LENGTH (*)
+      INTEGER I, SIZES (4), POINTER (9), ISTAT
+C     bytes per word (assuming 32 bit words...)
+      DATA SIZES /4,4,8,8/
+
+C     The calling routine, CCPALC, will have checked that the arguments
+C     are in range
+      DO I=1,N
+        ISTAT = LIB$GET_VM (SIZES(TYPE (I))*LENGTH(I), POINTER(I))
+        IF (.NOT.ISTAT)
+     +       CALL CCPERR (-1, 'CCPALC: can''t allocate memory')
+      ENDDO
+      IF (N.EQ.1) THEN
+        CALL ROUTNE (LENGTH (1), %VAL(POINTER(1)))
+      ELSE IF (N.EQ.2) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)))
+      ELSE IF (N.EQ.3) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)))
+      ELSE IF (N.EQ.4) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)))
+      ELSE IF (N.EQ.5) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)))
+      ELSE IF (N.EQ.6) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)))
+      ELSE IF (N.EQ.7) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)),
+     +       LENGTH (7), %VAL(POINTER(7)))
+      ELSE IF (N.EQ.8) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)),
+     +       LENGTH (7), %VAL(POINTER(7)), LENGTH (8), %VAL(POINTER(8)))
+      ELSE IF (N.EQ.9) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)),
+     +       LENGTH (7), %VAL(POINTER(7)), LENGTH (8), %VAL(POINTER(8)),
+     +       LENGTH (9), %VAL(POINTER(9)))
+      ENDIF
+      DO I=1,N
+        ISTAT = LIB$FREE_VM (SIZES(TYPE (I))*LENGTH(I), POINTER(I))
+        IF (.NOT.ISTAT) CALL CCPERR (-1, 'CCPALC: can''t free memory')
+      ENDDO
+      END
