@@ -50,7 +50,7 @@ C     Args
       character*30 prglab(*)
       logical echo, flag, cont
       integer ival, nsym, numsgp, nsymp, n, ivals (n), nth, mtznum,
-     +  nprglab
+     +  nprglab, toks
       real rval, cell (6), rsym (4,4,*), resmin, resmax, smin, smax,
      +  rvals(n)
 
@@ -102,7 +102,7 @@ C       matched key
       return
 
       entry parsekeyarg (key, rest)
-C     KEY + rest of line -- returned in REST
+C     KEY + rest of line -- rest of line returned in REST
       if (memokey.eq.key) then
 C       matched key
         if (ntok.gt.1) then
@@ -149,6 +149,11 @@ C       matched key
       end if
       return
       
+      entry parsenargs(key, toks)
+      toks = 0
+      if (memokey .eq. key) toks = ntok
+      return
+
       entry parsenints (key, n, ivals)
 C     KEY + upto N integers -- N reset to number found, returned in IVALS
       if (memokey.eq.key) then
@@ -162,6 +167,7 @@ C     KEY + upto N integers -- N reset to number found, returned in IVALS
           end do
         else
           argerr = .true.
+          n = ntok
           call lerror (1, 0, 'Incorrect number of integer arguments')
         end if
       end if
@@ -180,6 +186,7 @@ C     KEY + upto N reals -- N reset to number found, returned in RVALS
           end do
         else
           argerr = .true.
+          n = ntok
           call lerror (1, 0, 'Incorrect number of real arguments')
         end if
       end if
@@ -205,6 +212,37 @@ C       matched key
       end if
       return
       
+      entry parsesubkeyarg (key, subkey, nth, rest)
+C     KEY + subkey + rest of line -- rest of line returned in REST
+      if (memokey.eq.key) then
+C       matched key
+        success(1) = .true.
+        k = 1
+        if (subkey .ne. ' ') then
+          k = 9999
+          do i=2,ntok
+            memosubkey=cvalue(i)
+            call ccpupc(memosubkey)
+            if (memosubkey.eq.subkey) then
+             k = i
+             goto 90
+            endif
+          enddo
+        endif
+   90   if (k.le.ntok) then
+          if (ntok.ge.k+nth) then
+            rest = line (ibeg(k+nth):iend(ntok))
+            do i=2,ntok
+              success(i) = .true.
+            enddo
+          else
+            argerr = .true.
+            call lerror (1, 0, 'Argument expected after sub-keyword')
+          end if
+        end if
+      end if
+      return
+
       entry parsesubint (key, subkey, nth, flag, ival)
 C     KEY + n'th integer after subkey -- returned in IVAL
 C     ERROR only if flag=true
@@ -217,10 +255,13 @@ C  ... matched key
         do i=2,ntok
          memosubkey=cvalue(i)
          call ccpupc(memosubkey)
-         if (memosubkey.eq.subkey) k=i
-        end do
+         if (memosubkey.eq.subkey) then
+          k=i
+          goto 100
+         endif
+        enddo
        endif
-       if (k.le.ntok) then
+  100  if (k.le.ntok) then
 C  .... matched subkey (if set)
         success(k) = .true.
         if (ntok.ge.nth+k .and. ityp(nth+k).eq.2) then
@@ -246,10 +287,13 @@ C  ... matched key
         do i=2,ntok
          memosubkey=cvalue(i)
          call ccpupc(memosubkey)
-         if (memosubkey.eq.subkey) k=i
+         if (memosubkey.eq.subkey) then
+          k=i
+          goto 110
+         endif
         end do
        endif
-       if (k.le.ntok) then
+  110  if (k.le.ntok) then
 C  .... matched subkey (if set)
         success(k) = .true.
         if (ntok.ge.nth+k .and. ityp(nth+k).eq.2) then
@@ -274,10 +318,13 @@ C  ... matched key
         do i=2,ntok
          memosubkey=cvalue(i)
          call ccpupc(memosubkey)
-         if (memosubkey.eq.subkey) k=i
+         if (memosubkey.eq.subkey) then
+          k=i
+          goto 120
+        endif
         end do
        endif
-       if (k.le.ntok) then
+  120  if (k.le.ntok) then
 C  .... matched subkey (if set)
         success(k) = .true.
         if (ntok.ge.nth+k .and. (ityp(nth+k).eq.1 .or. .not.flag) ) then
@@ -341,6 +388,17 @@ C     LABOut -- requires mtz file number, program labels, and number of.
          success(i) = .true.
         enddo
       end if
+      return
+
+      entry parsefail()
+      do i=1,ntok
+       success(i) = .false.
+      enddo
+      return
+
+      entry parseend(key)
+C     KEY -- is treated as input terminator as same as END
+      if (memokey .eq. key) eof = .true.
       return
       
       entry parsediagnose (cont)
