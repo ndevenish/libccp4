@@ -1,0 +1,225 @@
+/*
+     This code is distributed under the terms and conditions of the
+     CCP4 licence agreement as `Part i)' software.  See the conditions
+     in the CCP4 manual for a copyright statement.
+*/
+
+/** @file library_err.c
+ *  Error handling library.
+ *  Charles Ballard
+ */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "ccp4_errno.h"
+static char rcsid[] = "$Id$";
+
+int ccp4_errno = 0;
+
+static const char * const error_levels[] =
+  {
+    "Success",
+    "Informational",
+    "Warning",
+    "Error",
+    "FATAL ERROR"
+};
+
+static const char *const cfile_errlist[] =
+  {
+    "Error 0",                                   /* 0 = CIO_Ok */
+    "Bad mode",                                  /* 1 = CIO_BadMode */
+    "Cannot open file",                          /* 2 = CIO_CantOpenFile */
+    "Too many open files",                       /* 3 = CIO_MaxFile */
+    "Read failed",                               /* 4 = CIO_ReadFail */
+    "Write failed",                              /* 5 = CIO_WriteFail */
+    "Close fail",                                /* 6 = CIO_CloseFail */
+    "Seek fail",                                 /* 7 = CIO_SeekFail */
+    "Null pointer passed",                       /* 8 = CIO_NullPtr */
+    "End of File",                               /* 9 = CIO_EOF */
+    "No file"                                    /* 10 = CIO_NoFile */
+    "File not open",                             /* 11 = CIO_NotOpen */
+    "Unlink failed"                              /* 12 = CIO_UnlinkFail */
+  };
+
+static const char *const cmap_errlist[] =
+  {
+    "Error 0",                                   /* 0 = CMERR_Ok */
+    "Unassigned unit",                           /* 1 = CMERR_NoChannel */
+    "Unassigned unit or disposed file",          /* 2 = CMERR_NoFile */
+    "Logical name does not exist",               /* 3 = CMERR_NoLogicalName */
+    "Cannot open file",                          /* 4 = CMERR_CantOpenFile */
+    "No associated header",                      /* 5 = CMERR_NoHeader */
+    "Read failed",                               /* 6 = CMERR_ReadFail */
+    "Write failed",                              /* 7 = CMERR_WriteFail */
+    "Parameter or dimension is incorrect    ",   /* 8 = CMERR_ParamError */
+    "Unrecognised keyword",                      /* 9 = CMERR_UnrecognK */
+    "File stamp error",                          /* 10 = CMERR_FileStamp */
+    "Symmetry",                                  /* 11 = CMERR_SymErr */
+    "Cannot allocate memory",                    /* 12 = CMERR_AllocFail */
+    "Too many open files",                       /* 13 = CMERR_MaxFile */
+  };
+
+static const char *const cmtz_errlist[] =
+  {
+    "Error 0",                                   /* 0 = CMTZERR_Ok */
+    "Unassigned unit",                           /* 1 = CMTZERR_NoChannel */
+    "Null file handle, file not opened",         /* 2 = CMTZERR_NoFile */
+    "Logical name does not exist",               /* 3 = CMTZERR_NoLogicalName */
+    "Cannot open file",                          /* 4 = CMTZERR_CantOpenFile */
+    "No associated header",                      /* 5 = CMTZERR_NoHeader */
+    "Read failed",                               /* 6 = CMTZERR_ReadFail */
+    "Write failed",                              /* 7 = CMTZERR_WriteFail */
+    "Function parameter is incorrect",           /* 8 = CMTZERR_ParamError */
+    "Invalid cell dimensions",                   /* 9 = CMTZERR_Cellerr */
+    "File stamp error",                          /* 10 = CMTZERR_FileStamp */
+    "Symmetry",                                  /* 11 = CMTZERR_SymErr */
+    "Cannot allocate memory",                    /* 12 = CMTZERR_AllocFail */
+    "Too many open files",                       /* 13 = CMTZERR_MaxFile */
+    "Failed to initialise parser",               /* 14 = CMTZERR_ParserFail */
+    "File not identified as MTZ",                /* 15 = CMTZERR_NotMTZ */
+  };
+
+static const char *const cpars_errlist[] =
+  {
+    "Error 0",                                   /* 0 = CPARSERR_Ok */
+    "Maximum number of tokens exceeded",         /* 1 = CPARSERR_MaxTokExceeded */
+    "Cannot allocate memory",                    /* 2 = CPARSERR_AllocFail */
+    "Null pointer",                              /* 3 = CPARSERR_NullPointer */
+    "Line is too long",                          /* 4 = CPARSERR_LongLine */
+    "Failed to open external command file",      /* 5 = CPARSERR_CantOpenFile */
+    "Failed to get name for external file",      /* 6 = CPARSERR_NoName */
+    "Overflow - exponent is too big to be evaluated",  /* 7 = CPARSERR_ExpOverflow */
+    "Underflow - exponent is too small to be evaluated", /* 8 = CPARSERR_ExpUnderflow */
+    "Problem in mat4_to_symop",                  /* 9 = CPARSERR_MatToSymop */
+  };
+
+static const char *const csym_errlist[] =
+  {
+    "Error 0",                                   /* 0 = CSYMERR_Ok */
+    "Failed to initialise parser",               /* 1 = CSYMERR_ParserFail */
+  };
+
+struct error_system {
+  char system[32];
+  int system_nerr;
+  const char **error_list;
+};
+
+static const struct error_system ccp4_errlist[] = {
+    {"system", 0, 0, },
+    {"library_file", CCP4_COUNT(cfile_errlist), cfile_errlist,},
+    {"mmdb", 0, 0,},
+    {"mtz", CCP4_COUNT(cmtz_errlist), cmtz_errlist,},
+    {"ccp4_map", CCP4_COUNT(cmap_errlist), cmap_errlist,},
+    {"utils", 0, 0},
+    {"ccp4_parser", CCP4_COUNT(cpars_errlist), cpars_errlist,},
+    {"csym", CCP4_COUNT(csym_errlist), csym_errlist,}
+};
+
+static const int ccp4_system_nerr = CCP4_COUNT(ccp4_errlist);
+  
+const char *ccp4_strerror(int error)
+{
+  int system = CCP4_ERRGETSYS(error);
+  int level = CCP4_ERRGETLEVEL(error);
+  int code = CCP4_ERRGETCODE(error);
+
+  if (error == -1 || system == 0)
+    return strerror(errno);
+
+  if (system >= ccp4_system_nerr)
+    return ("bad system error");
+  if (code >= ccp4_errlist[system].system_nerr)
+    return ("bad error code");
+  return (ccp4_errlist[system].error_list[code]);
+}
+
+void ccp4_error (const char *msg)
+{
+  const char *colon;
+
+  if (msg == 0 || *msg == '\0')
+    colon = "";
+  else
+    colon = ": ";
+ 
+  fprintf (stderr, "%s%s%s\n",
+           msg, colon, ccp4_strerror(ccp4_errno));
+  if(ccp4_errno != -1 && CCP4_ERRGETSYS(ccp4_errno)) {
+    fprintf (stderr, "System: %s\nLevel: %d\n", 
+             ccp4_errlist[CCP4_ERRGETSYS(ccp4_errno)].system,
+             CCP4_ERRGETLEVEL(ccp4_errno));
+    if (errno)
+      fprintf (stderr, "%s%s\n",
+               "Last system message: ",strerror(errno)); }
+}
+                 
+void ccp4_fatal (const char *message)
+{
+  ccp4_error(message);
+  exit(1);
+}
+
+int CFile_Perror(const char *msg)
+{
+  const char * colon;
+  int error = CCP4_ERRGETCODE(ccp4_errno);
+  int cfile_nerr = ccp4_errlist[4].system_nerr;
+
+  if (msg == NULL || msg == '\0') colon = "";
+  else colon = ": ";
+
+  if (error > 0 && error <= cfile_nerr) {
+    fprintf(stderr,"%s%s%s \n",
+            msg,colon,cfile_errlist[error]);
+    return error; }
+  fprintf(stderr,"Unknown error code");
+  return -1;
+}
+
+void ccp4_signal(const int code, const char * const msg, 
+		 void (*callback) ())
+{
+  int severity = CCP4_ERRGETLEVEL(code),
+    system     = CCP4_ERRGETSYS(code),
+    msg_no     = CCP4_ERRGETCODE(code),
+    fatal_err  = (severity == 4);
+  static const char msg_fmt[] = ">>>>>> CCP4 library signal %s:%s (%s)\n\t raised in %s <<<<<<\n";
+   static const char sys_fmt[] = ">>>>>> System signal %d:%s (%s)\n\t raised in %s <<<<<<\n";
+  ccp4_errno = code;
+
+  if (system == 0) {
+    if (msg) 
+      printf(sys_fmt,
+	     errno,
+	     strerror(errno),
+	     error_levels[severity],
+	     msg);
+    else 
+      printf(">>>>>> System signal %d:%s (%s) <<<<<<", 
+	     errno, 
+	     strerror(errno), 
+	     error_levels[severity]);
+    ccp4_errno = errno; }
+  else 
+    if (msg) 
+      printf(msg_fmt,
+	     ccp4_errlist[system].system,
+	     ccp4_errlist[system].error_list[msg_no],
+	     error_levels[severity],
+	     msg);
+    else
+      printf(">>>>>> CCP4 library signal %s:%s (%s) <<<<<<\n",
+	     ccp4_errlist[system].system,
+	     ccp4_errlist[system].error_list[msg_no],
+	     error_levels[severity]);
+  
+  if (callback)
+    (*callback)();
+
+  if (fatal_err) exit(1);
+}
+
+
