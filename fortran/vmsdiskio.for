@@ -312,9 +312,10 @@ C
 C
       IF (.NOT.ISTAT) THEN
         CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
-        WRITE (*,'(/1X,2A,I4,2A//1X,A)')
-     &  ATBUTE(:LENSTR(ATBUTE)),' file open error on unit',IUNIT,
-     &  ',   Logical name: ',NAME(:LENSTR(NAME)),MSG(:L)
+        WRITE (*,'(/1X,2A,I4,2A)')
+     &  ATBUTE(1:MIN(30,LENSTR(ATBUTE))),' file open error on unit',
+     &  IUNIT,',   Logical name: ',NAME(:MIN(50,LENSTR(NAME)))
+        WRITE(*,FMT='(//,1X,A)') MSG(1:MIN(130,L))
 C
 C==== Maybe this should be a soft fail: IUNIT = -1 ?
 C
@@ -323,10 +324,11 @@ C
         RETURN
       ENDIF
 C
-      WRITE (*,'(/1X,2A,I4,2A/2A)')
-     &ATBUTE(:LENSTR(ATBUTE)),' file opened on unit',IUNIT,
-     &',   Logical name: ',NAME(:LENSTR(NAME)),
-     &' File name: ',FNAME(IUNIT)(:LENSTR(FNAME(IUNIT)))
+      WRITE (*,'(/1X,2A,I4,2A)')
+     &ATBUTE(:MIN(30,LENSTR(ATBUTE))),' file opened on unit',IUNIT,
+     &',   Logical name: ',NAME(:MIN(50,LENSTR(NAME)))
+      WRITE (*,'(/,2A)')
+     &      ' File name: ',FNAME(IUNIT)(:MIN(100,LENSTR(FNAME(IUNIT))))
       IF (NEW(IUNIT)) THEN
         WRITE (*,'(A,2I8/)')
      &  ' Initial & extend sizes in physical blocks =',
@@ -400,7 +402,7 @@ D         WRITE (*,'(A,5I8)') ' SYS$WRITE 1:',
 D    &    IUNIT,NVBLK(IUNIT)+NOBLK,KEL+1,KRECSZ,ISTAT
           IF (.NOT.ISTAT) THEN
             CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
-            WRITE (*,'(/1X,A/)') MSG(:L)
+            WRITE (*,'(/1X,A/)') MSG(:MIN(130,L))
           ENDIF
         ENDIF
       ENDIF
@@ -412,7 +414,7 @@ C
       ISTAT = SYS$CLOSE(FAB(IUNIT))
       IF (.NOT.ISTAT) THEN
         CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
-        WRITE (*,'(/1X,A/)') MSG(:L)
+        WRITE (*,'(/1X,A/)') MSG(:MIN(130,L))
       ENDIF
 C      IF (.NOT.ISAVE .OR. .NOT.ISTAT)
 C     &CALL CCPERR(1,'QCLOSE: FATAL ERROR.')
@@ -537,7 +539,7 @@ D           WRITE (*,'(A,5I8)') ' SYS$WRITE 2:',
 D    &      IUNIT,NVBLK(IUNIT)+NOBLK,KEL+1,KRECSZ,ISTAT
             IF (.NOT.ISTAT) THEN
               CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
-              WRITE (*,'(/1X,A/)') MSG(:L)
+              WRITE (*,'(/1X,A/)') MSG(:MIN(130,L))
               CALL CCPERR(1,'QREAD: FATAL ERROR.')
               IER = -1
               RETURN
@@ -593,7 +595,7 @@ C        WRITE (*,'(1X,16F8.0)') (BUF(I,IUNIT),I=1,NSIZE/4)
 C
 60    IF (ISTAT.NE.RMS$_EOF) THEN
         CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
-        WRITE (*,'(/1X,A/)') MSG(:L)
+        WRITE (*,'(/1X,A/)') MSG(:MIN(130,L))
         CALL CCPERR(1,'QREAD: FATAL ERROR.')
       ENDIF
       BUFACT(IUNIT) = .FALSE.
@@ -823,7 +825,7 @@ D    &    IUNIT,NVBLK(IUNIT),1,IBY,ISTAT
       GOTO 70
 C
 80    CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
-      WRITE (*,'(/1X,A/)') MSG(:L)
+      WRITE (*,'(/1X,A/)') MSG(:MIN(130,L))
       CALL CCPERR(1,'QWRITE: FATAL ERROR.')
       RETURN
 C
@@ -912,7 +914,7 @@ D    &      IUNIT,NVBLK(IUNIT)+NOBLK,KEL+1,KRECSZ,ISTAT
 C
             IF (.NOT.ISTAT) THEN
               CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
-              WRITE (*,'(/1X,A/)') MSG(:L)
+              WRITE (*,'(/1X,A/)') MSG(:MIN(130,L))
               CALL CCPERR(1,'QSEEK: FATAL ERROR -- MAYBE CORRUPT FILE.')
               RETURN
             ENDIF

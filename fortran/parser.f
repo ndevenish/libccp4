@@ -174,7 +174,7 @@ C     .. External Subroutines ..
       EXTERNAL CCPDPN,CCPUPC,PARSE,LERROR,PUTLIN
 C     ..
 C     .. Intrinsic Functions ..
-      INTRINSIC LEN,MAX
+      INTRINSIC LEN,MAX,MIN
 C     ..
 C     .. Scalars in Common ..
       CHARACTER STROUT*1500
@@ -241,9 +241,10 @@ C---- Count total number of characters on line
       NINCHR = NINCHR + LX
       IF (NINCHR .GT. LINLEN) THEN
 C-----  Line overflow
-        WRITE (6, FMT='(A,I5,A/1X,A/1X,A)') ' *** WARNING - More than ',
+        WRITE (6, FMT='(A,I5,A/1X,A)') ' *** WARNING - More than ',
      .       LINLEN,' characters in (continued) line ***',
-     .       ' *** Parsing truncated line:',LINEX(1:LX)
+     .       ' *** Parsing truncated line beginning with:'
+        WRITE(6,FMT='(A)') LINEX(1:MIN(130,LX))
         NINCHR = LINLEN
       ENDIF
       IF (FIRST) THEN
@@ -284,7 +285,8 @@ C         avoid retaining previous KEY if one not present this time
 C       comment line
         IF (.NOT. HAVLIN .AND. (PRINT .OR. LSTREAM.NE.MSTREAM)) THEN
           STROUT = ' '
-          WRITE (STROUT,FMT=6002) 'Comment', LINE(1:LENSTR(LINE))
+          WRITE (STROUT,FMT=6002) 'Comment',
+     .                       LINE(1:MIN(1490,LENSTR(LINE)))
  6002     FORMAT (A,' line--- ',A)
           CALL PUTLIN(STROUT,'HLPWIN')
           NINCHR = 0
@@ -361,7 +363,7 @@ C       Read next line
       ELSE IF (.NOT. HAVLIN .AND. (PRINT .OR. LSTREAM.NE.MSTREAM)) THEN
 C       not a continued line -- maybe echo it
         STROUT = ' '
-        WRITE (STROUT,FMT=6002) 'Data', LINE(1:LENSTR(LINE))
+        WRITE (STROUT,FMT=6002) 'Data', LINE(1:MIN(1490,LENSTR(LINE)))
         CALL PUTLIN(STROUT,'HLPWIN')
       END IF
       END

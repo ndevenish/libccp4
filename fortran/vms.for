@@ -101,7 +101,10 @@ C
       INCLUDE       '($SSDEF)'
       INTEGER       STATUS,IPRINT,ISTAT
       CHARACTER*(*) ERRSTR
+      CHARACTER*100 OUTLIN
       INTEGER       ISTART,IEND,COND,IFLAGS,IRET
+      INTEGER LENSTR
+      EXTERNAL LENSTR
 C
 C
 C---- IFLAGS masks out irrelevant parts if the error message
@@ -148,8 +151,10 @@ C
 C---- Print result if appropriate
 C
       IF (IPRINT.EQ.1) THEN
-        WRITE (6,100) ISTAT,ERRSTR
-100     FORMAT (' OS error: ',I5,' Message: ',A)
+        WRITE (OUTLIN,100) ISTAT
+        OUTLIN(LENSTR(OUTLIN)+1:) = ERRSTR
+        WRITE(6,FMT='(A)') OUTLIN(1:LENSTR(OUTLIN))
+100     FORMAT (' OS error: ',I5,' Message: ')
       ENDIF
 C
       END
@@ -529,7 +534,7 @@ C
 C---- Sort Data Type
 C
          IF (KEYB(JOLD).NE.7) THEN
-            WRITE (LUNOUT,FMT=6010) ISTAT
+            WRITE (LUNOUT,FMT=6010)
  6010       FORMAT (' SRTBEG only REAL data type implemented')
             STOP
          END IF
@@ -741,7 +746,7 @@ C     .. Local Scalars ..
       PARAMETER (UNKNWN=1, SCRTCH=2, OLD=3, NEW=4, RDONLY=5, PRINTR=6)
 C     ..
 C     .. Local Arrays ..
-      CHARACTER STAT(6)*7
+      CHARACTER STAT(6)*7, OUTLIN*100
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -871,19 +876,29 @@ C     don't report UNKNOWN if actually SCRATCH
         CALL UGERR(IOS,ERRSTR)
         IF (IFAIL.EQ.0) THEN
 C         hard failure
-          WRITE (ERRSTR,FMT=6002) IUN, NAMFIL(1:LENSTR(NAMFIL)),
-     +         LOGNAM(1:LENSTR(LOGNAM))
- 6002     FORMAT ('Open failed: Unit:',I4,', File: ',A, ' (logical: ', A
-     +         , ')')
+          WRITE (ERRSTR,FMT=6002) IUN
+          ERRSTR(LENSTR(ERRSTR)+1:) = NAMFIL(1:LENSTR(NAMFIL))
+          IF (LENSTR(ERRSTR) .LE. 130) THEN
+            ERRSTR(LENSTR(ERRSTR)+1:) = ' logical: '
+            IF (LENSTR(ERRSTR) .LE. 130)
+     +         ERRSTR(LENSTR(ERRSTR)+1:) = LOGNAM(1:LENSTR(LOGNAM))
+          ENDIF
+ 6002     FORMAT ('Open failed: Unit:',I4,', File: ')
           CALL CCPERR(1, ERRSTR)
         ELSE
 C         soft failure
-          WRITE (6,FMT=6004) FRM, ST, IUN, 
-     +         LOGNAM(1:LENSTR(LOGNAM)), NAMFIL(1:LENSTR(NAMFIL)),
-     +         ERRSTR(1:LENSTR(ERRSTR))
+          WRITE (6,FMT=6004) FRM, ST, IUN
+          OUTLIN = ' Logical name: '
+          OUTLIN(LENSTR(OUTLIN)+1:) = LOGNAM(1:LENSTR(LOGNAM))
+          IF (LENSTR(OUTLIN) .LT. 100) THEN
+            OUTLIN(LENSTR(OUTLIN)+1:) = ' File name: '
+            IF (LENSTR(OUTLIN) .LT. 100)
+     +         OUTLIN(LENSTR(OUTLIN)+1:) = NAMFIL(1:LENSTR(NAMFIL))
+          ENDIF
+          WRITE(6,FMT='(A)') OUTLIN(1:LENSTR(OUTLIN))
+          WRITE(6,FMT='(A)') ERRSTR(1:MIN(130,LENSTR(ERRSTR)))
  6004     FORMAT (' **CCPOPN ERROR**  ',A,3X,A,
-     +         ' file open failure on unit ',I3,/' Logical name: ',
-     +         A,', ','File name: ',A/1X,A/)
+     +                              ' file open failure on unit ',I3)
           IFAIL = -1
           RETURN            
         ENDIF
@@ -941,10 +956,19 @@ C                                       1003  FORMAT ('+',A)
 C
 C====== Specification statements
 C
+      INTEGER IUN, ICC
       CHARACTER*(*) STR
+      INTEGER LENSTR
+      LOGICAL VAXVMS
+      EXTERNAL CCPERR, LENSTR, VAXVMS
 C
 C====== Write string
 C
+      IF (VAXVMS()) THEN
+        IF (LENSTR(STR) .GT. 132)
+     .      CALL CCPERR(1,' TTSEND: Output string is greater than 132')
+      ENDIF
+
       IF (ICC.EQ.0) THEN
          WRITE (IUN,1000) STR
       ELSE IF (ICC.EQ.2) THEN

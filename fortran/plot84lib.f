@@ -4817,7 +4817,7 @@ C
       EXTERNAL GSBLKD
 C     ..
 C     .. Intrinsic Functions ..
-      INTRINSIC ATAN2,INDEX
+      INTRINSIC ATAN2,INDEX,MIN
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
@@ -4901,7 +4901,8 @@ C
         END IF
       END IF
       IF ((NFLEN.LE.0) .OR. (NFSTRT.GT.NFLEN)) THEN
-        IF (IPRINT.GT.0) WRITE (LUNOUT,FMT=6002) GSNAM
+        IF (IPRINT.GT.0) 
+     .     WRITE (LUNOUT,FMT=6002) GSNAM(1:MIN(130,LENSTR(GSNAM)))
       END IF
 C
       FILNAM = GSNAM(NFSTRT:NFLEN)
@@ -6100,6 +6101,9 @@ C     .. Scalars in Common ..
       LOGICAL*4 DEVCON,INITON
       CHARACTER FILNAM*80,TITLE*80
 C     ..
+C     .. Local Scalars ..
+      CHARACTER OUTLIN*100
+C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
       COMMON /GSDVW/MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,MCNTFL,DWLIMX,
@@ -6112,13 +6116,15 @@ C     .. Save Statement ..
 C
       SAVE
 C
-      WRITE (LUNOUT,FMT=6000) SUBNAM,IDRLVL
+      WRITE (LUNOUT,FMT=6000)
+      OUTLIN(1:) = SUBNAM
+      WRITE (LUNOUT,FMT=6001) OUTLIN(1:LENSTR(OUTLIN)),IDRLVL
             call ccperr(1,'plot84lib internal error')
 C
 C---- Format statements
 C
- 6000 FORMAT (2X,'!!!GSLVCK ***FATAL ERROR STOP*** - ',/2X,
-     +        'ATTEMPT TO CALL ',A,' AT LEVEL ',I5,/2X,
+ 6000 FORMAT (2X,'!!!GSLVCK ***FATAL ERROR STOP*** - ')
+ 6001 FORMAT (2X,'ATTEMPT TO CALL ',A,' AT LEVEL ',I5,/2X,
      +        '(0)=NOINIT,(1)=INIT,(2)=','TRSET,(3)=DRAWING ')
 C
       END
@@ -11538,7 +11544,7 @@ C     .. Local Scalars ..
      +        IYOLD,IYSPAR,J,JINIT,JPIC,JSKIP,KEOF,KKEOF,LL,MORE,NCONTR,
      +        NDOT,NSKIP
       INTEGER*2 IEND,ILWT,IPAP,IPEN
-      CHARACTER CHKEY*1
+      CHARACTER CHKEY*1,OUTLIN*100
 C     ..
 C     .. Local Arrays ..
       INTEGER LOFFX(8),LOFFY(8)
@@ -11615,8 +11621,9 @@ C
       JINIT = 0
       NSKIP = NSTART - 1
       NCONTR = 0
+      OUTLIN(1:) = FILNAM
       IF (NOPRNT.EQ.0) WRITE (LUNOUT,FMT=6052) NINTER,NOPRNT,
-     +    FILNAM(1:LENSTR(FILNAM)),
+     +    OUTLIN(1:LENSTR(OUTLIN)),
      +    NSTART,ISCALE,SCAFAC,NOCENT,LINSIZ
 C
 C---- get filename and set options
@@ -11628,8 +11635,9 @@ C
       IF (NINTER.EQ.-1) THEN
         NINTER = 1
       END IF
+      OUTLIN(1:) = FILNAM
       IF ((NINTER.EQ.0) .AND. (NOPRNT.EQ.0)) WRITE (LUNOUT,
-     +    FMT=6028) FILNAM(1:LENSTR(FILNAM))
+     +    FMT=6028) OUTLIN(1:LENSTR(OUTLIN))
       IF (NINTER.EQ.0) GO TO 30
    20 CONTINUE
       CALL NOCRLF (' VIEW640: Auto(0) or interactive(1)...= ')
@@ -12023,8 +12031,8 @@ C
 C---- pause to look at picture "return" or "space" to save and continue
 C     "+" to save and pause. any other character to delete
 C
-      WRITE (LUNOUT,6666)
- 6666 FORMAT (' Type "RETURN" or "SPACE" to save "+" to pause',/,
+      WRITE (LUNOUT,6600)
+ 6600 FORMAT (' Type "RETURN" or "SPACE" to save "+" to pause',/,
      +        ' any other character to delete ')
 cc      CALL NOCRLF (' Type "RETURN" or "SPACE" to save "+" to pause')
 cc      CALL NOCRLF (' any other character to delete ')
@@ -12100,7 +12108,7 @@ C
       IF (NCONTR.EQ.1) CALL NOCRLF (' VIEW finished')
       IF (NCONTR.EQ.0) CALL NOCRLF ('  ')
   450 CONTINUE
-      WRITE (LUNOUT,6666)
+      WRITE (LUNOUT,6600)
 cc      CALL NOCRLF (' Exit: type "RETURN" or "SPACE" to save picture')
 cc      CALL NOCRLF ('  any other character to clear screen')
       READ (LUNIN,FMT=6058) CHKEY

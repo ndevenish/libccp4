@@ -182,9 +182,8 @@ C
      +     CALL QPRINT(2, '(Q)QOPEN status changed from NEW to '
      +     //'UNKNOWN for '// LNAME)
       IF (JSTAT.EQ.4 .AND. CCPEXS(FNAME)) THEN
-        WRITE (ERRSTR,FMT=6001)
-     +       '(Q)QOPEN NEW file already exists:',
-     +       FNAME(:MIN(100,LENSTR(FNAME)))
+        ERRSTR = ' (Q)QOPEN NEW file already exists: '
+        ERRSTR(LENSTR(ERRSTR)+1:) = FNAME
         CALL CCPERR(1,ERRSTR)
       ENDIF
 C
@@ -197,8 +196,8 @@ C
       IF (IUNIT.EQ.-1) THEN
         CALL CCPERR(1,' (Q)QOPEN failed - no streams left')
       ELSE IF (IUNIT.EQ.-2) THEN
-        WRITE (ERRSTR,FMT=6001) '(Q)QOPEN failed - File name:',
-     +       LOGNAM (:MIN(100,LENSTR(LOGNAM)))
+        ERRSTR = ' (Q)QOPEN failed - File name: '
+        ERRSTR(LENSTR(ERRSTR)+1:) = LOGNAM
         CALL CCPERR (-1,ERRSTR)
       END IF
 
@@ -209,7 +208,6 @@ C
       CALL QPRINT(1,ERRSTR)
       ERRSTR = 'Status: '//MODES(JSTAT)//' Filename: '//FNAME
       CALL QPRINT(1,ERRSTR)
- 6001 FORMAT (1X,A,1X,A)
       END
 C
 C

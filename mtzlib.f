@@ -1932,17 +1932,18 @@ C            ******************************
 C            ******************************
 C
         IF (IER.NE.0) THEN
-          WRITE (LINE2,FMT='(A,A)')
-     +      'From LROPEN : Error reading 1st record of MTZ file',
-     +      FILNAM(1:LENSTR(FILNAM))
+          LINE2 = ' From LROPEN : Error reading 1st record of MTZ file'
+          LINE2(LENSTR(LINE2)+1:) = FILNAM
 C
 C              *************************
           CALL LERROR(2,-1,LINE2)
 C              *************************
         ELSE
           IF (MKEY(1:3).NE.'MTZ') THEN
-            WRITE (LINE2,FMT='(A,A,A)') 'From LROPEN : File ',
-     +        FILNAM(1:LENSTR(FILNAM)),' is not an MTZ file'
+            LINE2 = ' From LROPEN : File '
+            LINE2(LENSTR(LINE2)+1:) = FILNAM(1:LENSTR(FILNAM))
+            IF (LENSTR(LINE2) .NE. 399) 
+     .                 LINE2(LENSTR(LINE2)+1:) = ' is not an MTZ file'
 C
 C                *************************
             CALL LERROR(2,-1,LINE2)
@@ -5157,13 +5158,12 @@ C
       CALL CCPDAT (DATE)
       CALL UTIME (TIME)
 C     Use a largeish buffer and truncate it later if necessary
-      WRITE (BUFFER, 10, ERR=20) PROG(:MAX(LENSTR(PROG),1)), DATE, TIME,
-     +     EXTRA(:MAX(LENSTR(EXTRA),1))
+      WRITE (BUFFER, 10) PROG(:MAX(LENSTR(PROG),1)), DATE, TIME
+      BUFFER(LENSTR(BUFFER)+1:) = EXTRA(:MAX(LENSTR(EXTRA),1))
       HIST (1) = BUFFER
- 10   FORMAT ('From ',A,', ',A,' ',A,' ',A)
+ 10   FORMAT ('From ',A,', ',A,' ',A,' ')
       CALL LWHIST (MINDX, HIST, 1)
       RETURN
- 20   CALL CCPERR (1, 'LWHSTL: history string too long for buffer')
       END
 C
 C
@@ -8037,6 +8037,10 @@ C     .. Local Arrays ..
       CHARACTER AXES(4)*4,LINES(MXLLIN)*(MXLLEN),SOMELN(MXLLIN)*(MXLLEN)
       CHARACTER*25 LABTYP(0:3)
 C     ..
+C     .. External Functions ..
+      INTEGER LENSTR
+      EXTERNAL LENSTR
+C     ..
 C     .. External Subroutines ..
       INTEGER NEXTLN
       EXTERNAL BLANK,PUTLIN,NEXTLN,ADDLIN
@@ -8077,7 +8081,7 @@ C
       WRITE (STROUT,FMT='(1X,I6,4X,A)') IBATCH,BTITLE
 C
       IF (IPRINT.GT.30) THEN
-        WRITE (IPRINT,FMT='(A)') STROUT
+        WRITE (IPRINT,FMT='(A)') STROUT(1:MIN(130,LENSTR(STROUT)))
 C
       ELSE
 C     
