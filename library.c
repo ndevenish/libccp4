@@ -37,7 +37,7 @@
 #    define sgi
 #  endif
 #endif
-#if defined (sgi)                     /* Silicon graphics with R3000's */
+#if defined (sgi)
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_SUN 1
 #endif
@@ -108,6 +108,10 @@
 #if defined(_AIX) || defined (__hpux) || defined(F2C) ||\
     defined(G77) /* would do no harm on others, though */
 #  include <time.h>
+#endif
+#if defined (F2C) || defined (G77)
+#  define Skip_f2c_Undefs
+#  include "f2c.h"
 #endif
 #define MAXFLEN       500       /* the maximum length of a filename in CCP4 */
 #define MAXFILES       10    /* maximum number of files open symultaneously */
@@ -1490,7 +1494,7 @@ float etime (tarray)
   return (tarray[0]+tarray[1]);
 }
 
-#endif  /* AIX || HPUX */
+#endif
 #if defined(F2C) || defined(G77)
 int exit_ (status)
      int *status;
@@ -1513,7 +1517,6 @@ int getpid_ ()
 
 /* following are from libI77/fio.h */
 #define MXUNIT 100
-typedef int flag;
 typedef struct
 {       FILE *ufd;      /*0=unconnected*/
         char *ufnm;
@@ -1589,7 +1592,7 @@ int itime_ (array)
 
 static long clk_tck = 0;
 
-float etime_ (tarray)
+doublereal etime_ (tarray)      /* NB `doublereal' return for f2c. */
      float tarray[2];
 {
   struct tms buffer;
@@ -1617,17 +1620,17 @@ int /* logical */ btest_ (a, b)
 {
   return ((((unsigned long) *a)>>(*b)))&1 ? TRUE_ : FALSE_;
 }
-#endif  /* F2C || g77 */
+#endif
 #if CALL_LIKE_HPUX
-  void cnan (real)
+  void qnan (realnum)
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void CNAN (real)
+  void QNAN (realnum)
 #endif
 #if CALL_LIKE_SUN
-  void cnan_ (real)
+  void qnan_ (realnum)
 #endif
-  union float_uint_uchar *real;
+  union float_uint_uchar *realnum;
 #if NATIVEFT == DFNTF_BEIEEE || NATIVEFT == DFNTF_LEIEEE
 #  define NAN 0xfffa5a5a
 #endif
@@ -1641,27 +1644,27 @@ int /* logical */ btest_ (a, b)
   #error "NAN isn't defined (needs NATIVEFT)"
 #endif
 {
-  real->i = NAN;
+  realnum->i = NAN;
 }
 #if CALL_LIKE_HPUX
-  int cisnan (real)
+  int cisnan (realnum)
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  int CISNAN (real)
+  int CISNAN (realnum)
 #endif
 #if CALL_LIKE_SUN
-  int cisnan_ (real)
+  int cisnan_ (realnum)
 #endif
-  union float_uint_uchar *real;
+  union float_uint_uchar *realnum;
 {
     switch (nativeFT) {
      case DFNTF_BEIEEE :
      case DFNTF_LEIEEE :
-       return ((real->i & 0x7f800000) == 0x7f800000); /* exponent all 1s */
+       return ((realnum->i & 0x7f800000) == 0x7f800000); /* exponent all 1s */
       case DFNTF_CONVEXNATIVE :
-        return ((real->i & 0xff800000) == 0x80000000);      
+        return ((realnum->i & 0xff800000) == 0x80000000);      
       case DFNTF_VAX :
-        return ((real->i & 0x0000ff80) == 0x00008000);
+        return ((realnum->i & 0x0000ff80) == 0x00008000);
       default :
         fatal("CISNAN: bad nativeFT");
         return 0;                   /* avoid compiler warning */
