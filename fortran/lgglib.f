@@ -5022,13 +5022,12 @@ c
        NPAR = 0
        REWIND (NUNIT)
       end if
-C	WRITE(6,*)  ncha,txt(1:ncha)
-      if (txt(ncha:ncha).eq.'-') then
-       jcha = 1
-c	 WRITE(6,*)  'continue at next card'
-       txt(ncha:ncha)=' '
-      else
-       jcha = 0
+      jcha = 0
+      if (ncha.gt.0) then
+        if (txt(ncha:ncha).eq.'-') then
+         jcha = 1
+         txt(ncha:ncha)=' '
+        end if
       end if
       I = 1
  10   IF ((I.LE.NCHA-jcha).AND.(TXT(I:I).NE.' ')) THEN
