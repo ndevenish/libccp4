@@ -2195,10 +2195,10 @@ C
         ENDIF
         DO 10 I = 1,6
           CELL(I) = CEL(I)
+          IF (CELL(I).EQ.0.0) call ccperr(1,
+     +' **** Incorrect (0.0) CELL element in  subroutine rbfro1?? ****')
    10   CONTINUE
       ENDIF
-      IF (CELL(1).EQ.0.0) call ccperr(1,
-     +  ' **** No Cell Input to subroutine rbfro1?? ****')
 C
 C
       CONV = 3.14159/180.0
