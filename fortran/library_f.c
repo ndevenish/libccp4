@@ -217,6 +217,11 @@ FORTRAN_SUBR ( USTIME, ustime,
 /* <outbuf code>=                                                           */
 FORTRAN_SUBR ( OUTBUF, outbuf, (), (), ())
 {
+#if defined (__APPLE__) && defined (_CALL_SYSV)
+   char *s = "buffering=disable_preconn";
+   int s_len = strlen(s);
+   FORTRAN_CALL (SETRTEOPTS,setrteopts,(s,s_len),(s,s_len),(s,s_len));
+#endif
   if(ccp4_utils_outbuf())
     ccp4_utils_print("OUTBUF:Can't turn off buffering");
 }

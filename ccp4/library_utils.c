@@ -71,7 +71,6 @@ are just generally useful (platform independent date).
 #include <math.h>
 #include "ccp4_utils.h"
 #include "ccp4_errno.h"
-#include "ccp4_fortran.h"
 
 #if defined (_MSC_VER)
 #include <tchar.h>
@@ -216,11 +215,6 @@ int ccp4_utils_outbuf(void)
 #  if defined (_AIX) || ( defined __linux__ && defined __PPC__ )
   return -1;
 #  else
-#   if defined (__APPLE__) && defined (_CALL_SYSV)
-   char *s = "buffering=disable_preconn";
-   int s_len = strlen(s);
-   FORTRAN_CALL (SETRTEOPTS,setrteopts,(s,s_len),(s,s_len),(s,s_len));
-#   endif
   /* Windows requires size argument, though 0 works on unix */
   return setvbuf(stdout, NULL, _IOLBF, 80);
 #  endif
