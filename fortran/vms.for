@@ -23,6 +23,7 @@ C UCPUTM - Get CPU time
 C UISATT - Is file a terminal?
 C URENAM - Rename file
 C VAXVMS - Logical function returns TRUE if VAX/VMS
+C WINMVS - Logical function returns TRUE if windows
 C UBYTES - Returns number of bytes per word and 'words'/'bytes'
 C          to indicate if byte handling is available
 C GETPID - Get unique process id.
@@ -285,6 +286,25 @@ C
 C Usage:     VAXVMS ()
 C
       VAXVMS = .TRUE.
+C
+      END
+C
+C
+C     =========================
+      LOGICAL FUNCTION WINMVS()
+C     =========================
+C
+C WINMVS - Windows mircrosoft Visual Studio
+C
+C Input:     none
+C
+C Returns:   .TRUE. for WINMVS, .FALSE. otherwise
+C
+C Arguments: none
+C
+C Usage:     WINMVS ()
+C
+      WINMVS = .FALSE.
 C
       END
 C
@@ -1509,4 +1529,24 @@ C
       SUBROUTINE CEXIT (ICODE)
 C     trivial interface to system-dependent EXIT routine
       CALL EXIT (ICODE)
+      END
+
+C
+CA dummy function for unix and vms
+C     =========================
+       CHARACTER FUNCTION RTNBKS()
+C     =========================
+C
+C RTNBKS - Returns a Backslash for nt as unix compilers are fussy!
+C
+C Input:     none
+C
+C Returns:   \ if WIN32 or not if unix or vms
+C
+C Arguments: none
+C
+C Usage:     RTNBKS ()
+C
+      RTNBKS=' '
+C
       END
