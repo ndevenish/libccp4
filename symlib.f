@@ -90,18 +90,13 @@ C
 C---- SYMTRN(NSM,RSM)
 C           symmetry translation from matrix back to characters
 C
-C           This translates the Symmetry matrices into INT TAB
+C           This translates the symmetry matrices RSM(4,4,NSM) into INT TAB
 C           character strings
 C
 C           It gives the real and reciprocal space operations.
 C                eg     X,Y,Z        H  , K, L
 C                eg     -Y,X-Y, Z   -H-K, H, L  etc
 C           That is more complicated than you might think!!
-C
-C          It then calls subroutines EPSLN and CENTRIC to give the
-C          centric zones and the epslin zones for h k l
-C          It also sets up the common block needed to test systematic
-C           absences.
 C
 C---- SUBROUTINE DETERM(det,a)  
 C          Input A - 4*4 matrix  (real)
@@ -2012,19 +2007,167 @@ C
       END
 C
 C
+C     ========================================
+      SUBROUTINE SYMTR3(NSM,RSM,SYMCHS,IPRINT)
+C     ========================================
+C
+C
+C---- SYMTR3(NSM,RSM)
+C           symmetry translation from matrix back to characters
+C
+C           This translates the Symmetry matrices into INT TAB
+C           character strings
+C
+C           It gives the real space operations.
+C                eg     X,Y,Z
+C                eg     -Y,X-Y, Z
+C           That is more complicated than you might think!!
+C
+C---- Arguments :
+C
+C     NSM       (I)	INTEGER         Number of Symmetry operations
+C
+C     RSM       (I)	REAL            Array of dimension (4,4,at least NSM)
+C                               	containing symmetry operations on input
+C
+C     SYMCHS    (O)	CHARACTER*(*)   Array of dimension at least NSM
+C                               	containing int tab char strings on output
+C
+C     IPRINT    (I)	INTEGER         Print flag
+C                               	=0 No printing
+C                               	=1 Print the int tab strings
+C
+C     .. Scalar Arguments ..
+      INTEGER IPRINT,NSM
+C     ..
+C     .. Array Arguments ..
+      REAL RSM(4,4,*)
+      CHARACTER SYMCHS(*)*(*)
+C     ..
+C     .. Local Scalars ..
+      INTEGER I1,I2,ICH,IST,ITR,JCOUNT,JDO10,JDO20,JDO30,JDO40
+      CHARACTER STROUT*400
+C     ..
+C     .. Local Arrays ..
+      INTEGER NPNTR1(10),NPNTR2(10)
+      CHARACTER AXISCR(3)*1,NUMB(9)*1
+C     ..
+C     .. External Functions ..
+      INTEGER LENSTR
+      EXTERNAL LENSTR
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL PUTLIN
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC ABS,NINT
+C     ..
+C     .. Data statements ..
+C
+      DATA AXISCR/'X','Y','Z'/
+      DATA NUMB/'1','2','3','4','5','6','7','8','9'/
+      DATA NPNTR1/0,1,1,1,0,1,0,2,3,5/
+      DATA NPNTR2/0,6,4,3,0,2,0,3,4,6/
+C     ..
+C
+      DO 40 JDO40 = 1,NSM
+C
+C---- Clear symchs
+C
+        SYMCHS(JDO40) = ' '
+        ICH = 1
+C
+        DO 20 JDO20 = 1,3
+C
+C---- Ist is flag for first character of operator
+C
+          IST = 0
+C
+          DO 10 JDO10 = 1,4
+C
+            IF (RSM(JDO20,JDO10,JDO40).NE.0) THEN
+C
+              IF (RSM(JDO20,JDO10,JDO40).GT.0.0 .AND. IST.GT.0) THEN
+                IF (ICH.GT.LEN(SYMCHS))
+     +               CALL CCPERR(1, 'SYMTR3: character array too short')
+                SYMCHS(JDO40) (ICH:ICH) = '+'
+                ICH = ICH + 1
+              END IF
+C
+              IF (RSM(JDO20,JDO10,JDO40).LT.0) THEN
+                IF (ICH.GT.LEN(SYMCHS))
+     +               CALL CCPERR(1, 'SYMTR3: character array too short')
+                SYMCHS(JDO40) (ICH:ICH) = '-'
+                IST = 1
+                ICH = ICH + 1
+              END IF
+C
+              IF (JDO10.NE.4) THEN
+                IF (ICH.GT.LEN(SYMCHS))
+     +               CALL CCPERR(1, 'SYMTR3: character array too short')
+                SYMCHS(JDO40) (ICH:ICH) = AXISCR(JDO10)
+                IST = 1
+                ICH = ICH + 1
+              END IF
+C
+              IF (JDO10.EQ.4 .AND. RSM(JDO20,4,JDO40).NE.0) THEN
+                ITR = NINT(ABS(RSM(JDO20,4,JDO40)*12.0))
+                I1 = NPNTR1(ITR)
+                I2 = NPNTR2(ITR)
+                IF (ICH+2.GT.LEN(SYMCHS))
+     +               CALL CCPERR(1, 'SYMTR3: character array too short')
+                SYMCHS(JDO40) (ICH:ICH+2) = NUMB(I1)//'/'//NUMB(I2)
+                ICH = ICH + 3
+              END IF
+            END IF
+   10     CONTINUE
+C
+C---- ADD COMMA  space
+C
+          IF (JDO20.NE.3) THEN
+            IF (ICH+2.GT.LEN(SYMCHS))
+     +           CALL CCPERR(1, 'SYMTR3: character array too short')
+            SYMCHS(JDO40) (ICH:ICH+2) = ',  '
+            ICH = ICH + 3
+          END IF
+   20   CONTINUE
+C
+C---- write a message if required
+C
+        IF (IPRINT.EQ.1) THEN
+          WRITE (STROUT,FMT='(A,I3,5X,A)') 'Symmetry',JDO40,
+     +      SYMCHS(JDO40) (1:LENSTR(SYMCHS(JDO40)))
+C
+C              ***********************
+          CALL PUTLIN(STROUT,'CURWIN')
+C              ***********************
+C
+          DO 30 JDO30 = 1,4
+            WRITE (STROUT,FMT='(4F6.2)') (RSM(JDO30,JCOUNT,JDO40),
+     +        JCOUNT=1,4)
+C
+C                ***********************
+            CALL PUTLIN(STROUT,'CURWIN')
+C                ***********************
+C
+   30     CONTINUE
+        END IF
+   40 CONTINUE
+      END
+C
+C
 C     ==========================
       SUBROUTINE SYMTRN(NSM,RSM)
 C     ==========================
 C
-C
 C---- This translates the Symmetry matrices into INT TAB
-C     character strings for each symmetry operation.
+C     character strings for each symmetry operation and prints the real
+C     and reciprocal space operators on standard output.
 C
 C     It gives the real and reciprocal space operations.
 C   eg     X,Y,Z    H,K,L
 C   eg     -Y,X-Y, Z   -H-K, H, L  etc
 C   That is more complicated than you might think!!
-C
 C
 C---- Inverse symmetry needed to test systematic absences -
 C     copy rsmm rsmtt this common block.
@@ -2035,111 +2178,53 @@ C     .. Scalar Arguments ..
       INTEGER NSM
 C     ..
 C     .. Array Arguments ..
-      REAL RSM(4,4,96)
-C     ..
+      REAL RSM(4,4,*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,ICH,IST,ITR,J,K,N,NS,IPRINT
+      INTEGER I,ICH,IST,ITR,J,K,N,NS
 C     ..
 C     .. Local Arrays ..
       REAL RSMT(4,4,96)
-      CHARACTER AXISCR(3)*1,HKLCR(3)*1,NUMB(9)*1,SYMCHS(96)*80
+      CHARACTER HKLCR(3)*1,SYMCHS(*)*(*)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL INVSYM
+      EXTERNAL INVSYM, SYMTR3, LUNSTO
+      INTEGER LUNSTO
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC NINT
 C     ..
-C     .. Save statement ..
-      SAVE
-C     ..
 C     .. Data statements ..
 C
-      DATA IPRINT/0/
-      DATA AXISCR/'X','Y','Z'/
       DATA HKLCR/'H','K','L'/
-      DATA NUMB/'1','2','3','4','5','6','7','8','9'/
 C     ..
-C
+      CALL SYMTR3 (NSM, RSM, SYMCHS, 0)
 C
       DO 50 NS = 1,NSM
 C
-C---- Clear symchs
-C
-        SYMCHS(NS) = ' '
-        ICH = 1
-C
-C
-        DO 20 J = 1,3
-C
-C---- Ist is flag for first character of operator
-C
-          IST = 0
-C
-C
-          DO 10 I = 1,4
-C
-            IF (RSM(J,I,NS).NE.0) THEN
-              IF (RSM(J,I,NS).GT.0 .AND. IST.GT.0) THEN
-                SYMCHS(NS) (ICH:ICH) = '+'
-                ICH = ICH + 1
-              END IF
-C
-              IF (RSM(J,I,NS).LT.0) THEN
-                SYMCHS(NS) (ICH:ICH) = '-'
-                IST = 1
-                ICH = ICH + 1
-              END IF
-C
-              IF (I.NE.4) THEN
-                SYMCHS(NS) (ICH:ICH) = AXISCR(I)
-                IST = 1
-                ICH = ICH + 1
-              END IF
-C
-              IF (I.EQ.4 .AND. RSM(J,4,NS).NE.0) THEN
-                ITR = NINT(1.0/RSM(J,4,NS))
-                SYMCHS(NS) (ICH:ICH+1) = '1/'
-                ICH = ICH + 2
-                SYMCHS(NS) (ICH:ICH) = NUMB(ITR)
-                ICH = ICH + 1
-              END IF
-            END IF
-   10     CONTINUE
-C
-C---- ADD COMMA  space
-C
-          IF (J.NE.3) THEN
-            SYMCHS(NS) (ICH:ICH+2) = ',  '
-            ICH = ICH + 3
-          END IF
-   20   CONTINUE
-C
 C---- H K L   - get inverse symmetry operation
 C
-C            ********************************
         CALL INVSYM(RSM(1,1,NS),RSMT(1,1,NS))
-C            ********************************
-C
         ICH = 40
-C
-C
         DO 40 J = 1,3
           IST = 0
-C
-C
           DO 30 I = 1,3
             IF (RSMT(I,J,NS).NE.0) THEN
               IF (RSMT(I,J,NS).GT.0 .AND. IST.GT.0) THEN
+                IF (ICH.GT.LEN(SYMCHS))
+     +               CALL CCPERR(1, 'SYMTR: character array too short')
                 SYMCHS(NS) (ICH:ICH) = '+'
                 ICH = ICH + 1
               END IF
               IF (RSMT(I,J,NS).LT.0) THEN
+                IF (ICH.GT.LEN(SYMCHS))
+     +               CALL CCPERR(1, 'SYMTR: character array too short')
                 SYMCHS(NS) (ICH:ICH) = '-'
                 IST = 1
                 ICH = ICH + 1
               END IF
+              IF (ICH.GT.LEN(SYMCHS))
+     +             CALL CCPERR(1, 'SYMTR: character array too short')
               SYMCHS(NS) (ICH:ICH) = HKLCR(I)
               ICH = ICH + 1
               IST = 1
@@ -2149,6 +2234,8 @@ C
 C---- ADD COMMA space
 C
           IF (J.NE.3) THEN
+            IF (ICH+2.GT.LEN(SYMCHS))
+     +           CALL CCPERR(1, 'SYMTR: character array too short')
             SYMCHS(NS) (ICH:ICH+2) = ',  '
             ICH = ICH + 3
           END IF
@@ -2156,13 +2243,10 @@ C
 C
 C---- write a message
 C
-        WRITE (6,FMT='(A,I3,A,/,2X,A,4(/,4F6.2,10X,4F6.2))')
+        WRITE (LUNSTO(1),FMT='(A,I3,A,/,2X,A,4(/,4F6.2,10X,4F6.2))')
      +    ' SYMMETRY ',NS,'   REAL SPACE            RECIPROCAL SPACE',
      +    SYMCHS(NS), ((RSM(I,J,NS),J=1,4), (RSMT(I,K,NS),K=1,4),I=1,4)
    50 CONTINUE
-C
-C
-C
       END
 C
 C
