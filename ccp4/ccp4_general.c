@@ -119,6 +119,23 @@ static char rcsid[] = "$Id$";
 */
 int ccperror(int ierr, const char *message)
 {
+  ccperror_noexit(ierr, message);
+  if (ierr==0) {
+    exit(0);
+  } else if (ierr==1 || ierr==-1) {
+    exit(1);
+  }
+  return 0;
+}
+
+/* ccperror_noexit
+
+   As above, but doesn't call exit()
+
+*/
+
+int ccperror_noexit(int ierr, const char *message)
+{
   char *prog_name=NULL;
 
   /* Get the program name */
@@ -140,7 +157,6 @@ int ccperror(int ierr, const char *message)
     }
     if (summary_output(-1)) 
       printf("<!--SUMMARY_END-->\n");
-    exit(0);
 
   } else if (ierr==1 || ierr==-1) {
     /* Level 1 (-1) : fatal error */
@@ -163,7 +179,6 @@ int ccperror(int ierr, const char *message)
     }
     if (summary_output(-1)) 
       printf("<!--SUMMARY_END-->\n");
-    exit(1);
 
   } else if (ierr==2) {
     /* Level 2 : severe warning */
