@@ -2511,17 +2511,6 @@ C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZWRK/
 C     ..
-C
-C---- In case programs check LOGMSS before the lookup value for the
-C     program label, it should be false for unassigned columns.  (This
-C     loop is excessive...)
-C
-      DO 10 JDO = 1,MCOLS
-        LOGMSS(JDO) = .FALSE.
-   10 CONTINUE
-C
-C---- Next check that the MINDX is valid
-C
       IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
         WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
      +       'From LRREFM: Index',MINDX,
@@ -2536,8 +2525,12 @@ C
      +       MINDX
         CALL LERROR(2,-1,LINE)
       END IF
-
-      DO 20 JDO = 1,NCOLS(MINDX)
+C     In case programs check LOGMSS before the lookup value for the
+C     program label, it should be false for unassigned columns; thus
+C     make sure we take account of the number of program labels in case
+C     this is greater than the number of columns present.  (Don't just
+C     loop up to MCOLS in case the array isn't taht long.)
+      DO 20 JDO = 1, MAX (NCOLS(MINDX), NPLABS(MINDX))
         LOGMSS(JDO) = DATMSS(JDO) 
  20   CONTINUE
       END
