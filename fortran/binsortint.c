@@ -99,7 +99,8 @@ KEYBUF consist of NKEYS entries, each of the form:
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX)
+#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
+    ( defined __linux__ && defined __PPC__ )
   int srtbeg (int *nkeys, int *keybuf, int *lrecl, int *memsize)
 #endif
 
@@ -116,7 +117,8 @@ KEYBUF consist of NKEYS entries, each of the form:
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX)
+#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
+    ( defined __linux__ && defined __PPC__ )
   int srtbeg (nkeys, keybuf, lrecl, memsize)
 #endif
 
@@ -269,7 +271,8 @@ SRTRLS:	Release one record into Sort
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX)
+#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
+    ( defined __linux__ && defined __PPC__ )
   int srtrls (char *record)
 #endif
 
@@ -286,7 +289,8 @@ SRTRLS:	Release one record into Sort
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX)
+#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
+    ( defined __linux__ && defined __PPC__ )
   int srtrls (record)
 #endif
 
@@ -318,7 +322,8 @@ SRTMRG:	Merge - finish release phase
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX)
+#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
+    ( defined __linux__ && defined __PPC__ )
   int srtmrg ()
 #endif
 
@@ -350,7 +355,8 @@ SRTRET:	Return 1 record from sort
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX)
+#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
+    ( defined __linux__ && defined __PPC__ )
   int srtret (char *record)
 #endif
 
@@ -367,7 +373,8 @@ SRTRET:	Return 1 record from sort
 
 #else
 
-#if defined (__hpux) || defined (_AIX) || defined (___AIX)
+#if defined (__hpux) || defined (_AIX) || defined (___AIX) || \
+   ( defined __linux__ && defined __PPC__ )
   int srtret (record)
 #endif
 
