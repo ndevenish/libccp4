@@ -2428,7 +2428,7 @@ C_BEGIN_RDCELL
 C     ==============================================
       SUBROUTINE RDCELL(ITOK,ITYPE,FVALUE,NTOK,CELL)
 C     ==============================================     
-C---- Read and decode resolution limits.
+C---- Read and decode cell parameters 
 C     
 C---- Arguments:
 C
