@@ -861,13 +861,27 @@ FORTRAN_SUBR ( SETGRD, setgrd,
 	       (const int *nlaue, const float *sample, const int *nxmin,
                 const int *nymin, const int *nzmin, int *nx, int *ny, int *nz))
 {
+  int nlaue_save = -1;
+
   if (spacegroup->nlaue != *nlaue) {
-    printf("SETGRD: requested nlaue ...! \n");
-    return;
+    printf("SETGRD: supplied CCP4 Laue code is different from that currently stored\n");
+    printf("NLAUE (supplied) = %d\n",*nlaue);
+    printf("NLAUE (library)  = %d\n",spacegroup->nlaue);
+    /* The requested Laue number is different to that for the
+       current spacegroup
+       Save the current Laue code and load the data for the requested code */
+    nlaue_save = spacegroup->nlaue;
+    if (ccp4spg_load_laue(spacegroup,*nlaue)) {
+      printf("SETGRD: unrecognised CCP4 Laue code, couldn't set FFT grid\n");
+      return;
+    }
   }
-
   set_fft_grid(spacegroup, *nxmin, *nymin, *nzmin, *sample, nx, ny, nz);
-
+  if (nlaue_save > -1) {
+    /* Restore previous settings */
+    ccp4spg_load_laue(spacegroup,nlaue_save);
+  }
+  return;
 }
 
 FORTRAN_SUBR ( FNDSMP, fndsmp,
