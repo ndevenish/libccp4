@@ -33,26 +33,32 @@ static char rcsid[] = "$Id$";
 
 CCP4SPG *ccp4spg_load_by_standard_num(const int numspg) 
 { 
-  return ccp4spg_load_spacegroup(numspg, 0, NULL, 0, NULL);
+  return ccp4spg_load_spacegroup(numspg, 0, NULL, NULL, 0, NULL);
 }
 
 CCP4SPG *ccp4spg_load_by_ccp4_num(const int ccp4numspg) 
 { 
-  return ccp4spg_load_spacegroup(0, ccp4numspg, NULL, 0, NULL);
+  return ccp4spg_load_spacegroup(0, ccp4numspg, NULL, NULL, 0, NULL);
 }
 
 CCP4SPG *ccp4spg_load_by_spgname(const char *spgname) 
 { 
-  return ccp4spg_load_spacegroup(0, 0, spgname, 0, NULL);
+  return ccp4spg_load_spacegroup(0, 0, spgname, NULL, 0, NULL);
+}
+
+CCP4SPG *ccp4spg_load_by_ccp4_spgname(const char *ccp4spgname) 
+{ 
+  return ccp4spg_load_spacegroup(0, 0, NULL, ccp4spgname, 0, NULL);
 }
 
 CCP4SPG *ccp4_spgrp_reverse_lookup(const int nsym1, const ccp4_symop *op1)
 {
-  return ccp4spg_load_spacegroup(0, 0, NULL, nsym1, op1);
+  return ccp4spg_load_spacegroup(0, 0, NULL, NULL, nsym1, op1);
 }
 
 CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
-         const char *spgname, const int nsym1, const ccp4_symop *op1) 
+         const char *spgname, const char *ccp4spgname, 
+         const int nsym1, const ccp4_symop *op1) 
 
 { CCP4SPG *spacegroup;
   int i,j,k,l,debug=0,nsym2,symops_provided=0,ierr,ilaue;
@@ -86,6 +92,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   if (debug) {
     printf(" Entering ccp4spg_load_spacegroup, with arguments %d %d %d \n",
         numspg,ccp4numspg,nsym1);
+    if (spgname) printf(" spgname = %s \n",spgname);
+    if (ccp4spgname) printf(" ccp4spgname = %s \n",ccp4spgname);
     for (i = 0; i < nsym1; ++i) {
       printf(" %f %f %f \n",op1[i].rot[0][0],op1[i].rot[0][1],op1[i].rot[0][2]);
       printf(" %f %f %f \n",op1[i].rot[1][0],op1[i].rot[1][1],op1[i].rot[1][2]);
@@ -192,6 +200,11 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
             break;
         } else if (spgname) {
           if (ccp4spg_name_equal(sg_symbol_xHM,spgname))
+            break;
+        } else if (ccp4spgname) {
+          if (ccp4spg_name_equal(sg_symbol_old,ccp4spgname))
+            break;
+          if (ccp4spg_name_equal(sg_symbol_xHM,ccp4spgname))
             break;
         } else if (symops_provided) {
           nsym2 = sg_nsymp*sg_num_cent;

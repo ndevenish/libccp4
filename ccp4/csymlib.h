@@ -20,7 +20,8 @@ auto-generated from sgtbx. A particular spacegroup in a particular setting
 is loaded into an in-memory data structure by requesting a particular
 spacegroup name, number, or set of operators. See the functions
 <tt>ccp4spg_load_by_standard_num</tt>, <tt>ccp4spg_load_by_ccp4_num</tt>, 
-<tt>ccp4spg_load_by_spgname</tt> and <tt>ccp4_spgrp_reverse_lookup</tt>.
+<tt>ccp4spg_load_by_spgname</tt>,  <tt>ccp4spg_load_by_ccp4_spgname</tt>
+and <tt>ccp4_spgrp_reverse_lookup</tt>.
 <p>
 Information on the data structure is given in ccp4_spg.h
 
@@ -57,11 +58,20 @@ CCP4SPG *ccp4spg_load_by_standard_num(const int numspg);
  */
 CCP4SPG *ccp4spg_load_by_ccp4_num(const int ccp4numspg); 
 
-/** Look up spacegroup by name.
- * @param spgname Spacegroup name.
+/** Look up spacegroup by the extended Hermann Mauguin symbol.
+ * @param spgname Spacegroup name in form of extended Hermann Mauguin symbol.
  * @return pointer to spacegroup
  */
 CCP4SPG *ccp4spg_load_by_spgname(const char *spgname);
+
+/** Look up spacegroup by name. This is for use by CCP4 programs
+ * and is more complicated than ccp4spg_load_by_spgname. For each
+ * spacegroup in syminfo.lib it checks the CCP4 spacegroup name
+ * first, and then the extended Hermann Mauguin symbol.
+ * @param ccp4spgname Spacegroup name.
+ * @return pointer to spacegroup
+ */
+CCP4SPG *ccp4spg_load_by_ccp4_spgname(const char *ccp4spgname);
 
 /** Look up spacegroup by symmetry operators and load properties.
  * @param nsym1 number of operators (including non-primitive)
@@ -76,12 +86,14 @@ CCP4SPG * ccp4_spgrp_reverse_lookup(const int nsym1, const ccp4_symop *op1);
  * @param numspg spacegroup number
  * @param ccp4numspg CCP4 spacegroup number
  * @param spgname Spacegroup name.
+ * @param ccp4spgname Spacegroup name.
  * @param nsym1 number of operators (including non-primitive)
  * @param op1 pointer to array of operators
  * @return pointer to spacegroup
  */
 CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
-        const char *spgname, const int nsym1, const ccp4_symop *op1); 
+        const char *spgname, const char *ccp4spgname, 
+        const int nsym1, const ccp4_symop *op1); 
 
 /** Free all memory malloc'd from static pointers.
  * To be called before program exit. The function can be
