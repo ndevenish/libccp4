@@ -51,6 +51,7 @@
 
 #include "ccp4_unitcell.h"
 #include "cvecmat.h"
+#include "ccp4_errno.h"
 static char rcsid[] = "$Id$";
 
 /* from input cell and orthogonalisation code, find orthogonalisation
@@ -290,8 +291,10 @@ int ccp4uc_cells_differ(const double cell1[6], const double cell2[6], const doub
   /* check cell volumes */
   acheck = fabs(0.5*(vol1 - vol2))/(vol1 + vol2);
   if (acheck > tolerance) {
-    printf("Difference in cell volumes detected.\n");
-    printf("  vol1 = %lf  vol2 = %lf \n",vol1,vol2);
+    if (ccp4_liberr_verbosity(-1)) {
+      printf("Difference in cell volumes detected.\n");
+      printf("  vol1 = %lf  vol2 = %lf \n",vol1,vol2);
+    }
     return 1;
   }
 
@@ -300,18 +303,22 @@ int ccp4uc_cells_differ(const double cell1[6], const double cell2[6], const doub
   for ( i = 0; i < 6; i++ ) 
     acheck += fabs(0.5*(cell2[i]-cell1[i]))/(cell2[i]+cell1[i]);
   if (acheck > 3.0*tolerance) {
-    printf("Large difference in cell parameters detected.\n");
-    printf("  cell1 = %lf %lf %lf %lf %lf %lf \n",
+    if (ccp4_liberr_verbosity(-1)) {
+      printf("Large difference in cell parameters detected.\n");
+      printf("  cell1 = %lf %lf %lf %lf %lf %lf \n",
 	   cell1[0],cell1[1],cell1[2],cell1[3],cell1[4],cell1[5]);
-    printf("  cell2 = %lf %lf %lf %lf %lf %lf \n",
+      printf("  cell2 = %lf %lf %lf %lf %lf %lf \n",
 	   cell2[0],cell2[1],cell2[2],cell2[3],cell2[4],cell2[5]);
+    }
     return 1;
   } else if (acheck > tolerance) {
-    printf("Small difference in cell parameters detected.\n");
-    printf("  cell1 = %lf %lf %lf %lf %lf %lf \n",
+    if (ccp4_liberr_verbosity(-1)) {
+      printf("Small difference in cell parameters detected.\n");
+      printf("  cell1 = %lf %lf %lf %lf %lf %lf \n",
 	   cell1[0],cell1[1],cell1[2],cell1[3],cell1[4],cell1[5]);
-    printf("  cell2 = %lf %lf %lf %lf %lf %lf \n",
+      printf("  cell2 = %lf %lf %lf %lf %lf %lf \n",
 	   cell2[0],cell2[1],cell2[2],cell2[3],cell2[4],cell2[5]);
+    }
     return 1;
   }
   return 0;
