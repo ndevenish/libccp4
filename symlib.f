@@ -3,6 +3,8 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
+      SUBROUTINE SYMLIB_OUTLINE
+
 C_BEGIN_SYMLIB
 C   SYMLIB
 C
@@ -763,6 +765,9 @@ C
 C  End of Brief Description.
 C +++++++++++++++++++++++++
 C_END_OUTLINE
+
+      END
+
 C_BEGIN_CENTR
 C     =======================
       SUBROUTINE CENTR(HKL,IC)
