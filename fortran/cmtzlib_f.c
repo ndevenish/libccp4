@@ -826,6 +826,8 @@ FORTRAN_SUBR ( LRASSN, lrassn,
   for (l = 0; l < *nlprgi; ++l) {
     collookup[*mindx-1][l] = colarray[l];
   }
+  /* Set maximum number of columns to read. This is used in LRREFF and LRREFM */
+  ndatmss[*mindx-1] = *nlprgi;
 
   for (l = 0; l < *nlprgi; ++l) {
  /* Loop over all columns */
@@ -1198,20 +1200,9 @@ FORTRAN_SUBR ( LRREFF, lrreff,
 
  if (MtzCheckSubInput(mindex,"LRREFF",1)) return;
 
- /* Get maximum number of columns to read
-    This is done by cycling backwards through the array until
-    we find the first active column
- */
- for (i = (MCOLUMNS-1); i >= 0; --i) 
-   if (collookup[mindex-1][i]) {
-     mcol = i+1;
-     break;
-   }
- ndatmss[mindex-1] = mcol;
-
  ++irref[mindex-1];
  ieof = ccp4_lrreff(mtzdata[mindex-1], resol, adata, logmss[mindex-1], 
-             collookup[mindex-1], mcol, irref[mindex-1]);
+             collookup[mindex-1], ndatmss[mindex-1], irref[mindex-1]);
  if (ieof) {
    *eof = FORTRAN_LOGICAL_TRUE;
  } else {
