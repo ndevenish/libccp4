@@ -311,12 +311,10 @@ chelp : $L(chelp.o)
 #  a program:
 
 # the unix-specific bits need preprocessing for different unix variants
-unix.f : $(srcdir)/unix.m4 gdummy.f
+unix.f : $(srcdir)/unix.m4
 	$(M4) $(srcdir)/unix.m4 >unix.f
-gdummy.f : $(srcdir)/gdummy.f
-	-$(LNS)	$(srcdir)/gdummy.f .
 # this shouldn't depend on unix.f since we zap that each time
-$L(unix.o) : $(srcdir)/unix.m4 gdummy.f
+$L(unix.o) : $(srcdir)/unix.m4
 	$(M4) $(srcdir)/unix.m4 >unix.f
 	-rm -rf unix.dir; mkdir unix.dir
 	echo '      SUBROUTINE UNIX' > unix.dir/unix.f
@@ -354,7 +352,6 @@ testlib : test-lib $(srcdir)/testlib.f
 #
 
 install : all
-	$(INSTALL_PROGRAM) $(bindir)
 	$(INSTALL_DATA) $L $(libdir)/$L
 	$(RANLIB) $(libdir)/$L
 
