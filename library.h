@@ -258,6 +258,15 @@
     defined(G77) /* would do no harm on others, though */
 #  include <time.h>
 #endif
+/* We need INT_MAX and DBL_MAX defined for routine Hgetlimits               */
+/* These should be in {\tt limits.h} and {\tt float.h} respectively         */
+/* (this is POSIX standard?).                                               */
+/*                                                                          */
+/* <header files>=                                                          */
+
+#include <limits.h>
+#include <float.h>
+
 /* For f2c we need this for typedefs.  We assume it's on an include         */
 /* path where (g)cc will find it.  The [[#define]] is to avoid the          */
 /* undefinition of macros like [[sgi]].                                     */

@@ -429,6 +429,16 @@ static int
 #if CALL_LIKE_SUN
   int cisnan_ (union float_uint_uchar *realnum);
 #endif
+
+#if CALL_LIKE_HPUX
+  void hgetlimits (int *IValueNotDet, double *ValueNotDet);
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void HGETLIMITS (int *IValueNotDet, double *ValueNotDet);
+#endif
+#if CALL_LIKE_SUN
+  void hgetlimits_ (int *IValueNotDet, double *ValueNotDet);
+#endif
 /****************************************************************************
 *  End of prototypes                                                        *
 *****************************************************************************/
@@ -2359,4 +2369,22 @@ int /* logical */ btest_ (a, b)
        if (cols[i].f > MDFBIG) {
          if (cols[i].f < wminmax[2*i]) wminmax[2*i] = cols[i].f;
          if (cols[i].f > wminmax[1+2*i]) wminmax[1+2*i] = cols[i].f; }
+}
+/* \subsection{Routines for Data Harvesting: {\tt subroutine hgetlimits}}    */
+/* Returns largest int and largest double as defined in <limits.h> and       */
+/* <float.h>                                                                 */
+#if CALL_LIKE_HPUX
+  void hgetlimits (IValueNotDet, ValueNotDet)
+  int *IValueNotDet;
+  double *ValueNotDet;
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void HGETLIMITS (int *IValueNotDet, double *ValueNotDet)
+#endif
+#if CALL_LIKE_SUN
+  void hgetlimits_ (int *IValueNotDet, double *ValueNotDet)
+#endif
+{
+  *IValueNotDet = INT_MAX;
+  *ValueNotDet  = DBL_MAX;
 }
