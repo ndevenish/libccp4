@@ -1573,8 +1573,8 @@ int *iunit, *nitems, *result;
     else {
       /**result = i;*/
       file_fatal ("QREAD: i/o error on ", file_name[*iunit]);
-      return;
     }
+    return;
   }
   *result = 0;
   n = *nitems;
