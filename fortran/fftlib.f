@@ -1907,3 +1907,79 @@ C
       END IF
 C
       END
+C
+C Obscure routines only used by SFALL
+C     ===============================
+      SUBROUTINE PRMVCI(PERM,JV,N,N1)
+C     ===============================
+C
+C---- Permute vector JV(N,3) by permutation matrix PERM
+C      N1 is first dimension of JV
+C
+C     .. Scalar Arguments ..
+      INTEGER N,N1
+C     ..
+C     .. Array Arguments ..
+      REAL PERM(4,4)
+      INTEGER JV(N1,3)
+C     ..
+C     .. Local Scalars ..
+      INTEGER I
+C     ..
+C     .. Local Arrays ..
+      REAL BV(3)
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC NINT
+C     ..
+C
+C---- Permute
+C
+      DO 10 I = 1,3
+        BV(I) = PERM(I,1)*FLOAT(JV(N,1)) + PERM(I,2)*FLOAT(JV(N,2)) +
+     +          PERM(I,3)*FLOAT(JV(N,3))
+   10 CONTINUE
+C
+C---- Copy back
+C
+      DO 20 I = 1,3
+        JV(N,I) = NINT(BV(I))
+   20 CONTINUE
+C
+      END
+C
+C     ===============================
+      SUBROUTINE PRMVCR(PERM,AV,N,N1)
+C     ===============================
+C
+C---- Permute vector AV(N,3) by permutation vector KP
+C           N1 is first dimension of AV
+C
+C     .. Scalar Arguments ..
+      INTEGER N,N1
+C     ..
+C     .. Array Arguments ..
+      REAL AV(N1,3),PERM(4,4)
+C     ..
+C     .. Local Scalars ..
+      INTEGER I
+C     ..
+C     .. Local Arrays ..
+      REAL BV(3)
+C     ..
+C
+C---- Permute
+C
+      DO 10 I = 1,3
+        BV(I) = PERM(I,1)*AV(N,1) + PERM(I,2)*AV(N,2) +
+     +          PERM(I,3)*AV(N,3)
+   10 CONTINUE
+C
+C---- Copy back
+C
+      DO 20 I = 1,3
+        AV(N,I) = BV(I)
+   20 CONTINUE
+C
+      END
+C
