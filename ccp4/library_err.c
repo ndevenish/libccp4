@@ -152,7 +152,7 @@ const char *ccp4_strerror(int error)
   return (ccp4_errlist[system].error_list[code]);
 }
 
-i/* Print out passed message and internal message based upon
+/* Print out passed message and internal message based upon
     ccp4_errno
     "message : error message "
     param message (const char *)
