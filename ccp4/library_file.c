@@ -2046,6 +2046,8 @@ int ccp4_file_seek (CCP4File *cfile, long offset, int whence)
         
   result = ccp4_file_raw_seek(cfile, offset*cfile->itemsize, whence);
 
+  if (result != -1) ccp4_file_clearerr(cfile);
+
   return ((result == -1) ? -1 : 0);
 }
 
