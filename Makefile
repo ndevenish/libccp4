@@ -23,7 +23,8 @@ RANLIB      = echo "ranlib"
 SHELL       = /bin/sh
 
 FTARGETS   = ccplib fftlib maplib parser rwatom rwbrook modlib \
-             symlib lcflib mtzlib diskio unix frodo_maplib hlplib
+             symlib lcflib mtzlib diskio unix frodo_maplib hlplib \
+             gdummy
 
 GRAPHICS   = plot84lib graflib graphics
 
@@ -43,7 +44,7 @@ ${FTARGETS} ${GRAPHICS}:
 	-/bin/rm -rf $@.dir
 	mkdir $@.dir
 	cd $@.dir ; fsplit $?         ; \
-	${FCOMP} ${FFLAGS} -c ${OPTIM} *.f -lccp4  ; \
+	${FCOMP} ${FFLAGS} -c ${OPTIM} *.f  ; \
 	ar r ${CCP4_LIB}/libccp4.a *.o
 	-/bin/rm -rf $@.dir
 	touch $@
@@ -90,3 +91,4 @@ library:	${CCP4_MASTER}/ccp4/lib/src/library.c
 ucurse:		${CCP4_MASTER}/ccp4/lib/src/ucurse.c
 frodo_maplib:	${CCP4_MASTER}/ccp4/lib/src/frodo_maplib.for
 testlib:	${CCP4_MASTER}/ccp4/lib/src/testlib.for
+gdummy:		${CCP4_MASTER}/ccp4/lib/src/gdummy.for
