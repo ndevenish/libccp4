@@ -15,7 +15,6 @@ C
 C     $Id$
 C
 C      CCFILL    Set specified number of elements of byte array
-C      CCPASZ    set array size suitable for current working set
 C      CCPALC    Call subroutine with allocated memory
 C      CCPALE    Call subroutine with allocated memory set from environment
 C      CCPBYI    Copy array of unsigned (or signed) bytes into integer array
@@ -223,46 +222,6 @@ C     ..
      +       (LENGTH (I), TYPE (I), LENG (I), I=1,N)
       ENDIF
       CALL CCPALC (ROUTNE, N, TYPE, LENG)
-      END
-C
-C
-C
-C_BEGIN_CCPASZ
-      SUBROUTINE CCPASZ(A,JSIZE,MINSIZ)
-C     =================================
-C
-C---- Set size of array A so that it remains in real memory
-C
-C---- On entry, JSIZE is dimension of array A
-C               MINSIZ is the minimum size
-C
-C---- On exit:  JSIZE is the max dimension of A for an array which
-C               will be held in memory to reduce page faulting.
-C               If this info. is
-C               not available just return JSIZE as input.
-C
-C----  On the Vax set JSIZE as dimension of array A set to the working
-C      set size less a guessed program size, to minimise page faults in
-C      using the array. Only the working set quota is used
-C      (not the extent)
-C      MINSIZ  <= JSIZE <= initial JSIZE
-C
-C **** NOT IMPLEMENTED ****
-C
-C Arguments:
-C ==========
-C
-C       A (I)   INTEGER or REAL ARRAY(*)
-C   JSIZE (I/O) INTEGER
-C  MINSIZ (I)   INTEGER
-C_END_CCPASZ
-C
-C     .. Scalar Arguments ..
-      INTEGER JSIZE,MINSIZ
-C     ..
-C     .. Array Arguments ..
-      REAL A(*)
-C     ..
       END
 C
 C
@@ -587,8 +546,8 @@ C     .. Local Arrays ..
       CHARACTER TYPES(4)*2,STATS(6)*8, STAT*8, TYP*2
 C     ..
 C     .. External Functions ..
-      INTEGER LENSTR
-      EXTERNAL LENSTR
+      INTEGER CCPNUN,LENSTR
+      EXTERNAL CCPNUN,LENSTR
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPOPN
@@ -598,6 +557,7 @@ C     .. Data statements ..
       DATA TYPES/'F','U','DF','DU'/
 C     ..
 C
+      IF (IUN .EQ. 0) IUN = CCPNUN()
       STAT = STATUS
       TYP = TYPE
       CALL CCPUPC(STAT)
@@ -671,16 +631,31 @@ C         ISTAT=0  Normal termination and stop.
 C         ISTAT=1  Fatal error and stop.
 C         ISTAT=2  Report severe warning.
 C         ISTAT=3  Report information.
-C            (ISTAT<0 also report latest system error
-C             normally only used as ISTAT=-1)
+C         ISTAT=4  Report from library
+C            (ISTAT=-1 also report latest system error
+C             and terminate)
 C
 C     ERRST (I)   CHARACTER*(*): message
+C
 C_END_CCPERR
 C
-      CHARACTER ERRSTR*(*), ERRBUF*100
+C     .. Arguments ..
       INTEGER ISTAT
-      EXTERNAL VAXVMS, CCPPNM, QPRINT, CEXIT, GETELAPSED
+      CHARACTER ERRSTR*(*)
+C     ..
+C     .. Locals ..
+      CHARACTER ERRBUF*100
+C     ..
+C     .. External Functions ..
+      INTEGER LENSTR
       LOGICAL VAXVMS
+      EXTERNAL LENSTR, VAXVMS
+C     ..
+C     .. External Routines ..
+      EXTERNAL CCPPNM, QPRINT, CEXIT, GETELAPSED, UGERR
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC ABS
 C
 C
       IF (ISTAT.LT.0) THEN
@@ -693,10 +668,9 @@ C     (avoid VMS `Message number 00000000')
           CALL QPRINT(0,ERRBUF)
         ENDIF
       ENDIF
-      ISTAT=ABS(ISTAT)
 
 C     construct appropriate ERRBUF
-      IF (ISTAT.LE.1) THEN
+      IF (ABS(ISTAT).LE.1) THEN
 C        report program name
          CALL CCPPNM (ERRBUF)
          IF (LENSTR(ERRBUF) .LT. 95) THEN
@@ -710,7 +684,7 @@ C        report program name
       ENDIF
 
 C     report messages and exit if appropriate
-      IF (ISTAT.LE.1) THEN
+      IF (ABS(ISTAT).LE.1) THEN
         CALL QPRINT(0,ERRBUF)
         IF (VAXVMS()) THEN
           IF (ISTAT.EQ.0) THEN
@@ -733,10 +707,7 @@ C         duplicate message to stderr, assumed to be connected to unit 0
         CALL QPRINT(0,ERRBUF)
         CALL QPRINT(0,' $$')
       ELSE
-        CALL QPRINT(0,' ')
-        CALL QPRINT(0,' $TEXT:Information: $$ comment $$ ')
         CALL QPRINT(0,ERRBUF)
-        CALL QPRINT(0,' $$')
       END IF
 C
       RETURN
@@ -2303,7 +2274,7 @@ C     .. Equivalences ..
 C     ..
       LOGICAL CALLED, LITEND
       INTEGER IND
-      EXTERNAL LITEND
+      EXTERNAL LITEND, CCPERR
       SAVE CALLED, IND
       DATA CALLED/.FALSE./
 C
@@ -2326,6 +2297,13 @@ C
       RR = ARRAY(NW)
       IBYT(IND) = JBYT(NB)
       II = IA
+      IF (II.LT.0 .OR. II.GT.255) THEN
+        IF (IFAIL .EQ. 0) THEN
+          CALL CCPERR(1,' *** Error in CCPTOI, bad convertion ***') 
+        ELSE
+          IFAIL = -1
+        ENDIF
+      ENDIF
       RETURN
 C
 C---- Integer*2 to integer value
@@ -2334,6 +2312,13 @@ C
       NIH = MOD(N-1,2) + 1
       RR = ARRAY(NW)
       II = JHALF(NIH)
+      IF (II.LT.0 .OR. II.GT.65535) THEN
+        IF (IFAIL .EQ. 0) THEN
+          CALL CCPERR(1,' *** Error in CCPTOI, bad convertion ***')
+        ELSE
+          IFAIL = -1
+        ENDIF
+      ENDIF
       END
 C
 C
@@ -2438,7 +2423,7 @@ C
      + '1##########################################################',/,
      + ' ##########################################################',/,
      + ' ##########################################################',/,
-     + ' ### CCP PROGRAM SUITE: ',A10,2X,'VERSION 3.2: ',A8,'##',/,
+     + ' ### CCP PROGRAM SUITE: ',A10,2X,'VERSION 3.3: ',A8,'##',/,
      + ' ##########################################################',/,
      + ' User: ',A,'  Run date: ',A8,'  Run time:',A,
      + /,/,/,
