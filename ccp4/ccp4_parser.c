@@ -98,6 +98,7 @@ static char rcsid[] = "$Id$";
 #define  CPARSERR_ExpOverflow         7
 #define  CPARSERR_ExpUnderflow        8
 #define  CPARSERR_MatToSymop          9
+#define  CPARSERR_SymopToMat         10
 
 /*------------------------------------------------------------------*/
 
@@ -451,7 +452,7 @@ int ccp4_parse_maxmin(CCP4PARSERARRAY *parsePtr, const double max_exponent,
 	    line.
 */
 
-int ccp4_parse(char *line, CCP4PARSERARRAY *parser)
+int ccp4_parse(const char *line, CCP4PARSERARRAY *parser)
 {
   int quotedstring,starttoken,endtoken;
   char this_char,next_char,matchquote;
@@ -1366,6 +1367,28 @@ ccp4_symop symop_to_rotandtrn(const char *symchs_begin, const char *symchs_end) 
 
 }
 
+/*------------------------------------------------------------------*/
+
+/* symop_to_mat4
+
+   Translates a single symmetry operator string into a 4x4 quine
+   matrix representation
+   NB Uses a utility function (symop_to_mat4_err) when reporting
+   failures.
+
+   Syntax of possible symop strings:
+
+   real space symmetry operations, e.g. X+1/2,Y-X,Z
+   reciprocal space operations,    e.g. h,l-h,-k
+   reciprocal axis vectors,        e.g. a*+c*,c*,-b*
+   real space axis vectors,        e.g. a,c-a,-b
+
+   The strings should not contain spaces, and the coordinate and
+   translation parts may be in either order.
+
+   The function returns 1 on success, 0 if there was a failure to
+   generate a matrix representation.
+*/
 int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
 {
   int no_real =0, no_recip = 0, no_axis = 0;          /* counters */
@@ -1377,8 +1400,8 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
   int j,k;                                 /* loop variables */
   int Isep = 0;                             /* parsed seperator? */
 
-  /* initialise and clear the relevant */
-  /* use knowledge that are using [4][4] for rot */
+  /* initialise and clear the relevant array */
+  /* use knowledge that we are using a [4][4] for rot */
   for (j = 0 ; j !=4 ; ++j) 
     for (k = 0; k !=4 ; ++k)
       rot[(k << 2) +j] = 0.0f; 
@@ -1387,17 +1410,22 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
   while (ptr_symchs < symchs_end) {
     ch = *ptr_symchs;
 
-    /* parse it */
-    if (isspace(ch) || (ch == '*' && no_axis != 0) ) {
+    /* Parse symop */
+    if (isspace(ch)) {
+      /* Symop strings cannot contain spaces and only one
+	 symop is allowed per line */
+      symop_to_mat4_err(symchs_begin);
+      return 0 ;
+    } else if (ch == '*') {
+      /* Ignore * as it will be part of e.g. a*+c*,c*,-b* */
       ++ptr_symchs;
       continue;
-    } else if (ch == ',' || ch == '*') {
+    } else if (ch == ',') {
       ++ptr_symchs;
       if (value == 0.0f && col == 3) {
 	/* nothing set, this is a problem */
-	fprintf(stderr, "Problem \n");
-	return nsym ;
-	/* salvage what we can */
+	ccp4_signal(CPARSER_ERRNO(CPARSERR_SymopToMat),"symop_to_mat4",NULL);
+	return 0 ;
       } else {
 	Isep = 1;     /* drop through to evaluation*/
       }
@@ -1455,11 +1483,16 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
     } else if ( ch == '/') {
       ++ptr_symchs;
       if (value == 0.0f) {
-	fprintf(stderr,"ooops\n");
 	/* error */
+	symop_to_mat4_err(symchs_begin);
+	return 0;
       }
       value2 = strtod(ptr_symchs, &cp);
-      if (!value2) return (1);
+      if (!value2) {
+	/* error */
+	symop_to_mat4_err(symchs_begin);
+	return 0;
+      }
       /* Nb don't apply the sign to value here
 	 It will already have been applied in the previous round */
       value = (float) value/value2;
@@ -1483,16 +1516,6 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
       Isep = 0;
       ++nops;
       sign = 1.0f;
-      if (nops == 3) {
-	nops = 0;
-	++nsym;
-	/* init for next operator */
-	for (j = 0 ; j !=4 ; ++j) 
-	  for (k = 0; k !=4 ; ++k)
-	    rot[(((nsym << 2) +k) << 2) +j] = 0.0f; 
-	rot[(((nsym << 2) +3) << 2) +3] = 1.0f;
-
-      }
     }
 
     /* reset for next cycle */
@@ -1501,12 +1524,26 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
 
   }
 
-  /* tidy up */
-  if (value)
-    rot[(((nsym << 2) + nops) << 2) + col] = value;
+  /* Tidy up last value */
+  if (value) rot[(((nsym << 2) + nops) << 2) + col] = value;
 
-  return ++nsym ;
-      
+  if (nops<2) {
+    /* Processed fewer than 3 operators, raise an error */
+    symop_to_mat4_err(symchs_begin);
+    return 0;
+  }
+
+  /* Return with success */
+  return 1;
+}
+
+/* Internal function: report error from symop_to_mat4_err */
+int symop_to_mat4_err(const char *symop)
+{
+  printf("\n **SYMMETRY OPERATOR ERROR**\n\n Error in interpreting symop \"%s\"\n\n",
+	 symop);
+  ccp4_signal(CPARSER_ERRNO(CPARSERR_SymopToMat),"symop_to_mat4",NULL);
+  return 1;
 }
 
 ccp4_symop mat4_to_rotandtrn(const float rsm[4][4]) {
