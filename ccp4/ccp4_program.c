@@ -20,20 +20,23 @@ static char rcsid[] = "$Id$";
 
 char *ccp4_prog_vers(char *progvers) 
 {
-  static char *programversion=NULL;
-  int         lname;
+  static char programversion[MAXLEN_PROGVERSION]="";
+  int         i;
 
   if (progvers) {
-    lname = strlen(progvers)+1;
-    programversion = (char *) realloc(programversion,lname);
-    strncpy(programversion,progvers,lname);
+    i = 0;
+    while (progvers[i] != '\0' && i < MAXLEN_PROGVERSION) {
+      programversion[i] = progvers[i];
+      ++i;
+    }
+    programversion[MAXLEN_PROGVERSION-1] = '\0';
   }
   return programversion;
 }
 
 /*------------------------------------------------------------------*/
 
-/* ccp4programname
+/* ccp4ProgramName
 
    Set or return program name
 
@@ -43,13 +46,16 @@ char *ccp4_prog_vers(char *progvers)
 */
 char *ccp4ProgramName(char *progname)
 {
-  static char *programname=NULL;
-  int         lname;
+  static char programname[MAXLEN_PROGNAME]="";
+  int         i;
 
   if (progname) {
-    lname = strlen(progname)+1;
-    programname = (char *) realloc(programname,lname);
-    strncpy(programname,progname,lname);
+    i = 0;
+    while (progname[i] != '\0' && i < MAXLEN_PROGNAME) {
+      programname[i] = progname[i];
+      ++i;
+    }
+    programname[MAXLEN_PROGNAME-1] = '\0';
   }
   return programname;
 }
@@ -112,6 +118,8 @@ int ccp4_licence_exists(const char *name)
       strcpy(filename,filepath);
       strcpy(filename+lpath,"/.agree2ccp4");
       if (ccpexists(filename)) sue = 0;
+      /* Filename is allocated but not freed?
+	 What about filepath? */
     }
     if (sue == 1) {
       filepath = (char *) getenv("HOME");
@@ -121,6 +129,8 @@ int ccp4_licence_exists(const char *name)
         strcpy(filename,filepath);
         strcpy(filename+lpath,"/.agree2ccp4");
         if (ccpexists(filename)) sue = 0;
+	/* Filename is allocated but not freed?
+	   What about filepath? */
       }
     }
     if (sue == 1) {
