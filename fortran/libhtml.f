@@ -393,7 +393,7 @@ C     dest= the link destination
        if (html) then
         write(lpt,20)
      +    chtml(1:lenstr(chtml)),dest,key,rest(1:lenstr(rest))
- 20     format('<a href="',a,'/',a,'">',a,'</a> ',a)
+ 20     format(' Data line--- <a href="',a,'/',a,'">',a,'</a> ',a)
        else
         write(lpt,30)key,rest(1:lenstr(rest))
  30     format(' Data line--- ',a,a)
