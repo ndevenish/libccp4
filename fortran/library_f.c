@@ -655,3 +655,21 @@ int ierrno () {
 
 #endif             /*  HPUX and AIX support */    
 
+#if ( defined (__APPLE__) && !defined (__GNUC__)
+/* apple xlf support */
+void gerror_ (str, Lstr)
+char *str;
+int  Lstr;
+{
+  int i;
+
+  if (errno == 0) {             /* Avoid `Error 0' or some such message */    
+    for (i=1; Lstr; i++)
+      str[i] = ' ';
+  } else {
+    (void) strncpy (str, strerror (errno), Lstr);
+    for (i = strlen (str); i < Lstr; i++) str[i] = ' ';  /* pad with spaces */
+  }
+} /* End of gerror (str, Lstr) */
+
+#endif /* end of apple xlf support */
