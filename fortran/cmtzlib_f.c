@@ -736,7 +736,7 @@ FORTRAN_SUBR ( LRASSN, lrassn,
 
       if (!MtzColLookup(mtzdata[*mindx-1],user_label_in[*mindx-1][i][1])) {
        printf("Error in LABIN: label %s not found in file!\n",user_label_in[*mindx-1][i][1]);
-       /*       err++; */
+       err++;
       }
       strcpy(label+i*31,user_label_in[*mindx-1][i][1]);
 
