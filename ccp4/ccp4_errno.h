@@ -3,15 +3,16 @@
      CCP4 licence agreement as `Part i)' software.  See the conditions
      in the CCP4 manual for a copyright statement.
 */
+/** @file ccp4_errno.h
+ *  Header file for error handling routines
+ *  base error codes on system errors. 
+ */
 
-/*  base error codes on system errors. */
 #ifndef __CCP4_ERROR_GUARD
 #define __CCP4_ERROR_GUARD
 
 #include <errno.h>
-/* initially 
-   || 12 bits (system) | 4 bits (level) | 16 bits (code) ||
-*/
+
 static char rcsidhe[] = "$Id$";
 
 #ifndef CCP4_ERRSYSTEM
@@ -44,6 +45,35 @@ static char rcsidhe[] = "$Id$";
 
 #define CCP4_COUNT(x) sizeof(x)/sizeof(x[0])
 
+/** @global ccp4_errno: global variable that stores the error last error
+ *           code from the ccp4 libraries 
+ * | 12 bits - library | 4 bits - level | 16 bits - code |
+ *
+ *  associated macros
+ *    CCP4_ERR_SYS   0     OS error
+ *    CCP4_ERR_FILE  1     io library
+ *    CCP4_ERR_COORD 2     mmdb
+ *    CCP4_ERR_MTZ   3     cmtz
+ *    CCP4_ERR_MAP   4     map io
+ *    CCP4_ERR_UTILS 5     utility routines
+ *    CCP4_ERR_PARS  6     parser routines
+ *    CCP4_ERR_SYM   7     csymlib 
+ *
+ * and bit manipulation
+ *    CCP4_ERRSYSTEM   system mask for setting
+ *    CCP4_ERRLEVEL    error level mask
+ *    CCP4_ERRSETLEVEL error level mask for setting error level
+ *    CCP4_ERRGETSYS   mask for returning system
+ *    CCP4_ERRGETLEVEL mask for returning level
+ *    CCP4_ERRGETCODE  mask for returning the code
+ *
+ * error levels
+ *    0  Success
+ *    1  Informational
+ *    2  Warning 
+ *    3  Error
+ *    4  Fatal
+ */ 
 extern int ccp4_errno;
 
 #ifdef __cplusplus
@@ -51,15 +81,44 @@ namespace CCP4 {
 extern "C" {
 #endif
 
+/** Print out passed message and internal message based upon
+ *  ccp4_errno
+ *            "message : error message "
+ * @param message (const char *)
+ * @return void
+ */
 void ccp4_error( const char *);
 
+/** Obtain character string based upon error code.
+ *  Typical use ccp4_strerror(ccp4_errno)
+ *  The returned string is statically allocated in the
+ *  library_err.c file and should not be freed.
+ * @param error code (int)
+ * @return const pointer to error message (const char *) 
+ */
 const char *ccp4_strerror( int);
 
+/** Wrapper for ccp4_error which also calls exit(1)
+ * @param message (const char *)
+ * @return void
+ */
 void ccp4_fatal(const char *);
 
-int cfile_perror(const char *);
+/** Routine to set ccp4_errno and print out message for
+ *  error tracing. This should be the only way in
+ *  which ccp4_errno is set.
+ *  See error codes above for levels and systems.
+ *  A callback with prototype void function(void)
+ *  may also be passed to the routine.
+ *  Note: FATAL calls exit(1). 
+ * @param error code (int)
+ * @param message (const char * const) 
+ * @param callback (point to routine void (*)(void) )
+ * @return void
+ */
+void ccp4_signal(int, const char *const, void (*)());
 
-void ccp4_signal(int, const char * const, void (*)());
+int cfile_perror(const char *);
 
 #ifdef __cplusplus
 }

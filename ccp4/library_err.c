@@ -15,17 +15,21 @@
 #include "ccp4_errno.h"
 static char rcsid[] = "$Id$";
 
+/** @global ccp4_errno: global to store data 
+*/
 int ccp4_errno = 0;
 
+/* error_levels: error level descriptions */
 static const char * const error_levels[] =
   {
-    "Success",
-    "Informational",
-    "Warning",
-    "Error",
-    "FATAL ERROR"
+    "Success"                                    /* 0 */
+    "Informational"                              /* 1 */
+    "Warning",                                   /* 2 */
+    "Error",                                     /* 3 */
+    "FATAL ERROR"                                /* 4 */
 };
 
+/* file io errors */
 static const char *const cfile_errlist[] =
   {
     "Error 0",                                   /* 0 = CIO_Ok */
@@ -43,6 +47,7 @@ static const char *const cfile_errlist[] =
     "Unlink failed"                              /* 12 = CIO_UnlinkFail */
   };
 
+/* map library errors */
 static const char *const cmap_errlist[] =
   {
     "Error 0",                                   /* 0 = CMERR_Ok */
@@ -61,6 +66,7 @@ static const char *const cmap_errlist[] =
     "Too many open files",                       /* 13 = CMERR_MaxFile */
   };
 
+/* mtz library errrors */
 static const char *const cmtz_errlist[] =
   {
     "Error 0",                                   /* 0 = CMTZERR_Ok */
@@ -81,6 +87,7 @@ static const char *const cmtz_errlist[] =
     "File not identified as MTZ",                /* 15 = CMTZERR_NotMTZ */
   };
 
+/* parser library errors */
 static const char *const cpars_errlist[] =
   {
     "Error 0",                                   /* 0 = CPARSERR_Ok */
@@ -95,6 +102,7 @@ static const char *const cpars_errlist[] =
     "Problem in mat4_to_symop",                  /* 9 = CPARSERR_MatToSymop */
   };
 
+/* symmetry library errors */
 static const char *const csym_errlist[] =
   {
     "Error 0",                                   /* 0 = CSYMERR_Ok */
@@ -107,6 +115,7 @@ struct error_system {
   const char * const *error_list;
 };
 
+/* construct error list */
 static const struct error_system ccp4_errlist[] = {
     {"system", 0, 0, },
     {"library_file", CCP4_COUNT(cfile_errlist), cfile_errlist,},
@@ -119,7 +128,14 @@ static const struct error_system ccp4_errlist[] = {
 };
 
 static const int ccp4_system_nerr = CCP4_COUNT(ccp4_errlist);
-  
+
+/* Obtain character string based upon error code.
+    Typical use ccp4_strerror(ccp4_errno)
+    The returned string is statically allocated in the
+    library_err.c file and should not be freed.
+    param error code (int)
+    returns const pointer to error message.
+*/
 const char *ccp4_strerror(int error)
 {
   int system = CCP4_ERRGETSYS(error);
@@ -136,6 +152,12 @@ const char *ccp4_strerror(int error)
   return (ccp4_errlist[system].error_list[code]);
 }
 
+i/* Print out passed message and internal message based upon
+    ccp4_errno
+    "message : error message "
+    param message (const char *)
+    return void      
+*/
 void ccp4_error (const char *msg)
 {
   const char *colon;
@@ -155,7 +177,10 @@ void ccp4_error (const char *msg)
       fprintf (stderr, "%s%s\n",
                "Last system message: ",strerror(errno)); }
 }
-                 
+
+/* Wrapper for ccp4_error which also calls exit(1)
+   param message (const char *)
+*/
 void ccp4_fatal (const char *message)
 {
   ccp4_error(message);
@@ -179,6 +204,17 @@ int CFile_Perror(const char *msg)
   return -1;
 }
 
+/* Routine to set ccp4_errno and print out message for
+    error tracing. This should be the only way in
+    which ccp4_errno is set.
+    See error codes above for levels and systems.
+    A callback with prototype void function(void)
+    may also be passed to the routine.
+    Note: FATAL calls exit(1).
+    param error code (int)
+    param message (const char * const)
+    param callback (point to routine)
+*/
 void ccp4_signal(const int code, const char * const msg, 
 		 void (*callback) ())
 {
