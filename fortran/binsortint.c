@@ -1,10 +1,10 @@
 /*************************************************************************
 	binsortint.c
-	Z130891
+	Z260193
 
 IMPORTANT
 
-This version is compatible with binsort version Z130891.
+This version is compatible with binsort version Z130891 and later.
 Agains version Z080389 arguments of SRTBEG have been changed.
 Modify and recompile your programs.
 
@@ -30,6 +30,11 @@ For information about key type values see binsortkey.h
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
+#ifndef NOUNISTD		/* ESV, for instance doesn'r have it */
+#  include <unistd.h>
+#  include <malloc.h>
+#endif
+#include <stddef.h>
 
 static int	fildesout[2],	/* file descriptors for "r" & "w" access */
 		fildesin[2];
@@ -113,6 +118,10 @@ int	        *memsize;       /* size of memory (BYTES) used by sort */
     dup(fildesin[1]);
     close(fildesout[1]);
     close(fildesin[0]);
+    if (errno != 0) {
+      perror("Binsort streams");
+      _exit(255);
+    }
 
     /* prepare binsort command line */
 
@@ -120,6 +129,10 @@ int	        *memsize;       /* size of memory (BYTES) used by sort */
     if (*memsize)
       argc += 2;
     argv = (char **)malloc(argc * sizeof(char *));
+    if (argv == NULL) {
+      fprintf(stderr,"malloc failed in SRTBEG\n");
+      _exit(255);
+    }
     argv [argc-1] = (char *)NULL;
     pargv = argv;
     *pargv++ = binsortname;
@@ -134,6 +147,10 @@ int	        *memsize;       /* size of memory (BYTES) used by sort */
     for (numkeys = *nkeys; numkeys; --numkeys, keybuf += 5) {
       *pargv++ = keyswitch;                /* -k keydescription */
       *pargv = (char *)malloc(256);
+      if (*pargv == NULL) {
+	fprintf(stderr,"malloc failed in SRTBEG\n");
+	_exit(255);
+      }
       switch (keybuf [0]) {
 	case CHAR:     keydatatype = 'c';
 	               break;
@@ -166,12 +183,18 @@ int	        *memsize;       /* size of memory (BYTES) used by sort */
     }
 
     execvp(binsortname, argv);
+    perror("Trying to execute binsort");
+    _exit(errno);
+  }
+  else if (pid == -1) {		/* fork failed */
+    perror("Trying to fork for binsort");
+    return(errno);
   }
   else {                         /* THE PARENT */
     close(fildesout[0]);
     close(fildesin[1]);
     if (!(filout = fdopen(fildesout[1], "w")))
-      return(errno);
+      return(255);
   }
   return(0);
 }
@@ -207,10 +230,10 @@ SRTRLS:	Release one record into Sort
 
 char		*record;
 {
-  register int     ret;
+  register unsigned long ret;
 
   ret = fwrite(record, sizeof(char), recl, filout);
-  return(ret == recl ? 0 : errno);
+  return(ret == recl ? 0 : ferror(filout));
 }
 
 /*=======================================================
@@ -244,7 +267,7 @@ SRTMRG:	Merge - finish release phase
 {
     fclose(filout);
     if (!(filin = fdopen(fildesin[0], "r")))
-      return(errno);
+      return(255);
     return(0);
 }
 
@@ -290,5 +313,6 @@ char		*record;
       return(-1);
     }
     else
-      return(errno);
+      return(ferror(filin));
 }
+
