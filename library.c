@@ -268,6 +268,7 @@
 #if defined(F2C) || defined(G77)
 #  undef CALL_LIKE_SUN
 #  define CALL_LIKE_SUN 1
+#  define KNOWN_MACHINE
 #endif
 /* If we haven't identified the system type, we want to stop with an        */
 /* error message.  Indenting [[#error]] works with \ac{ansi} C              */
