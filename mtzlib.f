@@ -7497,12 +7497,16 @@ C
           IF ((NCOLS(MINDX).GE.3).AND.(CTYPE(1,MINDX).EQ.'H')
      +        .AND.(CTYPE(2,MINDX).EQ.'H')
      +        .AND.(CTYPE(3,MINDX).EQ.'H')
-     +        .AND.(SRANGE(1,MINDX).GT.0.0)
-     +        .AND.(SRANGE(2,MINDX).GT.0.0)) THEN
+     +        .AND.((SRANGE(1,MINDX).GT.0.0)
+     +        .OR.(SRANGE(2,MINDX).GT.0.0) ) ) THEN
 C
             STROUT = '*  Resolution Range :'
-            RESMIN = 1./SQRT(SRANGE(1,MINDX))
-            RESMAX = 1./SQRT(SRANGE(2,MINDX))
+            RESMIN = 1000.0
+            IF(SRANGE(1,MINDX).GT.0.000001)
+     +        RESMIN = 1./SQRT(SRANGE(1,MINDX))
+            RESMAX = 0.5
+            IF(SRANGE(2,MINDX).GT.0.000001)
+     +        RESMAX = 1./SQRT(SRANGE(2,MINDX))
 C
 C                *************************
             CALL PUTLIN(STROUT,'CURWIN')
