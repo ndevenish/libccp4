@@ -811,6 +811,7 @@ char *ccp4spg_to_shortname(char *shortname, const char *longname) {
 
   const char *ch1;
   char *ch2;
+  int trigonal=0;
 
   ch1 = longname;
   ch2 = shortname;
@@ -821,8 +822,11 @@ char *ccp4spg_to_shortname(char *shortname, const char *longname) {
     return  ch2;
   }
 
+  /* trigonal are another exception, don't want to lose significant " 1" */
+  if (!strncmp(ch1,"P 3",3) || !strncmp(ch1,"P -3",4) || !strncmp(ch1,"R 3",3) || !strncmp(ch1,"R -3",4)) trigonal=1;
+
   while (*ch1 != '\0') {
-    if (!strncmp(ch1," 1",2)) {
+    if (!trigonal && !strncmp(ch1," 1",2)) {
       ch1 += 2;
     } else {
       /* take out blanks - note check for " 1" takes precedence */
