@@ -54,9 +54,11 @@ C
         BUFFER(I) = 0.0
    10 CONTINUE
 C
-      OPEN (10,FILE=NAME1,STATUS='NEW',ERR=70)
+      I = 0
+      CALL CCPDPN(10,NAME1,'NEW','F',0,I)
+      IF (I.NE.0) CALL CCPERR(1,' Failed to open file '//NAME1)
       WRITE (10,FMT='(A)') ' I am the test file, delete me.'
-      CLOSE (10)
+      CLOSE (10,STATUS='DELETE')
 C
 C---- Start of Tests
 C
@@ -229,11 +231,6 @@ C
       CALL UGTENV ('DISKIO',ENVNAM)
       IF (ENVNAM.NE.' ' ) CALL CUNLINK (ENVNAM)
       CALL CCPERR(0,'Normal Termination')
-C
-C---- Error for file open
-C
-   70 ERRSTR = ' Failed to open file '//NAME1
-      CALL CCPERR(1,ERRSTR)
 C
 C---- Format Statements
 C
