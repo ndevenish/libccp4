@@ -655,7 +655,8 @@ C_BEGIN_QNAN
 C
 C QNAN - return canonical `magic number'
 C
-C Usage:  REAL FUNCTION QNAN ()
+C Usage:  SUBROUTINE QNAN (VALUE)
+C Output: VALUE         REAL `magic' value
 C
 C     Returns a `magic number' which can be used to indicate the absence
 C     of data in an MTZ file.  In the current implementation, this is a
@@ -663,7 +664,3 @@ C     NaN in IEEE or Rop on a VAX or Convex native.
 C
 C_END_QNAN
 C======================================================================
-      REAL FUNCTION QNAN()
-      EXTERNAL CNAN
-      CALL CNAN(QNAN)
-      END

@@ -2084,25 +2084,26 @@ whether a given value is such.  These are architecture-dependent
 bit-level operations, hence their presence in the C code.
 
 The suite doesn't currently use these routines, but should do soon.
-\subsection{Setting a value: {\tt real function qnan()}}
+\subsection{Setting a value: {\tt subroutine qnan(value)}}
 
-This was initially implemented directly as a function returning a
-[[float]]/[[REAL] but this causes problems on VMS (and Convex?)
-returning the Rop for some reason.  It turns out to be OK if we set
-the value in [[cnan]] called as a \ft{} subroutine and have a [[REAL
-FUNCTION]] version of [[QNAN]] done in \ft{}.
+[[qnan]] was originally a \ft{} [[real function]] returning the value
+(and actually done in 2 stages) with a subroutine implementation like
+this called by the \ft{} function to avoid problems under \idx{VMS}
+and native \idx{Convex}.  However, the \idx{f2c} calling convention
+for a function loses in that case since it assumes a [[double]] value
+returned which is cast to [[float]] with a SIGFPE, sigh.
 <<magic numbers>>=
 #if CALL_LIKE_HPUX
-  void cnan (realnum)
+  void qnan (realnum)
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void CNAN (realnum)
+  void QNAN (realnum)
 #endif
 #if CALL_LIKE_SUN
-  void cnan_ (realnum)
+  void qnan_ (realnum)
 #endif
   union float_uint_uchar *realnum;
-@ %def cnan
+@ %def qnan
 @ We have a choice of \idx{NaN} values in
 \ac{ieee}\index{IEEE@\ac{ieee}} arithmetic.
 [[0xfffa5a5a]] is the one used by the \idx{MIPS} compilers as an

@@ -1261,13 +1261,13 @@ C
 C#######################################################################
 C
 C
-	REAL FUNCTION QNAN()
+	SUBROUTINE QNAN(VALUE)
 C====	Get undefined number value.
 	IMPLICIT NONE
 	INTEGER NAN,ROPC,ROPV
 	PARAMETER (NAN='FFFA5A5A'X,ROPC='80000000'X,ROPV='8000'X)
 	INTEGER INAN,MTIT,MTRT
-	REAL RNAN
+	REAL RNAN, VALUE
 	EQUIVALENCE(INAN,RNAN)
 C
 	CALL QIRTYP(MTIT,MTRT)
@@ -1280,7 +1280,7 @@ C
 	ELSE
 	  CALL CCPERR(1,'*** FATAL: QNAN machine type undefined.')
 	ENDIF
-	QNAN=RNAN
+	VALUE=RNAN
 	END
 C
 C
