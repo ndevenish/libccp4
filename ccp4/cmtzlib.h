@@ -326,6 +326,13 @@ int MtzNcolsInSet(const MTZSET *set);
  */
 int MtzNumActiveColsInSet(const MTZSET *set);
 
+/** For a given dataset, return number of columns in that dataset
+ * which have a source in an input file (i.e. non-zero source attribute).
+ * @param set pointer to dataset
+ * @return number of source columns
+ */
+int MtzNumSourceColsInSet(const MTZSET *set);
+
 /** For a given dataset, return number of batches in that dataset.
  * @param mtz pointer to MTZ struct
  * @param set pointer to dataset
@@ -391,6 +398,13 @@ int MtzNcol(const MTZ *mtz);
  * @return number of columns
  */
 int MtzNumActiveCol(const MTZ *mtz);
+  
+/** Get the number of columns in the MTZ data structure which have 
+ * a source in an input file (i.e. non-zero source attribute).
+ * @param mtz pointer to MTZ struct
+ * @return number of columns
+ */
+int MtzNumSourceCol(const MTZ *mtz);
 
 /** Return the full path name of a column as "/xname/dname/label" 
  * Memory for the path name is assigned with malloc, and can

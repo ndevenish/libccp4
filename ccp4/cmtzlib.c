@@ -2847,6 +2847,15 @@ int MtzNumActiveColsInSet(const MTZSET *set)
   return icol;
 }
 
+int MtzNumSourceColsInSet(const MTZSET *set)
+{
+  int k,icol=0;
+
+  for (k=0; k < set->ncol; k++)
+    if (set->col[k]->source) ++icol;
+  return icol;
+}
+
 int MtzNbatchesInSet(const MTZ *mtz, const MTZSET *set)
 {
   int i,ibatch=0;
@@ -2913,6 +2922,15 @@ int MtzNumActiveCol(const MTZ *mtz)
   for (x=0; x < mtz->nxtal; x++)
     for (s=0; s < mtz->xtal[x]->nset; s++)
       icol += MtzNumActiveColsInSet(mtz->xtal[x]->set[s]);
+  return icol;
+}
+  
+int MtzNumSourceCol(const MTZ *mtz)
+{
+  int x,s,icol=0;
+  for (x=0; x < mtz->nxtal; x++)
+    for (s=0; s < mtz->xtal[x]->nset; s++)
+      icol += MtzNumSourceColsInSet(mtz->xtal[x]->set[s]);
   return icol;
 }
    
