@@ -1,4 +1,8 @@
-$SET DEFAULT clibs:
+$!
+$ SET NOVERIFY
+$ CCP4_DEF
+$ CLIBS
+$!
 $ type sys$input
 This compiles and link modules to make CCPLIB.OLB on VAX/VMS.
 
@@ -15,8 +19,6 @@ Both versions also require CCPLIB.FOR, VMS.FOR and LIBRARY.C.
 
 First compile CCPLIB.FOR, VMS.FOR and LIBRARY.C ...
 $!
-$ FORTRAN CLIBS:ATOMSF
-$ FORTRAN CLIBS:ERRLIB
 $ FORTRAN CLIBS:FFTLIB
 $ FORTRAN CLIBS:MAPLIB
 $ FORTRAN CLIBS:PARSER
@@ -30,7 +32,6 @@ $ FORTRAN CLIBS:LCFLIB
 $ FORTRAN CLIBS:MTZLIB
 $ FORTRAN CLIBS:PLOT84LIB
 $ FORTRAN CLIBS:GRAFLIB
-$ FORTRAN CLIBS:GRAPHICS
 $ FORTRAN CLIBS:CCPLIB
 $ FORTRAN CLIBS:VMS
 $ CC /DEF=VAX  CLIBS:LIBRARY
@@ -49,8 +50,6 @@ $!
 $   write sys$output "Now create the library ''p1'.OLB ..."
 $!
 $   LIBRARY/CREATE 'p1'  - 
-CLIBS:ATOMSF,            -
-CLIBS:ERRLIB,            -
 CLIBS:CCPLIB,            -
 CLIBS:VMS,               -
 CLIBS:LIBRARY,           -
@@ -70,14 +69,11 @@ CLIBS:BLOCKMOVE,         -
   CLIBS:MTZLIB,          -
   CLIBS:PLOT84LIB,       -
   CLIBS:GRAFLIB,         -
-  CLIBS:GRAPHICS,        -
   CLIBS:VMS
 $!            
 $   write sys$output "Last clean up the object modules ..."
 $!
 $DELETE/LOG               -
-CLIBS:ATOMSF.OBJ;,        -
-CLIBS:ERRLIB.OBJ;,        -
 CLIBS:CCPLIB.OBJ;,        -
 CLIBS:VMS.OBJ;,           -
 CLIBS:LIBRARY.OBJ;,       -
@@ -96,9 +92,7 @@ CLIBS:SYMLIB.OBJ;,        -
 CLIBS:LCFLIB.OBJ;,        -
 CLIBS:MTZLIB.OBJ;,        -
 CLIBS:PLOT84LIB.OBJ;,     -
-CLIBS:GRAFLIB.OBJ;,       -
-CLIBS:GRAPHICS.OBJ;,      -
-CLIBS:VMS.OBJ;
+CLIBS:GRAFLIB.OBJ;
 $!
 $ else
 $!
@@ -108,8 +102,6 @@ $   FORTRAN CLIBS:DISKIO
 $!
 $   write sys$output "Now create the library ''p1'.OLB ..."
 $   LIBRARY/CREATE 'p1' -
-CLIBS:ATOMSF,            -
-CLIBS:ERRLIB,            -
 CLIBS:CCPLIB,            -
 CLIBS:VMS,               -
 CLIBS:LIBRARY,           -
@@ -127,13 +119,10 @@ CLIBS:DISKIO,            -
   CLIBS:MTZLIB,          -
   CLIBS:PLOT84LIB,       -
   CLIBS:GRAFLIB,         -
-  CLIBS:GRAPHICS,        -
   CLIBS:VMS
 $!
 $   write sys$output "Last clean up the object modules ..."
 $ DELETE/LOG              -
-CLIBS:ATOMSF.OBJ;,        -
-CLIBS:ERRLIB.OBJ;,        -
 CLIBS:CCPLIB.OBJ;,        -
 CLIBS:VMS.OBJ;,           -
 CLIBS:LIBRARY.OBJ;,       -
@@ -150,8 +139,6 @@ CLIBS:SYMLIB.OBJ;,        -
 CLIBS:LCFLIB.OBJ;,        -
 CLIBS:MTZLIB.OBJ;,        -
 CLIBS:PLOT84LIB.OBJ;,     -
-CLIBS:GRAFLIB.OBJ;,       -
-CLIBS:GRAPHICS.OBJ;,      -
-CLIBS:VMS.OBJ;
+CLIBS:GRAFLIB.OBJ;       
 $!
 $ endif
