@@ -765,6 +765,7 @@ C     ERRSTR should be big enough to hold more than 2 255-long paths
      +     NAMFIL*255,HANDLE*5,OPNVAR*20, ACCESS*10, DISPOS*6
       INTEGER UNKNWN, SCRTCH, OLD, NEW, RDONLY, PRINTR
       PARAMETER (UNKNWN=1, SCRTCH=2, OLD=3, NEW=4, RDONLY=5, PRINTR=6)
+      LOGICAL LNONAM
 C     ..
 C     .. Local Arrays ..
       CHARACTER STAT(6)*7, OUTLIN*100
@@ -833,12 +834,9 @@ C       scratch file
 C
 C     check for `logical name' referencing real file
       CALL UGTENV(LOGNAM,NAMFIL)
+      LNONAM = .FALSE.
       IF (NAMFIL.EQ.' ') THEN
-        IF (.NOT. CCPEXS(LOGNAM)) THEN
-          ERRSTR = 'WARNING: CCPOPN Logical name '//LOGNAM
-          ERRSTR(LENSTR(ERRSTR)+2:) = 'has not been assigned to a file'
-          CALL CCPERR(3,ERRSTR)
-        END IF
+        IF (.NOT. CCPEXS(LOGNAM)) LNONAM = .TRUE.
         NAMFIL = LOGNAM
       END IF
 C     Unix null device (defined as canonical if programs need it)
@@ -903,6 +901,12 @@ C     don't report UNKNOWN if actually SCRATCH
       IF (ISTAT.EQ.SCRTCH) ST = 'SCRATCH'
       IF (IOS.NE.0) THEN
         IF (IFAIL.EQ.0) THEN
+C         warning if there was no file associated with logical name
+          IF (LNONAM) THEN
+             ERRSTR = 'CCPOPN Logical name '//LOGNAM
+             ERRSTR(LENSTR(ERRSTR)+2:) = 'has no associated file name'
+             CALL CCPERR(2,ERRSTR)
+          END IF
 C         hard failure
           WRITE (ERRSTR,FMT=6002) IUN, NAMFIL(1:LENSTR(NAMFIL)),
      +         LOGNAM(1:LENSTR(LOGNAM))
