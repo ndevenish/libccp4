@@ -1718,6 +1718,9 @@ FORTRAN_SUBR ( LWCELL, lwcell,
 
  if (MtzCheckSubInput(*mindx,"LWCELL",2)) return;
 
+ /* nothing to do if input cell is zero */
+ if (cell[0] < 0.001) return;
+
  mtz = mtzdata[*mindx-1];
  if (mtz->nxtal == 0) {
   ccp4_lwidx(mtz, xname, dname, pname, cell, &datwave);
