@@ -25,8 +25,6 @@
      ccp4fyp(argc,argv)
      Initialise environment for CCP4 programs and parse the
      command line arguments
-     FIXME doesn't obey the CCP4FYP search logic for environ.def
-     and default.def
 
      ccp4setenv(logical_name,value,envname,envtype,envext,ienv,
      no_overwrt)
@@ -187,23 +185,6 @@ int ccp4printf(int level, char *format, ...)
    The command switches all start with a hyphen (-) and immediately
    follow the program name. The remainer of the arguments are logical
    name-value pairs.
-
-   The logic for locating the "environ.def" and "default.def" files
-   is as follows (from the original Fortran version):
-   If the file is defined on the command line then
-      If a directory is specified then
-	 Use the filename as is.
-      Else if the HOME variable is defined then
-         Use "$HOME/filename"
-      Else
-         Use the filename as is (in current directory).
-   Else
-      If the CINCL variable is defined then
-         Use "$CINCL/filename"
-      Else if the HOME variable is defined then
-         Use "$HOME/filename"
-      Else
-         Use the filename as is (in current directory).
 */
 int ccp4fyp(int argc, char **argv)
 {
@@ -218,7 +199,8 @@ int ccp4fyp(int argc, char **argv)
   char *testarg=NULL;
 
   /* Filenames, directories etc */
-  char *cinclude=NULL,*home=NULL,*dir=NULL;
+  char *cinclude=NULL,*home=NULL;
+  char *dir=NULL,*std_dir=NULL,*tmpstr=NULL;
 
   /* Decoding environ/defaults files */
   char line[CCP4_MAXLINE];
@@ -417,14 +399,15 @@ int ccp4fyp(int argc, char **argv)
   /* Environ.def file */
   /* ------------------------------------------------------ */
 
-  /* Use a non-standard environ.def file specified by the user */
-  /* Search logic is:
-     If a directory is specified then
-	 Use the filename as is.
-      Else if the HOME variable is defined then
-         Use "$HOME/filename"
-      Else
-         Use the filename as is (in current directory).
+  /* ------------------------------------------------------ */
+  /* Use non-standard environ.def file */
+  /* ------------------------------------------------------ */
+  /* The search logic is:
+     1. If a directory is specified as part of the filename, then
+	use the filename as is, otherwise
+     2. if the HOME variable is defined, then use $HOME/filename,
+        otherwise
+     3. use the filename as is (in current directory).
   */
   if (ienviron > 0) {
     /* Non-standard environ.def was specified */
@@ -435,45 +418,84 @@ int ccp4fyp(int argc, char **argv)
 	/* Couldn't allocate memory to store filename 
 	   Do clean up and exit */
 	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			file_type,file_ext,env_file,def_file,parser);
+			file_type,file_ext,env_file,def_file,dir,parser);
 	ccperror(1,"Can't fetch filename for -e option");
       }
       strcpy(env_file,argv[ienviron]);
+      if (diag) printf("CCP4FYP: env file is \"%s\"\n",env_file);
       env_init = 1;
+      /* Check whether this includes the path */
+      if (dir) free(dir);
+      dir = ccp4_utils_pathname(env_file);
+      if (dir && dir[0] == '\0') {
+	/* No path name - try and use $HOME/file_name */
+	if (diag) puts("CCP4FYP: env file has no path.");
+	if (home) {
+	  tmpstr = ccp4_utils_joinfilenames(home,env_file);
+	  if (diag) printf("CCP4FYP: HOME exists, joined filename \"%s\"\n",tmpstr);
+	  if (tmpstr) {
+	    if (env_file) free(env_file);
+	    env_file = tmpstr;
+	  } else {
+	    /* Failed to make complete filename
+	       Do clean up and exit */
+	    ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+			    file_type,file_ext,env_file,def_file,dir,parser);
+	    ccperror(1,"Can't make full pathname for environ.def");
+	  }
+	}
+      }
       if (diag) printf(" environ.def file is \"%s\"\n",env_file);
     } else {
       /* Not enough arguments in the arg list
 	 Do clean up and exit */
       if (diag) printf(" no filename found\n");
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-		      file_type,file_ext,env_file,def_file,parser);
+		      file_type,file_ext,env_file,def_file,dir,parser);
       ccperror(1,"Use: -e filename");
     }
   }
 
+  /* ------------------------------------------------------ */
+  /* Use standard environ.def file */
+  /* ------------------------------------------------------ */
+  /* The search logic is:
+     1. If the CINCL variable is defined, then use $CINCL/filename,
+	otherwise
+     2. if the HOME variable is defined, then use $HOME/filename,
+        otherwise
+     3. use the filename as is (in current directory).
+  */
   if (!env_file) {
     /* Use the standard environ.def file in CINCL */
     if (diag) printf("--> use standard environ.def file\n");
+    std_dir = NULL;
     if (cinclude) {
-      if (diag) printf("--> CINCL is \"%s\"\n",cinclude);
-      /* Set the full path for the environ.def file */
-      if (env_file) free(env_file);
-      env_file = ccp4_utils_joinfilenames(cinclude,"environ.def");
-      if (!env_file) {
-	/* Failed to make full path name for environ.def
-	   Do clean up and exit */
-	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			file_type,file_ext,env_file,def_file,parser);
-	ccperror(1,"Couldn't set filename for environ.def");
-      }
-      if (diag) printf("--> Full path for environ.def is \"%s\"\n",env_file);
-    } else {
-      if (diag) printf("--> CINCL env var has no value assigned\n");
+      std_dir = cinclude;
+    } else if (home) {
+      std_dir = home;
     }
+    /* Set the full path for the environ.def file */
+    if (env_file) free(env_file);
+    if (std_dir) {
+      if (diag) printf("--> leading directory is \"%s\"\n",std_dir);
+      env_file = ccp4_utils_joinfilenames(std_dir,"environ.def");
+    } else {
+      env_file = ccp4_utils_joinfilenames(".","environ.def");
+    }
+    if (!env_file) {
+      /* Failed to make full path name for environ.def
+	 Do clean up and exit */
+      ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+		      file_type,file_ext,env_file,def_file,dir,parser);
+      ccperror(1,"Couldn't set filename for environ.def");
+    }
+    if (diag) printf("--> Full path for environ.def is \"%s\"\n",env_file);
   }
 
+  /* ------------------------------------------------------ */
   /* Read in environ.def */
-
+  /* ------------------------------------------------------ */
   /* environ.def contains lines of the form
      LOGICALNAME=type.ext # comments
      where type is "in", "out" or "inout"
@@ -489,7 +511,7 @@ int ccp4fyp(int argc, char **argv)
       /* Failed to open the file
        Do clean up and exit */
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-		      file_type,file_ext,env_file,def_file,parser);
+		      file_type,file_ext,env_file,def_file,dir,parser);
       ccperror(1,"CCP4FYP: failed to open environ.def");
     } else {
       /* Set up a ccp4_parser array to deal with the contents of
@@ -514,7 +536,7 @@ int ccp4fyp(int argc, char **argv)
 	    /* Error parsing the line 
 	       Do clean up and exit */
 	    ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			    file_type,file_ext,env_file,def_file,parser);
+			    file_type,file_ext,env_file,def_file,dir,parser);
 	    if (envfp) fclose(envfp); 
 	    ccperror(-1,"CCP4FYP: couldn't parse line from environ.def");
 	  } else {
@@ -524,7 +546,7 @@ int ccp4fyp(int argc, char **argv)
 	      /* Exceeded the allowed number of logical names
 		 Do clean up and exit */
 	      ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			      file_type,file_ext,env_file,def_file,parser);
+			      file_type,file_ext,env_file,def_file,dir,parser);
 	      if (envfp) fclose(envfp);
 	      ccperror(1,"CCP4FYP: too many logical names in environ.def file");
 	    } else {
@@ -569,8 +591,16 @@ int ccp4fyp(int argc, char **argv)
   /* Default.def file */
   /* ------------------------------------------------------ */
 
-  /* If the user specified a non-standard default.def in the
-     command line switches then sort this out first */
+  /* ------------------------------------------------------ */
+  /* Non-standard default.def file */
+  /* ------------------------------------------------------ */
+  /* The search logic is:
+     1. If a directory is specified as part of the filename, then
+	use the filename as is, otherwise
+     2. if the HOME variable is defined, then use $HOME/filename,
+        otherwise
+     3. use the filename as is (in current directory).
+  */
   if (idefault > 0) {
     /* Extract the filename from the argument list - idefault
        points to which argument should hold it */
@@ -581,44 +611,84 @@ int ccp4fyp(int argc, char **argv)
 	/* Couldn't allocate memory to store filename
 	   Do clean up and exit */
 	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			file_type,file_ext,env_file,def_file,parser);
+			file_type,file_ext,env_file,def_file,dir,parser);
 	ccperror(1,"Can't fetch filename for -d option");
       }
       strcpy(def_file,argv[idefault]);
       def_init = 1;
+      if (diag) printf("CCP4FYP: def file is \"%s\"\n",def_file);
+      /* Check whether this includes the path */
+      if (dir) free(dir);
+      dir = ccp4_utils_pathname(def_file);
+      if (dir && dir[0] == '\0') {
+	/* No path name - try and use $HOME/file_name */
+	if (diag) puts("CCP4FYP: def file has no path.");
+	if (home) {
+	  tmpstr = ccp4_utils_joinfilenames(home,def_file);
+	  if (diag) printf("CCP4FYP: HOME exists, joined filename \"%s\"\n",tmpstr);
+	  if (tmpstr) {
+	    if (def_file) free(def_file);
+	    def_file = tmpstr;
+	  } else {
+	    /* Failed to make complete filename
+	       Do clean up and exit */
+	    ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+			    file_type,file_ext,env_file,def_file,dir,parser);
+	    ccperror(1,"Can't make full pathname for default.def");
+	  }
+	}
+      }
       if (diag) printf(" default.def file is \"%s\"\n",def_file);
     } else {
       /* Not enough arguments in the arg list
 	 Do clean up and exit */
       if (diag) printf(" no filename found\n");
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-		      file_type,file_ext,env_file,def_file,parser);
+		      file_type,file_ext,env_file,def_file,dir,parser);
       ccperror(1,"Use: -d filename");
     }
   }
 
+  /* ------------------------------------------------------ */
+  /* Standard default.def file */
+  /* ------------------------------------------------------ */
+  /* The search logic is:
+     1. If the CINCL variable is defined, then use $CINCL/filename,
+	otherwise
+     2. if the HOME variable is defined, then use $HOME/filename,
+        otherwise
+     3. use the filename as is (in current directory).
+  */
   if (!def_file) {
-    /* Use the standard default.def file in CINCL */
+    /* Use the standard default.def */
     if (diag) printf("--> use standard default.def file\n");
+    std_dir = NULL;
     if (cinclude) {
-      if (diag) printf("--> CINCL is \"%s\"\n",cinclude);
-      /* Set the full path for the default.def file */
-      def_file = ccp4_utils_joinfilenames(cinclude,"default.def");
-      if (!def_file) {
-	/* Unable to set the filename
-	   Do clean up and exit */
-	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			file_type,file_ext,env_file,def_file,parser);
-	ccperror(1,"Couldn't set filename for default.def");
-      }
-      if (diag) printf("--> Full path for default.def is \"%s\"\n",def_file);
-    } else {
-      if (diag) printf("--> CINCL env var has no value assigned\n");
+      std_dir = cinclude;
+    } else if (home) {
+      std_dir = home;
     }
+    /* Set the full path for the default.def file */
+    if (def_file) free(def_file);
+    if (std_dir) {
+      if (diag) printf("--> leading directory is \"%s\"\n",std_dir);
+      def_file = ccp4_utils_joinfilenames(std_dir,"default.def");
+    } else {
+      def_file = ccp4_utils_joinfilenames(".","default.def");
+    }
+    if (!def_file) {
+      /* Unable to set the filename
+	 Do clean up and exit */
+      ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+		      file_type,file_ext,env_file,def_file,dir,parser);
+      ccperror(1,"Couldn't set filename for default.def");
+    }
+    if (diag) printf("--> Full path for default.def is \"%s\"\n",def_file);
   }
 
+  /* ------------------------------------------------------ */
   /* Read in default.def */
-
+  /* ------------------------------------------------------ */
   /* default.def contains lines of the form
 	   LOGICALNAME=FILENAME # comments
   */
@@ -632,7 +702,7 @@ int ccp4fyp(int argc, char **argv)
       /* Failed to open the file
 	 Do clean up and exit */
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-		      file_type,file_ext,env_file,def_file,parser);
+		      file_type,file_ext,env_file,def_file,dir,parser);
       ccperror(1,"CCP4FYP: failed to open default.def");
     }
     /* Set a ccp4_parser array to deal with the contents of default.def */
@@ -656,7 +726,7 @@ int ccp4fyp(int argc, char **argv)
 	  /* Failed to parse the line - 
 	     do clean up and exit */
 	  ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			  file_type,file_ext,env_file,def_file,parser);
+			  file_type,file_ext,env_file,def_file,dir,parser);
 	  if (deffp) fclose(deffp);
 	  ccperror(-1,"CCP4FYP: couldn't parse line from default.def");
 	}
@@ -672,7 +742,7 @@ int ccp4fyp(int argc, char **argv)
 	     Clean up and exit */
 	  if (deffp) fclose(deffp);
 	  ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			  file_type,file_ext,env_file,def_file,parser);
+			  file_type,file_ext,env_file,def_file,dir,parser);
 	  ccperror(ierr,errmsg);
 	}
 	/* Reset number of tokens before reading next line */
@@ -722,7 +792,7 @@ int ccp4fyp(int argc, char **argv)
 	/* An error from ccp4setenv
 	   Clean up and exit */
 	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			file_type,file_ext,env_file,def_file,parser);
+			file_type,file_ext,env_file,def_file,dir,parser);
 	ccperror(ierr,errmsg);
       }
       iarg++;
@@ -731,7 +801,7 @@ int ccp4fyp(int argc, char **argv)
 	 Do clean up and exit with error */
       if (diag) printf("  no associated file name\n");
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-		      file_type,file_ext,env_file,def_file,parser);
+		      file_type,file_ext,env_file,def_file,dir,parser);
       if (deffp) fclose(deffp);
       ccperror(1,"Use: <logical name> <filename> ...");
     }
@@ -744,7 +814,7 @@ int ccp4fyp(int argc, char **argv)
   /* ------------------------------------------------------ */
 
   ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-		  file_type,file_ext,env_file,def_file,parser);
+		  file_type,file_ext,env_file,def_file,dir,parser);
   if (diag) printf("CCP4FYP: ending\n");
   return 0;
 }
@@ -760,7 +830,7 @@ int ccp4fyp(int argc, char **argv)
 int ccp4fyp_cleanup(int ienv, char **envname, char **envtype, char **envext,
 		    char *logical_name, char *file_name, char *file_type,
 		    char *file_ext, char *env_file, char *def_file,
-		    CCP4PARSERARRAY *parser)
+		    char *dir, CCP4PARSERARRAY *parser)
 {
   int i;
   /* Parser */
@@ -772,6 +842,7 @@ int ccp4fyp_cleanup(int ienv, char **envname, char **envtype, char **envext,
   if (def_file) free(def_file);
   if (logical_name) free(logical_name);
   if (file_name) free(file_name);
+  if (dir) free(dir);
   /* Free arrays of pointers */
   if (ienv > 0) {
     for (i=0; i<ienv; ++i) {
