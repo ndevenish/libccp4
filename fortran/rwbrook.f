@@ -404,7 +404,7 @@ C---REMARK 290       4555   1/2+X,1/2-Y,-Z
              READ(BROOKA(11:18),'(I8)')NSYMCHK
              CALL  symfr2 (BROOKA,22,nsymchk,rsymchk)
               write(6,'(a,i3,4(/,4f10.3))')' remark 290',nsymchk,
-     + ((rsymchk(ii,jj,nsymchk),ii=1,4),jj=1,4)
+     + ((rsymchk(ii,jj,nsymchk),jj=1,4),ii=1,4)
            ENDIF
           ENDIF
 C
