@@ -26,15 +26,19 @@ C     become the property of the external user.
 C       The liaison officer for the library's external affairs is listed
 C     as: Mr. S. Marlow, Building 8.9, Harwell Laboratory, Didcot, 
 C     Oxon OX11 0RA, UK.
-C     
+C
+C
+C_BEGIN_CROSS
+C
       SUBROUTINE CROSS(A,B,C)
 C     =======================
 C
-C
-C     compute A = B cross C
+C     compute vector product A = B x C
 C
 C     .. Array Arguments ..
       REAL             A(3),B(3),C(3)
+C
+C_END_CROSS
 C     ..
       A(1) = B(2)*C(3) - C(2)*B(3)
       A(2) = B(3)*C(1) - C(3)*B(1)
@@ -42,75 +46,73 @@ C     ..
       END
 C
 C
+C_BEGIN_DOT
+C
       REAL FUNCTION DOT(A,B)
 C     ======================
 C
-C---- Dot product of two vectors
-C
-C
+C     dot product of two vectors
 C
 C     .. Array Arguments ..
       REAL              A(3),B(3)
+C
+C_END_DOT
 C     ..
       DOT = A(1)*B(1) + A(2)*B(2) + A(3)*B(3)
       END
 C
+C
+C_BEGIN_EA06C
 C
       SUBROUTINE EA06C(A,VALUE,VECTOR,M,IA,IV,W)
 C     ==========================================
 C
 C**  18/03/70 LAST LIBRARY UPDATE
 C
-C   Given a real mXm symmetric matrix A = {aij} this routine finds 
-C   all its eigenvalues (lambda)i i=1,2,.....,m and 
-C   eigenvectors xj i=1,2,...,m.
-C  i.e. finds the non-trivial solutions of Ax=(lambda)x
+C       ( Calls EA08C(W,W(M1),VALUE,VECTOR,M,IV,W(M+M1))
+C       and MC04B(A,W,W(M1),M,IA,W(M+M1)) )
+C
+C       Given a real MxM symmetric matrix A = {aij} this routine
+C       finds all its eigenvalues (lambda)i i=1,2,.....,m  and
+C       eigenvectors xj i=1,2,...,m.  i.e. finds the non-trivial
+C       solutions of Ax=(lambda)x
+C
+C       The matrix is reduced to tri-diagonal form by applying
+C       Householder transformations. The eigenvalue problem for
+C       the reduced problem is then solved using the QR algorithm
+C       by calling EA08C.
 C
 C  Argument list
 C  -------------
 C
-C  SUBROUTINE EA06C(A,VALUE,X,M,IA,IX,W)
+C   IA    (I) (integer) should be set to the first dimension
+C			of the array A, i.e. if the allocation
+C			for the array A was specified by
+C			DIMENSION A(100,50)
+C			then IA would be set to 100
 C
-C  Arguments set by the user -
+C   M     (I) (integer) should be set to the order m of the matrix
 C
-C   A  is a REAL 2-dimensional array with first dimension IA. 
-C   The user must store the lower triangle of matrix A into the 
-C   lower triangle of the array A. 
-C   i.e. put a(ij) into A(I,J) for i>=j and I>=J.
+C   IV    (I) (integer) should be set to the first dimension
+C			of the 2-dimensional array VECTOR
 C
-C  M  is an INTEGER and should be set to the order m of the matrix
+C   VECTOR(IV,M) (O) (real) 2-dimensional array, with first dimension IV,
+C		            containing the eigenvectors. The components
+C		            of the eigenvector vector(i) corresponding
+C		            to the eigenvalue (lambda)i (in VALUE(I))
+C		            are placed in VECTOR(J,I) J=1,2,...,M.
+C		            The eigenvectors are normalized so that
+C		            xT(i)x(i)=1 i=1,2,...,m.
 C
-C   IA is an INTEGER set to the first dimension of the array A, 
-C   i.e. if the allocation for the array A was specified by
+C   VALUE(M) (O) (real)  array in which the routine puts
+C		         the eigenvalues (lambda)i, i=1,2,...,m.
+C		         These are not necessarily in any order.
 C
-C            DIMENSION A(100,50)
+C   W    (I) (real(*)) working array used by the routine for
+C		       work space. The dimension must be set
+C		       to at least 5*M.
 C
-C     then IA would be set to 100
-C
-C   IX is an INTEGER set to the first dimension of 
-C   the 2-dimensional array X
-C
-C
-C  Arguments set by the routine -
-C
-C   A  the space above the diagonal of the array A is used by 
-C   the routine as work space, the lower triangle set by the user 
-C   will remain unchanged on return.
-C
-C   VALUE is a REAL array in which the routine puts the eigenvalues
-C   (lambda)i, i=1,2,...,m. These are not necessarily in any order.
-C
-C   X  is a REAL 2-dimensional array, with first dimension IX, 
-C      containing the eigenvectors. The components of the eigenvector 
-C      x(i) corresponding to the eigenvalue (lambda)i 
-C      (in VALUE(I)) are placed in X(J,I) J=1,2,...,M.
-C     The eigenvectors are normalized si that xT(i)x(i)=1 i=1,2,...,m.
-C
-C  W  is a REAL array used by the routine for work space. It must have
-C     dimension at least 5*M.
-C
-C                                    ------------
-C
+C_END_EA06C
 C
 C
 C     .. Scalar Arguments ..
@@ -157,16 +159,49 @@ C     ..
 
       END
 C
+C_BEGIN_EA08C
 C
       SUBROUTINE EA08C(A,B,VALUE,VEC,M,IV,W)
 C     =====================================
 C
-C    19/03/70 LAST LIBRARY UPDATE
-C  This uses qr iteration to find the eigenvalues and eigenvectors
-C  of the symmetric tridiagonal matrix whose diagonal elements are
-C  a(i),i=1,m and off-diagonal elements are b(i),i=2,m.  The array
-C  w is used for workspace and must have dimension at least 2*m.
-C  we treat vec as if it had dimensions (iv,m).
+C       (Calls EA09C(A,B,W(M+1),M,W))
+C
+C       This uses QR iteration to find the all the eigenvalues and
+C       eigenvectors of the real symmetric tri-diagonal matrix
+C       whose diagonal elements are A(i), i=1,M and off-diagonal
+C       elements are B(i),i=2,M. The eigenvalues will have unit
+C       length.	The array W is used for workspace and must have
+C       dimension at least 2*M.	We treat VEC as	if it had
+C       dimensions (IV,M).
+C
+C       First EA09, which uses the QR algorithm, is used to find
+C       the eigenvalues; using these as shifts the QR algorithm is
+C       again applied but now using the	plane rotations	to generate
+C       the eigenvectors. Finally the eigenvalues are refined
+C       by taking Rayleigh quotients of the vectors.
+C
+C    Argument list
+C    -------------
+C
+C       A(M)	(I) (real)    Diagonal elements
+C
+C       B(M)	(I) (real)    Off-diagonal elements
+C
+C       IV	(I)  (integer)	should be set to the first dimen-
+C                               sion of the 2-dimensional array VEC
+C
+C       M	(I) (integer) should be	set to the order m of the
+C                             matrix
+C
+C       VALUE(M) (O) (real)   Eigenvalues
+C
+C       VEC	(O) (real)    Eigenvectors. The	dimensions
+C			      should be	set to (IV,M).
+C
+C       W(*)	(I) (real)    Working array.The	dimension must be
+C			      set to at	least 2*M.
+C
+C_END_EA08C
 C
 C     .. Scalar Arguments ..
       INTEGER          IV,M
@@ -369,7 +404,7 @@ C
 
       END
 C
-C
+C
 C---- Changes put in to make it work on vax (this version has scaling)
 C  1. 12 statements for calculation of over/underflow of determinant in ma21
 C     replaced by a simple one which will overflow more easily(entry ma21cd)
@@ -423,26 +458,44 @@ C
       RETURN
       END
 C
-C---- FM02AD - A routine to compute the inner product of two
-C     double precision real vectors accumulating the result
-C     double precision.  it can be used as an alternative
-C     to the assembler version, but note that it is likely
-C     to be significantly slower in execution.
+C_BEGIN_FM02AD
 C
-      DOUBLE PRECISION  FUNCTION FM02AD(N,A,IA,B,IB)
+      DOUBLE PRECISION FUNCTION FM02AD(N,A,IA,B,IB)
+C
+C     Compute the inner product of two double precision real
+C     vectors accumulating the result double precision, when the
+C     elements of each vector are stored at some fixed displacement
+C     from neighbouring elements. Given vectors A={a(j)},
+C     B={b(j)} of length N, evaluates w=a(j)b(j) summed over
+C     j=1..N. Can be used to evaluate inner products involving
+C     rows of multi-dimensional arrays.
+C     It can be used as an alternative to the assembler version,
+C     but note that it is likely to be significantly slower in execution.
+C
+C     Argument list
+C     -------------
+C
+C       N  (I) (integer) The length of the vectors (if N <= 0 FM02AD = 0)
+C
+C       A  (I) (double precision) The first vector
+C
+C       IA (I) (integer) Subscript displacement between elements of A
+C
+C       B  (I) (double precision) The second vector
+C
+C       IB (I) (integer) Subscript displacement between elements of B
+C
+C       FM02AD  the result
+C
+C
+C_END_FM02AD
+C
       DOUBLE PRECISION  R1,A,B
 C
 C---- The following statement changed from a(n),b(n) to avoid vax dynamic
 C     array check failure.
 C
       DIMENSION A(1),B(1)
-C
-C    N       the length of the vectors (if n<= 0  fm02ad = 0)
-C    A       the first vector
-C    IA      subscript displacement between elements of a
-C    B       the second vector
-C    IB      subscript displacement between elements of b
-C    FM02AD  the result
 C
       R1=0D0
       IF(N.LE.0) GO TO 2
@@ -462,15 +515,19 @@ C
       END
 C
 C
+C_BEGIN_ICROSS
+C
       SUBROUTINE ICROSS(A,B,C)
 C     ========================
 C
-C Integer version
+C    Cross product (integer version)
 C
-C
+C    A = B x C
 C
 C     .. Array Arguments ..
       INTEGER           A(3),B(3),C(3)
+C
+C_END_ICROSS
 C     ..
       A(1) = B(2)*C(3) - C(2)*B(3)
       A(2) = B(3)*C(1) - C(3)*B(1)
@@ -478,35 +535,41 @@ C     ..
       END
 C
 C
+C_BEGIN_IDOT
+C
       INTEGER FUNCTION IDOT(A,B)
 C     ==========================
 C
-C---- Dot product of two vectors, integer version
+C      Dot product (integer version)
 C
-C
+C      IDOT = A . B
 C
 C     .. Array Arguments ..
       INTEGER               A(3),B(3)
+C
+C_END_IDOT
 C     ..
       IDOT = A(1)*B(1) + A(2)*B(2) + A(3)*B(3)
       END
 C
 C
+C_BEGIN_IMINV3
+C
       SUBROUTINE IMINV3(A,B,D)
 C     =======================
 C
-C    Integer version
-C---- Invert a general 3x3 matrix and return determinant in d
+C     Invert a general 3x3 matrix and return determinant in D
+C     (integer version)
 C
-C     A=(B)-1
-C
-C
+C     A = (B)-1
 C
 C     .. Scalar Arguments ..
       INTEGER          D
 C     ..
 C     .. Array Arguments ..
       INTEGER          A(3,3),B(3,3)
+C
+C_END_IMINV3
 C     ..
 C     .. Local Scalars ..
       INTEGER          I,J
@@ -548,17 +611,19 @@ C
       END
 C
 C
+C_BEGIN_MATMUL
+C
       SUBROUTINE MATMUL(A,B,C)
 C     ========================
 C
-C---- Multiply 2 3x3 matrices
+C      Multiply two 3x3 matrices
 C
-C   A=BC
-C
-C
+C      A = BC
 C
 C     .. Array Arguments ..
       REAL              A(3,3),B(3,3),C(3,3)
+C
+C_END_MATMUL
 C     ..
 C     .. Local Scalars ..
       REAL              S
@@ -576,17 +641,19 @@ C     ..
       END
 C
 C
+C_BEGIN_MATVEC
+C
       SUBROUTINE MATVEC(V,A,B)
 C     ========================
 C
-C---- Post-multiply a 3x3 matrix by a vector
+C      Post-multiply a 3x3 matrix by a vector
 C
-C    V=AB
-C
-C
+C      V = AB
 C
 C     .. Array Arguments ..
       REAL              A(3,3),B(3),V(3)
+C
+C_END_MATVEC
 C     ..
 C     .. Local Scalars ..
       REAL              S
@@ -602,16 +669,22 @@ C     ..
       END
 C
 C
+C_BEGIN_MC04B
+C
       SUBROUTINE MC04B(A,ALPHA,BETA,M,IA,Q)
 C     =====================================
 C
-C
+C     Transforms a real symmetric matrix A={a(i,j)}, i, j=1..IA
+C     into a tri-diagonal matrix having the same eigenvalues as A
+C     using Householder's method.
 C
 C     .. Scalar Arguments ..
       INTEGER          IA,M
 C     ..
 C     .. Array Arguments ..
       REAL             A(IA,1),ALPHA(1),BETA(1),Q(1)
+C
+C_END_MC04B
 C     ..
 C     .. Local Scalars ..
       REAL             BIGK,H,PP,PP1,QJ
@@ -687,20 +760,22 @@ C     ..
       END
 C
 C
+C_BEGIN_MINV
+C
       SUBROUTINE MINV(A,B,D)
 C     ======================
 C
-C---- Invert a general 3x3 matrix and return determinant in d
+C     Invert a general 3x3 matrix and return determinant in D
 C
-C      A=(B)-1
-C
-C
+C     A = (B)-1
 C
 C     .. Scalar Arguments ..
       REAL            D
 C     ..
 C     .. Array Arguments ..
       REAL            A(3,3),B(3,3)
+C
+C_END_MINV
 C     ..
 C     .. Local Scalars ..
       INTEGER         I,J
@@ -742,18 +817,20 @@ C
       END
 C
 C
+C_BEGIN_SCALEV
+C
       SUBROUTINE SCALEV(A,X,B)
 C     ========================
 C
-C---- Scale a vector b with scalar x and put result in a
-C
-C
+C     Scale vector B with scalar X and put result in A
 C
 C     .. Scalar Arguments ..
       REAL              X
 C     ..
 C     .. Array Arguments ..
       REAL              A(3),B(3)
+C
+C_END_SCALEV
 C     ..
 C     .. Local Scalars ..
       INTEGER           I
@@ -764,17 +841,19 @@ C     ..
       END
 C
 C
+C_BEGIN_TRANSP
+C
       SUBROUTINE TRANSP(A,B)
 C     ======================
 C
 C---- Transpose a 3x3 matrix
 C
-C     A=BT
-C
-C
+C     A = BT
 C
 C     .. Array Arguments ..
       REAL              A(3,3),B(3,3)
+C
+C_END_TRANSP
 C     ..
 C     .. Local Scalars ..
       INTEGER           I,J
@@ -787,15 +866,17 @@ C     ..
       END
 C
 C
+C_BEGIN_UNIT
+C
       SUBROUTINE UNIT(V)
 C     =================
 C
-C
-C
-C---- Vector v reduced to unit vector
+C    Vector V reduced to unit vector
 C
 C     .. Array Arguments ..
       REAL            V(3)
+C
+C_END_UNIT
 C     ..
 C     .. Local Scalars ..
       REAL            VMOD
@@ -812,16 +893,19 @@ C     ..
       END
 C
 C
+C_BEGIN_VDIF
+C
       SUBROUTINE VDIF(A,B,C)
 C     =====================
 C
+C      Subtract two vectors
 C
-C---- Subtract two vectors
-C
-C
+C      A = B - C
 C
 C     .. Array Arguments ..
       REAL            A(3),B(3),C(3)
+C
+C_END_VDIF
 C     ..
 C     .. Local Scalars ..
       INTEGER         I
@@ -832,16 +916,17 @@ C     ..
       END
 C
 C
+C_BEGIN_VSET
+C
       SUBROUTINE VSET(A,B)
 C     ====================
 C
-C
-C---- Move a vector from b to a
-C
-C
+C      Copy a vector from B to A
 C
 C     .. Array Arguments ..
       REAL            A(3),B(3)
+C
+C_END_VSET
 C     ..
 C     .. Local Scalars ..
       INTEGER         I
@@ -852,16 +937,19 @@ C     ..
       END
 C
 C
+C_BEGIN_VSUM
+C
       SUBROUTINE VSUM(A,B,C)
 C     ======================
 C
+C     Add two vectors
 C
-C---- Add two vectors
-C
-C
+C     A = B + C
 C
 C     .. Array Arguments ..
       REAL            A(3),B(3),C(3)
+C
+C_END_VSUM
 C     ..
 C     .. Local Scalars ..
       INTEGER         I
@@ -872,37 +960,39 @@ C     ..
       END
 C
 C
+C_BEGIN_ZIPIN
+C
       SUBROUTINE ZIPIN(ID,N,BUF)
 C     ==========================
 C
-C
-C---- Fast binary read on unit id into array buf of length n
-C
-C
+C     Fast binary read on unit ID into real array BUF of length N
 C
 C     .. Scalar Arguments ..
       INTEGER          ID,N
 C     ..
 C     .. Array Arguments ..
       REAL             BUF(N)
+C
+C_END_ZIPIN
 C     ..
       READ (ID) BUF
       END
 C
 C
+C_BEGIN_ZIPOUT
+C
       SUBROUTINE ZIPOUT(ID,N,BUF)
 C     ===========================
 C
-C
-C---- Fast binary write to unit id of array buf length n
-C
-C
+C     Fast binary write to unit ID of real array BUF length N
 C
 C     .. Scalar Arguments ..
       INTEGER           ID,N
 C     ..
 C     .. Array Arguments ..
       REAL              BUF(N)
+C
+C_END_ZIPOUT
 C     ..
       WRITE (ID) BUF
       END
