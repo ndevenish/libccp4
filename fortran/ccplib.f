@@ -1818,8 +1818,7 @@ C     .. Array Arguments ..
 C     ..
 C     .. Local Scalars ..
       REAL RR
-      INTEGER IA,NB,NIH,NW,I,J
-      BYTE A
+      INTEGER IA,NB,NIH,NW
 C     ..
 C     .. Local Arrays ..
       BYTE IBYT(4),JBYT(4)
@@ -1864,16 +1863,6 @@ C
    20 NW = (N-1)/2 + 1
       NIH = MOD(N-1,2) + 1
       RR = ARRAY(NW)
-C     need to swap bytes if big-endian
-      IF (IND.EQ.4) THEN
-C       index of first byte of half-word into 4-element byte array:
-        I = 2*NIH - 1
-C       index of second byte
-        J = I + 1
-        A = JBYT(I)
-        JBYT(I) = JBYT(J)
-        JBYT(J) = A
-      ENDIF
       II = JHALF(NIH)
       END
 C
