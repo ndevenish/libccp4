@@ -299,7 +299,9 @@ FORTRAN_SUBR ( LRHIST, lrhist,
  * and ranges. In fact, it returns current values on MINDX rather than 
  * those of the input file.
  * @param mindx MTZ file index
- * @param versnx MTZ version.
+ * @param versnx (O) MTZ version. This is the version of the current
+    library rather than that of the input file. If these differ, a
+    warning will have been issued by LROPEN/MtzGet.
  * @param ncolx Number of columns.
  * @param nreflx Number of reflections.
  * @param ranges Array of column ranges.
@@ -311,12 +313,14 @@ FORTRAN_SUBR ( LRINFO, lrinfo,
 
 {
   int i,j,k,iarray;
+  char mtzvers[20];
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRINFO");)
 
  if (MtzCheckSubInput(*mindx,"LRINFO",1)) return;
 
-  ccp4_CtoFString(FTN_STR(versnx),FTN_LEN(versnx),MTZVERSN);
+  sprintf(mtzvers,"MTZ:V%d.%d",MTZ_MAJOR_VERSN,MTZ_MINOR_VERSN);
+  ccp4_CtoFString(FTN_STR(versnx),FTN_LEN(versnx),mtzvers);
   *ncolx = MtzNumActiveCol(mtzdata[*mindx-1]);
   *nreflx = MtzNref(mtzdata[*mindx-1]);
 

@@ -84,6 +84,7 @@ static char rcsid[] = "$Id$";
 #define  CMTZERR_SYMINFIncomplete    20
 #define  CMTZERR_COLUMNIncomplete    21
 #define  CMTZERR_BadBatchHeader    22
+#define  CMTZERR_DifferentVersion  23
 
 MTZ *MtzGet(const char *logname, int read_refs)
 
@@ -455,9 +456,16 @@ MTZ *MtzGet(const char *logname, int read_refs)
       printf(" MtzGet: header line %s \n",hdrrec);
 
     if (strncmp (mkey, "VERS",4) == 0) {
-      if (strncmp (hdrrec+5,"MTZ:V1.1",8) != 0) {
+      if (atoi(hdrrec+10) != MTZ_MAJOR_VERSN) {
+         printf("Input MTZ file has major version %d and minor version %d \n",
+	       atoi(hdrrec+10),atoi(hdrrec+12));
          ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_BadVersion),"MtzGet",NULL);
          return(NULL);
+         }  
+      if (atoi(hdrrec+12) != MTZ_MINOR_VERSN) {
+         printf("Input MTZ file has major version %d and minor version %d \n",
+	       atoi(hdrrec+10),atoi(hdrrec+12));
+         ccp4_signal(CCP4_ERRLEVEL(2) | CMTZ_ERRNO(CMTZERR_DifferentVersion),"MtzGet",NULL);
          }  
        }
     else if (strncmp (mkey, "TITL",4) == 0) {
@@ -2346,7 +2354,9 @@ int MtzPut(MTZ *mtz, const char *logname)
 
  ccp4_file_setmode(fileout,0);
  /* Write header */
- sprintf(hdrrec,"VERS %8s",MTZVERSN);
+ sprintf(hdrrec,"VERS MTZ:V%d.%d",MTZ_MAJOR_VERSN,MTZ_MINOR_VERSN);
+ /* if MTZ_MAJOR_VERSN,MTZ_MINOR_VERSN get into double figures,
+    adjust following call to MtzWhdrLine */
  MtzWhdrLine(fileout,13,hdrrec);
  strcpy(hdrrec,"TITLE ");
  strncpy(hdrrec+6,mtz->title,70);
