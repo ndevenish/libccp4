@@ -85,11 +85,11 @@ C     level=0-6. Header size. 0= plain text
 C
       subroutine ccp4h_init()
 C   ccp4h_init() - write initial comment to identify file
-      integer lpt, htmlinit
+      integer lpt, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       call ccp4h_init_lib(0,0)
       if (html) then
@@ -111,12 +111,12 @@ C              isumm = 0 (use default settings for summary tags)
 C                     -1 (switch off summary tags)
 C
       integer ihtml,isumm
-      integer lpt, idum, htmlinit,lunsto
+      integer lpt, idum, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160,dummy*160
       external lunsto
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       data htmlinit/-1/
       if (htmlinit.lt.0) then
@@ -138,17 +138,18 @@ C
         end if
         htmlinit=0
         summopen=.false.
+        summlevel=0
       endif
       return
       end
 C
       subroutine ccp4h_html_close()
 C   ccp4h_html_close() - write html close tag
-      integer lpt,htmlinit
+      integer lpt,htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160
-      common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid, htmlinit,
-     .                 summopen
+      common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
+     .                 summopen, summlevel
       save   /ccp4hdat/
       if (html) then
         call ccp4h_summary_beg()
@@ -161,11 +162,11 @@ C   ccp4h_html_close() - write html close tag
 C
       subroutine ccp4h_toc_beg()
 C   ccp4h_toc_beg() - write starting Contents section tags
-      integer lpt,htmlinit
+      integer lpt,htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160
-      common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid, htmlinit,
-     .                 summopen
+      common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
+     .                 summopen, summlevel
       save   /ccp4hdat/
       call ccp4h_header('Contents','toc',2)
       if (html) write (lpt,10)
@@ -178,11 +179,11 @@ C   ccp4h_toc_ent(char*(*) text, char*(*) dest) - write Contents entry
 C     text= the link text
 C     dest= the link destination
       character*(*) text,dest
-      integer lpt,htmlinit
+      integer lpt,htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160,pn*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       integer lenstr
       external lenstr,ccppnm
@@ -200,11 +201,11 @@ C     dest= the link destination
 C
       subroutine ccp4h_toc_end()
 C   ccp4h_toc_end() - write ending Contents section tags
-      integer lpt, htmlinit
+      integer lpt, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       if (html) write (lpt,10)
  10   format('</ul>')
@@ -217,11 +218,11 @@ C     x = width of graph in pixels
 C     y = height of graph in pixels
 C      both can be zero, then they default to 400,300.
       integer x,y,x1,y1,lenstr
-      integer lpt, htmlinit
+      integer lpt, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       external lenstr
       x1=x
@@ -237,11 +238,11 @@ C      both can be zero, then they default to 400,300.
 C
       subroutine ccp4h_graph_end()
 C   ccp4h_graph_end() - write ending JLogGraph applet tag
-      integer lpt, htmlinit
+      integer lpt, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       if (html) write (lpt,10)
  10   format('"><b>For inline graphs use a Java browser</b></applet>')
@@ -250,18 +251,26 @@ C   ccp4h_graph_end() - write ending JLogGraph applet tag
 C
       subroutine ccp4h_summary_beg()
 C   ccp4h_summary_beg() - begin summary section
-      integer lpt, htmlinit
+      integer lpt, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       call ccp4h_init_lib(0,0)
 C   logsumm should be true unless CCP_SUPPRESS_SUMMARY set
       if (.not.logsumm) return
+C
 C   if summopen is true then there is already an "unclosed" BEGIN tag
 C   in this case don't write another
-      if (summopen) return
+C   keep track of nested level of calls to ccp4h_summary_beg and
+C   ccp4h_summary_end
+      if (summopen) then
+        summlevel = summlevel + 1
+        return
+      else
+        summlevel = 1
+      endif
       if (html) then
         write (lpt,10)
  10     format('<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->')
@@ -276,16 +285,25 @@ C   set summopen to indicate there is an "unclosed" BEGIN
 C
       subroutine ccp4h_summary_end()
 C   ccp4h_summary_end() - end summary section 
-      integer lpt, htmlinit
+      integer lpt, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       if (.not.logsumm) return
 C   if summopen is not true then there is no matching BEGIN tag
 C   in this case don't write an END
-      if (.not.summopen) return
+C   keep track of nested level of calls to ccp4h_summary_beg and
+C   ccp4h_summary_end
+      if (.not.summopen) THEN
+        summlevel = 0
+        return
+      endif
+      if (summlevel .GT. 1) THEN
+        summlevel = summlevel - 1
+        return
+      endif
       if (html) then
         write (lpt,10)
  10     format('<!--SUMMARY_END--></FONT></B>')
@@ -293,19 +311,21 @@ C   in this case don't write an END
         write (lpt,20)
  20     format('<!--SUMMARY_END-->')
       endif
-C   set summopen to indicate there is no unmatched BEGIN tag
+C   set summopen and summlevel to indicate there is no unmatched 
+C   BEGIN tag
       summopen=.false.
+      summlevel = 0
       return
       end
 C
 C
       subroutine ccp4h_pre_beg()
 C   ccp4h_pre_beg() - begin preformatted (html <pre> tag)
-      integer lpt, htmlinit
+      integer lpt, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       if (html) write (lpt,10)
  10   format('<pre>')
@@ -314,11 +334,11 @@ C   ccp4h_pre_beg() - begin preformatted (html <pre> tag)
 C
       subroutine ccp4h_pre_end()
 C   ccp4h_pre_end() - end preformatted (html <pre> tag)
-      integer lpt, htmlinit
+      integer lpt, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       if (html) write (lpt,10)
  10   format('</pre>')
@@ -327,11 +347,11 @@ C   ccp4h_pre_end() - end preformatted (html <pre> tag)
 C
       subroutine ccp4h_rule()
 C   ccp4h_rule() - rule (html <hr> tag)
-      integer lpt, htmlinit
+      integer lpt, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       if (html) then
        write (lpt,10)
@@ -348,11 +368,11 @@ C   ccp4h_link(char*(*) text, char*(*) dest) - link (html <a> tag)
 C     text= the link text
 C     dest= the link destination
       character*(*) text,dest
-      integer lpt, htmlinit
+      integer lpt, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160,pn*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       integer lenstr
       external lenstr,ccppnm
@@ -377,11 +397,11 @@ C   ccp4h_link(char*(*) text, char*(*) dest) - link keyword
 C     text= the link text
 C     dest= the link destination
       character*(*) key,dest
-      integer lpt, htmlinit
+      integer lpt, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       character kw*4,rest*120
       logical flag
@@ -394,7 +414,8 @@ C     dest= the link destination
        call parsekeyarg(kw,rest)
        if (html) then
         write(lpt,20)
-     +    chtml(1:lenstr(chtml)),dest,key,rest(1:lenstr(rest))
+     +    chtml(1:lenstr(chtml)),dest(1:lenstr(dest)),key,
+     +    rest(1:lenstr(rest))
  20     format(' Data line--- <a href="',a,'/',a,'">',a,'</a> ',a)
        else
         write(lpt,30)key,rest(1:lenstr(rest))
@@ -411,11 +432,11 @@ C     name= header name to link to
 C     level=0-6. Header size. 0= plain text
       character*(*) text,name
       integer level,lenstr
-      integer lpt, htmlinit
+      integer lpt, htmlinit, summlevel
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160,pn*160
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
-     .                 summopen
+     .                 summopen, summlevel
       save   /ccp4hdat/
       character*60 underline
       external lenstr,ccppnm
