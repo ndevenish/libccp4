@@ -137,7 +137,11 @@ MTZ *MtzGet(const char *logname, int read_refs)
   /* 1st Pass: Read ntotcol, nref, nbat and dataset info.  
      nxtal and nset are used to assign memory for MTZ structure.
      Position at top of header */
-  ccp4_file_seek(filein, hdrst-1, SEEK_SET);
+  /* We don't test all seeks, but this one should trap for e.g. truncated files */
+  if ( ccp4_file_seek(filein, hdrst-1, SEEK_SET) ) {
+    ccp4_signal(CCP4_ERRLEVEL(4) | CMTZ_ERRNO(CMTZERR_ReadFail),"MtzGet",NULL);
+    return NULL;
+  }
 
   /* set up base dataset in case it is in not in file */
   iiset = 0;
@@ -1048,9 +1052,10 @@ int MtzParseLabin(char *labin_line, const char prog_labels[][31],
     if (iprint) printf("Interpreting LABIN line.\n");
   } else if (ccp4_keymatch(key,"LABO")) {
     if (iprint) printf("Interpreting LABOUT line.\n");
+  } else if (ccp4_keymatch(key,"COMP")) {
+    if (iprint) printf("Interpreting COMPLETE line (freerflag).\n");
   } else {
-    printf("Input is not LABIN or LABOUT line !!\n");
-    return 0;
+    printf("Warning in MtzParseLabin: Input is not LABIN or LABOUT line !!\n");
   }
 
   /* initialise user labels */
