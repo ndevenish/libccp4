@@ -18,9 +18,9 @@
  * qskip    (iunit,lrecl)                - fseek within random access file  *
  * cqinq    (iunit,lfilnm,filnam,length) - inquire file on the given stream *
  * qlocate  (iunit,locate)               - ftell within random access file  *
- * qtype   (istamp)                     - returns machine type stamp       *
+ * qtype    (istamp)                     - returns machine type stamp       *
  *                                                                          *
- * Comments, complaints, moans and updates to: ccp4@uk.ac.daresbury.cxa     *
+ * Comments, complaints, moans and updates to: ccp4@dl.ac.uk                *
  *                                                                          *
  * CCP4, 28th February 1992                                                 *
  *  $Date$
