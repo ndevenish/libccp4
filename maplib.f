@@ -654,7 +654,7 @@ C
 C If not set yet, set bias for rms deviation calculation to 1st point in map
 C This reduces rounding errors
            IF (OFFSTR .LT. QOFFST) THEN
-              OFFSTR = X(J)
+              OFFSTR = X(1)
            ENDIF
            DO 20 J = 1,N
               IF(X(J) .GT.AMAX) AMAX = X(J)
