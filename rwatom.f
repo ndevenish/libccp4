@@ -3,6 +3,10 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
+C_BEGIN_RWATOM
+C
+C RWATOM.FOR
+C
 C Routines for reading and writing atoms in Brookhaven or Diamond
 C format. Uses CCP RBROOK, WBROOK etc for Brookhaven file, and
 C makes Diamond file look similar.
@@ -36,21 +40,32 @@ C On output:
 C  The residue name is made up of a 3-digit residue number and 
 C  a one-character chain identifier
 C
+C_END_RWATOM
+C
 C------------------
 C
       SUBROUTINE RDAINI(IUN,LTYPE,TITLE,MSG)
 C     ======================================
 C
+C_BEGIN_RDAINI
+C
+C      SUBROUTINE RDAINI(IUN,LTYPE,TITLE,MSG)
+C
 C Initialise (or rewind) input file on unit IUN. The file must have
 C already been opened
 C
-C LTYPE = 0 Brookhaven format
-C       = 1 Diamond format
-C       .lt. 0  unknown, find out file type (Brookhaven or Diamond)
-C               return LTYPE = 0 or 1
-C TITLE  for Diamond format only, returned as title read from file
+C Parameters
 C
-C MSG is the message output stream
+C   IUN (I)
+C LTYPE (I) = 0 Brookhaven format
+C           = 1 Diamond format
+C            .lt. 0  unknown, find out file type (Brookhaven or Diamond)
+C               return LTYPE = 0 or 1
+C TITLE (O) for Diamond format only, returned as title read from file
+C
+C   MSG (I) is the message output stream
+C
+C_END_RDAINI
 C
       PARAMETER (NSTRM=20)
       COMMON /RDATMC/ JTYPES(NSTRM),NSER
@@ -117,7 +132,12 @@ C
      .  X,Y,Z,Q,B,IZ,IOUT,MSG1,MSG2,ITER,*,*)
 C     ==========================================================
 C
+C_BEGIN_RDATOM
 C
+C      SUBROUTINE RDATOM(IUN,ISER,ATNAM,RESTYP,IDCH,IRES,RESNO,IS,
+C     .  X,Y,Z,Q,B,IZ,IOUT,MSG1,MSG2,ITER,*,*)
+C
+C Reads one atom record from coordinate file
 C
 C Parameters
 C
@@ -148,6 +168,7 @@ C
 C  RETURN 1   return on 'TER' card found (only if ITER=1)
 C  RETURN 2   return on end of file found
 C
+C_END_RDATOM
 C
       CHARACTER*4 ATNAM,RESTYP,RESNO,RESNAM
       CHARACTER*1 IDCH
@@ -226,14 +247,21 @@ C
 C
       SUBROUTINE WTAINI(IUN,LTYPE,TITLE,MSG)
 C     ======================================
+C_BEGIN_WTAINI
 C
-C Initialise previously opened atom output file 
-C  LTYPE = 0 Brookhaven format
-C        = 1 Diamond format
-C  TITLE character*80 title for Diamond file
+C      SUBROUTINE WTAINI(IUN,LTYPE,TITLE,MSG)
 C
-C  MSG  message output stream
+C Initialise previously opened atom output file
+C 
+C Parameters
 C
+C    IUN (I) = Unit number of the output coordinate file
+C  LTYPE (I) = 0 Brookhaven format
+C            = 1 Diamond format
+C  TITLE (I) character*80 title for Diamond file
+C    MSG (I) message output stream
+C
+C_END_WTAINI
 C
       PARAMETER (NSTRM=20)
       COMMON /WTATMC/ JTYPES(NSTRM),NSER
@@ -271,6 +299,12 @@ C
      .   IUN,ISER,ATNAM,RESTYP,IDCH,IRES,IS,X,Y,Z,Q,B,IZ)
 C     ===================================================
 C
+C_BEGIN_WTATOM
+C
+C Write one atom to output atom file
+C
+C      SUBROUTINE WTATOM(
+C     .   IUN,ISER,ATNAM,RESTYP,IDCH,IRES,IS,X,Y,Z,Q,B,IZ)
 C
 C PARAMETERS
 C
@@ -289,6 +323,7 @@ C           B (I) temperature factor
 C          IZ (I) atomic number (may be 0 if the atomic symbol is a
 C                                single character e.g. C,N,O,H,S)
 C
+C_END_WTATOM
 C
       PARAMETER (NSTRM=20)
       COMMON /WTATMC/ JTYPES(NSTRM),NSER
@@ -350,7 +385,18 @@ C
       SUBROUTINE WTAFIN(IIN,IOUT)
 C     ===========================
 C
+C_BEGIN_WTAFIN
+C
+C      SUBROUTINE WTAFIN(IIN,IOUT)
+C
 C Copy rest of input atom file to output
+C
+C Parameters
+C
+C    IUN (I)  Unit number of input file
+C   IOUT (I)  Unit number of output file
+C
+C_END_WTAFIN
 C
       CHARACTER*80 LINE
 C
@@ -367,9 +413,21 @@ C
        SUBROUTINE SETORT(A,B,C,ALPHA,BETA,GAMMA,NCODEI,MSG)
 C      ====================================================
 C
+C_BEGIN_SETORT
+C
+C       SUBROUTINE SETORT(A,B,C,ALPHA,BETA,GAMMA,NCODEI,MSG)
+C
 C  Set up orthogonal to fractional (RF) and fractional to orthogonal (RO)
 C  matrices with appropriate NCODE. If input is from Brookhaven file,
 C  this should be done from RBROOK, so this routine should not be called.
+C
+C Parameters
+C
+C  A,B,C,ALPHA,BETA,GAMMA (I)    Unit cell dimensions 
+C                  NCODEI (I)    
+C                     MSG (I)    Message output stream
+C
+C_END_SETORT
 C
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE,IBRKFL
       LOGICAL IFCRYS,IFSCAL,IFEND,IFTER,MATRIX
