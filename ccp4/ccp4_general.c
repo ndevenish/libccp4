@@ -892,11 +892,9 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
 		char **envtype, char **envext, int *ienv, int no_overwrt)
 {
   int  diag=0;
-  int  icount,lext=0,lroot=0,lpath=0,lname,procid;
+  int  icount,lext=0,lroot=0,lpath=0,lname,lprognam,procid;
   char *clibd,*cscr;
   char *file_ext=NULL,*file_root=NULL,*file_path=NULL,*file_name=NULL;
-
-  /* tmpstr1 only used for diagnostics */
   char *tmpstr1=NULL;
 
   /* Begin */
@@ -1028,6 +1026,9 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
 	}
 
       } else if (strmatch(file_ext,"scr")) {
+        /* Scratch files in a special place
+	   actually create <ccp4_scr>/<prognm>_.<pid>
+	*/
 	/* Fetch CCP4_SCR */
 	cscr = (char *) getenv("CCP4_SCR");
 	if (cscr) {
@@ -1045,6 +1046,17 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
 	  ccp4_signal(CGEN_ERRNO(CGENERR_CantGetCcp4Scr),"ccp4setenv",NULL);
 	  return 1;
 	}
+        /* Replace <file_root> with <prognam>_<file_root> */
+	lprognam = strlen(ccp4ProgramName(NULL));
+        tmpstr1 = ccp4_utils_malloc(sizeof(char)*(lprognam + lroot + 2));
+        strncpy(tmpstr1,ccp4ProgramName(NULL),lprognam);
+	tmpstr1[lprognam] = '\0';
+        strncat(tmpstr1,"_",1);
+	strncat(tmpstr1,file_root,lroot);
+        if (file_root) free(file_root);
+	file_root = tmpstr1;
+	lroot = strlen(file_root);
+	if (diag) printf("CCP4SETENV: updated file_root = \"%s\"\n",file_root);
 	/* Replace scr extension with the process id
 	 In fact to guarantee that it is always 5 characters,
 	 take the id number modulo 100,000 */
