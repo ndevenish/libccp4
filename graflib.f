@@ -1741,7 +1741,7 @@ C     ..
       IGUNIT = 92
       ISTAT = 0
       CALL CCPDPN(92, FILNAM, 'NEW', 'F',0, ISTAT)
-      IF (ISTAT.NE.0) CALL CPPERR(1,'Can''t open PLOT file')
+      IF (ISTAT.NE.0) CALL CCPERR(1,'Can''t open PLOT file')
       WRITE (92,FMT=6000) BEGIN
       WRITE (92,FMT=6000) 'initgraphics'
       WRITE (92,FMT=6000) 'newpath'
