@@ -2590,7 +2590,11 @@ C---- Read and decode SCALE .
 C     
 C---- Arguments:
 C
-C  ITOK   (I) INTEGER       Number of first field to interpret
+C  ITOK   (I/O) INTEGER     Input: number of first field to interpret
+C                           Output: number of next token to interpret (.gt. 0)
+C                                  =  0 if line exhausted (SCAL & BB OK)
+C                                  = -1 if no scale given
+C                                  = -2 unrecognized label
 C
 C  LINE   (I) CHARACTER*(*) Input string (from PARSER)
 C
@@ -2617,9 +2621,9 @@ C  NLPRGI (I) INTEGER        Number of label strings in LSPRGI
 C
 C  ILPRGI (O) INTEGER        Number in array of LSPRGI whose scale has been reset
 C
-C  SCAL   (O) REAL           Scale factor.
+C  SCAL   (O) REAL           Scale factor, no default
 C
-C  BB     (O) REAL           Temperature factor.
+C  BB     (O) REAL           Temperature factor, default = 0.0
 C
 C_END_RDSCAL
 C     
@@ -2635,7 +2639,7 @@ C
       CHARACTER*100 STROUT
 C     
       CWORK = LINE(IBEG(ITOK) :IEND(ITOK))
-          DO 10 JDO = 1,NLPRGI
+      DO 10 JDO = 1,NLPRGI
 C     
          IF (CWORK.EQ.LSPRGI(JDO)) GO TO 20
 C     
@@ -2648,12 +2652,35 @@ C     ***********************
       CALL PUTLIN(STROUT,'ERRWIN')
 C     ***********************
 C     
+      ITOK = -2
+      RETURN
 C     
 C     
  20   ILPRGI = JDO
-      CALL GTPREA(ITOK+1,SCAL,NTOK,ITYP,FVALUE)
+      IF(ITOK+1.GT.NTOK) THEN
+         ITOK = -1
+         RETURN
+      ELSE
+         IF (ITYP(ITOK+1) .EQ. 2) THEN
+            CALL GTPREA(ITOK+1,SCAL,NTOK,ITYP,FVALUE)
+         ELSE
+            ITOK = -1
+            RETURN
+         ENDIF
+      ENDIF
+C
       BB = 0
-      IF(ITOK+2.LE.NTOK)CALL GTPREA(ITOK+2,BB,NTOK,ITYP,FVALUE)
+      IF(ITOK+2.LE.NTOK) THEN
+         IF (ITYP(ITOK+2) .EQ. 2) THEN
+            CALL GTPREA(ITOK+2,BB,NTOK,ITYP,FVALUE)
+            ITOK = ITOK + 3
+         ELSE
+            ITOK = ITOK + 2
+         ENDIF
+         IF (ITOK .GT. NTOK) ITOK = 0
+      ELSE
+         ITOK = 0
+      ENDIF
 C     
       RETURN
       END 
