@@ -44,6 +44,9 @@ For information about key type values see binsortkey.h
 #include <sys/types.h>		/* necessary on Titan, at least, and
 				   for POSIX wait */
 
+#define	TRUE                    1
+#define	FALSE                   0
+
 #ifndef EIO
 #  define EIO 5
 #endif
@@ -54,6 +57,7 @@ static FILE	*filout,        /* file pointers for fildesout, fildesin */
 		*filin;
 static int	pid;		/* child process id */
 static int	recl;		/* record length (fixed) */
+static int      f_verbose = FALSE;      /* verbose flag */
 
 /*=======================================================
 SRTBEG:	Sort initialisation
@@ -130,15 +134,22 @@ int	        *memsize;       /* size of memory (BYTES) used by sort */
 {
   char         **argv, **pargv;
   int            argc;
-  static char   *binsortname = "binsort";
+  char          *binsortname;
   static char   *rclswitch = "-r";
   char           lengthbuf [10];
   static char   *memswitch = "-m";
   char           memsizbuf [10];
-  int            numkeys;
+  int            numkeys, i;
   static char   *keyswitch = "-k";
   char           keydatatype;
   char           sortorder;
+  char           *charvalue;
+
+  if (charvalue = (char *) getenv ("BINSORT_VERB"))
+    f_verbose = charvalue ? TRUE : FALSE;
+  binsortname = "binsort";
+  if (charvalue = (char *) getenv ("BINSORT_NAME"))
+    binsortname = charvalue;
 
   pipe(fildesin);
   pipe(fildesout);
@@ -218,6 +229,13 @@ int	        *memsize;       /* size of memory (BYTES) used by sort */
       ++pargv;
     }
 
+    if (f_verbose)
+      fprintf(stderr, " binsortint -- calling program \"%s\"\n",binsortname);
+    if (f_verbose) {
+        for (i=0; i < argc ;++i) {
+	  fprintf(stderr, " binsortint -- argument #%d = \"%s\"\n",i,argv[i]);
+	}
+    }
     execvp(binsortname, argv);
     perror("Trying to execute binsort");
     _exit(errno);
@@ -383,6 +401,7 @@ char            *record;
 {
     register size_t	ret;
     int reterr;
+
 # if defined (ESV) || defined (ultrix) || defined (alliant)
     /* Ultrix guessed as BSD-ish */
     union wait *status;
@@ -390,8 +409,9 @@ char            *record;
     int status;
 #endif
 
-    if ((ret = fread(record, sizeof(char), recl, filin)) == recl)
+    if ((ret = fread(record, sizeof(char), recl, filin)) == recl) {
       return(0);
+    }
     /* else EOF or read error */
     if ((int) wait (&status) < 0) { /* some error with sub-process */
       fclose(filin);
