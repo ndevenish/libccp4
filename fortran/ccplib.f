@@ -2519,7 +2519,7 @@ C     .. Scalar Arguments ..
       CHARACTER PROG* (*),VDATE* (*), PNM*(*)
 C     ..
 C     .. Local Scalars ..
-      CHARACTER CTIME*8,DT2*8,DT*10,PR*20,UID*20,TMPPRG*20,VERSION*10
+      CHARACTER CTIME*8,DT2*8,DT*10,PR*20,UID*20,TMPPRG*100,VERSION*10
       SAVE PR
 C     ..
 C     .. External Functions ..
