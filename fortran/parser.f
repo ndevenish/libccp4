@@ -161,7 +161,7 @@ C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,J,K,KSTREAM,LENLIN,LINLEN,LSTREAM,MSTREAM,N,
      +        NITEM,ISTERR,IFGERR
-      LOGICAL FIRST
+      LOGICAL FIRST, HAVLIN
       CHARACTER IAMP*1,IDASH*1,FLNAME*60,LINERR*800,LINEX*800
       CHARACTER ICOMM1*1,ICOMM2*1
 C     ..
@@ -191,6 +191,10 @@ C
       LINEX = ' '
       NINCHR = 0
       ICX = 0
+C     We need a flag to avoid the echoing of data when parser is called
+C     during processing of an `@'-included file, as in RDSYMM typically
+C     called from agrovata
+      HAVLIN = LINE .NE. ' '
 C
    10 FIRST = .TRUE.
 C
@@ -221,6 +225,7 @@ C
    20 CONTINUE
       READ (LSTREAM,FMT=6000,END=40) LINEX
  6000 FORMAT (A)
+      HAVLIN = .FALSE.
 C
 C
       IF(LINEX(1:1).EQ.ICOMM1 .OR. LINEX(1:1).EQ.ICOMM2) THEN
@@ -332,7 +337,7 @@ C
       END IF
 C
 C
-      IF (PRINT .OR. LSTREAM.NE.MSTREAM) THEN
+      IF (.NOT. HAVLIN .AND. (PRINT .OR. LSTREAM.NE.MSTREAM)) THEN
         STROUT = ' '
         WRITE (STROUT,FMT=6002) LINE(1:LENSTR(LINE))
  6002   FORMAT (' Data line--- ',A)
