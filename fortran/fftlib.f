@@ -1906,3 +1906,240 @@ C
       END IF
 C
       END
+C
+
+C
+C     ==========================================================
+      SUBROUTINE SETGRD(NLAUE,SAMPLE,NXMIN,NYMIN,NZMIN,NX,NY,NZ)
+C     ==========================================================
+C
+C Set up a suitable sampling grid for FFT
+C
+C Input:
+C     NLAUE         Laue-group for FFT/SF calculation
+C     SAMPLE        default fineness of sample, ie if = 1.0 (minimum),
+C                   try to get sampling as close to minimum as possible
+C                   Typically = 1.5 to get sample at traditional
+C                   3 * maximum index
+C     NXMIN NYMIN NZMIN minimum sampling (true XYZ)
+C
+C Output:
+C     NX,NY,NZ       sampling intervals along X,Y,Z
+C
+C  The sampling intervals must satisfying the following conditions:
+C
+C     1) approximately SAMPLE * minimum sampling
+C     2) no prime factor .gt. 19
+C     3) special restrictions for particular space-groups
+C
+C      IMPLICIT NONE
+C
+      INTEGER NLAUE,NXMIN,NYMIN,NZMIN,NX,NY,NZ
+      REAL SAMPLE
+      EXTERNAL FNDSMP
+C
+C  This is ALL the point groups.
+C PG1 PG1bar PG2 PGm PG2/m PG222 PGmm2 PGmmm 
+C PG4 PG4bar PG4/m PG422 PG4mm PG4bar2m PG4/mmm 
+C PG3 PG3bar PG32 PG3m PG3barm 
+C PG6 PG6bar PG6/m PG622 PG6mm PG6bar2m  PG6/mmm
+C PG23 PGm/3bar PG432 PG4bar3m PGm3bar m
+C
+C  We use:
+C PG1 PG1bar PG2  PG2/m PG222  PGmmm 
+C PG4 PG4/m PG422 PG4/mmm 
+C PG3 PG3bar PG32 PG3bar/m 
+C PG6 PG6/m PG622 PG6/mmm
+C PG23 PGm/3bar PG432 PGm3barm
+C  For grid restrictions we only need to know the laue number.
+C Here is the table:
+C   3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
+C   4 pg2    2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
+C   6 pg222  mmm        hkl:h>=0, k>=0, l>=0            16 ...
+C   7 pg4    4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
+C   8 pg422 4/mmm       hkl:h>=0, k>=0, l>=0            89..
+C   9 pg3     3bar      hkl:h>=0, k>0  00l:l>0         143..
+C  10 pg312  3/m        hkl:h>=0, k>=0 with k<=h for all l.
+C                           if k = 0  l>=0
+C           Space group numbers :   149-151-153
+C  11 pg321  3/m        hkl:h>=0, k>=0 with k<=h for all l.
+C                           if h = k  l>=0
+C           Space group numbers :   150-152-154
+C  12 pg6    6/m        hkl:h>=0, k>=0, l>=0 with k=0 if  h=0
+C  13 pg622  6/mmm
+C  14 pg23   m3
+C  15 pg432  m3m
+C 
+C Tables of restrictions for FFT Laue-groups
+C  NRESTR(1,) lauegroup number
+C        (2-4,) factors for NX,NY,NZ
+      INTEGER MAXLAU
+      PARAMETER (MAXLAU=15)
+      INTEGER NRESTR(4,MAXLAU), I
+      DATA NRESTR/
+C          Nsg    NX NY NZ
+C     P1 or P1bar - disallowed:
+     $     -1,    2, 2, 2,
+C     P1 or P1bar - disallowed:
+     $     -2,    2, 2, 2,
+C     P1 or P1bar :
+     $      3,    2, 2, 2,
+C     P2 or P2bar :
+     $      4,    2, 4, 2,
+C     P2/m:
+     $      5,    2, 8, 4,
+C     P222 or Pmmm:
+     $      6,    4, 4, 4,
+C     P4   or P4/m:
+     $      7,    4, 4, 8,
+C     P422 or P4/mmm:
+     $      8,    4, 4, 8,
+C     P3   or P3bar:
+     $      9,    6, 6, 6,
+C     P32  or P3/m:
+     $     10,    6, 6, 6,
+C     P32  or P3/m:
+     $     11,    6, 6, 6,
+C     P6   or P6/m:
+     $     12,    6, 6, 6,
+C     P6222   or P6/mmmm:
+     $     13,    6, 6, 6,
+C     P23:
+     $     14,    4, 4, 4,
+C     P432 or Pmmm:
+     $     15,    8, 8, 8/
+C
+      DO 1, I=1,MAXLAU
+         IF (NLAUE .EQ. NRESTR(1,I)) GO TO 10
+ 1    CONTINUE
+C
+C Unrecognized Laue-group
+      NX = -1
+      RETURN
+C
+ 10   CALL FNDSMP(NXMIN, NRESTR(2,I), SAMPLE, NX)
+      CALL FNDSMP(NYMIN, NRESTR(3,I), SAMPLE, NY)
+      CALL FNDSMP(NZMIN, NRESTR(4,I), SAMPLE, NZ)
+C
+      RETURN
+      END
+C
+C
+C
+C     ================================
+      SUBROUTINE SETLIM(LSPGRP,XYZLIM)
+C     ================================
+C
+C Set appropriate box (asymmetric unit) for spacegroup (true spacegroup)
+C     LSPGRP. For high symmetry spacegroups, this will be more than
+C     one asymmetric unit
+C
+C On entry:
+C     lspgrp    true spacegroup (not FFT spacegroup)
+C
+C On exit
+C     xyzlim(2,3)  minimum, maximum limits on x,y,z (fractions of cell)
+C                  if spacegroup not recognized, returns xzylim(1,1) = -1.0
+C                  Note that the minimum limits (xyzlim(1,)) will always
+C                   = 0.0
+C
+C      IMPLICIT NONE
+C
+      INTEGER LSPGRP
+      REAL XYZLIM(2,3)
+C
+      INTEGER I,J
+C
+      INTEGER NUMSGP
+      PARAMETER (NUMSGP=88)
+      REAL ONE,HALF,THRD,TWTD,SIXT,QUAR,EIGH,TWLT,ROUND,ROUND2
+      REAL ONEL,HALFL,THRDL,SIXTL,QUARL,EIGHL
+      PARAMETER (ROUND=0.00001, ROUND2=2.0*ROUND)
+      PARAMETER (ONE=1.0+ROUND,HALF=0.5+ROUND,THRD=1./3.+ROUND,
+     $     TWTD=2./3.+ROUND,SIXT=1./6.+ROUND,
+     $     QUAR=0.25+ROUND,EIGH=0.125+ROUND,TWLT=1./12.+ROUND)
+      PARAMETER (ONEL=ONE-ROUND2,HALFL=HALF-ROUND2,THRDL=THRD-ROUND2,
+     $     SIXTL=SIXT-ROUND2,QUARL=QUAR-ROUND2,EIGHL=EIGH-ROUND2)
+C
+      INTEGER NSPGRP(NUMSGP)
+      REAL ASULIM(3,NUMSGP)
+C
+C  asulim contains maximum limit on x,y,z: the box is always assumed to
+C     start at 0,0,0
+C
+C  Space group numbers
+      DATA NSPGRP/
+     $   1,   2,   3,    4,   5,  10,  16,   17,  18,1018,  19,   20,
+     $  21,  22,  23,   24,  47,  65,  69,   71,  75,  76,  77,   78,
+     $  79,  80,  83,   87,  89,  90,  91,   92,  93,  94,  95,   96,
+     $  97,  98, 123,  139, 143, 144, 145,  146, 147, 148, 149,  150,
+     $ 151, 152, 153,  154, 155, 162, 166,  168, 169, 170, 171,  172,
+     $ 173, 175, 177,  178, 179, 180, 181,  182, 191, 195, 196,  197,
+     $ 198, 199, 200,  202, 204, 207, 208,  209, 210, 211, 212,  213,
+     $ 214, 221, 225,  229/
+C
+      DATA ((ASULIM(II,JJ),II=1,3),JJ=1,76)/
+C        1:  P1          2:  P-1         3:  P2            4:  P21
+     $ ONEL,ONEL,ONEL, ONEL,HALF,ONEL, HALF,ONEL,ONEL, ONEL,HALFL,ONEL,
+C        5:  C2         10:  P2/m       16:  P222         17:  P2221
+     $ HALF,HALFL,ONEL, HALF,HALF,ONEL,HALF,HALF,ONEL, HALF,HALF,ONEL,
+C       18: P21212    1018: P21212      19: P212121       20:C2221
+     $ ONEL,QUAR,ONEL, ONEL,QUAR,ONEL, ONEL,ONEL,QUAR, HALF,QUAR,ONEL,
+C       21:  C222       22:  F222       23:  I222         24: I212121
+     $ HALF,QUAR,ONEL, QUAR,QUAR,ONEL, HALF,QUAR,ONE, HALF,QUAR,ONEL,
+C       47:  Pmmm       65:  Cmmm       69:  Fmmm         71:  Immm
+     $ HALF,HALF,HALF, HALF,QUAR,HALF, QUAR,QUAR,HALF, HALF,QUAR,HALF,
+C       75:  P4         76:  P41        77:  P42          78:  P43
+     $ HALF,HALF,ONEL,ONEL,ONEL,QUARL, HALF,ONEL,HALFL,ONEL,ONEL,QUARL,
+C       79:  I4         80:  I41        83:  P4/m         87:  I4/m
+     $ HALF,HALF,HALF,HALF,ONEL,QUARL, HALF,HALF,HALF, HALF,HALF,QUAR,
+C       89: P422        90: P4212       91: P4122         92: P41212
+     $ HALF,HALF,HALF, HALF,HALF,HALF, ONEL,ONEL,EIGH, ONEL,ONEL,EIGH,
+C       93: P4222       94: P42212      95: P4322         96: P43212
+     $ HALF,ONEL,QUAR, HALF,HALF,HALF, ONEL,ONEL,EIGH, ONEL,ONEL,EIGH,
+C       97: I422        98: I4122      123: P4/mmm       139: I4/mmm
+     $ HALF,HALF,QUAR, HALF,ONEL,EIGH, HALF,HALF,HALF,  HALF,HALF,QUAR,
+C      143:  P3        144:  P31       145: P32          146:  R3
+     $ TWTD,TWTD,ONEL,ONEL,ONEL,THRDL,ONEL,ONEL,THRDL, TWTD,TWTD,THRDL,
+C      147:  P-3       148:  R-3       149: P312         150:  P321
+     $ TWTD,TWTD,HALF, TWTD,TWTD,SIXT, TWTD,TWTD,HALF, TWTD,TWTD,HALF,
+C      151: P3112      152: P3121      153: P3212        154: P3221
+     $ ONEL, ONEL,SIXT, ONEL,ONEL,SIXT, ONEL,ONEL,SIXT, ONEL,ONEL,SIXT,
+C      155: R32        162:  P-31m     166:  R-3m        168:  P6
+     $ TWTD,TWTD,SIXT, TWTD,HALF,HALF, TWTD,TWTD,SIXT, TWTD,HALF,ONEL,
+C      169:  P61       170:  P65       171:  P62         172:  P64
+     $ ONEL,ONEL,SIXTL,ONEL,ONEL,SIXTL,ONEL,ONEL,THRDL,ONEL,ONEL,THRDL,
+C      173:  P63       175:  P6/m      177: P622         178: P6122
+     $ TWTD,TWTD,HALFL, TWTD,TWTD,HALF,TWTD,HALF,HALF, ONEL,ONEL,TWLT,
+C      179: P6522      180: P6222      181: P6422        182: P6322
+     $ ONEL,ONEL,TWLT, ONEL,ONEL,SIXT, ONEL,ONEL,SIXT, TWTD,TWTD,QUAR,
+C      191: P6/mmm     195: P23        196: F23          197: I23
+     $ TWTD,THRD,HALF, ONEL,ONEL,HALF, QUAR,QUAR,ONEL, ONEL,ONEL,HALF,
+C      198: P213       199: I213       200: Pm-3         202: Fm-3
+     $ HALF,HALF,ONEL, HALF,HALF,HALF, HALF,HALF,HALF, HALF,HALF,QUAR/
+      DATA ((ASULIM(II,JJ),II=1,3),JJ=77,88)/
+C      204: Im-3       207: P432       208: P4232        209: F432
+     $ HALF,HALF,HALF, ONEL,HALF,HALF, HALF,ONEL,QUAR, HALF,HALF,HALF,
+C      210: F4132      211: I432       212: P4332        213: P4132
+     $ HALF,ONEL,EIGH, HALF,HALF,QUAR, ONEL,ONEL,EIGH, ONEL,ONEL,EIGH,
+C      214: I4132      221: Pm-3m      225: Fm-3m        229: Im-3m
+     $ HALF,ONEL,EIGH, HALF,HALF,HALF, HALF,QUAR,QUAR, HALF,HALF,QUAR/
+C
+C
+      DO 10, J=1,NUMSGP
+         IF (LSPGRP .EQ. NSPGRP(J)) GO TO 20
+ 10   CONTINUE
+C
+C Spacegroup not found
+      XYZLIM(1,1) = -1.0
+      RETURN
+C
+C
+ 20   DO 30, I=1,3
+         XYZLIM(1,I) = 0.0
+         XYZLIM(2,I) = ASULIM(I,J)
+ 30   CONTINUE
+C
+      RETURN
+C
+      END
