@@ -9,7 +9,7 @@
 #ifndef __GUARD_MAPLIB
 #define __GUARD_MAPLIB
 
-#include "ccp4_lib.h"
+#include "ccp4_utils.h"
 
 #ifdef __cplusplus
 namespace CMap_io {

@@ -21,7 +21,7 @@
 static char rcsidhm[] = "$Id$";
 
 /* defines CCP4::CCP4File */
-#include "ccp4_lib.h"
+#include "ccp4_utils.h"
 
 #ifdef  __cplusplus
 namespace CMtz {
