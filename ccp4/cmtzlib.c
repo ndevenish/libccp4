@@ -85,7 +85,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
 { MTZ *mtz;
   CCP4File *filein;
-  int istat, newproj, cset_warn=0;
+  int istat, newproj, cset_warn=0, length;
   MTZCOL *colin[MCOLUMNS], *newcol;
   char *filename;
   char crysin[MXTALS][65],projin[MXTALS][65],crystal[65],project[65];
@@ -433,7 +433,9 @@ MTZ *MtzGet(const char *logname, int read_refs)
        }
     else if (strncmp (mkey, "TITL",4) == 0) {
        strncpy(mtz->title,hdrrec+6,70); 
-       mtz->title[70] = '\0';
+       length = 70;
+       while ((--length >= 0) && (mtz->title[length] == ' '));
+       mtz->title[length+1] = '\0';
        }
 
     else if (strncmp (mkey, "CELL",4) == 0) {
