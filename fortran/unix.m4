@@ -8,6 +8,8 @@ dnl
 dnl * units for record lengths:
 ifelse(_sgi,1,
   [define(_ubytes,'WORDS')],
+_dec_fortran,1,dnl           as opposed to (old) MIPS compiler on Ultrix
+  [define(_ubytes,'WORDS')],
   [define(_ubytes,'BYTES')])dnl
 dnl
 dnl * fortran compiler may or may not accept READONLY specifier on OPEN:
