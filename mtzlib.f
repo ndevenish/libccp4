@@ -1255,10 +1255,10 @@ C            ************************
 C
       ELSE
 C
-C---- Close the file
+C---- Close the file (for safety, check it was open)
 C
 C            *******************
-        CALL QCLOSE(RLUN(MINDX))
+        IF (RLUN(MINDX).NE.0) CALL QCLOSE(RLUN(MINDX))
 C            *******************
 C
 C---- Mark this index as unoccupied for read
