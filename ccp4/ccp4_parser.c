@@ -1460,11 +1460,13 @@ int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
       }
       value2 = strtod(ptr_symchs, &cp);
       if (!value2) return (1);
+      /* Nb don't apply the sign to value here
+	 It will already have been applied in the previous round */
       value = (float) value/value2;
       ptr_symchs = cp;
       continue;
     } else if ( isdigit(ch) || ch == '.') {
-      value = strtod(ptr_symchs, &cp);
+      value = sign*strtod(ptr_symchs, &cp);
       ptr_symchs = cp;
       continue;
     } else {
