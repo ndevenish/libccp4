@@ -283,20 +283,6 @@ $L(library.o) : $(srcdir)/library.c
 library : $L(library.o)
 	$(RANLIB) $L
 
-# These next targets are only any use if you have the noweb system
-# The following shouldn't run unless you're actually modifying
-$(srcdir)/library.c : $(srcdir)/library.nw
-# first save the distributed one in case of disasters
-	-test -f $@-dist || mv $@ $@-dist
-	-notangle -L $? > $@ || mv $@-dist $@
-library.tex: $(srcdir)/library.nw
-	noweave -index -delay $? >library.tex
-library.dvi: library.tex
-	latex library
-	latex library
-	makeindex library
-	latex library
-
 $L(binsortint.o) : $(srcdir)/binsortint.c $(srcdir)/binsort.h
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/binsortint.c
 	$(AR) $L binsortint.o && rm binsortint.o
