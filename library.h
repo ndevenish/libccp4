@@ -881,6 +881,8 @@ static void ieeeF2convexF (union float_uint_uchar *, int);
 
 int ccp4_ustenv (char *);
 
+int ccp4_outbuf (void);
+
 int ccp4_qopen (const char *, int);
 
 int ccp4_qrarch ( int, int);

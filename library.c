@@ -221,7 +221,7 @@ FORTRAN_CALL ( QPRINT, qprint,
 /* This reports a fatal error with a given file.                            */
 /*                                                                          */
 /* <internal routines>=                                                     */
-static void file_fatal (char *message, char *file)
+void file_fatal (char *message, char *file)
 {
   char *buff;
   size_t l;
@@ -419,7 +419,7 @@ static void ieeeF2convexF(union float_uint_uchar buffer[], int size)
   }
 }
 /* \section{Miscellaneous routines}                                         */
-/* \subsection{{\tt int ustenv(\meta{string})}}                             */
+/* \subsection{{\tt int ccp4_ustenv(\meta{string})}}                        */
 /*                                                                          */
 /* This sets an environment variable \meta{var} to \meta{val}, where the    */
 /* argument \meta{string}[[==']]\meta{var}[['//'='//']]\meta{val}[[']].     */
@@ -461,6 +461,32 @@ int ccp4_ustenv (char *str)
   return (-1);
   *param2++ = '\0';
   return (setenv (param1, param2, 1));
+#endif
+}
+#endif
+
+/* \subsection{{\tt int ccp4_outbuf()}}                                     */
+/*                                                                          */
+/* This sets stdout to line buffering                                       */
+/* wraps setvbuf(ANSI) and setlinebuf(BSD extension).  setvbuf() must be    */
+/* used before any io on the file, setlinebuf() is more flexible            */
+/*                                                                          */
+/*                                                                          */
+/* <miscellaneous routines>=                                                */
+#if ! defined (VMS)
+/* <outbuf code>=                                                           */    
+int ccp4_outbuf(void)
+{
+#if defined (sgi) || defined (sun) || \
+    defined(ultrix) || defined (__OSF1__) || \
+    defined (__osf__) || defined (__FreeBSD__) || defined (linux)
+  setlinebuf(stdout);
+#else
+#  if defined (_AIX)
+  return -1;
+#  else
+  return setvbuf(stdout, NULL, _IOLBF, 0);
+#  endif
 #endif
 }
 #endif
