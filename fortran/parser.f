@@ -669,8 +669,8 @@ C
                 IF (NUMBER) THEN
                   ITYP(N) = 2
                   FVALUE(N) = VALUE*SIGN
-                  IF (OPER.GT.0) FVALUE(N) = DOCALC(FVALUE(N),OPER,
-     +                SIGN0*VALUE0)
+CCC                  IF (OPER.GT.0) FVALUE(N) = DOCALC(FVALUE(N),OPER,
+CCC     +                SIGN0*VALUE0)
                   IDEC(N) = 100*IDOT + NPLACE
                 ELSE
 C
