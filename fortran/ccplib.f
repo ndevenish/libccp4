@@ -1715,8 +1715,9 @@ C SPECIFICATION STATEMENTS
 C ------------------------
 C
       CHARACTER*(*) FILNAM,PATH,NAME,TYPE,VERS
-      EXTERNAL VAXVMS
-      LOGICAL VAXVMS, VMS
+      EXTERNAL VAXVMS, WINMVS, RTNBKS
+      LOGICAL VAXVMS, WINMVS, VMS, MVS
+      CHARACTER RTNBKS*1, BKS*1
 C
 C INITIALISATIONS
 C ---------------
@@ -1729,6 +1730,8 @@ C
       IF (LMAX.EQ.0) RETURN
       LMIN=0
       VMS = VAXVMS()
+      MVS = WINMVS()
+      BKS = RTNBKS()      
 10    LMIN=LMIN+1
       IF (FILNAM(LMIN:LMIN).EQ.' ') GO TO 10
 C
@@ -1739,10 +1742,14 @@ C
         DO 20 L=LMAX,LMIN,-1
           IF (FILNAM(L:L).EQ.':'.OR.FILNAM(L:L).EQ.']') GO TO 30
  20     CONTINUE
-      ELSE
+      ELSEIF (MVS) THEN
         DO 21 L=LMAX,LMIN,-1
-          IF (FILNAM(L:L).EQ.'/')GO TO 30
+          IF (FILNAM(L:L).EQ.BKS)GO TO 30
  21     CONTINUE
+      ELSE
+        DO 22 L=LMAX,LMIN,-1
+          IF (FILNAM(L:L).EQ.'/')GO TO 30
+ 22     CONTINUE
       ENDIF
       GO TO 40
 30    PATH=FILNAM(LMIN:L)
