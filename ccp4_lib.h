@@ -67,6 +67,8 @@ char *ccp4_utils_pathname(char *filename);
 
 char *ccp4_utils_extension(char *filename);
 
+char *ccp4_utils_joinfilenames(char *dir, char *file);
+
 void ccp4_utils_idate (int *);
 
 char *ccp4_utils_date(char *);

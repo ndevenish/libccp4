@@ -448,6 +448,35 @@ char *ccp4_utils_extension(char *filename)
   return extension;
 }
 
+/** Joins a leading directory with a filename.
+ * Separators for directories and extensions are OS-specific.
+ * @param dir  directory path.
+ * @param file file name string.
+ * @return pointer to joined directory-filename path.
+ */
+char *ccp4_utils_joinfilenames(char *dir, char *file)
+{
+  char *join=NULL;
+  int  lendir,lenfile,lenjoin;
+
+  lendir = strlen(dir);
+  lenfile = strlen(file);
+  lenjoin = lendir + lenfile + 2;
+
+  join = (char *) ccp4_utils_malloc(sizeof(char)*lenjoin);
+  if (!join) {
+    return NULL;
+  }
+
+  strncpy(join,dir,lendir);
+  join[lendir] = PATH_SEPARATOR;
+  join[lendir+1] = '\0';
+  strcat(join,file,lendir);
+  join[lenjoin] = '\0';
+
+  return join;
+}
+
 void ccp4_utils_idate (int iarray[3])
 {
      struct tm *lt;
