@@ -857,7 +857,7 @@ C
           IF (.NOT.ISTAT) THEN
             CALL LIB$SYS_GETMSG(ISTAT,L,MSG)
             WRITE (*,'(/1X,A/)') MSG(:L)
-            CALL CCPERR(1,'QSEEK: FATAL ERROR.')
+            CALL CCPERR(1,'QSEEK: FATAL ERROR -- MAYBE CORRUPT FILE.')
             RETURN
           ENDIF
           WRTACT(IUNIT) = .FALSE.
@@ -1249,6 +1249,46 @@ C
 	ENDIF
 	END
 C
+C
+C#######################################################################
+C
+C
+      SUBROUTINE CCPBML (N, A)
+C     Reset BIOMOL absence flags to zero in N elements of array A,
+C     testing for Rops.  (We rely on the default optimisation to inline
+C     the QISNAN, which otherwise will be called for each number in the
+C     MTZ file.)
+      INTEGER N, I
+      REAL A (*)
+      LOGICAL QISNAN
+      EXTERNAL QISNAN
+      DO I=1,N
+        IF (.NOT.QISNAN (A(I))) THEN
+          IF (A(I).GT.-0.99E10) A(I) = 0.0
+        ENDIF
+      ENDDO
+      END
+C
+C
+C#######################################################################
+C
+C
+      SUBROUTINE CCPWRG (N, A, WRANGE)
+C     This a an Rop-safe routine to update the column ranges needed by
+C     mtzlib
+      INTEGER I, N
+      REAL A (*), WRANGE (2,N,*)
+      DO I=1,N
+        IF (.NOT.QISNAN (A(I))) THEN
+          IF (A(I).NE.-1E-10) THEN
+          IF (A(I).NE.MDFBIG) THEN
+            IF (A(I).LT.WRANGE(1,I,1)) WRANGE(1,I,1) = A(I)
+            IF (A(I).GT.WRANGE(2,I,1)) WRANGE(2,I,1) = A(I)            
+          ENDIF
+        ENDIF
+      ENDDO
+      END
+C     
 C
 C#######################################################################
 
