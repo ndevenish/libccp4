@@ -3648,7 +3648,7 @@ C
       IMPLICIT NONE
 C     .. Parameter (table size: MUST BE A PRIME NUMBER)
       INTEGER KPRI
-      PARAMETER (KPRI=1999)
+      PARAMETER (KPRI=5003)
 C
 C     .. Scalar Arguments ..
       INTEGER NSER
@@ -3713,7 +3713,7 @@ C
       IMPLICIT NONE
 C     .. Parameter (table size: MUST BE A PRIME NUMBER)
       INTEGER KPRI
-      PARAMETER (KPRI=1999)
+      PARAMETER (KPRI=5003)
 C
 C     .. Scalar Arguments ..
       INTEGER NFIND,NSER
@@ -3759,7 +3759,7 @@ C
       IMPLICIT NONE
 C     .. Parameter (table size: MUST BE A PRIME NUMBER)
       INTEGER KPRI
-      PARAMETER (KPRI=1999)
+      PARAMETER (KPRI=5003)
 C
 C     .. Arrays in Common ..
       INTEGER IT
