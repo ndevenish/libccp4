@@ -3333,6 +3333,7 @@ C     input when setting up the function in the subroutine ccp4_hash_setup)
 C     for the large range variable nser.  Uses hashing. (see comments for
 C     CCP4_HASH_SETUP for description of hashing method).
 C
+      IMPLICIT NONE
 C     .. Parameter (table size: MUST BE A PRIME NUMBER)
       INTEGER KPRI
       PARAMETER (KPRI=1999)
@@ -3366,7 +3367,7 @@ C
         END IF
       END IF
 C
-      LOOKUP = IT(2,NDX)
+      CCP4_HASH_LOOKUP = IT(2,NDX)
 C
       END
 C
@@ -3397,6 +3398,7 @@ C     order for this method to work.
 C
 C     IT(1, NDX) = NSER,  IT(2, NDX) = NFIND
 C
+      IMPLICIT NONE
 C     .. Parameter (table size: MUST BE A PRIME NUMBER)
       INTEGER KPRI
       PARAMETER (KPRI=1999)
@@ -3442,6 +3444,7 @@ C     =============================
       SUBROUTINE CCP4_HASH_ZEROIT()
 C     =============================
 C
+      IMPLICIT NONE
 C     .. Parameter (table size: MUST BE A PRIME NUMBER)
       INTEGER KPRI
       PARAMETER (KPRI=1999)
