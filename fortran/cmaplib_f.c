@@ -392,12 +392,19 @@ static int NumberToSymop(char **symchs_begin, int spacegroup)
   spg=ccp4spg_load_by_ccp4_num(spacegroup);
   nsym = spg->nsymop;
 
-  if ( !(*symchs_begin = (char *) malloc( nsym * n_byt_symop * sizeof(char)) )) {
+  /* 
+   * We allocate an extra byte for a null.
+   * ccp4_cmap_set_symop assumes that the buffer is null terminated for strlen.
+   * We really need a strnlen function
+   */
+
+  if ( !(*symchs_begin = (char *) malloc( 1 + nsym * n_byt_symop * sizeof(char)) )) {
      ccp4_signal( CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_AllocFail),
                  "Write_Sym_Gp",NULL);
      return (-1); }
 
   memset(*symchs_begin,' ',n_byt_symop*nsym);
+  (*symchs_begin)[n_byt_symop*nsym] = 0;
 
   for (i = 0; i < nsym; ++i)
     rotandtrn_to_symop(*symchs_begin+n_byt_symop*i, (*symchs_begin)+n_byt_symop*(i+1), spg->symop[i]);
