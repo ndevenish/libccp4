@@ -22,8 +22,8 @@ int ccp4_errno = 0;
 /* error_levels: error level descriptions */
 static const char * const error_levels[] =
   {
-    "Success"                                    /* 0 */
-    "Informational"                              /* 1 */
+    "Success",                                   /* 0 */
+    "Informational",                             /* 1 */
     "Warning",                                   /* 2 */
     "Error",                                     /* 3 */
     "FATAL ERROR"                                /* 4 */
