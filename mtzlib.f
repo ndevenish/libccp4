@@ -1842,7 +1842,7 @@ C     .. Parameters ..
       INTEGER MINCOL
       PARAMETER (MINCOL=3)
       INTEGER NTYP,LTYP
-      PARAMETER (NTYP=12,LTYP=8)
+      PARAMETER (NTYP=16,LTYP=9)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER SIZE1
@@ -1917,8 +1917,12 @@ C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
 C     ..
 C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R'/
-      DATA LTYPES/'P','A','B','C','I','F','R','?'/
+C  Adding column types to indicate pairs associated with hkl and -h-k-l
+C  Need new indicator for F Q; using G L
+C                         J Q; using K M
+      DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R',
+     +            'G','K','L','M'/
+      DATA LTYPES/'P','A','B','C','I','F','R','H','?'/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -3869,8 +3873,8 @@ C     .. Parameters ..
       PARAMETER (MSETS=MCOLS)
       INTEGER MINCOL
       PARAMETER (MINCOL=3)
-      INTEGER NTYP,LTYP
-      PARAMETER (NTYP=12,LTYP=8)
+      INTEGER NTYP
+      PARAMETER (NTYP=16)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
@@ -3941,7 +3945,8 @@ C     .. Save statement ..
       SAVE
 C     ..
 C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R'/
+      DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R',
+     +            'G','K','L','M'/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -4769,8 +4774,8 @@ C     .. Parameters ..
       PARAMETER (MSETS=MCOLS)
       INTEGER MINCOL
       PARAMETER (MINCOL=3)
-      INTEGER NTYP,LTYP
-      PARAMETER (NTYP=12,LTYP=8)
+      INTEGER NTYP
+      PARAMETER (NTYP=16)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER MAXSYM
@@ -4831,7 +4836,8 @@ C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
 C     ..
 C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R'/
+      DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R',
+     +            'G','K','L','M'/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -6247,8 +6253,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
-      INTEGER NTYP,LTYP
-      PARAMETER (NTYP=12,LTYP=8)
+      INTEGER LTYP
+      PARAMETER (LTYP=9)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER MAXSYM
@@ -6293,7 +6299,7 @@ C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/
 C     ..
 C     .. Data statements ..
-      DATA LTYPES/'P','A','B','C','I','F','R','?'/
+      DATA LTYPES/'P','A','B','C','I','F','R','H','?'/
 C     ..
 C
 C---- First check that the MINDX is valid
