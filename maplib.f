@@ -2092,7 +2092,7 @@ C     .. Arrays in Common ..
      +        JUNKO2,LSTRM,NCHITI,MODEI
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IER,KMODE,NBLIN,NLIN
+      INTEGER I,IER,NBLIN,NLIN
       CHARACTER LINE*80
 C     ..
 C     .. External Functions ..
@@ -2100,7 +2100,7 @@ C     .. External Functions ..
       EXTERNAL NBYTXX
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QSEEK, QMODE, CCPERR, QREADC, QWRITC
+      EXTERNAL QSEEK, CCPERR, QREADC, QWRITC
 C     ..
 C     .. Common blocks ..
       COMMON /MIHDR/JUNKI(22),ISGI,NBTI,JUNKI2(232),JUNKI3(12,3),
