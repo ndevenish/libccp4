@@ -118,9 +118,12 @@ FORTRAN_SUBR ( CCPLWC, ccplwc,
   char *string2, *string3;
 
   string2 = ccp4_FtoCString(FTN_STR(string), FTN_LEN(string));
-  string3 = (char *) ccp4_utils_malloc(strlen(string2)*sizeof(char));
+  if (!string2) return;
+  string3 = (char *) ccp4_utils_malloc((strlen(string2)+1)*sizeof(char));
+  strtolower(string3, string2);
+  string3[strlen(string3)] = '\0';
 
-  strncpy(string, strtolower(string3, string2), strlen(string2)); 
+  ccp4_CtoFString(FTN_STR(string), FTN_LEN(string), string3);
 
   free((char *) string2);
   free((char *) string3);
