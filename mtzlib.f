@@ -416,9 +416,9 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,NLPRGI
 C     ..
 C     .. Array Arguments ..
-      INTEGER LOOKUP(*)
-      CHARACTER*1  CTPRGI(*)
-      CHARACTER*30 LSPRGI(*)
+      INTEGER LOOKUP(NLPRGI)
+      CHARACTER*1  CTPRGI(NLPRGI)
+      CHARACTER*30 LSPRGI(NLPRGI)
 C     ..
 C     .. Scalars in Common ..
       INTEGER NLUSRI,NLUSRO
@@ -696,7 +696,7 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,NBATX
 C     ..
 C     .. Array Arguments ..
-      INTEGER BATCHX(*)
+      INTEGER BATCHX(NBATX)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,RBATR,RSYM,SRANGE,VAL_MISS
@@ -1176,8 +1176,8 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,NCOL
 C     ..
 C     .. Array Arguments ..
-      CHARACTER*1  CTYPS(*)
-      CHARACTER*30 CLABS(*)
+      CHARACTER*1  CTYPS(NCOL)
+      CHARACTER*30 CLABS(NCOL)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
@@ -1353,7 +1353,7 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,NLINES
 C     ..
 C     .. Array Arguments ..
-      CHARACTER HSTRNG(*)*(*)
+      CHARACTER HSTRNG(NLINES)*(*)
 C     ..
 C     .. Arrays in Common ..
       REAL RBATW,WRANGE,WSRNGE
@@ -1461,7 +1461,7 @@ C     .. Scalar Arguments ..
       CHARACTER VERSNX*10
 C     ..
 C     .. Array Arguments ..
-      REAL RANGES(2,*)
+      REAL RANGES(2,NCOLX)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
@@ -3708,8 +3708,8 @@ C     .. Scalar Arguments ..
       INTEGER IAPPND,MINDX,NLPRGO
 C     ..
 C     .. Array Arguments ..
-      CHARACTER*1  CTPRGO(*)
-      CHARACTER*30 LSPRGO(*)
+      CHARACTER*1  CTPRGO(NLPRGO)
+      CHARACTER*30 LSPRGO(NLPRGO)
 C     ..
 C     .. Scalars in Common ..
       INTEGER NLUSRI,NLUSRO
@@ -4273,8 +4273,8 @@ C     .. Scalar Arguments ..
       INTEGER IAPPND,MINDX,NLPRGO
 C     ..
 C     .. Array Arguments ..
-      CHARACTER*1  CTPRGO(*)
-      CHARACTER*30 LSPRGO(*)
+      CHARACTER*1  CTPRGO(NLPRGO)
+      CHARACTER*30 LSPRGO(NLPRGO)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
@@ -6577,7 +6577,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       INTEGER IBEG(*),IEND(*)
-      CHARACTER*30 LSPRGI(*)
+      CHARACTER*30 LSPRGI(NLPRGI)
 C     ..
 C     .. Arrays in Common ..
       CHARACTER LSUSRI*30,LSUSRO*30
@@ -6764,7 +6764,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       INTEGER IBEG(*),IEND(*)
-      CHARACTER*30 LSPRGO(*)
+      CHARACTER*30 LSPRGO(NLPRGO)
 C     ..
 C     .. Arrays in Common ..
       INTEGER NLUSRI,NLUSRO
@@ -6927,8 +6927,8 @@ C     .. Scalar Arguments ..
       CHARACTER         LINE* (*)
 C     ..
 C     .. Array Arguments ..
-      INTEGER           IBEG(*),IEND(*),KPOINT(*)
-      CHARACTER*30      LSPRGI(*),LSUSRJ(*)
+      INTEGER           IBEG(*),IEND(*),KPOINT(NLPRGI)
+      CHARACTER*30      LSPRGI(NLPRGI),LSUSRJ(NLPRGI)
 C     ..
 C     .. Local Scalars ..
       INTEGER           JDO,JLOOP,JSTART,JTOK
@@ -7106,9 +7106,9 @@ C     .. Scalar Arguments ..
       INTEGER MINDX,NLPRGI
 C     ..
 C     .. Array Arguments ..
-      INTEGER LOOKUP(*)
-      CHARACTER*1  CTPRGI(*)
-      CHARACTER*30 LSPRGI(*)
+      INTEGER LOOKUP(NLPRGI)
+      CHARACTER*1  CTPRGI(NLPRGI)
+      CHARACTER*30 LSPRGI(NLPRGI)
 C     ..
 C     .. Local Scalars ..
       CHARACTER KEY*4,LINE*80,LINE2*400
