@@ -567,7 +567,7 @@ C     .. Scalar Arguments ..
       INTEGER IUNIT
 C     ..
 C     .. Array Arguments ..
-      REAL X(*)
+      BYTE X(*)
 C     ..
 C     .. Scalars in Common ..
       REAL AMAX,AMEAN,AMIN,ARMS
