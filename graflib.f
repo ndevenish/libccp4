@@ -603,8 +603,17 @@ C
 C---- For sigma, set colour
 C
 C
-#include "fgl.h"
-#include "fdevice.h"
+* replacement for the things formerly picked up from sgi include
+* files fgl.h and fdevice.h
+      INTEGER BLUE, CYAN, GREEN, RED, WHITE, YELLOW
+      PARAMETER (BLUE = 4, CYAN = 6, GREEN = 2, RED = 1, WHITE = 7,
+     $     YELLOW = 3)
+      INTEGER GETVAL, QREAD, KEYBD, MOUSEX, MOUSEY, MPROJE, MVIEWI,
+     $     WINOPE
+      PARAMETER (KEYBD = 513, MOUSEX = 266, MOUSEY = 267, MPROJE = 1,
+     $     MVIEWI = 2)
+C#include "fgl.h"
+C#include "fdevice.h"
 cc-al         include 'fgl.h'
 cc-al         include 'fdevice.h'
 C
@@ -819,7 +828,7 @@ C
 C       ===============================
 C
 C
-        IMPLICIT NONE
+C
 C
        INTEGER X,Y,M,N,XXX,I,NPOS,SPACE,SPACING,IXLAST,IYLAST
        REAL FONTSIZE,R,FONTSCALE
@@ -876,7 +885,7 @@ C
 C       ==============================
 C
 C
-      IMPLICIT NONE
+C
 C
       INTEGER X,Y,M,N,XXX,I,NPOS,SPACE,SPACING,IXLAST,IYLAST
       INTEGER LENGTH,FRACT
@@ -1027,7 +1036,7 @@ C
 C       =============================
 C
 C
-        IMPLICIT NONE
+C
 C
       INTEGER X,Y,M,N,XXX,YYY,I,SPACE,SPACING,IXLAST,IYLAST
       REAL FONTSIZE,FONTSCALE
@@ -2935,8 +2944,17 @@ C     =============================
 C
 C---- Subroutine to return position of cross hairs
 C
-#include "fgl.h"
-#include "fdevice.h"
+*  replacement for the things formerly picked up from sgi include
+* files fgl.h and fdevice.h
+      INTEGER BLUE, CYAN, GREEN, RED, WHITE, YELLOW
+      PARAMETER (BLUE = 4, CYAN = 6, GREEN = 2, RED = 1, WHITE = 7,
+     $     YELLOW = 3)
+      INTEGER GETVAL, QREAD, KEYBD, MOUSEX, MOUSEY, MPROJE, MVIEWI,
+     $     WINOPE
+      PARAMETER (KEYBD = 513, MOUSEX = 266, MOUSEY = 267, MPROJE = 1,
+     $     MVIEWI = 2)
+C#include "fgl.h"
+C#include "fdevice.h"
 cc-al         include 'fgl.h'
 cc-al         include 'fdevice.h'
 C
@@ -3174,8 +3192,17 @@ C        for the own graphics , the font is loaded
 C
 C
 C
-#include "fgl.h"
-#include "fdevice.h"
+* replacement for the things formerly picked up from sgi include
+* files fgl.h and fdevice.h
+      INTEGER BLUE, CYAN, GREEN, RED, WHITE, YELLOW
+      PARAMETER (BLUE = 4, CYAN = 6, GREEN = 2, RED = 1, WHITE = 7,
+     $     YELLOW = 3)
+      INTEGER GETVAL, QREAD, KEYBD, MOUSEX, MOUSEY, MPROJE, MVIEWI,
+     $     WINOPE
+      PARAMETER (KEYBD = 513, MOUSEX = 266, MOUSEY = 267, MPROJE = 1,
+     $     MVIEWI = 2)
+C#include "fgl.h"
+C#include "fdevice.h"
 cc-al         include 'fgl.h'
 cc-al         include 'fdevice.h'
 C
@@ -3646,66 +3673,6 @@ C
 C
         RETURN
         END
-C
-C
-C
-      SUBROUTINE SYMBOL(X,Y,TZ,LABEL,ANGLE,NCHAR)
-C     ===========================================
-C
-C
-C---- Emulates calcomp routine "SYMBOL"
-C
-C
-C
-C     .. Scalar Arguments ..
-      REAL ANGLE,TZ,X,Y
-      INTEGER NCHAR
-      CHARACTER LABEL*160
-C     ..
-C     .. Scalars in Common ..
-      REAL FACT,XOFFS,YOFFS
-      INTEGER IPC,IPEN
-C     ..
-C     .. Local Scalars ..
-      REAL ANG,CORR,V1,V2
-      INTEGER ISF
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC NINT
-C     ..
-C     .. Common blocks ..
-      COMMON /LASOFFS/XOFFS,YOFFS,IPC,FACT,IPEN
-C     ..
-      ANG = ANGLE - 90.0
-      IPC = IPC + 1
-      V1 = (Y/2.51+YOFFS)*FACT
-      V2 = 26.0/2.51 - (X/2.51+XOFFS)*FACT
-      IF (NCHAR.LT.0) THEN
-        CORR = (TZ/5.02)*FACT
-        WRITE (92,FMT=6000) V1 - CORR,' inch',V2,' inch',' moveto'
-        WRITE (92,FMT=6000) V1 + CORR,' inch',V2,' inch',' lineto'
-        WRITE (92,FMT=6000) V1,' inch',V2 - CORR,' inch',' moveto'
-        WRITE (92,FMT=6000) V1,' inch',V2 + CORR,' inch',' lineto'
-      ELSE
-        ISF = NINT(FACT*TZ*40.0)
-        IF (ISF.LE.0) ISF = 1
-        IF (IPEN.LE.2) THEN
-          WRITE (92,FMT=6002) '/Times-Roman findfont ',ISF,
-     +      ' scalefont setfont'
-        ELSE
-          WRITE (92,FMT=6002) '/Times-Bold findfont ',ISF,
-     +      ' scalefont setfont'
-        END IF
-        WRITE (92,FMT=6000) V1,' inch',V2,' inch',' moveto'
-        WRITE (92,FMT='(F6.1,'' rotate'')') ANG
-        WRITE (92,FMT=6004) '(',LABEL(1:NCHAR),') show'
-        WRITE (92,FMT='(F6.1,'' rotate'')') - ANG
-      END IF
-C
- 6000 FORMAT (1X,F8.4,A5,F8.4,A5,A7)
- 6002 FORMAT (A22,I2,A18)
- 6004 FORMAT (A1,A,A6)
-      END
 C
 C
 C
@@ -4594,7 +4561,7 @@ C---- write the characters in text starting at the current
 C     position on the screen
 C
 C
-        IMPLICIT NONE
+C
         CHARACTER*(*) TEXT
         INTEGER X,Y,LENGTH,I,IXLAST,IYLAST,SPACING,SPACE,XXX
         REAL FONTSIZE,FONTSCALE

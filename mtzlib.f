@@ -8511,7 +8511,7 @@ C
       CALL ADDLIN(SOMELN,LINES,MXLLIN)
 C
 C
-      IF (MISFLG .GT. 0) THEN
+      IF (MISFLG .EQ. 0) THEN
          WRITE (SOMELN, FMT=6005) UMAT
 C
 C
@@ -9642,7 +9642,7 @@ c
 c On exit:
 c     lookup(nlprgi)  column numbers for each assigned label
 c
-      implicit none
+C
 c
 c Arguments:
       integer index, nlprgi

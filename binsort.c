@@ -47,7 +47,9 @@ from fortran programs?
 *****************************************************************************/
 
 #ifndef __convex__
-#define __STDC__
+#ifndef __STDC__
+#  define __STDC__X
+#endif /* __STDC__ */
 #endif /* __convex__ */
 
 #ifdef  POSIX
@@ -99,8 +101,7 @@ from fortran programs?
 #endif /* SYSV */
 
 
-#if defined(bsd) | defined(sun) | defined(BSD) 
-/*** This is somtehing really special for Kim ***/
+#ifdef BSD         /*** This is somtehing really special for Kim ***/
     extern char       *getenv();
     extern void        qsort();
 

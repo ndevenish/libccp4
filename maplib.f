@@ -36,6 +36,13 @@ C
 C   24/2/92  new subroutine MRDHDS, like MRDHDR but with soft fail & 
 C            print flag. s/r MRDHDR nor calls MRDHDS (Stefan Knight)
 C
+C   24/6/92  Remove calculation of max,min etc from mspew for modes
+C            other than 2 (Peter Brick)
+C
+C   26/6/92  Only print max,min etc in s/r MCLOSE, MWCLOSE and MCLOSC
+C            for mode 2.  Suppress printing of min,max etc in MRFNAM
+C            for logical*1 maps (mode 0) (Peter Brick)
+C
 C
 C---- EXTERNAL SUBROUTINES USED:
 C     =========================
@@ -155,7 +162,7 @@ C
 C 
 C
 C
-      IMPLICIT NONE
+C
 C                                            
 C     .. Scalar Arguments ..
       INTEGER IUNIT,LMODE,LSPGRP,NSEC,NU1,NU2,NV1,NV2,NW1
@@ -208,7 +215,7 @@ C                                =11 bricked vector map
 C                                =12 bricked ridge-line map
 C
 C
-      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -450,7 +457,7 @@ C            ((X(I,J),I=IU1,IU2),J=IV1,IV2).
 C 
 C
 C
-      IMPLICIT NONE
+C
 C
 C
 C     .. Parameters ..
@@ -548,7 +555,7 @@ C  IUNIT (I)   Map stream number
 C 
 C     X (I)   Array holding the map section
 C 
-      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..
       INTEGER IUNIT
@@ -588,13 +595,16 @@ C
 C
       CALL QWRITE(LSTRM(IUNIT),X,N)
 C
-C    Calculate AMEAN ARMS
-        DO 20 J = 1,N
-        IF(X(J) .GT.AMAX) AMAX = X(J)
-        IF(X(J) .LT.AMIN) AMIN = X(J)
-        AMEAN = AMEAN + X(J)
-        ARMS  = ARMS  + X(J)*X(J)
-20      CONTINUE
+C    Calculate AMEAN ARMS - ONLY IF MAP IS REAL*4
+C
+        IF(MODE.EQ.2) THEN
+          DO 20 J = 1,N
+            IF(X(J) .GT.AMAX) AMAX = X(J)
+            IF(X(J) .LT.AMIN) AMIN = X(J)
+            AMEAN = AMEAN + X(J)
+            ARMS  = ARMS  + X(J)*X(J)
+20        CONTINUE
+        ENDIF
 C
       END
 C
@@ -632,7 +642,7 @@ C RHRMS  (I)   The sum of squares of the density values in the map
 C              (This will used internally to calculate the 
 C               rms deviation from the mean value which is then stored.)
 C
-      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -694,7 +704,9 @@ C---- Minimum & maximum
 C
       AMIN = RHMIN
       AMAX = RHMAX
-      WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
+      IF(MODE.EQ.2) THEN
+        WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
+      ENDIF
 C
 C---- Write to header, reset mode to 2 first
 C
@@ -732,14 +744,14 @@ C      the output map file and closes the file.
 C     The minimum, maximum, mean & rms densities are calculated 
 C     from internal sums
 C 
-C  Call:  CALL MCLOSE(IUNIT)
+C  Call:  CALL MWCLOSE(IUNIT)
 C 
 C---- Parameters:
 C     ==========
 C 
 C  IUNIT (I)   The map stream number
 C 
-      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -799,7 +811,9 @@ C
 C
 C---- Minimum & maximum
 C
-      WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
+      IF(MODE.EQ.2) THEN
+        WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
+      ENDIF
 C
 C---- Write to header, reset mode to 2 first
 C
@@ -851,7 +865,7 @@ C  RHMEAN (I)   The mean density in the map
 C 
 C  RHRMS  (I)   The rms deviation from the mean value in the map
 C
-      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -910,7 +924,9 @@ C---- Minimum & maximum
 C
       AMIN = RHMIN
       AMAX = RHMAX
-      WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
+      IF(MODE.EQ.2) THEN
+        WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
+      ENDIF
 C
 C---- Write to header, reset mode to 2 first
 C
@@ -960,7 +976,7 @@ C   IUNIT (I)   Map stream number
 C 
 C   JSEC (I)   Position the output map before section JSEC
 C 
-      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..   
       INTEGER IUNIT,JSEC
@@ -1042,7 +1058,7 @@ C  RHRMS        rms deviation from mean density
 C
 C
 C
-      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -1152,7 +1168,7 @@ C  IPRINT                     = 0; silent
 C                             .ne. 0; print file name, header info etc
 C
 C
-      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -1286,9 +1302,11 @@ C
 C---- Write out header information
 C
           IF ( IPRINT .NE. 0 ) THEN
-            WRITE (LUNOUT,FMT=6004) NC,NR,NS,MODE,NU1,NU2,NV1,NV2,NW1,
-     +      NW2,NXYZ,CEL, (LXYZ(MAPCRS(I)),I=1,3),AMIN,AMAX,AMEAN,ARMS,
-     +      ISPG,NLAB, ((LABELS(I,J),I=1,20),J=1,NLAB)
+            WRITE (LUNOUT,FMT=6003) NC,NR,NS,MODE,NU1,NU2,NV1,NV2,NW1,
+     +      NW2,NXYZ,CEL, (LXYZ(MAPCRS(I)),I=1,3)
+            IF(MODE.NE.0) WRITE (LUNOUT,FMT=6004) AMIN,AMAX,AMEAN,ARMS
+            WRITE (LUNOUT,FMT=6005) ISPG,NLAB,
+     +            ((LABELS(I,J),I=1,20),J=1,NLAB)
           ENDIF
 
 C---- Copy header information for return to calling routine
@@ -1363,15 +1381,15 @@ C
      +       'file size =',I8,'  ;  logical name  ',A,/)
  6002 FORMAT (/' File name for input map file on unit',I4,' : ',A,/31X,
      +       'Logical name  ',A,/)
- 6004 FORMAT (/11X,'Number of columns, rows, sections ',15 ('.'),3I5,
+ 6003 FORMAT (/11X,'Number of columns, rows, sections ',15 ('.'),3I5,
      +       /11X,'Map mode ',40 ('.'),I5,/11X,'Start and stop points ',
      +       'on columns, rows, sections ',6I5,/11X,'Grid sampling on ',
      +       'x, y, z ',24 ('.'),3I5,/11X,'Cell dimensions ',33 ('.'),
-     +       6F10.5,/11X,'Fast, medium, slow axes ',25 ('.'),3 (4X,A1),
-     +       /11X,'Minimum density ',33 ('.'),F12.5,/11X,'Maximum dens',
+     +       6F10.5,/11X,'Fast, medium, slow axes ',25 ('.'),3 (4X,A1))
+ 6004 FORMAT (11X,'Minimum density ',33 ('.'),F12.5,/11X,'Maximum dens',
      +       'ity ',33 ('.'),F12.5,/11X,'Mean density ',36 ('.'),F12.5,
-     +       /11X,'Rms deviation from mean density ',17 ('.'),F12.5,
-     +       /11X,'Space-group ',37 ('.'),I5,/11X,'Number of titles ',
+     +       /11X,'Rms deviation from mean density ',17 ('.'),F12.5)
+ 6005 FORMAT (11X,'Space-group ',37 ('.'),I5,/11X,'Number of titles ',
      +       32 ('.'),I5,//' Titles :',/10 (11X,20A4,/))
  6006 FORMAT (20A4)
  6008 FORMAT (/' **MAP FILE HANDLING ERROR**')
@@ -1404,7 +1422,7 @@ C  IUNIT (I)   Map stream number
 C 
 C  JSEC (I)   Position the input map before section JSEC
 C 
-      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..
       INTEGER IUNIT,JSEC
@@ -1481,7 +1499,7 @@ C
 C   IER (O)   Error flag =0, OK   non-zero, error or end of file
 C 
 C
-      IMPLICIT NONE
+C
 C
 C
 C     .. Scalar Arguments ..
@@ -1538,7 +1556,7 @@ C Returns IER = 0  OK
 C            .ne. 0  error (end of file)
 C
 C
-      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..
       INTEGER IER,IUNIT
@@ -1597,7 +1615,7 @@ C
 C---- Map header common
 C
 C
-      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..
       INTEGER IER,IUNIT
@@ -1690,7 +1708,7 @@ C     ========================
 C
 C---- Close read file
 C
-      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..
       INTEGER IUNIT
@@ -1725,7 +1743,7 @@ C     IUNIT, leaving space at head of file for NBHDR items of
 C     header record. Puts number of characters of symmetry
 C     information NSYMBT into header record in com  MOHDR.
 C
-      IMPLICIT NONE
+C
 C
 C---- Map header common
 C
@@ -1867,7 +1885,7 @@ C
 C---- Map header common
 C
 C
-      IMPLICIT NONE
+C
 C
 C
 C     .. Parameters ..
@@ -2009,7 +2027,7 @@ C     (after calls to MRDHDR & MWRHDR)
 C
 C---- Headers from input and output files
 C
-      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -2108,7 +2126,7 @@ C---- Copy all titles from previously opened input and output files
 C     adding title to end
 C
 C
-      IMPLICIT NONE
+C
 C
 C---- Copy all existing titles
 C
@@ -2161,7 +2179,7 @@ C
 C
 C---- Add new title, if already 10, overwrite last one
 C
-      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..
       INTEGER NT
@@ -2201,7 +2219,7 @@ C     ================================
 C
 C---- Put skew transformation into output common block
 C
-      IMPLICIT NONE
+C
 C
 C     .. Array Arguments ..
       REAL ASKWMT(3,3),ASKWTN(3)
@@ -2248,7 +2266,7 @@ C     ======================================
 C
 C---- Get skew transformation from input common block
 C
-      IMPLICIT NONE
+C
 C
 C     .. Array Arguments ..
       REAL ASKWMT(3,3),ASKWTN(3)
@@ -2301,7 +2319,7 @@ C---- Convert N items from BLINE in mode MODE to reals in X
 C     JB = number of bytes/item
 C
 C
-      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -2408,7 +2426,7 @@ C
 C---- Returms the number of machine items in nword words
 C     (as defined by the function ccpbyt)
 C
-      IMPLICIT NONE
+C
 C     .. Scalar Arguments ..
       INTEGER NWORD
 C     ..

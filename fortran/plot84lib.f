@@ -1,5 +1,7 @@
-C---- Errors
-C
+C     Routines which call AED... commented out to avoid link-time
+C     problems.  (These seem to be sensitive to the order in which the
+C     library is built, or the phase of the moon :-))  DJGL 6/7/92
+C     
 C       SUBROUTINE GSSTRD(TEXT,DX,DY)
 C       ERROR XCOLD and YCOLD not defined
 C
@@ -252,7 +254,7 @@ C---- Set up scale for characters
 C     this scaling results in  a unit hgt=1.0 mm
 C     for letter sizes independent of user scale "uscaly" .
 C
-      HGT = (1.0/USCALY)
+      HGT = (1.0/FLOAT(NTRSAV(11)))
       CALL GSSCLC(HGT,HGT)
       THETA = ANGLE*ANGFAC
       CALL GSCROT(THETA,THETA+PI/2.0)
@@ -482,50 +484,50 @@ C
       IFLAG4 = 1
 C
       END
-C
-C
-C
-      SUBROUTINE CHNCOL(NCOL,NBACK,TEXT)
-C     ==================================
-C
-C---- Change AED colour to colour NCOL, unless this is the
-C     same as the background colour NBACK:
-C     if it is, set to black or white
-C
-C---- If TEXT .true., set colours in upper 4 bits
-C
-C     .. Scalar Arguments ..
-      INTEGER NBACK,NCOL
-      LOGICAL TEXT
-C     ..
-C     .. Scalars in Common ..
-      INTEGER LUNIN,LUNOUT
-C     ..
-C     .. Local Scalars ..
-      INTEGER N
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL AEDSEC
-C     ..
-C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-      N = NCOL
-      IF (N.EQ.NBACK) THEN
-        IF (NBACK.EQ.0) THEN
-          N = 7
-        ELSE
-          N = 0
-        END IF
-      END IF
-      IF (TEXT) N = N*16
-      CALL AEDSEC(N)
-C
-      END
+CCCC
+CCCC
+CCCC
+CCC      SUBROUTINE CHNCOL(NCOL,NBACK,TEXT)
+CCCC     ==================================
+CCCC
+CCCC---- Change AED colour to colour NCOL, unless this is the
+CCCC     same as the background colour NBACK:
+CCCC     if it is, set to black or white
+CCCC
+CCCC---- If TEXT .true., set colours in upper 4 bits
+CCCC
+CCCC     .. Scalar Arguments ..
+CCC      INTEGER NBACK,NCOL
+CCC      LOGICAL TEXT
+CCCC     ..
+CCCC     .. Scalars in Common ..
+CCC      INTEGER LUNIN,LUNOUT
+CCCC     ..
+CCCC     .. Local Scalars ..
+CCC      INTEGER N
+CCCC     ..
+CCCC     .. External Subroutines ..
+CCC      EXTERNAL AEDSEC
+CCCC     ..
+CCCC     .. Common blocks ..
+CCC      COMMON /PINOUT/LUNIN,LUNOUT
+CCCC
+CCCC     .. Save Statement ..
+CCCC
+CCC      SAVE
+CCCC
+CCC      N = NCOL
+CCC      IF (N.EQ.NBACK) THEN
+CCC        IF (NBACK.EQ.0) THEN
+CCC          N = 7
+CCC        ELSE
+CCC          N = 0
+CCC        END IF
+CCC      END IF
+CCC      IF (TEXT) N = N*16
+CCC      CALL AEDSEC(N)
+CCCC
+CCC      END
 C
 C
 C
@@ -675,315 +677,319 @@ C
 C
 C
       END
-C
-C
-C
-      SUBROUTINE DRAWPC
-C     =================
-C
-C---- Draw picture
-C     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
-C     They were ICHAR
-C
-C     .. Scalars in Common ..
-      REAL DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,DWLIMX,DWLIMY,
-     +     SCALX,SCALY,TX,TY
-      INTEGER ICOLOR,IPICT,IUNIT,IXMAX,IXMIN,IYMAX,IYMIN,KXMAX,KXMIN,
-     +        KYMAX,KYMIN,LINWT,LUNIN,LUNOUT,MCNTFL,MDEVIC,MDIREC,
-     +        MIXCOLOR,MOUT,MPIC,MSCAFL,NBACK,NPICS,NREC
-      LOGICAL AAV,CLEAR,EOF,HTEXT,PAN,PICTURE,ROTATE,TABLE,UNIFORM
-      CHARACTER PASWRD*8,TITLEH*80
-C     ..
-C     .. Arrays in Common ..
-      REAL RM,SPARE1,SPARE2
-      INTEGER PENS,PFLAGS
-C     ..
-C     .. Local Scalars ..
-      INTEGER I,IDOT,IDXY,IEND,IERAS,IFLAG5,ILWT,IND,IPAP,IPEN,IX,
-     +        IXDRAW,IXMOVE,IXOLD,IY,IYDRAW,IYMOVE,IYOLD,J,JL,JX,JY,
-     +        MASK,MASKFULL,MASKPICT,N,NDOT,NPOLL
-      CHARACTER*1 ICHAR
-      LOGICAL MOVE
-C     ..
-C     .. Local Arrays ..
-      INTEGER LOFFX(16),LOFFY(16)
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL AEDAAV,AEDDMF,AEDDPA,AEDDVA,AEDEPA,AEDESC,AEDFFD,AEDFSC,
-     +         AEDMOV,AEDRSC,AEDSBC,AEDSIF,AEDSRM,AEDSWM,CHNCOL,IROT,
-     +         GSFLRI,GSFLSR,SETTBL
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC ABS,MOD,NINT
-C     ..
-C     .. Common blocks ..
-      COMMON /FLAGS/NBACK,PENS(8),PFLAGS(8),RM(2,2),TX,TY,SCALX,SCALY,
-     +       KXMIN,KXMAX,KYMIN,KYMAX,IPICT,AAV,PAN,ROTATE,CLEAR,UNIFORM,
-     +       TABLE,PICTURE,HTEXT,EOF
-      COMMON /PINOUT/LUNIN,LUNOUT
-      COMMON /GSFHD/IUNIT,NREC,DOTMMX,DOTMMY,IXMIN,IXMAX,IYMIN,IYMAX,
-     +       LINWT,ICOLOR,MIXCOLOR,MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,
-     +       MCNTFL,DWLIMX,DWLIMY,DVXMIN,DVXMAX,DVYMIN,DVYMAX,NPICS,
-     +       PASWRD,SPARE1(15),TITLEH,SPARE2(68)
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-C     .. Data statements ..
-C
-C---- Plotfile command codes
-C
-      DATA IEND/-1/,IDOT/-2/,ILWT/-3/,IPEN/-4/,IPAP/-5/,IERAS/-6/
-      DATA LOFFX/1,-1,2,-2,3,-3,4,-4,8*0/
-      DATA LOFFY/8*0,1,-1,2,-2,3,-3,4,-4/
-      DATA NPOLL/20/
-C
-C---- AED masks for picture (lower 4 bits) and text (upper 4 bits)
-C
-      DATA MASKPICT,MASKTEXT,MASKFULL/15,240,255/
-C
-C---- Do actual plotting Flush keyboard buffer
-C
-      CALL AEDSIF
-C
-C---- Flag for text
-C
-      HTEXT = .FALSE.
-C
-      IF (AAV) THEN
-        MASK = MASKFULL
-      ELSE
-        MASK = MASKPICT
-      END IF
-      CALL AEDSWM(MASK)
-      CALL AEDSRM(MASK,MASK,MASK,MASK)
-C
-      IF (CLEAR) THEN
-C
-C---- Set background colour
-C
-        CALL AEDSBC(NBACK)
-        CALL AEDFFD
-        CALL AEDESC
-        CALL SETTBL
-      END IF
-C
-C---- Set default colour = pen 1
-C
-      CALL CHNCOL(PENS(1),NBACK,.FALSE.)
-C
-C---- Reset pen flags
-C
-      DO 10 I = 1,8
-        PFLAGS(I) = 1
-   10 CONTINUE
-C
-C----- Anti-aliased vectors
-C
-      IF (NBACK.NE.0) AAV = .FALSE.
-      IF (AAV) THEN
-        CALL AEDAAV(2)
-        TABLE = .FALSE.
-      ELSE
-        CALL AEDAAV(0)
-      END IF
-C
-C---- If full memory, enable panning
-C
-      IF (PAN) THEN
-        CALL AEDEPA
-      ELSE
-        CALL AEDDPA
-      END IF
-C
-C---- NDOT remembers when a dot code was last issued
-C
-      NDOT = 0
-      IXOLD = 0
-      IYOLD = 0
-      DO 30 J = 1,NREC
-        IFLAG5 = 0
-        CALL GSFLRI(JX,JY,IFLAG5)
-        IF (IFLAG5.EQ.1) THEN
-          GO TO 50
-        ELSE
-          NDOT = NDOT - 1
-          IF (JX.EQ.ILWT) THEN
-            LINWT = JY
-          ELSE IF (JX.EQ.IPEN) THEN
-C
-C---- Change colour
-C
-            CALL CHNCOL(PENS(JY),NBACK,.FALSE.)
-C
-C---- Mark which pens used
-C
-            PFLAGS(JY) = 2
-          ELSE IF (JX.EQ.IDOT) THEN
-            NDOT = 2
-C
-          ELSE IF (JX.GE.0) THEN
-C
-            IF (JY.LT.0) THEN
-              MOVE = .TRUE.
-              JY = -JY
-            ELSE
-              MOVE = .FALSE.
-            END IF
-C
-C---- Rotate coordinates
-C
-            IF (ROTATE) THEN
-              CALL IROT(IX,IY,RM,JX,JY)
-            ELSE
-              IX = JX
-              IY = JY
-            END IF
-C
-            IF (MOVE) THEN
-              IXOLD = NINT(SCALX*IX+TX)
-              IYOLD = NINT(SCALY*IY+TY)
-              CALL AEDMOV(IXOLD,IYOLD)
-            ELSE
-              IX = NINT(SCALX*IX+TX)
-              IY = NINT(SCALY*IY+TY)
-              IF (NDOT.LT.1) THEN
-                CALL AEDDVA(IX,IY)
-              ELSE
-                CALL AEDMOV(IX,IY)
-                CALL AEDDVA(IX,IY)
-              END IF
-C
-C---- Here for multiple wt lines
-C
-              IF (LINWT.GT.1) THEN
-                IDXY = -1
-                IF (ABS(IX-IXOLD).GT.ABS(IY-IYOLD)) IDXY = 7
-                DO 20 JL = 2,LINWT
-                  IND = JL + IDXY
-                  IXMOVE = LOFFX(IND) + IXOLD
-                  IYMOVE = LOFFY(IND) + IYOLD
-                  IF (IXMOVE.LT.KXMIN) IXMOVE = KXMIN
-                  IF (IYMOVE.LT.KYMIN) IYMOVE = KYMIN
-                  IF (IXMOVE.GT.KXMAX) IXMOVE = KXMAX
-                  IF (IYMOVE.GT.KYMAX) IYMOVE = KYMAX
-                  CALL AEDMOV(IXMOVE,IYMOVE)
-                  IXDRAW = LOFFX(IND) + IX
-                  IYDRAW = LOFFY(IND) + IY
-                  IF (IXDRAW.LT.KXMIN) IXDRAW = KXMIN
-                  IF (IYDRAW.LT.KYMIN) IYDRAW = KYMIN
-                  IF (IXDRAW.GT.KXMAX) IXDRAW = KXMAX
-                  IF (IYDRAW.GT.KYMAX) IYDRAW = KYMAX
-                  IF (NDOT.LT.1) THEN
-                    CALL AEDDVA(IXDRAW,IYDRAW)
-                  ELSE
-                    CALL AEDMOV(IXDRAW,IYDRAW)
-                    CALL AEDDVA(IXDRAW,IYDRAW)
-                  END IF
-   20           CONTINUE
-              END IF
-              IXOLD = IX
-              IYOLD = IY
-            END IF
-          END IF
-C
-C---- Poll keyboard every NPOLL vector for any character to interrupt plotting
-C
-          IF (MOD(J,NPOLL).EQ.0) THEN
-            CALL AEDFSC(ICHAR)
-            IF (ICHAR.NE.CHAR(0)) THEN
-C
-C---- Character found, wait for another character
-C
-              CALL AEDRSC(ICHAR)
-C
-C---- If <space> continue, otherwise stop
-C
-              IF(ICHAR.NE.' ') GO TO 50
-            END IF
-          END IF
-        END IF
-   30 CONTINUE
-C
-C
-C---- Flush buffer
-C
-      CALL AEDDMF
-C
-      RETURN
-C
-C---- Position file to end of current picture
-C   code unreachable
-C
-      N = NREC - J
-      IF (N.GT.0) CALL GSFLSR(N*4)
-      RETURN
-C
-   50 call ccperr(1,' stop 50 in plot84lib.for')
-C
-      END
-C
-C
-C
-      SUBROUTINE DTEXT(BUFFER)
-C     ========================
-C
-C---- Write character string BUFFER to AED, no terminal cr lf,
-C     include trailing spaces
-C
-C     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
-C     They were LINE
-C
-C     .. Scalar Arguments ..
-      CHARACTER BUFFER* (*)
-C     ..
-C     .. Scalars in Common ..
-      INTEGER LUNIN,LUNOUT
-C     ..
-C     .. Local Scalars ..
-      INTEGER I,IC,J,K
-C     ..
-C     .. Local Arrays ..
-      CHARACTER*1 LINE(100)
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL AEDTXT
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC ICHAR,LEN,CHAR
-C     ..
-C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-C---- Get length of string
-C
-      I = LEN(BUFFER)
-C
-C---- Copy string to local array to allow room to insert cr lf at end
-C
-      K = 0
-      DO 10 J = 1,I
-        IC = ICHAR(BUFFER(J:J))
-        K = K + 1
-        IF (IC.EQ.35) THEN
-C
-C---- Character is # - Replace character # by cr lf
-C
-          LINE(K)=CHAR(15)
-          LINE(K+1)=CHAR(12)
-          K = K + 1
-        ELSE
-          LINE(K) = CHAR(IC)
-        END IF
-   10 CONTINUE
-      CALL AEDTXT(LINE,K)
-C
-      END
+CCCC
+CCCC
+CCCC
+CCC      SUBROUTINE DRAWPC
+CCCC     =================
+CCCC
+CCCC---- Draw picture
+CCCC     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
+CCCC     They were ICHAR
+CCCC
+CCCC     .. Scalars in Common ..
+CCC      REAL DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,DWLIMX,DWLIMY,
+CCC     +     SCALX,SCALY,TX,TY
+CCC      INTEGER ICOLOR,IPICT,IUNIT,IXMAX,IXMIN,IYMAX,IYMIN,KXMAX,KXMIN,
+CCC     +        KYMAX,KYMIN,LINWT,LUNIN,LUNOUT,MCNTFL,MDEVIC,MDIREC,
+CCC     +        MIXCOLOR,MOUT,MPIC,MSCAFL,NBACK,NPICS,NREC
+CCC      LOGICAL AAV,CLEAR,EOF,HTEXT,PAN,PICTURE,ROTATE,TABLE,UNIFORM
+CCC      CHARACTER PASWRD*8,TITLEH*80
+CCCC     ..
+CCCC     .. Arrays in Common ..
+CCC      REAL RM,SPARE1,SPARE2
+CCC      INTEGER PENS,PFLAGS
+CCCC     ..
+CCCC     .. Local Scalars ..
+CCC      INTEGER I,IDOT,IDXY,IEND,IERAS,IFLAG5,ILWT,IND,IPAP,IPEN,IX,
+CCC     +        IXDRAW,IXMOVE,IXOLD,IY,IYDRAW,IYMOVE,IYOLD,J,JL,JX,JY,
+CCC     +        MASK,MASKFULL,MASKPICT,N,NDOT,NPOLL
+CCC      CHARACTER*1 ICHAR
+CCC      LOGICAL MOVE
+CCCC     ..
+CCCC     .. Local Arrays ..
+CCC      INTEGER LOFFX(16),LOFFY(16)
+CCCC     ..
+CCCC     .. External Subroutines ..
+CCC      EXTERNAL AEDAAV,AEDDMF,AEDDPA,AEDDVA,AEDEPA,AEDESC,AEDFFD,AEDFSC,
+CCC     +         AEDMOV,AEDRSC,AEDSBC,AEDSIF,AEDSRM,AEDSWM,CHNCOL,IROT,
+CCC     +         GSFLRI,GSFLSR,SETTBL
+CCCC     ..
+CCCC     .. Intrinsic Functions ..
+CCC      INTRINSIC ABS,MOD,NINT
+CCCC     ..
+CCCC     .. Common blocks ..
+CCC      COMMON /FLAGS/NBACK,PENS(8),PFLAGS(8),RM(2,2),TX,TY,SCALX,SCALY,
+CCC     +       KXMIN,KXMAX,KYMIN,KYMAX,IPICT,AAV,PAN,ROTATE,CLEAR,UNIFORM,
+CCC     +       TABLE,PICTURE,HTEXT,EOF
+CCC      COMMON /PINOUT/LUNIN,LUNOUT
+CCC      COMMON /GSFHD/
+CCC     + IUNIT,  NREC,   DOTMMX, DOTMMY,   IXMIN,  IXMAX,  IYMIN,
+CCC     + IYMAX,  LINWT,  ICOLOR, MIXCOLOR, MDEVIC, MDIREC, MOUT,
+CCC     + MPIC,   MSCAFL, MCNTFL, DWLIMX,   DWLIMY, DVXMIN, DVXMAX,
+CCC     + DVYMIN, DVYMAX, NPICS,
+CCC     + PASWRD, 
+CCC     + SPARE1(15),
+CCC     + TITLEH,
+CCC     + SPARE2(68)
+CCCC     .. Save Statement ..
+CCCC
+CCC      SAVE
+CCCC
+CCCC     .. Data statements ..
+CCCC
+CCCC---- Plotfile command codes
+CCCC
+CCC      DATA IEND/-1/,IDOT/-2/,ILWT/-3/,IPEN/-4/,IPAP/-5/,IERAS/-6/
+CCC      DATA LOFFX/1,-1,2,-2,3,-3,4,-4,8*0/
+CCC      DATA LOFFY/8*0,1,-1,2,-2,3,-3,4,-4/
+CCC      DATA NPOLL/20/
+CCCC
+CCCC---- AED masks for picture (lower 4 bits) and text (upper 4 bits)
+CCCC
+CCC      DATA MASKPICT,MASKTEXT,MASKFULL/15,240,255/
+CCCC
+CCCC---- Do actual plotting Flush keyboard buffer
+CCCC
+CCC      CALL AEDSIF
+CCCC
+CCCC---- Flag for text
+CCCC
+CCC      HTEXT = .FALSE.
+CCCC
+CCC      IF (AAV) THEN
+CCC        MASK = MASKFULL
+CCC      ELSE
+CCC        MASK = MASKPICT
+CCC      END IF
+CCC      CALL AEDSWM(MASK)
+CCC      CALL AEDSRM(MASK,MASK,MASK,MASK)
+CCCC
+CCC      IF (CLEAR) THEN
+CCCC
+CCCC---- Set background colour
+CCCC
+CCC        CALL AEDSBC(NBACK)
+CCC        CALL AEDFFD
+CCC        CALL AEDESC
+CCC        CALL SETTBL
+CCC      END IF
+CCCC
+CCCC---- Set default colour = pen 1
+CCCC
+CCC      CALL CHNCOL(PENS(1),NBACK,.FALSE.)
+CCCC
+CCCC---- Reset pen flags
+CCCC
+CCC      DO 10 I = 1,8
+CCC        PFLAGS(I) = 1
+CCC   10 CONTINUE
+CCCC
+CCCC----- Anti-aliased vectors
+CCCC
+CCC      IF (NBACK.NE.0) AAV = .FALSE.
+CCC      IF (AAV) THEN
+CCC        CALL AEDAAV(2)
+CCC        TABLE = .FALSE.
+CCC      ELSE
+CCC        CALL AEDAAV(0)
+CCC      END IF
+CCCC
+CCCC---- If full memory, enable panning
+CCCC
+CCC      IF (PAN) THEN
+CCC        CALL AEDEPA
+CCC      ELSE
+CCC        CALL AEDDPA
+CCC      END IF
+CCCC
+CCCC---- NDOT remembers when a dot code was last issued
+CCCC
+CCC      NDOT = 0
+CCC      IXOLD = 0
+CCC      IYOLD = 0
+CCC      DO 30 J = 1,NREC
+CCC        IFLAG5 = 0
+CCC        CALL GSFLRI(JX,JY,IFLAG5)
+CCC        IF (IFLAG5.EQ.1) THEN
+CCC          GO TO 50
+CCC        ELSE
+CCC          NDOT = NDOT - 1
+CCC          IF (JX.EQ.ILWT) THEN
+CCC            LINWT = JY
+CCC          ELSE IF (JX.EQ.IPEN) THEN
+CCCC
+CCCC---- Change colour
+CCCC
+CCC            CALL CHNCOL(PENS(JY),NBACK,.FALSE.)
+CCCC
+CCCC---- Mark which pens used
+CCCC
+CCC            PFLAGS(JY) = 2
+CCC          ELSE IF (JX.EQ.IDOT) THEN
+CCC            NDOT = 2
+CCCC
+CCC          ELSE IF (JX.GE.0) THEN
+CCCC
+CCC            IF (JY.LT.0) THEN
+CCC              MOVE = .TRUE.
+CCC              JY = -JY
+CCC            ELSE
+CCC              MOVE = .FALSE.
+CCC            END IF
+CCCC
+CCCC---- Rotate coordinates
+CCCC
+CCC            IF (ROTATE) THEN
+CCC              CALL IROT(IX,IY,RM,JX,JY)
+CCC            ELSE
+CCC              IX = JX
+CCC              IY = JY
+CCC            END IF
+CCCC
+CCC            IF (MOVE) THEN
+CCC              IXOLD = NINT(SCALX*IX+TX)
+CCC              IYOLD = NINT(SCALY*IY+TY)
+CCC              CALL AEDMOV(IXOLD,IYOLD)
+CCC            ELSE
+CCC              IX = NINT(SCALX*IX+TX)
+CCC              IY = NINT(SCALY*IY+TY)
+CCC              IF (NDOT.LT.1) THEN
+CCC                CALL AEDDVA(IX,IY)
+CCC              ELSE
+CCC                CALL AEDMOV(IX,IY)
+CCC                CALL AEDDVA(IX,IY)
+CCC              END IF
+CCCC
+CCCC---- Here for multiple wt lines
+CCCC
+CCC              IF (LINWT.GT.1) THEN
+CCC                IDXY = -1
+CCC                IF (ABS(IX-IXOLD).GT.ABS(IY-IYOLD)) IDXY = 7
+CCC                DO 20 JL = 2,LINWT
+CCC                  IND = JL + IDXY
+CCC                  IXMOVE = LOFFX(IND) + IXOLD
+CCC                  IYMOVE = LOFFY(IND) + IYOLD
+CCC                  IF (IXMOVE.LT.KXMIN) IXMOVE = KXMIN
+CCC                  IF (IYMOVE.LT.KYMIN) IYMOVE = KYMIN
+CCC                  IF (IXMOVE.GT.KXMAX) IXMOVE = KXMAX
+CCC                  IF (IYMOVE.GT.KYMAX) IYMOVE = KYMAX
+CCC                  CALL AEDMOV(IXMOVE,IYMOVE)
+CCC                  IXDRAW = LOFFX(IND) + IX
+CCC                  IYDRAW = LOFFY(IND) + IY
+CCC                  IF (IXDRAW.LT.KXMIN) IXDRAW = KXMIN
+CCC                  IF (IYDRAW.LT.KYMIN) IYDRAW = KYMIN
+CCC                  IF (IXDRAW.GT.KXMAX) IXDRAW = KXMAX
+CCC                  IF (IYDRAW.GT.KYMAX) IYDRAW = KYMAX
+CCC                  IF (NDOT.LT.1) THEN
+CCC                    CALL AEDDVA(IXDRAW,IYDRAW)
+CCC                  ELSE
+CCC                    CALL AEDMOV(IXDRAW,IYDRAW)
+CCC                    CALL AEDDVA(IXDRAW,IYDRAW)
+CCC                  END IF
+CCC   20           CONTINUE
+CCC              END IF
+CCC              IXOLD = IX
+CCC              IYOLD = IY
+CCC            END IF
+CCC          END IF
+CCCC
+CCCC---- Poll keyboard every NPOLL vector for any character to interrupt plotting
+CCCC
+CCC          IF (MOD(J,NPOLL).EQ.0) THEN
+CCC            CALL AEDFSC(ICHAR)
+CCC            IF (ICHAR.NE.CHAR(0)) THEN
+CCCC
+CCCC---- Character found, wait for another character
+CCCC
+CCC              CALL AEDRSC(ICHAR)
+CCCC
+CCCC---- If <space> continue, otherwise stop
+CCCC
+CCC              IF(ICHAR.NE.' ') GO TO 50
+CCC            END IF
+CCC          END IF
+CCC        END IF
+CCC   30 CONTINUE
+CCCC
+CCCC
+CCCC---- Flush buffer
+CCCC
+CCC      CALL AEDDMF
+CCCC
+CCC      RETURN
+CCCC
+CCCC---- Position file to end of current picture
+CCCC   code unreachable
+CCCC
+CCC      N = NREC - J
+CCC      IF (N.GT.0) CALL GSFLSR(N*4)
+CCC      RETURN
+CCCC
+CCC   50 call ccperr(1,' stop 50 in plot84lib.for')
+CCCC
+CCC      END
+CCCC
+CCCC
+CCCC
+CCC      SUBROUTINE DTEXT(BUFFER)
+CCCC     ========================
+CCCC
+CCCC---- Write character string BUFFER to AED, no terminal cr lf,
+CCCC     include trailing spaces
+CCCC
+CCCC     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
+CCCC     They were LINE
+CCCC
+CCCC     .. Scalar Arguments ..
+CCC      CHARACTER BUFFER* (*)
+CCCC     ..
+CCCC     .. Scalars in Common ..
+CCC      INTEGER LUNIN,LUNOUT
+CCCC     ..
+CCCC     .. Local Scalars ..
+CCC      INTEGER I,IC,J,K
+CCCC     ..
+CCCC     .. Local Arrays ..
+CCC      CHARACTER*1 LINE(100)
+CCCC     ..
+CCCC     .. External Subroutines ..
+CCC      EXTERNAL AEDTXT
+CCCC     ..
+CCCC     .. Intrinsic Functions ..
+CCC      INTRINSIC ICHAR,LEN,CHAR
+CCCC     ..
+CCCC     .. Common blocks ..
+CCC      COMMON /PINOUT/LUNIN,LUNOUT
+CCCC
+CCCC     .. Save Statement ..
+CCCC
+CCC      SAVE
+CCCC
+CCCC---- Get length of string
+CCCC
+CCC      I = LEN(BUFFER)
+CCCC
+CCCC---- Copy string to local array to allow room to insert cr lf at end
+CCCC
+CCC      K = 0
+CCC      DO 10 J = 1,I
+CCC        IC = ICHAR(BUFFER(J:J))
+CCC        K = K + 1
+CCC        IF (IC.EQ.35) THEN
+CCCC
+CCCC---- Character is # - Replace character # by cr lf
+CCCC
+CCC          LINE(K)=CHAR(15)
+CCC          LINE(K+1)=CHAR(12)
+CCC          K = K + 1
+CCC        ELSE
+CCC          LINE(K) = CHAR(IC)
+CCC        END IF
+CCC   10 CONTINUE
+CCC      CALL AEDTXT(LINE,K)
+CCCC
+CCC      END
 C
 C
 C
@@ -1019,10 +1025,15 @@ C     .. Common blocks ..
      +       KXMIN,KXMAX,KYMIN,KYMAX,IPICT,AAV,PAN,ROTATE,CLEAR,UNIFORM,
      +       TABLE,PICTURE,HTEXT,EOF
       COMMON /PINOUT/LUNIN,LUNOUT
-      COMMON /GSFHD/IUNIT,NREC,DOTMMX,DOTMMY,IXMIN,IXMAX,IYMIN,IYMAX,
-     +       LINWT,ICOLOR,MIXCOLOR,MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,
-     +       MCNTFL,DWLIMX,DWLIMY,DVXMIN,DVXMAX,DVYMIN,DVYMAX,NPICS,
-     +       PASWRD,SPARE1(15),TITLEH,SPARE2(68)
+      COMMON /GSFHD/
+     + IUNIT,  NREC,   DOTMMX, DOTMMY,   IXMIN,  IXMAX,  IYMIN,
+     + IYMAX,  LINWT,  ICOLOR, MIXCOLOR, MDEVIC, MDIREC, MOUT,
+     + MPIC,   MSCAFL, MCNTFL, DWLIMX,   DWLIMY, DVXMIN, DVXMAX,
+     + DVYMIN, DVYMAX, NPICS,
+     + PASWRD, 
+     + SPARE1(15),
+     + TITLEH,
+     + SPARE2(68)
 C
 C     .. Save Statement ..
 C
@@ -1062,112 +1073,110 @@ C
       END IF
 C
       END
-C
-C
-C
-C     SUBROUTINE FREAD(CARD,XNUMS,NFIELDS)
-C     ===================================
-C
-C-----Commented out as it make clashes with system C subroutine fread
-C     on a Vax. It is not used by any CCP4 program
-C
-C---- Decode string CARD into floating numbers in XNUMS, returns
-C     number of numbers in NFIELDS
-C
-C     If NFIELDS .gt. 0 on entry, only this number of fields will be read
-C
-C     .. Scalar Arguments ..
-C     INTEGER NFIELDS
-C     CHARACTER CARD* (*)
-C     ..
-C     .. Array Arguments ..
-C     REAL XNUMS(1)
-C     ..
-C     .. Scalars in Common ..
-C     INTEGER LUNIN,LUNOUT
-C     ..
-C     .. Local Scalars ..
-C     INTEGER I,IEND,ISTART,N,NCHAR,NPC,NPOINT
-C     CHARACTER BLANK*1,COMMA*1
-C     ..
-C     .. Intrinsic Functions ..
-C     INTRINSIC INDEX,LEN
-C     ..
-C     .. Common blocks ..
-C     COMMON /PINOUT/LUNIN,LUNOUT
-C
-C     .. Save Statement ..
-C
-C     SAVE
-C
-C     .. Data statements ..
-C     DATA BLANK/' '/,COMMA/','/
-C
-C     NCHAR = LEN(CARD)
-C
-C---- Numeric string
-C
-C     ISTART = 1
-C     IF (NFIELDS.LE.0) NFIELDS = 10000
-C     N = 0
-C  10 CONTINUE
-C
-C---- Search for starting point
-C
-C     IF (CARD(ISTART:ISTART).EQ.BLANK .OR.
-C    +    CARD(ISTART:ISTART).EQ.COMMA) THEN
-C       ISTART = ISTART + 1
-C       IF (ISTART.GT.NCHAR) THEN
-C         GO TO 50
-C       ELSE
-C         GO TO 10
-C       END IF
-C     END IF
-C  20 CONTINUE
-C
-C---- Decode fields
-C
-C     IF (ISTART.LE.NCHAR .AND. N.LT.NFIELDS) THEN
-C       N = N + 1
-C       NPOINT = INDEX(CARD(ISTART:),BLANK) - 1
-C       NPC = INDEX(CARD(ISTART:),COMMA) - 1
-C       IF (NPC.GE.0 .AND. NPC.LT.NPOINT) NPOINT = NPC
-C       IEND = ISTART + NPOINT - 1
-C       READ (CARD(ISTART:IEND),FMT=6333,ERR=40) XNUMS(N)
-C
-C----   6333 FORMAT(F<NPOINT>.0)
-C
-C6333    FORMAT(F10.0)
-C       ISTART = IEND + 2
-C  30   CONTINUE
-C
-C---- Skip over recurring blanks
-C
-C       IF (CARD(ISTART:ISTART).EQ.BLANK .OR.
-C    +      CARD(ISTART:ISTART).EQ.COMMA) THEN
-C         ISTART = ISTART + 1
-C         IF (ISTART.GT.NCHAR) THEN
-C           GO TO 50
-C         ELSE
-C           GO TO 30
-C         END IF
-C       END IF
-C
-C       I = I + 1
-C       GO TO 20
-C     ELSE
-C       GO TO 50
-C     END IF
-C
-C  40 NFIELDS = -1
-C     RETURN
-C
-C---- All numeric fields decoded
-C
-C  50 NFIELDS = N
-C
-C
-C     END
+CCCC
+CCCC
+CCCC  commented-out since it clashes with system routine & isn't used by
+CCCC     ccp4 programs
+CCC      SUBROUTINE FREAD(CARD,XNUMS,NFIELDS)
+CCCC     ===================================
+CCCC
+CCCC---- Decode string CARD into floating numbers in XNUMS, returns
+CCCC     number of numbers in NFIELDS
+CCCC
+CCCC     If NFIELDS .gt. 0 on entry, only this number of fields will be read
+CCCC
+CCCC     .. Scalar Arguments ..
+CCC      INTEGER NFIELDS
+CCC      CHARACTER CARD* (*)
+CCCC     ..
+CCCC     .. Array Arguments ..
+CCC      REAL XNUMS(*)
+CCCC     ..
+CCCC     .. Scalars in Common ..
+CCC      INTEGER LUNIN,LUNOUT
+CCCC     ..
+CCCC     .. Local Scalars ..
+CCC      INTEGER I,IEND,ISTART,N,NCHAR,NPC,NPOINT
+CCC      CHARACTER BLANK*1,COMMA*1
+CCCC     ..
+CCCC     .. Intrinsic Functions ..
+CCC      INTRINSIC INDEX,LEN
+CCCC     ..
+CCCC     .. Common blocks ..
+CCC      COMMON /PINOUT/LUNIN,LUNOUT
+CCCC
+CCCC     .. Save Statement ..
+CCCC
+CCC      SAVE
+CCCC
+CCCC     .. Data statements ..
+CCC      DATA BLANK/' '/,COMMA/','/
+CCCC
+CCC      NCHAR = LEN(CARD)
+CCCC
+CCCC---- Numeric string
+CCCC
+CCC      ISTART = 1
+CCC      IF (NFIELDS.LE.0) NFIELDS = 10000
+CCC      N = 0
+CCC   10 CONTINUE
+CCCC
+CCCC---- Search for starting point
+CCCC
+CCC      IF (CARD(ISTART:ISTART).EQ.BLANK .OR.
+CCC     +    CARD(ISTART:ISTART).EQ.COMMA) THEN
+CCC        ISTART = ISTART + 1
+CCC        IF (ISTART.GT.NCHAR) THEN
+CCC          GO TO 50
+CCC        ELSE
+CCC          GO TO 10
+CCC        END IF
+CCC      END IF
+CCC   20 CONTINUE
+CCCC
+CCCC---- Decode fields
+CCCC
+CCC      IF (ISTART.LE.NCHAR .AND. N.LT.NFIELDS) THEN
+CCC        N = N + 1
+CCC        NPOINT = INDEX(CARD(ISTART:),BLANK) - 1
+CCC        NPC = INDEX(CARD(ISTART:),COMMA) - 1
+CCC        IF (NPC.GE.0 .AND. NPC.LT.NPOINT) NPOINT = NPC
+CCC        IEND = ISTART + NPOINT - 1
+CCC        READ (CARD(ISTART:IEND),FMT=6333,ERR=40) XNUMS(N)
+CCCC
+CCCC----   6333 FORMAT(F<NPOINT>.0)
+CCCC
+CCC6333    FORMAT(F10.0)
+CCC        ISTART = IEND + 2
+CCC   30   CONTINUE
+CCCC
+CCCC---- Skip over recurring blanks
+CCCC
+CCC        IF (CARD(ISTART:ISTART).EQ.BLANK .OR.
+CCC     +      CARD(ISTART:ISTART).EQ.COMMA) THEN
+CCC          ISTART = ISTART + 1
+CCC          IF (ISTART.GT.NCHAR) THEN
+CCC            GO TO 50
+CCC          ELSE
+CCC            GO TO 30
+CCC          END IF
+CCC        END IF
+CCCC
+CCC        I = I + 1
+CCC        GO TO 20
+CCC      ELSE
+CCC        GO TO 50
+CCC      END IF
+CCCC
+CCC   40 NFIELDS = -1
+CCC      RETURN
+CCCC
+CCCC---- All numeric fields decoded
+CCCC
+CCC   50 NFIELDS = N
+CCCC
+CCCC
+CCC      END
 C
 C
 C
@@ -1212,11 +1221,15 @@ C     .. Common blocks ..
      +       KXMIN,KXMAX,KYMIN,KYMAX,IPICT,AAV,PAN,ROTATE,CLEAR,UNIFORM,
      +       TABLE,PICTURE,HTEXT,EOF
       COMMON /PINOUT/LUNIN,LUNOUT
-      COMMON /GSFHD/IUNIT,NREC,DOTMMX,DOTMMY,IXMIN,IXMAX,IYMIN,IYMAX,
-     +       LINWT,ICOLOR,MIXCOLOR,MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,
-     +       MCNTFL,DWLIMX,DWLIMY,DVXMIN,DVXMAX,DVYMIN,DVYMAX,NPICS,
-     +       PASWRD,SPARE1(15),TITLEH,SPARE2(68)
-C
+      COMMON /GSFHD/
+     + IUNIT,  NREC,   DOTMMX, DOTMMY,   IXMIN,  IXMAX,  IYMIN,
+     + IYMAX,  LINWT,  ICOLOR, MIXCOLOR, MDEVIC, MDIREC, MOUT,
+     + MPIC,   MSCAFL, MCNTFL, DWLIMX,   DWLIMY, DVXMIN, DVXMAX,
+     + DVYMIN, DVYMAX, NPICS,
+     + PASWRD, 
+     + SPARE1(15),
+     + TITLEH,
+     + SPARE2(68)
 C     .. Save Statement ..
 C
       SAVE
@@ -1246,1124 +1259,6 @@ C
      +     SCALX*PXMIN
       TY = ((KYMAX-KYMIN)- (PYMAX-PYMIN)*SCALY)*0.5 + KYMIN -
      +     SCALY*PYMIN
-C
-      END
-C
-C
-C
-      SUBROUTINE HELPTXT(IOPT)
-C     ========================
-C
-C---- Display help text and current options.
-C     IOPT is option number currently active
-C
-C     .. Scalar Arguments ..
-      INTEGER IOPT
-C     ..
-C     .. Scalars in Common ..
-      REAL SCALX,SCALY,TX,TY
-      INTEGER IPICT,KXMAX,KXMIN,KYMAX,KYMIN,LUNIN,LUNOUT,NBACK
-      LOGICAL AAV,CLEAR,EOF,HTEXT,PAN,PICTURE,ROTATE,TABLE,UNIFORM
-C     ..
-C     .. Arrays in Common ..
-      REAL RM
-      INTEGER PENS,PFLAGS
-C     ..
-C     .. Local Scalars ..
-      INTEGER I,IP,IX,IY,JX,JY,MASKTEXT,NOPT
-      CHARACTER BUFFER*80,OUTLIN*400
-C     ..
-C     .. Local Arrays ..
-      CHARACTER IDENT(13)*8,SW(3)*8,SWFL(13)*8,TEXT(13)*50
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL AEDDPA,AEDESC,AEDFFD,AEDHOM,AEDMOV,AEDRCP,AEDSBC,AEDSRM,
-     +         AEDSWM,CHNCOL,DTEXT,GSTXT,SETTBL
-C     ..
-C     .. Common blocks ..
-      COMMON /FLAGS/NBACK,PENS(8),PFLAGS(8),RM(2,2),TX,TY,SCALX,SCALY,
-     +       KXMIN,KXMAX,KYMIN,KYMAX,IPICT,AAV,PAN,ROTATE,CLEAR,UNIFORM,
-     +       TABLE,PICTURE,HTEXT,EOF
-      COMMON /PINOUT/LUNIN,LUNOUT
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-C     .. Data statements ..
-      DATA IDENT/' H',' E','<return>',' D',' N',' P',' C',' V',' R',
-     +     ' F',' A',' W',' U'/
-      DATA SW/'        ','  on    ','  off   '/
-      DATA NOPT/13/
-      DATA TEXT/'display this text','exit',
-     +     'display or redraw current picture','redraw picture',
-     +     'draw next picture','select picture number','change colours',
-     +     'change viewport (area of screen used)','rotate picture',
-     +     'read new input filename',
-     +     'switch anti-aliasing (smoothing of vectors) on/off',
-     +     'switch flag to superimpose pictures',
-     +     'switch for uniform scaling on x and y'/
-      DATA MASKTEXT/240/
-C
-C---- Option number here includes <return>, so adjust
-C
-      IP = IOPT
-      IF (IOPT.GT.2) IP = IOPT + 1
-C
-C
-      IF (.NOT.TABLE) THEN
-C
-C---- Set colour table
-C
-        CALL SETTBL
-C
-C---- Set flag
-C
-        TABLE = .TRUE.
-      END IF
-C
-      IF (.NOT.HTEXT) THEN
-C
-C---- Set masks
-C
-        CALL AEDSWM(MASKTEXT)
-        CALL AEDSRM(MASKTEXT,MASKTEXT,MASKTEXT,MASKTEXT)
-C
-C---- Erase screen, set cursor to top, set colour black, disable pan
-C
-        CALL AEDSBC(NBACK*16)
-        CALL AEDFFD
-        CALL AEDESC
-        CALL AEDHOM
-        CALL CHNCOL(0,NBACK,.TRUE.)
-        CALL AEDDPA
-C
-        OUTLIN = '#When a picture has been plotted, '//
-     +      'the program waits for a single character command,'//
-     +      ' listed below'
-        CALL GSTXT(OUTLIN)
-C
-        OUTLIN = 'If anti-aliasing is switched off (default),'//
-     +        ' the current picture is preserved while text is on'
-        CALL GSTXT(OUTLIN)
-C
-        OUTLIN = 'the screen: if anti-aliasing is switched on, '//
-     +      'the picture is redrawn after this text is'
-        CALL GSTXT(OUTLIN)
-C
-        OUTLIN = 'displayed. Anti-aliasing smoothes out vectors,'//
-     +    ' at the expense of some loss of resolution#'
-        CALL GSTXT(OUTLIN)
-C
-        OUTLIN = 'Plotting may be interrupted by pressing '//
-     +          'any key, and be resumed by <space>.'
-        CALL GSTXT(OUTLIN)
-C
-        OUTLIN = 'Typing any other key abandons the plot#'
-        CALL GSTXT(OUTLIN)
-C
-C---- Blank all switch flags
-C
-        DO 10 I = 1,NOPT
-          SWFL(I) = SW(1)
-   10   CONTINUE
-C
-C---- Set switches for anti-aliasing, superimposition, and uniform scaling
-C
-        IF (AAV) THEN
-          SWFL(11) = SW(2)
-        ELSE
-          SWFL(11) = SW(3)
-        END IF
-C
-        IF (CLEAR) THEN
-          SWFL(12) = SW(3)
-        ELSE
-          SWFL(12) = SW(2)
-        END IF
-C
-        IF (UNIFORM) THEN
-          SWFL(13) = SW(2)
-        ELSE
-          SWFL(13) = SW(3)
-        END IF
-C
-C---- Display
-C
-        DO 20 I = 1,NOPT
-          CALL DTEXT(IDENT(I))
-          CALL DTEXT(SWFL(I))
-          OUTLIN = TEXT(I)
-          CALL GSTXT(OUTLIN)
-   20   CONTINUE
-C
-        IF (PICTURE .AND. IPICT.GT.0) THEN
-          WRITE (BUFFER,FMT=6000) IPICT
-          CALL GSTXT(BUFFER)
-        ELSE IF (EOF) THEN
-          OUTLIN = '# End of file found'
-          CALL GSTXT(OUTLIN)
-        END IF
-C
-        HTEXT = .TRUE.
-C
-      END IF
-C
-C---- If IOPT .gt. 0 , overwrite option selection letter in colour
-C
-      IF (IOPT.GT.0) THEN
-C
-C---- Record current alpha cursor position
-C
-        CALL AEDRCP(JX,JY)
-C
-C---- Position to appropriate line, home = 1, 563, line spacing = 12
-C
-        IX = 1
-        IY = 563 - (8+IP)*12
-        CALL AEDMOV(IX,IY)
-C
-C---- Colour current option
-C
-        CALL CHNCOL(5,NBACK,.TRUE.)
-        CALL DTEXT(IDENT(IP))
-        CALL CHNCOL(0,NBACK,.TRUE.)
-C
-C---- Restore position
-C
-        CALL AEDMOV(JX,JY)
-      ELSE
-C
-      END IF
-C
-C---- Format statements
-C
- 6000 FORMAT ('#  Current picture number is:',I5)
-C
-      END
-C                   
-C
-C
-      SUBROUTINE INITRIPLOT(ISTREAM,NAME,IFLAG)
-C     ========================================
-C
-C---- Set of fortran driver routines for the trilog printer
-C     public version d.a. agard. copied from [public.progs]triplot
-C     sep 6 1984. trivial changes a.d. mclachlan 6 sept 1984.
-C
-C     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
-C     They were LINE, PC, PF, PL, FORWARD, LINEFEED, REVERSE, BLANK, COLOURCH
-C
-C     TRILOG PRINTER/PLOTTER.
-C     all i/o is done using the mrc direct-access disk routines
-C
-C     .. Scalar Arguments ..
-      INTEGER IFLAG,IOFF,ISTREAM,LENGTH,N,NFORMS,NROWS
-      CHARACTER NAME* (*)
-C     ..
-C     .. Array Arguments ..
-      CHARACTER*1 LINE(1)
-C     ..
-C     .. Scalars in Common ..
-      INTEGER INIT,IUNIT,LUNIN,LUNOUT
-C     ..
-C     .. Arrays in Common ..
-      CHARACTER*1 PC,PF,PL
-C     ..
-C     .. Local Scalars ..
-      INTEGER J,NDO,NL,NBYTES,NMCITM
-      CHARACTER*1 FOWARD,LINEFEED,REVERSE
-C     ..
-C     .. Local Arrays ..
-      CHARACTER*1 BLANK(250),COLOURCH(3)
-C     ..
-C     .. External Functions ..
-      LOGICAL CCPONL
-      EXTERNAL CCPONL
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QOPEN,QWRITE,QMODE
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC MOD
-C     ..
-C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
-      COMMON /TRI$$DAT/INIT,IUNIT,PC(4),PL(6),PF(6)
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-C     .. Equivalences ..
-      EQUIVALENCE (NBYTES,PC)
-C     ..
-C     .. Data statements ..
-C
-      DATA INIT/0/
-C
-C---- Set up all needed info; note odd byte counts must actually be even
-C
-      DO 99 II=1,250
-        BLANK(II) = CHAR(0)
-99    CONTINUE
-      COLOURCH(1) = CHAR(16)
-      COLOURCH(2) = CHAR(17)
-      COLOURCH(3) = CHAR(18)
-      LINEFEED = CHAR(10)
-      PC(1) = CHAR(0)
-      PC(2) = CHAR(0)
-      PC(3) = CHAR(5)
-      PC(4) = CHAR(0)
-      PF(1) = CHAR(3)
-      PF(2) = CHAR(0)
-      PF(3) = CHAR(5)
-      PF(4) = CHAR(0)
-      PF(5) = CHAR(12)
-      PF(6) = CHAR(0)
-      PL(1) = CHAR(3)
-      PL(2) = CHAR(0)
-      PL(3) = CHAR(5)
-      PL(4) = CHAR(0)
-      PL(5) = CHAR(10)
-      PL(6) = CHAR(0)
-      FOWARD = CHAR(0)
-      REVERSE = CHAR(23)
-C
-      IF (INIT.NE.1) THEN
-        IUNIT = ISTREAM
-        INIT = 1
-        IF (IFLAG.EQ.1 .AND. CCPONL()) THEN
-C
-C---- Open if in batch
-C
-          CALL QOPEN(IUNIT,NAME,'NEW')
-        ELSE
-          CALL QOPEN(IUNIT,NAME,'NEW')
-        END IF
-C
-C---- Change to byte handling
-C
-        CALL QMODE (IUNIT,0,NMCITM)
-      END IF
-      RETURN
-C
-      ENTRY TRICOLOUR(N)
-C     ==================
-C
-      IF (N.GE.1 .AND. N.LE.3) PC(4) = COLOURCH(N)
-      RETURN
-C
-      ENTRY TRIROW(NROWS)
-C     ===================
-C
-      IF (NROWS.LT.0) THEN
-        NDO = -NROWS
-        PL(4) = REVERSE
-        DO 10 J = 1,NDO
-          CALL QWRITE(IUNIT,PL,6)
-   10   CONTINUE
-      ELSE IF (NROWS.GT.0) THEN
-        NDO = NROWS
-        PL(4) = CHAR(0)
-        DO 20 J = 1,NDO
-          CALL QWRITE(IUNIT,PL,6)
-   20   CONTINUE
-      END IF
-      RETURN
-C
-      ENTRY TRIFORM(NFORMS)
-C     =====================
-C
-      IF (NFORMS.LT.0) THEN
-        NDO = -NFORMS
-        PF(4) = REVERSE
-        DO 30 J = 1,NDO
-          CALL QWRITE(IUNIT,PF,6)
-   30   CONTINUE
-      ELSE IF (NFORMS.GT.0) THEN
-        NDO = NFORMS
-        PF(4) = CHAR(0)
-        DO 40 J = 1,NDO
-          CALL QWRITE(IUNIT,PF,6)
-   40   CONTINUE
-      END IF
-      RETURN
-C
-      ENTRY TRIPLOT(LINE,LENGTH)
-C     ==========================
-C
-      NBYTES = LENGTH + 3
-      NL = 1
-      CALL QWRITE(IUNIT,PC,4)
-      CALL QWRITE(IUNIT,LINE,LENGTH)
-      CALL QWRITE(IUNIT,LINEFEED,NL)
-      PC(4) = CHAR(0)
-      RETURN
-C
-      ENTRY TRIPLOTC(LINE,LENGTH,IOFF)
-C     ================================
-C
-      NBYTES = LENGTH + IOFF + 3
-      NL = 1
-      CALL QWRITE(IUNIT,PC,4)
-      IF (IOFF.GT.0) CALL QWRITE(IUNIT,BLANK,IOFF)
-      CALL QWRITE(IUNIT,LINE,LENGTH)
-      CALL QWRITE(IUNIT,LINEFEED,NL)
-      PC(4) = CHAR(0)
-      RETURN
-C
-      ENTRY CLOSETRIPLOT()
-C     ==================
-C
-      CALL QCLOSE(IUNIT)
-C
-      END
-C
-C
-C
-      SUBROUTINE INITVT640(ITERM)
-C     ===========================
-C
-C---- lookalike plot82 routines for driving the vt640 from plot84
-C
-C     A.D. McLachlan SEP 1984. Last updated 25 SEP 1984.
-C     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
-C     They were NBYTE, BYTXT, HTEXT
-C
-C     .. Scalar Arguments ..
-      INTEGER ICODE,ISIZE,ITERM,IX,IY,NCHARS
-      CHARACTER*1 NBYTE
-C     ..
-C     .. Array Arguments ..
-      CHARACTER*1 BYTXT(1)
-C     ..
-C     .. Scalars in Common ..
-      INTEGER LUNIN,LUNOUT
-C     ..
-C     .. Local Scalars ..
-      INTEGER I,JSIZE,N
-      CHARACTER CHKEY*1,TEXT*256
-C     ..
-C     .. Local Arrays ..
-      CHARACTER*1 HTEXT(256)
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL GSBFTM,GSCYTM,GSDOTM,GSDWTM,GSERTM,
-     +         GSGRTM,GSHRTM,GSINTM,GSMVTM,GSMYTM,
-     +         GSPTTM,GSRVTM,GSTXTM,GSTYTM,GSXYTM
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC ICHAR
-C     ..
-C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-C     .. Equivalences ..
-      EQUIVALENCE (TEXT,HTEXT(1))
-C     ..
-C
-      CALL GSINTM(ITERM)
-      RETURN
-C
-      ENTRY SELECTVT640()
-C     =================
-C
-      CALL GSGRTM
-      RETURN
-C
-      ENTRY MOVEVT640(IX,IY)
-C     ======================
-C
-      CALL GSMVTM(IX,IY)
-      RETURN
-C
-      ENTRY DRAWVT640(IX,IY)
-C     ======================
-C
-      CALL GSDWTM(IX,IY)
-      RETURN
-C
-      ENTRY POINTVT640(IX,IY)
-C     =======================
-C
-      CALL GSPTTM(IX,IY)
-      RETURN
-C
-      ENTRY TEXTVT640(BYTXT,NCHARS,ISIZE)
-C     ===================================
-C
-      JSIZE = ISIZE + 1
-      N = NCHARS
-      IF (N.GT.256) N = 256
-      DO 10 I = 1,N
-        HTEXT(I) = BYTXT(I)
-   10 CONTINUE
-      CALL GSTXTM(TEXT(1:N),JSIZE)
-      RETURN
-C
-      ENTRY XHAIRVT640(IX,IY,ICODE)
-C     =============================
-C
-      CALL GSHRTM(IX,IY,CHKEY)
-      ICODE = ICHAR(CHKEY)
-      RETURN
-C
-      ENTRY DOTSONVT640()
-C     =================
-C
-      CALL GSDOTM
-      RETURN
-C
-      ENTRY DOTSOFFVT640()
-C     ==================
-C
-      CALL GSERTM
-      RETURN
-C
-      ENTRY DOTSCOMPVT640()
-C     ===================
-C
-      CALL GSRVTM
-      RETURN
-C
-      ENTRY SELECTVT100()
-C     =================
-C
-      CALL GSTYTM
-      RETURN
-C
-      ENTRY MOVEVT100(IX,IY)
-C     ======================
-C
-      CALL GSMYTM(IX,IY)
-      RETURN
-C
-      ENTRY CLEARVT100()
-C     ================
-C
-      CALL GSCYTM
-      RETURN
-C
-      ENTRY BUFFVT640(ITERM,NBYTE)
-C     ============================
-C
-      CALL GSBFTM(ITERM,NBYTE)
-      RETURN
-C
-      ENTRY COORDVT640(ITERM,IX,IY,NBYTE)
-C     ===================================
-C
-      CALL GSXYTM(ITERM,IX,IY,NBYTE)
-C
-      END
-C
-C
-C
-      SUBROUTINE IREAD(CARD,NUMS,NFIELDS)
-C     ===================================
-C
-C---- Decode string CARD into floating numbers in NUMS, returns
-C     number of numbers in NFIELDS
-C
-C     .. Scalar Arguments ..
-      INTEGER NFIELDS
-      CHARACTER CARD* (*)
-C     ..
-C     .. Array Arguments ..
-      INTEGER NUMS(1)
-C     ..
-C     .. Scalars in Common ..
-      INTEGER LUNIN,LUNOUT
-C     ..
-C     .. Local Scalars ..
-      INTEGER I,IEND,ISTART,N,NCHAR,NPC,NPOINT
-      CHARACTER BLANK*1,COMMA*1
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC INDEX,LEN
-C     ..
-C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-C     .. Data statements ..
-      DATA BLANK/' '/,COMMA/','/
-C     ..
-C
-      NCHAR = LEN(CARD)
-C
-C---- Numeric string
-C
-      ISTART = 1
-      N = 0
-      IF (NFIELDS.LE.0) NFIELDS = 10000
-   10 CONTINUE
-C
-C---- Search for starting point
-C
-      IF (CARD(ISTART:ISTART).EQ.BLANK .OR.
-     +    CARD(ISTART:ISTART).EQ.COMMA) THEN
-        ISTART = ISTART + 1
-        IF (ISTART.GT.NCHAR) THEN
-          GO TO 50
-        ELSE
-          GO TO 10
-        END IF
-      END IF
-   20 CONTINUE
-C
-C---- Decode fields
-C
-      IF (ISTART.LE.NCHAR .AND. N.LT.NFIELDS) THEN
-        N = N + 1
-        NPOINT = INDEX(CARD(ISTART:),BLANK) - 1
-        NPC = INDEX(CARD(ISTART:),COMMA) - 1
-        IF (NPC.GE.0 .AND. NPC.LT.NPOINT) NPOINT = NPC
-        IEND = ISTART + NPOINT - 1
-        READ (CARD(ISTART:IEND),FMT=6333,ERR=40) NUMS(N)
-C
-C----   6333    FORMAT(I<NPOINT>)
-C
-6333    FORMAT(I10)
-        ISTART = IEND + 2
-   30   CONTINUE
-C
-C---- Skip over recurring blanks
-C
-        IF (CARD(ISTART:ISTART).EQ.BLANK .OR.
-     +      CARD(ISTART:ISTART).EQ.COMMA) THEN
-          ISTART = ISTART + 1
-          IF (ISTART.GT.NCHAR) THEN
-            GO TO 50
-          ELSE
-            GO TO 30
-          END IF
-        END IF
-C
-        I = I + 1
-        GO TO 20
-      ELSE
-        GO TO 50
-      END IF
-C
-   40 NFIELDS = -1
-      RETURN
-C
-C---- All numeric fields decoded
-C
-   50 NFIELDS = N
-C
-      END
-C
-C
-C
-      SUBROUTINE IROT(IX,IY,RM,JX,JY)
-C     ===============================
-C
-C---- Rotate JX,JY by 2 x 2 matrix RM, answer in IX, IY
-C
-C     .. Scalar Arguments ..
-      INTEGER IX,IY,JX,JY
-C     ..
-C     .. Array Arguments ..
-      REAL RM(2,2)
-C     ..
-C     .. Scalars in Common ..
-      INTEGER LUNIN,LUNOUT
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC NINT
-C     ..
-C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-      IX = NINT(RM(1,1)*JX+RM(1,2)*JY)
-      IY = NINT(RM(2,1)*JX+RM(2,2)*JY)
-C
-      END
-C
-C
-C
-      INTEGER FUNCTION ISHFT (INUM,IBITS)
-C     ===================================
-C
-C---- ISHIFT perfoms a bitwise shift of INUM by IBITS bits. 
-C     For IBITS = 0    ISHIFT returns INUM unchanged
-C     For IBITS > 0    ISHIFT returns the Left shift of INUM 
-C     For IBITS < 0    ISHIFT returns the Right shift of INUM 
-C
-      INTEGER INUM, IBITS
-C
-      IF (IBITS.EQ.0) THEN
-        ISHFT = INUM
-      ELSE IF (IBITS.GT.0) THEN
-        ISHFT = INUM * IBITS * 2
-      ELSE
-        ISHFT = INUM / (IABS(IBITS) * 2)
-      ENDIF
-C
-      END
-C
-C
-C
-      SUBROUTINE NEXTPC(IFLAG)
-C     =======================
-C
-C---- Open next picture
-C
-C     .. Scalar Arguments ..
-      INTEGER IFLAG
-C     ..
-C     .. Scalars in Common ..
-      REAL DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,DWLIMX,DWLIMY
-      INTEGER ICOLOR,IUNIT,IXMAX,IXMIN,IYMAX,IYMIN,LINWT,LUNIN,LUNOUT,
-     +        MCNTFL,MDEVIC,MDIREC,MIXCOLOR,MOUT,MPIC,MSCAFL,NPICS,NREC
-      CHARACTER PASWRD*8,TITLEH*80
-C     ..
-C     .. Arrays in Common ..
-      REAL SPARE1,SPARE2
-C     ..
-C     .. Local Scalars ..
-      INTEGER IFLAG2
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL GSRHDR
-C     ..
-C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
-      COMMON /GSFHD/IUNIT,NREC,DOTMMX,DOTMMY,IXMIN,IXMAX,IYMIN,IYMAX,
-     +       LINWT,ICOLOR,MIXCOLOR,MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,
-     +       MCNTFL,DWLIMX,DWLIMY,DVXMIN,DVXMAX,DVYMIN,DVYMAX,NPICS,
-     +       PASWRD,SPARE1(15),TITLEH,SPARE2(68)
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-      IFLAG = 0
-      IFLAG2 = 0
-      CALL GSRHDR(IFLAG2)
-      IF (IFLAG2.NE.1) THEN
-        IF (NREC.NE.0) RETURN
-      END IF
-C
-      IFLAG = 1
-C
-      END
-C
-C
-C
-      SUBROUTINE OLDTRIL(GSFIL,LISFIL,IOFLAG)
-C     ========================================
-C
-C---- Substitute routine  for old trilog82
-C
-C     ADAPTED FROM D.A. AGARD'S TRILOG PLOT82 (1982)
-C     A.D. MCLACHLAN JUN 1984. LAST UPDATED 21 OCT 1984
-C     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
-C     They were BRICKS
-C     and the followig BYTEs to INTEGER: ICLBRK, KXY, LINROW, PAGE
-C
-C     The program reads in the intermediate plot file and
-C     generates a file of line dots to print on trilog printer/plotter
-C
-C     The maximum page depth is set at 8192 lines (100 per inch)
-C     each line 1536 dots across (6 dots/byte and 256 bytes)
-C     the plotter allows 1320 dots across page (220 bytes)
-C     with a 13-inch paper width only the first 1296 dots (216 bytes)
-C     on each line are used
-C     with 8-inch page depth there are 800 lines per page
-C
-C     In this version of the program the plot area is divided into
-C     bricks of (48*64) dots or (8*64)=512 bytes
-C     with 32 bricks across the page and 128 up the page
-C     this reduces the number of virtual memory page faults
-C     in plots with many long vectors which run up and down the page
-C     the brick algorithm is 8 times faster than the plot82 trilog
-C     method.
-C     some of the byte-copying of bricks is done in terms of blocks
-C     of character strings
-C
-C   --Plot file command codes (ix,iy) revised july 1984
-C       (I,+J)    draw line to (i,j)   i,j in range 1 to 32766,not 0.
-C       (I,-J)    move to (i,j)
-C
-C       (-I,J)    treat i as a command code, j as a data value
-C       (-1,J)    end picture: 
-C                 put out j pages of paper before next (j=1)
-C       (-2,0)    dot
-C       (-3,J)    lineweight,thickness j=1...9
-C       (-4,J)    colour change. j defines colour
-C       (-5,J)    blank paper, j rows of 1/100 inch height
-C       (-6,J)    erase (vt640 only) j=0 off, j=1 on,
-C                 j=2 reverse black-white.
-C
-C   parameters to define the size and numbers of bricks
-C   if these are altered the character*xxx string sizes may
-C   need changing
-C
-C---- Picture array as bricks or as rows of bricks
-C
-C---- Special for nwidx=8 !! store 8 bytes in one character variable
-C
-C---- Output buffer as rows of lines 
-C     or a row of bricks each 8 bytes wide
-C
-C---- Whole bricks as blocks of 512(=nsizeb) characters
-C
-C---- One brick as characters to clear
-C
-C     .. Parameters ..
-      INTEGER NWIDX,NWIDY,NBRIKX,NBRIKY
-      PARAMETER (NWIDX=8,NWIDY=64,NBRIKX=32,NBRIKY=128)
-      INTEGER NSIZEB
-      PARAMETER (NSIZEB=NWIDX*NWIDY)
-      INTEGER NBYTX,NBYTX1
-      PARAMETER (NBYTX=NWIDX*NBRIKX,NBYTX1=NBYTX-1)
-      INTEGER NWIDX1,NWIDY1
-      PARAMETER (NWIDX1=NWIDX-1,NWIDY1=NWIDY-1)
-      INTEGER NBRKX1,NBRKY1
-      PARAMETER (NBRKX1=NBRIKX-1,NBRKY1=NBRIKY-1)
-      INTEGER NDOTX
-      PARAMETER (NDOTX=NWIDX*6)
-      REAL DOTMMP
-      PARAMETER (DOTMMP=100.0/25.4)
-C     ..
-C     .. Scalar Arguments ..
-      INTEGER IOFLAG
-      CHARACTER LISFIL* (*),GSFIL* (*)
-C     ..
-C     .. Scalars in Common ..
-      INTEGER ICOLOR,IUNIT,IXMAX,IXMIN,IYMAX,IYMIN,LINWT,LUNIN,LUNOUT,
-     +        MIXCOLOR,NBPI,NREC
-C     ..
-C     .. Arrays in Common ..
-      REAL EXTRA
-      INTEGER BRICKS
-C     ..
-C     .. Local Scalars ..
-      REAL ANBPI,SCFACX,SCFACY,SECTOT,SSTAGE,XWID,YWID
-      INTEGER IBRIKX,IBRIKY,IBXMAX,IBXMIN,IBXWID,IBYMAX,IBYMIN,IBYWID,
-     +        IER,IND,IPRINT,IPXMAX,IPXMIN,IPY,IPY0,IPY1,IPYBOT,IPYTOP,
-     +        IREC,ISTREM,IX,IXOLD,IY,IYOLD,JX,JXOLD,JY,JYOLD,LL,MAXDTX,
-     +        MAXLNY,NBPG,NBXOFF,NBXWID,NDOT,NFORM,NLINPG,NLINU,NLINY,
-     +        NLNSKP,NMARGY,NPAGES,NREAD,NSPARE,NMCITM
-      INTEGER*2 IDOT,IEND,ILWT,IPAP,IPEN,KX,KY
-      LOGICAL IRET
-      CHARACTER CLRBRK*512
-C     ..
-C     .. Local Arrays ..
-      INTEGER LOFFX(8),LOFFY(8),MREC(20)
-      INTEGER ICLBRK(512),KXY(2),LINROW(0:NBYTX1,0:NWIDY1),
-     +          PAGE(0:NBYTX1,0:NWIDY1,0:NBRKY1)
-      CHARACTER CBRIKS(0:NWIDY1,0:NBRKX1,0:NBRKY1)*8,
-     +          LLBROW(0:NBRKX1,0:NWIDY1)*8,
-     +          HOLBRK(0:NBRKX1,0:NBRKY1)*512
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CLOSETRIPLOT,INITRIPLOT,GSLRSB,GSTIM0,GSTIMR,
-     +         QCLOSE,QOPEN,QREAD,TRICOLOUR,TRIFORM,TRIPLOTC,TRIROW
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC MIN,REAL
-C     ..
-C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
-      COMMON /GSOLD/IUNIT,NREC,NBPI,IXMIN,IXMAX,IYMIN,IYMAX,LINWT,
-     +       ICOLOR,MIXCOLOR,EXTRA(11)
-      COMMON /GSRAS/BRICKS(0:NWIDX1,0:NWIDY1,0:NBRKX1,0:NBRKY1)
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-C     .. Equivalences ..
-      EQUIVALENCE (BRICKS(0,0,0,0),PAGE(0,0,0))
-      EQUIVALENCE (CBRIKS(0,0,0),BRICKS(0,0,0,0))
-      EQUIVALENCE (LINROW(0,0),LLBROW(0,0))
-      EQUIVALENCE (HOLBRK(0,0),BRICKS(0,0,0,0))
-      EQUIVALENCE (CLRBRK,ICLBRK(1))
-      EQUIVALENCE (NREC,MREC(1))
-      EQUIVALENCE (KXY(1),KX), (KXY(2),KY)
-C     ..
-C     .. Data statements ..
-      DATA ICLBRK/512*64/
-      DATA LOFFX/1,0,-1,0,2,-2,-3,3/
-      DATA LOFFY/0,1,0,-1,2,-2,3,-3/
-      DATA MAXLNY/8191/,MAXDTX/1320/
-      DATA NLINPG/800/,NBPG/216/
-      DATA NSPARE/20/
-      DATA IEND/4/,IDOT/16/,ILWT/2/,
-     +     IPEN/1/,IPAP/8/,IERAS/32/
-C
-C---- plotfile command codes
-C
-      IPRINT = 0
-      CALL GSTIM0(IPRINT)
-C
-C---- Start up plotfile and printer
-C
-      CALL QOPEN(IUNIT,GSFIL,'READONLY')
-      CALL QMODE (IUNIT,0,NMCITM)
-C
-C---- IOFLAG=1,0 .IOFLAG=(1) then batch jobs have file opened 'tr' and
-C     must be part of sys$output or sys$print
-C     IOFLAG=(0) then all jobs have file opened as 'pd'=print/delete.
-C     normal trilog uses ioflag=0. trilogq uses ioflag=1
-C
-      ISTREM = 2
-      CALL INITRIPLOT(ISTREM,LISFIL,IOFLAG)
-   10 CONTINUE
-C
-C
-C---- Start of current picture
-C
-C---- Skip nspare lines at start of first
-C     page in addition to nmargy later
-C
-      CALL TRIROW(NSPARE)
-      NFORM = 1
-      NLNSKP = 0
-      CALL QREAD(IUNIT,MREC,80,IER)
-      IF ((IER.EQ.0) .AND. (NREC.GT.0)) THEN
-C
-C---- Rescale for different dot densities
-C
-        ANBPI = NBPI
-        SCFACX = 100.0/ANBPI
-        SCFACY = SCFACX
-        IXMIN = REAL(IXMIN)*SCFACX
-        IXMAX = REAL(IXMAX)*SCFACX
-        IYMIN = REAL(IYMIN)*SCFACY
-        IYMAX = REAL(IYMAX)*SCFACY
-C
-C---- Check size of plot and reduce if too big
-C     rescaling may make ixmin,iymin zero
-C
-        IF ((IXMIN.LT.0) .OR. (IXMAX.GT.MAXDTX) .OR. (IYMIN.LT.0) .OR.
-     +      (IYMAX.GT.MAXLNY)) WRITE (LUNOUT,FMT=6004) MAXDTX,MAXLNY,
-     +      IXMIN,IXMAX,IYMIN,IYMAX
-        IF (IXMIN.LT.1) IXMIN = 1
-        IF (IXMAX.LT.IXMIN) IXMAX = IXMIN
-        IF (IXMAX.GT.MAXDTX) IXMAX = MAXDTX
-        IF (IYMIN.LT.1) IYMIN = 1
-        IF (IYMAX.LT.IYMIN) IYMAX = IYMIN
-        IF (IYMAX.GT.MAXLNY) IYMAX = MAXLNY
-C
-C---- Brick limits across page
-C     NOTE IX=1...1295 BUT IBX=0...31
-C     thus brick number 0 goes from ix=0 to 47
-C
-        IBXMIN = IXMIN/NDOTX
-        IBXMAX = IXMAX/NDOTX
-        IBXWID = IBXMAX - IBXMIN + 1
-        XWID = IBXWID*NDOTX
-        XWID = XWID/DOTMMP
-C
-C---- Brick limits up and down
-C     NOTE IY=1...8191 BUT IBY=0...127
-C     thus brick number 0 goes from iy=0 to 63
-C     and its bottom line is not used
-C
-        IBYMIN = IYMIN/NWIDY
-        IBYMAX = IYMAX/NWIDY
-        IBYWID = IBYMAX - IBYMIN + 1
-        NLINY = IYMAX - IYMIN + 1
-        YWID = NLINY
-        YWID = YWID/DOTMMP
-C
-C---- Centre up and down if only one page
-C     lines used in the occupied bricks
-C
-        NLINU = NLINY + NSPARE
-        NPAGES = (NLINU-1)/NLINPG + 1
-        NMARGY = (NPAGES*NLINPG-NLINU)/2
-C
-C---- Positions of extreme lines used in top and bottom bricks
-C
-        IPYTOP = IYMAX - IBYMAX*NWIDY
-        IPYBOT = IYMIN - IBYMIN*NWIDY
-C
-C---- Center along x:  calculate offsets in bytes (6 dots/byte)
-C
-        IPXMIN = IXMIN/6
-        IPXMAX = IXMAX/6
-        NBXWID = MIN((IPXMAX-IPXMIN+1),NBPG)
-        NBXOFF = (NBPG-NBXWID)/2
-C
-C---- Clear required rows of bricks
-C
-        DO 30 IBRIKY = IBYMIN,IBYMAX
-          DO 20 IBRIKX = IBXMIN,IBXMAX
-            HOLBRK(IBRIKX,IBRIKY) = CLRBRK
-   20     CONTINUE
-   30   CONTINUE
-C
-C---- Start on this plot
-C
-        IXOLD = 0
-        IYOLD = 0
-        NREAD = 0
-C
-C---- NDOT remembers when a dot code was last issued
-C
-        NDOT = 0
-        DO 50 IREC = 1,NREC
-          CALL QREAD(IUNIT,KXY,4,IER)
-          IF (IER.NE.0) THEN
-            GO TO 80
-          ELSE
-            IX = KX
-            IY = KY
-            NREAD = NREAD + 1
-            NDOT = NDOT - 1
-C
-C---- Handle control info
-C
-            IF (IX.GE.0) THEN
-C
-C---- Here for actual plot handling
-C
-              IX = REAL(IX)*SCFACX
-              IF (IY.LT.0) THEN
-                IXOLD = IX
-                IYOLD = REAL(-IY)*SCFACY
-              ELSE
-                IY = REAL(IY)*SCFACY
-                IF (NDOT.LT.1) THEN
-                  CALL GSLRSB(IX,IY,IXOLD,IYOLD)
-                ELSE
-                  CALL GSLRSB(IX,IY,IX,IY)
-                END IF
-C
-C---- Here for multiple wt lines
-C
-                IF (LINWT.GT.1) THEN
-                  LL = LINWT - 1
-                  IF (LL.LT.2) LL = 2
-                  DO 40 IND = 1,LL
-                    JX = LOFFX(IND) + IX
-                    JXOLD = LOFFX(IND) + IXOLD
-                    IF (JX.LT.IXMIN) JX = IXMIN
-                    IF (JX.GT.IXMAX) JX = IXMAX
-                    IF (JXOLD.LT.IXMIN) JXOLD = IXMIN
-                    IF (JXOLD.GT.IXMAX) JXOLD = IXMAX
-                    JY = LOFFY(IND) + IY
-                    JYOLD = LOFFY(IND) + IYOLD
-                    IF (JY.LT.IYMIN) JY = IYMIN
-                    IF (JY.GT.IYMAX) JY = IYMAX
-                    IF (JYOLD.LT.IYMIN) JYOLD = IYMIN
-                    IF (JYOLD.GT.IYMAX) JYOLD = IYMAX
-                    IF (NDOT.LT.1) THEN
-                      CALL GSLRSB(JX,JY,JXOLD,JYOLD)
-                    ELSE
-                      CALL GSLRSB(JX,JY,JX,JY)
-                    END IF
-   40             CONTINUE
-                END IF
-                IXOLD = IX
-                IYOLD = IY
-              END IF
-            ELSE IF (IX.EQ.IEND) THEN
-              GO TO 60
-            ELSE IF (IX.EQ.IDOT) THEN
-              NDOT = 2
-            ELSE IF (IX.EQ.ILWT) THEN
-              LINWT = IY
-            ELSE IF (IX.EQ.IPEN) THEN
-              ICOLOR = 3
-              IF (IY.EQ.2) ICOLOR = 2
-              IF (IY.EQ.5) ICOLOR = 1
-              CALL TRICOLOUR(ICOLOR)
-            ELSE IF (IX.EQ.IPAP) THEN
-              CALL TRIROW(IY)
-C
-C---- Ignore ix=ieras on paper plotter
-C
-              NLNSKP = NLNSKP + IY
-            END IF
-          END IF
-   50   CONTINUE
-C
-        GO TO 70
-   60   NFORM = IY
-        IF (NREAD.EQ.1) NREAD = 0
-C
-C---- End of records loop
-C
-   70   CONTINUE
-        IRET = .TRUE.
-        GO TO 90
-C
-C---- Output section
-C
-   80   CONTINUE
-        WRITE (LUNOUT,FMT=6000) NREC,NREAD
-        IRET = .FALSE.
-C
-   90   IF (NREAD.NE.0) THEN
-C
-C---- If no plotfile line skips call trirow to skip lines
-C     and centre the page if there is only one page
-C
-          IF ((NLNSKP.EQ.0) .AND. (NPAGES.LE.1)) CALL TRIROW(NMARGY)
-C
-C---- Get a row of bricks at a time in reverse order of rows
-C
-          DO 130 IBRIKY = IBYMAX,IBYMIN,-1
-C
-C---- Rearrange contents of each brick into lines 8 bytes at a time
-C
-            IPY0 = 0
-            IPY1 = NWIDY1
-            IF (IBRIKY.EQ.IBYMAX) IPY1 = IPYTOP
-            IF (IBRIKY.EQ.IBYMIN) IPY0 = IPYBOT
-            DO 110 IPY = IPY0,IPY1
-              DO 100 IBRIKX = 0,NBRKX1
-                LLBROW(IBRIKX,IPY) = CBRIKS(IPY,IBRIKX,IBRIKY)
-  100         CONTINUE
-  110       CONTINUE
-C
-C---- Print a row of bricks as lines from the buffer in reverse order
-C
-            DO 120 IPY = IPY1,IPY0,-1
-              CALL TRIPLOTC(LINROW(IPXMIN,IPY),NBXWID,NBXOFF)
-  120       CONTINUE
-  130     CONTINUE
-          CALL TRIFORM(NFORM)
-C
-          CALL GSTIMR(SECTOT,SSTAGE,IPRINT)
-          WRITE (LUNOUT,FMT=6002) NREAD,XWID,YWID,SECTOT
-C
-C---- For next picture
-C
-          IF (IRET) GO TO 10
-        END IF
-      END IF
-C
-      CALL QCLOSE(IUNIT)
-      CALL CLOSETRIPLOT
-C
-C---- Format statements
-C
- 6000 FORMAT (2X,'TRILOG82: End-file error reading plot records: expec',
-     +       'ted,found=',2I8)
- 6002 FORMAT (2X,'TRILOG82:',I8,' records read; area used(mm) =',2F7.0,
-     +       '; cpu sec',F6.2)
- 6004 FORMAT (2X,'!!!TRILOG82: Warning; plot too big for X Y dot range',
-     +       's ',2I5,/13X,'uses X1 X2 Y1 Y2 = ',4I6)
 C
       END
 C
@@ -2788,6 +1683,8 @@ C
           IF ((LETTER.GE.1) .AND. (LETTER.LE.146)) THEN
 C
 C---- for legal letters in fonts (1-4)
+C  Here converting Integer*2 to Real*4
+C  BIG-ENDIAN PROBLEM ???
 C
             X1 = IFX0(LETTER,KFONT) + 1
             Y1 = IFY0(LETTER,KFONT) + 9
@@ -2869,7 +1766,7 @@ C     .. Local Scalars ..
       LOGICAL DONE,INSIDE,REJECT
 C     ..
 C     .. Local Arrays ..
-      LOGICAL*1 NOCODE(4),WCODEA(4),WCODEB(4)
+      LOGICAL*1 NOCODE(4),WCODEA(4),WCODEB(4),BT1,BT2,BT3,BT4
 C     ..
 C     .. External Subroutines ..
       EXTERNAL GSCLPT,GSCLTS,GSSWLN
@@ -2885,9 +1782,11 @@ C     .. Save Statement ..
 C
       SAVE
 C
-C     .. Equivalences ..
-      EQUIVALENCE (WCODEA(1),NCODE1), (WCODEB(1),NCODE2)
-      EQUIVALENCE (NOCODE(1),NO4)
+C     .. Equivalences .. 
+ccx      logical*1 nocode(4),wcodea(4),wcodeb(4)
+ccx      integer ncode1,ncode2,no4,nswap ******** BIG-ENDIAN PROBLEM
+      equivalence (wcodea(1),ncode1), (wcodeb(1),ncode2)
+      equivalence (nocode(1),no4)
 C     ..
 C     .. Data statements ..
       DATA NOCODE/4*.FALSE./
@@ -2933,7 +1832,12 @@ C    -check for divides by zero when lines are horizontal or vertical
 C     "if1" "level 3"
 C    -split line on left (y1 is to left)
 C
-        IF (WCODEA(1)) THEN
+C
+C---- If machine is BigEndian, need to swap byte order
+C
+C
+C
+        IF ( wcodea(1) ) THEN  
           IF (ABS(X2-X1).GT.SMALL) Y1 = Y1 + (Y2-Y1)*(BXMIN-X1)/(X2-X1)
           X1 = BXMIN
 C
@@ -2997,7 +1901,8 @@ C     .. Local Scalars ..
       INTEGER NO4,NWCODE
 C     ..
 C     .. Local Arrays ..
-      LOGICAL*1 NOCODE(4),WCODE(4)
+ccx      logical*1 nocode(4),wcode(4)
+      LOGICAL*1 NOCODE(4),WCODE(4),BT1,BT2,BT3,BT4
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
@@ -3007,7 +1912,9 @@ C     .. Save Statement ..
 C
       SAVE
 C
-C     .. Equivalences ..
+C     .. Equivalences .. BIG - ENDIAN PROBLEM *****
+ccx      integer no4,nwcode
+ccx      logical*1 nocode(4),wcode(4)
       EQUIVALENCE (NWCODE,WCODE(1)), (NO4,NOCODE(1))
 C     ..
 C     .. Data statements ..
@@ -3043,7 +1950,8 @@ C     .. Local Scalars ..
       INTEGER NCDAND,NO4
 C     ..
 C     .. Local Arrays ..
-      LOGICAL*1 NOCODE(4)
+ccx      logical*1 nocode(4)
+      LOGICAL*1 NOCODE(4),BT1,BT2,BT3,BT4
 C     ..
 C     .. External Functions ..
 cc      INTEGER IAND
@@ -3057,12 +1965,14 @@ C
       SAVE
 C
 C     .. Equivalences ..
+ccx      logical*1 nocode(4)
+ccx      integer ncdand,no4
       EQUIVALENCE (NOCODE(1),NO4)
 C     ..
 C     .. Data statements ..
       DATA NOCODE/4*.FALSE./
 C
-C---- NCDAND = IAND(NCODE1,NCODE2)
+C---- ncdand = iand(ncode1,ncode2)
 C
       NCDAND = NCODE1 .AND. NCODE2
       REJECT = (NCDAND.NE.NO4)
@@ -3648,13 +2558,6 @@ C
 C     .. Scalar Arguments ..
       REAL XB,YB
 C     ..
-C     .. Scalars in Common ..
-      REAL DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,DWBLMX,DWBLMY,
-     +     DWLIMX,DWLIMY,FACX,FACY,PAPLMX,PAPLMY,UBXMAX,UBXMIN,UBYMAX,
-     +     UBYMIN,V64LMX,V64LMY,XFOFF,YFOFF
-      INTEGER ICOLOR,IDRLVL,IDXOFF,IDYOFF,IPRINT,IUNIT,IXMAX,IXMIN,
-     +        IXOLD,IYMAX,IYMIN,IYOLD,LINWT,LUNIN,LUNOUT,MCNTFL,MDEVIC,
-     +        MDIREC,MIXCOL,MODOLD,MOUT,MPIC,MSCAFL,NERROR,NPICS
       LOGICAL*4 DEVCON,INITON
       CHARACTER FILNAM*80,TITLE*80
 C     ..
@@ -3669,6 +2572,16 @@ C     .. Intrinsic Functions ..
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
+      REAL DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,DWBLMX,DWBLMY,
+     +     DWLIMX,DWLIMY,PAPLMX,PAPLMY,UBXMAX,UBXMIN,UBYMAX,
+     +     UBYMIN,V64LMX,V64LMY
+      INTEGER ICOLOR,IDRLVL,IPRINT,IUNIT,IXMAX,IXMIN,
+     +        IYMAX,IYMIN,LINWT,LUNIN,LUNOUT,MCNTFL,MDEVIC,
+     +        MDIREC,MIXCOL,MOUT,MPIC,MSCAFL,NERROR,NPICS
+C
+C
+      REAL FACX, FACY, XFOFF, YFOFF
+      INTEGER IDXOFF, IDYOFF, IXOLD, IYOLD, MODOLD
       COMMON /GSDVT/FACX,FACY,XFOFF,YFOFF,IDXOFF,IDYOFF,
      +                IXOLD,IYOLD,MODOLD
       COMMON /GSDVW/MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,MCNTFL,DWLIMX,
@@ -4037,17 +2950,15 @@ C     .. Scalars in Common ..
      +        LINWT,LUNIN,LUNOUT,MCNTFL,MDEVIC,MDIREC,MIXCOL,MOUT,MPIC,
      +        MSCAFL,NERROR,NPICS
       LOGICAL*4 DEVCON,INITON
-      CHARACTER FILNAM*80,TITLE*80
+      CHARACTER FILNAM*80,TITLE*80,TITLEH*80
 C     ..
 C     .. Arrays in Common ..
-      INTEGER IREC
+      REAL IREC
+      INTEGER AREC(128)
 C     ..
 C     .. Local Scalars ..
       INTEGER I,JPIC,KEOF,LEVEL,MREC,NRECL
-      CHARACTER CHKEY*1,TMPNAM*40,BLN80*80,TITLEH*80
-C     ..
-C     .. Local Arrays ..
-      REAL*4 AREC(128)
+      CHARACTER CHKEY*1,TMPNAM*40,BLN80*80
 C     ..
 C     .. External Subroutines ..
       EXTERNAL GSBLTM,GSCFIL,GSCYTM,GSFLBR,GSFLP1,
@@ -4066,20 +2977,23 @@ C     .. Common blocks ..
      +       DWBLMY,PAPLMX,PAPLMY,V64LMX,V64LMY,IUNIT,IXMIN,IXMAX,IYMIN,
      +       IYMAX,LINWT,ICOLOR,MIXCOL,NPICS,IPRINT,IDRLVL,TITLE
       COMMON /GSFHD/IUNITR,IREC(128)
-C
 C     .. Save Statement ..
 C
       SAVE
 C
 C     .. Equivalences ..
+C
+C---- Equivalences
+C
       EQUIVALENCE (IREC(1),AREC(1))
-      EQUIVALENCE (TITLEH,IREC(41))
+      EQUIVALENCE (IREC(41),TITLEH)
 C     ..
 C     .. Data statements ..
       DATA BLN80/' '/
 C
 C---- check level
 C
+	 TITLEH = TITLE
       IF ((IDRLVL.EQ.0) .OR. (IDRLVL.GT.2)) 
      +            CALL GSLVCK('GSDVON')
 C
@@ -4120,6 +3034,7 @@ C
       ENTRY GSDVOF()
 C     =============
 C
+      TITLEH = TITLE
       IF (MDIREC.EQ.1) THEN
         GO TO (50,50,30) MDEVIC
 C
@@ -4155,14 +3070,18 @@ C
           KEOF = 0
           CALL GSRHDR(KEOF)
           IF (KEOF.NE.1) THEN
-            IREC(23) = NPICS
+            AREC(23) = NPICS
             CALL GSFLBR(NRECL)
-            IF (IPRINT.GE.2) WRITE (LUNOUT,FMT=6008) IREC(1),
-     +          (AREC(I),I=2,3), (IREC(I),I=4,16), (AREC(I),I=17,22),
-     +          IREC(23),TITLEH
+            IF (IPRINT.GE.2) WRITE (LUNOUT,FMT=6008) AREC(1),
+     +          (IREC(I),I=2,3), (AREC(I),I=4,16), 
+     +          (IREC(I),I=17,22),AREC(23),TITLE
             CALL GSFLWR(IREC,NRECL)
-            MREC = IREC(1)
+            MREC = AREC(1)
+C QSKIP - skip forward 1 record of length LRECL
+C  LRECL  = Record length in elements
+C  CALL QSEEK   (IUNIT,IREC,IEL,LRECL)       - Move to irec,iel
             CALL GSFLSR(MREC*4)
+            MREC = AREC(1)
           END IF
    40   CONTINUE
 C
@@ -4237,11 +3156,11 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Scalars in Common ..
       REAL DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,DWBLMX,DWBLMY,
-     +     DWLIMX,DWLIMY,FACX,FACY,PAPLMX,PAPLMY,UBXMAX,UBXMIN,UBYMAX,
-     +     UBYMIN,V64LMX,V64LMY,XFOFF,YFOFF
-      INTEGER ICOLOR,IDRLVL,IDXOFF,IDYOFF,IPRINT,IUNIT,IXMAX,IXMIN,
-     +        IXOLD,IYMAX,IYMIN,IYOLD,LINWT,LUNIN,LUNOUT,MCNTFL,MDEVIC,
-     +        MDIREC,MIXCOL,MODOLD,MOUT,MPIC,MSCAFL,NERROR,NPICS
+     +     DWLIMX,DWLIMY,PAPLMX,PAPLMY,UBXMAX,UBXMIN,UBYMAX,
+     +     UBYMIN,V64LMX,V64LMY
+      INTEGER ICOLOR,IDRLVL,IPRINT,IUNIT,IXMAX,IXMIN,
+     +        IYMAX,IYMIN,LINWT,LUNIN,LUNOUT,MCNTFL,MDEVIC,
+     +        MDIREC,MIXCOL,MOUT,MPIC,MSCAFL,NERROR,NPICS
       LOGICAL*4 DEVCON,INITON
       CHARACTER FILNAM*80,TITLE*80
 C     ..
@@ -4254,6 +3173,8 @@ C     .. Intrinsic Functions ..
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
+      REAL FACX, FACY, XFOFF, YFOFF
+      INTEGER IDXOFF, IDYOFF, IXOLD, IYOLD, MODOLD
       COMMON /GSDVT/FACX,FACY,XFOFF,YFOFF,IDXOFF,IDYOFF,
      +                IXOLD,IYOLD,MODOLD
       COMMON /GSDVW/MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,MCNTFL,DWLIMX,
@@ -6083,11 +5004,11 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Scalars in Common ..
       REAL DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,DWBLMX,DWBLMY,
-     +     DWLIMX,DWLIMY,FACX,FACY,PAPLMX,PAPLMY,SCALEX,SCALEY,UBXMAX,
-     +     UBXMIN,UBYMAX,UBYMIN,USANGX,USANGY,V64LMX,V64LMY,XFOFF,YFOFF
-      INTEGER ICOLOR,IDRLVL,IDXOFF,IDYOFF,IPRINT,IUNIT,IXMAX,IXMIN,
-     +        IXOLD,IYMAX,IYMIN,IYOLD,KPRINT,LINWT,LUNIN,LUNOUT,MCNTFL,
-     +        MDEVIC,MDIREC,MIXCOL,MODOLD,MOUT,MPIC,MSCAFL,NERROR,NPICS
+     +     DWLIMX,DWLIMY,PAPLMX,PAPLMY,SCALEX,SCALEY,UBXMAX,
+     +     UBXMIN,UBYMAX,UBYMIN,USANGX,USANGY,V64LMX,V64LMY
+      INTEGER ICOLOR,IDRLVL,IPRINT,IUNIT,IXMAX,IXMIN,
+     +        IYMAX,IYMIN,KPRINT,LINWT,LUNIN,LUNOUT,MCNTFL,
+     +        MDEVIC,MDIREC,MIXCOL,MOUT,MPIC,MSCAFL,NERROR,NPICS
       LOGICAL*4 DEVCON,ICULNK,INITON,LINMOD
       CHARACTER FILNAM*80,TITLE*80
 C     ..
@@ -6111,8 +5032,10 @@ C     .. Intrinsic Functions ..
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
+      REAL FACX, FACY, XFOFF, YFOFF
+      INTEGER IDXOFF, IDYOFF, IXOLD, IYOLD, MODOLD
       COMMON /GSDVT/FACX,FACY,XFOFF,YFOFF,IDXOFF,IDYOFF,
-     +       IXOLD,IYOLD,MODOLD
+     +                IXOLD,IYOLD,MODOLD
       COMMON /GSDVW/MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,MCNTFL,DWLIMX,
      +       DWLIMY,DVXMIN,DVXMAX,DVYMIN,DVYMAX,UBXMIN,UBXMAX,UBYMIN,
      +       UBYMAX,FILNAM,DOTMMX,DOTMMY,DEVCON,INITON,NERROR,DWBLMX,
@@ -6212,7 +5135,6 @@ C
  6004 FORMAT (1X,'CHKEY= ',A)
 C
       END
-C
 C
 C
       SUBROUTINE GSINIT(GSNAM)
@@ -6379,20 +5301,19 @@ C     ..
 C     .. Scalars in Common ..
       REAL ANGFAC,BXMAX,BXMIN,BYMAX,BYMIN,CHANGX,CHANGY,CHRSCX,CHRSCY,
      +     CHRSPX,CHRSPY,DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,
-     +     DWBLMX,DWBLMY,DWLIMX,DWLIMY,FACX,FACY,PAPLMX,PAPLMY,SCALEX,
+     +     DWBLMX,DWBLMY,DWLIMX,DWLIMY,PAPLMX,PAPLMY,SCALEX,
      +     SCALEY,UBXMAX,UBXMIN,UBYMAX,UBYMIN,USANGX,USANGY,V64LMX,
-     +     V64LMY,XBNEW,XBOLD,XCHAR,XCSTRT,XFOFF,XNOW,YBNEW,YBOLD,YCHAR,
-     +     YCSTRT,YFOFF,YNOW
-      INTEGER ICENTC,ICOLOR,IDRLVL,IDXOFF,IDYOFF,IFONT,IPRINT,IUNIT,
-     +        IUNITR,IXMAX,IXMIN,IXOLD,IYMAX,IYMIN,IYOLD,KPRINT,LINWT,
-     +        LUNIN,LUNOUT,MCNTFL,MDEVIC,MDIREC,MIXCOL,MODOLD,MOUT,MPIC,
+     +     V64LMY,XBNEW,XBOLD,XCHAR,XCSTRT,XNOW,YBNEW,YBOLD,YCHAR,
+     +     YCSTRT,YNOW
+      INTEGER ICENTC,ICOLOR,IDRLVL,IFONT,IPRINT,IUNIT,
+     +        IUNITR,IXMAX,IXMIN,IYMAX,IYMIN,KPRINT,LINWT,
+     +        LUNIN,LUNOUT,MCNTFL,MDEVIC,MDIREC,MIXCOL,MOUT,MPIC,
      +        MSCAFL,NERROR,NPICS
       LOGICAL*4 DEVCON,FONTIN,ICULNK,INITON,LINMOD,UCSPAC
       CHARACTER FILNAM*80,TITLE*80
 C     ..
 C     .. Arrays in Common ..
       REAL CHRMAT,CUMAT,USRMAT
-      INTEGER IREC
       INTEGER*2 IFHT,IFSTRT,IFWID,IFX0,IFY0,LENGF
       CHARACTER*1 NFONTS
 C     ..
@@ -6402,7 +5323,6 @@ C     .. Local Scalars ..
       CHARACTER PASWRD*8,TITLEH*80
 C     ..
 C     .. Local Arrays ..
-      REAL*4 AREC(128)
       INTEGER NCTRAN(24),NSTRAN(24)
 C     ..
 C     .. External Functions ..
@@ -6426,15 +5346,29 @@ C     .. Common blocks ..
      +       CHRSPX,CHRSPY,ICENTC,UCSPAC,IFONT,FONTIN,XCHAR,
      +       YCHAR,XCSTRT,YCSTRT,ANGFAC
       COMMON /GSCLP/BXMIN,BXMAX,BYMIN,BYMAX
+      REAL FACX, FACY, XFOFF, YFOFF
+      INTEGER IDXOFF, IDYOFF, IXOLD, IYOLD, MODOLD
       COMMON /GSDVT/FACX,FACY,XFOFF,YFOFF,IDXOFF,IDYOFF,
-     +       IXOLD,IYOLD,MODOLD
+     +                IXOLD,IYOLD,MODOLD
       COMMON /GSDVW/MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,MCNTFL,DWLIMX,
      +       DWLIMY,DVXMIN,DVXMAX,DVYMIN,DVYMAX,UBXMIN,UBXMAX,UBYMIN,
      +       UBYMAX,FILNAM,DOTMMX,DOTMMY,DEVCON,INITON,NERROR,DWBLMX,
-     +       DWBLMY,PAPLMX,PAPLMY,V64LMX,V64LMY,IUNIT,IXMIN,IXMAX,IYMIN,
+     +       DWBLMY,PAPLMX,PAPLMY,V64LMX,V64LMY,IUNIT,IXMIN,IXMAX,
+     +       IYMIN,
      +       IYMAX,LINWT,ICOLOR,MIXCOL,NPICS,IPRINT,IDRLVL,TITLE
       COMMON /GSDWX/XNOW,YNOW,XBNEW,YBNEW,XBOLD,YBOLD
-      COMMON /GSFHD/IUNITR,IREC(128)
+      COMMON /GSFHD/
+     + IUNITR,  NREC,   DOTMMX2, DOTMMY2,
+     +   IXMIN2,  IXMAX2,  IYMIN2,
+     + IYMAX2,  LINWT2,  ICOLOR2, MIXCOLOR, MDEVIC2, 
+     + MDIREC2, MOUT2,
+     + MPIC2,   MSCAFL2, MCNTFL2, DWLIMX2,   DWLIMY2, 
+     +  DVXMIN2, DVXMAX2,
+     + DVYMIN2, DVYMAX2, NPICSX,
+     + PASWRD, 
+     + SPARE1(15),
+     + TITLEH,
+     + SPARE2(68)
       COMMON /GSFNT/IFSTRT(150,4),LENGF(150,4),IFX0(150,4),
      +       IFY0(150,4),IFWID(150,4),IFHT(150,4),NFONTS(4,3000,4)
       COMMON /GSUTR/USRMAT(3,3),SCALEX,SCALEY,USANGX,USANGY,
@@ -6450,9 +5384,6 @@ C     .. Equivalences ..
       EQUIVALENCE (NSTRAN(1),USRMAT(1,1))
       EQUIVALENCE (CHORGX,CHRMAT(1,3)), (CHORGY,CHRMAT(2,3))
       EQUIVALENCE (NCTRAN(1),CHRMAT(1,1))
-      EQUIVALENCE (IREC(1),AREC(1))
-      EQUIVALENCE (TITLEH,IREC(41))
-      EQUIVALENCE (PASWRD,IREC(24))
 C
 C
        CALL GSBLKD
@@ -6471,8 +5402,11 @@ C
       KPRINT = 1
       NERROR = 0
       TITLE = ' '
+      TITLEH = ' '
       MPIC = 0
+      MPIC2 = MPIC
       NPICS = 0
+      NPICSX = NPICS
 C
 C---- Remove leading and trailing blanks from filename
 C
@@ -6514,6 +5448,7 @@ C
 C     ==================
 C
       TITLE = TITL
+      TITLEH = TITLE
       IF (IPRINT.GT.1) WRITE (LUNOUT,FMT=6000) TITLE
       RETURN
 C
@@ -7232,7 +6167,7 @@ C     .. Local Scalars ..
       LOGICAL BOTTOM,LEFT,SLOW,UP
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL GSDOT
+      EXTERNAL GSDOTB
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC ABS
@@ -7787,7 +6722,7 @@ C     .. Scalar Arguments ..
       CHARACTER GSNAM* (*)
 C     ..
 C     .. Array Arguments ..
-      INTEGER IARRAY(1)
+      REAL IARRAY(*)
 C     ..
 C     .. Scalars in Common ..
       REAL DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,DWBLMX,DWBLMY,
@@ -7800,14 +6735,13 @@ C     .. Scalars in Common ..
       CHARACTER FILNAM*80,TITLE*80
 C     ..
 C     .. Arrays in Common ..
-      INTEGER IREC
+      REAL IREC
 C     ..
 C     .. Local Scalars ..
       INTEGER I,IELM,IER,MREC,NRECL,NMCITM
-      CHARACTER FILE84*8,PASWRD*8,TMPNAM*40,TITLEH*80
+      CHARACTER FILE84*8,TMPNAM*40,PASWRD*8,TITLEH*80
 C     ..
 C     .. Local Arrays ..
-      REAL*4 AREC(128)
       INTEGER*2 JXY(2)
 C     ..
 C     .. External Subroutines ..
@@ -7824,13 +6758,26 @@ C     .. Common blocks ..
      +       UBYMAX,FILNAM,DOTMMX,DOTMMY,DEVCON,INITON,NERROR,DWBLMX,
      +       DWBLMY,PAPLMX,PAPLMY,V64LMX,V64LMY,IUNIT,IXMIN,IXMAX,IYMIN,
      +       IYMAX,LINWT,ICOLOR,MIXCOL,NPICS,IPRINT,IDRLVL,TITLE
+cc      COMMON /GSFHD/
+cc     + IUNIT,  NREC,   DOTMMX, DOTMMY,   IXMIN,  IXMAX,  IYMIN,
+cc     + IYMAX,  LINWT,  ICOLOR, MIXCOLOR, MDEVIC, MDIREC, MOUT,
+cc     + MPIC,   MSCAFL, MCNTFL, DWLIMX,   DWLIMY, DVXMIN, DVXMAX,
+cc     + DVYMIN, DVYMAX, NPICS,
+cc     + PASWRD, 
+cc     + SPARE1(15),
+cc     + TITLEH,
+cc     + SPARE2(68)
       COMMON /GSFHD/IUNITR,IREC(128)
+      INTEGER AREC(128)
 C
 C     .. Save Statement ..
 C
       SAVE
 C
 C     .. Equivalences ..
+C
+C---- Equivalences
+C
       EQUIVALENCE (IREC(1),AREC(1))
       EQUIVALENCE (TITLEH,IREC(41))
       EQUIVALENCE (PASWRD,IREC(24))
@@ -7838,6 +6785,7 @@ C     ..
 C     .. Data statements ..
       DATA NRECL/512/
       DATA FILE84/'PLOT%%84'/
+ccx      IPRINT = 3
 C
 C---- Open plotfile to write check level
 C
@@ -7855,7 +6803,8 @@ C
 C
 C---- Change to byte handling
 C
-      CALL QMODE (IUNITR,0,NMCITM)
+        KMODEX = 0
+      CALL QMODE (IUNITR,KMODEX,NMCITM)
       IUNIT = IUNITR
       IUNITP = IUNITR
       RETURN
@@ -7873,7 +6822,8 @@ C
 C
 C---- Change to byte handling
 C
-      CALL QMODE (IUNITR,0,NMCITM)
+       KMODEX = 0
+      CALL QMODE (IUNITR,KMODEX,NMCITM)
       IUNIT = IUNITR
       IUNITP = IUNITR
       RETURN
@@ -7895,36 +6845,37 @@ C
 C---- Write out header of 512 bytes check level
 C
       IF (IDRLVL.NE.3) CALL GSLVCK('GSWHDR')
-      IREC(1) = 0
-      AREC(2) = DOTMMX
-      AREC(3) = DOTMMY
-      IREC(4) = IXMIN
-      IREC(5) = IXMAX
-      IREC(6) = IYMIN
-      IREC(7) = IYMAX
-      IREC(8) = LINWT
-      IREC(9) = ICOLOR
-      IREC(10) = MIXCOL
-      IREC(11) = MDEVIC
-      IREC(12) = MDIREC
-      IREC(13) = MOUT
-      IREC(14) = MPIC
-      IREC(15) = MSCAFL
-      IREC(16) = MCNTFL
-      AREC(17) = DWLIMX
-      AREC(18) = DWLIMY
-      AREC(19) = DVXMIN
-      AREC(20) = DVXMAX
-      AREC(21) = DVYMIN
-      AREC(22) = DVYMAX
-      IREC(23) = NPICS
+      AREC(1) = 0
+      IREC(2) = DOTMMX
+      IREC(3) = DOTMMY
+      AREC(4) = IXMIN
+      AREC(5) = IXMAX
+      AREC(6) = IYMIN
+      AREC(7) = IYMAX
+      AREC(8) = LINWT
+      AREC(9) = ICOLOR
+      AREC(10) = MIXCOL
+      AREC(11) = MDEVIC
+      AREC(12) = MDIREC
+      AREC(13) = MOUT
+      AREC(14) = MPIC
+      AREC(15) = MSCAFL
+      AREC(16) = MCNTFL
+      IREC(17) = DWLIMX
+      IREC(18) = DWLIMY
+      IREC(19) = DVXMIN
+      IREC(20) = DVXMAX
+      IREC(21) = DVYMIN
+      IREC(22) = DVYMAX
+      AREC(23) = NPICS
       TITLEH = TITLE
       PASWRD = FILE84
       IUNIT = IUNITR
 C
       CALL QWRITE(IUNITR,IREC,NRECL)
-      IF (IPRINT.GE.2) WRITE (LUNOUT,FMT=6000) IREC(1),AREC(2),AREC(3),
-     +     (IREC(I),I=4,16), (AREC(I),I=17,22),IREC(23),TITLEH,PASWRD
+      IF (IPRINT.GE.2) WRITE (LUNOUT,FMT=6000) AREC(1),IREC(2),
+     +   IREC(3),(AREC(I),I=4,16), (IREC(I),I=17,22),
+     + AREC(23),TITLEH,PASWRD
       RETURN
 C
       ENTRY GSFLWI(IX,IY)
@@ -7933,7 +6884,7 @@ C
 C---- Write out ix,iy to intermediate plot file check level
 C
       IF (IDRLVL.NE.3) CALL GSLVCK('GSFLWI')
-      IREC(1) = IREC(1) + 1
+      AREC(1) = AREC(1) + 1
       JXY(1) = IX
       JXY(2) = IY
       IF (IPRINT.GE.3) WRITE (LUNOUT,FMT=*) JXY(1),JXY(2)
@@ -7945,20 +6896,26 @@ C     ================
 C
 C---- Update plot header check level
 C
+      NRECL = 512
+C
+C---- somehow on ESV lost AREC(1) = 0 ????
+C
       IF (IDRLVL.NE.3) CALL GSLVCK('GSUHDR')
-      IF ((IREC(1).GE.2) .OR. (JXY(1).GE.0)) THEN
+      IF ((AREC(1).GE.2) .OR. (JXY(1).GE.0)) THEN
         IF (IXMIN.GT.IXMAX) IXMIN = IXMAX
         IF (IYMIN.GT.IYMAX) IYMIN = IYMAX
-        IREC(4) = IXMIN
-        IREC(5) = IXMAX
-        IREC(6) = IYMIN
-        IREC(7) = IYMAX
-        CALL QBACK(IUNITR, (4*IREC(1)+NRECL))
-        IF (IPRINT.GE.2) WRITE (LUNOUT,FMT=6000) IREC(1),AREC(2),
-     +      AREC(3), (IREC(I),I=4,16), (AREC(I),I=17,22),IREC(23),
+        AREC(4) = IXMIN
+        AREC(5) = IXMAX
+        AREC(6) = IYMIN
+        AREC(7) = IYMAX
+        CALL QBACK(IUNITR, (4*AREC(1)+NRECL))
+        IF (IPRINT.GE.2) WRITE (LUNOUT,FMT=6000) AREC(1),
+     +IREC(2),IREC(3), (AREC(I),I=4,16), 
+     +(IREC(I),I=17,22),AREC(23),
      +      TITLEH,PASWRD
         CALL QWRITE(IUNITR,IREC,NRECL)
-        CALL QSKIP(IUNITR,IREC(1)*4)
+           KRECORD = AREC(1)*4
+        CALL QSKIP(IUNITR,KRECORD)
       END IF
       RETURN
 C
@@ -7978,7 +6935,7 @@ C
 C
 C---- Check for empty or end of file
 C
-      IF ((IER.EQ.0) .AND. (IREC(1).GE.2)) THEN
+      IF ((IER.EQ.0) .AND. (AREC(1).GE.2)) THEN
 C
 C---- Check for plot84 password
 C
@@ -8088,14 +7045,12 @@ C     .. Scalars in Common ..
       CHARACTER FILNAM*80,TITLE*80
 C     ..
 C     .. Arrays in Common ..
-      INTEGER IREC
+      INTEGER AREC(128)
+      REAL IREC
 C     ..
 C     .. Local Scalars ..
       INTEGER IDOT,IEND,IERAS,ILWT,IPAP,IPEN,ISTOP,IX,IY,MILSEC,NOUT
       CHARACTER CHKEY*1,PASWRD*8,GSNAM*40,TITLEH*80
-C     ..
-C     .. Local Arrays ..
-      REAL*4 AREC(128)
 C     ..
 C     .. External Subroutines ..
       EXTERNAL GSBLTM,GSCYTM,GSDVOF,GSDVON,
@@ -8112,12 +7067,22 @@ C     .. Common blocks ..
      +       DWBLMY,PAPLMX,PAPLMY,V64LMX,V64LMY,IUNIT,IXMIN,IXMAX,IYMIN,
      +       IYMAX,LINWT,ICOLOR,MIXCOL,NPICS,IPRINT,IDRLVL,TITLE
       COMMON /GSFHD/IUNITR,IREC(128)
+ccx      COMMON /GSFHD/
+ccx     + IUNIT,  NREC,   DOTMMX, DOTMMY,   IXMIN,  IXMAX,  IYMIN,
+ccx     + IYMAX,  LINWT,  ICOLOR, MIXCOLOR, MDEVIC, MDIREC, MOUT,
+ccx     + MPIC,   MSCAFL, MCNTFL, DWLIMX,   DWLIMY, DVXMIN, DVXMAX,
+ccx     + DVYMIN, DVYMAX, NPICS,
+ccx     + PASWRD, 
+ccx     + SPARE1(15),
+ccx     + TITLEH,
+ccx     + SPARE2(68)
 C
 C     .. Save Statement ..
 C
       SAVE
 C
 C     .. Equivalences ..
+C
       EQUIVALENCE (IREC(1),AREC(1))
       EQUIVALENCE (TITLEH,IREC(41))
       EQUIVALENCE (PASWRD,IREC(24))
@@ -8318,7 +7283,8 @@ C
  6008 FORMAT (2X,'Number of out-of-bounds plot errors: ',I8)
  6012 FORMAT (2X,'GSPICT: MDEVIC MDIREC = ',2I5)
 C
-   50 END
+50      CONTINUE
+      END
 C
 C
 C
@@ -8525,10 +7491,12 @@ C     .. Local Scalars ..
 C     ..
 C     .. Local Arrays ..
       REAL P(2),Q(2),TMAT(2,2)
-      INTEGER*4 ITEXT4(80),NTRSAV(48),IARRAY(128)
+      INTEGER*4 ITEXT4(80),NTRSAV(48),KARRAY(128)
+      REAL IARRAY(128)
       CHARACTER*1 HTEXT(80)
       INTEGER*2 ITEXT2(80)
       CHARACTER KEY5(200)*5
+      EQUIVALENCE (KARRAY(1), IARRAY(1))
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -8597,7 +7565,8 @@ C     .. Data statements ..
      +     '    ','    ','    ','    ','    '/
       DATA (KEY5(JJJ),JJJ=131,200)/70*'    '/
       DATA BLANK80/' '/,BLANK75/' '/
-      DATA IARRAY/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,112*0/
+      DATA KARRAY/1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.,13.,
+     +    14.,15.,16.,112*0./
 C
       PI = ATAN2(1.0,1.0)*4.0
       ANGFAC = PI/180.0
@@ -10590,9 +9559,9 @@ C     .. Scalar Arguments ..
       CHARACTER TEXT* (*)
 C     ..
 C     .. Array Arguments ..
-      INTEGER*4 ITEXT4(1)
-      INTEGER*2 ITEXT2(1)
-      CHARACTER*1 BYTXT(1)
+      INTEGER*4 ITEXT4(*)
+      INTEGER*2 ITEXT2(*)
+      CHARACTER*1 BYTXT(*)
 C     ..
 C     .. Scalars in Common ..
       REAL ANGFAC,CHANGX,CHANGY,CHRSCX,CHRSCY,CHRSPX,CHRSPY,SCALEX,
@@ -11504,14 +10473,14 @@ C     .. Scalars in Common ..
       CHARACTER PASWRD*8,TITLEH*80
 C     ..
 C     .. Arrays in Common ..
-      REAL SPARE1,SPARE2
+      REAL ISPARE(15),MSPARE(68)
       INTEGER BRICKS
 C     ..
 C     .. Local Scalars ..
       REAL SCFACX,SCFACY,SECTOT,SSTAGE,XWID,YWID
       INTEGER I,IAY,IBRIKX,IBRIKY,IBXMAX,IBXMIN,IBXWID,IBYMAX,IBYMIN,
      +        IBYWID,ICLEAR,IDOT,IEND,IERAS,ILWT,IND,INK,IPAP,IPEN,
-     +        IPRINT,IPXMAX,IPXMIN,IPY,IPY0,IPY1,IPYBOT,IPYTOP,IREC,
+     +        IPRINT,IPXMAX,IPXMIN,IPY,IPY0,IPY1,IPYBOT,IPYTOP,IRECX,
      +        ITINT,IUNIT,IX,IXOLD,IY,IYOLD,JBYMAX,JBYMIN,JX,JXOLD,JY,
      +        JYMAX,JYMIN,JYOLD,KEOF,KKEOF,LL,MAXDTX,MAXLNY,MPAGES,
      +        MSKIP,NBACK,NBPG,NBXOFF,NBXWID,NDOT,NFORM,NLINPG,NLINU,
@@ -11537,10 +10506,15 @@ C     .. Intrinsic Functions ..
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
-      COMMON /GSFHD/IUNITR,NREC,DOTMMX,DOTMMY,IXMIN,IXMAX,IYMIN,
-     +       IYMAX,LINWT,ICOLOR,MIXCOL,MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,
-     +       MCNTFL,DWLIMX,DWLIMY,DVXMIN,DVXMAX,DVYMIN,DVYMAX,NPICS,
-     +       PASWRD,SPARE1(15),TITLEH,SPARE2(68)
+      COMMON /GSFHD/
+     + IUNITR,  NREC,   DOTMMX, DOTMMY,   IXMIN,  IXMAX,  IYMIN,
+     + IYMAX,  LINWT,  ICOLOR, MIXCOLOR, MDEVIC, MDIREC, MOUT,
+     + MPIC,   MSCAFL, MCNTFL, DWLIMX,   DWLIMY, DVXMIN, DVXMAX,
+     + DVYMIN, DVYMAX, NPICS,
+     + PASWRD, 
+     + SPARE1(15),
+     + TITLEH,
+     + SPARE2(68)
       COMMON /GSRAS/BRICKS(0:NWIDX1,0:NWIDY1,0:NBRKX1,0:NBRKY1)
 C
 C     .. Save Statement ..
@@ -11697,7 +10671,7 @@ C---- Start on this plot
 C---- Ndot remembers when a dot code was last issued
 C
           NDOT = 0
-          DO 100 IREC = 1,NREC
+          DO 100 IRECX = 1,NREC
             KKEOF = 0
             CALL GSFLRI(IX,IY,KKEOF)
             IF (KKEOF.EQ.1) THEN
@@ -12058,7 +11032,8 @@ C     .. Local Scalars ..
       REAL SCFACX,SCFACY,SECTOT,SSTAGE,XWID,YWID
       INTEGER IBRIKX,IBRIKY,IBXMAX,IBXMIN,IBXWID,IBYMAX,IBYMIN,IBYWID,
      +        IDOT,IEND,IERAS,ILWT,IND,IPAP,IPEN,IPRINT,IPXMAX,IPXMIN,
-     +        IPY,IPY0,IPY1,IPYBOT,IPYTOP,IREC,ISTREM,IUNIT,IX,IXOLD,IY,
+     +        IPY,IPY0,IPY1,IPYBOT,IPYTOP,IRECX,
+     +        ISTREM,IUNIT,IX,IXOLD,IY,
      +        IYOLD,JX,JXOLD,JY,JYOLD,KEOF,KKEOF,LL,MAXDTX,MAXLNY,NBPG,
      +        NBXOFF,NBXWID,NDOT,NFORM,NLINPG,NLINU,NLINY,NLNSKP,NMARGY,
      +        NPAGES,NREAD,NSPARE
@@ -12084,10 +11059,15 @@ C     .. Intrinsic Functions ..
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
-      COMMON /GSFHD/IUNITR,NREC,DOTMMX,DOTMMY,IXMIN,IXMAX,IYMIN,
-     +       IYMAX,LINWT,ICOLOR,MIXCOL,MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,
-     +       MCNTFL,DWLIMX,DWLIMY,DVXMIN,DVXMAX,DVYMIN,DVYMAX,NPICS,
-     +       PASWRD,SPARE1(15),TITLEH,SPARE2(68)
+      COMMON /GSFHD/
+     + IUNITR,  NREC,   DOTMMX, DOTMMY,   IXMIN,  IXMAX,  IYMIN,
+     + IYMAX,  LINWT,  ICOLOR, MIXCOLOR, MDEVIC, MDIREC, MOUT,
+     + MPIC,   MSCAFL, MCNTFL, DWLIMX,   DWLIMY, DVXMIN, DVXMAX,
+     + DVYMIN, DVYMAX, NPICS,
+     + PASWRD, 
+     + SPARE1(15),
+     + TITLEH,
+     + SPARE2(68)
       COMMON /GSRAS/BRICKS(0:NWIDX1,0:NWIDY1,0:NBRKX1,0:NBRKY1)
 C
 C     .. Save Statement ..
@@ -12227,7 +11207,7 @@ C
 C---- ndot remembers when a dot code was last issued
 C
           NDOT = 0
-          DO 50 IREC = 1,NREC
+          DO 50 IRECX = 1,NREC
             KKEOF = 0
             CALL GSFLRI(IX,IY,KKEOF)
             IF (KKEOF.EQ.1) THEN
@@ -12483,75 +11463,75 @@ C
    40 CONTINUE
 C
       END
-C
-C
-C
-      SUBROUTINE GSTXT(BUFFER)
-C     =========================
-C
-C---- Write character string BUFFER to AED
-C     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
-C     They were LINE
-C
-C     .. Scalar Arguments ..
-      CHARACTER BUFFER* (*)
-C     ..
-C     .. Scalars in Common ..
-      INTEGER LUNIN,LUNOUT
-C     ..
-C     .. Local Scalars ..
-      INTEGER I,IC,J,K
-C     ..
-C     .. Local Arrays ..
-      CHARACTER*1 LINE(130)
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL AEDTXT
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC ICHAR,LEN,CHAR
-C     ..
-C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-C---- Get length of string
-C
-      J = LEN(BUFFER)
-C
-C---- Find last non-blank character
-C
-      DO 10 I = J,1,-1
-        IF (BUFFER(I:I).NE.' ') GO TO 20
-   10 CONTINUE
-      RETURN
-C
-C---- Copy string to local array to allow room
-C     to insert cr lf at end
-C
-   20 K = 0
-      DO 30 J = 1,I
-        IC = ICHAR(BUFFER(J:J))
-        K = K + 1
-        IF (IC.EQ.35) THEN
-C
-C---- Character is # - Replace character # by cr lf
-C
-        LINE(K)= CHAR(13)
-        LINE(K+1)= CHAR(10)
-          K = K + 1
-        ELSE
-          LINE(K) = CHAR(IC)
-        END IF
-   30 CONTINUE
-      LINE(K+1)= CHAR(13)
-      LINE(K+2)= CHAR(10)
-      CALL AEDTXT(LINE,K+2)
-C
-      END
+CCCC
+CCCC
+CCCC
+CCC      SUBROUTINE GSTXT(BUFFER)
+CCCC     =========================
+CCCC
+CCCC---- Write character string BUFFER to AED
+CCCC     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
+CCCC     They were LINE
+CCCC
+CCCC     .. Scalar Arguments ..
+CCC      CHARACTER BUFFER* (*)
+CCCC     ..
+CCCC     .. Scalars in Common ..
+CCC      INTEGER LUNIN,LUNOUT
+CCCC     ..
+CCCC     .. Local Scalars ..
+CCC      INTEGER I,IC,J,K
+CCCC     ..
+CCCC     .. Local Arrays ..
+CCC      CHARACTER*1 LINE(130)
+CCCC     ..
+CCCC     .. External Subroutines ..
+CCC      EXTERNAL AEDTXT
+CCCC     ..
+CCCC     .. Intrinsic Functions ..
+CCC      INTRINSIC ICHAR,LEN,CHAR
+CCCC     ..
+CCCC     .. Common blocks ..
+CCC      COMMON /PINOUT/LUNIN,LUNOUT
+CCCC
+CCCC     .. Save Statement ..
+CCCC
+CCC      SAVE
+CCCC
+CCCC---- Get length of string
+CCCC
+CCC      J = LEN(BUFFER)
+CCCC
+CCCC---- Find last non-blank character
+CCCC
+CCC      DO 10 I = J,1,-1
+CCC        IF (BUFFER(I:I).NE.' ') GO TO 20
+CCC   10 CONTINUE
+CCC      RETURN
+CCCC
+CCCC---- Copy string to local array to allow room
+CCCC     to insert cr lf at end
+CCCC
+CCC   20 K = 0
+CCC      DO 30 J = 1,I
+CCC        IC = ICHAR(BUFFER(J:J))
+CCC        K = K + 1
+CCC        IF (IC.EQ.35) THEN
+CCCC
+CCCC---- Character is # - Replace character # by cr lf
+CCCC
+CCC        LINE(K)= CHAR(13)
+CCC        LINE(K+1)= CHAR(10)
+CCC          K = K + 1
+CCC        ELSE
+CCC          LINE(K) = CHAR(IC)
+CCC        END IF
+CCC   30 CONTINUE
+CCC      LINE(K+1)= CHAR(13)
+CCC      LINE(K+2)= CHAR(10)
+CCC      CALL AEDTXT(LINE,K+2)
+CCCC
+CCC      END
 C
 C
 C
@@ -13155,15 +12135,19 @@ C     .. Intrinsic Functions ..
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
-      COMMON /GSFHD/IUNITR,NREC,DOTMMX,DOTMMY,IXMIN,IXMAX,IYMIN,
-     +       IYMAX,LINWT,ICOLOR,MIXCOL,MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,
-     +       MCNTFL,DWLIMX,DWLIMY,DVXMIN,DVXMAX,DVYMIN,DVYMAX,NPICS,
-     +       PASWRD,SPARE1(15),TITLEH,SPARE2(68)
+      COMMON /GSFHD/
+     + IUNITR,  NREC,   DOTMMX, DOTMMY,   IXMIN,  IXMAX,  IYMIN,
+     + IYMAX,  LINWT,  ICOLOR, MIXCOLOR, MDEVIC, MDIREC, MOUT,
+     + MPIC,   MSCAFL, MCNTFL, DWLIMX,   DWLIMY, DVXMIN, DVXMAX,
+     + DVYMIN, DVYMAX, NPICS,
+     + PASWRD, 
+     + SPARE1(15),
+     + TITLEH,
+     + SPARE2(68)
 C
 C     .. Save Statement ..
 C
       SAVE
-C
 C     .. Data statements ..
 C
 C---- screen size 880 by 756 for iscale=2
@@ -13824,6 +12808,1132 @@ C
       OLDLSX = LSX
 C
       END
+CCCC
+CCCC
+CCCC
+CCC      SUBROUTINE HELPTXT(IOPT)
+CCCC     ========================
+CCCC
+CCCC---- Display help text and current options.
+CCCC     IOPT is option number currently active
+CCCC
+CCCC     .. Scalar Arguments ..
+CCC      INTEGER IOPT
+CCCC     ..
+CCCC     .. Scalars in Common ..
+CCC      REAL SCALX,SCALY,TX,TY
+CCC      INTEGER IPICT,KXMAX,KXMIN,KYMAX,KYMIN,LUNIN,LUNOUT,NBACK
+CCC      LOGICAL AAV,CLEAR,EOF,HTEXT,PAN,PICTURE,ROTATE,TABLE,UNIFORM
+CCCC     ..
+CCCC     .. Arrays in Common ..
+CCC      REAL RM
+CCC      INTEGER PENS,PFLAGS
+CCCC     ..
+CCCC     .. Local Scalars ..
+CCC      INTEGER I,IP,IX,IY,JX,JY,MASKTEXT,NOPT
+CCC      CHARACTER BUFFER*80,OUTLIN*400
+CCCC     ..
+CCCC     .. Local Arrays ..
+CCC      CHARACTER IDENT(13)*8,SW(3)*8,SWFL(13)*8,TEXT(13)*50
+CCCC     ..
+CCCC     .. External Subroutines ..
+CCC      EXTERNAL AEDDPA,AEDESC,AEDFFD,AEDHOM,AEDMOV,AEDRCP,AEDSBC,AEDSRM,
+CCC     +         AEDSWM,CHNCOL,DTEXT,GSTXT,SETTBL
+CCCC     ..
+CCCC     .. Common blocks ..
+CCC      COMMON /FLAGS/NBACK,PENS(8),PFLAGS(8),RM(2,2),TX,TY,SCALX,SCALY,
+CCC     +       KXMIN,KXMAX,KYMIN,KYMAX,IPICT,AAV,PAN,ROTATE,CLEAR,UNIFORM,
+CCC     +       TABLE,PICTURE,HTEXT,EOF
+CCC      COMMON /PINOUT/LUNIN,LUNOUT
+CCCC
+CCCC     .. Save Statement ..
+CCCC
+CCC      SAVE
+CCCC
+CCCC     .. Data statements ..
+CCC      DATA IDENT/' H',' E','<return>',' D',' N',' P',' C',' V',' R',
+CCC     +     ' F',' A',' W',' U'/
+CCC      DATA SW/'        ','  on    ','  off   '/
+CCC      DATA NOPT/13/
+CCC      DATA TEXT/'display this text','exit',
+CCC     +     'display or redraw current picture','redraw picture',
+CCC     +     'draw next picture','select picture number','change colours',
+CCC     +     'change viewport (area of screen used)','rotate picture',
+CCC     +     'read new input filename',
+CCC     +     'switch anti-aliasing (smoothing of vectors) on/off',
+CCC     +     'switch flag to superimpose pictures',
+CCC     +     'switch for uniform scaling on x and y'/
+CCC      DATA MASKTEXT/240/
+CCCC
+CCCC---- Option number here includes <return>, so adjust
+CCCC
+CCC      IP = IOPT
+CCC      IF (IOPT.GT.2) IP = IOPT + 1
+CCCC
+CCCC
+CCC      IF (.NOT.TABLE) THEN
+CCCC
+CCCC---- Set colour table
+CCCC
+CCC        CALL SETTBL
+CCCC
+CCCC---- Set flag
+CCCC
+CCC        TABLE = .TRUE.
+CCC      END IF
+CCCC
+CCC      IF (.NOT.HTEXT) THEN
+CCCC
+CCCC---- Set masks
+CCCC
+CCC        CALL AEDSWM(MASKTEXT)
+CCC        CALL AEDSRM(MASKTEXT,MASKTEXT,MASKTEXT,MASKTEXT)
+CCCC
+CCCC---- Erase screen, set cursor to top, set colour black, disable pan
+CCCC
+CCC        CALL AEDSBC(NBACK*16)
+CCC        CALL AEDFFD
+CCC        CALL AEDESC
+CCC        CALL AEDHOM
+CCC        CALL CHNCOL(0,NBACK,.TRUE.)
+CCC        CALL AEDDPA
+CCCC
+CCC        OUTLIN = '#When a picture has been plotted, '//
+CCC     +      'the program waits for a single character command,'//
+CCC     +      ' listed below'
+CCC        CALL GSTXT(OUTLIN)
+CCCC
+CCC        OUTLIN = 'If anti-aliasing is switched off (default),'//
+CCC     +        ' the current picture is preserved while text is on'
+CCC        CALL GSTXT(OUTLIN)
+CCCC
+CCC        OUTLIN = 'the screen: if anti-aliasing is switched on, '//
+CCC     +      'the picture is redrawn after this text is'
+CCC        CALL GSTXT(OUTLIN)
+CCCC
+CCC        OUTLIN = 'displayed. Anti-aliasing smoothes out vectors,'//
+CCC     +    ' at the expense of some loss of resolution#'
+CCC        CALL GSTXT(OUTLIN)
+CCCC
+CCC        OUTLIN = 'Plotting may be interrupted by pressing '//
+CCC     +          'any key, and be resumed by <space>.'
+CCC        CALL GSTXT(OUTLIN)
+CCCC
+CCC        OUTLIN = 'Typing any other key abandons the plot#'
+CCC        CALL GSTXT(OUTLIN)
+CCCC
+CCCC---- Blank all switch flags
+CCCC
+CCC        DO 10 I = 1,NOPT
+CCC          SWFL(I) = SW(1)
+CCC   10   CONTINUE
+CCCC
+CCCC---- Set switches for anti-aliasing, superimposition, and uniform scaling
+CCCC
+CCC        IF (AAV) THEN
+CCC          SWFL(11) = SW(2)
+CCC        ELSE
+CCC          SWFL(11) = SW(3)
+CCC        END IF
+CCCC
+CCC        IF (CLEAR) THEN
+CCC          SWFL(12) = SW(3)
+CCC        ELSE
+CCC          SWFL(12) = SW(2)
+CCC        END IF
+CCCC
+CCC        IF (UNIFORM) THEN
+CCC          SWFL(13) = SW(2)
+CCC        ELSE
+CCC          SWFL(13) = SW(3)
+CCC        END IF
+CCCC
+CCCC---- Display
+CCCC
+CCC        DO 20 I = 1,NOPT
+CCC          CALL DTEXT(IDENT(I))
+CCC          CALL DTEXT(SWFL(I))
+CCC          OUTLIN = TEXT(I)
+CCC          CALL GSTXT(OUTLIN)
+CCC   20   CONTINUE
+CCCC
+CCC        IF (PICTURE .AND. IPICT.GT.0) THEN
+CCC          WRITE (BUFFER,FMT=6000) IPICT
+CCC          CALL GSTXT(BUFFER)
+CCC        ELSE IF (EOF) THEN
+CCC          OUTLIN = '# End of file found'
+CCC          CALL GSTXT(OUTLIN)
+CCC        END IF
+CCCC
+CCC        HTEXT = .TRUE.
+CCCC
+CCC      END IF
+CCCC
+CCCC---- If IOPT .gt. 0 , overwrite option selection letter in colour
+CCCC
+CCC      IF (IOPT.GT.0) THEN
+CCCC
+CCCC---- Record current alpha cursor position
+CCCC
+CCC        CALL AEDRCP(JX,JY)
+CCCC
+CCCC---- Position to appropriate line, home = 1, 563, line spacing = 12
+CCCC
+CCC        IX = 1
+CCC        IY = 563 - (8+IP)*12
+CCC        CALL AEDMOV(IX,IY)
+CCCC
+CCCC---- Colour current option
+CCCC
+CCC        CALL CHNCOL(5,NBACK,.TRUE.)
+CCC        CALL DTEXT(IDENT(IP))
+CCC        CALL CHNCOL(0,NBACK,.TRUE.)
+CCCC
+CCCC---- Restore position
+CCCC
+CCC        CALL AEDMOV(JX,JY)
+CCC      ELSE
+CCCC
+CCC      END IF
+CCCC
+CCCC---- Format statements
+CCCC
+CCC 6000 FORMAT ('#  Current picture number is:',I5)
+CCCC
+CCC      END
+C                   
+C
+C
+      SUBROUTINE INITRIPLOT(ISTREAM,NAME,IFLAG)
+C     ========================================
+C
+C---- Set of fortran driver routines for the trilog printer
+C     public version d.a. agard. copied from [public.progs]triplot
+C     sep 6 1984. trivial changes a.d. mclachlan 6 sept 1984.
+C
+C     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
+C     They were LINE, PC, PF, PL, FORWARD, LINEFEED, REVERSE, BLANK, COLOURCH
+C
+C     TRILOG PRINTER/PLOTTER.
+C     all i/o is done using the mrc direct-access disk routines
+C
+C     .. Scalar Arguments ..
+      INTEGER IFLAG,IOFF,ISTREAM,LENGTH,N,NFORMS,NROWS
+      CHARACTER NAME* (*)
+C     ..
+C     .. Array Arguments ..
+      CHARACTER*1 LINE(*)
+C     ..
+C     .. Scalars in Common ..
+      INTEGER INIT,IUNIT,LUNIN,LUNOUT
+C     ..
+C     .. Arrays in Common ..
+      CHARACTER*1 PC,PF,PL
+C     ..
+C     .. Local Scalars ..
+      INTEGER J,NDO,NL,NBYTES,NMCITM
+      CHARACTER*1 FOWARD,LINEFEED,REVERSE
+C     ..
+C     .. Local Arrays ..
+      CHARACTER*1 BLANK(250),COLOURCH(3)
+C     ..
+C     .. External Functions ..
+      LOGICAL CCPONL
+      EXTERNAL CCPONL
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL QCLOSE,QOPEN,QWRITE,QMODE
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC MOD
+C     ..
+C     .. Common blocks ..
+      COMMON /PINOUT/LUNIN,LUNOUT
+      COMMON /TRIKKDAT/INIT,IUNIT,PC(4),PL(6),PF(6)
+C
+C     .. Save Statement ..
+C
+      SAVE
+C
+C     .. Equivalences .. character*1 to integer
+      EQUIVALENCE (NBYTES,PC)
+C     ..
+C     .. Data statements ..
+C
+      DATA INIT/0/
+C
+C---- Set up all needed info; note odd byte counts must actually be even
+C
+      DO 99 II=1,250
+        BLANK(II) = CHAR(0)
+99    CONTINUE
+      COLOURCH(1) = CHAR(16)
+      COLOURCH(2) = CHAR(17)
+      COLOURCH(3) = CHAR(18)
+      LINEFEED = CHAR(10)
+      PC(1) = CHAR(0)
+      PC(2) = CHAR(0)
+      PC(3) = CHAR(5)
+      PC(4) = CHAR(0)
+      PF(1) = CHAR(3)
+      PF(2) = CHAR(0)
+      PF(3) = CHAR(5)
+      PF(4) = CHAR(0)
+      PF(5) = CHAR(12)
+      PF(6) = CHAR(0)
+      PL(1) = CHAR(3)
+      PL(2) = CHAR(0)
+      PL(3) = CHAR(5)
+      PL(4) = CHAR(0)
+      PL(5) = CHAR(10)
+      PL(6) = CHAR(0)
+      FOWARD = CHAR(0)
+      REVERSE = CHAR(23)
+C
+      IF (INIT.NE.1) THEN
+        IUNIT = ISTREAM
+        INIT = 1
+        IF (IFLAG.EQ.1 .AND. CCPONL()) THEN
+C
+C---- Open if in batch
+C
+          CALL QOPEN(IUNIT,NAME,'NEW')
+        ELSE
+          CALL QOPEN(IUNIT,NAME,'NEW')
+        END IF
+C
+C---- Change to byte handling
+C
+        CALL QMODE (IUNIT,0,NMCITM)
+      END IF
+      RETURN
+C
+      ENTRY TRICOLOUR(N)
+C     ==================
+C
+      IF (N.GE.1 .AND. N.LE.3) PC(4) = COLOURCH(N)
+      RETURN
+C
+      ENTRY TRIROW(NROWS)
+C     ===================
+C
+      IF (NROWS.LT.0) THEN
+        NDO = -NROWS
+        PL(4) = REVERSE
+        DO 10 J = 1,NDO
+          CALL QWRITE(IUNIT,PL,6)
+   10   CONTINUE
+      ELSE IF (NROWS.GT.0) THEN
+        NDO = NROWS
+        PL(4) = CHAR(0)
+        DO 20 J = 1,NDO
+          CALL QWRITE(IUNIT,PL,6)
+   20   CONTINUE
+      END IF
+      RETURN
+C
+      ENTRY TRIFORM(NFORMS)
+C     =====================
+C
+      IF (NFORMS.LT.0) THEN
+        NDO = -NFORMS
+        PF(4) = REVERSE
+        DO 30 J = 1,NDO
+          CALL QWRITE(IUNIT,PF,6)
+   30   CONTINUE
+      ELSE IF (NFORMS.GT.0) THEN
+        NDO = NFORMS
+        PF(4) = CHAR(0)
+        DO 40 J = 1,NDO
+          CALL QWRITE(IUNIT,PF,6)
+   40   CONTINUE
+      END IF
+      RETURN
+C
+      ENTRY TRIPLOT(LINE,LENGTH)
+C     ==========================
+C
+      NBYTES = LENGTH + 3
+      NL = 1
+      CALL QWRITE(IUNIT,PC,4)
+      CALL QWRITE(IUNIT,LINE,LENGTH)
+      CALL QWRITE(IUNIT,LINEFEED,NL)
+      PC(4) = CHAR(0)
+      RETURN
+C
+      ENTRY TRIPLOTC(LINE,LENGTH,IOFF)
+C     ================================
+C
+      NBYTES = LENGTH + IOFF + 3
+      NL = 1
+      CALL QWRITE(IUNIT,PC,4)
+      IF (IOFF.GT.0) CALL QWRITE(IUNIT,BLANK,IOFF)
+      CALL QWRITE(IUNIT,LINE,LENGTH)
+      CALL QWRITE(IUNIT,LINEFEED,NL)
+      PC(4) = CHAR(0)
+      RETURN
+C
+      ENTRY CLOSETRIPLOT()
+C     ==================
+C
+      CALL QCLOSE(IUNIT)
+C
+      END
+C
+C
+C
+      SUBROUTINE INITVT640(ITERM)
+C     ===========================
+C
+C---- lookalike plot82 routines for driving the vt640 from plot84
+C
+C     A.D. McLachlan SEP 1984. Last updated 25 SEP 1984.
+C     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
+C     They were NBYTE, BYTXT, HTEXT
+C
+C     .. Scalar Arguments ..
+      INTEGER ICODE,ISIZE,ITERM,IX,IY,NCHARS
+      CHARACTER*1 NBYTE
+C     ..
+C     .. Array Arguments ..
+      CHARACTER*1 BYTXT(*)
+C     ..
+C     .. Scalars in Common ..
+      INTEGER LUNIN,LUNOUT
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,JSIZE,N
+      CHARACTER CHKEY*1,TEXT*256
+C     ..
+C     .. Local Arrays ..
+      CHARACTER*1 HTEXT(256)
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL GSBFTM,GSCYTM,GSDOTM,GSDWTM,GSERTM,
+     +         GSGRTM,GSHRTM,GSINTM,GSMVTM,GSMYTM,
+     +         GSPTTM,GSRVTM,GSTXTM,GSTYTM,GSXYTM
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC ICHAR
+C     ..
+C     .. Common blocks ..
+      COMMON /PINOUT/LUNIN,LUNOUT
+C
+C     .. Save Statement ..
+C
+      SAVE
+C
+C     .. Equivalences ..
+      EQUIVALENCE (TEXT,HTEXT(1))
+C     ..
+C
+      CALL GSINTM(ITERM)
+      RETURN
+C
+      ENTRY SELECTVT640()
+C     =================
+C
+      CALL GSGRTM
+      RETURN
+C
+      ENTRY MOVEVT640(IX,IY)
+C     ======================
+C
+      CALL GSMVTM(IX,IY)
+      RETURN
+C
+      ENTRY DRAWVT640(IX,IY)
+C     ======================
+C
+      CALL GSDWTM(IX,IY)
+      RETURN
+C
+      ENTRY POINTVT640(IX,IY)
+C     =======================
+C
+      CALL GSPTTM(IX,IY)
+      RETURN
+C
+      ENTRY TEXTVT640(BYTXT,NCHARS,ISIZE)
+C     ===================================
+C
+      JSIZE = ISIZE + 1
+      N = NCHARS
+      IF (N.GT.256) N = 256
+      DO 10 I = 1,N
+        HTEXT(I) = BYTXT(I)
+   10 CONTINUE
+      CALL GSTXTM(TEXT(1:N),JSIZE)
+      RETURN
+C
+      ENTRY XHAIRVT640(IX,IY,ICODE)
+C     =============================
+C
+      CALL GSHRTM(IX,IY,CHKEY)
+      ICODE = ICHAR(CHKEY)
+      RETURN
+C
+      ENTRY DOTSONVT640()
+C     =================
+C
+      CALL GSDOTM
+      RETURN
+C
+      ENTRY DOTSOFFVT640()
+C     ==================
+C
+      CALL GSERTM
+      RETURN
+C
+      ENTRY DOTSCOMPVT640()
+C     ===================
+C
+      CALL GSRVTM
+      RETURN
+C
+      ENTRY SELECTVT100()
+C     =================
+C
+      CALL GSTYTM
+      RETURN
+C
+      ENTRY MOVEVT100(IX,IY)
+C     ======================
+C
+      CALL GSMYTM(IX,IY)
+      RETURN
+C
+      ENTRY CLEARVT100()
+C     ================
+C
+      CALL GSCYTM
+      RETURN
+C
+      ENTRY BUFFVT640(ITERM,NBYTE)
+C     ============================
+C
+      CALL GSBFTM(ITERM,NBYTE)
+      RETURN
+C
+      ENTRY COORDVT640(ITERM,IX,IY,NBYTE)
+C     ===================================
+C
+      CALL GSXYTM(ITERM,IX,IY,NBYTE)
+C
+      END
+C
+C
+C
+      SUBROUTINE IREAD(CARD,NUMS,NFIELDS)
+C     ===================================
+C
+C---- Decode string CARD into floating numbers in NUMS, returns
+C     number of numbers in NFIELDS
+C
+C     .. Scalar Arguments ..
+      INTEGER NFIELDS
+      CHARACTER CARD* (*)
+C     ..
+C     .. Array Arguments ..
+      INTEGER NUMS(*)
+C     ..
+C     .. Scalars in Common ..
+      INTEGER LUNIN,LUNOUT
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,IEND,ISTART,N,NCHAR,NPC,NPOINT
+      CHARACTER BLANK*1,COMMA*1
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC INDEX,LEN
+C     ..
+C     .. Common blocks ..
+      COMMON /PINOUT/LUNIN,LUNOUT
+C
+C     .. Save Statement ..
+C
+      SAVE
+C
+C     .. Data statements ..
+      DATA BLANK/' '/,COMMA/','/
+C     ..
+C
+      NCHAR = LEN(CARD)
+C
+C---- Numeric string
+C
+      ISTART = 1
+      N = 0
+      IF (NFIELDS.LE.0) NFIELDS = 10000
+   10 CONTINUE
+C
+C---- Search for starting point
+C
+      IF (CARD(ISTART:ISTART).EQ.BLANK .OR.
+     +    CARD(ISTART:ISTART).EQ.COMMA) THEN
+        ISTART = ISTART + 1
+        IF (ISTART.GT.NCHAR) THEN
+          GO TO 50
+        ELSE
+          GO TO 10
+        END IF
+      END IF
+   20 CONTINUE
+C
+C---- Decode fields
+C
+      IF (ISTART.LE.NCHAR .AND. N.LT.NFIELDS) THEN
+        N = N + 1
+        NPOINT = INDEX(CARD(ISTART:),BLANK) - 1
+        NPC = INDEX(CARD(ISTART:),COMMA) - 1
+        IF (NPC.GE.0 .AND. NPC.LT.NPOINT) NPOINT = NPC
+        IEND = ISTART + NPOINT - 1
+        READ (CARD(ISTART:IEND),FMT=6333,ERR=40) NUMS(N)
+C
+C----   6333    FORMAT(I<NPOINT>)
+C
+6333    FORMAT(I10)
+        ISTART = IEND + 2
+   30   CONTINUE
+C
+C---- Skip over recurring blanks
+C
+        IF (CARD(ISTART:ISTART).EQ.BLANK .OR.
+     +      CARD(ISTART:ISTART).EQ.COMMA) THEN
+          ISTART = ISTART + 1
+          IF (ISTART.GT.NCHAR) THEN
+            GO TO 50
+          ELSE
+            GO TO 30
+          END IF
+        END IF
+C
+        I = I + 1
+        GO TO 20
+      ELSE
+        GO TO 50
+      END IF
+C
+   40 NFIELDS = -1
+      RETURN
+C
+C---- All numeric fields decoded
+C
+   50 NFIELDS = N
+C
+      END
+C
+C
+C
+      SUBROUTINE IROT(IX,IY,RM,JX,JY)
+C     ===============================
+C
+C---- Rotate JX,JY by 2 x 2 matrix RM, answer in IX, IY
+C
+C     .. Scalar Arguments ..
+      INTEGER IX,IY,JX,JY
+C     ..
+C     .. Array Arguments ..
+      REAL RM(2,2)
+C     ..
+C     .. Scalars in Common ..
+      INTEGER LUNIN,LUNOUT
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC NINT
+C     ..
+C     .. Common blocks ..
+      COMMON /PINOUT/LUNIN,LUNOUT
+C
+C     .. Save Statement ..
+C
+      SAVE
+C
+      IX = NINT(RM(1,1)*JX+RM(1,2)*JY)
+      IY = NINT(RM(2,1)*JX+RM(2,2)*JY)
+C
+      END
+C
+C
+C
+      INTEGER FUNCTION ISHFT (INUM,IBITS)
+C     ===================================
+C
+C---- ISHIFT perfoms a bitwise shift of INUM by IBITS bits. 
+C     For IBITS = 0    ISHIFT returns INUM unchanged
+C     For IBITS > 0    ISHIFT returns the Left shift of INUM 
+C     For IBITS < 0    ISHIFT returns the Right shift of INUM 
+C
+      INTEGER INUM, IBITS
+C
+      IF (IBITS.EQ.0) THEN
+        ISHFT = INUM
+      ELSE IF (IBITS.GT.0) THEN
+        ISHFT = INUM * IBITS * 2
+      ELSE
+        ISHFT = INUM / (IABS(IBITS) * 2)
+      ENDIF
+C
+      END
+C
+C
+C
+      SUBROUTINE NEXTPC(IFLAG)
+C     =======================
+C
+C---- Open next picture
+C
+C     .. Scalar Arguments ..
+      INTEGER IFLAG
+C     ..
+C     .. Scalars in Common ..
+      REAL DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,DWLIMX,DWLIMY
+      INTEGER ICOLOR,IUNIT,IXMAX,IXMIN,IYMAX,IYMIN,LINWT,LUNIN,LUNOUT,
+     +        MCNTFL,MDEVIC,MDIREC,MIXCOLOR,MOUT,MPIC,MSCAFL,NPICS,NREC
+      CHARACTER PASWRD*8,TITLEH*80
+C     ..
+C     .. Arrays in Common ..
+      REAL SPARE1,SPARE2
+C     ..
+C     .. Local Scalars ..
+      INTEGER IFLAG2
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL GSRHDR
+C     ..
+C     .. Common blocks ..
+      COMMON /PINOUT/LUNIN,LUNOUT
+      COMMON /GSFHD/
+     + IUNIT,  NREC,   DOTMMX, DOTMMY,   IXMIN,  IXMAX,  IYMIN,
+     + IYMAX,  LINWT,  ICOLOR, MIXCOLOR, MDEVIC, MDIREC, MOUT,
+     + MPIC,   MSCAFL, MCNTFL, DWLIMX,   DWLIMY, DVXMIN, DVXMAX,
+     + DVYMIN, DVYMAX, NPICS,
+     + PASWRD, 
+     + SPARE1(15),
+     + TITLEH,
+     + SPARE2(68)
+C
+C     .. Save Statement ..
+C
+      SAVE
+C
+C
+C
+      IFLAG = 0
+      IFLAG2 = 0
+      CALL GSRHDR(IFLAG2)
+      IF (IFLAG2.NE.1) THEN
+        IF (NREC.NE.0) RETURN
+      END IF
+C
+      IFLAG = 1
+C
+      END
+C
+C
+C
+      SUBROUTINE OLDTRIL(GSFIL,LISFIL,IOFLAG)
+C     ========================================
+C
+C---- Substitute routine  for old trilog82
+C
+C     ADAPTED FROM D.A. AGARD'S TRILOG PLOT82 (1982)
+C     A.D. MCLACHLAN JUN 1984. LAST UPDATED 21 OCT 1984
+C     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
+C     They were BRICKS
+C     and the followig BYTEs to INTEGER: ICLBRK, KXY, LINROW, PAGE
+C
+C     The program reads in the intermediate plot file and
+C     generates a file of line dots to print on trilog printer/plotter
+C
+C     The maximum page depth is set at 8192 lines (100 per inch)
+C     each line 1536 dots across (6 dots/byte and 256 bytes)
+C     the plotter allows 1320 dots across page (220 bytes)
+C     with a 13-inch paper width only the first 1296 dots (216 bytes)
+C     on each line are used
+C     with 8-inch page depth there are 800 lines per page
+C
+C     In this version of the program the plot area is divided into
+C     bricks of (48*64) dots or (8*64)=512 bytes
+C     with 32 bricks across the page and 128 up the page
+C     this reduces the number of virtual memory page faults
+C     in plots with many long vectors which run up and down the page
+C     the brick algorithm is 8 times faster than the plot82 trilog
+C     method.
+C     some of the byte-copying of bricks is done in terms of blocks
+C     of character strings
+C
+C   --Plot file command codes (ix,iy) revised july 1984
+C       (I,+J)    draw line to (i,j)   i,j in range 1 to 32766,not 0.
+C       (I,-J)    move to (i,j)
+C
+C       (-I,J)    treat i as a command code, j as a data value
+C       (-1,J)    end picture: 
+C                 put out j pages of paper before next (j=1)
+C       (-2,0)    dot
+C       (-3,J)    lineweight,thickness j=1...9
+C       (-4,J)    colour change. j defines colour
+C       (-5,J)    blank paper, j rows of 1/100 inch height
+C       (-6,J)    erase (vt640 only) j=0 off, j=1 on,
+C                 j=2 reverse black-white.
+C
+C   parameters to define the size and numbers of bricks
+C   if these are altered the character*xxx string sizes may
+C   need changing
+C
+C---- Picture array as bricks or as rows of bricks
+C
+C---- Special for nwidx=8 !! store 8 bytes in one character variable
+C
+C---- Output buffer as rows of lines 
+C     or a row of bricks each 8 bytes wide
+C
+C---- Whole bricks as blocks of 512(=nsizeb) characters
+C
+C---- One brick as characters to clear
+C
+C     .. Parameters ..
+      INTEGER NWIDX,NWIDY,NBRIKX,NBRIKY
+      PARAMETER (NWIDX=8,NWIDY=64,NBRIKX=32,NBRIKY=128)
+      INTEGER NSIZEB
+      PARAMETER (NSIZEB=NWIDX*NWIDY)
+      INTEGER NBYTX,NBYTX1
+      PARAMETER (NBYTX=NWIDX*NBRIKX,NBYTX1=NBYTX-1)
+      INTEGER NWIDX1,NWIDY1
+      PARAMETER (NWIDX1=NWIDX-1,NWIDY1=NWIDY-1)
+      INTEGER NBRKX1,NBRKY1
+      PARAMETER (NBRKX1=NBRIKX-1,NBRKY1=NBRIKY-1)
+      INTEGER NDOTX
+      PARAMETER (NDOTX=NWIDX*6)
+      REAL DOTMMP
+      PARAMETER (DOTMMP=100.0/25.4)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER IOFLAG
+      CHARACTER LISFIL* (*),GSFIL* (*)
+C     ..
+C     .. Scalars in Common ..
+      INTEGER ICOLOR,IUNIT,IXMAX,IXMIN,IYMAX,IYMIN,LINWT,LUNIN,LUNOUT,
+     +        MIXCOLOR,NBPI,NREC
+C     ..
+C     .. Arrays in Common ..
+      REAL EXTRA
+      INTEGER BRICKS
+C     ..
+C     .. Local Scalars ..
+      REAL ANBPI,SCFACX,SCFACY,SECTOT,SSTAGE,XWID,YWID
+      INTEGER IBRIKX,IBRIKY,IBXMAX,IBXMIN,IBXWID,IBYMAX,IBYMIN,IBYWID,
+     +        IER,IND,IPRINT,IPXMAX,IPXMIN,IPY,IPY0,IPY1,IPYBOT,IPYTOP,
+     +        IRECX,
+     +  ISTREM,IX,IXOLD,IY,IYOLD,JX,JXOLD,JY,JYOLD,LL,MAXDTX,
+     +        MAXLNY,NBPG,NBXOFF,NBXWID,NDOT,NFORM,NLINPG,NLINU,NLINY,
+     +        NLNSKP,NMARGY,NPAGES,NREAD,NSPARE,NMCITM
+      INTEGER*2 IDOT,IEND,ILWT,IPAP,IPEN,KX,KY
+      LOGICAL IRET
+      CHARACTER CLRBRK*512
+C     ..
+C     .. Local Arrays ..
+      INTEGER LOFFX(8),LOFFY(8),MREC(20)
+      INTEGER ICLBRK(512),KXY(2),LINROW(0:NBYTX1,0:NWIDY1),
+     +          PAGE(0:NBYTX1,0:NWIDY1,0:NBRKY1)
+      CHARACTER CBRIKS(0:NWIDY1,0:NBRKX1,0:NBRKY1)*8,
+     +          LLBROW(0:NBRKX1,0:NWIDY1)*8,
+     +          HOLBRK(0:NBRKX1,0:NBRKY1)*512
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL CLOSETRIPLOT,INITRIPLOT,GSLRSB,GSTIM0,GSTIMR,
+     +         QCLOSE,QOPEN,QREAD,TRICOLOUR,TRIFORM,TRIPLOTC,TRIROW
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC MIN,REAL
+C     ..
+C     .. Common blocks ..
+      COMMON /PINOUT/LUNIN,LUNOUT
+      COMMON /GSOLD/IUNIT,NREC,NBPI,IXMIN,IXMAX,IYMIN,IYMAX,LINWT,
+     +       ICOLOR,MIXCOLOR,EXTRA(11)
+      COMMON /GSRAS/BRICKS(0:NWIDX1,0:NWIDY1,0:NBRKX1,0:NBRKY1)
+C
+C     .. Save Statement ..
+C
+      SAVE
+C
+C     .. Equivalences ..
+      EQUIVALENCE (BRICKS(0,0,0,0),PAGE(0,0,0))
+      EQUIVALENCE (CBRIKS(0,0,0),BRICKS(0,0,0,0))
+      EQUIVALENCE (LINROW(0,0),LLBROW(0,0))
+      EQUIVALENCE (HOLBRK(0,0),BRICKS(0,0,0,0))
+      EQUIVALENCE (CLRBRK,ICLBRK(1))
+      EQUIVALENCE (NREC,MREC(1))
+      EQUIVALENCE (KXY(1),KX), (KXY(2),KY)
+C     ..
+C     .. Data statements ..
+      DATA ICLBRK/512*64/
+      DATA LOFFX/1,0,-1,0,2,-2,-3,3/
+      DATA LOFFY/0,1,0,-1,2,-2,3,-3/
+      DATA MAXLNY/8191/,MAXDTX/1320/
+      DATA NLINPG/800/,NBPG/216/
+      DATA NSPARE/20/
+      DATA IEND/4/,IDOT/16/,ILWT/2/,
+     +     IPEN/1/,IPAP/8/,IERAS/32/
+C
+C---- plotfile command codes
+C
+      IPRINT = 0
+      CALL GSTIM0(IPRINT)
+C
+C---- Start up plotfile and printer
+C
+      CALL QOPEN(IUNIT,GSFIL,'READONLY')
+      CALL QMODE (IUNIT,0,NMCITM)
+C
+C---- IOFLAG=1,0 .IOFLAG=(1) then batch jobs have file opened 'tr' and
+C     must be part of sys$output or sys$print
+C     IOFLAG=(0) then all jobs have file opened as 'pd'=print/delete.
+C     normal trilog uses ioflag=0. trilogq uses ioflag=1
+C
+      ISTREM = 2
+      CALL INITRIPLOT(ISTREM,LISFIL,IOFLAG)
+   10 CONTINUE
+C
+C
+C---- Start of current picture
+C
+C---- Skip nspare lines at start of first
+C     page in addition to nmargy later
+C
+      CALL TRIROW(NSPARE)
+      NFORM = 1
+      NLNSKP = 0
+      CALL QREAD(IUNIT,MREC,80,IER)
+      IF ((IER.EQ.0) .AND. (NREC.GT.0)) THEN
+C
+C---- Rescale for different dot densities
+C
+        ANBPI = NBPI
+        SCFACX = 100.0/ANBPI
+        SCFACY = SCFACX
+        IXMIN = REAL(IXMIN)*SCFACX
+        IXMAX = REAL(IXMAX)*SCFACX
+        IYMIN = REAL(IYMIN)*SCFACY
+        IYMAX = REAL(IYMAX)*SCFACY
+C
+C---- Check size of plot and reduce if too big
+C     rescaling may make ixmin,iymin zero
+C
+        IF ((IXMIN.LT.0) .OR. (IXMAX.GT.MAXDTX) .OR. (IYMIN.LT.0) .OR.
+     +      (IYMAX.GT.MAXLNY)) WRITE (LUNOUT,FMT=6004) MAXDTX,MAXLNY,
+     +      IXMIN,IXMAX,IYMIN,IYMAX
+        IF (IXMIN.LT.1) IXMIN = 1
+        IF (IXMAX.LT.IXMIN) IXMAX = IXMIN
+        IF (IXMAX.GT.MAXDTX) IXMAX = MAXDTX
+        IF (IYMIN.LT.1) IYMIN = 1
+        IF (IYMAX.LT.IYMIN) IYMAX = IYMIN
+        IF (IYMAX.GT.MAXLNY) IYMAX = MAXLNY
+C
+C---- Brick limits across page
+C     NOTE IX=1...1295 BUT IBX=0...31
+C     thus brick number 0 goes from ix=0 to 47
+C
+        IBXMIN = IXMIN/NDOTX
+        IBXMAX = IXMAX/NDOTX
+        IBXWID = IBXMAX - IBXMIN + 1
+        XWID = IBXWID*NDOTX
+        XWID = XWID/DOTMMP
+C
+C---- Brick limits up and down
+C     NOTE IY=1...8191 BUT IBY=0...127
+C     thus brick number 0 goes from iy=0 to 63
+C     and its bottom line is not used
+C
+        IBYMIN = IYMIN/NWIDY
+        IBYMAX = IYMAX/NWIDY
+        IBYWID = IBYMAX - IBYMIN + 1
+        NLINY = IYMAX - IYMIN + 1
+        YWID = NLINY
+        YWID = YWID/DOTMMP
+C
+C---- Centre up and down if only one page
+C     lines used in the occupied bricks
+C
+        NLINU = NLINY + NSPARE
+        NPAGES = (NLINU-1)/NLINPG + 1
+        NMARGY = (NPAGES*NLINPG-NLINU)/2
+C
+C---- Positions of extreme lines used in top and bottom bricks
+C
+        IPYTOP = IYMAX - IBYMAX*NWIDY
+        IPYBOT = IYMIN - IBYMIN*NWIDY
+C
+C---- Center along x:  calculate offsets in bytes (6 dots/byte)
+C
+        IPXMIN = IXMIN/6
+        IPXMAX = IXMAX/6
+        NBXWID = MIN((IPXMAX-IPXMIN+1),NBPG)
+        NBXOFF = (NBPG-NBXWID)/2
+C
+C---- Clear required rows of bricks
+C
+        DO 30 IBRIKY = IBYMIN,IBYMAX
+          DO 20 IBRIKX = IBXMIN,IBXMAX
+            HOLBRK(IBRIKX,IBRIKY) = CLRBRK
+   20     CONTINUE
+   30   CONTINUE
+C
+C---- Start on this plot
+C
+        IXOLD = 0
+        IYOLD = 0
+        NREAD = 0
+C
+C---- NDOT remembers when a dot code was last issued
+C
+        NDOT = 0
+        DO 50 IRECX = 1,NREC
+          CALL QREAD(IUNIT,KXY,4,IER)
+          IF (IER.NE.0) THEN
+            GO TO 80
+          ELSE
+            IX = KX
+            IY = KY
+            NREAD = NREAD + 1
+            NDOT = NDOT - 1
+C
+C---- Handle control info
+C
+            IF (IX.GE.0) THEN
+C
+C---- Here for actual plot handling
+C
+              IX = REAL(IX)*SCFACX
+              IF (IY.LT.0) THEN
+                IXOLD = IX
+                IYOLD = REAL(-IY)*SCFACY
+              ELSE
+                IY = REAL(IY)*SCFACY
+                IF (NDOT.LT.1) THEN
+                  CALL GSLRSB(IX,IY,IXOLD,IYOLD)
+                ELSE
+                  CALL GSLRSB(IX,IY,IX,IY)
+                END IF
+C
+C---- Here for multiple wt lines
+C
+                IF (LINWT.GT.1) THEN
+                  LL = LINWT - 1
+                  IF (LL.LT.2) LL = 2
+                  DO 40 IND = 1,LL
+                    JX = LOFFX(IND) + IX
+                    JXOLD = LOFFX(IND) + IXOLD
+                    IF (JX.LT.IXMIN) JX = IXMIN
+                    IF (JX.GT.IXMAX) JX = IXMAX
+                    IF (JXOLD.LT.IXMIN) JXOLD = IXMIN
+                    IF (JXOLD.GT.IXMAX) JXOLD = IXMAX
+                    JY = LOFFY(IND) + IY
+                    JYOLD = LOFFY(IND) + IYOLD
+                    IF (JY.LT.IYMIN) JY = IYMIN
+                    IF (JY.GT.IYMAX) JY = IYMAX
+                    IF (JYOLD.LT.IYMIN) JYOLD = IYMIN
+                    IF (JYOLD.GT.IYMAX) JYOLD = IYMAX
+                    IF (NDOT.LT.1) THEN
+                      CALL GSLRSB(JX,JY,JXOLD,JYOLD)
+                    ELSE
+                      CALL GSLRSB(JX,JY,JX,JY)
+                    END IF
+   40             CONTINUE
+                END IF
+                IXOLD = IX
+                IYOLD = IY
+              END IF
+            ELSE IF (IX.EQ.IEND) THEN
+              GO TO 60
+            ELSE IF (IX.EQ.IDOT) THEN
+              NDOT = 2
+            ELSE IF (IX.EQ.ILWT) THEN
+              LINWT = IY
+            ELSE IF (IX.EQ.IPEN) THEN
+              ICOLOR = 3
+              IF (IY.EQ.2) ICOLOR = 2
+              IF (IY.EQ.5) ICOLOR = 1
+              CALL TRICOLOUR(ICOLOR)
+            ELSE IF (IX.EQ.IPAP) THEN
+              CALL TRIROW(IY)
+C
+C---- Ignore ix=ieras on paper plotter
+C
+              NLNSKP = NLNSKP + IY
+            END IF
+          END IF
+   50   CONTINUE
+C
+        GO TO 70
+   60   NFORM = IY
+        IF (NREAD.EQ.1) NREAD = 0
+C
+C---- End of records loop
+C
+   70   CONTINUE
+        IRET = .TRUE.
+        GO TO 90
+C
+C---- Output section
+C
+   80   CONTINUE
+        WRITE (LUNOUT,FMT=6000) NREC,NREAD
+        IRET = .FALSE.
+C
+   90   IF (NREAD.NE.0) THEN
+C
+C---- If no plotfile line skips call trirow to skip lines
+C     and centre the page if there is only one page
+C
+          IF ((NLNSKP.EQ.0) .AND. (NPAGES.LE.1)) CALL TRIROW(NMARGY)
+C
+C---- Get a row of bricks at a time in reverse order of rows
+C
+          DO 130 IBRIKY = IBYMAX,IBYMIN,-1
+C
+C---- Rearrange contents of each brick into lines 8 bytes at a time
+C
+            IPY0 = 0
+            IPY1 = NWIDY1
+            IF (IBRIKY.EQ.IBYMAX) IPY1 = IPYTOP
+            IF (IBRIKY.EQ.IBYMIN) IPY0 = IPYBOT
+            DO 110 IPY = IPY0,IPY1
+              DO 100 IBRIKX = 0,NBRKX1
+                LLBROW(IBRIKX,IPY) = CBRIKS(IPY,IBRIKX,IBRIKY)
+  100         CONTINUE
+  110       CONTINUE
+C
+C---- Print a row of bricks as lines from the buffer in reverse order
+C
+            DO 120 IPY = IPY1,IPY0,-1
+              CALL TRIPLOTC(LINROW(IPXMIN,IPY),NBXWID,NBXOFF)
+  120       CONTINUE
+  130     CONTINUE
+          CALL TRIFORM(NFORM)
+C
+          CALL GSTIMR(SECTOT,SSTAGE,IPRINT)
+          WRITE (LUNOUT,FMT=6002) NREAD,XWID,YWID,SECTOT
+C
+C---- For next picture
+C
+          IF (IRET) GO TO 10
+        END IF
+      END IF
+C
+      CALL QCLOSE(IUNIT)
+      CALL CLOSETRIPLOT
+C
+C---- Format statements
+C
+ 6000 FORMAT (2X,'TRILOG82: End-file error reading plot records: expec',
+     +       'ted,found=',2I8)
+ 6002 FORMAT (2X,'TRILOG82:',I8,' records read; area used(mm) =',2F7.0,
+     +       '; cpu sec',F6.2)
+ 6004 FORMAT (2X,'!!!TRILOG82: Warning; plot too big for X Y dot range',
+     +       's ',2I5,/13X,'uses X1 X2 Y1 Y2 = ',4I6)
+C
+      END
 C
 C
 C
@@ -13854,30 +13964,35 @@ C     .. Scalars in Common ..
      +          MDEVIC,MDIREC,MIXCOL,MOUT,MPIC,MSCAFL,NPICS,NREC
 C     ..
 C     .. Arrays in Common ..
-      REAL SPARE1,SPARE2,TITLEH
+      REAL SPARE1,SPARE2
+      CHARACTER PASWRD*8,TITLEH*80
+      REAL IREC(128)
 C     ..
 C     .. Local Scalars ..
       INTEGER IEND,IERAS,ILNW,IPAP,IPEN
 C     ..
 C     .. Local Arrays ..
-      INTEGER*4 NHEADR(128)
-C     ..
 C     .. External Subroutines ..
       EXTERNAL QREAD
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
-      COMMON /GSFHD/IUNITR,NREC,DOTMMX,DOTMMY,IXMIN,IXMAX,IYMIN,IYMAX,
-     +       LINWT,ICOLOR,MIXCOL,MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,MCNTFL,
-     +       DWLIMX,DWLIMY,DVXMIN,DVYMIN,DVXMAX,DVYMAX,NPICS,SPARE1(17),
-     +       TITLEH(20),SPARE2(68)
+      COMMON /GSFHD/
+     + IUNITR,  NREC,   DOTMMX, DOTMMY,   IXMIN,  IXMAX,  IYMIN,
+     + IYMAX,  LINWT,  ICOLOR, MIXCOLOR, MDEVIC, MDIREC, MOUT,
+     + MPIC,   MSCAFL, MCNTFL, DWLIMX,   DWLIMY, DVXMIN, DVXMAX,
+     + DVYMIN, DVYMAX, NPICS,
+     + PASWRD, 
+     + SPARE1(15),
+     + TITLEH,
+     + SPARE2(68)
 C
 C     .. Save Statement ..
 C
       SAVE
 C
 C     .. Equivalences ..
-      EQUIVALENCE (NHEADR(1),NREC)
+      EQUIVALENCE (IREC(1),NREC)
 C     ..
 C     .. Data statements ..
 C
@@ -13887,7 +14002,7 @@ C
 C
 C---- Read header
 C
-      CALL QREAD(1,NHEADR,512,IER)
+      CALL QREAD(IUNIT,IREC,512,IER)
 C
 C---- End File if block length wrong
 C
@@ -13921,35 +14036,33 @@ C     .. Scalar Arguments ..
       INTEGER ICOLR,LWT,N,NPOINT
 C     ..
 C     .. Array Arguments ..
-      REAL XVEC(1),YVEC(1)
+      REAL XVEC(*),YVEC(*)
 C     ..
 C     .. Scalars in Common ..
       REAL ANGFAC,BXMAX,BXMIN,BYMAX,BYMIN,CHANGX,CHANGY,CHRSCX,CHRSCY,
      +     CHRSPX,CHRSPY,DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,
-     +     DWBLMX,DWBLMY,DWLIMX,DWLIMY,FACX,FACY,PAPLMX,PAPLMY,SCALEX,
+     +     DWBLMX,DWBLMY,DWLIMX,DWLIMY,PAPLMX,PAPLMY,SCALEX,
      +     SCALEY,UBXMAX,UBXMIN,UBYMAX,UBYMIN,USANGX,USANGY,V64LMX,
-     +     V64LMY,XBNEW,XBOLD,XCHAR,XCSTRT,XFOFF,XNOW,YBNEW,YBOLD,YCHAR,
-     +     YCSTRT,YFOFF,YNOW
-      INTEGER ICENTC,ICOLOR,IDRLVL,IDXOFF,IDYOFF,IFONT,IPRINT,IUNIT,
+     +     V64LMY,XBNEW,XBOLD,XCHAR,XCSTRT,XNOW,YBNEW,YBOLD,YCHAR,
+     +     YCSTRT,YNOW
+      INTEGER ICENTC,ICOLOR,IDRLVL,IFONT,IPRINT,IUNIT,
      +        IUNITR,IXMAX,IXMIN,IYMAX,IYMIN,KPRINT,LINWT,LUNIN,LUNOUT,
      +        MCNTFL,MDEVIC,MDIREC,MIXCOL,MOUT,MPIC,MSCAFL,NERROR,
-     +        NPICS,IXOLD,IYOLD,MODOLD
+     +        NPICS
       LOGICAL*4 DEVCON,FONTIN,ICULNK,INITON,LINMOD,UCSPAC
       CHARACTER FILNAM*80,TITLE*80
 C     ..
 C     .. Arrays in Common ..
       REAL CHRMAT,CUMAT,USRMAT
-      INTEGER IREC
+      REAL IREC
       INTEGER*2 IFHT,IFSTRT,IFWID,IFX0,IFY0,LENGF
       CHARACTER*1 NFONTS
 C     ..
 C     .. Local Scalars ..
       REAL AA,BB,CHORGX,CHORGY,CUORGX,CUORGY,PI,XORIG,YORIG
       INTEGER M,MODE
-      CHARACTER TITLEH*80
 C     ..
 C     .. Local Arrays ..
-      REAL*4 AREC(128)
       REAL TMAT(2,2)
       INTEGER NCTRAN(24),NSTRAN(24)
 C     ..
@@ -13967,15 +14080,28 @@ C     .. Common blocks ..
      +       CHRSPY,ICENTC,UCSPAC,IFONT,FONTIN,XCHAR,YCHAR,XCSTRT,
      +       YCSTRT,ANGFAC
       COMMON /GSCLP/BXMIN,BXMAX,BYMIN,BYMAX
-      COMMON /GSDVT/FACX,FACY,XFOFF,YFOFF,IDXOFF,IDYOFF
-     +       IXOLD,IYOLD,MODOLD
+      REAL FACX, FACY, XFOFF, YFOFF
+      INTEGER IDXOFF, IDYOFF, IXOLD, IYOLD, MODOLD
+      COMMON /GSDVT/FACX,FACY,XFOFF,YFOFF,IDXOFF,IDYOFF,
+     +                IXOLD,IYOLD,MODOLD
       COMMON /GSDVW/MDEVIC,MDIREC,MOUT,MPIC,MSCAFL,MCNTFL,DWLIMX,
      +       DWLIMY,DVXMIN,DVXMAX,DVYMIN,DVYMAX,UBXMIN,UBXMAX,UBYMIN,
      +       UBYMAX,FILNAM,DOTMMX,DOTMMY,DEVCON,INITON,NERROR,DWBLMX,
      +       DWBLMY,PAPLMX,PAPLMY,V64LMX,V64LMY,IUNIT,IXMIN,IXMAX,IYMIN,
      +       IYMAX,LINWT,ICOLOR,MIXCOL,NPICS,IPRINT,IDRLVL,TITLE
       COMMON /GSDWX/XNOW,YNOW,XBNEW,YBNEW,XBOLD,YBOLD
-      COMMON /GSFHD/IUNITR,IREC(128)
+      CHARACTER PASWRD*8,TITLEH*80
+      COMMON /GSFHD/
+     + IUNITR,  NREC,   DOTMMX2, DOTMMY2,   
+     +IXMIN2,  IXMAX2,  IYMIN2,
+     + IYMAX2,  LINWT2,  ICOLOR2, MIXCOLOR, MDEVIC2, MDIREC2, MOUT2,
+     + MPIC2,   MSCAFL2, MCNTFL2, DWLIMX2,   DWLIMY2,
+     +   DVXMIN2, DVXMAX2,
+     + DVYMIN2, DVYMAX2, NPICS2,
+     + PASWRD, 
+     + SPARE1(15),
+     + TITLEH,
+     + SPARE2(68)
       COMMON /GSFNT/IFSTRT(150,4),LENGF(150,4),IFX0(150,4),
      +       IFY0(150,4),IFWID(150,4),IFHT(150,4),NFONTS(4,3000,4)
       COMMON /GSUTR/USRMAT(3,3),SCALEX,SCALEY,USANGX,USANGY,
@@ -13991,8 +14117,10 @@ C     .. Equivalences ..
       EQUIVALENCE (NSTRAN(1),USRMAT(1,1))
       EQUIVALENCE (CHORGX,CHRMAT(1,3)), (CHORGY,CHRMAT(2,3))
       EQUIVALENCE (NCTRAN(1),CHRMAT(1,1))
-      EQUIVALENCE (IREC(1),AREC(1))
-      EQUIVALENCE (TITLEH,IREC(41))
+C
+C---- Equivalences
+C
+cc      EQUIVALENCE (IREC(1),AREC(1))
 C
       AA = SCALEX*A
       BB = SCALEY*B
@@ -14142,66 +14270,66 @@ C
      +       'LEFT ')
 C
       END
-C
-C
-C
-      SUBROUTINE SETTBL
-C     =================
-C
-C---- Set colour lookuptable for lower 4 bits (picture)
-C     and upper 4 bits (for text)
-C
-C---- ITABLE    0,0,0,            ! black
-C                 255,0,0,            ! red
-C                 0,255,0,      ! green
-C                 255,255,0,      ! yellow
-C                 0,0,255,      ! blue
-C                 255,0,255,      ! magenta
-C                 0,255,255,      ! cyan
-C                 255,255,255,      ! white
-C                 255,100,128,      ! pink
-C                 150,30,30,      ! brick
-C                 255,128,0,      ! orange
-C                 170,255,170,      ! aqua
-C                 100,100,100,      ! grey
-C                 150,100,50,      ! brown
-C                 150,180,255,      ! sky
-C                 200,100,255      ! lilac
-C
-C     .. Scalars in Common ..
-      INTEGER LUNIN,LUNOUT
-C     ..
-C     .. Local Scalars ..
-      INTEGER I,N
-C     ..
-C     .. Local Arrays ..
-      INTEGER ITABLE(3,16)
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL AEDSCT
-C     ..
-C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-C     .. Data statements ..
-      DATA ITABLE/0,0,0,255,0,0,0,255,0,255,255,0,0,0,255,255,0,255,0,
-     +     255,255,255,255,255,255,100,128,150,30,30,255,128,0,170,255,
-     +     170,100,100,100,150,100,50,150,180,255,200,100,255/
-C     ..
-C
-C---- Set colour table
-C
-      DO 10 I = 1,16
-        CALL AEDSCT(I-1,1,ITABLE(1,I),ITABLE(2,I),ITABLE(3,I))
-        N = (I-1)*16
-        CALL AEDSCT(N,1,ITABLE(1,I),ITABLE(2,I),ITABLE(3,I))
-   10 CONTINUE
-C
-      END
+CCCC
+CCCC
+CCCC
+CCC      SUBROUTINE SETTBL
+CCCC     =================
+CCCC
+CCCC---- Set colour lookuptable for lower 4 bits (picture)
+CCCC     and upper 4 bits (for text)
+CCCC
+CCCC---- ITABLE    0,0,0,            ! black
+CCCC                 255,0,0,            ! red
+CCCC                 0,255,0,      ! green
+CCCC                 255,255,0,      ! yellow
+CCCC                 0,0,255,      ! blue
+CCCC                 255,0,255,      ! magenta
+CCCC                 0,255,255,      ! cyan
+CCCC                 255,255,255,      ! white
+CCCC                 255,100,128,      ! pink
+CCCC                 150,30,30,      ! brick
+CCCC                 255,128,0,      ! orange
+CCCC                 170,255,170,      ! aqua
+CCCC                 100,100,100,      ! grey
+CCCC                 150,100,50,      ! brown
+CCCC                 150,180,255,      ! sky
+CCCC                 200,100,255      ! lilac
+CCCC
+CCCC     .. Scalars in Common ..
+CCC      INTEGER LUNIN,LUNOUT
+CCCC     ..
+CCCC     .. Local Scalars ..
+CCC      INTEGER I,N
+CCCC     ..
+CCCC     .. Local Arrays ..
+CCC      INTEGER ITABLE(3,16)
+CCCC     ..
+CCCC     .. External Subroutines ..
+CCC      EXTERNAL AEDSCT
+CCCC     ..
+CCCC     .. Common blocks ..
+CCC      COMMON /PINOUT/LUNIN,LUNOUT
+CCCC
+CCCC     .. Save Statement ..
+CCCC
+CCC      SAVE
+CCCC
+CCCC     .. Data statements ..
+CCC      DATA ITABLE/0,0,0,255,0,0,0,255,0,255,255,0,0,0,255,255,0,255,0,
+CCC     +     255,255,255,255,255,255,100,128,150,30,30,255,128,0,170,255,
+CCC     +     170,100,100,100,150,100,50,150,180,255,200,100,255/
+CCCC     ..
+CCCC
+CCCC---- Set colour table
+CCCC
+CCC      DO 10 I = 1,16
+CCC        CALL AEDSCT(I-1,1,ITABLE(1,I),ITABLE(2,I),ITABLE(3,I))
+CCC        N = (I-1)*16
+CCC        CALL AEDSCT(N,1,ITABLE(1,I),ITABLE(2,I),ITABLE(3,I))
+CCC   10 CONTINUE
+CCCC
+CCC      END
 C
 C
 C
@@ -14285,7 +14413,7 @@ C     .. Scalar Arguments ..
       INTEGER NCHARS
 C     ..
 C     .. Array Arguments ..
-      CHARACTER*1 BYTXT(1)
+      CHARACTER*1 BYTXT(*)
 C     ..
 C     .. Scalars in Common ..
       INTEGER LUNIN,LUNOUT
@@ -14347,7 +14475,7 @@ C     .. Scalar Arguments ..
       INTEGER NC,NDIG
 C     ..
 C     .. Array Arguments ..
-      CHARACTER*1 BYTXT(1)
+      CHARACTER*1 BYTXT(*)
 C     ..
 C     .. Scalars in Common ..
       INTEGER LUNIN,LUNOUT
@@ -14423,35 +14551,35 @@ C
       CALL GSTRES(NTRSAV)
 C
       END
-C     
-C
-C
-      SUBROUTINE ZERO(A,N)
-C     ====================
-C
-C---- zero n bytes of a
-C
-C     .. Scalar Arguments ..
-      INTEGER N
-C     ..
-C     .. Array Arguments ..
-      INTEGER A(N)
-C     ..
-C     .. Scalars in Common ..
-      INTEGER LUNIN,LUNOUT
-C     ..
-C     .. Local Scalars ..
-      INTEGER I
-C     ..
-C     .. Common blocks ..
-      COMMON /PINOUT/LUNIN,LUNOUT
-C
-C     .. Save Statement ..
-C
-      SAVE
-C
-      DO 10 I = 1,N
-        A(I) = 0
-   10 CONTINUE
-C
-      END
+CCCC     
+CCCC
+CCCC commented-out because of reported clash with system routine
+CCC      SUBROUTINE ZERO(A,N)
+CCCC     ====================
+CCCC
+CCCC---- zero n bytes of a
+CCCC
+CCCC     .. Scalar Arguments ..
+CCC      INTEGER N
+CCCC     ..
+CCCC     .. Array Arguments ..
+CCC      INTEGER A(N)
+CCCC     ..
+CCCC     .. Scalars in Common ..
+CCC      INTEGER LUNIN,LUNOUT
+CCCC     ..
+CCCC     .. Local Scalars ..
+CCC      INTEGER I
+CCCC     ..
+CCCC     .. Common blocks ..
+CCC      COMMON /PINOUT/LUNIN,LUNOUT
+CCCC
+CCCC     .. Save Statement ..
+CCCC
+CCC      SAVE
+CCCC
+CCC      DO 10 I = 1,N
+CCC        A(I) = 0
+CCC   10 CONTINUE
+CCCC
+CCC      END
