@@ -42,7 +42,7 @@ C    prtrsm       inasu
 C
 C  3b) Asymmetric units for choosing asymmetric units
 C    in real space consistent with FFT expectations; FFT grids etc.
-C    setlim       setgrd
+C    setlim       setgrd         setlim_arp
 C
 c  Internal routines:-
 C    fndsmp       factrz
@@ -616,6 +616,26 @@ C     LOGICAL FUNCTION FACTRZ(N)
 C
 C---- Returns true if N has all prime factors .le. 19
 C
+C
+C---- SUBROUTINE SETLIM_ARP(LSPGRP,XYZLIM)
+C
+C Set appropriate box (asymmetric unit) for spacegroup (true spacegroup)
+C     LSPGRP for use in ARP/WARP.
+C     ARP needs an extra grid point at each edge. For high symmetry
+C     spacegroups, 
+C     this will be more than one asymmetric unit
+C     ARP does not provide all the spacegroups in this list.
+C     Where no ARP definition was given I have left the CCP4 definition but
+C     marked it in lower case
+C
+C On entry:
+C     lspgrp    true spacegroup (not FFT spacegroup)
+C
+C On exit
+C     xyzlim(2,3)  minimum, maximum limits on x,y,z (fractions of cell)
+C                  if spacegroup not recognized, returns xzylim(1,1) = -1.0
+C                  Note that the minimum limits (xyzlim(1,)) will always
+C                   = 0.0
 C
 C Group 4: Subroutines for testing coordinate data
 C======================================================================
@@ -6188,7 +6208,151 @@ C---- Failure
 C
       FACTRZ = .FALSE.
       END
-
+C
+C
+C     ================================
+      SUBROUTINE SETLIM_ARP(LSPGRP,XYZLIM)
+C     ================================
+C
+C Set appropriate box (asymmetric unit) for spacegroup (true spacegroup)
+C     LSPGRP for use in ARP/WARP.
+C     ARP needs an extra grid point at each edge. For high symmetry spacegroups, 
+C     this will be more than one asymmetric unit
+C     ARP does not provide all the spacegroups in this list.
+C     Where no ARP definition was given I have left the CCP4 definition but
+C     marked it in lower case
+C
+C On entry:
+C     lspgrp    true spacegroup (not FFT spacegroup)
+C
+C On exit
+C     xyzlim(2,3)  minimum, maximum limits on x,y,z (fractions of cell)
+C                  if spacegroup not recognized, returns xzylim(1,1) = -1.0
+C                  Note that the minimum limits (xyzlim(1,)) will always
+C                   = 0.0
+C
+C      IMPLICIT NONE
+C
+      INTEGER LSPGRP
+      REAL XYZLIM(2,3)
+C
+      INTEGER I,J
+C
+      INTEGER NUMSGP
+      PARAMETER (NUMSGP=89)
+      REAL ONE,HALF,THRD,TWTD,SIXT,QUAR,EIGH,TWLT,ROUND,ROUND2
+      REAL ONEL,HALFL,THRDL,SIXTL,QUARL
+      PARAMETER (ROUND=0.00001, ROUND2=2.0*ROUND)
+      PARAMETER (ONE=1.0+ROUND,HALF=0.5+ROUND,THRD=1./3.+ROUND,
+     $     TWTD=2./3.+ROUND,SIXT=1./6.+ROUND,THRQ=0.75+ROUND,
+     $     QUAR=0.25+ROUND,EIGH=0.125+ROUND,TWLT=1./12.+ROUND)
+      PARAMETER (ONEL=ONE-ROUND2,HALFL=HALF-ROUND2,THRDL=THRD-ROUND2,
+     $     SIXTL=SIXT-ROUND2,QUARL=QUAR-ROUND2)
+C
+      INTEGER NSPGRP(NUMSGP)
+      REAL ASULIM(3,NUMSGP)
+C
+C  asulim contains maximum limit on x,y,z: the box is always assumed to
+C     start at 0,0,0
+C
+C  Space group numbers
+      DATA NSPGRP/
+     $   1,   2,   3,    4,   5,  10,  16,   17,  18,1018,  19,   20,
+     $  21,  22,  23,   24,  47,  65,  69,   71,  75,  76,  77,   78,
+     $  79,  80,  83,   87,  89,  90,  91,   92,  93,  94,  95,   96,
+     $  97,  98, 123,  139, 143, 144, 145,  146, 147, 148, 149,  150,
+     $ 151, 152, 153,  154, 155, 162, 164,  166, 168, 169, 170,  171,  
+     $ 172, 173, 175,  177, 178, 179, 180,  181, 182, 191, 195,  196,  
+     $ 197, 198, 199,  200, 202, 204, 207,  208, 209, 210, 211,  212,  
+     $ 213, 214, 221,  225, 229/
+C
+      DATA ((ASULIM(II,JJ),II=1,3),JJ=1,73)/
+C        1:  P1          2:  P-1         3:  P2            4:  P21
+     $  ONE,ONE,ONE,   ONE,ONE,HALF,   ONE,ONE,HALF,   ONE,HALF,ONE,
+CCP4 $ ONEL,ONEL,ONEL, ONEL,HALF,ONEL, HALF,ONEL,ONEL, ONEL,HALFL,ONEL,
+C        5:  C2         10:  P2/m       16:  P222         17:  P2221
+     $ HALF,ONE,HALF,   half,half,onel,HALF,ONE,HALF,  HALF,ONE,HALF,
+CCP4 $ HALF,HALFL,ONEL, HALF,HALF,ONEL,HALF,HALF,ONEL, HALF,HALF,ONEL,
+C       18: P21212    1018: P21212      19: P212121       20:C2221
+     $  ONE,QUAR,ONE,  onel,quar,onel, ONE,ONE,QUAR,  HALF,HALF,HALF,
+CCP4 $ ONEL,QUAR,ONEL, ONEL,QUAR,ONEL, ONEL,ONEL,QUAR, HALF,QUAR,ONEL,
+C       21:  C222       22:  F222       23:  I222         24: I212121
+     $ QUAR,HALF,ONE,  ONE,QUAR,QUAR,  HALF,HALF,HALF, HALF,HALF,HALF,
+CCP4 $ HALF,QUAR,ONEL, QUAR,QUAR,ONEL, HALF,QUAR,ONE, HALF,QUAR,ONEL,
+C       47:  Pmmm       65:  Cmmm       69:  Fmmm         71:  Immm
+     $ half,half,half, half,quar,half, quar,quar,half, half,quar,half,
+CCP4 $ HALF,HALF,HALF, HALF,QUAR,HALF, QUAR,QUAR,HALF, HALF,QUAR,HALF,
+C       75:  P4         76:  P41        77:  P42          78:  P43
+     $ HALF,HALF,ONE, HALF,HALF,ONE, HALF,HALF,ONE, HALF,HALF,ONE,
+CCP4 $ HALF,HALF,ONEL,ONEL,ONEL,QUARL, HALF,ONEL,HALFL,ONEL,ONEL,QUARL,
+C       79:  I4         80:  I41        83:  P4/m         87:  I4/m
+     $ HALF,HALF,HALF, ONE,HALF,QUAR,  half,half,half, half,half,quar,
+CCP4 $ HALF,HALF,HALF,HALF,ONEL,QUARL, HALF,HALF,HALF, HALF,HALF,QUAR,
+C       89: P422        90: P4212       91: P4122         92: P41212
+     $ HALF,HALF,HALF, HALF,HALF,HALF, ONE,ONE,EIGH,   HALF,HALF,HALF,
+CCP4 $ HALF,HALF,HALF, HALF,HALF,HALF, ONEL,ONEL,EIGH, ONEL,ONEL,EIGH,
+C       93: P4222       94: P42212      95: P4322         96: P43212
+     $  ONE,HALF,QUAR, HALF,HALF,HALF, ONE,ONE,EIGH,   HALF,HALF,HALF,
+CCP4 $ HALF,ONEL,QUAR, HALF,HALF,HALF, ONEL,ONEL,EIGH, ONEL,ONEL,EIGH,
+C       97: I422        98: I4122      123: P4/mmm       139: I4/mmm
+     $  HALF,HALF,QUAR, ONE,QUAR,QUAR, half,half,half,  half,half,quar,
+CCP4 $ HALF,HALF,QUAR, HALF,ONEL,EIGH, HALF,HALF,HALF,  HALF,HALF,QUAR,
+C      143:  P3        144:  P31       145: P32          146:  R3
+     $ ONE,ONE,ONE,   ONE,ONE,THRD,   ONE,ONE,THRD,    THRD,THRD,ONE,
+CCP4 $ TWTD,TWTD,ONEL,ONEL,ONEL,THRDL,ONEL,ONEL,THRDL, TWTD,TWTD,THRDL,
+C      147:  P-3       148:  R-3       149: P312         150:  P321
+     $ twtd,twtd,half, twtd,twtd,sixt, ONE,ONE,HALF,   ONE,ONE,HALF,
+CCP4 $ TWTD,TWTD,HALF, TWTD,TWTD,SIXT, TWTD,TWTD,HALF, TWTD,TWTD,HALF,
+C      151: P3112      152: P3121      153: P3212        154: P3221
+     $ ONE,ONE,SIXT,    ONE,ONE,SIXT,   ONE,ONE,SIXT,   ONE,ONE,SIXT,
+CCP4 $ ONEL, ONEL,SIXT, ONEL,ONEL,SIXT, ONEL,ONEL,SIXT, ONEL,ONEL,SIXT,
+C      155: R32        162:  P-31m     164: P-3m1
+     $ THRD,THRD,HALF, twtd,half,half, twtd,thrd, one,
+CCP4 $ TWTD,TWTD,SIXT, TWTD,HALF,HALF, TWTD,THRD, ONE,
+C      166:  R-3m        168:  P6
+     $ twtd,twtd,sixt,  ONE,HALF,ONE,
+CCP4 $ TWTD,TWTD,SIXT, TWTD,HALF,ONEL,
+C      169:  P61       170:  P65       171:  P62         172:  P64
+     $  ONE,ONE,SIXT,  ONE,ONE,SIXT,   ONE,HALF,THRD,  ONE,HALF,THRD,
+CCP4 $ ONEL,ONEL,SIXTL,ONEL,ONEL,SIXTL,ONEL,ONEL,THRDL,ONEL,ONEL,THRDL,
+C      173:  P63       175:  P6/m      177: P622         178: P6122
+     $  ONE,ONE,HALF,  twtd,twtd,half,  ONE,HALF,HALF, ONE,ONE,TWLT,
+CCP4 $ TWTD,TWTD,HALFL, TWTD,TWTD,HALF,TWTD,HALF,HALF, ONEL,ONEL,TWLT,
+C      179: P6522      180: P6222      181: P6422        182: P6322
+     $ ONE,ONE,TWLT,   ONE,HALF,SIXT,  ONE,HALF,SIXT,  ONE,ONE,QUAR,
+CCP4 $ ONEL,ONEL,TWLT, ONEL,ONEL,SIXT, ONEL,ONEL,SIXT, TWTD,TWTD,QUAR,
+C      191: P6/mmm     195: P23        196: F23          197: I23
+     $ twtd,thrd,half,  ONE,ONE,HALF,  ONE,HALF,HALF,  HALF,HALF,ONE/
+CCP4 $ TWTD,THRD,HALF, ONEL,ONEL,HALF, QUAR,QUAR,ONEL, ONEL,ONEL,HALF/
+      DATA ((ASULIM(II,JJ),II=1,3),JJ=74,NUMSGP)/
+C      198: P213       199: I213       200: Pm-3         202: Fm-3
+     $ HALF,HALF,ONE,  HALF,HALF,ONE,  half,half,half, half,half,quar,
+CCP4 $ HALF,HALF,ONEL, HALF,HALF,HALF, HALF,HALF,HALF, HALF,HALF,QUAR,
+C      204: Im-3       207: P432       208: P4232        209: F432
+     $ half,half,half, HALF,HALF,ONE,  ONE,HALF,HALF,  HALF,HALF,HALF,
+CCP4 $ HALF,HALF,HALF, ONEL,HALF,HALF, HALF,ONEL,QUAR, HALF,HALF,HALF,
+C      210: F4132      211: I432       212: P4332        213: P4132
+     $  HALF,THRQ,TWTD, QUAR,THRQ,TWTD, ONE,ONE,ONE,   ONE,ONE,ONE,
+CCP4 $ HALF,ONEL,EIGH, HALF,HALF,QUAR, ONEL,ONEL,EIGH, ONEL,ONEL,EIGH,
+C      214: I4132      221: Pm-3m      225: Fm-3m        229: Im-3m
+     $ half,onel,eigh, half,half,half, half,quar,quar, half,half,quar/
+CCP4 $ HALF,ONEL,EIGH, HALF,HALF,HALF, HALF,QUAR,QUAR, HALF,HALF,QUAR/
+C
+      DO 10, J=1,NUMSGP
+         IF (LSPGRP .EQ. NSPGRP(J)) GO TO 20
+ 10   CONTINUE
+C
+C Spacegroup not found
+      XYZLIM(1,1) = -1.0
+      RETURN
+C
+ 20   DO 30, I=1,3
+         XYZLIM(1,I) = 0.0
+         XYZLIM(2,I) = ASULIM(I,J)
+ 30   CONTINUE
+C
+      END
+C
 C ******
 C     =========================================================
        SUBROUTINE CALC_ORIG_PS(NAMSPG_CIF,NSYM,RSYM,NORIG,ORIG,
@@ -6375,9 +6539,5 @@ c          ENDDO
 
       RETURN
       END
-
-
-
-
 
 
