@@ -396,12 +396,10 @@ C...  MMDB open channel (need to test for failures)
       IF (IRET.NE.RWBERR_Ok) THEN
         IF (IRET.NE.RWBERR_NoMatrices) THEN
 C...  MMDB error information
-        CALL RBERRSTOP(1,IRET,IUNIT,0)
-        ERRLIN = ' ERROR: XYZOPEN'
-        CALL CCPERR(1,ERRLIN)
+          CALL RBERRSTOP(1,IRET,IUNIT,1)
+          ERRLIN = ' XYZOPEN: Error opening logical name '//LOGNAM
+          CALL CCPERR(1,ERRLIN(1:LENSTR(ERRLIN)))
         ENDIF
-        ELSE
-        CALL RBERRSTOP(1,IRET,IUNIT,0)
       ENDIF
 C
 C==== If the file is an INPUT file
