@@ -1,8 +1,10 @@
 C
-C     This code is distributed under the terms and conditions of the
-C     CCP4 licence agreement as `Part i)' software.  See the conditions
-C     in the CCP4 manual for a copyright statement.
+C     vms.for
 C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part 1' (Annex 2) software.
+C     A copy of the CCP4 licence can be obtained by writing to the
+C     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
 C
 C   ---------------- vms.for --------------------
 C   replaces vmssupport.for and is replaced by unix.for 
