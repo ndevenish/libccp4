@@ -1828,7 +1828,7 @@ C               	                any other value; nothing happens
 C     IFAIL     (O)	INTEGER         error indicator : meaning :
 C                               	on exit
 C                               	=0 OK
-C                               	=-1 no such file
+C                               	=-1 no such file (but broken!)
 C                               	all other errors cause stop
 C
 C
@@ -6013,7 +6013,7 @@ C     .. Arrays in Common ..
       CHARACTER CBATW*1,PLABS*30,HSCR*80
 C     ..
 C     .. Local Scalars ..
-      INTEGER ENDLOP,IFAIL,ISTAT,JDO10,JDO20,JDO5,NLINS
+      INTEGER ENDLOP,IFAIL,ISTAT,JDO10,JDO20,JDO5,NLINS,NNONBLANK
       CHARACTER LINE*400
 C     ..
 C     .. Local Arrays ..
@@ -6074,9 +6074,14 @@ C
           HISTX(JDO5) = HSCR(JDO5,MINDX)
    10   CONTINUE
 C
+        NNONBLANK = 0
         DO 20 JDO10 = 1,NLINS
-          HSCR(JDO10,MINDX) = HSTRNG(JDO10)
+          IF (HSTRNG(JDO10).NE.' ') THEN
+            NNONBLANK = NNONBLANK + 1
+            HSCR(NNONBLANK,MINDX) = HSTRNG(JDO10)
+          ENDIF
    20   CONTINUE
+        NLINS = NNONBLANK
 C
 C---- Fill up any space left with lines already in history header
 C
@@ -8577,8 +8582,8 @@ C                ************************************
 C                ************************************
 C
           ELSE IF (IPRINT.EQ.3) THEN
-            CALL PUTLIN('* Column Labels, Types, and Ranges :',
-     +           'CURWIN')
+            CALL PUTLIN(
+     +   '* Column Labels, Types, Ranges [and Dataset IDs] :','CURWIN')
             CALL BLANK('CURWIN',1)
 C                ***********************
 C
