@@ -904,14 +904,15 @@ C
               CALL CCP4_PROG_VERSION(PVERSION,1)
               CALL CCPPNM (PROGNAME)
               WRITE(TEMP,'(''CCP4 software suite: library version '',
-     +                      A20)') VERSION
+     +                  A)') VERSION(1:LENSTR(VERSION))
               WRITE(6,'(A)') TEMP(1:LENSTR(TEMP)) 
               WRITE(TEMP,'(''CCP4 software suite: patch level     '',
-     +                      A20)') PATCH_LEVEL
+     +                  A)') PATCH_LEVEL(1:LENSTR(PATCH_LEVEL))
               WRITE(6,'(A)') TEMP(1:LENSTR(TEMP)) 
-              WRITE(TEMP,'(''Program:  '',A20)') PROGNAME
+              WRITE(TEMP,'(''Program:             '',
+     +                  A)') PROGNAME(1:LENSTR(PROGNAME))
               IF (PVERSION.NE.' ') TEMP = 
-     +          TEMP(1:LENSTR(TEMP))//' version '//PVERSION
+     +          TEMP(1:LENSTR(TEMP))//'; version '//PVERSION
               WRITE(6,'(A)') TEMP(1:LENSTR(TEMP))
               IF (VAXVMS()) THEN
                 CALL CEXIT(1)
