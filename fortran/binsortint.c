@@ -32,7 +32,6 @@ For information about key type values see binsortkey.h
 #include <fcntl.h>
 #ifndef NOUNISTD		/* ESV, for instance doesn'r have it */
 #  include <unistd.h>
-#  include <malloc.h>
 #endif
 #include <stddef.h>
 
@@ -74,7 +73,8 @@ KEYBUF consist of NKEYS entries, each of the form:
   int SRTBEG (nkeys, keybuf, lrecl, memsize)
 #endif
 
-#if defined (__convex__) || defined (ultrix) || defined (sgi) || defined (ESV)
+#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
+    defined (ESV) || defined(__OSF1__)
   int srtbeg_ (nkeys, keybuf, lrecl, memsize)
 #endif
 
@@ -112,13 +112,12 @@ int	        *memsize;       /* size of memory (BYTES) used by sort */
 
     /* create input and output pipes */
 
-    close(0);		/* close stdin */
-    dup(fildesout[0]);
-    close(1);
-    dup(fildesin[1]);
-    close(fildesout[1]);
-    close(fildesin[0]);
-    if (errno != 0) {
+    if ((close(0) != 0) ||		/* close stdin */
+	(dup(fildesout[0]) < 0) ||
+	(close(1) != 0) ||
+	(dup(fildesin[1]) < 0) ||
+	(close(fildesout[1]) != 0) ||
+	(close(fildesin[0]) != 0)) {
       perror("Binsort streams");
       _exit(255);
     }
@@ -216,7 +215,8 @@ SRTRLS:	Release one record into Sort
   int SRTRLS (record)
 #endif
 
-#if defined (__convex__) || defined (ultrix) || defined (sgi) || defined (ESV) 
+#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
+    defined (ESV) || defined(__OSF1__)
   int srtrls_ (record)
 #endif
 
@@ -252,7 +252,8 @@ SRTMRG:	Merge - finish release phase
   int SRTMRG ()
 #endif
 
-#if defined (__convex__) || defined (ultrix) || defined (sgi) || defined (ESV) 
+#if defined (__convex__) || defined (ultrix) || defined (sgi) || \
+    defined (ESV) || defined(__OSF1__) 
   int srtmrg_ ()
 #endif
 
@@ -290,7 +291,8 @@ SRTRET:	Return 1 record from sort
   int SRTRET (record)
 #endif
 
-#if defined (__convex__) || defined (ultrix) || defined (sgi)  || defined (ESV)
+#if defined (__convex__) || defined (ultrix) || defined (sgi)  || \
+    defined (ESV) || defined(__OSF1__)
   int srtret_ (record)
 #endif
 
@@ -312,7 +314,9 @@ char		*record;
       fclose(filin);
       return(-1);
     }
-    else
+    else {
+      perror("Sort routine SRTRET: ");
       return(ferror(filin));
+    }
 }
 
