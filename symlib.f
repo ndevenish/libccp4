@@ -11,7 +11,8 @@ C
 C 1) Subroutines for manipulating symmetry operators.
 C   
 C    invsym        msyget        msymlb        pgdefn    
-C    pgmdf         pgnlau        symfr2        symtrn       
+C    pgmdf         pgnlau        symfr2        symtrn 
+C    msymlb2      
 c  Internal routines:-
 C    determ     
 C
@@ -72,7 +73,7 @@ C                from library file on stream IST, logical name SYMOP.
 C         Returns NSYM           = number of symmetry operations
 C                 ROT(4,4,NSYM)  = rotation/translation  matrices
 C
-C   SUBROUTINE MSYMLB(IST,LSPGRP,NAMSPG,NAMPG,NSYMP,NSYM,RSYM)
+C   SUBROUTINE MSYMLB(IST,LSPGRP,NAMSPG,NAMPG,NSYMP,NSYM,ROT)
 C
 C Get symmetry operations from library file
 C on stream IST, logical name SYMOP.
@@ -87,7 +88,13 @@ C   NSYMP        number of primitive symmetry operations
 C   NSYM         number of symmetry operations
 C   ROT(4,4,NSYM)  rotation/translation  matrices
 C
-C---- SYMTRN(NSM,RSM)
+C   SUBROUTINE MSYMLB2(IST,LSPGRP,NAMSPG_CIF,NAMPG,NSYMP,NSYM,ROT)
+C
+C     Identical to MSYMLB, except that on output NAMSPG_CIF
+C     has correct CIF format, e.g. 'P 21 21 21'
+C     NAMSPG_CIF should be as in _symmetry.space_group_name_H-M
+C
+C---- SUBROUTINE SYMTRN(NSM,RSM)
 C           symmetry translation from matrix back to characters
 C
 C           This translates the symmetry matrices RSM(4,4,NSM) into INT TAB
@@ -1263,6 +1270,162 @@ C
  30   CONTINUE
       WRITE (LINERR,FMT='(A,A,I5,A)')
      +     'MSYGET: No symmetry information for space group ',
+     +     ' number',LSPGRP,' in SYMOP file'
+      CALL LERROR(2,-1,LINERR)
+      END
+C
+C
+C     =========================================================
+      SUBROUTINE MSYMLB2(IST,LSPGRP,NAMSPG_CIF,NAMPG,NSYMP,NSYM,ROT)
+C     =========================================================
+C
+C     Identical to MSYMLB, except that on output NAMSPG_CIF
+C     has correct CIF format, e.g. 'P 21 21 21'
+C     NAMSPG_CIF should be as in _symmetry.space_group_name_H-M
+C
+C---- Get symmetry operations for spacegroup LSPGRP from library file
+C     on stream IST, logical name SYMOP.
+C
+C   In the library file, the header for each entry is
+C
+C      LSPGRP   NLINS   NLINP   NAMSPG  NAMPG  CRYSTAL  NAMSPG_CIF
+C
+C  where  LSPGRP        spacegroup number
+C         NLINS         total number of lines of symmetry operators.
+C         NLINP         number of LINES of primitive symmetry operators
+C         NAMSPG        spacegroup name
+C         NAMPG         name of corresponding pointgroup
+C         CRYSTAL       crystal system
+C         NAMSPG_CIF    spacegroup name in CIF format
+C
+C On entry:
+C   IST         stream number to read file
+C   LSPGRP      spacegroup number
+C   NAMSPG_CIF  spacegroup name: this will be used to find the
+C                       spacegroup only if LSPGRP = 0
+C
+C Returns
+C   LSPGRP      spacegroup number
+C   NAMSPG_CIF  spacegroup name in CIF format
+C   NAMPG       pointgroup name
+C   NSYMP       number of primitive symmetry operations - only different
+C               from NSYM in non-primitive spacegroups
+C   NSYM        total number of symmetry operations
+C   ROT(4,4,NSYM)  rotation/translation  matrices
+C
+C     .. Parameters ..
+      INTEGER NPARSE
+      PARAMETER (NPARSE=200)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER IST,LSPGRP,NSYM,NSYMP
+      CHARACTER NAMPG* (*),NAMSPG_CIF* (*)
+C     ..
+C     .. Array Arguments ..
+      REAL ROT(4,4,*)
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,IFAIL,ISG,NLIN,NLINS,NTOK
+      CHARACTER LINE*400,LINERR*400
+C     ..
+C     .. Local Arrays ..
+      REAL FVALUE(NPARSE)
+      INTEGER IBEG(NPARSE),IDEC(NPARSE),IEND(NPARSE),ITYP(NPARSE)
+      CHARACTER CVALUE(NPARSE)*4
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL CCPDPN,CCPUPC,PARSE,SYMFR2,LERROR
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC NINT
+C     ..
+      IFAIL = 0
+      CALL CCPDPN(IST,'SYMOP','READONLY','F',0,IFAIL)
+C
+      NTOK = 0
+      NSYM = 0
+C
+   10 CONTINUE
+C
+C---- Find correct space-group in file.
+C     Each space-group has header line of space-group number,
+C     number of line of symmetry operations for non-primitive
+C     and primitive cells.
+C
+      READ (IST,FMT='(A)',ERR=30,END=30) LINE
+      CALL CCPUPC(LINE)
+      NTOK = -NPARSE
+      CALL PARSE(LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,NTOK)
+C
+C---- Fields are space group number,
+C                number of lines,
+C                number of lines in primitive cell symmetry,
+C                spacegroup name
+C
+      IF (ITYP(1).NE.2.OR.ITYP(2).NE.2.OR.ITYP(3).NE.2.OR.NTOK.LT.7)
+     +     CALL LERROR(2,-1,'MSYMLB2: Error in format of SYMOP file: '
+     +     // LINE)
+      ISG = NINT(FVALUE(1))
+      NLIN = NINT(FVALUE(2))
+      NLINS = NINT(FVALUE(3))
+      IF (LSPGRP.GT.0) THEN
+C
+C---- Check for spacegroup number given
+C
+        IF (LSPGRP.EQ.ISG) GO TO 40
+C
+C---- Check for spacegroup name given against CIF name
+C
+      ELSE IF (NAMSPG_CIF.EQ.LINE(IBEG(7) :IEND(7))) THEN
+        GO TO 40
+C
+C---- Check for spacegroup name given against short name
+C
+      ELSE IF (NAMSPG_CIF.EQ.LINE(IBEG(4) :IEND(4))) THEN
+        GO TO 40
+
+      END IF
+C
+C---- Not this one, skip NLIN lines
+C
+      DO 20 I = 1,NLIN
+        READ (IST,FMT=*)
+ 20   CONTINUE
+C     try again
+      GO TO 10
+C
+ 40   CONTINUE
+C
+C---- Space-group found, convert NLIN lines of
+C     symmetry operators to matrices
+C
+      LSPGRP = ISG
+      NAMSPG_CIF = LINE(IBEG(7) :IEND(7))
+      NAMPG = LINE(IBEG(8) :IEND(8))
+C
+      DO 50 I = 1,NLINS
+        READ (IST,FMT='(A)') LINE
+C       Convert line to matrices
+        NSYM = NSYM + 1
+        CALL SYMFR2(LINE,1,NSYM,ROT)
+ 50   CONTINUE
+C
+      NSYMP = NSYM
+      IF (NLIN.GT.NLINS) THEN
+        DO 60 I = NLINS + 1,NLIN
+          READ (IST,FMT='(A)') LINE
+C         Convert line to matrices
+          NSYM = NSYM + 1
+          CALL SYMFR2(LINE,1,NSYM,ROT)
+ 60     CONTINUE
+      END IF
+C
+      CLOSE (IST)
+      RETURN
+C
+ 30   CONTINUE
+      WRITE (LINERR,FMT='(A,A,I5,A)')
+     +     'MSYMLB2: No symmetry information for space group ',
      +     ' number',LSPGRP,' in SYMOP file'
       CALL LERROR(2,-1,LINERR)
       END
