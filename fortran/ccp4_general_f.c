@@ -72,12 +72,19 @@ void ccp4f_mem_tidy(void) {
 
 /* MVS was defaulting to assigning GETARG to be returning an int and it aint*/
 #ifdef _MSC_VER
+#if (CALL_LIKE_MVS==2)
+ void CCP4H_INIT_LIB(int *ihtml, int *isumm);
+ void CCP4H_SUMMARY_BEG();
+ void CCP4H_SUMMARY_END();
+ void CCP4H_PRE_BEG();
+#else
  int __stdcall IARGC();
  void __stdcall GETARG(int *i,char *arg,int arg_len);
  void __stdcall CCP4H_INIT_LIB(int *ihtml, int *isumm);
  void __stdcall CCP4H_SUMMARY_BEG();
  void __stdcall CCP4H_SUMMARY_END();
  void __stdcall CCP4H_PRE_BEG();
+#endif
 #endif
 
 FORTRAN_SUBR ( CCPFYP, ccpfyp,
