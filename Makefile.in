@@ -79,6 +79,27 @@ CSYMPLPACKAGE = $(LIB_DIR)/csym_pl.so
 LUMTZ       = $(LIB_DIR)/libumtz.a
 LMMTZ       = $(LIB_DIR)/libmmtz.a
 
+### SWIG generation of modules for Python, Tcl and Perl ###
+# Adjust these lines as required
+
+# Add e.g. $(CSYMPYMODULE) to make it part of the default build
+SCRIPT_MODULES = 
+
+# Wrapper files are distributed, but use this if you want to 
+# update them
+SWIG_BIN    = /user/xtal/swig/swig
+SWIG_LIB    = /user/xtal/swig/Lib
+
+# These are necessary to compile the wrapper files
+PYTHON_INCLUDE  = /usr/local/include/python2.3
+TCL_INCLUDE  = /usr/local/include
+PERL_INCLUDE  = 
+
+# This is necessary to create module
+SHARE_MODULE = ld -dy -G -z allextract -z text
+
+### SWIG end ###
+
 MMDBOBJS = bfgs_min.o mmdb_chain.o    mmdb_manager.o  mmdb_symop.o \
            file_.o    mmdb_cifdefs.o  mmdb_mask.o     mmdb_title.o \
            linalg_.o  mmdb_coormngr.o mmdb_mmcif.o    mmdb_utils.o \
@@ -151,7 +172,7 @@ $(mmdbsrcdir)/mmdb_sbase0.h
 
 ##### Makefile targets ######
 
-all:  fsplit $(LMMDB) $(LC) $(LF)
+all:  fsplit $(LMMDB) $(LC) $(LF) $(SCRIPT_MODULES)
 # maybe create shared library
 	$(SHARE_LIB)
 
@@ -228,8 +249,8 @@ $(CMAPPYMODULE): $(LCMAP) $(CMAPPYOBJS)
 
 csym_py: $(CSYMPYMODULE)
 
-$(CSYMPYMODULE): $(CSYMOBJS) $(CORELIBOBJS) $(CSYMPYOBJS)
-	$(SHARE_MODULE) $(CSYMOBJS) $(CORELIBOBJS) $(CSYMPYOBJS) -o $(CSYMPYMODULE)
+$(CSYMPYMODULE): $(CSYMOBJS) $(CORELIBOBJS) $(CUCOBJS) $(CSYMPYOBJS)
+	$(SHARE_MODULE) $(CSYMOBJS) $(CORELIBOBJS) $(CUCOBJS) $(CSYMPYOBJS) -o $(CSYMPYMODULE)
 
 mmdb_py: $(MMDBPYMODULE)
 
@@ -528,48 +549,48 @@ unix : unix.o
 ### SWIG stuff ###
 
 $(srcdir)/cmtzlib_python_wrap.c: $(srcdir)/cmtzlib.i $(srcdir)/cmtzlib.h
-	/ccpstaff/ccp4/mdw/cmtz/swig/swig -python -dhtml \
+	SWIG_LIB=$(SWIG_LIB) $(SWIG_BIN) -python \
            -o $(srcdir)/cmtzlib_python_wrap.c $(srcdir)/cmtzlib.i
 
 $(srcdir)/cmaplib_python_wrap.c: $(srcdir)/cmaplib.i $(srcdir)/cmaplib.h
-	/ccpstaff/ccp4/mdw/cmtz/swig/swig -v -python -dhtml \
+	SWIG_LIB=$(SWIG_LIB) $(SWIG_BIN) -python \
            -o $(srcdir)/cmaplib_python_wrap.c $(srcdir)/cmaplib.i
 
 $(srcdir)/csymlib_python_wrap.c: $(srcdir)/csymlib.i $(srcdir)/csymlib.h
-	/ccpstaff/ccp4/mdw/cmtz/swig/swig -v -python -dhtml \
+	SWIG_LIB=$(SWIG_LIB) $(SWIG_BIN) -python \
            -o $(srcdir)/csymlib_python_wrap.c $(srcdir)/csymlib.i
 
 # -shadow produces a file MMDB.py
 $(mmdbsrcdir)/mmdb_python_wrap.cpp: $(mmdbsrcdir)/mmdb_python.i
-	/ccpstaff/ccp4/mdw/cmtz/swig/swig -c++ -shadow -python \
+	SWIG_LIB=$(SWIG_LIB) $(SWIG_BIN) -c++ -shadow -python \
             -o $(mmdbsrcdir)/mmdb_python_wrap.cpp $(mmdbsrcdir)/mmdb_python.i
 
 $(srcdir)/cmtzlib_tcl_wrap.c: $(srcdir)/cmtzlib.i $(srcdir)/cmtzlib.h
-	/ccpstaff/ccp4/mdw/cmtz/swig/swig -tcl -dhtml \
+	SWIG_LIB=$(SWIG_LIB) $(SWIG_BIN) -tcl \
            -o $(srcdir)/cmtzlib_tcl_wrap.c $(srcdir)/cmtzlib.i
 
 $(srcdir)/cmaplib_tcl_wrap.c: $(srcdir)/cmaplib.i $(srcdir)/cmaplib.h
-	/ccpstaff/ccp4/mdw/cmtz/swig/swig -tcl -dhtml \
+	SWIG_LIB=$(SWIG_LIB) $(SWIG_BIN) -tcl \
            -o $(srcdir)/cmaplib_tcl_wrap.c $(srcdir)/cmaplib.i
 
 $(srcdir)/csymlib_tcl_wrap.c: $(srcdir)/csymlib.i $(srcdir)/csymlib.h
-	/ccpstaff/ccp4/mdw/cmtz/swig/swig -tcl -dhtml \
+	SWIG_LIB=$(SWIG_LIB) $(SWIG_BIN) -tcl \
            -o $(srcdir)/csymlib_tcl_wrap.c $(srcdir)/csymlib.i
 
 $(mmdbsrcdir)/mmdb_tcl_wrap.cpp: $(mmdbsrcdir)/mmdb_python.i
-	/ccpstaff/ccp4/mdw/cmtz/swig/swig -c++ -tcl8 \
+	SWIG_LIB=$(SWIG_LIB) $(SWIG_BIN) -c++ -tcl8 \
             -o $(mmdbsrcdir)/mmdb_tcl_wrap.cpp $(mmdbsrcdir)/mmdb_python.i
 
 $(srcdir)/cmtzlib_pl_wrap.c: $(srcdir)/cmtzlib.i $(srcdir)/cmtzlib.h
-	/ccpstaff/ccp4/mdw/cmtz/swig/swig -perl5 -dhtml \
+	SWIG_LIB=$(SWIG_LIB) $(SWIG_BIN) -perl5 \
            -o $(srcdir)/cmtzlib_pl_wrap.c $(srcdir)/cmtzlib.i
 
 $(srcdir)/cmaplib_pl_wrap.c: $(srcdir)/cmaplib.i $(srcdir)/cmaplib.h
-	/ccpstaff/ccp4/mdw/cmtz/swig/swig -perl5 -dhtml \
+	SWIG_LIB=$(SWIG_LIB) $(SWIG_BIN) -perl5 \
            -o $(srcdir)/cmaplib_pl_wrap.c $(srcdir)/cmaplib.i
 
 $(srcdir)/csymlib_pl_wrap.c: $(srcdir)/csymlib.i $(srcdir)/csymlib.h
-	/ccpstaff/ccp4/mdw/cmtz/swig/swig -perl5 -dhtml \
+	SWIG_LIB=$(SWIG_LIB) $(SWIG_BIN) -perl5 \
            -o $(srcdir)/csymlib_pl_wrap.c $(srcdir)/csymlib.i
 
 #
@@ -676,7 +697,7 @@ testlib : $(srcdir)/testlib.f  $(LF)
 install-ccp4HEADERS: $(ccp4_HEADERS)
 	if test ! -d $(DESTDIR)$(includedir)/ccp4; then mkdir $(DESTDIR)$(includedir)/ccp4; fi
 	@list='$(ccp4_HEADERS)'; for p in $$list; do \
-       	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(includedir)/ccp4/$$f"; \
 	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(includedir)/ccp4/$$f; \
