@@ -65,6 +65,7 @@ c     call dna_start with filename = ' ' - which I could interpret
 c     appropriately
 
       subroutine dna_set_no_output
+      implicit none
       include 'dna_header.fh'
       dnaout = .false.
       return
@@ -77,9 +78,13 @@ c     the file is opened
 c     
 
       subroutine dna_start(filename, progname)
+      implicit none
       include 'dna_header.fh'
       character*(*) progname, filename
-      integer ifail
+      integer ifail, lenstr
+      external lenstr
+      dnainlist = .false.
+      dnaintable = .false.
       dna_image = ' '
       ifail = 1
       call ccpdpn(dnafd, filename, 'UNKNOWN', 'F' ,0 , ifail)
@@ -102,6 +107,7 @@ c     program
 c     
 
       subroutine dna_end
+      implicit none
       include 'dna_header.fh'
  1    format('</dna_tables>')
 
@@ -120,18 +126,24 @@ c     write an item containing a "real"
 c     
 
       subroutine dna_real_item(name, value)      
+      implicit none
       include 'dna_header.fh'
       character *(*) name
       real value
+      integer lenstr
+      external lenstr
  1    format('      <item name="', a, '">', e15.6, '</item>')
       if(dnaout) write(dnafd, 1) name(1:lenstr(name)), value
       return
       end
 
       subroutine dna_double_item(name, value)      
+      implicit none
       include 'dna_header.fh'
       character *(*) name
       double precision value
+      integer lenstr
+      external lenstr
  1    format('      <item name="', a, '">', e15.6, '</item>')
       if(dnaout) write(dnafd, 1) name(1:lenstr(name)), value
       return
@@ -143,9 +155,11 @@ c
 
 
       subroutine dna_integer_item(name, value)
+      implicit none
       include 'dna_header.fh'
       character *(*) name
-      integer value
+      integer value, lenstr
+      external lenstr
  1    format('      <item name="', a, '">', i15, '</item>')
       if(dnaout) write(dnafd, 1) name(1:lenstr(name)), value
       return
@@ -156,9 +170,12 @@ c     as above sed 's/real/character*(*)/'
 c     
 
       subroutine dna_character_item(name, value)
+      implicit none
       include 'dna_header.fh'
       character *(*) name
       character *(*) value
+      integer lenstr
+      external lenstr
  1    format('      <item name="', a, '">', a, '</item>')
       if(dnaout) write(dnafd, 1) name(1:lenstr(name)), value
       return
@@ -169,6 +186,7 @@ c     start a named list
 c     
 
       subroutine dna_list_start(name)
+      implicit none
       include 'dna_header.fh'
       character *(*) name
  1    format('    <list name="', a, '">')
@@ -187,6 +205,7 @@ c     close it!
 c     this is the same as the above but with an integer index
 c     so that you can have any lists with the same name - very 
 c     important for tabular output.
+      implicit none
       include 'dna_header.fh'
       character *(*) name
       integer index
@@ -207,6 +226,7 @@ c     finish a named list
 c     
 
       subroutine dna_list_end
+      implicit none
       include 'dna_header.fh'
 
  1    format('    </list>')
@@ -224,8 +244,11 @@ c     start a named table
 c     
 
       subroutine dna_table_start(name)
+      implicit none
       include 'dna_header.fh'
       character *(*) name
+      integer lenstr
+      external lenstr
  1    format('  <table name="', a, '" image="', a, '">')
  2    format('  <table name="', a, '">')
 
@@ -247,6 +270,7 @@ c     finish a named table
 c     
 
       subroutine dna_table_end
+      implicit none
       include 'dna_header.fh'
  1    format('  </table>')
 
@@ -264,7 +288,10 @@ c     check we are not still inside a list
       end
 
       subroutine dna_error(message)
+      implicit none
       character*(*) message
+      integer lenstr
+      external lenstr
 
       call dna_table_start('error')
       call dna_list_start('error')
@@ -276,7 +303,10 @@ c     check we are not still inside a list
       end
 
       subroutine dna_warning(message)
+      implicit none
       character*(*) message
+      integer lenstr
+      external lenstr
 
       call dna_table_start('warning')
       call dna_list_start('warning')
