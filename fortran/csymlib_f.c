@@ -1322,6 +1322,31 @@ FORTRAN_SUBR ( EPSLON, epslon,
   *isysab = ccp4spg_is_sysabs(spacegroup, h, k, l);
 }
 
+FORTRAN_SUBR ( CCP4SPG_F_EPSLON, ccp4spg_f_epslon,
+	       (const int *sindx, const int ih[3], float *epsi, int *isysab),
+	       (const int *sindx, const int ih[3], float *epsi, int *isysab),
+	       (const int *sindx, const int ih[3], float *epsi, int *isysab))
+{
+  int h,k,l;
+
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_EPSLON");)
+
+  if (*sindx <= 0 || *sindx > MSPAC) {
+    printf("Error in CCP4SPG_F_EPSLON: sindx %d out of range!\n",*sindx);
+    return;
+  }
+
+  if ( ! spacegrp[*sindx-1] ) {
+    printf("CCP4SPG_F_EPSLON: No spacegroup loaded on channel %d ! \n",*sindx);
+    return;
+  }
+
+  h = ih[0]; k = ih[1]; l = ih[2]; 
+
+  *epsi = (float) ccp4spg_get_multiplicity(spacegrp[*sindx-1], h, k, l);
+  *isysab = ccp4spg_is_sysabs(spacegrp[*sindx-1], h, k, l);
+}
+
 FORTRAN_SUBR ( SYSAB, sysab,
 	       (const int in[3], int *isysab),
 	       (const int in[3], int *isysab),
@@ -1334,6 +1359,30 @@ FORTRAN_SUBR ( SYSAB, sysab,
   h = in[0]; k = in[1]; l = in[2]; 
 
   *isysab = ccp4spg_is_sysabs(spacegroup, h, k, l);
+}
+
+FORTRAN_SUBR ( CCP4SPG_F_IS_SYSABS, ccp4spg_f_is_sysabs,
+	       (const int *sindx, const int in[3], int *isysab),
+	       (const int *sindx, const int in[3], int *isysab),
+	       (const int *sindx, const int in[3], int *isysab))
+{
+  int h,k,l;
+
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_IS_SYSABS");)
+
+  if (*sindx <= 0 || *sindx > MSPAC) {
+    printf("Error in CCP4SPG_F_IS_SYSABS: sindx %d out of range!\n",*sindx);
+    return;
+  }
+
+  if ( ! spacegrp[*sindx-1] ) {
+    printf("CCP4SPG_F_IS_SYSABS: No spacegroup loaded on channel %d ! \n",*sindx);
+    return;
+  }
+
+  h = in[0]; k = in[1]; l = in[2]; 
+
+  *isysab = ccp4spg_is_sysabs(spacegrp[*sindx-1], h, k, l);
 }
 
 /** Set up centric zones based on symmetry operators.
@@ -1431,6 +1480,35 @@ FORTRAN_SUBR ( CENTPHASE, centphase,
   }
 
   *cenphs = ccp4spg_centric_phase(spacegroup, h, k, l);
+}
+
+FORTRAN_SUBR ( CCP4SPG_F_CENTPHASE, ccp4spg_f_centphase,
+	       (const int *sindx, const int ih[3], float *cenphs),
+	       (const int *sindx, const int ih[3], float *cenphs),
+	       (const int *sindx, const int ih[3], float *cenphs))
+{
+  int h,k,l;
+
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_CENTPHASE");)
+
+  if (*sindx <= 0 || *sindx > MSPAC) {
+    printf("Error in CCP4SPG_F_IS_CENTPHASE: sindx %d out of range!\n",*sindx);
+    return;
+  }
+
+  if ( ! spacegrp[*sindx-1] ) {
+    printf("CCP4SPG_F_IS_CENTPHASE: No spacegroup loaded on channel %d ! \n",*sindx);
+    return;
+  }
+
+  h = ih[0]; k = ih[1]; l = ih[2]; 
+
+  if (! ccp4spg_is_centric(spacegrp[*sindx-1], h, k, l) ) {
+    printf("CCP4SPG_F_CENTPHASE: This is not a centric reflection!\n");
+    return;
+  }
+
+  *cenphs = ccp4spg_centric_phase(spacegrp[*sindx-1], h, k, l);
 }
 
 /* Returns map limits of a.s.u. in fractional units.
