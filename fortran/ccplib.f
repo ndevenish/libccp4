@@ -682,7 +682,7 @@ C     (avoid VMS `Message number 00000000')
         ENDIF
       ENDIF
       CALL CCPPNM (ERRBUF)
-      ERRBUF (LENSTR(ERRBUF)+1:) = ": "
+      ERRBUF (LENSTR(ERRBUF)+1:) = ': '
       ERRBUF (LENSTR(ERRBUF)+2:) = ERRSTR
       CALL QPRINT(0,ERRBUF)
       IF (VAXVMS()) THEN
