@@ -1,4 +1,3 @@
-
 C
 C---- F77MSUB.FOR                               30/10/86    JWC
 C
@@ -37,11 +36,6 @@ C
 C   24/2/92  new subroutine MRDHDS, like MRDHDR but with soft fail & 
 C            print flag. s/r MRDHDR nor calls MRDHDS (Stefan Knight)
 C
-C   11/5/92  Changes to subroutines MRHDRS, MSYMOP, MSYCPY, MCLOSC,
-C            MCLOSE to read real, intger & character parts of header
-C            seperately. Allows CONVERT stuff to work (David Wild).
-C
-C   29/5/92  Same changes to MWCLOSE (D.W.)
 C   24/6/92  Remove calculation of max,min etc from mspew for modes
 C            other than 2 (Peter Brick)
 C
@@ -168,7 +162,7 @@ C
 C 
 C
 C
-C      IMPLICIT NONE
+C
 C                                            
 C     .. Scalar Arguments ..
       INTEGER IUNIT,LMODE,LSPGRP,NSEC,NU1,NU2,NV1,NV2,NW1
@@ -221,7 +215,7 @@ C                                =11 bricked vector map
 C                                =12 bricked ridge-line map
 C
 C
-C      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -463,7 +457,7 @@ C            ((X(I,J),I=IU1,IU2),J=IV1,IV2).
 C 
 C
 C
-C      IMPLICIT NONE
+C
 C
 C
 C     .. Parameters ..
@@ -561,7 +555,7 @@ C  IUNIT (I)   Map stream number
 C 
 C     X (I)   Array holding the map section
 C 
-C      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..
       INTEGER IUNIT
@@ -629,9 +623,7 @@ C---- This subroutine writes the header records to
 C      the output map file and closes the file.
 C 
 C  Call:  CALL MCLOSE(IUNIT,RHMIN,RHMAX,RHMEAN,RHRMS)
-C
-C---- Added code to write out map/machine stamp to header.  D.Wild 11/5/92
-C
+C 
 C---- Parameters:
 C     ==========
 C 
@@ -650,13 +642,11 @@ C RHRMS  (I)   The sum of squares of the density values in the map
 C              (This will used internally to calculate the 
 C               rms deviation from the mean value which is then stored.)
 C
-C      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
-      CHARACTER*4 MAP
-      PARAMETER (MAP      =  'MAP ')
 C     ..
 C     .. Scalar Arguments ..
       REAL RHMAX,RHMEAN,RHMIN,RHRMS
@@ -670,8 +660,6 @@ C     ..
 C     .. Arrays in Common ..
       REAL CEL,SKWMAT,SKWTRN
       INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ
-      INTEGER   MACHST
-      CHARACTER*4 MAPST
 C     ..
 C     .. Local Scalars ..
       REAL T
@@ -681,20 +669,15 @@ C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QTYPE,QWRITE           
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITE           
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
 C     ..
 C     .. Common blocks ..
-Cdw      COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
-Cdw     +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
-Cdw     +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
-     +       JUNK(15),MAPST,MACHST,ARMS,NLAB,LABELS(20,10),NCHITM,
-     +       ITMHDR,ITMSC1
-
+     +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
       COMMON /MSTRM/LSTRM(12)
 C     ..
 C     .. Equivalences ..
@@ -724,14 +707,6 @@ C
       IF(MODE.EQ.2) THEN
         WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
       ENDIF
-C
-C---- Get machine type stamp (word 54)
-C
-      CALL QTYPE(MACHST)
-C
-C---- write map stamp to word 53
-C
-      MAPST  = MAP
 C
 C---- Write to header, reset mode to 2 first
 C
@@ -771,20 +746,16 @@ C     from internal sums
 C 
 C  Call:  CALL MWCLOSE(IUNIT)
 C 
-C---- Added code to write out map/machine stamp to header.  D.Wild 29/5/92
-C
 C---- Parameters:
 C     ==========
 C 
 C  IUNIT (I)   The map stream number
 C 
-C      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
-      CHARACTER*4 MAP
-      PARAMETER (MAP      =  'MAP ')
 C     ..
 C     .. Scalar Arguments ..
       REAL RHMAX,RHMEAN,RHMIN,RHRMS
@@ -794,8 +765,6 @@ C     .. Scalars in Common ..
       REAL AMAX,AMEAN,AMIN,ARMS
       INTEGER ISPG,ITMHDR,ITMSC1,LSKFLG,MODE,NC,NC1,NCHITM,NLAB,NR,NR1,
      +        NS,NS1,NSYMBT
-      INTEGER   MACHST
-      CHARACTER*4 MAPST
 C     ..
 C     .. Arrays in Common ..
       REAL CEL,SKWMAT,SKWTRN
@@ -809,20 +778,15 @@ C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QTYPE,QWRITE           
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITE           
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
 C     ..
 C     .. Common blocks ..
-Cdw      COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
-Cdw     +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
-Cdw     +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
-     +       JUNK(15),MAPST,MACHST,ARMS,NLAB,LABELS(20,10),NCHITM,
-     +       ITMHDR,ITMSC1
-
+     +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
       COMMON /MSTRM/LSTRM(12)
 C     ..
 C     .. Equivalences ..
@@ -850,14 +814,6 @@ C
       IF(MODE.EQ.2) THEN
         WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
       ENDIF
-C
-C---- Get machine type stamp (word 54)
-C
-      CALL QTYPE(MACHST)
-C
-C---- write map stamp to word 53 
-C
-      MAPST  = MAP
 C
 C---- Write to header, reset mode to 2 first
 C
@@ -895,8 +851,6 @@ C---- This subroutine writes the header records to
 C      the output map file and closes the file.
 C 
 C  Call:  CALL MCLOSC(IUNIT,RHMIN,RHMAX,RHMEAN,RHRMS)
-C
-C---- Added code to write out map/machine stamp to header.  D.Wild 11/5/92
 C 
 C---- Parameters:
 C     ==========
@@ -911,13 +865,11 @@ C  RHMEAN (I)   The mean density in the map
 C 
 C  RHRMS  (I)   The rms deviation from the mean value in the map
 C
-C      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
-      CHARACTER*4  MAP
-      PARAMETER (MAP      =  'MAP ')
 C     ..
 C     .. Scalar Arguments ..
       REAL RHMAX,RHMEAN,RHMIN,RHRMS
@@ -927,8 +879,6 @@ C     .. Scalars in Common ..
       REAL AMAX,AMEAN,AMIN,ARMS
       INTEGER ISPG,ITMHDR,ITMSC1,LSKFLG,MODE,NC,NC1,NCHITM,NLAB,NR,NR1,
      +        NS,NS1,NSYMBT
-       INTEGER   MACHST
-      CHARACTER*4 MAPST
 C     ..
 C     .. Arrays in Common ..
       REAL CEL,SKWMAT,SKWTRN
@@ -942,20 +892,15 @@ C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QTYPE,QWRITE           
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITE           
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
 C     ..
 C     .. Common blocks ..
-Cdw      COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
-Cdw     +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
-Cdw     +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
-     +       JUNK(15),MAPST,MACHST,ARMS,NLAB,LABELS(20,10),NCHITM,
-     +       ITMHDR,ITMSC1
-
+     +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
       COMMON /MSTRM/LSTRM(12)
 C     ..
 C     .. Equivalences ..
@@ -979,14 +924,6 @@ C---- Minimum & maximum
 C
       AMIN = RHMIN
       AMAX = RHMAX
-C
-C---- Get machine type stamp (word 54)
-C
-      CALL QTYPE(MACHST)
-C
-C---- write map stamp to word 53 
-C
-      MAPST  = MAP
       IF(MODE.EQ.2) THEN
         WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
       ENDIF
@@ -1039,7 +976,7 @@ C   IUNIT (I)   Map stream number
 C 
 C   JSEC (I)   Position the output map before section JSEC
 C 
-C      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..   
       INTEGER IUNIT,JSEC
@@ -1121,7 +1058,7 @@ C  RHRMS        rms deviation from mean density
 C
 C
 C
-C      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -1173,7 +1110,6 @@ C     .. Common blocks ..
 C     ..
 C     .. Equivalences ..
       EQUIVALENCE (NC,HEADER(1))
-
 
 C     ..
 C     .. Save statement ..
@@ -1232,7 +1168,7 @@ C  IPRINT                     = 0; silent
 C                             .ne. 0; print file name, header info etc
 C
 C
-C      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -1257,8 +1193,7 @@ C     .. Arrays in Common ..
      +        NCHITM,NCS,NR1S,NRS,NS1S,NSS,NXYZ
 C     ..
 C     .. Local Scalars ..
-Cdw      INTEGER I,IER,J,KMODE,NBHDR,NCHHDR,NFILSZ,NW2
-      INTEGER I,IER,J,KMODE,NBHDR,NITHDR,NCHHDR,NFILSZ,NW2
+      INTEGER I,IER,J,KMODE,NBHDR,NCHHDR,NFILSZ,NW2
       CHARACTER FILE*255
 
 C     ..
@@ -1269,11 +1204,6 @@ C     .. Error and print control ..
 C     ..
 C     .. Local Arrays ..
       REAL HEADER(256)
-C
-Cdw----added to seperate real and integer parts of header
-C
-      INTEGER IHDR1(10),IHDR2(3),IHDR3(3),IHDR4(17),IHDR5,IHDR6(200)
-      REAL    RHDR1(6),RHDR2(3),RHDR3(12),RHDR4
       CHARACTER LXYZ(3)*1
 C     ..
 C     .. External Subroutines ..
@@ -1290,17 +1220,7 @@ C     .. Common blocks ..
       COMMON /MSTRM/LSTRM(12)
 C     ..
 C     .. Equivalences ..
-Cdw      EQUIVALENCE (NC,HEADER(1))
-      EQUIVALENCE (NC,IHDR1(1)),
-     *            (CEL(1),RHDR1(1)),
-     *            (MAPCRS(1),IHDR2(1)),
-     *            (AMIN,RHDR2(1)),
-     *            (ISPG,IHDR3(1)),
-     *            (SKWMAT(1,1),RHDR3(1)),
-     *            (JUNK(1),IHDR4(1)),
-     *            (ARMS,RHDR4),
-     *            (NLAB,IHDR5),
-     *            (LABELS(1,1),IHDR6(1))
+      EQUIVALENCE (NC,HEADER(1))
 C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/,FILE
@@ -1351,93 +1271,8 @@ C
      +                          FILE(1:LENSTR(FILE)),MAPNAM
         ENDIF
 C
-Cdw---- NO -  Read header, mode 2
-C
-Cdw        CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-Cdw        CALL QREAD(LSTRM(IUNIT),HEADER,NBHDR,IER)
-C
-Cdw---- Read header, modes 2 & 6 in real and integer blocks
-Cdw---- Mode 0 for characters
-Cdw---- Unfortunately need to call QMODE each time we change
-C
-        NITHDR = 10
-        CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),IHDR1,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
-C
-        NITHDR = 6
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),RHDR1,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
-C
-        NITHDR = 3
-        CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),IHDR2,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
-C
-        NITHDR = 3
-        CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),RHDR2,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
-C
-        NITHDR = 3
-        CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),IHDR3,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
-C
-        NITHDR = 12
-        CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),RHDR3,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
-C
-        NITHDR = 17
-        CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),IHDR4,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
-C
-        NITHDR = 1
-        CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),RHDR4,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
-C
-        NITHDR = 1
-        CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),IHDR5,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
-C
-Cdw---- Read labels as bytes
-C
-        NITHDR = 800
-        CALL QMODE(LSTRM(IUNIT),0,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),IHDR6,NITHDR,IER)
-C
+        CALL QREAD(LSTRM(IUNIT),HEADER,NBHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
@@ -1503,10 +1338,9 @@ C
           RHMEAN = AMEAN
           RHRMS = ARMS
 C
-C---- Get length of header in items (1024 bytes)
+C---- Get length of header in items
 C
-Cdw          ITMHDR(IUNIT) = NBHDR*NCHHDR/NCHITM(IUNIT)
-          ITMHDR(IUNIT) = NBHDR*4/NCHITM(IUNIT)
+          ITMHDR(IUNIT) = NBHDR*NCHHDR/NCHITM(IUNIT)
 C
 C---- and position of first section
 C
@@ -1586,7 +1420,7 @@ C  IUNIT (I)   Map stream number
 C 
 C  JSEC (I)   Position the input map before section JSEC
 C 
-C      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..
       INTEGER IUNIT,JSEC
@@ -1663,7 +1497,7 @@ C
 C   IER (O)   Error flag =0, OK   non-zero, error or end of file
 C 
 C
-C      IMPLICIT NONE
+C
 C
 C
 C     .. Scalar Arguments ..
@@ -1720,7 +1554,7 @@ C Returns IER = 0  OK
 C            .ne. 0  error (end of file)
 C
 C
-C      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..
       INTEGER IER,IUNIT
@@ -1779,7 +1613,7 @@ C
 C---- Map header common
 C
 C
-C      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..
       INTEGER IER,IUNIT
@@ -1872,7 +1706,7 @@ C     ========================
 C
 C---- Close read file
 C
-C      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..
       INTEGER IUNIT
@@ -1907,7 +1741,7 @@ C     IUNIT, leaving space at head of file for NBHDR items of
 C     header record. Puts number of characters of symmetry
 C     information NSYMBT into header record in com  MOHDR.
 C
-C      IMPLICIT NONE
+C
 C
 C---- Map header common
 C
@@ -2049,7 +1883,7 @@ C
 C---- Map header common
 C
 C
-C      IMPLICIT NONE
+C
 C
 C
 C     .. Parameters ..
@@ -2072,8 +1906,7 @@ C     .. Arrays in Common ..
      +        NCHITM,NCS,NR1S,NRS,NS1S,NSS,NXYZ
 C     ..
 C     .. Local Scalars ..
-Cdw      INTEGER I,IER,ISYMC,J,L,M,N,NBLIN,NILINE,NLIN
-      INTEGER I,IER,ISYMC,J,KMODE,L,M,N,NBLIN,NCHINT,NILINE,NLIN
+      INTEGER I,IER,ISYMC,J,L,M,N,NBLIN,NILINE,NLIN
       CHARACTER LINE*80
 C     ..
 C     .. Local Arrays ..
@@ -2110,18 +1943,13 @@ C---- Position to start of symmetry block
 C
         CALL QSEEK(LSTRM(IUNIT),2,1,ITMHDR(IUNIT))
 C
-Cdw---- Set Mode = 0 (bytes)
-C
-        CALL QMODE(LSTRM(IUNIT),0,NCHINT)
-C
 C---- Total number of symmetry characters
 C
         ISYMC = JSYMBT(IUNIT)
 C
-Cdw---- Number of items / line (BYTES)
+C---- Number of items / line
 C
-Cdw        NILINE = (NCHITM(IUNIT)+NBLIN-1)/NCHITM(IUNIT)
-        NILINE = NBLIN
+        NILINE = (NCHITM(IUNIT)+NBLIN-1)/NCHITM(IUNIT)
 C
 C---- Number of 'lines' of symmetry data, taken in groups of NBLIN
 C     characters
@@ -2166,14 +1994,6 @@ C
           END IF
    20   CONTINUE
 C
-Cdw---- Reset Mode, changing modes 10 & 11(12) to 0 & 2
-C
-        KMODE = MODES(IUNIT)
-        IF (MODES(IUNIT).EQ.10) KMODE = 0
-        IF (MODES(IUNIT).EQ.11 .OR. MODES(IUNIT).EQ.12) 
-     +      KMODE = 2
-        CALL QMODE(LSTRM(IUNIT),KMODE,NCHITM(IUNIT))
-C
         RETURN
 C
 C---- Error condition
@@ -2205,7 +2025,7 @@ C     (after calls to MRDHDR & MWRHDR)
 C
 C---- Headers from input and output files
 C
-C      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -2218,14 +2038,11 @@ C     .. Scalars in Common ..
       INTEGER ISGI,ISGO,ITMHDO,ITMS1O,NBTI,NBTO,NCHITO
 C     ..
 C     .. Arrays in Common ..
-Cdw      INTEGER ITMHDI,ITMS1I,JUNKI,JUNKI2,JUNKI3,JUNKO,JUNKO2,LSTRM,
-Cdw     +        NCHITI
-      INTEGER ITMHDI,ITMS1I,JUNKI,JUNKI2,JUNKI3,JUNKI4,JUNKO,
-     +        JUNKO2,LSTRM,NCHITI,MODEI
+      INTEGER ITMHDI,ITMS1I,JUNKI,JUNKI2,JUNKI3,JUNKO,JUNKO2,LSTRM,
+     +        NCHITI
 C     ..
 C     .. Local Scalars ..
-Cdw      INTEGER I,IER,NBLIN,NIN,NLIN,NOUT
-      INTEGER I,IER,KMODE,NBLIN,NIN,NLIN,NOUT,JUNK
+      INTEGER I,IER,NBLIN,NIN,NLIN,NOUT
 C     ..
 C     .. Local Arrays ..
       INTEGER LINE(20)
@@ -2238,10 +2055,8 @@ C     .. External Subroutines ..
       EXTERNAL QREAD,QSEEK,QWRITE
 C     ..
 C     .. Common blocks ..
-Cdw      COMMON /MIHDR/JUNKI(22),ISGI,NBTI,JUNKI2(232),JUNKI3(12,8),
-Cdw     +       NCHITI(12),ITMHDI(12),ITMS1I(12)
-      COMMON /MIHDR/JUNKI(22),ISGI,NBTI,JUNKI2(232),JUNKI3(12,3),
-     +       MODEI(12),JUNKI4(12,4),NCHITI(12),ITMHDI(12),ITMS1I(12)
+      COMMON /MIHDR/JUNKI(22),ISGI,NBTI,JUNKI2(232),JUNKI3(12,8),
+     +       NCHITI(12),ITMHDI(12),ITMS1I(12)
       COMMON /MOHDR/JUNKO(22),ISGO,NBTO,JUNKO2(232),NCHITO,ITMHDO,ITMS1O
       COMMON /MSTRM/LSTRM(12)
 C     ..
@@ -2270,9 +2085,6 @@ C
         NIN = NBLIN/NCHITI(IN)
         NOUT = NBLIN/NCHITO
 C
-Cdw---- Set Mode = 6 (Integer*4) for input file
-C
-        CALL QMODE(LSTRM(IN),6,JUNK)
         DO 10 I = 1,NLIN
           CALL QREAD(LSTRM(IN),LINE,NIN,IER)
           IF (IER.NE.0) THEN
@@ -2281,15 +2093,6 @@ C
             CALL QWRITE(LSTRM(IOUT),LINE,NOUT)
           END IF
    10   CONTINUE
-C
-Cdw---- Rest Mode for input file
-C----   changing modes 10 & 11(12) to 0 & 2
-C
-        KMODE = MODEI(IN)
-        IF (MODEI(IN).EQ.10) KMODE = 0
-        IF (MODEI(IN).EQ.11 .OR. MODEI(IN).EQ.12) KMODE = 2
-        CALL QMODE(LSTRM(IN),KMODE,NCHITI(IN))
-C
         GO TO 30
 C
 C
@@ -2321,7 +2124,7 @@ C---- Copy all titles from previously opened input and output files
 C     adding title to end
 C
 C
-C      IMPLICIT NONE
+C
 C
 C---- Copy all existing titles
 C
@@ -2374,7 +2177,7 @@ C
 C
 C---- Add new title, if already 10, overwrite last one
 C
-C      IMPLICIT NONE
+C
 C
 C     .. Scalar Arguments ..
       INTEGER NT
@@ -2414,7 +2217,7 @@ C     ================================
 C
 C---- Put skew transformation into output common block
 C
-C      IMPLICIT NONE
+C
 C
 C     .. Array Arguments ..
       REAL ASKWMT(3,3),ASKWTN(3)
@@ -2461,7 +2264,7 @@ C     ======================================
 C
 C---- Get skew transformation from input common block
 C
-C      IMPLICIT NONE
+C
 C
 C     .. Array Arguments ..
       REAL ASKWMT(3,3),ASKWTN(3)
@@ -2514,7 +2317,7 @@ C---- Convert N items from BLINE in mode MODE to reals in X
 C     JB = number of bytes/item
 C
 C
-C      IMPLICIT NONE
+C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -2621,7 +2424,7 @@ C
 C---- Returms the number of machine items in nword words
 C     (as defined by the function ccpbyt)
 C
-C      IMPLICIT NONE
+C
 C     .. Scalar Arguments ..
       INTEGER NWORD
 C     ..
