@@ -435,24 +435,32 @@ static void ieeeF2convexF(union float_uint_uchar buffer[], int size)
 /* <ustenv code>=                                                           */
 int ccp4_ustenv (char *str)
 {
-  int putenv ();
-  char *temp;
-
 #if defined (sgi) || defined (sun) || defined (__hpux) || \
     defined(_AIX) || defined(ultrix) || defined (__OSF1__) || \
     defined (__osf__) || defined (__FreeBSD__) || defined (linux) || \
     defined (titan) || defined (_WIN32)
   /* putenv is the POSIX.1, draft 3 proposed mechanism */
       /* ESV seems to have it in the SysVile universe */
-  if ( (temp = (char *) malloc(strlen(str) +1)) == NULL) 
+  int putenv ();
+  char *param;
+
+  if ( (param = (char *) malloc(strlen(str) +1)) == NULL) 
     ccp4_fatal("CCP4_USTENV: Memory allocation failed");
-  return (putenv (strcpy(temp,str)));
+  strcpy(param,str);
+  return (putenv (param));
   /* note the necessary lack of free() */
 #else
   /* setenv is not POSIX, BSD might have to use `index' */
-  if ((temp = (char *) strchr(str, '=')) != NULL)
-    *temp++ = '\0';
-  return (setenv (str, temp, 1));
+  int setenv ();
+  char *param1,*param2;
+
+  if ( (param1 = (char *) malloc(strlen(str) +1)) == NULL) 
+  ccp4_fatal("CCP4_USTENV: Memory allocation failed");
+  strcpy(param1,str);
+  if ((param2 = (char *) strchr(param1, '=')) == NULL)
+  return (-1);
+  *param2++ = '\0';
+  return (setenv (param1, param2, 1));
 #endif
 }
 #endif
