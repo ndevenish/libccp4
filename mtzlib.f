@@ -474,7 +474,7 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER IEND,IERR,IFAIL,II,IST,ISTAT,JDO10,JDO20,JDO30,
-     +        JDO50,JDO60,JDO90,JDO100,JDO110,JLENG
+     +        JDO50,JDO60,JDO90,JDO100,JDO110,JLENG,IFLAG
       CHARACTER CWORK*30,LINE*400,STROUT*400
 C     ..
 C     .. External Functions .. 
@@ -619,22 +619,26 @@ C
           STROUT = '* Input Program Labels :'
 C
 C              ****************
-          CALL PUTLIN(STROUT,'CURWIN')
-          CALL BLANK('CURWIN',1)
-          CALL LABPRT(LSPRGI,NLPRGI)
-          CALL BLANK('CURWIN',1)
-          STROUT = '* Input File Labels :'
-          CALL PUTLIN(STROUT,'CURWIN')
-          CALL BLANK('CURWIN',1)
-          CALL LABPRT(CLABEL(1,MINDX),NCOLS(MINDX))
-          CALL BLANK('CURWIN',1)
-          STROUT = 
-     +     '* Lookup Table : the number indicates the input column no.'
-          CALL PUTLIN(STROUT,'CURWIN')
-          STROUT = 
-     +     '* Array element n corresponds to the nth program label'
-          CALL PUTLIN(STROUT,'CURWIN')
-          CALL BLANK('CURWIN',1)
+          IFLAG = -999
+          CALL QPRINT(IFLAG,' ')
+          IF (IFLAG.GT.0) THEN
+            CALL PUTLIN(STROUT,'CURWIN')
+            CALL BLANK('CURWIN',1)
+            CALL LABPRT(LSPRGI,NLPRGI)
+            CALL BLANK('CURWIN',1)
+            STROUT = '* Input File Labels :'
+            CALL PUTLIN(STROUT,'CURWIN')
+            CALL BLANK('CURWIN',1)
+            CALL LABPRT(CLABEL(1,MINDX),NCOLS(MINDX))
+            CALL BLANK('CURWIN',1)
+            STROUT = 
+     +      '* Lookup Table : the number indicates the input column no.'
+            CALL PUTLIN(STROUT,'CURWIN')
+            STROUT = 
+     +      '* Array element n corresponds to the nth program label'
+            CALL PUTLIN(STROUT,'CURWIN')
+            CALL BLANK('CURWIN',1)
+          END IF
 C              *****************
 C
           IST = 0
@@ -645,7 +649,9 @@ C
           WRITE (STROUT,FMT='(15I5)') (LOOKUP(II),II=IST+1,IEND)
 C
 C              ****************
-          CALL PUTLIN(STROUT,'CURWIN')
+          IFLAG = -999
+          CALL QPRINT(IFLAG,' ')
+          IF (IFLAG.GT.0) CALL PUTLIN(STROUT,'CURWIN')
 C              ****************
 C
           IST = IEND
@@ -1881,7 +1887,7 @@ C     .. Local Scalars ..
       INTEGER BATFLG,EFLAG,ENDLOP,IER,ISTAT,ITEND,IUNIN,JDO10,JDO55,
      +        JDO100,JDO110,JDO120,JDO130,JDO140,JDO150,JDO190,JDO20,
      +        JDO200,JDO30,JDO40,JDO50,JDO60,JDO80,JDO90,NBATRF,NCOLR,
-     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT,NSETD
+     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT,NSETD,IFLAG
       LOGICAL LEND
       CHARACTER KEY*4,MKEY*4,LINE*80,LINE2*400,STROUT*400
 C     ..
@@ -2436,9 +2442,13 @@ C
      +      'From LROPEN : Illegal keyword in MTZ header - line ignored'
 C
 C                  *************************
-              CALL LERROR(1,1,LINE2)
-              CALL PUTLIN(LINE,'ERRWIN')
-              CALL PUTLIN(' ','ERRWIN')
+              IFLAG = -999
+              CALL QPRINT(IFLAG,' ')
+              IF (IFLAG.GT.0) THEN
+                CALL LERROR(1,1,LINE2)
+                CALL PUTLIN(LINE,'ERRWIN')
+                CALL PUTLIN(' ','ERRWIN')
+              END IF
 C                  ***********************
 C
               GO TO 70
@@ -3935,7 +3945,7 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ILEN,IOUT,ISTAT,JDO10,JDO30,JDO40,JDO50,JDO60,JDO70,
-     +        JDO80,JDO90,LSTART,IREFSET
+     +        JDO80,JDO90,LSTART,IREFSET,IFLAG
       CHARACTER LINE*400,CWORK*30
 C     ..
 C     .. Local Arrays ..
@@ -4157,22 +4167,27 @@ C
 C---- Print out program labels and column labels
 C
 C              ****************
-          CALL PUTLIN('* Output Program Labels :','CURWIN')
-          CALL BLANK('CURWIN',1)
-          IF (NLPRGO.GT.0) THEN
-            CALL LABPRT(LSPRGO,NLPRGO)
-          ELSE
-            CALL PUTLIN('There were NO output program labels','CURWIN')
+          IFLAG = -999
+          CALL QPRINT(IFLAG,' ')
+          IF (IFLAG.GT.0) THEN
+            CALL PUTLIN('* Output Program Labels :','CURWIN')
+            CALL BLANK('CURWIN',1)
+            IF (NLPRGO.GT.0) THEN
+               CALL LABPRT(LSPRGO,NLPRGO)
+            ELSE
+               CALL PUTLIN('There were NO output program labels',
+     +                     'CURWIN')
+            END IF
+            CALL BLANK('CURWIN',1)
+            CALL PUTLIN('* Output File Labels :','CURWIN')
+            CALL BLANK('CURWIN',1)
+            CALL LABPRT(CLABEL(1,MINDX),NCOLW(MINDX))
+            CALL BLANK('CURWIN',1)
+            CALL PUTLIN('* Output File Column Types :','CURWIN')
+            CALL BLANK('CURWIN',1)
+            CALL LABPRT(CTYPE(1,MINDX),NCOLW(MINDX))
+            CALL BLANK('CURWIN',1)
           END IF
-          CALL BLANK('CURWIN',1)
-          CALL PUTLIN('* Output File Labels :','CURWIN')
-          CALL BLANK('CURWIN',1)
-          CALL LABPRT(CLABEL(1,MINDX),NCOLW(MINDX))
-          CALL BLANK('CURWIN',1)
-          CALL PUTLIN('* Output File Column Types :','CURWIN')
-          CALL BLANK('CURWIN',1)
-          CALL LABPRT(CTYPE(1,MINDX),NCOLW(MINDX))
-          CALL BLANK('CURWIN',1)
 C              *****************
 C
         END IF
