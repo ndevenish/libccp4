@@ -160,6 +160,7 @@ FORTRAN_FUN ( int, LENSTR, lenstr,
  * @param iday Day (1-31).
  * @param iyear Year (4 digit).
  */
+#if ! defined (_MVS) 
 FORTRAN_SUBR ( UIDATE, uidate,
                (int *imonth, int *iday, int *iyear),
                (int *imonth, int *iday, int *iyear),
@@ -172,6 +173,7 @@ FORTRAN_SUBR ( UIDATE, uidate,
   *iday = iarray[0];
   *iyear = iarray[2];
 }
+#endif
 
 /** Fortran wrapper to string data function.
  * @param caldat Date string in format dd/mm/yy.
@@ -210,7 +212,7 @@ FORTRAN_SUBR ( CCPTIM, ccptim,
   }
 
 }
-
+#if ! defined (_MVS)
 FORTRAN_SUBR ( UTIME, utime,
                (fpstr ctime, int ctime_len),
                (fpstr ctime),
@@ -221,6 +223,7 @@ FORTRAN_SUBR ( UTIME, utime,
   ccp4_CtoFString(FTN_STR(ctime),FTN_LEN(ctime),ccp4_utils_time(time));
 
 }
+
 
 FORTRAN_SUBR ( UCPUTM, ucputm,
                (float *sec), (float *sec), (float *sec))
@@ -235,6 +238,7 @@ FORTRAN_SUBR ( UCPUTM, ucputm,
   }
 
 }
+#endif
 
 FORTRAN_SUBR ( CCP4_VERSION, ccp4_version,
                (const fpstr version, int version_len),
