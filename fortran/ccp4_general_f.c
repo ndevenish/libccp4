@@ -350,3 +350,11 @@ FORTRAN_FUN ( ftn_logical, CCPLIC, ccplic,
 
   return ( ccp4_licence_exists(string) ? FORTRAN_LOGICAL_TRUE : FORTRAN_LOGICAL_FALSE );
 }
+
+/** Print timing information to stdout
+ * wraps ccp4ProgramTime
+ */
+FORTRAN_SUBR (GETELAPSED, getelapsed,(void) , (void) , (void))
+{
+  ccp4ProgramTime(0);
+}
