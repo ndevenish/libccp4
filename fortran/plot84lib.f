@@ -420,6 +420,13 @@ C
       END
 C
 C
+      BLOCK DATA
+      INTEGER INIT, IUNIT
+      CHARACTER *1 PC,PF,PL
+      COMMON /TRIKKDAT/INIT,IUNIT,PC(4),PL(6),PF(6)
+      DATA INIT/0/
+      END
+C
 C
       SUBROUTINE BOPENW
 C     =================
@@ -8888,7 +8895,7 @@ C
 C---- (( term ))
 C
  1370   CONTINUE
-        IF (IPRINT) WRITE (LUNOUT,FMT=6300)
+        IF (PRINT) WRITE (LUNOUT,FMT=6300)
         NTERM = 1
         GO TO 10
       END IF
@@ -13057,10 +13064,7 @@ C
 C
 C     .. Equivalences .. character*1 to integer
       EQUIVALENCE (NBYTES,PC)
-C     ..
-C     .. Data statements ..
 C
-      DATA INIT/0/
 C
 C---- Set up all needed info; note odd byte counts must actually be even
 C
