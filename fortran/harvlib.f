@@ -948,7 +948,7 @@ C
         IF (VAXVMS()) THEN
           FileName = Buffer(1:Lenstr(Buffer))//':[DepositFiles]'
         ELSE IF (WINMVS()) THEN
-          FileName = Buffer(1:Lenstr(Buffer))//'\DepositFiles'
+          FileName = Buffer(1:Lenstr(Buffer))//'\\DepositFiles'
         ELSE
           FileName = Buffer(1:Lenstr(Buffer))//'/DepositFiles'
         END IF
@@ -983,7 +983,7 @@ C
           FileName = FileName(1:Lenstr(FileName)-1)//'.'//
      +               ProjectName(1:Lenstr(ProjectName))
         ELSE IF (WINMVS()) THEN
-          FileName = FileName(1:Lenstr(FileName))//'\'//
+          FileName = FileName(1:Lenstr(FileName))//'\\'//
      +               ProjectName(1:Lenstr(ProjectName))
         ELSE
           FileName = FileName(1:Lenstr(FileName))//'/'//
@@ -1021,7 +1021,7 @@ C
      +               DataSetName(1:Lenstr(DataSetName))//'.'//
      +               ProgName(1:Lenstr(ProgName))
         ELSE IF (WINMVS()) THEN
-           FileName = FileName(1:Lenstr(FileName))//'\'//
+           FileName = FileName(1:Lenstr(FileName))//'\\'//
      +          DataSetName(1:Lenstr(DataSetName))//'.'//
      +          ProgName(1:Lenstr(ProgName))
         ELSE
