@@ -1562,7 +1562,7 @@ C     for other things such as standard error.  99 seems a reasonable
 C     place to stop.
       DO 10 CCPNUN=7,99
         INQUIRE (UNIT=CCPNUN, OPENED=OD, IOSTAT=IOS, EXIST=EX)
-        IF (EX .AND. .NOT. OD .AND. IOSTAT.EQ.0) RETURN
+        IF (EX .AND. (.NOT.OD) .AND. IOS.EQ.0) RETURN
  10   CONTINUE
       CALL CCPERR (1, 'CCPNUN: Can''t find an unused unit')
       END
