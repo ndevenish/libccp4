@@ -123,7 +123,9 @@ $(LC) : $(CORELIBOBJS) $(CGENERALOBJS) $(CUCOBJS) $(CMTZOBJS) $(CMAPOBJS) $(CSYM
 	$(RANLIB) $@
 
 $(LF) : $(FORTRANOBJS) $(FINTERFACEOBJS)
-# we could presumably avoid the next two steps if we haven't changed anything
+# this is slight overkill, but we only what to archive objects from
+# FINTERFACEOBJS. Those from FORTRANOBJS are passed through fsplit first
+	$(AR) $(LF) $(FINTERFACEOBJS)
 	$(RANLIB) $@
 
 # cmtz library only
@@ -245,7 +247,6 @@ $(CORELIBOBJS) $(CGENERALOBJS) $(CMTZOBJS) $(CMAPOBJS) $(CUCOBJS) \
 
 $(FINTERFACEOBJS):
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/`basename $@ .o`.c
-	$(AR) $(LF) $@
 
 $(CMTZPYOBJS) $(CMAPPYOBJS) $(CSYMPYOBJS): 
 	$(CC) $(CFLAGS) -I$(srcdir) -I$(PYTHON_INCLUDE) -c $(srcdir)/`basename $@ .o`.c
