@@ -194,7 +194,7 @@ int ccp4_parse_maxmin(CCP4PARSERARRAY *parsePtr, const double max_exponent,
 
 int ccp4_parse_reset(CCP4PARSERARRAY *parsePtr);
 
-int ccp4_parse(char *line, CCP4PARSERARRAY *parser);
+int ccp4_parse(const char *line, CCP4PARSERARRAY *parser);
 
 /** The main function for parsing lines, either supplied or read
  * from stdin.
@@ -268,6 +268,7 @@ ccp4_symop symop_to_rotandtrn(const char *symchs_begin, const char *symchs_end);
  * @return number of operators converted 
  */
 int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot);
+int symop_to_mat4_err(const char *symop);
 ccp4_symop mat4_to_rotandtrn(const float rsm[4][4]);
 /* This is Charles' version of symtr */
 char *rotandtrn_to_symop(char *symchs_begin, char *symchs_end, const ccp4_symop symop);
