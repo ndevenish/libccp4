@@ -46,7 +46,7 @@
 
 # The following variables are expected to be set by configure:
 # top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
-# INSTALL_PROGRAM INSTALL_DATA MAYBEMOSFLM SHARE_LIB SHARE_INST
+# INSTALL_PROGRAM INSTALL_DATA SHARE_LIB SHARE_INST
 
 SHELL       = /bin/sh
 srcdir	    = $(top_srcdir)/lib/src
@@ -87,15 +87,16 @@ LIBTARGETS = ccplib fftlib maplib parser rwbrook modlib \
 
 # probably only recognised by GNU make:
 .PHONY : all clean install $(LIBTARGETS) ranlib realclean distclean \
-         test help test-lib uninstall tags mosflm-stuff
+         test help test-lib uninstall tags
 
-all :  $L $(MAYBEMOSFLM)
+all :  $L
 
 $L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) \
 	  $L(mtzlib.o) $L(diskio.o) $L(unix.o) \
 	  $L(binsortint.o) $L(library.o) \
-	  $L(plot84lib.o) $L(plotsubs.o) $L(keyparse.o)
+	  $L(plot84lib.o) $L(plotsubs.o) $L(keyparse.o) \
+	  $L(pack_c.o) $L(pack_f.o)
 # titan special:
 	-(test -f /usr/lib/fortran/time.o && make '$L(time.o)') || true
 # we could presumably avoid the next two steps if we haven't changed anything
@@ -109,13 +110,6 @@ test-lib : $(srcdir)/testlib.f $L(library.o) $L(unix.o) $L(ccplib.o) \
 	-(test -f /usr/lib/fortran/time.o && make '$L(time.o)') || true
 	$(RANLIB) $L
 
-# mosflm stuff, some of which we'd like to disown:
-mosflm-stuff : $L(graflib.o) $L(chelp.o) $L(pack_c.o) $L(pack_f.o)
-	$(RANLIB) $L
-# chelp.o drags in curses stuff and we get unresolved stuff at load time
-# unless we have curses around, sigh.  chelp will go when the next mosflm
-# includes it
-	if test -z "$(SHARE_LIB)"; then true; else $(SHARE_LIB) -lcurses; fi
 
 # explicit building of the real targets, sigh...
 # include the pwd info for ease of symbolic debugging
@@ -263,18 +257,6 @@ $L(keyparse.o) : $(srcdir)/keyparse.f
 keyparse : $L(keyparse.o)
 	$(RANLIB) $L
 
-$L(graflib.o) : $(srcdir)/graflib.f
-	-rm -rf graflib.dir; mkdir graflib.dir
-	echo '      SUBROUTINE GRAFLIB' > graflib.dir/graflib.$F
-	echo '      END' >> graflib.dir/graflib.$F
-	cd graflib.dir && fsplit $(srcdir)/graflib.f >/dev/null && $(RMEMPTY) && \
-	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
-	rm -f graflib.dir/*.o
-graflib : $L(graflib.o)
-	$(RANLIB) $L
-
 # C stuff: (these are kept as whole modules)
 
 $L(library.o) : $(srcdir)/library.c
@@ -287,12 +269,6 @@ $L(binsortint.o) : $(srcdir)/binsortint.c $(srcdir)/binsort.h
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/binsortint.c
 	$(AR) $L binsortint.o && rm binsortint.o
 binsortint : $L(binsortint.o)
-	$(RANLIB) $L
-
-$L(chelp.o) : $(srcdir)/chelp.c
-	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/chelp.c
-	$(AR) $L chelp.o && rm chelp.o
-chelp : $L(chelp.o)
 	$(RANLIB) $L
 
 #
@@ -318,8 +294,8 @@ $L(unix.o) : $(srcdir)/unix.m4
 unix : $L(unix.o)
 	$(RANLIB) $L
 
-#  The image (un)packing routines which are needed for mosflm and may be 
-#  generally useful, but not built by default
+#  The image (un)packing routines which were needed for mosflm and are needed
+#  for ipdisp. May be useful but could be moved. 
 $L(pack_c.o):	$(srcdir)/pack_c.c $(srcdir)/pack_c.h
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/pack_c.c
 	$(AR) $L pack_c.o && rm pack_c.o
