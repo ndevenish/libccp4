@@ -1095,16 +1095,25 @@ C
         IF(BROOKA(1:6) .EQ. '      ')BROOKA(1:6) = 'ATOM  '
         BROOKA(17:17) = ALTCOD(1:1)
 c
-c----- PDB rule is that if it is a Hydrogen or Deuterium
-c      then BROOKA(13:13) can be a digit 0-9
-c      all other single char element symbols
-c      must have BROOKA(13:13) = ' '
-c
 c---- BROOKA(12:12) is ALWAYS ' '
 c
         BROOKA(12:12) = ' '
 c
 c
+c Some old files may have things like AC4* and NO7*
+C
+c----- PDB rule is that if it is a Hydrogen or Deuterium
+c      then BROOKA(13:13) can be a digit 0-9
+c      most other single char element symbols
+c      have BROOKA(13:13) = ' ', but NOT ALL!
+C
+C----- Need to deal with horrors like AC4*; NO etc where ID is ' C' or ' O'
+C      Check if first character of atnam = 2nd character of ID.
+        IF (ID(1:1) .EQ. ' ' .AND.ATNAM(1:1).NE.ID(2:2)) THEN
+          BROOKA(13:16) = ATNAM(1:4)
+          GO TO 22
+        END IF
+C
         IF (ID(1:1) .EQ. ' ') THEN
           IF (ATNAM(2:2).eq.'H' .or. 
      +          (ATNAM(2:2).eq.'D' .and. ID(1:2).eq.' D') ) then
@@ -1731,34 +1740,43 @@ C
         IAT=BROOK(13)//BROOK(14)
         CALL CCPUPC(IAT)
 C
-        IF (ID(1:2) .EQ. IATM(6)) THEN
-          II = 6
-          GOTO 480
-        ENDIF
-        IF (ID(1:2) .EQ. IATM(7)) THEN
-          II = 7
-          GOTO 480
-        ENDIF
-        IF (ID(1:2) .EQ. IATM(8)) THEN
-          II = 8
-          GOTO 480
-        ENDIF
-        IF (ID(1:2) .EQ. IATM(1)) THEN
-          II = 1
-          GOTO 480
-        ENDIF
-
-        DO 452 I=1,MAXIATM
-          IF (ID(1:2) .EQ. IATM(I)) THEN
-            II = I
+C---- Fast initial check for C, O, N or H
+        II = 0
+        IF (ID(1:4) .NE. '    ') THEN
+          IF (ID(1:2) .EQ. IATM(6)) THEN
+            II = 6
             GOTO 480
           ENDIF
-452     CONTINUE
+          IF (ID(1:2) .EQ. IATM(7)) THEN
+            II = 7
+            GOTO 480
+          ENDIF
+          IF (ID(1:2) .EQ. IATM(8)) THEN
+            II = 8
+            GOTO 480
+          ENDIF
+          IF (ID(1:2) .EQ. IATM(1)) THEN
+            II = 1
+            GOTO 480
+          ENDIF
 C
-C     If no ID match then make sure it is empty
+C---- Must be a different element - check against all
+C     possibilities, which is slower
+          DO 452 I=1,MAXIATM
+            IF (ID(1:2) .EQ. IATM(I)) THEN
+              II = I
+              GOTO 480
+            ENDIF
+ 452      CONTINUE
+        END IF 
 C
-        ID = ' '
+C     If no ID match then make sure it is reset to be empty
 C
+        ID = '    '
+C
+C     Check against first characters of atom name:
+C
+C---- Initial fast check against C, O, N or H
         IF (IAT.EQ.IATM(6)) THEN
           II = 6
           GO TO 480
@@ -1776,33 +1794,72 @@ C
           GO TO 480
         ENDIF
 C
+C---- Could be a hydrogen? Check for things like 0H, HH, etc
         II=1
         DO 454 J=1,MAXIHATM
           IF (IAT.EQ.IHATM(J)) GO TO 480
 454     CONTINUE
 C
+C---- Must be a different element - check everything else
         DO 456 I=1,MAXIATM
           IF (IAT.EQ.IATM(I)) THEN
             II = I
+C           Should issue a warning if AC or AN to the effect that this
+C           is based on ambigious input and should be checked
+            IF (II.EQ.89 .OR. II.EQ.102) THEN
+              WRITE(ERRLIN,2002)ATNAM,RESNAM,RESNO(1:4),IATM(II)
+              CALL CCPERR(2,ERRLIN)
+            END IF
             GO TO 480
           ENDIF
 456     CONTINUE
 C
+C---- No match for ID to anything using the first 2 characters
+C     of the atom name
+C
+C  If the atom name begins with " A" set the atom_type to N
+C  " A" is an ambigious atom name so presumably using N is
+C  just a default?
+c  Otherwise it's completely unknown
+C
         II=0
-        IF(IAT.EQ.IAA)II=7
-        IF (I .EQ. 0) THEN
+        IF(IAT.EQ.IAA) II=7
+C
+C  Ambigious name...
+        IF (II .EQ. 7) THEN
+          WRITE(ERRLIN,2002)ATNAM,RESNAM,RESNO(1:4),IATM(II)
+          CALL CCPERR(2,ERRLIN)
+        ELSE
+C
+C---- II is zero so try some other tricks to get a match
+C
+C     Desperate measure: try to match second character only - 
+C     This will deal with the NO7* horrors..
+          IF (IAT(1:1).NE.' ') THEN
+            IAT = ' '//BROOK(14)
+            DO I=1,MAXIATM
+              IF (IAT.EQ.IATM(I)) THEN
+                II = I
+C               Issue a warning about this match since it
+C               is based on incomplete data and assumptions
+                WRITE(ERRLIN,2002)ATNAM,RESNAM,RESNO(1:4),IATM(II)
+                CALL CCPERR(2,ERRLIN)
+                GO TO 480
+              ENDIF
+            END DO
+          ENDIF
+        END IF
+C
+C Still completely unrecognised... give up
+C
+        IF (II .EQ. 0) THEN
           WRITE(ERRLIN,2001)ATNAM,RESNAM,RESNO(1:4)
-          CALL CCPERR(4,' ')
-          CALL CCPERR(4,ERRLIN)
-          CALL CCPERR(4,' ')
-        ENDIF
-        IF (I .EQ. 7) THEN
-          WRITE(ERRLIN,2002)ATNAM,RESNAM,RESNO(1:4)
-          CALL CCPERR(4,' ')
-          CALL CCPERR(4,ERRLIN)
-          CALL CCPERR(4,' ')
-        ENDIF
+          CALL CCPERR(2,ERRLIN)
+        END IF
+C
+C---- Atom number decided
 480     IZ=II
+C
         IF (IZ .EQ. 0) THEN
           ID = ' '
         ELSE
@@ -1859,7 +1916,8 @@ C
 1006  FORMAT(6X,I5,11X,I4)
 1010  FORMAT(28X,6I7)
 2001  FORMAT(' *UNKNOWN ATOMIC FORMFACTOR ',A4,' IN ',A4,1X,A4,'*')
-2002  FORMAT(' *AMBIGUOUS ATOMIC FORMFACTOR ',A4,' IN ',A4,1X,A4,'*')
+2002  FORMAT(' *AMBIGUOUS ATOMIC FORMFACTOR ',A4,' IN ',A4,1X,A4,
+     +     ' ASSIGNED AS ',A2,' *')
       END
 C
 C
