@@ -1,3 +1,8 @@
+C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part i)' software.  See the conditions
+C     in the CCP4 manual for a copyright statement.
+C
 C    REVISED on						SMM  23-Oct-1992
 C    (1) Make mtzlib.1 (from WR) match library and vice versa
 C    (2) General tidy up of comments, quite a lot removed
