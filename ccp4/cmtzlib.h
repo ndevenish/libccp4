@@ -538,7 +538,7 @@ int MtzArrayToBatch(const int *intbuf, const float *fltbuf, MTZBAT *batch);
  * @param batch pointer to batch structure
  * @param intbuf pointer to integer batch array
  * @param fltbuf pointer to float batch array
- * @return 1 on success
+ * @return 1 on success, 0 on failure
  */
 int MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf);
 
@@ -688,10 +688,10 @@ int ccp4_lhprt_adv(const MTZ *mtz, int iprint);
 
 /** Function to return batch header data for a specified batch.
  * @param batch Pointer to requested batch.
- * @param buf Real and integer batch data.
- * @param charbuf Character batch data (title and axes names).
+ * @param buf On return, real and integer batch data.
+ * @param charbuf On return, character batch data (title and axes names).
  * @param iprint =0 no printing, =1 print title only, >1 print full header.
- * @return 1 on success 
+ * @return 1 on success, 0 on failure
  */
 int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint);
 
@@ -759,6 +759,19 @@ int ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
 int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[], 
 		 const int ncol, const int iref);
 
+/** Write new batch information to 'batch' or if 'batch' is NULL create 
+ * new batch header with batch number 'batno'. If you try to create more 
+ * than one new batch header with the same batch number, the function will
+ * complain and return. It is OK to create a new batch with the same
+ * number as one read from file - this is the mechanism for changing
+ * batch headers.
+ * @param mtz pointer to MTZ struct
+ * @param batch pointer to batch
+ * @param batno batch number
+ * @param buf pointer to batch array
+ * @param charbuf pointer to character batch array
+ * @return 1 on success, 0 on failure
+ */
 int ccp4_lwbat(MTZ *mtz, MTZBAT *batch, const int batno, const float *buf, const char *charbuf);
 
 int ccp4_lwbsetid(MTZ *mtz, MTZBAT *batch, const char xname[], const char dname[]);

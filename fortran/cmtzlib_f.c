@@ -15,7 +15,23 @@
  *  @section cmtz_f_overview Overview
 
 This library consists of a set of wrappers to the CMTZ library
-giving the same API as the original mtzlib.f
+giving the same API as the original mtzlib.f For details of the
+API, see the original <a href="../mtzlib.html">documentation</a>.
+This document covers some peculiarities of the C implementation.
+
+*   @section cmtz_f_batches Batches
+
+Batch headers are held as a linked list in the MTZ data structure.
+Upon reading an MTZ file, a list is created holding the all the batch
+headers from the input file (mtz->n_orig_bat holds the number read
+in). LRBATS will return a list of batch numbers. LRBAT can be used
+to read the batch headers one at a time.
+<p>
+LWBAT can be used to write new or updated batch headers. Updated
+batch headers are in fact added as new batch headers at the end of the
+list of input batch headers. This mimics the use of RBATW/CBATW in
+the Fortran routines. There are problems with this approach, and
+this may be re-implemented.
 
  */
  
@@ -1071,7 +1087,15 @@ FORTRAN_SUBR ( LHPRT_ADV, lhprt_adv,
 
 }
 
-/* Fortran wrapper for ccp4_lrbat */
+/** Fortran wrapper for ccp4_lrbat. Returns the header info for the next 
+ * batch from the multi-record MTZ file open on index MINDX, as
+ * the two arrays RBATCH (for numbers) and CBATCH (for characters).
+ * @param mindx MTZ file index
+ * @param batno On return, batch number
+ * @param rbatch On return, real and integer batch data.
+ * @param cbatch On return, character batch data (title and axes names).
+ * @param iprint =0 no printing, =1 print title only, >1 print full header.
+ */
 FORTRAN_SUBR ( LRBAT, lrbat,
 	       (const int *mindx, int *batno, float rbatch[], fpstr cbatch, 
                         const int *iprint, int cbatch_len),
@@ -2140,7 +2164,6 @@ FORTRAN_SUBR ( LWBAT, lwbat,
                         int cbatch_len))
 
 {
-  int istat=-1;
   MTZBAT *batch;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWBAT");)
@@ -2160,18 +2183,8 @@ FORTRAN_SUBR ( LWBAT, lwbat,
    return;
  }
 
- batch = mtzdata[*mindx-1]->batch;
- while (batch != NULL) {
-   if (*batno == batch->num) {
-     istat = 0;
-     /* match found, so overwrite original batch header */
-     --mtzdata[*mindx-1]->n_orig_bat;
-     break;
-   }
-   batch = batch->next;
- }
- if (istat == -1) 
-   batch = NULL;
+ /* add as new batch */
+ batch = NULL;
 
  ccp4_lwbat(mtzdata[*mindx-1], batch, *batno, rbatch, cbatch); 
 
@@ -2179,7 +2192,12 @@ FORTRAN_SUBR ( LWBAT, lwbat,
  ++nbatw[*mindx-1];
 }
 
-/* Fortran wrapper for ccp4_lwbat */
+/** Write batch header for batch number batno. Only the batch title
+ * is provided, so dummy header is written.
+ * @param mindx MTZ file index
+ * @param batno Serial number of batch.
+ * @param tbatch Batch title.
+ */
 FORTRAN_SUBR ( LWBTIT, lwbtit,
 	       (const int *mindx, int *batno, fpstr tbatch, int tbatch_len),
 	       (const int *mindx, int *batno, fpstr tbatch),
@@ -2211,10 +2229,13 @@ FORTRAN_SUBR ( LWBTIT, lwbtit,
 
  length = (FTN_LEN(tbatch) < 70) ? FTN_LEN(tbatch) : 70 ;
  strncpy(cbatch,FTN_STR(tbatch),length);
- batch = NULL;
+ cbatch[length] = '\0';
  intbuf[0] = NBATCHWORDS;
  intbuf[1] = NBATCHINTEGERS;
  intbuf[2] = NBATCHREALS;
+
+ /* add as new batch */
+ batch = NULL;
 
  ccp4_lwbat(mtzdata[*mindx-1], batch, *batno, rbatch, cbatch); 
 
@@ -2222,7 +2243,13 @@ FORTRAN_SUBR ( LWBTIT, lwbtit,
  ++nbatw[*mindx-1];
 }
 
-/* Fortran wrapper for ccp4_lwbat */
+/** Write batch header for batch number batno. New batch scales
+ * are set. batno must correspond to pre-existing batch.
+ * @param mindx MTZ file index
+ * @param batno Serial number of batch.
+ * @param batscl Array of batch scales.
+ * @param nbatsc Number of batch scales.
+ */
 FORTRAN_SUBR ( LWBSCL, lwbscl,
 	       (const int *mindx, int *batno, float batscl[], int *nbatsc),
 	       (const int *mindx, int *batno, float batscl[], int *nbatsc),
@@ -2247,8 +2274,6 @@ FORTRAN_SUBR ( LWBSCL, lwbscl,
    if (*batno == batch->num) {
      istat = 0;
      ccp4_lrbat(batch, rbatch, cbatch, iprint); 
-     /* match found, so overwrite original batch header */
-     --mtzdata[*mindx-1]->n_orig_bat;
      break;
    }
    batch = batch->next;
@@ -2257,6 +2282,9 @@ FORTRAN_SUBR ( LWBSCL, lwbscl,
    printf("Error: file on %d has no batch %d ! \n",*mindx,*batno);
    return;
  }
+
+ /* add as new batch */
+ batch = NULL;
 
  intbatch[16] = *nbatsc;
  for (i = 0; i < *nbatsc; ++i) 
@@ -2277,7 +2305,7 @@ FORTRAN_SUBR ( LWBSETID, lwbsetid,
                   const fpstr dataset_name, int dataset_name_len))
 
 { char *temp_xname, *temp_pname, *temp_dname;
-  int istat=-1;
+  int i,istat=-1;
   MTZBAT *batch;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWBSETID");)
@@ -2293,6 +2321,12 @@ FORTRAN_SUBR ( LWBSETID, lwbsetid,
   temp_xname = strdup(temp_pname);
 
   batch = mtzdata[*mindx-1]->batch;
+  /* if new batch headers have been written, skip the old ones */
+  if (MtzNbat(mtzdata[*mindx-1]) > mtzdata[*mindx-1]->n_orig_bat) {
+     for (i=0; i < mtzdata[*mindx-1]->n_orig_bat; ++i)
+       batch = batch->next;
+  }
+
   while (batch != NULL) {
     if (*batno == batch->num) {
      istat = 0;
@@ -2323,7 +2357,7 @@ FORTRAN_SUBR ( LWBSETIDX, lwbsetidx,
                   const fpstr dataset_name, int dataset_name_len))
 
 { char *temp_xname, *temp_dname;
-  int istat=-1;
+  int i,istat=-1;
   MTZBAT *batch;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWBSETIDX");)
@@ -2336,6 +2370,12 @@ FORTRAN_SUBR ( LWBSETIDX, lwbsetidx,
   temp_dname = ccp4_FtoCString(FTN_STR(dataset_name), FTN_LEN(dataset_name));
 
   batch = mtzdata[*mindx-1]->batch;
+  /* if new batch headers have been written, skip the old ones */
+  if (MtzNbat(mtzdata[*mindx-1]) > mtzdata[*mindx-1]->n_orig_bat) {
+     for (i=0; i < mtzdata[*mindx-1]->n_orig_bat; ++i)
+       batch = batch->next;
+  }
+
   while (batch != NULL) {
     if (*batno == batch->num) {
      istat = 0;

@@ -1573,6 +1573,8 @@ int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint)
   int *intbuf = (int *) buf;
   float *fltbuf = buf + NBATCHINTEGERS;
 
+  if (!batch) return 0;
+
   intbuf[0] = nwords;
   intbuf[1] = nintegers;
   intbuf[2] = nreals;
@@ -1965,27 +1967,27 @@ MTZCOL **ccp4_lwassn(MTZ *mtz, const char labels[][31], const int nlabels,
 
 int ccp4_lwbat(MTZ *mtz, MTZBAT *batch, const int batno, const float *buf, const char *charbuf)
 
-/* write new batch information to 'batch' or if 'batch' is NULL create   */
-/* new batch header with batch number 'batno'                           */
-/* don't update mtz->n_orig_bat - input no. of batches - use MtzNbat instead */
-
 {  
   int *intbuf = (int *) buf;
   const float *fltbuf = buf + NBATCHINTEGERS;
   char cbatch[95]=" ";
-  int cbatch_len;
+  int i,cbatch_len;
   MTZBAT *otherbat;
 
   if (batch == NULL) {
     /* add new batch at end of list */
     batch = mtz->batch;
+    /* is this the first ever batch? */
     if (batch == NULL) {
       mtz->batch = MtzMallocBatch();
       batch = mtz->batch;
       batch->num = batno;
       batch->next = NULL;
     } else {
-      if (batch->num == batno) {
+      /* first, skip over n_orig_bat batches if some were read in */
+      for (i=0; i < mtz->n_orig_bat - 1; ++i)
+        batch = batch->next;
+      if (mtz->n_orig_bat == 0 && batch->num == batno) {
         printf("From ccp4_lwbat: warning: attempt to add new batch with existing batch number %d!\n",batno);
         return 0;
       }
@@ -2518,6 +2520,8 @@ CCP4File *MtzOpenForWrite(const char *logname)
 int MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf)
 
 {  int i;
+
+  if (!batch) return 0;
 
   for (i = 0; i < NBATCHINTEGERS; ++i)
     intbuf[i] = 0;
