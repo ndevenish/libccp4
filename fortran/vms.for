@@ -740,7 +740,8 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Local Scalars ..
       INTEGER LLREC,IUN,IBYTES,ISTAT
-      CHARACTER CCNTRL*7,ST*7,FRM*12,ERRSTR*131,FULNAM*255,
+C     ERRSTR should be big enough to hold more than 2 255-long paths
+      CHARACTER CCNTRL*7,ST*7,FRM*12,ERRSTR*600,FULNAM*255,
      +     NAMFIL*255,HANDLE*5,OPNVAR*20, ACCESS*10, DISPOS*6
       INTEGER UNKNWN, SCRTCH, OLD, NEW, RDONLY, PRINTR
       PARAMETER (UNKNWN=1, SCRTCH=2, OLD=3, NEW=4, RDONLY=5, PRINTR=6)
@@ -749,9 +750,9 @@ C     .. Local Arrays ..
       CHARACTER STAT(6)*7, OUTLIN*100
 C     ..
 C     .. External Functions ..
-      INTEGER LENSTR
+      INTEGER LENSTR, LUNSTO
       LOGICAL VAXVMS
-      EXTERNAL LENSTR,VAXVMS
+      EXTERNAL LENSTR,VAXVMS, LUNSTO
 C     ..
 C     .. External Subroutines ..
       EXTERNAL UGERR,UGTENV
@@ -768,9 +769,10 @@ C     Check args:
       IF (ISTAT.LT.1 .OR. ISTAT.GT.6 .OR. ITYPE.LT.1 .OR. ITYPE.GT.4)
      +     THEN 
         IF (IFAIL.EQ.0) THEN
-          CALL CCPERR(1, '**CCPOPN ERROR** Invalid parameters in call')
+          CALL CCPERR(LUNSTO (1),
+     +         '**CCPOPN ERROR** Invalid parameters in call')
         ELSE
-          WRITE (6,
+          WRITE (LUNSTO (1),
      +         '('' **CCPOPN ERROR** Invalid parameters in call'',/)')
           IFAIL = -1
         END IF
@@ -873,32 +875,28 @@ C     Error check
 C     don't report UNKNOWN if actually SCRATCH
       IF (ISTAT.EQ.SCRTCH) ST = 'SCRATCH'
       IF (IOS.NE.0) THEN
-        CALL UGERR(IOS,ERRSTR)
         IF (IFAIL.EQ.0) THEN
 C         hard failure
-          WRITE (ERRSTR,FMT=6002) IUN
-          ERRSTR(LENSTR(ERRSTR)+2:) = NAMFIL(1:LENSTR(NAMFIL))
-          IF (LENSTR(ERRSTR) .LE. 130) THEN
-            ERRSTR(LENSTR(ERRSTR)+1:) = ' logical: '
-            IF (LENSTR(ERRSTR) .LE. 129)
-     +         ERRSTR(LENSTR(ERRSTR)+2:) = LOGNAM(1:LENSTR(LOGNAM))
-          ENDIF
- 6002     FORMAT ('Open failed: Unit:',I4,', File: ')
+          WRITE (ERRSTR,FMT=6002) IUN, NAMFIL(1:LENSTR(NAMFIL)),
+     +         LOGNAM(1:LENSTR(LOGNAM))
+ 6002     FORMAT ('Open failed: Unit:',I4,', File: ',A, ' (logical: ', A
+     +         , ')')
+          CALL QPRINT (0, ERRSTR)
+          ERRSTR = ' Open failed: File: ' // NAMFIL
           CALL CCPERR(1, ERRSTR)
         ELSE
 C         soft failure
-          WRITE (6,FMT=6004) FRM, ST, IUN
-          OUTLIN = ' Logical name: '
-          OUTLIN(LENSTR(OUTLIN)+2:) = LOGNAM(1:LENSTR(LOGNAM))
-          IF (LENSTR(OUTLIN) .LT. 100) THEN
-            OUTLIN(LENSTR(OUTLIN)+1:) = ' File name: '
-            IF (LENSTR(OUTLIN) .LT. 99)
-     +         OUTLIN(LENSTR(OUTLIN)+2:) = NAMFIL(1:LENSTR(NAMFIL))
-          ENDIF
-          WRITE(6,FMT='(A)') OUTLIN(1:LENSTR(OUTLIN))
-          WRITE(6,FMT='(A)') ERRSTR(1:MIN(130,LENSTR(ERRSTR)))
+          WRITE (LUNSTO (1),FMT=6004) FRM, ST, IUN, 
+     +         LOGNAM(1:LENSTR(LOGNAM)), NAMFIL(1:LENSTR(NAMFIL))
  6004     FORMAT (' **CCPOPN ERROR**  ',A,3X,A,
-     +                              ' file open failure on unit ',I3)
+     +         ' file open failure on unit ',I3)
+          ERRSTR = 'Logical name: ' //LOGNAM
+          CALL QPRINT (0, ERRSTR)
+          ERRSTR = 'File name: ' // NAMFIL
+          CALL QPRINT (0, ERRSTR)
+          CALL UGERR(IOS,ERRSTR)
+          CALL QPRINT (0, ERRSTR)
+          CALL QPRINT (0, ' ')
           IFAIL = -1
           RETURN            
         ENDIF
