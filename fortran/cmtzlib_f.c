@@ -2310,47 +2310,61 @@ FORTRAN_SUBR ( LWASSN, lwassn,
 	       (const int *mindx, fpstr lsprgo, const int *nlprgo, fpstr ctprgo, int *iappnd),
 	       (const int *mindx, fpstr lsprgo, int lsprgo_len, const int *nlprgo, 
                       fpstr ctprgo, int ctprgo_len, int *iappnd))
-{int i,j,istart;
+{   int i,j,istart;
     char *label;
     char *type;
     MTZCOL **colarray, *colsort[5];
 
     CMTZLIB_DEBUG(puts("CMTZLIB_F: LWASSN");)
 
-        if (MtzCheckSubInput(*mindx,"LWASSN",2)) return;
+    if (MtzCheckSubInput(*mindx,"LWASSN",2)) return;
 
     label = (char *) ccp4_utils_malloc((*nlprgo)*31*sizeof(char));
     type = (char *) ccp4_utils_malloc((*nlprgo)*3*sizeof(char));
 
-    /* to retain primacy of read structure for copy/rename
-        the read assignments should be done first, then
-        column information should be updated
-        */
+    /* Construct label array to pass to ccp4_lwassn.
+       This has undergone several iterations. Watch out for
+       special cases: 
+         output assignment is taken from LABIN e.g. revise
+           (same prog label in lsprgi and lsprgo, and iappnd = 0)
+         dm has same prog label FDM in lsprgi and lsprgo, and 
+           iappnd = 1 so these are distinct columns
+         sfall has "labout allin" which should be sorted out by
+           sfall itself
+     */
     for (i = 0; i < *nlprgo; ++i) {
-        for (j = 0; j != lsprgo_len && lsprgo[lsprgo_len*i+j] != ' ' ; ++j) {
-            label[i*31+j] = lsprgo[lsprgo_len*i+j];
-        }
-        label[i*31+j] = '\0';
-        for (j = 0; j < MCOLUMNS; ++j) {
-            if (strcmp(user_label_in[*mindx-1][j][1],"") && !strcmp(user_label_in[*mindx-1][j][0],label+i*31)) {
-                strcpy(label+i*31,user_label_in[*mindx-1][j][1]);
-                break;
-            } /* strcmp if */
-        }   /* MCOLUMNS loop */ 
-/* use invariance of j */
-        if (j == MCOLUMNS) {
-          if (strcmp(user_label_out[*mindx-1][i][1],"") != 0) {
-            strcpy(label+i*31,user_label_out[*mindx-1][i][1]);
-          }
-        }
-	/* check for duplicated labels */
-        for (j = 0; j < i; ++j)
-          if ( ! strncmp(label+i*31,label+j*31,31) ) {
-            printf("LWASSN: duplicate column labels in output file, columns %d and %d both have the label %s \n",j,i,label+i*31);
-            ccperror(1,"Duplicate column labels in output file");
-	  }
 
-    } /* nlprgo for */
+      /* set label to program default */
+      for (j = 0; j != 30 && j != lsprgo_len && lsprgo[lsprgo_len*i+j] != ' ' ; ++j) {
+        label[i*31+j] = lsprgo[lsprgo_len*i+j];
+      }
+      label[i*31+j] = '\0';
+
+      /* if there was a user output assignment (LABOUT), overwrite
+         with this */
+      if (strcmp(user_label_out[*mindx-1][i][1],"")) {
+        strcpy(label+i*31,user_label_out[*mindx-1][i][1]);
+      } else {
+
+	/* else check for input assignment (see e.g. revise.exam) */
+	for (j = 0; j < MCOLUMNS; ++j) {
+	  if (strcmp(user_label_in[*mindx-1][j][1],"") && !strcmp(user_label_in[*mindx-1][j][0],label+i*31)) {
+	    strcpy(label+i*31,user_label_in[*mindx-1][j][1]);
+	    break;
+	  }
+	}
+
+      }
+
+      /* check for duplicated labels */
+      for (j = 0; j < i; ++j)
+        if ( ! strncmp(label+i*31,label+j*31,31) ) {
+          printf("LWASSN: duplicate column labels in output file, columns %d and %d both have the label %s \n",j,i,label+i*31);
+          ccperror(1,"Duplicate column labels in output file");
+        }
+
+    } /* end of labels loop */
+
   /* types loop */
   for (i = 0; i < *nlprgo; ++i) {
       for (j = 0; j < 2; ++j) {
@@ -2385,11 +2399,6 @@ FORTRAN_SUBR ( LWASSN, lwassn,
        set, we retain sort order of input file. */
     if (sortorder[*mindx-1][0]) 
       MtzSetSortOrder(mtzdata[*mindx-1],colsort);
-    
-    /* now must update col data for write */
-    for (i = 0; i < *nlprgo; ++i)
-        if (strcmp(user_label_out[*mindx-1][i][1],"") ) strcpy(colarray[i]->label,user_label_out[*mindx-1][i][1]);
-    /*should confirm ctype */
     
     free(colarray);
     free(label);
