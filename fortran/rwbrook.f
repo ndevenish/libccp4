@@ -141,7 +141,7 @@ C     .. Scalar Arguments ..
       INTEGER IUNIT
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,J
+      INTEGER I,J,IRET
 C     ..
 C     .. Scalars in Common ..
       INTEGER FILESOPEN,NCODE,ITYP
@@ -178,7 +178,7 @@ C...  mmdb, initialise and simulate rwbrook
       CALL SIMRWBROOK(1)
 
 C...  mmdb, rewind channel
-   20 CALL MMDB_F_REWD(IUNIT)
+   20 CALL MMDB_F_REWD(IUNIT,IRET)
       IFCRYS=.FALSE.
       IFSCAL=.FALSE.
       MATRIX=.FALSE.
@@ -683,8 +683,7 @@ C     .. Local Variables ..
       CHARACTER*6 ITYPE(7)
 C     ..
 C     .. External Routines ..
-      EXTERNAL CCPERR,MMDB_F_COPY,MMDB_F_ADVANCE,
-     *         MMDB_F_SETHET,MMDB_F_SETTER
+      EXTERNAL CCPERR,MMDB_F_COPY,MMDB_F_ADVANCE
 C     ..
 C     .. Common Blocks ..
       COMMON /RBRKAA/ FILESOPEN,LOGUNIT(MAXFILESOPEN),
