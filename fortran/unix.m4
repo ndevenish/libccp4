@@ -223,9 +223,9 @@ C     check for `logical name' referencing real file
       CALL UGTENV(LOGNAM,NAMFIL)
       IF (NAMFIL.EQ.' ') THEN
         IF (.NOT. CCPEXS(LOGNAM)) THEN
-          ERRSTR = 'CCPOPN Logical name '//LOGNAM
+          ERRSTR = 'WARNING: CCPOPN Logical name '//LOGNAM
           ERRSTR(LENSTR(ERRSTR)+2:) = 'has not been assigned to a file'
-          CALL CCPERR(2,ERRSTR)
+          CALL CCPERR(3,ERRSTR)
         END IF
         NAMFIL = LOGNAM
       END IF
