@@ -52,10 +52,8 @@ C       matrices RO(4,4) and RF(4,4).
 C
 C_BEGIN_RWBROOK
 C
-C COORD         GUIDE DOCUMENTATION       04/09/84
-C                                                 
 C Title: STANDARD COORDINATE FILES AND THEIR USE (FORTRAN 77 IMPLEMENTATION)
-C                                                                           
+C $Date$
 C Author: John W. Campbell
 C                         
 C CONTENTS
