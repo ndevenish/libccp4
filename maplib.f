@@ -1259,7 +1259,7 @@ C
 C
 C---- Open file
 C
-        CALL QOPEN(LSTRM(IUNIT),MAPNAM,'RO')
+        CALL QOPEN(LSTRM(IUNIT),MAPNAM,'READONLY')
 C
 C---- Get and print file name
 C

@@ -1507,7 +1507,7 @@ C then just reposition file at beginning
             RETURN
       ENDIF
 C
-      CALL QOPEN(IUNIN,FILIN,'RO')
+      CALL QOPEN(IUNIN,FILIN,'READONLY')
 C
 C Record file as open
       ISTREAM=IUNIN
