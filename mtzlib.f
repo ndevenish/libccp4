@@ -3876,7 +3876,7 @@ C--- Set read pointer to this batch and read orientation block
 C
 C          ****************************************
       CALL LRBRES(MINDX,BATNO)
-      CALL LRBAT(MINDX,BATNO,NWORDS,BTITLE,.FALSE.)
+      CALL LRBAT(MINDX,BATNO,NWORDS,BTITLE,0)
 C          ****************************************
 C
       IF (NBATSC .EQ. 0) THEN
