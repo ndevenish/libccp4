@@ -89,6 +89,11 @@ static char rcsid[] = "$Id$";
 
 MTZ *MtzGet(const char *logname, int read_refs)
 
+{ return MtzGetUserCellTolerance(logname, read_refs, 0.002);
+}
+
+MTZ *MtzGetUserCellTolerance(const char *logname, int read_refs, const double cell_tolerance)
+
 { MTZ *mtz;
   CCP4File *filein;
   int istat, newproj, cset_warn=0, length;
@@ -338,7 +343,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
          This test doesn't apply to base dataset. 
          Chosen tolerance is arbitrary - there is no single correct value! */
       if (jxtal > 0 && iiset > 0 && 
-	  ccp4uc_cells_differ(cellin[jxtal], cell, 0.002)) {
+	  ccp4uc_cells_differ(cellin[jxtal], cell, cell_tolerance)) {
         if (debug) {
           printf(" MtzGet: Old crystal %d but new cell dimensions. \n",jxtal);
           for (i = 0; i < 6; ++i) 

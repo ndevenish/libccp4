@@ -146,12 +146,25 @@ typedef CCP4::CCP4File CCP4File;
 /**** MTZ i/o ****/
 
 /** Reads the contents of the MTZ file into an MTZ structure.
- * @param logname logical name of MTZ file
- * @param read_refs whether to read reflections into memory (non-zero) or
+ * @param logname (I) Logical name of MTZ file
+ * @param read_refs (I) Whether to read reflections into memory (non-zero) or
  *        to read later from file (zero)
- * @return pointer to MTZ struct
+ * @return Pointer to MTZ struct
  */
 MTZ *MtzGet(const char *logname, int read_refs);
+
+/** Reads the contents of the MTZ file into an MTZ structure. As for function
+ * MtzGet except for extra argument cell_tolerance.
+ * @param logname (I) Logical name of MTZ file
+ * @param read_refs (I) Whether to read reflections into memory (non-zero) or
+ *        to read later from file (zero)
+ * @param cell_tolerance (I) User-defined tolerance for ccp4uc_cells_differ.
+ *        Setting this to zero means that a new crystal is generated whenever
+ *        dataset cell dimensions are different. MtzGet allows for a certain
+ *        variation within a single crystal.
+ * @return Pointer to MTZ struct
+ */
+MTZ *MtzGetUserCellTolerance(const char *logname, int read_refs, const double cell_tolerance);
 
 /** Reads reflection data from MTZ file.
  * @param filein pointer to input file
