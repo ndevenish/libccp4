@@ -708,6 +708,7 @@ C
         IF (ITYP.EQ.4 .OR. ITYP.EQ.5) THEN
           DO 50 I=1,80
             WBROOK(I) = BROOK(I)
+            WBROOK1(I) = ' '
    50     CONTINUE
         ELSE IF (ITYP .EQ. 6) THEN
           DO 60 I=1,80
@@ -733,12 +734,14 @@ C
           WRITE(UNIT(II),FMT='(80A1)') WBROOK
         ENDIF
         IF (WBROOK1(1) .NE. ' ') THEN
-          DO 70 I=7,27
-            WBROOK1(I) = WBROOK(I)
-   70     CONTINUE
-          DO 80 I=73,80
-            WBROOK1(I) = WBROOK(I)
-   80     CONTINUE
+          IF (BROOKB .NE. ' ') THEN
+            DO 70 I=7,27
+              WBROOK1(I) = WBROOK(I)
+   70       CONTINUE
+            DO 80 I=73,80
+              WBROOK1(I) = WBROOK(I)
+   80       CONTINUE
+          ENDIF
           WRITE(UNIT(II),FMT='(80A1)') WBROOK1
         ENDIF
         DO 90 I=1,80
@@ -1534,8 +1537,23 @@ C
         IF (IZ .EQ. 0) THEN
           ID = ' '
         ELSE
-          ID = IATM(IZ)
+C
+C---- Keep the ionic state if valid, OR from atom name.
+C
+          IF (ID(1:1) .EQ. ' ') THEN
+            IF (ATNAM(3:3).EQ.'+' .OR. ATNAM(3:3).EQ.'-') 
+     +                                       ID(3:4) = ATNAM(3:4)
+          ELSE
+            IF (ID(3:3).NE.'+' .AND. ID(3:3).NE.'-') ID(3:4) = '  '
+          ENDIF
+          ID(1:2) = IATM(IZ)
         ENDIF
+C
+C---- Put elment ID into output buffer.
+C
+        DO 485 J=1,4
+          WBROOK(76+J) = ID(J:J)
+485     CONTINUE
         RETURN
 C
 C---- AnisoU cards
