@@ -343,79 +343,6 @@ static int SymopToFMat4(char *symchs_begin, char *symchs_end, float *rot)
       
 }     
 
-static char *FMat4ToSymop(char *symchs_begin, char *symchs_end, float *rsm)
-{     
-  static char axiscr[] = {'X','Y','Z'};
-  static char numb[] = {'0','1','2','3','4','5','6','7','8','9'};
-  static int npntr1[10] = { 0,1,1,1,0,1,0,2,3,5 };
-  static int npntr2[10] = { 0,6,4,3,0,2,0,3,4,6 };
-      
-  int col, row, irsm, itr, ist;
-  register char *ich = symchs_begin;
-      
-  for (row = 0; row != 3; ++row) {
-    *ich = '0';
-    ist = FALSE;    /* ---- Ist is flag for first character of operator */
-    for (col = 0; col != 4; ++col) {
-      
-      if (rsm[(col<<2)+row] != 0.f) {
-        irsm = (int) (ABS(rsm[(col<<2)+row]) + 0.5);
-      /* sign */
-        if ( rsm[(col<<2)+row] > 0.f) {
-          if (ist) {
-          if (ich >= symchs_end) {
-            ccp4_signal(CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_SymErr),
-                        "mat_to_symop", NULL);
-            return NULL; }
-          *ich++ = '+'; }
-        } else {
-          if (ich >= symchs_end) {
-            ccp4_signal(CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_SymErr),
-                        "mat_to_symop", NULL);
-            return NULL; }
-          *ich++ = '-';
-        }
-      
-      /* value + axis */
-        if (col != 3) {
-          if (ich+1 >= symchs_end)  {
-            ccp4_signal(CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_SymErr),
-                        "mat_to_symop", NULL);
-            return NULL; }
-          if (irsm != 1) { 
-            *ich++ = numb[irsm];  
-            *ich++ = axiscr[col];
-          } else
-            *ich++ = axiscr[col];
-          ist = TRUE;
-        } else {
-          itr = (int) (ABS(rsm[(12)+row]*12.0) + 0.5) - 1;
-          if (ich+2 >= symchs_end) {
-            ccp4_signal(CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_SymErr),
-                        "mat_to_symop", NULL);
-            return NULL; }
-          *ich++ = numb[npntr1[itr]];
-          *ich++ = '/';
-          *ich++ = numb[npntr2[itr]]; }
-      }
-    }  
-    
-    /* seperator */
-    if (row != 2) {
-      if (*ich == '0')
-        ++ich;
-      if (ich+2 >= symchs_end) {
-        ccp4_signal(CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_SymErr), 
-                    "mat_to_symop", NULL);
-        return NULL; } 
-      *ich++ = ',';
-      *ich++ = ' ';
-      *ich++ = ' ';
-    } 
-  }
-  return ich;
-} 
-
 static int NumberToSymop(char **symchs_begin, int spacegroup)
 { 
   int i,nsym;
@@ -1197,7 +1124,7 @@ FORTRAN_SUBR( MSYWRT, msywrt,
 
   for (i=0; i != *nsym ; ++i) {
     memset(buffer,' ',80U);
-    FMat4ToSymop(buffer,&buffer[80],rot+16*i);
+    mat4_to_symop(buffer,&buffer[80],rot+16*i);
     ccp4_cmap_set_symop(ioArray[ii]->mapfile,buffer);
   }
   /* record for FORTRAN API */
@@ -1220,7 +1147,7 @@ FORTRAN_SUBR( CCP4_MAP_WRITE_SYMM_MATRIX, ccp4_map_write_symm_matrix,
 
   for (i=0; i != *nsym ; ++i) {
     memset(buffer,' ',80U);
-    FMat4ToSymop(buffer,&buffer[80],rot+16*i);
+    mat4_to_symop(buffer,&buffer[80],rot+16*i);
     ccp4_cmap_set_symop(ioArray[ii]->mapfile,buffer);
   }
   /* record for FORTRAN API */
