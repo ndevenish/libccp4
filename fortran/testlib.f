@@ -20,7 +20,8 @@ C     ..
 C     .. External Functions ..
       LOGICAL LITEND,VAXVMS, QISNAN
       REAL QNAN, RANU
-      EXTERNAL LITEND,VAXVMS, QNAN, QISNAN, RANU
+      INTEGER CCPNUN
+      EXTERNAL LITEND,VAXVMS, QNAN, QISNAN, RANU, CCPNUN
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPERR,CCPFYP,NOCRLF,QCLOSE,QMODE,QOPEN,QQINQ,QREAD,
@@ -144,6 +145,12 @@ C---- NOCRLF
 C     
       CALL NOCRLF('NOCRLF')
       WRITE(LUNOUT,'(''+'',14X,A)') 'Should be on same line'
+C
+C --- CCPNUN
+C
+      I = CCPNUN ()
+      WRITE (REPLY,FMT=6020) I
+      WRITE (LUNOUT,FMT=6002) ' CCPNUN',REPLY,'Next free unit'
 C
 C --- QNAN/QISNAN (`magic numbers')
 C
