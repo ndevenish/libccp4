@@ -97,7 +97,6 @@ C   ROT(4,4,NSYM)  rotation/translation  matrices
 C
 C.....  Calls SYMFR2
 C
-C
 C---- SYMTRN(NSM,RSM)
 C           symmetry translation from matrix back to characters
 C
@@ -274,7 +273,7 @@ C     .. Common blocks ..
       COMMON /CP/CPROJ(3,20),NCENT
 C     ..
 C     .. Save statement ..
-      SAVE
+      SAVE /CP/
 C     ..
 C
 C
@@ -2205,6 +2204,7 @@ C     .. Common blocks ..
       COMMON /SYMM/NISYM,ISYM(9,47)
       COMMON /SYMM1/PGNAME
 C     ..
+      SAVE /SYMM/, /SYMM1/
 C
 C
       MOST = 0
@@ -2298,7 +2298,7 @@ C     .. Common blocks ..
       COMMON /SYMM/NISYM,ISYM(9,47)
       COMMON /SYMM1/PGNAME
 C     ..
-C
+      SAVE /SYMM/, /SYMM1/
 C
       MOST = 0
       IBEST = -MPACK
@@ -2396,6 +2396,7 @@ C     .. Intrinsic Functions ..
 C     ..
 C     .. Common blocks ..
       COMMON /LOOK/IT(2,461)
+      SAVE /LOOK/
 C     ..
 C     .. Data statements ..
       DATA KPRI/461/
@@ -2453,6 +2454,7 @@ C     .. Intrinsic Functions ..
 C     ..
 C     .. Common blocks ..
       COMMON /LOOK/IT(2,461)
+      SAVE /LOOK/
 C     ..
 C     .. Data statements ..
       DATA KPRI/461/
@@ -2720,148 +2722,6 @@ C
       END
 C
 C
-C     =================
-      SUBROUTINE SYMMAT
-C     =================
-C
-C---- to read and print the symmetry matrices for point group pg
-C     which are stored with successive rows being the 9 elements
-C     of the column for the jth matrix in isym.
-C
-C
-C
-C
-C     .. Scalars in Common ..
-      INTEGER NISYM
-      CHARACTER PGNAME*10
-C     ..
-C     .. Arrays in Common ..
-      INTEGER ISYM
-C     ..
-C     .. Local Scalars ..
-      INTEGER I,IFAIL,J,JX,K,KT,LDUM,MT,MU,NMAT,NU
-      CHARACTER PGIN*10
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL CCPOPN
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC MIN
-      INTEGER LENSTR
-      EXTERNAL LENSTR
-C     ..
-C     .. Common blocks ..
-      COMMON /SYMM/NISYM,ISYM(9,47)
-      COMMON /SYMM1/PGNAME
-C     ..
-C
-C
-      IFAIL = 1
-      CALL CCPOPN(4,'PGDATA',5,1,LDUM,IFAIL)
-      IF (IFAIL.NE.-1) THEN
-   10   CONTINUE
-C
-C---- Skip file to correct point group pgname
-C
-        READ (4,FMT=6000,END=20) PGIN
-        LNSTR1 = LENSTR(PGIN)
-        LNSTR2 = LENSTR(PGNAME(1:10))
-        IF (PGIN(1:LNSTR1).NE.PGNAME(1:LNSTR2)) THEN
-          GO TO 10
-        ELSE
-          GO TO 30
-        END IF
-C
-C---- point-group not found
-C
-   20   WRITE (6,FMT=6002) PGNAME
-        GO TO 110
-C
-   30   CONTINUE
-C
-C
-        DO 50 I = 1,9
-          DO 40 K = 1,47
-            ISYM(I,K) = 0
-   40     CONTINUE
-   50   CONTINUE
-C
-C
-        READ (4,FMT=6010) NMAT
-        NISYM = NMAT + NMAT + 1
-C
-C
-        DO 60 K = 1,9,4
-          ISYM(K,1) = -1
-   60   CONTINUE
-C
-C
-        IF (NISYM.GT.1) THEN
-C
-C
-          DO 80 I = 2,NISYM,2
-            READ (4,FMT=6010) (ISYM(J,I),J=1,9)
-C
-C
-            DO 70 J = 1,9
-              ISYM(J,I+1) = -ISYM(J,I)
-   70       CONTINUE
-   80     CONTINUE
-C
-C
-        END IF
-        J = NISYM + 1
-        WRITE (6,FMT=6012) PGNAME,NMAT,NISYM,J
-        WRITE (6,FMT=6004)
-C
-C
-        DO 100 J = 1,NISYM,8
-C
-C---- print out matrices eight at a time
-C
-          JX = MIN(NISYM,J+7)
-          MT = 1
-          KT = 3
-C
-C---- all the matrices are 3-by-3, print 3 lines
-C
-          DO 90 I = 1,3
-            WRITE (6,FMT=6008) ((ISYM(NU,MU),NU=MT,KT),MU=J,JX)
-            MT = MT + 3
-            KT = KT + 3
-   90     CONTINUE
-C
-C---- skip two lines on printer
-C
-          WRITE (6,FMT=6006)
-  100   CONTINUE
-C
-C
-        REWIND 4
-        CLOSE (UNIT=4)
-C
-        RETURN
-      END IF
-  110           CALL CCPERR(1,' STOP in SYMLIB.for 110')
-C
-C---- Format statements
-C
- 6000 FORMAT (2X,A)
- 6002 FORMAT (//'  POINT-GROUP  ',A,'  NOT FOUND IN LIBRARY !!!!',//)
- 6004 FORMAT (//10X,'** SYMMETRY MATRICES USED **')
- 6006 FORMAT (//)
- 6008 FORMAT (14X,8 (4X,3I3))
- 6010 FORMAT (9I2)
- 6012 FORMAT (////11X,'Number of Symmetry Matrices read for POINT GROU',
-     +       'P ',A,' .....',I5,/11X,'Total Number of Symmetry Matric',
-     +       'es..........................',I5,/11X,'Identity Matrix i',
-     +       's assumed to be number 1 - Those printed are numbers 2 to'
-     +       ,I3)
-C
-C
-      END
-C
-C
 C     ================================
       SUBROUTINE DECSYM(JHKL,HKL,KSYM)
 C     ================================
@@ -2905,6 +2765,7 @@ C     ..
 C     .. Common blocks ..
       COMMON /SYMM/NISYM,ISYM(9,47)
       COMMON /SYMM1/PGNAME
+      SAVE /SYMM/, /SYMM1/
 C     ..
 C
 C
@@ -2969,6 +2830,7 @@ C     ..
 C     .. Common blocks ..
       COMMON /SYMM/NISYM,ISYM(9,47)
       COMMON /SYMM1/PGNAME
+      SAVE /SYMM/, /SYMM1/
 C     ..
 C
 C
@@ -3086,6 +2948,7 @@ C     .. Common blocks ..
       COMMON /POINTS/JP(3),LP(3),LSEC,NXYZ10(3)
       COMMON /SYM/NSYM,NAU(3),JS(3,3,96),JT(3,96)
       COMMON /INOUT/ LUNIN,LUNOUT,INMAP,OUTMAP,SYMFIL
+      SAVE /INPUT/, /POINTS/, /SYM/, /INOUT/
 C     ..
 C
 C---- Error trap
@@ -3193,7 +3056,7 @@ C     .. Common blocks ..
       COMMON /RECPLT/COEFHH,COEFHK,COEFHL,COEFKK,COEFKL,COEFLL
 C     ..
 C     .. Save statement ..
-      SAVE
+      SAVE /RECPLT/
 C     ..
 C
 C
