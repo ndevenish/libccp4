@@ -1764,8 +1764,8 @@ C
       IF (RCSDAT(:7) .EQ. '$Date: ') THEN
 C       raw form (not exported)
         DATE = '  /  /'
-        DATE(1:2) = RCSDAT(13:14)
-        DATE(4:5) = RCSDAT(16:17)
+        DATE(1:2) = RCSDAT(16:17)
+        DATE(4:5) = RCSDAT(13:14)
         DATE(7:8) = RCSDAT(10:11)
       ELSE IF (LEN(RCSDAT).GE.10 .AND. RCSDAT(:2).EQ.'19') THEN
 C       after export

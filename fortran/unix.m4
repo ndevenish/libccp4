@@ -560,8 +560,8 @@ C
 ifelse(_sgi,1,
 [      CALL IDATE(IARRAY(1),IARRAY(2),IARRAY(3))],dnl VMS-style
 [      CALL IDATE (IARRAY)])
-      IDAY = IARRAY(2)
-      IMONTH = IARRAY(1)
+      IDAY = IARRAY(1)
+      IMONTH = IARRAY(2)
 C     This may or may not be necessary, depending on system, but does no
 C     harm:
       IYEAR = MOD(IARRAY(3), 100)
