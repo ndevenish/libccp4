@@ -8,6 +8,8 @@ C---- F77MSUB.FOR                               30/10/86    JWC
 C
 C $Date$
 C
+C     FIXME: remove the character MAPST in MOHDR and write out the info
+C     by packing bytes
 C
 C---- Version 2.1  Fortran 77 version
 C
@@ -658,7 +660,7 @@ C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
-      CHARACTER*4	  MAP
+      CHARACTER*4 MAP
       parameter (MAP      =  'MAP ')
 C     ..
 C     .. Scalar Arguments ..
@@ -783,7 +785,7 @@ C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
-      CHARACTER*4	  MAP
+      CHARACTER*4 MAP
       parameter (MAP      =  'MAP ')
 C     ..
 C     .. Scalar Arguments ..
@@ -912,7 +914,7 @@ C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
-      CHARACTER*4	  MAP
+      CHARACTER*4 MAP
       parameter (MAP      =  'MAP ')
 C     ..
 C     .. Scalar Arguments ..
@@ -1230,8 +1232,8 @@ C     .. Local Arrays ..
 C
 Cdw----added to seperate real and integer parts of header
 C
-      INTEGER IHDR1(10),IHDR2(3),IHDR3(3),IHDR4(17),IHDR5,IHDR6(200)
-      REAL    RHDR1(6),RHDR2(3),RHDR3(12),RHDR4
+      INTEGER IHDR1(10),IHDR2(3),IHDR3(3),IHDR4(17),IHDR5(1),IHDR6(200)
+      REAL    RHDR1(6),RHDR2(3),RHDR3(12),RHDR4 (1)
       CHARACTER LXYZ(3)*1
 C     ..
 C     .. External Subroutines ..
@@ -1312,81 +1314,81 @@ Cdw---- Read header, modes 2 & 6 in real and integer blocks
 Cdw---- Mode 0 for characters
 Cdw---- Unfortunately need to call QMODE each time we change
 C
-	NITHDR = 10
+        NITHDR = 10
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),IHDR1,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 6
+        NITHDR = 6
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),RHDR1,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 3
+        NITHDR = 3
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),IHDR2,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 3
+        NITHDR = 3
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),RHDR2,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 3
+        NITHDR = 3
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),IHDR3,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 12
+        NITHDR = 12
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),RHDR3,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 17
+        NITHDR = 17
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),IHDR4,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 1
+        NITHDR = 1
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),RHDR4,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-	NITHDR = 1
+        NITHDR = 1
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),IHDR5,NITHDR,IER)
         IF (IER.NE.0) THEN
           WRITE (LUNOUT,FMT=6008)
           WRITE (LUNOUT,FMT=6012)
-	ENDIF
+        ENDIF
 C
-Cdw----	Read labels as bytes
+Cdw---- Read labels as bytes
 C
-	NITHDR = 800
+        NITHDR = 800
         CALL QMODE(LSTRM(IUNIT),0,NCHHDR)
         CALL QREAD(LSTRM(IUNIT),IHDR6,NITHDR,IER)
 C
@@ -2054,7 +2056,7 @@ C
 C
 Cdw---- Set Mode = 0 (bytes)
 C
-	  CALL QMODE(LSTRM(IUNIT),0,NCHINT)
+        CALL QMODE(LSTRM(IUNIT),0,NCHINT)
 C
 C---- Total number of symmetry characters
 C
@@ -2062,7 +2064,7 @@ C
 C
 Cdw---- Number of items / line (BYTES)
 C
-	NILINE = NBLIN
+        NILINE = NBLIN
 C
 C---- Number of 'lines' of symmetry data, taken in groups of NBLIN
 C     characters
