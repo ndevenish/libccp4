@@ -129,7 +129,8 @@ C        complex baz (n3)
 C        ...
 C     Obviously all communication with ROUTNE must be by COMMON (or,
 C     possibly, extra ENTRYs).  The allocated memory is freed on return
-C     from ROUTNE.
+C     from ROUTNE.  As a concession, it's initially filled with zeroed
+C     bytes.
 
 C
 C Arguments:
@@ -2398,7 +2399,7 @@ C
       CALL UTIME(CTIME)
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
  6000 FORMAT (
-     +     '1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.12: ',
+     +     '1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.13: ',
      +     A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
      +     ///
      +     ' Please reference: Collaborative Computational Project,',
