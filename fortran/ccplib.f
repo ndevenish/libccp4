@@ -1280,7 +1280,9 @@ C
 C     ==================================
 C
 C     Interface to CCPVRS using RCS-format date e.g.,
-C     '$Date$'
+C     '$Date$' or its form expanded with RCS
+C     option `-kv' as for a CVS export, in which case it will have the
+C     `$Date$' stripped.
 C     
       CHARACTER*(*) RCSDAT, PROG
       CHARACTER*8 DATE
@@ -1288,11 +1290,19 @@ C
       EXTERNAL CCPVRS
 C
       IF (RCSDAT(:7) .EQ. '$Date: ') THEN
+C       raw form (not exported)
         DATE = '  /  /'
         DATE(1:2) = RCSDAT(13:14)
         DATE(4:5) = RCSDAT(16:17)
         DATE(7:8) = RCSDAT(10:11)
+      ELSE IF (LEN(RCSDAT).GE.10 .AND. RCSDAT(:2).EQ.'19')
+C       after export
+        DATE = '  /  /'
+        DATE(1:2) = RCSDAT(9:10)
+        DATE(4:5) = RCSDAT(6:7)
+        DATE(7:8) = RCSDAT(3:4)
       ELSE
+C       fallback
         DATE = ' '
       ENDIF
       CALL CCPVRS(ILP,PROG,DATE)
@@ -1954,7 +1964,7 @@ C
       CALL UGTUID(UID)
       CALL UTIME(CTIME)
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
- 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'FORTRAN77 VERSION: ',
+ 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.1: ',
      +       A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
      +       /)
 C
