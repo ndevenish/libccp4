@@ -2121,8 +2121,13 @@ int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[],
       } 
       /* update column ranges */
       if (!ccp4_ismnf(mtz, adata[i])) {
-        if (adata[i] < lookup[i]->min) lookup[i]->min = adata[i];
-        if (adata[i] > lookup[i]->max) lookup[i]->max = adata[i];
+        if (iref == 1) {
+          lookup[i]->min = adata[i];
+          lookup[i]->max = adata[i];
+        } else {
+          if (adata[i] < lookup[i]->min) lookup[i]->min = adata[i];
+          if (adata[i] > lookup[i]->max) lookup[i]->max = adata[i];
+        }
       }
     }
   }
