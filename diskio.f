@@ -130,7 +130,7 @@ C     .. Data statements ..
 C     ..
 C
       IF (ISTAT.LT.1 .OR. ISTAT.GT.5) THEN
-        WRITE (ERRSTR,FMT=6000) ' (Q)QOPEN: bad mode: ',ISTAT
+        WRITE (ERRSTR,'(1X,A,I2)') ' (Q)QOPEN: bad mode: ',ISTAT
         CALL CCPERR(1,ERRSTR)
       END IF
 C
@@ -169,24 +169,23 @@ C
         CALL CCPERR(1,' (Q)QOPEN failed - no streams left')
       ELSE IF (IUNIT.EQ.-2) THEN
         WRITE (ERRSTR,FMT=6001) '(Q)QOPEN failed - File name:',
-     +       LOGNAM (:100)
+     +       LOGNAM (:MIN(100,LENSTR(LOGNAM)))
         CALL CCPERR(1,ERRSTR)
       ELSE IF (JSTAT.EQ.4 .AND. CCPEXS(FNAME)) THEN
         WRITE (ERRSTR,FMT=6001)
-     +       '(Q)QOPEN NEW file already exists:', FNAME(:100)
+     +       '(Q)QOPEN NEW file already exists:',
+     +       FNAME(:MIN(100,LENSTR(LOGNAM)))
         CALL CCPERR(1,ERRSTR)
       END IF
 
       CALL UGTUID(USRNAM)
-      WRITE (ERRSTR,FMT=6000) '(Q)QOPEN allocated # ',IUNIT
+      WRITE (ERRSTR,'(1X,A,I2)') '(Q)QOPEN allocated # ',IUNIT
       CALL QPRINT(1,ERRSTR)
       ERRSTR = 'User:   '//USRNAM//' Logical Name: '//LNAME
       CALL QPRINT(1,ERRSTR)
       ERRSTR = 'Status: '//MODES(JSTAT)//' Filename: '//FNAME
       CALL QPRINT(1,ERRSTR)
-C
- 6000 FORMAT (A,I2)
- 6001 FORMAT (A,5X,A)
+ 6001 FORMAT (1X,A,1X,A)
       END
 C
 C
