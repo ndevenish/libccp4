@@ -74,6 +74,16 @@ extern "C" {
 
 /*------------------------------------------------------------------*/
 
+/* Type Definitions */
+
+/*------------------------------------------------------------------*/
+
+/* Define a type which is a pointer to a function taking an integer
+   and a pointer to character, and returning an integer */
+typedef int (*CCP4INTFUNCPTR)(int, char *);
+
+/*------------------------------------------------------------------*/
+
 /* Function Prototypes */
 
 /*------------------------------------------------------------------*/
@@ -109,6 +119,46 @@ void ccp4ProgramTime(int init);
  * @return Verbosity level
  */
 int ccp4VerbosityLevel(int level);
+
+/** Set or invoke a user-defined callback function
+ * The callback must be of the form "function(const int, const char *)"
+ * This is essentially an internal function which operates in one of two
+ * modes - in "set" mode the named function is stored and the remaining
+ * arguments are discarded; in "invoke" mode the stored function is
+ * executed with the supplied values (the supplied name is discarded).
+ * @param mycallback Callback function (discarded in "invoke" mode)
+ * @param mode Either "set" or "invoke"
+ * @param ierr An error level equivalent to that used in ccperror
+ * @param message A message string equivalent to that used in ccperror
+ * @return Result of the executed function (invoke mode)
+ */
+int ccp4Callback(CCP4INTFUNCPTR mycallback, char *mode, int ierr, char *message);
+
+/** Set a user-defined callback function
+ * This is a wrapper to ccp4Callback - it stores a user-defined
+ * callback function which must be of the form 
+ * "function(const int, const char *)"
+ * @param mycallback Callback function
+ * @return 1 (if the function is stored), 0 (if it is not) 
+ */
+int ccp4SetCallback(CCP4INTFUNCPTR mycallback);
+
+/** Invoke the user-defined callback function
+ * This is a wrapper to ccp4Callback - it executes the user-defined
+ * callback function previously stored.
+ * @param ierr An error level equivalent to that used in ccperror
+ * @param message A message string equivalent to that used in ccperror
+ * @return Result of the executed function
+ */
+int ccp4InvokeCallback(int ierr, char *message);
+
+/** A dummy callback function used by default in ccp4CallOnExit
+ * Internal function. This function does nothing.
+ * @param level Severity level supplied from ccperror
+ * @param message Message text supplied from ccperror
+ * @return Always returns 1
+*/      
+int ccp4NullCallback(int level, char *message);
 
 /** Check existence of licence agreement
  * @param name Name of licence, e.g. "CCP4".

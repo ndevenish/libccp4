@@ -207,6 +207,77 @@ int ccp4VerbosityLevel(int level)
   return verbositylevel;
 }
 
+/*------------------------------------------------------------------*/
+
+/*
+  Callback functionality
+ */
+
+/* ccp4Callback
+
+   Set or invoke a user-defined callback function.
+
+   Internal function: applications should use the API functions
+   ccp4SetCallback and ccp4InvokeCallback
+ */
+int ccp4Callback(CCP4INTFUNCPTR mycallback, char *mode, int ierr, char *message)
+{
+  static CCP4INTFUNCPTR callback=ccp4NullCallback;
+
+  if (strncmp(mode,"set",3) == 0) {
+    /* Set callback
+       Store the pointer to the callback function */
+    callback=mycallback;
+    return 1;
+  } else if (strncmp(mode,"invoke",3) == 0) {
+    /* Invoke callback
+       Execute the callback function */
+    return callback(ierr,message);
+  }
+  /* Unrecognised mode */
+  return 0;
+}
+
+/* ccp4SetCallback
+
+   Store a pointer to a user-defined callback function of
+   the form "int func(int, char *)"
+
+   This is a wrapper to ccp4Callback in "set" mode.
+ */
+int ccp4SetCallback(CCP4INTFUNCPTR mycallback)
+{
+  return ccp4Callback(mycallback,"set",-1,"No message");
+}
+
+/* ccp4InvokeCallback
+
+   Execute the user-defined callback function (previously
+   set up using ccp4SetCallback) with the supplied
+   arguments.
+
+   This is a wrapper to ccp4Callback in "invoke" mode.
+ */
+int ccp4InvokeCallback(int ierr, char *message)
+{
+  return ccp4Callback(ccp4NullCallback,"invoke",ierr,message);
+}
+
+/* Default null callback function
+
+   Internal function: this is the default callback function
+   used by ccp4Callback if no user-defined function has been
+   specified.
+ */
+int ccp4NullCallback(int level, char *message)
+{
+  /* This is the default callback function which takes no
+     action */
+  return 1;
+}
+
+/*------------------------------------------------------------------*/
+
 /* check existence of licence agreement */
 
 int ccp4_licence_exists(const char *name)
