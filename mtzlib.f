@@ -392,7 +392,7 @@ C     NLPRGI    (I)	INTEGER         number of input program labels
 C
 C     LOOKUP    (I/O)	INTEGER         array of dimension at least NLPRGI
 C                               	containing index from program labels
-C                               	to file labels. On input these should 
+C                               	to file labels. on entry these should 
 C                               	be set to -1 for compulsory labels 
 C                               	and 0 for optional labels, and on exit
 C                               	labels which are not present in the 
@@ -676,7 +676,8 @@ C
 C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
 C                               	points to both input and output files
 C
-C     NBATX     (O)	INTEGER         number of batches in the file on
+C     NBATX     (I/O)	INTEGER         Dimension of BATCHX on entry;
+C                                       number of batches in the file on
 C                               	exit
 C
 C     BATCHX    (O)	INTEGER         array of dimension at least NBATX
@@ -904,11 +905,11 @@ C     BATNO     (I)	INTEGER         batch number
 C
 C     NBATSC    (I)	INTEGER         maximum number of batch scales expected
 C
-C     BATSCL	(O)	REAL            array of dimension at least NBATSC containing
-C					batch scale, relative Bfactor,
+C     BATSCL	(O)	REAL            array of dimension at least NBATSC
+C					containing batch scale, relative Bfactor,
 C                               	SD(Bscale), SD(Bfactor) if NBATSC = 4
 C                                	else NBATSC/2 scales or B-factors + Sd's
-C					on output
+C					on exit
 C
 C     NBATSC    (O)	INTEGER         number of batch scales found
 C
@@ -1159,8 +1160,9 @@ C
 C     CTYPS     (O)	CHARACTER*1     array of dimension at least NCOL
 C                               	containing the column types on exit
 C
-C     NCOL      (O)	INTEGER         number of columns in MTZ file
-C
+C     NCOL      (I/O)	INTEGER         on entry, dimension of CLABS, CTYPS on
+C                                       exit, number of columns in the
+C                                       MTZ file
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
@@ -1338,8 +1340,9 @@ C                               	points to both input and output files
 C
 C     HSTRNG    (O)	CHARACTER       array of (NLINES) with the history lines
 C
-C     NLINES    (O)	INTEGER         number of history lines being returned
-C
+C     NLINES    (I/O)	INTEGER         on entry, dimension of HSTRNG; on
+C                                       exit, number of history lines being
+C                                       returned.
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
@@ -1433,16 +1436,16 @@ C
 C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
 C                               	points to both input and output files
 C
-C     VERSNX    (O)	CHARACTER*10    version stamp of MTZ subroutines used to
-C                               	write the file.
+C     VERSNX    (O)	CHARACTER*10    version stamp of MTZ subroutines used
+C                               	to write the file.
 C
-C     NCOLX     (O)	INTEGER         number of columns in the file
+C     NCOLX     (I/O)	INTEGER         on entry, last dimension of RANGES; on
+C                                       exit, number of columns in the file
 C
 C     NREFLX    (O)	INTEGER         number of reflection records in the file
 C
 C     RANGES    (O)	REAL            array(2,ncolx) containing the minimum
 C                               	and maximum values in each column
-C
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
@@ -1699,7 +1702,7 @@ C	                               	=2 as above plus history info
 C        	                       	=3 Full header dump; symmetry
 C               	                any other value; nothing happens
 C     IFAIL     (O)	INTEGER         error indicator : meaning :
-C                               	on output
+C                               	on exit
 C                               	=0 OK
 C                               	=-1 no such file
 C                               	all other errors cause stop
@@ -3498,8 +3501,10 @@ C
 C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
 C                               	points to both input and output files
 C
-C     NSYMX     (O)	INTEGER         total no. of symmetry operations
-C                               	if =0 on exit then no symm info present
+C     NSYMX     (I/O)	INTEGER         Pn entry, the last dimension of RSYMX;
+C                                       on exit the total no. of symmetry
+C                                       operations, 0 if no symmetry
+C                                       information is present
 C
 C     RSYMX     (O)	REAL            array of dimensions (4,4,NSYM) of
 C                               	symmetry ops on exit (max. NSYM is 192)
@@ -3593,7 +3598,7 @@ C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
 C                               	points to both input and output files
 C
 C     FTITLE    (O)	CHARACTER*(*)   Character string containing the title
-C                               	on output - maximum possible length 70
+C                               	on exit - maximum possible length 70
 C
 C     LEN       (O)	INTEGER         Length of the title string - ie no. of
 C                               	chars from start to last non-blank char
@@ -4455,16 +4460,16 @@ C     VAL_MAGIC (I)	REAL            variable giving value assigned to
 C                                       "missing data"; it may be passed to 
 C                                        an MTZ  file, or return a preset value.
 C
-C     SETVAL    (I)	LOGICAL         if TRUE on input, the mtz missing flag is 
+C     SETVAL    (I)	LOGICAL         if TRUE on entry, the mtz missing flag is 
 C                                       set to VAL_MAGIC - ie the value in the mtz 
 C                                       file is OVERWRITTEN!
 C
-C                                       if FALSE on input and there is a 
+C                                       if FALSE on entry and there is a 
 C                                       "missing value" set in the input MTZ file 
 C                                       that will be returned as VAL_MAGIC, and
 C                                       SETVAL will be returned TRUE.
 C
-C                                       if FALSE on input and there is NO 
+C                                       if FALSE on entry and there is NO 
 C                                       "missing value" set in the input MTZ file 
 C                                       VAL_MAGIC will be set to the default
 C                                       for both input and output
