@@ -245,7 +245,7 @@ that [[__OSF1__]] is defined, but it's reported that you need
 #endif
 @ \idx{VMS} is a law unto itself, of course.  Help for VAX C doesn't
 actually say [[VMS]] is defined (as opposed to [[vms]]), although it
-seems to be.  The other possibilities are guesses for DEC C in strict
+seems to be.  The other possibilities are for DEC C in strict
 ANSI mode.
 <<identifying the platform>>=
 #ifndef VMS
@@ -386,14 +386,25 @@ indication).  I've no idea why.  However, I note that the \ac{ansi} C
 [[b]] doesn't have any effect in \ac{posix} anyway.  In \idx{VAX} C
 [[b]] means `no conversion of carriage-control information is
 attempted'.  It's not clear to me whether you want this or not.  Both
-possibilites {\em seem\/} to work OK\@.
+possibilites {\em seem\/} to work OK \dots\ but not in \idx{DEC~C}\@.
+This is something to watch out for on other
+systems.\index{portability!possible problem}
 <<global variables>>=
+#if defined (__DECC)
+static char *file_attribute[] = { /* DISKIO file modes */
+  "wb+",   /* 'UNKNOWN'   open as 'OLD'/'NEW' check existence */
+  "wb+",   /* 'SCRATCH'   open as 'OLD' and delete on closing */
+  "rb+",   /* 'OLD'       file MUST exist or program halts */
+  "wb+",   /* 'NEW'       create (overwrite) new file */
+  "rb"     /* 'READONLY'  self explanatory */
+#else
 static char *file_attribute[] = {
   "w+",   /* 'UNKNOWN'   open as 'OLD'/'NEW' check existence */
   "w+",   /* 'SCRATCH'   open as 'OLD' and delete on closing */
   "r+",   /* 'OLD'       file MUST exist or program halts */
   "w+",   /* 'NEW'       create (overwrite) new file */
   "r"     /* 'READONLY'  self explanatory */
+#endif
 };                                                                      
 @ %def rcsid initialised file_attribute
 @ Here is a table of bytes per item for the different i/o modes
@@ -465,6 +476,7 @@ char *message;
 #endif
 #if defined (VMS)
   extern void CCPERR();
+  extern void QPRINT();
   struct dsc$descriptor_s str;
 
   str.dsc$a_pointer = strerror(errno, vaxc$errno);
