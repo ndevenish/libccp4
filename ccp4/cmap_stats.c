@@ -15,9 +15,9 @@ int stats_update(CMMFile_Stats *stats, void *section_begin,
   float *ufp = (float *) section_begin;
   float val;
       
-  if (stats->total == 0) {         
+  if (stats->total == 0 && *ufp < -1.0e10 ) {         
     stats->offset = *ufp;
-  }
+  } 
   
   while (ufp < (float *) section_end) {
     val = *ufp - stats->offset;
