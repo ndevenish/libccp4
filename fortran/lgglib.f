@@ -2076,7 +2076,8 @@ C ***** PREVIOUS UPDATES                              07/07/75  06/11/72
 C 
 C 
       DIMENSION S(3,4), ICHAR(36)
-      CHARACTER*1 TEXT(36),CHAR,VALID(14),BLANK
+      CHARACTER*1 CHAR,VALID(14),BLANK
+      CHARACTER*36 TEXT
       EQUIVALENCE (BLANK,VALID(14))
       DATA VALID/'1','2','3','4','5','6','X','Y','Z','-','+','/',',',
      . ' '/
@@ -2097,7 +2098,7 @@ C      CHAR OF 'TEXT' -IGNORING BLANKS- IS 'Y', ICHAR(7)=8)
 C
       ICOLMX = 0
       DO 20 I=1,36
-      CHAR = TEXT(I)
+      CHAR = TEXT(I:I)
       IF(CHAR .EQ. BLANK) GO TO 20
       ICOLMX = ICOLMX + 1
       DO 10 J=1,13
@@ -3553,6 +3554,10 @@ C SUPOS1 is almost same with SUPOS,but used as a subroutine as a first
 c step of the refinement by subroutine SUPRIMP.
 c
 c                                           by Guoguang Lu
+cv
+c     added an upper limit for number of refinement cycles to do.
+c     C. Vonrhein
+cv
 C                                               30/01/1989
 C
 C
@@ -3566,6 +3571,11 @@ c   NATM0 is the largest number of atoms.
 C
       DIMENSION DA(3,3,3),VVV(3,3)
       DIMENSION B1(3),B2(3),ROHOLD(3),ROH(3),DETAROH(3),TOLD(3)
+C MAXREF = maximum number of refinements to do
+C
+      INTEGER MAXREF
+      PARAMETER (MAXREF=100)
+C
 c...  data statements.  Seperate declaration and init required for f2c
       DATA SCALR/1./,SCALT/1./
 C
@@ -3625,10 +3635,13 @@ C                       NEW MATRIX
 C                                  A*V1 - V2
       RMS=dosq(3*NATM,DIS)
 C
-      IF (RMS.LT.RMS1) THEN
-      RMS1=RMS
-      NREF=NREF+1
-      GOTO 50
+C     do only a maximum of MAXREF refinement cycles
+C
+      IF ((NREF.LE.MAXREF).AND.(RMS.LT.RMS1)) THEN
+c
+        RMS1=RMS
+        NREF=NREF+1
+        GOTO 50
       END IF
 
 C	WRITE(6,'(1H0)')
@@ -4900,7 +4913,7 @@ c	if (isp.ne.nsp) goto 10
         str = '                                        '
         str(1:iend-ist) = key(ist:iend-1)
         NSYM=NSYM+1
-        IF (MATSYM(SYM(1,1,nsym),%REF(STR),ICOL).EQ.0) GOTO 502
+        IF (MATSYM(SYM(1,1,nsym),STR,ICOL).EQ.0) GOTO 502
         WRITE(6,*) 'Error in symop after colunm ',ICOL
         write(6,*) key
         write(6,*) str
@@ -4983,7 +4996,7 @@ c	.ture. = continue
 c	.false. = start
 c
 c
-      CHARACTER*120 TXT
+      CHARACTER*(*) TXT
       logical*1 cont
       if (.not.cont) then
        NPAR = 0
@@ -4998,20 +5011,21 @@ c	 WRITE(6,*)  'continue at next card'
        jcha = 0
       end if
       I = 1
-10	IF (TXT(I:I).NE.' '.AND.I.LE.NCHA-jcha) THEN
-       J = I
-20	 IF (TXT(J+1:J+1).EQ.' '.OR.J.GT.NCHA-jcha) THEN
-        WRITE(NUNIT,'(A)') TXT(I:J)
-        NPAR = NPAR + 1
-       ELSE	
-        J = J + 1
-        GOTO 20
-       END IF
-       I = J + 1
-       GOTO 10
+ 10   IF ((I.LE.NCHA-jcha).AND.(TXT(I:I).NE.' ')) THEN
+        J = I
+ 20     CONTINUE
+        IF (((J+1).GT.NCHA).OR.(TXT(J+1:J+1).EQ.' ')) THEN
+          WRITE(NUNIT,'(A)') TXT(I:J)
+          NPAR = NPAR + 1
+        ELSE  
+          J = J + 1
+          GOTO 20
+        END IF
+        I = J + 1
+        GOTO 10
       ELSE IF (I.LT.NCHA-jcha) THEN
-       I = I + 1
-       GOTO 10
+        I = I + 1
+        GOTO 10
       END IF
       if (jcha.eq.1) TXT(NCHA:NCHA)='-'
 C
@@ -5472,7 +5486,7 @@ c	call spstrunct(latnam)
         str = '                                        '
         str(1:iend-ist) = key(ist:iend-1)
         NSYM=NSYM+1
-        IF (MATSYM(SYM(1,1,nsym),%REF(STR),ICOL).EQ.0) GOTO 502
+        IF (MATSYM(SYM(1,1,nsym),STR,ICOL).EQ.0) GOTO 502
         WRITE(6,*) 'Error in symop after colunm ',ICOL
         write(6,*) key
         write(6,*) str
