@@ -74,7 +74,7 @@ RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
 
 # modules to go in libccp4.a:
 LIBTARGETS = ccplib fftlib maplib parser rwbrook modlib \
-           symlib mtzlib diskio unix plot84lib \
+           symlib mtzlib diskio unix plot84lib libhtml \
            binsortint library plotsubs keyparse pack_f pack_c
 
 .PRECIOUS : $L # don't zap the library if a component fails
@@ -94,8 +94,8 @@ all :  $L
 $L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) \
 	  $L(mtzlib.o) $L(diskio.o) $L(unix.o) \
-	  $L(binsortint.o) $L(library.o) \
-	  $L(plot84lib.o) $L(plotsubs.o) $L(keyparse.o) \
+	  $L(binsortint.o) $L(library.o) $L(plot84lib.o) \
+	  $L(libhtml.o) $L(plotsubs.o) $L(keyparse.o) \
 	  $L(pack_c.o) $L(pack_f.o)
 # titan special:
 	-(test -f /usr/lib/fortran/time.o && make '$L(time.o)') || true
@@ -235,6 +235,18 @@ $L(plot84lib.o) : $(srcdir)/plot84lib.f
 	  && $(AR) ../$L *.o
 	rm -f plot84lib.dir/*.o
 plot84lib : $L(plot84lib.o)
+	$(RANLIB) $L
+
+$L(libhtml.o) : $(srcdir)/libhtml.f
+	-rm -rf libhtml.dir; mkdir libhtml.dir
+	echo '      SUBROUTINE LIBHTML' > libhtml.dir/libhtml.$F
+	echo '      END' >> libhtml.dir/libhtml.$F
+	cd libhtml.dir && fsplit $(srcdir)/libhtml.f >/dev/null && $(RMEMPTY) && \
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
+	rm -f libhtml.dir/*.o
+libhtml : $L(libhtml.o)
 	$(RANLIB) $L
 
 $L(plotsubs.o) : $(srcdir)/plotsubs.f
