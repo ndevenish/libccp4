@@ -1878,7 +1878,7 @@ C     .. Local Scalars ..
       INTEGER BATFLG,EFLAG,ENDLOP,IER,ISTAT,ITEND,IUNIN,JDO10,JDO55,
      +        JDO100,JDO110,JDO120,JDO130,JDO140,JDO150,JDO190,JDO20,
      +        JDO200,JDO30,JDO40,JDO50,JDO60,JDO80,JDO90,NBATRF,NCOLR,
-     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT,NSETP,NSETD,NSETDC
+     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT,NSETD
       LOGICAL LEND
       CHARACTER KEY*4,MKEY*4,LINE*80,LINE2*400,STROUT*400
 C     ..
@@ -2056,6 +2056,7 @@ C
           DO I = 1,6
             DCELL(1,JDO55,MINDX) = 0.0
           ENDDO
+          DWAVEL(JDO55,MINDX) = 0.0
    55   CONTINUE
 
         DO 60 JDO60 = 1,MCOLS
@@ -2070,9 +2071,7 @@ C
 C
         NBATRF = 0
         NCOLR = 0
-        NSETP = 0
         NSETD = 0
-        NSETDC = 0
         NSYMIN = 0
         SYFLAG = 1
         BATFLG = 1
@@ -2364,25 +2363,30 @@ C---- Information on datasets used in harvesting
               GO TO 70
 
 C---- This works with MTZ files written by current LWCLOS, but
-C     might be problems if PROJ or DATA records get out of order.
+C     might be problems if records get out of order. It assumes
+C     that records from the same dataset are grouped together,
+C     and the first such record is PROJECT
             ELSEIF (KEY.EQ.'PROJ') THEN
-              NSETP = NSETP + 1
-              CALL GTPINT(2,SET_ID(NSETP,MINDX),NTOK,ITYP,FVALUE)
-              ENTRY_ID(NSETP,MINDX) = LINE(IBEG(3) :IEND(3))
+              NSETD = NSETD + 1
+              CALL GTPINT(2,SET_ID(NSETD,MINDX),NTOK,ITYP,FVALUE)
+              ENTRY_ID(NSETD,MINDX) = LINE(IBEG(3) :IEND(3))
               GO TO 70
 
             ELSEIF (KEY.EQ.'DATA') THEN
-              NSETD = NSETD + 1
               CALL GTPINT(2,SET_ID(NSETD,MINDX),NTOK,ITYP,FVALUE)
               DIFFRN_ID(NSETD,MINDX) = LINE(IBEG(3) :IEND(3))
               GO TO 70
 
             ELSEIF (KEY.EQ.'DCEL') THEN
-              NSETDC = NSETDC + 1
-              CALL GTPINT(2,SET_ID(NSETDC,MINDX),NTOK,ITYP,FVALUE)
+              CALL GTPINT(2,SET_ID(NSETD,MINDX),NTOK,ITYP,FVALUE)
               DO I = 1,6
-                CALL GTPREA(I+2,DCELL(I,NSETDC,MINDX),NTOK,ITYP,FVALUE)
+                CALL GTPREA(I+2,DCELL(I,NSETD,MINDX),NTOK,ITYP,FVALUE)
               ENDDO
+              GO TO 70
+
+            ELSEIF (KEY.EQ.'DWAV') THEN
+              CALL GTPINT(2,SET_ID(NSETD,MINDX),NTOK,ITYP,FVALUE)
+              CALL GTPREA(3,DWAVEL(NSETD,MINDX),NTOK,ITYP,FVALUE)
               GO TO 70
 C
 C---- BATCH - serial numbers of the batches in the file 
@@ -2471,21 +2475,11 @@ C
 C
 C---- Check no. of datasets input equals NSETW from NDIFFRN line
 C
-            IF (NSETP.NE.NSETW(MINDX)) THEN
-              WRITE (LINE2,FMT='(A,I4,A,A,I4,A)')
-     +          'From LROPEN : Header indicates',NSETW(MINDX),
-     +          ' datasets, but ',' there were',NSETP,
-     +          ' PROJECT records in header'
-C
-C                  *************************
-              CALL LERROR(2,-1,LINE2)
-C                  *************************
-C
-            ELSEIF (NSETD.NE.NSETW(MINDX)) THEN
+            IF (NSETD.NE.NSETW(MINDX)) THEN
               WRITE (LINE2,FMT='(A,I4,A,A,I4,A)')
      +          'From LROPEN : Header indicates',NSETW(MINDX),
      +          ' datasets, but ',' there were',NSETD,
-     +          ' DATASET records in header'
+     +          ' PROJECT records in header'
 C
 C                  *************************
               CALL LERROR(2,-1,LINE2)
@@ -4796,7 +4790,7 @@ C
       PARAMETER (MBLENG=185)
       INTEGER RBATCH(MBLENG)
       CHARACTER*94 BTITLE
-      REAL BATCH(1)
+      REAL BATCH(3)
       EXTERNAL LWBAT
       EQUIVALENCE (BATCH,RBATCH)
 C
@@ -4974,16 +4968,17 @@ C     .. Arguments ..
       CHARACTER*(*) PNAME(*),DNAME(*)
 C     ..
 C     .. Local  ..
-      REAL DATCELL(6,MSETS)
+      REAL DATCELL(6,MSETS),DATWAVE(MSETS)
 
-      CALL LRIDC(MINDX,PNAME,DNAME,ISETS,DATCELL,NDATASETS)
+      CALL LRIDC(MINDX,PNAME,DNAME,ISETS,DATCELL,DATWAVE,NDATASETS)
 C
       END
 C
 C
 C
 C     ====================================================
-      SUBROUTINE LRIDC(MINDX,PNAME,DNAME,ISETS,DATCELL,NDATASETS)
+      SUBROUTINE LRIDC(MINDX,PNAME,DNAME,ISETS,DATCELL,DATWAVE,
+     +                  NDATASETS)
 C     ====================================================
 C
 C---- Subroutine to return information for all datasets from the MTZ file
@@ -5006,6 +5001,9 @@ C
 C     DATCELL   (O)     REAL            array of dimension at least NDATASETS
 C                               	containing the dataset cell dimensions
 C
+C     DATWAVE   (O)     REAL            array of dimension at least NDATASETS
+C                               	containing the dataset wavelength
+C
 C     NDATASETS (O)     INTEGER         number of datasets in MTZ header
 C
 C     .. Parameters ..
@@ -5018,7 +5016,7 @@ C     .. Parameters ..
 C     ..
 C     .. Scalar Arguments ..
       INTEGER NDATASETS,MINDX,ISETS(*)
-      REAL DATCELL(6,*)
+      REAL DATCELL(6,*),DATWAVE(*)
       CHARACTER*(*) PNAME(*),DNAME(*)
 C     ..
 C     .. Local Scalars ..
@@ -5049,6 +5047,7 @@ C     New dataset to be added to header
         DO I = 1,6
           DATCELL(I,ISET) = DCELL(I,ISET,MINDX)
         ENDDO
+        DATWAVE(ISET) = DWAVEL(ISET,MINDX)
  10   CONTINUE
 
       END
@@ -5087,18 +5086,19 @@ C     .. Arguments ..
       CHARACTER PROJECT_NAME*(*),DATASET_NAME*(*)
 C     ..
 C     .. Local  ..
-      REAL DATCELL(6)
+      REAL DATCELL(6),DATWAVE
 
       DO I=1,6
         DATCELL(I) = 0.0
       ENDDO
-      CALL LWIDC(MINDX,PROJECT_NAME,DATASET_NAME,DATCELL)
+      DATWAVE = 0.0
+      CALL LWIDC(MINDX,PROJECT_NAME,DATASET_NAME,DATCELL,DATWAVE)
 
       END
 C
 C
 C     ====================================================
-      SUBROUTINE LWIDC(MINDX,PROJECT_NAME,DATASET_NAME,DATCELL)
+      SUBROUTINE LWIDC(MINDX,PROJECT_NAME,DATASET_NAME,DATCELL,DATWAVE)
 C     ====================================================
 C
 C---- Subroutine to add dataset information to the output MTZ file header.
@@ -5121,6 +5121,8 @@ C                                          (strings longer than 64 will be trunc
 C
 C     DATCELL       (I)     REAL           cell dimensions of dataset to be added
 C
+C     DATWAVE       (I)     REAL           wavelength of dataset to be added
+C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS
       PARAMETER (MFILES=4,MCOLS=200)
@@ -5131,7 +5133,7 @@ C     .. Parameters ..
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
-      REAL DATCELL(6)
+      REAL DATCELL(6),DATWAVE
       CHARACTER PROJECT_NAME*(*),DATASET_NAME*(*)
 C     ..
 C     .. Local Scalars ..
@@ -5180,6 +5182,9 @@ C     New dataset to be added to header
         DO I=1,6
           DCELL(I,ISET,MINDX) = DATCELL(I)
         ENDDO
+      ENDIF
+      IF (DATWAVE.GT.0.0) THEN
+        DWAVEL(ISET,MINDX) = DATWAVE
       ENDIF
 
       END
@@ -5836,6 +5841,7 @@ C---- No batches, i.e. merged file, so check columns
                 DO I=1,6
                   DCELL(I,ISET,MINDX) = DCELL(I,JDO22,MINDX)
                 ENDDO
+                DWAVEL(ISET,MINDX) = DWAVEL(JDO22,MINDX)
                 GOTO 22
               ENDIF
  23         CONTINUE
@@ -5867,6 +5873,7 @@ C     should not have been set yet).
                 DO I=1,6
                   DCELL(I,ISET,MINDX) = DCELL(I,JDO22,MINDX)
                 ENDDO
+                DWAVEL(ISET,MINDX) = DWAVEL(JDO22,MINDX)
                 GOTO 24
               ENDIF
  25         CONTINUE
@@ -5903,6 +5910,13 @@ C---- If datasets but no DCELL, default it to CELL
      +          'DCELL',SET_ID(JDO25,MINDX),
      +          (DCELL(I,JDO25,MINDX),I=1,6)
             CALL QWRITC(WLUN(MINDX),LINE(1:80))
+C---- Only write wavelength if it has been set
+            IF (DWAVEL(JDO25,MINDX).GT.0.0) THEN
+              WRITE (LINE,FMT='(A7,1X,I7,1X,F10.5)') 
+     +          'DWAVEL',SET_ID(JDO25,MINDX),
+     +          DWAVEL(JDO25,MINDX)
+              CALL QWRITC(WLUN(MINDX),LINE(1:80))
+            ENDIF
  26       CONTINUE
 
 C---- End of dataset info
@@ -6397,6 +6411,7 @@ C
             DO I = 1,6
               DCELL(1,JDO55,MINDX) = 0.0
             ENDDO
+            DWAVEL(JDO55,MINDX) = 0.0
    55     CONTINUE
 
           DO 60 JDO55 = 1,MBATCH
@@ -8593,9 +8608,10 @@ C              ***********************
      +        NSETW(MINDX)
             CALL PUTLIN(STROUT,'CURWIN')
             CALL BLANK('CURWIN',1)
-            CALL PUTLIN(
-     +    '* Dataset ID, project name, dataset name, cell dimensions:',
-     +        'CURWIN')
+            WRITE (STROUT,FMT='(A,A)') 
+     +    '* Dataset ID, project name, dataset name, ',
+     +    'cell dimensions, wavelength:'
+            CALL PUTLIN(STROUT,'CURWIN')
             CALL BLANK('CURWIN',1)
             DO 30 JDO30 = 1,NSETW(MINDX)
 
@@ -8609,6 +8625,15 @@ C              ***********************
                 WRITE (STROUT,FMT='(9X,6F10.4)') 
      +             (DCELL(I,JDO30,MINDX),I=1,6)
                 CALL PUTLIN(STROUT,'CURWIN')
+              ELSE
+                CALL BLANK('CURWIN',1)
+              ENDIF
+              IF (DWAVEL(JDO30,MINDX).GT.0.0) THEN
+                WRITE (STROUT,FMT='(9X,F10.5)') 
+     +             DWAVEL(JDO30,MINDX)
+                CALL PUTLIN(STROUT,'CURWIN')
+              ELSE
+                CALL BLANK('CURWIN',1)
               ENDIF
 C
    30       CONTINUE
