@@ -1558,7 +1558,7 @@ FORTRAN_SUBR ( LWHSTL, lwhstl,
  Length = strlen(temp_hstrng);
  if (Length > MTZRECORDLENGTH-len) Length = MTZRECORDLENGTH-len;
  strncpy(hline+len,temp_hstrng,Length);
- hline[len + Length] = '\0';
+ for (i = len+Length; i < MTZRECORDLENGTH; ++i) hline[i] = '\0';
 
  MtzAddHistory(mtzdata[*mindx-1], hline, 1);
 
