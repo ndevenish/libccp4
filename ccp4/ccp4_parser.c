@@ -1530,7 +1530,8 @@ void rotandtrn_to_mat4(float rsm[4][4], const ccp4_symop symop) {
  * This is Charles' version of symtr. Note that translations
  * are held in elements [*][3] and [3][3] is set to 1.0
  * @param symchs_begin pointer to beginning of string
- * @param symchs_endpointer to end of string
+ * @param symchs_end pointer to end of string (i.e. last character
+ *   is *(symchs_end-1) )
  * @param rsm 4 x 4 matrix operator
  * @return pointer to beginning of string
  */
@@ -1622,19 +1623,28 @@ char *mat4_to_symop(char *symchs_begin, char *symchs_end, const float rsm[4][4])
       *ich++ = ' ';
     }
   }
-  return ich;
+  return symchs_begin;
 }
 
+/** Convert symmetry operator as matrix to string in reciprocal space notation.
+ * This is Charles' version of symtr. Note that translations
+ * are held in elements [*][3] and [3][3] is set to 1.0
+ * @param symchs_begin pointer to beginning of string
+ * @param symchs_end pointer to end of string (i.e. last character
+ *   is *(symchs_end-1) )
+ * @param rsm 4 x 4 matrix operator
+ * @return pointer to beginning of string
+ */
 char *mat4_to_recip_symop(char *symchs_begin, char *symchs_end, const float rsm[4][4])
 {
   char *symop;
   size_t lsymop;
   register char *ich, *ich_out;
 
-  lsymop = symchs_end-symchs_begin+1;
+  lsymop = symchs_end-symchs_begin;
   symop = (char *) ccp4_utils_malloc(lsymop*sizeof(char));
 
-  mat4_to_symop(symop, symop+lsymop-1, rsm);
+  mat4_to_symop(symop, symop+lsymop, rsm);
   ich_out = symchs_begin;
   for (ich = symop; ich < symop+lsymop; ++ich) {
     if (*ich == 'X') {
@@ -1655,7 +1665,8 @@ char *mat4_to_recip_symop(char *symchs_begin, char *symchs_end, const float rsm[
       *ich_out++ = *ich;
     }
   }
+  while (ich_out < symchs_end) *ich_out++ = ' ';
 
   free (symop);
-  return ich;
+  return symchs_begin;
 }
