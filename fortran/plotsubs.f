@@ -772,3 +772,201 @@ C
 C
       RETURN
       END
+C
+C
+      SUBROUTINE PL84CLEAR
+C     =====================
+C
+C
+C---- Start a new picture
+C
+C
+C     .. External Subroutines ..
+      EXTERNAL GSPICT
+C     ..
+      CALL GSPICT
+      END
+C
+C
+C
+      SUBROUTINE PL84CLOSE
+C     =====================
+C
+C
+C     .. External Subroutines ..
+      EXTERNAL GSSTOP
+C     ..
+      CALL GSSTOP
+      END
+C
+C
+C
+      SUBROUTINE PL84DRAW(IX,IY)
+C     ===========================
+C
+C
+C---- Convert from 10 micron units to mm
+C
+C
+C     .. Scalar Arguments ..
+      INTEGER IX,IY
+C     ..
+C     .. Local Scalars ..
+      REAL X,Y
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL GSDWTO
+C     ..
+      X = 0.01*IX
+      Y = 0.01*IY
+      CALL GSDWTO(X,Y)
+      END
+C
+C
+C
+      SUBROUTINE PL84END
+C     ===================
+C
+C
+C     .. External Subroutines ..
+      EXTERNAL GSENDP
+C     ..
+      CALL GSENDP
+      END
+C
+C
+C
+C    ****  PLOT84 ROUTINES *****
+C          ===============
+C
+C
+      SUBROUTINE PL84INIT
+C     ====================
+C
+C
+C---- Initialise PLOT84 file
+C
+C
+C     .. External Subroutines ..
+      EXTERNAL GSINIT
+C     ..
+      CALL GSINIT('PLOT')
+      END
+C
+C
+C
+      SUBROUTINE PL84INTEG(INUM,NDIG,SIZX,SIZY,NJUST)
+C     ===============================================
+C
+C
+C     .. Scalar Arguments ..
+      REAL SIZX,SIZY
+      INTEGER INUM,NDIG,NJUST
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL GSINUM
+C     ..
+      CALL GSINUM(INUM,NDIG,SIZX,SIZY,NJUST)
+      END
+C
+C
+C
+      SUBROUTINE PL84MOVE(IX,IY)
+C     ===========================
+C
+C
+C
+C---- Convert from 10 micron units to mm
+C
+C
+C     .. Scalar Arguments ..
+      INTEGER IX,IY
+C     ..
+C     .. Local Scalars ..
+      REAL X,Y
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL GSMVTO
+C     ..
+      X = 0.01*IX
+      Y = 0.01*IY
+      CALL GSMVTO(X,Y)
+      END
+C
+C
+C
+      SUBROUTINE PL84NEWLINE(X)
+C     ==========================
+C
+C
+C     .. Scalar Arguments ..
+      REAL X
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL GSLNFD
+C     ..
+      CALL GSLNFD(X)
+      END
+C
+C
+C
+      SUBROUTINE PL84ORIGIN(X,Y)
+C     ===========================
+C
+C
+C     .. Scalar Arguments ..
+      REAL X,Y
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL GSANCD
+C     ..
+      CALL GSANCD(X,Y)
+      END
+C
+C
+C
+      SUBROUTINE PL84REAL(X,NDIG,NAFTER,SIZX,SIZY,NJUST)
+C     ===================================================
+C
+C
+C     .. Scalar Arguments ..
+      REAL SIZX,SIZY,X
+      INTEGER NAFTER,NDIG,NJUST
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL GSFNUM
+C     ..
+      CALL GSFNUM(X,NDIG,NAFTER,SIZX,SIZY,NJUST)
+      END
+C
+C
+C
+      SUBROUTINE PL84STRING(STR)
+C     ===========================
+C
+C
+C
+C
+C     .. Scalar Arguments ..
+      CHARACTER STR* (*)
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL GSSTRC
+C     ..
+      CALL GSSTRC(STR)
+      END
+C
+C
+C
+      SUBROUTINE PL84XCUR(X)
+C     =======================
+C
+C
+C     .. Scalar Arguments ..
+      REAL X
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL GSSCUR
+C     ..
+      CALL GSSCUR(X)
+      END
