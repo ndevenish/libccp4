@@ -61,6 +61,7 @@ static char rcsid[] = "$Id$";
 #define MSPAC 4
 #define MAXSYM 192
 #define MAXSYMOPS 20
+#define MAXLENSYMOPSTR 80
 
 static CCP4SPG *spacegroup = NULL;          /* allow more than one spacegroup ?? */
 static CCP4SPG *spacegrp[MSPAC] = {NULL};   /* cf. Eugene's channel for rwbrook */
@@ -91,6 +92,9 @@ FORTRAN_SUBR ( INVSYM, invsym,
 
    "line" is a string containing one or more symop description
    strings to be translated into matrix representations.
+   Multiple symmetry operations can be specified in a single
+   input line, and must be separated by * (with spaces either
+   side).
    "rot" is an array of 4x4 matrices in which the symops are
    returned.
 
@@ -102,9 +106,9 @@ FORTRAN_SUBR ( INVSYM, invsym,
 int symfr_driver (const char *line, float rot[MAXSYMOPS][4][4])
 {
   CCP4PARSERARRAY *symops=NULL;
-  int i,j,k;
+  int i,j,k,got_symop=0;
   int ns=0,nsym=0,maxsymops=MAXSYMOPS;
-  char *symop=NULL;
+  char *symop=NULL,symopbuf[MAXLENSYMOPSTR];
   float tmp_rot[4][4];
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: symfr_driver");)
@@ -117,39 +121,63 @@ int symfr_driver (const char *line, float rot[MAXSYMOPS][4][4])
     return -1;
   }
 
-  /* Scan the line for multiple symop strings separated by
-     spaces */
+  /* Tokenise the line, splitting on spaces */
   ccp4_parse_delimiters(symops," ","");
   if ((ns = ccp4_parse(line,symops)) > 0) {
 
-    /* Loop over symop stings and process */
+    /* Initialise */
+    got_symop = 0;
+    symopbuf[0] = '\0';
+
+    /* Loop over tokens and reconstruct symop strings */
     for (i=0; i<ns; ++i) {
       symop = symops->token[i].fullstring;
 
-      /* Ignore any floating asterisks and go to the next token */
-      if (strlen(symop) == 1 && symop[0] == '*') continue;
-
-      /* Translate */
-      if (!symop_to_mat4(symop,symop+strlen(symop),tmp_rot[0])) {
-	/* Error from symop_to_mat4 */
-	if (symops) ccp4_parse_end(symops);
-	return -1;
+      /* If there are multiple symop strings then these
+	 will be delimited by asterisks */
+      if (strlen(symop) == 1 && symop[0] == '*') {
+	/* End of symop */
+	got_symop = 1;
       } else {
+	/* Append token to symop */
+	if (strlen(symopbuf)+strlen(symop)+1 <= MAXLENSYMOPSTR) {
+	  strcat(symopbuf,symop);
+	} else {
+	  /* Error - symop string is too long */
+	  printf("SYMFR: symmetry operator string is too long!\n");
+	  if (symops) ccp4_parse_end(symops);
+	  return -1;
+	}
+	/* Check if this is the last token, in which case
+	   flag it to be processed */
+	if ((i+1)==ns) got_symop = 1;
+      }
+
+      /* Process a complete symop */
+      if (got_symop && strlen(symopbuf) > 0) {
+	/* Translate */
+	if (!symop_to_mat4(&(symopbuf[0]),&(symopbuf[0])+strlen(symopbuf),tmp_rot[0])) {
+	  /* Error */
+	  if (symops) ccp4_parse_end(symops);
+	  return -1;
+	}
 	/* Load result into the appropriate array location */
 	for (j = 0; j < 4; ++j) 
 	  for (k = 0; k < 4; ++k) 
 	    rot[nsym][j][k] = tmp_rot[j][k];
 	nsym++;
+	/* Reset for next symop */
+	got_symop = 0;
+	symopbuf[0] = '\0';
       }
     }
   }
 
   /* Tidy up and return the number of symops */
   if (symops) ccp4_parse_end(symops);
-  return (nsym+1);
+  return nsym;
 }
 
-/* Now same as symfr2 */
 FORTRAN_SUBR ( SYMFR3, symfr3,
                (const fpstr icol, const int *i1, int *nsym, float rot[MAXSYM][4][4],
                      int *eflag, int icol_len),
@@ -170,6 +198,11 @@ FORTRAN_SUBR ( SYMFR3, symfr3,
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: SYMFR3");)
 
+  /* nsym is the position to store the first symop in
+     Convert from Fortran (starts at 1) to C (starts at 0) */
+  *nsym = *nsym - 1;
+  if (*nsym < 0) *nsym = 0;
+
   /* Get the input string to interpret */
   temp_name = ccp4_FtoCString(FTN_STR(icol)+(*i1-1), FTN_LEN(icol)-(*i1-1));
   /* Fetch the matrices */
@@ -180,7 +213,7 @@ FORTRAN_SUBR ( SYMFR3, symfr3,
       for (j = 0; j < 4; ++j) 
 	for (k = 0; k < 4; ++k) 
 	  rot[*nsym+i][j][k] = tmp_rot[i][k][j];
-    *nsym = *nsym + ns - 1;
+    *nsym = *nsym + ns;
     *eflag = 0;
   } else {
     /* Error occured in symfr_driver - return error*/
@@ -198,7 +231,7 @@ FORTRAN_SUBR( SYMFR2, symfr2,
 /* symfr2   ---- Read and interpret symmetry operations
 
    SYMFR2 recognises the following types of input:
-      real space symmetry operatoions, e.g. X+1/2,Y-X,Z
+      real space symmetry operations,  e.g. X+1/2,Y-X,Z
       reciprocal space operations,     e.g. h,l-h,-k
       reciprocal axis vectors,         e.g. a*+c*,c*,-b*
       real space axis vectors,         e.g. a,c-a,-b
@@ -208,14 +241,13 @@ FORTRAN_SUBR( SYMFR2, symfr2,
    interpret the resutling matrix(ces) correctly.
 
    Multiple symmetry operations can be specified in a single
-   input line, and must be separated by spaces or by * (with
-   spaces either side).
+   input line, and must be separated by * (with spaces either
+   side).
 
    On entry, icol is the first character to look at 
              nsym is the number of the first symmetry
 	     operation to be read, and returns with the last
 	     one read
-
 */
 {
   char *temp_name;
@@ -223,6 +255,11 @@ FORTRAN_SUBR( SYMFR2, symfr2,
   float tmp_rot[MAXSYMOPS][4][4];
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: SYMFR2");)
+
+  /* nsym is the position to store the first symop in
+     Convert from Fortran (starts at 1) to C (starts at 0) */
+  *nsym = *nsym - 1;
+  if (*nsym < 0) *nsym = 0;
 
   /* Get the input string to interpret */
   temp_name = ccp4_FtoCString(FTN_STR(symchs)+(*icol-1), FTN_LEN(symchs)-(*icol-1));
@@ -234,7 +271,7 @@ FORTRAN_SUBR( SYMFR2, symfr2,
       for (j = 0; j < 4; ++j) 
 	for (k = 0; k < 4; ++k) 
 	  rot[*nsym+i][j][k] = tmp_rot[i][k][j];
-    *nsym = *nsym + ns - 1;
+    *nsym = *nsym + ns;
   } else {
     /* Error occured in symfr_driver - abort */
     ccperror(1," **SYMMETRY OPERATOR ERROR**");
