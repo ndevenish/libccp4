@@ -81,7 +81,7 @@ extern "C" {
 
 void ccp4f_mem_tidy(void);
 
-int ccperror(int ierr, char* message);
+int ccperror(int ierr, const char *message);
 
 int ccp4printf(int level, char *format, ...);
 

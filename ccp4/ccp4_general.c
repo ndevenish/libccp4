@@ -79,7 +79,7 @@ static char rcsid[] = "$Id$";
    error for ierr=1 (or -1).
 
 */
-int ccperror(int ierr, char* message)
+int ccperror(int ierr, const char *message)
 {
   char *prog_name=NULL;
 
