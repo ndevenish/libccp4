@@ -1326,10 +1326,10 @@ C     .. Equivalences ..
 ccx      logical*1 nocode(4),wcodea(4),wcodeb(4)
 ccx      integer ncode1,ncode2,no4,nswap ******** BIG-ENDIAN PROBLEM
       equivalence (wcodea(1),ncode1), (wcodeb(1),ncode2)
-      equivalence (nocode(1),no4)
+CCC      equivalence (nocode(1),no4)
 C     ..
 C     .. Data statements ..
-      DATA NOCODE/4*.FALSE./
+CCC      DATA NOCODE/4*.FALSE./
       DATA SMALL/1.0E-20/
 C
       NSWAP = 1
@@ -1458,7 +1458,7 @@ ccx      logical*1 nocode(4),wcode(4)
       EQUIVALENCE (NWCODE,WCODE(1)), (NO4,NOCODE(1))
 C     ..
 C     .. Data statements ..
-      DATA NOCODE/4*.FALSE./
+CCC      DATA NOCODE/4*.FALSE./
 C
       WCODE(1) = (X.LT.BXMIN)
       WCODE(2) = (X.GT.BXMAX)
@@ -1505,10 +1505,10 @@ C
       SAVE
 C
 C     .. Equivalences ..
-      EQUIVALENCE (NOCODE(1),NO4)
+CCC      EQUIVALENCE (NOCODE(1),NO4)
 C     ..
 C     .. Data statements ..
-      DATA NOCODE/4*.FALSE./
+CCC      DATA NOCODE/4*.FALSE./
       NCDAND = IAND(NCODE1,NCODE2)
 CCC      NCDAND = NCODE1 .AND. NCODE2
       REJECT = (NCDAND.NE.NO4)
