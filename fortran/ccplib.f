@@ -217,8 +217,8 @@ C     ..
         LENG (I) = CCPE2I (LENGTH (I), LENDEF (I))
  10   CONTINUE
       IF (PRINT) THEN
-        WRITE (LUNSTO(1), '(/
-     +       '' Memory allocation (logical name, type, elements):'')')
+        WRITE (LUNSTO(1), 
+     +     '(/'' Memory allocation (logical name, type, elements):'')')
         WRITE (LUNSTO(1), '(3X, A, 1X, A, 3X, I10)')
      +       (LENGTH (I), TYPE (I), LENG (I), I=1,N)
       ENDIF
@@ -586,6 +586,10 @@ C     ..
 C     .. Local Arrays ..
       CHARACTER TYPES(4)*2,STATS(6)*8, STAT*8, TYP*2
 C     ..
+C     .. External Functions ..
+      INTEGER LENSTR
+      EXTERNAL LENSTR
+C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPOPN
 C     ..
@@ -600,17 +604,20 @@ C
       CALL CCPUPC(TYP)
       DO 10 ISTAT = 1,6
         IF (STAT.EQ.STATS(ISTAT)) GO TO 20
- 10   CONTINUE
-      ERRSTR = 'CCPDPN: illegal status : ' // STATUS
+   10 CONTINUE
+      ERRSTR = ' CCPDPN: illegal status : '
+      ERRSTR(LENSTR(ERRSTR)+2:) = STATUS
       CALL CCPERR(1,ERRSTR)
 C
    20 DO 30 ITYPE = 1,4
         IF (TYP.EQ.TYPES(ITYPE)) GO TO 40
- 30   CONTINUE
-      ERRSTR = 'CCPDPN: illegal type: ' // TYPE
+   30 CONTINUE
+      ERRSTR = ' CCPDPN: illegal type: '
+      ERRSTR(LENSTR(ERRSTR)+2:) = TYPE
       CALL CCPERR(1,ERRSTR)
 C
    40 CALL CCPOPN(IUN,LOGNAM,ISTAT,ITYPE,LREC,IFAIL)
+C
       END
 C
 C
@@ -639,10 +646,13 @@ C_END_CCPE2I
       ENDIF
       READ (BUFFER, '(BN,I80)', ERR=99) CCPE2I
       RETURN 
- 99   CONTINUE
-      EMESS = 'Logical name ' // NAME (:LENSTR (NAME)) //
-     +     '''s value isn''t an integer: ' //
-     +     BUFFER (:LENSTR (BUFFER))
+ 99   EMESS = ' Logical name '
+      EMESS(LENSTR(EMESS)+2:) = NAME(1:LENSTR(NAME))
+      IF(LENSTR(EMESS) .LE. 99) THEN
+        EMESS(LENSTR(EMESS)+1:) =' should represent an integer and is: '
+        IF(LENSTR(EMESS) .LE. 98) 
+     .           EMESS(LENSTR(EMESS)+2:) = BUFFER(1:LENSTR(BUFFER))
+      ENDIF
       CALL CCPERR (1, EMESS)
       END
 C
@@ -663,7 +673,7 @@ C                 1 for fatal error)
 C     ERRST (I)   CHARACTER*(*): message
 C_END_CCPERR
 C
-      CHARACTER ERRSTR*(*), ERRBUF*130
+      CHARACTER ERRSTR*(*), ERRBUF*100
       INTEGER ISTAT
       EXTERNAL VAXVMS, CCPPNM, QPRINT, CEXIT, GETELAPSED
       LOGICAL VAXVMS
@@ -680,8 +690,10 @@ C     (avoid VMS `Message number 00000000')
         ENDIF
       ENDIF
       CALL CCPPNM (ERRBUF)
-      ERRBUF (LENSTR(ERRBUF)+1:) = ': '
-      ERRBUF (LENSTR(ERRBUF)+2:) = ERRSTR
+      IF (LENSTR(ERRBUF) .LT. 95) THEN
+        ERRBUF (LENSTR(ERRBUF)+1:) = ': '
+        ERRBUF (LENSTR(ERRBUF)+3:) = ERRSTR
+      ENDIF
       CALL QPRINT(0,ERRBUF)
       IF (VAXVMS()) THEN
         IF (ISTAT.EQ.0) THEN
