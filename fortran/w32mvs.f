@@ -1042,3 +1042,43 @@ C
 C
       END
 
+c     ============================
+      subroutine hciftime(ciftime)
+c     ============================
+
+c     Uses f90 intrinsic Date_and_Time. Using f77:
+c       works on VMS Fortran V7 but not earlier versions
+c       works on Digital UNIX V4.0F 
+c       doesn't work on IRIX 6.5
+c
+      implicit none
+c
+      character ciftime*(*)
+c
+      character cdate*8,ctime*9,czone*5
+      integer ivalues(8)
+c
+c ... check if the argument can hold 25 characters
+c     (better to return an error flag, of course ;-)
+c
+      if (len(ciftime) .lt. 25) then
+        print *,'error --- hciftime: string too short'
+        ciftime = ' '
+        return
+      end if
+c
+      CALL Date_and_Time(CDATE,CTIME,CZONE,IVALUES)
+c
+      write (ciftime,fmt=6000) IVALUES(1),IVALUES(2),IVALUES(3),
+     +   IVALUES(5),IVALUES(6),IVALUES(7),CZONE(1:3),CZONE(4:5)
+c
+c ... NOTE: "i4" in the following format makes that this routine
+c           is not Year-10,000-compliant !!!
+c
+ 6000 format (i4,'-',i2.2,'-',i2.2,'T',i2.2,':',i2.2,':',i2.2,
+     +   a3,':',a2)
+c
+      return
+      end
+
+
