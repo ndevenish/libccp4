@@ -328,8 +328,11 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   /* reciprocal asymmetric unit */
   strcpy(spacegroup->asu_descr,sg_asu_descr);
 
-  /* select ASU function (referred to default basis) from asu desc */
-  /* also infer Laue and Patterson groups */
+  /* Select ASU function (referred to default basis) from asu desc */
+  /* Also infer Laue and Patterson groups. This uses additional
+     information from spacegroup name. In general, we use Hall symbol
+     because syminfo.lib is missing a few xHM symbols. However, we
+     need to use the latter for R vs. H settings. */
   ierr = 1;
   ilaue = 1;
 
@@ -407,7 +410,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
      if (strchr(spacegroup->symbol_Hall,'P')) {
        spacegroup->npatt = 147;
        strcpy(spacegroup->patt_name,"P-3");
-     } else if (strchr(spacegroup->symbol_Hall,'H')) {
+     } else if (strchr(spacegroup->symbol_xHM,'H')) {
+       /* this is special case, as Hall doesn't specify H */
        spacegroup->npatt = 148;
        strcpy(spacegroup->patt_name,"H-3");
      } else if (strchr(spacegroup->symbol_Hall,'R')) {
@@ -429,7 +433,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
      if (strchr(spacegroup->symbol_Hall,'P')) {
        spacegroup->npatt = 164;
        strcpy(spacegroup->patt_name,"P-3m1");
-     } else if (strchr(spacegroup->symbol_Hall,'H')) {
+     } else if (strchr(spacegroup->symbol_xHM,'H')) {
+       /* this is special case, as Hall doesn't specify H */
        spacegroup->npatt = 166;
        strcpy(spacegroup->patt_name,"H-3m");
      } else if (strchr(spacegroup->symbol_Hall,'R')) {
@@ -595,6 +600,7 @@ int ccp4_spg_get_centering(const char *symbol_Hall, float cent_ops[4][3])
     cent_ops[1][2] = 0.5;
     return 2;
   } else if (strchr(symbol_Hall,'H')) {
+    /* fixme: Hall doesn't specify H, whereas xHM does */
     if (debug) printf("H centering \n");
     cent_ops[1][0] = 2.0/3.0;
     cent_ops[1][1] = 1.0/3.0;
@@ -656,15 +662,17 @@ ccp4_symop ccp4_symop_invert( const ccp4_symop op1 )
 
 int ccp4spg_name_equal(const char *spgname1, const char *spgname2) {
 
-  /* TODO some xHM symbols have :1 or :2 which should be removed */
-
   char *ch1, *ch2, *spgname1_upper, *spgname2_upper, *tmpstr;
   int have_one_1=0, have_one_2=0;
 
+  /* create copies of input strings, convert to upper case, and
+     deal with colons */
   spgname1_upper = strdup(spgname1);
   strtoupper(spgname1_upper,spgname1);
+  ccp4spg_name_de_colon(spgname1_upper);
   spgname2_upper = strdup(spgname2);
   strtoupper(spgname2_upper,spgname2);
+  ccp4spg_name_de_colon(spgname2_upper);
 
   /* try to identify if "short names" are being used. */
   if (strstr(spgname1_upper," 1 ")) have_one_1 = 1;
@@ -727,6 +735,27 @@ char *ccp4spg_to_shortname(char *shortname, const char *longname) {
   }
   *ch2 = '\0';
   return ch2;
+}
+
+void ccp4spg_name_de_colon(char *name) {
+
+  char *ch1;
+
+  /* various spacegroup names have settings specified by colon. We'll
+     deal with these on a case-by-case basis. */
+  if (ch1 = strstr(name,":R")) {
+  /* :R spacegroup should be R already so just replace with blanks */
+    *ch1 = ' ';
+    *(ch1+1) = ' ';
+  } else if (ch1 = strstr(name,":H")) {
+  /* :H spacegroup should be R so change to H */
+    *ch1 = ' ';
+    *(ch1+1) = ' ';
+    ch1 = strstr(name,"R");
+    *ch1 = 'H';
+  }
+    
+  return;
 }
 
 int ccp4spg_pgname_equal(const char *pgname1, const char *pgname2) {

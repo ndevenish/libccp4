@@ -254,6 +254,14 @@ int ccp4spg_name_equal(const char *spgname1, const char *spgname2);
 */
 char *ccp4spg_to_shortname(char *shortname, const char *longname);
 
+/** Function to deal with colon-specified spacegroup settings.
+ * E.g. 'R 3 :H' is converted to 'H 3   '. Note that spaces are
+ * returned and should be dealt with by the calling function.
+ * @param name Spacegroup name.
+ * @return void
+*/
+void ccp4spg_name_de_colon(char *name);
+
 /** Compare two point group names. Blanks are removed when
  * making the comparison. Strings are converted to upper
  * case before making the comparison. Any initial "PG" is ignored.

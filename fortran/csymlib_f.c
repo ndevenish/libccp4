@@ -918,7 +918,8 @@ void ccp4spg_register_by_ccp4_num(int numspg) {
  * entry, used to search for spacegroup. Returned value is that found.
  * @param namspg_cif Spacegroup name. If set on
  * entry, used to search for spacegroup. Returned value is the full
- * extended Hermann Mauguin symbol.
+ * extended Hermann Mauguin symbol, with one slight alteration. Symbols
+ * such as 'R 3 :H' are converted to 'H 3'. This is for backwards compatibility.
  * @param namspg_cifs On output, contains the spacegroup name without
  * any spaces.
  * @param nampg On output, the point group name.
@@ -939,7 +940,7 @@ FORTRAN_SUBR ( MSYMLB3, msymlb3,
                 int *nsymp, int *nsym, float rlsymmmatrx[192][4][4]))
 {
   int i,j,k;
-  char *temp_name, *shortname=NULL;
+  char *temp_name, *shortname=NULL, *no_colon_name=NULL;
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: MSYMLB3");)
 
@@ -973,17 +974,21 @@ FORTRAN_SUBR ( MSYMLB3, msymlb3,
     } else {
       *lspgrp = spacegroup->spg_num;
     }
-    ccp4_CtoFString(FTN_STR(namspg_cif),FTN_LEN(namspg_cif),spacegroup->symbol_xHM);
+    /* produce de-coloned version of xHM symbol */
+    no_colon_name = (char *) ccp4_utils_malloc((strlen(spacegroup->symbol_xHM)+1)*sizeof(char));
+    strcpy(no_colon_name,spacegroup->symbol_xHM);
+    ccp4spg_name_de_colon(no_colon_name);
+    ccp4_CtoFString(FTN_STR(namspg_cif),FTN_LEN(namspg_cif),no_colon_name);
     if (spacegroup->symbol_old) {
      if (strlen(spacegroup->symbol_old) > 0) {
-      shortname = (char *) ccp4_utils_malloc(strlen(spacegroup->symbol_old)*sizeof(char));
+      shortname = (char *) ccp4_utils_malloc((strlen(spacegroup->symbol_old)+1)*sizeof(char));
       ccp4spg_to_shortname(shortname,spacegroup->symbol_old);
      }
     } 
-    if (!shortname && spacegroup->symbol_xHM) {
-     if (strlen(spacegroup->symbol_xHM) > 0) {
-      shortname = (char *) ccp4_utils_malloc(strlen(spacegroup->symbol_xHM)*sizeof(char));
-      ccp4spg_to_shortname(shortname,spacegroup->symbol_xHM);
+    if (!shortname) {
+     if (strlen(no_colon_name) > 0) {
+      shortname = (char *) ccp4_utils_malloc((strlen(no_colon_name)+1)*sizeof(char));
+      ccp4spg_to_shortname(shortname,no_colon_name);
      }
     }
     ccp4_CtoFString(FTN_STR(namspg_cifs),FTN_LEN(namspg_cifs),shortname);
