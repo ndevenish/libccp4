@@ -1298,14 +1298,18 @@ int doublefromstr(const char *str, const double max_exp, const double min_exp,
 	is_frc = 1;
 
       } else if (toupper(this_char) == 'E') {
+        char next_char = (ichar+1 < lstr ) ? str[ichar+1] : '\0';
+        if ( next_char == '+' || next_char == '-')
+           next_char = (ichar+2 < lstr ) ? str[ichar+2] : '\0';
+        /* require the next active character after E to be a digit */
+        if ( !isdigit(next_char) )  return 0;
 	/* Exponent? i.e. e or E
 	   There can only be one exponent */
-	if (exponent > -1) return 0;
-	exponent = ichar;
-	is_int = 0;
-	is_frc = 0;
-	is_exp = 1;
-
+        if (exponent > -1) return 0;
+        exponent = ichar;
+        is_int = 0;
+        is_frc = 0;
+        is_exp = 1;
       } else {
 	/* Not a permissible character
 	   This is not a number so get out now */
