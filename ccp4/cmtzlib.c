@@ -1058,31 +1058,39 @@ int MtzParseLabin(char *labin_line, const char prog_labels[][31],
 
   for (i = 1; i < ntok; i += 2) {
     strcpy(label1,token[i].fullstring);
-    strcpy(label2,token[i+1].fullstring);
+    /* Trap against trying to access tokens that don't exist */
+    if (i+1 < ntok) {
+      strcpy(label2,token[i+1].fullstring);
 
-    /* check first label against program labels */
-    imatch = 0;
-    for (j = 0; j < nlprgi; ++j) {
-      if (strcmp(label1,prog_labels[j]) == 0) {
-        strcpy(user_labels[j][0],label1);
-        strcpy(user_labels[j][1],label2);
-        imatch = 1;
-        ++nlabels;
-        break;
-      }
-    }
-
-    if (imatch == 0) {
-    /* check second label against program labels */
+      /* check first label against program labels */
+      imatch = 0;
       for (j = 0; j < nlprgi; ++j) {
-        if (strcmp(label2,prog_labels[j]) == 0) {
-          strcpy(user_labels[j][0],label2);
-          strcpy(user_labels[j][1],label1);
-          imatch = 1;
-          ++nlabels;
-          break;
-        }
+	if (strcmp(label1,prog_labels[j]) == 0) {
+	  strcpy(user_labels[j][0],label1);
+	  strcpy(user_labels[j][1],label2);
+	  imatch = 1;
+	  ++nlabels;
+	  break;
+	}
       }
+ 
+      if (imatch == 0) {
+	/* check second label against program labels */
+	for (j = 0; j < nlprgi; ++j) {
+	  if (strcmp(label2,prog_labels[j]) == 0) {
+	    strcpy(user_labels[j][0],label2);
+	    strcpy(user_labels[j][1],label1);
+	    imatch = 1;
+	    ++nlabels;
+	    break;
+	  }
+	}
+      }
+    } else {
+      printf("clkyin: run out of labels trying to match \"%s\"\n",label1);
+      /* Stop here - there are no more labels to process
+	 This is an error but there is no way to flag it */
+      break;
     }
 
     if (imatch == 0) {
