@@ -2933,58 +2933,7 @@ c	i1 = index(name1,'.pdb')
       len2 = i1 - i
       name2(1:len2) = name1(i+1:i1)
       end
-c A program to generate a frame for O
-c
-      real x(3,8),b1(3),b2(3),b3(3)
-      real vec(3,3),trns(3,3),cnew(6)
-      real cell(6),deor(3,3), orth(3,3)
-      real cells(6),deors(3,3), orths(3,3)
-      real x0(3,8)/0.,0.,0.,1.,0.,0.,0.,1.,0.,1.,1.,0.,
-     1          0.,0.,1.,1.,0.,1.,0.,1.,1.,1.,1.,1/
-      real scale/1.0/
 
-      write(6,*) 'cell dimension'
-5	read(5,*) cell
-      write(6,*) 'scale'
-      read(5,*,end=25) scale
-25	continue
-      call crystal(cell,cells,deor,orth,deors,orths)
-      write(6,*) 'Orthogonalization matrix'
-      write(6,10) ((orth(i,j),j=1,3),i=1,3)
-10	format(1x,3f10.4)
-
-      call matmult(3,3,3,8,orth,x0,x)
-c
-20	format(a1,3f11.5)
-21	format(a4,3f11.5,a)
-      call arrmc(3,8,x,scale,x)
-      WRITE(1,30) 23,40
-      WRITE(1,'(A)') 'begin cell'
-      WRITE(1,'(A)') 'colour    62500'
-30	FORMAT('.cell',T26,'t',I8,I3)
-      write(1,20) 'M',(x(i,1),i=1,3)
-      write(1,20) 'L',(x(i,2),i=1,3)
-      write(1,20) 'L',(x(i,4),i=1,3)
-      write(1,20) 'L',(x(i,3),i=1,3)
-      write(1,20) 'L',(x(i,1),i=1,3)
-      write(1,20) 'L',(x(i,5),i=1,3)
-      write(1,20) 'L',(x(i,6),i=1,3)
-      write(1,20) 'L',(x(i,8),i=1,3)
-      write(1,20) 'L',(x(i,7),i=1,3)
-      write(1,20) 'L',(x(i,5),i=1,3)
-      write(1,20) 'M',(x(i,2),i=1,3)
-      write(1,20) 'L',(x(i,6),i=1,3)
-      write(1,20) 'M',(x(i,3),i=1,3)
-      write(1,20) 'L',(x(i,7),i=1,3)
-      write(1,20) 'M',(x(i,4),i=1,3)
-      write(1,20) 'L',(x(i,8),i=1,3)
-      write(1,21) 'TEXT',(x(i,1),i=1,3),' O'
-      write(1,21) 'TEXT',(x(i,2),i=1,3),' X'
-      write(1,21) 'TEXT',(x(i,3),i=1,3),' Y'
-      write(1,21) 'TEXT',(x(i,5),i=1,3),' Z'
-      write(1,'(a)') 'end_object'
-c
-      end
       SUBROUTINE ORIEN ( NATM, XYZ1, XYZ2, A )
 c The subroutine select three atoms to calculate the initial superposing
 c matrix A from two molecules in 3*4 array XYZ1 and XYZ2 individually.
@@ -3076,69 +3025,7 @@ C
       call elize(3,a)
       call arrvalue(3,t,0.)
       END
-      SUBROUTINE ORIEN ( NATM, XYZ1, XYZ2, A )
-c The subroutine select three atoms to calculate the initial superposing
-c matrix A from two molecules in 3*4 array XYZ1 and XYZ2 individually.
-c Parameter description:
-c NATM is the number of the atoms
-c	DIMENSION XYZ1(3,NATM), XYZ2(3,NATM), A(3,3)
-c XYZ1(3,NATM) represent the XYZ of molecule 1
-c XYZ2(3,NATM) represent the XYZ of molecule 2
-c A is the output superposing matrix.
-c	COMMON/IAT/ IAT1,IAT2,IAT3,IAT
-c	DATA IAT/0/
-c Atom IAT1, IAT2 and IAT3 is used to calculate the matrix. It could be
-c decided outside the routine if IAT not eq 0.
-c
-c 
-      COMMON/IAT/ IAT1,IAT2,IAT3,IAT
-c	DATA IAT/0/,IAT1/1/,IAT2/2/,IAT3/3/
-      DIMENSION XYZ1(3,NATM), XYZ2(3,NATM), A(3,3)
-      DIMENSION V11(3),V12(3)
-      DIMENSION V21(3),V22(3)
-      DIMENSION C1(3,3),C2(3,3),C1P(3,3)
-      DIMENSION B1(3),B2(3)
-c
-c If IAT = 0, define the three atoms which is used do calculate the 
-c  initial orientational matrix
-c
-      IF (IAT.EQ.0) THEN
-       IAT1 = 1
-       IF (NATM.GE.6) THEN
-        IAT2 = INT(NATM/3) + 1
-        IAT3 = 2*INT(NATM/3) + 1
-       ELSE
-        IAT2 = 2
-c	  IAT3 = 3
-        IAT3 = NATM
-       END IF
-      END IF
-      
-C
-C Calculate the initial matrix and the Eulerian angle.
-c 
-C
-C  calculate the matrix 1
-      CALL ARRPS(3,1,XYZ1(1,IAT2),XYZ1(1,IAT1),V11)  
-      CALL ARRPS(3,1,XYZ1(1,IAT2),XYZ1(1,IAT3),V12)
-      CALL ARRMC (3,1,V12,1./VEM(3,V12),C1(1,1))
-      CALL VECCRSMLT (V12,V11,B1)        
-      CALL ARRMC(3,1,B1,1./VEM(3,B1),C1(1,3))
-      CALL VECCRSMLT (C1(1,3),C1(1,1),C1(1,2))
 
-C  calculate the matrix 2
-      CALL ARRPS(3,1,XYZ2(1,IAT2),XYZ2(1,IAT1),V21)
-      CALL ARRPS(3,1,XYZ2(1,IAT2),XYZ2(1,IAT3),V22)
-      CALL ARRMC (3,1,V22,1./VEM(3,V22),C2(1,1))
-      CALL VECCRSMLT (V22,V21,B1)
-      CALL ARRMC(3,1,B1,1./VEM(3,B1),C2(1,3))
-      CALL VECCRSMLT (C2(1,3),C2(1,1),C2(1,2))
-
-c calculate the matrix A = c2 * c1^-1  (x2= A * x1)
-      call ANTIARR(3,3,C1,C1P)
-      CALL MATMULT(3,3,3,3,C2,C1P,A)
-C 
-      END 
 C-----------APENIX PROGRAM FOR THE NEWGIN SYSTEM ANGLE
 C              WHEN INOPT1=8
       SUBROUTINE OXFORD(ROT,E)
