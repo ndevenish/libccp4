@@ -1253,9 +1253,9 @@ int size;
 #endif /* CONVERT */
 
 
-#if defined (__hpux)
+/* these routines are missing from the library on some systems */
 
-/* these extra routines are used by HPUX machines */
+#if defined (__hpux) || defined (_AIX)
 
 /****************************************************************************
  * Routine: gerror                                                          *
@@ -1272,41 +1272,14 @@ int  Lstr;
   for (i = strlen (str); i < Lstr; i++) str[i] = ' ';   /* pad with spaces */
 } /* End of gerror (str, Lstr) */
 
-/****************************************************************************
- * Routine: getenv_                                                         *
- ****************************************************************************/
+#endif				/* defined (__hpux) || defined (_AIX) */
 
-void getenv_ (name, value, Lname, Lvalue)
-char *name, *value;
-int Lname, Lvalue;
-{
-  int i;
-
-  name[flength (name, Lname)] = (char) NULL; 
-
-  (void) strncpy (value, getenv (name), Lvalue);
-  for (i = strlen (value); i < Lvalue; i++) 
-    value[i] = ' ';                                      /* pad with spaces */
-} /* End of getenv_ (name, value, lname, lvalue) */
-
-/****************************************************************************
- * Routine: rename_                                                         *
- ****************************************************************************/
-
-int rename_ (from, to, Lfrom, Lto)
-char *from, *to;
-int Lfrom, Lto;
-{
-  from[flength (from, Lfrom)] = (char) NULL; 
-  to[flength (to, Lto)] = (char) NULL; 
-
-  return (rename (from, to));
-} /* End of rename_ (from, to) */
+#if defined (__hpux)
 
 /****************************************************************************
  * Routine: access_                                                         *
  ****************************************************************************/
-
+/* no longer used
 int access_ (name, mode, Lname, Lmode)
 char *name, *mode;
 int Lname, Lmode;
@@ -1331,7 +1304,38 @@ int Lname, Lmode;
   name[flength (name, Lname)] = (char) NULL; 
 
   return (access (name, imode));
-} /* End of access_ (name, value) */
+} */
+
+/****************************************************************************
+ * Routine: getenv_                                                         *
+ ****************************************************************************/
+
+void getenv_ (name, value, Lname, Lvalue)
+char *name, *value;
+int Lname, Lvalue;
+{
+  int i;
+
+  name[flength (name, Lname)] = (char) NULL; 
+
+  (void) strncpy (value, getenv (name), Lvalue);
+  for (i = strlen (value); i < Lvalue; i++) 
+    value[i] = ' ';                                      /* pad with spaces */
+} /* End of getenv_ (name, value, lname, lvalue) */
+
+/****************************************************************************
+ * Routine: rename_                                                         *
+ ****************************************************************************/
+/* no longer used
+int rename_ (from, to, Lfrom, Lto)
+char *from, *to;
+int Lfrom, Lto;
+{
+  from[flength (from, Lfrom)] = (char) NULL; 
+  to[flength (to, Lto)] = (char) NULL; 
+
+  return (rename (from, to));
+} */
 
 #endif /* defined (__hpux) */
 
