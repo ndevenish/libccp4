@@ -1907,7 +1907,7 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL BLANK,GTPINT,GTPREA,LERROR,LHPRT,LRCLOS,LRHDRL,PARSER,
      +     PUTLIN,QMODE,QOPEN,QSEEK,RBATHD,LSTRSL,SYMFR3, QRARCH,
-     +     QREADI, QPRINT, QREADC
+     +     QREAD, QPRINT, QREADC
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -2130,7 +2130,7 @@ C
 C
 C                *************************************
             CALL QMODE(RLUN(MINDX),6,NITEM)
-            CALL QREADI(RLUN(MINDX),HDRST(MINDX),1,IER)
+            CALL QREAD(RLUN(MINDX),HDRST(MINDX),1,IER)
             CALL QSEEK(RLUN(MINDX),1,HDRST(MINDX),1)
             CALL QMODE(RLUN(MINDX),0,NITEM)
 C                *************************************
@@ -2867,7 +2867,7 @@ C     .. External Functions ..
       REAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR, LSTLSQ, CCPERR, QREADR, CCPBML
+      EXTERNAL LERROR, LSTLSQ, CCPERR, QREAD, CCPBML
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -2941,7 +2941,7 @@ C
         ELSE
 C
 C              ******************************************
-          CALL QREADR(RLUN(MINDEX),BDATA,NCOLS(MINDEX),IERR)
+          CALL QREAD(RLUN(MINDEX),BDATA,NCOLS(MINDEX),IERR)
 C              ******************************************
 C
           IF (IERR.GT.0) THEN
@@ -3091,7 +3091,7 @@ C     .. External Functions ..
       REAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QREADR, LSTLSQ, CCPERR, CCPBML
+      EXTERNAL LERROR,QREAD, LSTLSQ, CCPERR, CCPBML
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -3165,7 +3165,7 @@ C
         ELSE
 C
 C              ******************************************
-          CALL QREADR(RLUN(MINDEX),ADATA,NCOLS(MINDEX),IERR)
+          CALL QREAD(RLUN(MINDEX),ADATA,NCOLS(MINDEX),IERR)
 C              ******************************************
 C
           IF (IERR.GT.0) THEN
@@ -5688,7 +5688,7 @@ C     .. External Functions ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL BLANK,LERROR,LHPRT,QWRITC,PUTLIN,QCLOSE,QSEEK,
-     +         QMODE,QWARCH,SORTUP,SYMTR3,WBATHD, QWRITI
+     +         QMODE,QWARCH,SORTUP,SYMTR3,WBATHD, QWRITE
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -6110,7 +6110,7 @@ C            ************************
         CALL QSEEK(WLUN(MINDX),1,1,1)
         CALL QWRITC(WLUN(MINDX),'MTZ ')
         CALL QMODE (WLUN(MINDX),2,NITEM)
-        CALL QWRITI(WLUN(MINDX),HDRST(MINDX),1)
+        CALL QWRITE(WLUN(MINDX),HDRST(MINDX),1)
 C       architecture info:
         CALL QWARCH(WLUN(MINDX),2)
 C            **********************************
@@ -6370,7 +6370,7 @@ C     .. Local Arrays ..
       INTEGER IDUMMY(SIZE1)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QMODE,QOPEN,QWRITI,QNAN
+      EXTERNAL LERROR,QMODE,QOPEN,QWRITE,QNAN
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -6513,7 +6513,7 @@ C
 C---- Write a dummy first record to the file, to be filled in LWCLOS
 C
 C              **************************
-          CALL QWRITI(IUNIN,IDUMMY,SIZE1)
+          CALL QWRITE(IUNIN,IDUMMY,SIZE1)
 C              **************************
 C
 C---- Zero a few variables
@@ -6600,7 +6600,7 @@ C     .. External Functions ..
       EXTERNAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL IS_MAGIC,LERROR,QWRITR
+      EXTERNAL IS_MAGIC,LERROR,QWRITE
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -6695,7 +6695,7 @@ C
 C---- Write the reflection record to file
 C
 C            **************************************
-        CALL QWRITR(WLUN(MINDX),ADATA,NCOLW(MINDX))
+        CALL QWRITE(WLUN(MINDX),ADATA,NCOLW(MINDX))
 C            **************************************
 C
 
@@ -7501,7 +7501,7 @@ C     .. Local Scalars ..
       CHARACTER LINE*80,LINERR*100
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,LRHDRL,QMODE,QREADR
+      EXTERNAL LERROR,LRHDRL,QMODE,QREAD
 C     ..
 C
 C---- Read first header line to get NWORDS etc., and Batch number
@@ -7528,10 +7528,10 @@ C
       IF (NWORDS.GT.0) THEN
 Cdw---- Read NINTGR integers followed by NREALS reals as BINARY
          CALL QMODE(ILUN,6,NITEM)
-         CALL QREADR(ILUN,RBATCH(1),NINTGR,IER)
+         CALL QREAD(ILUN,RBATCH(1),NINTGR,IER)
          IF (IER.GT.0) GO TO 50
          CALL QMODE(ILUN,2,NITEM)
-         CALL QREADR(ILUN,RBATCH(NINTGR+1),NREALS,IER)
+         CALL QREAD(ILUN,RBATCH(NINTGR+1),NREALS,IER)
          IF (IER.GT.0) GO TO 50
          CALL QMODE(ILUN,0,NITEM)
 C             ********************************
@@ -7623,7 +7623,7 @@ C     .. Local Scalars ..
       CHARACTER LINE*80
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QWRITC,QMODE,QWRITR
+      EXTERNAL QWRITC,QMODE,QWRITE
 C     ..
 C
 C---- Here are the important EQUIVALENCE statements
@@ -7669,7 +7669,7 @@ C     have to change the mode to 2 and change back to 0 after
 C
 C            *****************************
         CALL QMODE(ILUN,2,NITEM)
-        CALL QWRITR(ILUN,RBATCH(1),NWORDS)
+        CALL QWRITE(ILUN,RBATCH(1),NWORDS)
         CALL QMODE(ILUN,0,NITEM)
 C            *****************************
 C
