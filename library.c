@@ -169,6 +169,272 @@ union float_uint_uchar {
 static int
     Iconvert[MAXFILES],         /* integer convserion needed on read*/
     Fconvert[MAXFILES];         /* real convserion needed on read*/
+/****************************************************************************
+ * Prototype subroutines                                                    *
+ ****************************************************************************/
+#if defined (PROTOTYPE)
+  static size_t flength (char *s, int len);
+
+  static void fatal (char *message);
+
+  static void cqprint (char *message);
+
+  static void file_fatal (char *message, char *file);
+
+  static void vaxF2ieeeF (union float_uint_uchar *buffer, int size);
+
+  static void ieeeF2vaxF (union float_uint_uchar *buffer, int size);
+
+  static void convexF2ieeeF (union float_uint_uchar *buffer, int size);
+
+  static void ieeeF2convexF (union float_uint_uchar *buffer, int size);
+
+#if CALL_LIKE_HPUX
+  void ustenv (char *str, int *result, int Lstr);
+#endif
+#if CALL_LIKE_STARDENT
+  void USTENV (struct Str_Desc *str, int *result);
+#endif
+#if CALL_LIKE_SUN
+  void ustenv_ (char *str, int *result, int Lstr);
+#endif
+
+#if CALL_LIKE_HPUX
+  void cunlink (char *filename, int Lfilename);
+#endif
+#if CALL_LIKE_STARDENT
+  void CUNLINK (struct Str_Desc *filename);
+#endif
+#if defined (VMS)
+  void CUNLINK (struct dsc$descriptor_s *filename);
+#endif
+#if CALL_LIKE_SUN
+  void cunlink_ (char *filename, int Lfilename);
+#endif
+
+#if CALL_LIKE_HPUX
+  void copen (int *iunit, char *filename, int *istat, int Lfilename);
+#endif
+#if CALL_LIKE_STARDENT
+  void COPEN (int *iunit, struct Str_Desc *filename, int *istat);
+#endif
+#if defined (VMS)
+  void COPEN (int *iunit, struct dsc$descriptor_s *filename, int *istat);
+#endif
+#if CALL_LIKE_SUN
+  void copen_ (int *iunit, char *filename, int *istat, int Lfilename);
+#endif
+
+#if CALL_LIKE_HPUX
+  void qrarch (int *iunit, int *ipos, int *ireslt);
+#endif
+#if CALL_LIKE_STARDENT
+  void QRARCH (int *iunit, int *ipos, int *ireslt);
+#endif
+#if defined (VMS)
+  void QRARCH (int *iunit, int *ipos, int *ireslt);
+#endif
+#if CALL_LIKE_SUN
+  void qrarch_ (int *iunit, int *ipos, int *ireslt);
+#endif
+
+#if CALL_LIKE_HPUX
+  void qwarch (int *iunit, int *ipos);
+#endif
+#if CALL_LIKE_STARDENT
+  void QWARCH (int *iunit, int *ipos);
+#endif
+#if defined (VMS)
+  void QWARCH (int *iunit, int *ipos);
+#endif
+#if CALL_LIKE_SUN
+  void qwarch_ (int *iunit, int *ipos);
+#endif
+
+#if CALL_LIKE_HPUX
+  void qclose (int *iunit);
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void QCLOSE (int *iunit);
+#endif
+#if CALL_LIKE_SUN
+  void qclose_ (int *iunit);
+#endif
+
+#if CALL_LIKE_HPUX
+  void qmode (int *iunit, int *mode, int *size);
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void QMODE (int *iunit, int *mode, int *size);
+#endif
+#if CALL_LIKE_SUN
+  void qmode_ (int *iunit, int *mode, int *size);
+#endif
+
+#if CALL_LIKE_HPUX
+  void qread (int *iunit, uint8 * buffer, int *nitems, int *result);
+#endif
+#if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
+  void QREAD (int *iunit, uint8 * buffer, int *nitems, int *result);
+#endif
+#if CALL_LIKE_SUN
+  void qread_ (int *iunit, uint8 * buffer, int *nitems, int *result);
+#endif
+
+#if CALL_LIKE_HPUX
+  void qreadc (int *iunit, char * buffer, int *result, int Lbuffer);
+#endif
+#ifdef VMS
+  void QREADC (int *iunit, struct dsc$descriptor_s *buffer, int *result);
+#endif
+#if CALL_LIKE_STARDENT
+  void QREADC (int *iunit, struct Str_Desc *buffer, int *result);
+#endif
+#if CALL_LIKE_SUN
+  void qreadc_ (int *iunit, char * buffer, int *result, int Lbuffer);
+#endif
+
+#if CALL_LIKE_HPUX
+  void qwrite (int *iunit, uint8 * buffer, int *nitems);
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void QWRITE (int *iunit, uint8 * buffer, int *nitems);
+#endif
+#if CALL_LIKE_SUN
+  void qwrite_ (int *iunit, uint8 * buffer, int *nitems);
+#endif
+
+#if CALL_LIKE_HPUX
+  void qwritc (int *iunit, char * buffer, int Lbuffer);
+#endif
+#if defined (VMS)
+  void QWRITC (int *iunit, struct dsc$descriptor_s *buffer);
+#endif
+#if defined CALL_LIKE_STARDENT
+  void QWRITC (int *iunit, struct Str_Desc *buffer);
+#endif
+#if CALL_LIKE_SUN
+  void qwritc_ (int *iunit, char * buffer, int Lbuffer);
+#endif
+
+#if CALL_LIKE_HPUX
+  void qseek (int *iunit, int *irec, int *iel, int *lrecl);
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void QSEEK (int *iunit, int *irec, int *iel, int *lrecl);
+#endif
+#if CALL_LIKE_SUN
+  void qseek_ (int *iunit, int *irec, int *iel, int *lrecl);
+#endif
+
+#if CALL_LIKE_HPUX
+  void qback (int *iunit, int *lrecl);
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void QBACK (int *iunit, int *lrecl);
+#endif
+#if CALL_LIKE_SUN
+  void qback_ (int *iunit, int *lrecl);
+#endif
+
+#if CALL_LIKE_HPUX
+  void qskip (int *iunit, int *lrecl);
+#endif
+#if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
+  void QSKIP (int *iunit, int *lrecl);
+#endif
+#if CALL_LIKE_SUN
+  void qskip_ (int *iunit, int *lrecl);
+#endif
+
+#if CALL_LIKE_HPUX
+  void cqinq (int *istrm, char *filnam, int *length, int len_filnam);
+#endif
+#if CALL_LIKE_STARDENT
+  void CQINQ (int *istrm, struct Str_Desc *filnam, int *length);
+#endif
+#if defined (VMS)
+  void CQINQ (int *istrm, struct dsc$descriptor_s *filnam, int *length);
+#endif
+#if CALL_LIKE_SUN
+  void cqinq_ (int *istrm, char *filnam, int *length, int len_filnam);
+#endif
+
+#if CALL_LIKE_HPUX
+  void qlocate (int *iunit, int *locate);
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void QLOCATE (int *iunit, int *locate);
+#endif
+#if CALL_LIKE_SUN
+  void qlocate_ (int *iunit, int *locate);
+#endif
+
+#ifdef _AIX
+  void idate (int iarray);
+#endif
+
+#if defined (__hpux) || defined (_AIX)
+  void gerror (char *str, int Lstr);
+
+  int ierrno ();
+
+  void itime (int array);
+
+  float etime (float tarray);
+#endif
+
+#if defined(F2C) || defined(G77)
+  int exit_ (int *status);
+
+  int time_ ();
+
+  int getpid_ ();
+
+  int isatty_ (int *lunit);
+
+  int idate_ (int *iarray);
+
+  int gerror_ (char *str, int Lstr);
+
+  int ierrno_ ();
+
+  int itime_ (int *array);
+
+  doublereal etime_ (float *tarray);
+
+  int ibset_ (int *a, int *b);
+
+  int ibclr_ (int *a, int *b);
+
+  int btest_ (int *a, int *b);
+#endif
+
+#if CALL_LIKE_HPUX
+  void qnan (union float_uint_uchar *realnum);
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void QNAN (union float_uint_uchar *realnum);
+#endif
+#if CALL_LIKE_SUN
+  void qnan_ (union float_uint_uchar *realnum);
+#endif
+
+#if CALL_LIKE_HPUX
+  int cisnan (union float_uint_uchar *realnum);
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  int CISNAN (union float_uint_uchar *realnum);
+#endif
+#if CALL_LIKE_SUN
+  int cisnan_ (union float_uint_uchar *realnum);
+#endif
+/****************************************************************************
+*  End of prototypes                                                        *
+*****************************************************************************/
+#endif
+
+/****************************************************************************/
 /* %def file_last_op file_mode                                              */
 /*                                                                          */
 /* \section{Internal routines}                                              */
@@ -178,9 +444,13 @@ static int
 /*   on null/blank string}                                                  */
 /*                                                                          */
 /* <internal routines>=                                                     */
-static size_t flength (s, len)
+#if defined (PROTOTYPE)
+static size_t flength (char *s, int len)
+#else
+static size_t flength(s, len)
 char *s;
 int len;
+#endif
 {
   while (s[--len] == ' ');
   return (++len);
@@ -189,10 +459,14 @@ int len;
 /* originally done.\index{error reporting}                                  */
 /*                                                                          */
 /* <internal routines>=                                                     */
-static void fatal (message)
+#if defined (PROTOTYPE)
+static void fatal (char *message)
+#else
+static void fatal(message)
 char *message;
+#endif
 {
-  int mone = -1, zero = 0;
+  int mone = -1;
 #if CALL_LIKE_HPUX
   extern void ccperr();
 
@@ -207,6 +481,7 @@ char *message;
   CCPERR (&mone, &str);
 #endif
 #if defined (VMS)
+  int zero=0;
   extern void CCPERR();
   extern void QPRINT();
   struct dsc$descriptor_s str;
@@ -231,8 +506,12 @@ char *message;
 /* This prints a non-fatal [[message]] using the Fortran i/o.               */
 /*                                                                          */
 /* <internal routines>=                                                     */
+#if defined (PROTOTYPE)
+static void cqprint (char *message)
+#else
 static void cqprint (message)
 char *message;
+#endif
 {
   int zero = 0;
 #if CALL_LIKE_HPUX
@@ -267,11 +546,17 @@ char *message;
 /* This reports a fatal error with a given file.                            */
 /*                                                                          */
 /* <internal routines>=                                                     */
+#if defined (PROTOTYPE)
+static void file_fatal (char *message, char *file)
+#else
 static void file_fatal (message, file)
-char *message, *file;
+char *message;
+char *file;
+#endif
 {
   char *buff;
   size_t l;
+
   l = strlen (message) + strlen (file) + 1;
   buff = malloc (l);
   if (buff == NULL)
@@ -289,9 +574,13 @@ char *message, *file;
 /* the routine names.                                                       */
 /*                                                                          */
 /* <internal routines>=                                                     */
+#if defined (PROTOTYPE)
+static void vaxF2ieeeF(union float_uint_uchar buffer[], int size)
+#else
 static void vaxF2ieeeF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
+#endif
 {
   union float_uint_uchar out;
   unsigned char exp;
@@ -331,9 +620,13 @@ int size;
   }
 }
 /* <internal routines>=                                                     */
+#if defined (PROTOTYPE)
+static void ieeeF2vaxF(union float_uint_uchar buffer[], int size)
+#else
 static void ieeeF2vaxF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
+#endif
 {
   union float_uint_uchar out;
   unsigned char exp;
@@ -383,9 +676,13 @@ int size;
 /* conversion routines, but we need [[convexF2ieeeF]] anyhow.               */
 /*                                                                          */
 /* <internal routines>=                                                     */
+#if defined (PROTOTYPE)
+static void convexF2ieeeF(union float_uint_uchar buffer[], int size)
+#else
 static void convexF2ieeeF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
+#endif
 {
   union float_uint_uchar out;
   unsigned char exp;
@@ -425,9 +722,13 @@ int size;
   }
 }
 /* <internal routines>=                                                     */
+#if defined (PROTOTYPE)
+static void ieeeF2convexF(union float_uint_uchar buffer[], int size)
+#else
 static void ieeeF2convexF(buffer, size)
 union float_uint_uchar buffer[];
 int size;
+#endif
 {
   union float_uint_uchar out;
   unsigned char exp;
@@ -490,19 +791,17 @@ int size;
 #if CALL_LIKE_HPUX
   void ustenv (str, result, Lstr)
   char *str;
-  int  Lstr;
+  int *result;
+  int Lstr;
 #endif
 #if CALL_LIKE_STARDENT
-  void USTENV (str, result)
-  struct Str_Desc *str;
+  void USTENV (struct Str_Desc *str, int *result)
 #endif
 #if CALL_LIKE_SUN
-  void ustenv_ (str, result, Lstr)
-  char *str;
-  int  Lstr;
+  void ustenv_ (char *str, int *result, int Lstr)
 #endif
-int *result;
 {
+  int putenv ();
   size_t Length;
   char name[MAXFLEN], value[MAXFLEN], *temp;
 
@@ -550,20 +849,16 @@ int *result;
 #if CALL_LIKE_HPUX
   void cunlink (filename, Lfilename)
   char *filename;
-  int  Lfilename;
+  int Lfilename;
 #endif
 #if CALL_LIKE_STARDENT
-  void CUNLINK (filename)
-  struct Str_Desc *filename;
+  void CUNLINK (struct Str_Desc *filename)
 #endif
 #if defined (VMS)
-  void CUNLINK (filename)
-  struct dsc$descriptor_s *filename;
+  void CUNLINK (struct dsc$descriptor_s *filename)
 #endif
 #if CALL_LIKE_SUN
-  void cunlink_ (filename, Lfilename)
-  char *filename;
-  int  Lfilename;
+  void cunlink_ (char *filename, int Lfilename)
 #endif
 {
   size_t Length;
@@ -622,15 +917,15 @@ int *result;
 #ifndef VMS                     /* we'll use the Fortran version in VMS*/
 #if CALL_LIKE_HPUX
   void ccpal1 (routne, n, type, length)
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void CCPAL1 (routne, n, type, length)
-#endif
-#if CALL_LIKE_SUN
-  void ccpal1_ (routne, n, type, length) 
-#endif
   void (* routne) ();
   int *n, type[], length[];
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void CCPAL1 (void (* routne) (), int *n, int type[], int length[])
+#endif
+#if CALL_LIKE_SUN
+  void ccpal1_ (void (* routne) (), int *n, int type[], int length[])
+#endif
 {
   int i, size, *leng[13];
   void *pointer[13];
@@ -735,24 +1030,18 @@ int *result;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void copen (iunit, filename, istat, Lfilename)
+  int *iunit, *istat, Lfilename;
   char *filename;
-  int  Lfilename;
 #endif
 #if CALL_LIKE_STARDENT
-  void COPEN (iunit, filename, istat)
-  struct Str_Desc *filename;
+  void COPEN (int *iunit, struct Str_Desc *filename, int *istat)
 #endif
 #if defined (VMS)
-  void COPEN (iunit, filename, istat)
-  struct dsc$descriptor_s *filename;
+  void COPEN (int *iunit, struct dsc$descriptor_s *filename, int *istat)
 #endif
 #if CALL_LIKE_SUN
-  void copen_ (iunit, filename, istat, Lfilename)
-  char *filename;
-  int  Lfilename;
+  void copen_ (int *iunit, char *filename, int *istat, int Lfilename)
 #endif
-
-int  *iunit, *istat;
 {
   size_t Length;
   int i, jstat;
@@ -892,17 +1181,17 @@ int  *iunit, *istat;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void qrarch (iunit, ipos, ireslt)
+  int *iunit, *ipos, *ireslt;
 #endif
 #if CALL_LIKE_STARDENT
-  void QRARCH (iunit, ipos, ireslt)
+  void QRARCH (int *iunit, int *ipos, int *ireslt)
 #endif
 #if defined (VMS)
-  void QRARCH (iunit, ipos, ireslt)
+  void QRARCH (int *iunit, int *ipos, int *ireslt)
 #endif
 #if CALL_LIKE_SUN
-  void qrarch_ (iunit, ipos, ireslt)
+  void qrarch_ (int *iunit, int *ipos, int *ireslt)
 #endif
-  int *ipos, *ireslt, *iunit;
 {
   uint16 fileFT, fileIT;        /* float and integer machine types of file */
   unsigned char mtstring[4];    /* machine stamp */
@@ -932,7 +1221,7 @@ int  *iunit, *istat;
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-    if ((fseek (file_stream[*iunit], (size_t) ((*ipos)*item_sizes[2]),
+    if ((fseek (file_stream[*iunit], (long int) ((*ipos)*item_sizes[2]),
                 SEEK_SET) != 0))
       file_fatal ("QRARCH: seek failed on ", file_name[*iunit]);
     file_last_op[*iunit] = READ_OP;
@@ -965,17 +1254,17 @@ int  *iunit, *istat;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void qwarch (iunit, ipos)
+  int *iunit, *ipos;
 #endif
 #if CALL_LIKE_STARDENT
-  void QWARCH (iunit, ipos)
+  void QWARCH (int *iunit, int *ipos)
 #endif
 #if defined (VMS)
-  void QWARCH (iunit, ipos)
+  void QWARCH (int *iunit, int *ipos)
 #endif
 #if CALL_LIKE_SUN
-  void qwarch_ (iunit, ipos)
+  void qwarch_ (int *iunit, int *ipos)
 #endif
-  int *ipos, *iunit;
 {
   unsigned char mtstring[4];    /* machine stamp */
 /* It seems the \idx{OpenVMS} (don't know which version) can easily lose its */
@@ -986,7 +1275,7 @@ int  *iunit, *istat;
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
-  if (fseek (file_stream[*iunit], (size_t) ((*ipos)*item_sizes[2]),
+  if (fseek (file_stream[*iunit], (long int) ((*ipos)*item_sizes[2]),
              SEEK_SET) != 0)
     file_fatal ("QWARCH: seek failed on ", file_name[*iunit]);
   /* nibbles packed by masking and ORing: */
@@ -1004,17 +1293,15 @@ int  *iunit, *istat;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void qclose (iunit)
+  int *iunit;
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void QCLOSE (iunit)
+  void QCLOSE (int *iunit)
 #endif
 #if CALL_LIKE_SUN
-  void qclose_ (iunit)
+  void qclose_ (int *iunit)
 #endif
-
-int *iunit;
 {
-  int l;
   if (! initialised) 
     fatal ("QCLOSE: qopen/qqopen not yet called");
   if (file_stream[*iunit] != NULL) {
@@ -1033,15 +1320,14 @@ int *iunit;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void qmode (iunit, mode, size)
+  int *iunit, *mode, *size;
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void QMODE (iunit, mode, size)
+  void QMODE (int *iunit, int *mode, int *size)
 #endif
 #if CALL_LIKE_SUN
-  void qmode_ (iunit, mode, size)
+  void qmode_ (int *iunit, int *mode, int *size)
 #endif
-
-int *iunit, *mode, *size;
 {
   if (! initialised) 
     fatal ("QMODE: qopen/qqopen not yet called");
@@ -1066,16 +1352,15 @@ int *iunit, *mode, *size;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void qread (iunit, buffer, nitems, result)
+  int *iunit, *nitems, *result;
+  uint8 * buffer;
 #endif
 #if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
-  void QREAD (iunit, buffer, nitems, result)
+  void QREAD (int *iunit, uint8 * buffer, int *nitems, int *result)
 #endif
 #if CALL_LIKE_SUN
-  void qread_ (iunit, buffer, nitems, result)
+  void qread_ (int *iunit, uint8 * buffer, int *nitems, int *result)
 #endif
-
-uint8 * buffer;
-int *iunit, *nitems, *result;
 {
   int i, n;
 
@@ -1096,7 +1381,7 @@ int *iunit, *nitems, *result;
       return; } }
   file_last_op[*iunit] = READ_OP;
   errno = 0;
-  i = fread (buffer, (size_t) file_bytes_per_item[*iunit], 
+  i = (int) fread (buffer, (size_t) file_bytes_per_item[*iunit], 
                 (size_t) *nitems, file_stream[*iunit]);
   if (i != *nitems) {
     if (feof (file_stream[*iunit])) *result = -1;
@@ -1325,24 +1610,18 @@ int *iunit, *nitems, *result;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void qreadc (iunit, buffer, result, Lbuffer)
-  int Lbuffer;
+  int *iunit, *result, Lbuffer;
   char * buffer;
 #endif
 #ifdef VMS
-  void QREADC (iunit, buffer, result)
-  struct dsc$descriptor_s *buffer;
+  void QREADC (int *iunit, struct dsc$desccriptor_s *buffer, int *result)
 #endif
 #if CALL_LIKE_STARDENT
-  void QREADC (iunit, buffer, result)
-  struct Str_Desc *buffer;
+  void QREADC (int *iunit, struct Str_Desc *buffer, int *result)
 #endif
 #if CALL_LIKE_SUN
-  void qreadc_ (iunit, buffer, result, Lbuffer)
-  int Lbuffer;
-  char * buffer;
+  void qreadc_ (int *iunit, char * buffer, int *result, int Lbuffer)
 #endif
-
-int *iunit, *result;
 {
   int i, n;
 
@@ -1363,7 +1642,7 @@ int *iunit, *result;
   file_last_op[*iunit] = READ_OP;
 #if defined (VMS)
   n = buffer->dsc$w_length;
-  i = fread (buffer->dsc$a_pointer, (size_t) item_sizes[BYTE], 
+  i = (int) fread (buffer->dsc$a_pointer, (size_t) item_sizes[BYTE], 
                 (size_t) n, file_stream[*iunit]);
 #else
 #  if CALL_LIKE_STARDENT
@@ -1372,7 +1651,7 @@ int *iunit, *result;
                 (size_t) n, file_stream[*iunit]);
 #  else                         /* normal */
   n = Lbuffer;
-  i = fread (buffer, (size_t) item_sizes[BYTE], 
+  i = (int) fread (buffer, (size_t) item_sizes[BYTE], 
                 (size_t) n, file_stream[*iunit]);
 #  endif
 #endif
@@ -1391,15 +1670,15 @@ int *iunit, *result;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void qwrite (iunit, buffer, nitems)
+  int *iunit, *nitems;
+  uint8 * buffer;
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void QWRITE (iunit, buffer, nitems)
+  void QWRITE (int *iunit, uint8 * buffer, int *nitems)
 #endif
 #if CALL_LIKE_SUN
-  void qwrite_ (iunit, buffer, nitems)
+  void qwrite_ (int *iunit, uint8 * buffer, int *nitems)
 #endif
-uint8 * buffer;
-int *iunit, *nitems;
 {
   int i;
 
@@ -1436,23 +1715,18 @@ int *iunit, *nitems;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void qwritc (iunit, buffer, Lbuffer)
-  int Lbuffer;
+  int *iunit, Lbuffer;
   char * buffer;
 #endif
 #if defined (VMS)
-  void QWRITC (iunit, buffer)
-  struct dsc$descriptor_s *buffer;
+  void QWRITC (int *iunit, struct dsc$descriptor_s *buffer)
 #endif
 #if defined CALL_LIKE_STARDENT
-  void QWRITC (iunit, buffer)
-  struct Str_Desc *buffer;
+  void QWRITC (int *iunit, struct Str_Desc *buffer)
 #endif
 #if CALL_LIKE_SUN
-  void qwritc_ (iunit, buffer, Lbuffer)
-  int Lbuffer;
-  char * buffer;
+  void qwritc_ (int *iunit, char * buffer, int Lbuffer)
 #endif
-int *iunit;
 {
   int i, n;
 
@@ -1496,15 +1770,14 @@ int *iunit;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void qseek (iunit, irec, iel, lrecl)
+  int *iunit, *irec, *iel, *lrecl;
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void QSEEK (iunit, irec, iel, lrecl)
+  void QSEEK (int *iunit, int *irec, int *iel, int *lrecl)
 #endif
 #if CALL_LIKE_SUN
-  void qseek_ (iunit, irec, iel, lrecl)
+  void qseek_ (int *iunit, int *irec, int *iel, int *lrecl)
 #endif
-
-int *iunit, *irec, *iel, *lrecl;
 {
   long int position;
 
@@ -1522,7 +1795,7 @@ int *iunit, *irec, *iel, *lrecl;
 (void) fflush (file_stream[*iunit]);
 #endif
   if (fseek (file_stream[*iunit],position,SEEK_SET) != 0)
-    file_fatal ("QSEEK failed -- maybe corrupt file: , file_name[*iunit]");
+    file_fatal ("QSEEK failed -- maybe corrupt file: ",file_name[*iunit]);
 }
 /* \subsection{{\tt subroutine qback (\meta{iunit}, \meta{lrecl})}}         */
 /* Backspaces one record, of length \meta{lrecl} on diskio stream \meta{iunit}. */
@@ -1530,15 +1803,14 @@ int *iunit, *irec, *iel, *lrecl;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void qback (iunit, lrecl)
+  int *iunit, *lrecl;
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void QBACK (iunit, lrecl)
+  void QBACK (int *iunit, int *lrecl)
 #endif
 #if CALL_LIKE_SUN
-  void qback_ (iunit, lrecl)
+  void qback_ (int *iunit, int *lrecl)
 #endif
-
-int *iunit, *lrecl;
 {
   long int position;
 
@@ -1563,15 +1835,14 @@ int *iunit, *lrecl;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void qskip (iunit, lrecl)
+  int *iunit, *lrecl;
 #endif
 #if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
-  void QSKIP (iunit, lrecl)
+  void QSKIP (int *iunit, int *lrecl)
 #endif
 #if CALL_LIKE_SUN
-  void qskip_ (iunit, lrecl)
+  void qskip_ (int *iunit, int *lrecl)
 #endif
-
-int *iunit, *lrecl;
 {
   long int position;
 
@@ -1599,28 +1870,23 @@ int *iunit, *lrecl;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void cqinq (istrm, filnam, length, len_filnam)
-  char *filnam; 
-  int len_filnam;
+  int *istrm, *length, len_filnam;
+  char *filnam;
 #endif
 #if CALL_LIKE_STARDENT
-  void CQINQ (istrm, filnam, length)
-  struct Str_Desc *filnam;
+  void CQINQ (int *istrm, struct Str_Desc *filnam, int *length)
 #endif
 #if defined (VMS)
-  void CQINQ (istrm, filnam, length)
-  struct dsc$descriptor_s *filnam;
+  void CQINQ (int *istrm, struct dsc$descriptor_s *filnam, int *length)
 #endif
 #if CALL_LIKE_SUN
-  void cqinq_ (istrm, filnam, length, len_filnam)
-  char *filnam;
-  int len_filnam;
+  void cqinq_ (int *istrm, char *filnam, int *length, int len_filnam)
 #endif
-
-int *istrm, *length;
 {
   char real_name[MAXFLEN];
-  int *iunit, Length, i;
+  int *iunit, i;
   long position;
+  size_t Length;
 
   if (! initialised) 
     fatal ("QQINQ: qopen/qqopen not yet called");
@@ -1630,16 +1896,16 @@ int *istrm, *length;
     /* no unit open -- try file name */
 #if CALL_LIKE_STARDENT
     Length = flength (filnam->Str_pointer, filnam->Str_length);
-    if (Length > MAXFLEN) Length = MAXFLEN - 1;
+    if (Length > (size_t) MAXFLEN) Length = (size_t) MAXFLEN - 1;
     (void) strncpy (real_name, filnam->Str_pointer, Length);
 #else
 #  if defined (VMS)
      Length = flength (filnam->dsc$a_pointer, filnam->dsc$w_length);
-     if (Length > MAXFLEN) Length = MAXFLEN - 1;
+     if (Length > (size_t) MAXFLEN) Length = (size_t) MAXFLEN - 1;
      (void) strncpy (real_name, filnam->dsc$a_pointer, Length);
 #  else
      Length = flength (filnam, len_filnam);
-     if (Length > MAXFLEN) Length = MAXFLEN - 1;
+     if (Length > (size_t) MAXFLEN) Length = (size_t) MAXFLEN - 1;
      (void) strncpy (real_name, filnam, Length);
 #  endif
 #endif
@@ -1678,15 +1944,14 @@ int *istrm, *length;
 /* <diskio routines>=                                                       */
 #if CALL_LIKE_HPUX
   void qlocate (iunit, locate)
+  int *iunit, *locate;
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void QLOCATE (iunit, locate)
+  void QLOCATE (int *iunit, int *locate)
 #endif
 #if CALL_LIKE_SUN
-  void qlocate_ (iunit, locate)
+  void qlocate_ (int *iunit, int *locate)
 #endif
-
-int *iunit, *locate;
 {
   if (! initialised) 
     fatal ("QLOCATE: qopen/qqopen not yet called");
@@ -1775,7 +2040,7 @@ float etime (tarray)
   return (tarray[0]+tarray[1]);
 }
 
-#endif
+#endif             /*  HPUX and AIX support */
 #if defined(F2C) || defined(G77)
 /* <f2c support>=                                                           */
 int exit_ (status)
@@ -1907,7 +2172,7 @@ int /* logical */ btest_ (a, b)
 {
   return ((((unsigned long) *a)>>(*b)))&1 ? TRUE_ : FALSE_;
 }
-#endif
+#endif              /* F2C support  */
 /* \section{`Magic' numbers}                                                */
 /*                                                                          */
 /* When, for instance, an $F$ is unobserved in a derivative, we might       */
@@ -1961,14 +2226,14 @@ int /* logical */ btest_ (a, b)
 /* <magic numbers>=                                                         */
 #if CALL_LIKE_HPUX
   void qnan (realnum)
+  union float_uint_uchar *realnum;
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void QNAN (realnum)
+  void QNAN (union float_uint_uchar *realnum)
 #endif
 #if CALL_LIKE_SUN
-  void qnan_ (realnum)
+  void qnan_ (union float_uint_uchar *realnum)
 #endif
-  union float_uint_uchar *realnum;
 /* We have a choice of \idx{NaN} values in                                  */
 /* \ac{ieee}\index{IEEE@\ac{ieee}} arithmetic.                              */
 /* [[0xfffa5a5a]] is the one used by the \idx{MIPS} compilers as an         */
@@ -2005,14 +2270,14 @@ int /* logical */ btest_ (a, b)
 /* <magic numbers>=                                                         */
 #if CALL_LIKE_HPUX
   int cisnan (realnum)
+  union float_uint_uchar *realnum;
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  int CISNAN (realnum)
+  int CISNAN (union float_uint_uchar *realnum)
 #endif
 #if CALL_LIKE_SUN
-  int cisnan_ (realnum)
+  int cisnan_ (union float_uint_uchar *realnum)
 #endif
-  union float_uint_uchar *realnum;
 {
     /* In the \ac{ieee} case we actually return true both for \idx{NaN}s        */
     /* and for \idx{Infinity}; in either case the exponent is all ones---the    */
@@ -2052,15 +2317,15 @@ int /* logical */ btest_ (a, b)
 #define MDFBIG -1.0E10          /* BIOMOL absence flag value */
 #if CALL_LIKE_HPUX
   void ccpbml (ncols, cols)
-#endif
-#if defined (VMS) || CALL_LIKE_STARDENT
-  void CCPBML (ncols, cols)
-#endif
-#if CALL_LIKE_SUN
-  void ccpbml_ (ncols, cols)
-#endif
   int *ncols;
   union float_uint_uchar cols[];
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void CCPBML (int *ncols, union float_uint_uchar cols[])
+#endif
+#if CALL_LIKE_SUN
+  void ccpbml_ (int *ncols, union float_uint_uchar cols[])
+#endif
 {
   int i;
   for (i=0; i<*ncols; i++)
@@ -2077,16 +2342,16 @@ int /* logical */ btest_ (a, b)
 /* <magic numbers>=                                                         */
 #if CALL_LIKE_HPUX
   void ccpwrg (ncols, cols, wminmax)
+  int *ncols;
+  union float_uint_uchar cols[];
+  float wminmax[];
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void CCPWRG (ncols, cols, wminmax)
+  void CCPWRG (int *ncols, union float_uint_uchar cols[], float wminmax[])
 #endif
 #if CALL_LIKE_SUN
-  void ccpwrg_ (ncols, cols, wminmax)
+  void ccpwrg_ (int *ncols, union float_uint_uchar cols[], float wminmax[])
 #endif
-  int *ncols;
-  float wminmax[];
-  union float_uint_uchar cols[];
 {
   int i;
   for (i=0; i<*ncols; i++)
