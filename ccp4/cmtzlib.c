@@ -859,7 +859,7 @@ int ccp4_lrtitl(const MTZ *mtz, char *title) {
 
   length = (int) strlen(strcpy(title, mtz->title));
   if (length > 0) {
-    while (title[--length] == ' ');
+    while ((--length >= 0) && (title[length] == ' '));
     ++length;
   }
   return(length);
@@ -1778,7 +1778,7 @@ int MtzPrintBatchHeader(MTZBAT *batch) {
 
 int ccp4_lwtitl(MTZ *mtz, const char *ftitle, int flag) {
 
-  size_t length;
+  int length;
 
   if (flag == 0) {
 
@@ -1786,10 +1786,11 @@ int ccp4_lwtitl(MTZ *mtz, const char *ftitle, int flag) {
 
   } else {
 
-    length = strlen(mtz->title);
-    while (mtz->title[--length] == ' ');
-    mtz->title[length+1] = ' ';
-    strncpy(mtz->title+length+2,ftitle,69-length);
+    length = (int) strlen(mtz->title);
+    while ((--length >= 0) && mtz->title[length] == ' ');
+    if (length >= 0)
+      mtz->title[++length] = ' ';
+    strncpy(mtz->title+length+1,ftitle,70-length);
 
   }
 
@@ -2336,7 +2337,7 @@ int MtzPut(MTZ *mtz, const char *logname)
 
  spgname[0] = '\'';
  length = strlen(mtz->mtzsymm.spcgrpname);
- while (mtz->mtzsymm.spcgrpname[--length] == ' ');
+ while ((--length >= 0) && mtz->mtzsymm.spcgrpname[length] == ' ');
  strncpy(spgname+1,mtz->mtzsymm.spcgrpname,length+1);
  spgname[length+2] = '\'';
  spgname[length+3] = '\0';
