@@ -633,9 +633,12 @@ install : all
 
 uninstall :
 	-rm -f $(libdir)/$(LMMDB) $(libdir)/$(LC) $(libdir)/$(LF)
-	test -f $(libdir)/libccp4f.so && rm -f $(libdir)/libccp4f.so
-	test -f $(libdir)/libccp4c.so && rm -f $(libdir)/libccp4c.so
-	test -f $(libdir)/libmmdb.so && rm -f $(libdir)/libmmdb.so
+	if [ -f $(libdir)/libccp4f.so ] ; then rm -f $(libdir)/libccp4f.so ; fi
+	if [ -f $(libdir)/libccp4c.so ] ; then rm -f $(libdir)/libccp4c.so ; fi
+	if [ -f $(libdir)/libmmdb.so ] ; then rm -f $(libdir)/libmmdb.so ; fi
+	if [ -f $(libdir)/libccp4f.dylib ] ; then rm -f $(libdir)/libccp4f.dylib ; fi
+	if [ -f $(libdir)/libccp4c.dylib ] ; then rm -f $(libdir)/libccp4c.dylib ; fi
+	if [ -f $(libdir)/libmmdb.dylib ] ; then rm -f $(libdir)/libmmdb.dylib ; fi
 
 clean :
 	-rm -f core *.o *~ *.dir/*.o testlib disc.dft a.out *.orig *.rej defs.m4
@@ -643,9 +646,12 @@ clean :
 
 realclean : clean
 	-rm -rf $(LF) $(LC) $(LMMDB) *.dir TAGS unix.f fsplit
-	test -f libccp4f.so && rm -f libccp4f.so
-	test -f libccp4c.so && rm -f libccp4c.so
-	test -f libmmdb.so && rm -f libmmdb.so
+	if [ -f libccp4f.so ] ; then rm -f libccp4f.so ; fi
+	if [ -f libccp4c.so ] ; then rm -f libccp4c.so ; fi
+	if [ -f libmmdb.so ] ; then rm -f libmmdb.so ; fi  
+	if [ -f libccp4f.dylib ] ; then rm -f libccp4f.dylib ; fi
+	if [ -f libccp4c.dylib ] ; then rm -f libccp4c.dylib ; fi
+	if [ -f libmmdb.dylib ] ; then rm -f libmmdb.dylib ; fi 
 
 distclean : realclean
 	-rm -f Makefile
