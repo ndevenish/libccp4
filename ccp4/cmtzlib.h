@@ -458,9 +458,9 @@ int ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64],
             float datcell[6], float *datwave);
 
 /** Returns iref'th reflection from file held in MTZ struct mtz. Returns
- * data for all columns held in input file in the order that they are 
- * held in the file (uses the "source" attribute of the column). 
- * The "lookup" mechanism can be used to find particular columns.
+ * data for all columns held in input file, but in the order that they are 
+ * held in the datasets rather than in strict file order. The "lookup"
+ * mechanism can still be used to find particular columns.
  * In "in-memory" mode, reflection data is taken from arrays held in
  * memory. In the traditional file-based mode, a reflection record is
  * read from the input file.

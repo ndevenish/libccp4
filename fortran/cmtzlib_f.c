@@ -602,7 +602,7 @@ FORTRAN_SUBR ( LRASSN, lrassn,
 	       (const int *mindx, fpstr lsprgi, int lsprgi_len, int *nlprgi, 
                       int lookup[], fpstr ctprgi, int ctprgi_len))
 
-{ int i,j,k,l;
+{ int i,j,k,l,icol;
   char *label;
   char *type;
   MTZCOL **colarray;
@@ -650,16 +650,18 @@ FORTRAN_SUBR ( LRASSN, lrassn,
   }
 
   for (l = 0; l < *nlprgi; ++l) {
- /* Loop over crystals */
+   icol = -1;
+ /* Loop over all columns */
    for (i = 0; i < mtzdata[*mindx-1]->nxtal; ++i) {
- /* Loop over datasets for each crystal */
     for (j = 0; j < mtzdata[*mindx-1]->xtal[i]->nset; ++j) {
- /* Loop over columns for each dataset */
      for (k = 0; k < mtzdata[*mindx-1]->xtal[i]->set[j]->ncol; ++k) {
+      if (mtzdata[*mindx-1]->xtal[i]->set[j]->col[k]->source) {
+       ++icol;
        if (mtzdata[*mindx-1]->xtal[i]->set[j]->col[k] == collookup[*mindx-1][l]) {
-         lookup[l] = mtzdata[*mindx-1]->xtal[i]->set[j]->col[k]->source;
+         lookup[l] = icol + 1;
          goto next_label;
-       }  
+       } 
+      } 
      }
     }
    }
