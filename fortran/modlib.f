@@ -996,3 +996,91 @@ C_END_ZIPOUT
 C     ..
       WRITE (ID) BUF
       END
+      SUBROUTINE RANMAR(RVEC,LEN)
+C     Universal random number generator proposed by Marsaglia and Zaman
+C     in report FSU-SCRI-87-50
+C     slightly modified by F. James, 1988 to generate a vector
+C     of pseudorandom numbers RVEC of length LEN
+C     and making the COMMON block include everything needed to
+C     specify completely the state of the generator.
+C     Transcribed from CERN report DD/88/22.
+C     Rather inelegant messing about added by D. Love, Jan. 1989 to
+C     make sure initialisation always occurs.
+C     *** James says that this is the preferred generator.
+C     Gives bit-identical results on all machines with at least
+C     24-bit mantissas in the flotaing point representation (i.e.
+C     all common 32-bit computers. Fairly fast, satisfies very
+C     stringent tests, has very long period and makes it very
+C     simple to generate independly disjoint sequences.
+C     See also RANECU.
+C     The state of the generator may be saved/restored using the
+C     whole contents of /RASET1/.
+C     Call RANMAR to get a vector, RMARIN to initialise. 
+C     
+      REAL RVEC(*)
+      LOGICAL INITED
+      COMMON /RASET1/ U(97),C,CD,CM,I97,J97
+      SAVE INITED, /RASET1/
+      DATA INITED /.FALSE./
+C     
+ 1    IF (INITED) THEN
+        DO 100 IVEC=1,LEN
+          UNI=U(I97)-U(J97)
+          IF (UNI.LT.0.) UNI=UNI+1.
+          U(I97)=UNI
+          I97=I97-1
+          IF (I97.EQ.0) I97=97
+          J97=J97-1
+          IF (J97.EQ.0) J97=97
+          C=C-CD
+          IF (C.LT.0.) C=C+CM
+          UNI=UNI-C
+          IF (UNI.LT.0.) UNI=UNI+1.
+          RVEC(IVEC)=UNI
+ 100    CONTINUE
+        RETURN
+      ENDIF
+      I=MOD(1802/177,177)+2
+      J=MOD(1802,177)+2
+      K=MOD(9373/169,178)+1
+      L=MOD(9373,169)
+C     
+      ENTRY RMARIN(IJ,KL)
+C     Initialisation for RANMAR.  The input values should
+C     be in the ranges: 0<=ij<=31328, 0<=kl<=30081
+C     This shows the correspondence between the simplified input seeds
+C     IJ, KL and the original Marsaglia-Zaman seeds i,j,k,l
+C     To get standard values in Marsaglia-Zaman paper,
+C     (I=12, J=34, K=56, L=78) put IJ=1802, KL=9373
+C     
+      IF (INITED) THEN
+        I=MOD(IJ/177,177)+2
+        J=MOD(IJ,177)+2
+        K=MOD(KL/169,178)+1
+        L=MOD(KL,169)
+      ENDIF
+      DO 2 II=1,97
+        S=0.
+        T=.5
+        DO 3 JJ=1,24
+          M=MOD(MOD(I*J,179)*K,179)
+          I=J
+          J=K
+          K=M
+          L=MOD(53*L+1,169)
+          IF (MOD(L*M,64).GE.32) S=S+T
+          T=0.5*T
+ 3      CONTINUE
+        U(II)=S
+ 2    CONTINUE
+      C=362436./16777216.
+      CD=7654321./16777216.
+      CM=16777213./16777216.
+      I97=97
+      J97=33
+      IF (.NOT. INITED) THEN
+        INITED=.TRUE.
+        GOTO 1
+      ENDIF
+      INITED=.TRUE.
+      END
