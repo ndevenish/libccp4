@@ -37,10 +37,9 @@
 #   the make is interrupted.)  My original tactic of using an empty
 #   file doesn't work in AIX because it isn't in object format ;
 # * ar *.o into ../libccp4.a;
-# * rm *.o from foo.dir (leave *.f there so you can do symbolic debug,
-#   although you then have to get the path right.  fixme: compile
-#   $(srcdir)/<dir>/*.f to solve this problem if it doesn't make lines
-#   too long for sh...).
+# * rm *.o from foo.dir (we want to leave *.f there so you can do
+#   symbolic debug, and also include the absolute path for this, but
+#   see comments at definition of WD below.
 
 # The following variables are expected to be set by configure:
 # top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
@@ -50,6 +49,15 @@ SHELL       = /bin/sh
 srcdir	    = $(top_srcdir)/lib/src
 L           = libccp4.a#        convenient abbreviation only
 LIB_DIR     = .
+
+# This should, ideally, be set to "`pwd`/" to get the full path into
+# the modules for symbolic debugging, but that tends to make lines too
+# long for sh sometimes,  sigh.  Fixme: at least make this
+# configurable -- it's probably possible to hack it so that if the
+# command fails with pwd in there, make tries again recursively
+# without it...
+# WD          = `pwd`/
+WD          =
 
 # The following is for the benefit of Alliant, which is the only
 # system I know where you can't use -L to specify the load path.
@@ -95,7 +103,7 @@ $L(ccplib.o) : $(srcdir)/ccplib.for
 	echo '      SUBROUTINE CCPLIB' > ccplib.dir/ccplib.$F
 	echo '      END' >> ccplib.dir/ccplib.$F
 	cd ccplib.dir && fsplit $(srcdir)/ccplib.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f ccplib.dir/*.o
 ccplib : $L(ccplib.o)
 	$(RANLIB) $L
@@ -105,7 +113,7 @@ $L(fftlib.o) : $(srcdir)/fftlib.for
 	echo '      SUBROUTINE FFTLIB' > fftlib.dir/fftlib.$F
 	echo '      END' >> fftlib.dir/fftlib.$F
 	cd fftlib.dir && fsplit $(srcdir)/fftlib.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f fftlib.dir/*.o
 fftlib : $L(fftlib.o)
 	$(RANLIB) $L
@@ -115,7 +123,7 @@ $L(maplib.o) : $(srcdir)/maplib.for
 	echo '      SUBROUTINE MAPLIB' > maplib.dir/maplib.$F
 	echo '      END' >> maplib.dir/maplib.$F
 	cd maplib.dir && fsplit $(srcdir)/maplib.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f maplib.dir/*.o
 maplib : $L(maplib.o)
 	$(RANLIB) $L
@@ -128,7 +136,7 @@ $L(parser.o) : $(srcdir)/parser.for
 	  echo '      SUBROUTINE PRSER' > parser.dir/parser.$F; \
 	  echo '      END' >> parser.dir/parser.$F; \
 	fi
-	cd parser.dir && $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	cd parser.dir && $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f parser.dir/*.o
 parser : $L(parser.o)
 	$(RANLIB) $L
@@ -138,7 +146,7 @@ $L(rwbrook.o) : $(srcdir)/rwbrook.for
 	echo '      SUBROUTINE RWBROOK' > rwbrook.dir/rwbrook.$F
 	echo '      END' >> rwbrook.dir/rwbrook.$F
 	cd rwbrook.dir && fsplit $(srcdir)/rwbrook.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f rwbrook.dir/*.o
 rwbrook : $L(rwbrook.o)
 	$(RANLIB) $L
@@ -148,7 +156,7 @@ $L(rwatom.o) : $(srcdir)/rwatom.for
 	echo '      SUBROUTINE RWATOM' > rwatom.dir/rwatom.$F
 	echo '      END' >> rwatom.dir/rwatom.$F
 	cd rwatom.dir && fsplit $(srcdir)/rwatom.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f rwatom.dir/*.o
 rwatom : $L(rwatom.o)
 	$(RANLIB) $L
@@ -158,7 +166,7 @@ $L(modlib.o) : $(srcdir)/modlib.for
 	echo '      SUBROUTINE MODLIB' > modlib.dir/modlib.$F
 	echo '      END' >> modlib.dir/modlib.$F
 	cd modlib.dir && fsplit $(srcdir)/modlib.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f modlib.dir/*.o
 modlib : $L(modlib.o)
 	$(RANLIB) $L
@@ -168,7 +176,7 @@ $L(mthlib.o) : $(srcdir)/mthlib.for
 	echo '      SUBROUTINE MTHLIB' > mthlib.dir/mthlib.$F
 	echo '      END' >> mthlib.dir/mthlib.$F
 	cd mthlib.dir && fsplit $(srcdir)/mthlib.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f mthlib.dir/*.o
 mthlib : $L(mthlib.o)
 	$(RANLIB) $L
@@ -178,7 +186,7 @@ $L(symlib.o) : $(srcdir)/symlib.for
 	echo '      SUBROUTINE SYMLIB' > symlib.dir/symlib.$F
 	echo '      END' >> symlib.dir/symlib.$F
 	cd symlib.dir && fsplit $(srcdir)/symlib.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f symlib.dir/*.o
 symlib : $L(symlib.o)
 	$(RANLIB) $L
@@ -188,7 +196,7 @@ $L(lcflib.o) : $(srcdir)/lcflib.for
 	echo '      SUBROUTINE LCFLIB' > lcflib.dir/lcflib.$F
 	echo '      END' >> lcflib.dir/lcflib.$F
 	cd lcflib.dir && fsplit $(srcdir)/lcflib.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f lcflib.dir/*.o
 lcflib : $L(lcflib.o)
 	$(RANLIB) $L
@@ -198,7 +206,7 @@ $L(mtzlib.o) : $(srcdir)/mtzlib.for
 	echo '      SUBROUTINE MTZLIB' > mtzlib.dir/mtzlib.$F
 	echo '      END' >> mtzlib.dir/mtzlib.$F
 	cd mtzlib.dir && fsplit $(srcdir)/mtzlib.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f mtzlib.dir/*.o
 mtzlib : $L(mtzlib.o)
 	$(RANLIB) $L
@@ -208,7 +216,7 @@ $L(diskio.o) : $(srcdir)/diskio.for
 	echo '      SUBROUTINE DISKIO' > diskio.dir/diskio.$F
 	echo '      END' >> diskio.dir/diskio.$F
 	cd diskio.dir && fsplit $(srcdir)/diskio.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f diskio.dir/*.o
 diskio : $L(diskio.o)
 
@@ -217,7 +225,7 @@ $L(hlplib.o) : $(srcdir)/hlplib.for
 	echo '      SUBROUTINE HLPLIB' > hlplib.dir/hlplib.$F
 	echo '      END' >> hlplib.dir/hlplib.$F
 	cd hlplib.dir && fsplit $(srcdir)/hlplib.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f hlplib.dir/*.o
 hlplib : $L(hlplib.o)
 	$(RANLIB) $L
@@ -228,7 +236,7 @@ $L(frodo_maplib.o) : $(srcdir)/frodo_maplib.for
 	echo '      SUBROUTINE frodo_MAPLIB' > frodo_maplib.dir/frodo_maplib.$F
 	echo '      END' >> frodo_maplib.dir/frodo_maplib.$F
 	cd frodo_maplib.dir && fsplit $(srcdir)/frodo_maplib.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f frodo_maplib.dir/*.o
 frodo_maplib : $L(frodo_maplib.o)
 	$(RANLIB) $L
@@ -238,7 +246,7 @@ $L(plot84lib.o) : $(srcdir)/plot84lib.for
 	echo '      SUBROUTINE PLOT84LIB' > plot84lib.dir/plot84lib.$F
 	echo '      END' >> plot84lib.dir/plot84lib.$F
 	cd plot84lib.dir && fsplit $(srcdir)/plot84lib.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f plot84lib.dir/*.o
 plot84lib : $L(plot84lib.o)
 	$(RANLIB) $L
@@ -248,7 +256,7 @@ $L(graflib.o) : $(srcdir)/graflib.for
 	echo '      SUBROUTINE GRAFLIB' > graflib.dir/graflib.$F
 	echo '      END' >> graflib.dir/graflib.$F
 	cd graflib.dir && fsplit $(srcdir)/graflib.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f graflib.dir/*.o
 graflib : $L(graflib.o)
 	$(RANLIB) $L
@@ -258,7 +266,7 @@ $L(graphics.o) : $(srcdir)/graphics.for
 	echo '      SUBROUTINE GRAPHICS' > graphics.dir/graphics.$F
 	echo '      END' >> graphics.dir/graphics.$F
 	cd graphics.dir && fsplit $(srcdir)/graphics.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f graphics.dir/*.o
 graphics : $L(graphics.o)
 	$(RANLIB) $L
@@ -266,7 +274,7 @@ graphics : $L(graphics.o)
 $L(gdummy.o) : $(srcdir)/gdummy.for
 	-rm -rf gdummy.dir; mkdir gdummy.dir
 	cd gdummy.dir && fsplit $(srcdir)/gdummy.for && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F  && \
+	  $(FC) -c $(FFLAGS) $(WD)*.$F  && \
 	  $(AR) ../$L *.o
 	rm -f gdummy.dir/*.o
 gdummy : $L(gdummy.o)
@@ -311,7 +319,7 @@ $L(unix.o) : $(srcdir)/unix.m4
 	echo '      SUBROUTINE UNIX' > unix.dir/unix.$F
 	echo '      END' >> unix.dir/unix.$F
 	cd unix.dir && fsplit ../unix.$F && \
-	  $(FC) -c $(FFLAGS) `pwd`/*.$F && $(AR) ../$L *.o
+	  $(FC) -c $(FFLAGS) $(WD)*.$F && $(AR) ../$L *.o
 	rm -f unix.dir/*.o
 unix : $L(unix.o)
 	$(RANLIB) $L
