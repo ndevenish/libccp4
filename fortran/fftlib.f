@@ -898,6 +898,11 @@ C
 C
 C---- Radix prime multi-dimensional complex fourier transform kernel
 C
+CMDW: Note, routine works beyond the nominal bounds of X and Y.
+C     We think this is deliberate, so don't be tempted to "fix" it.
+C     This routine is therefore incompatible with "bounds-checking" 
+C     options of compilers.
+C
 C     .. Scalar Arguments ..
       INTEGER           M,N,P,R
 C     ..
