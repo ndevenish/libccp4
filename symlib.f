@@ -1049,19 +1049,15 @@ C     .. Array Arguments ..
       REAL A(4,4)
 C     ..
 C     .. Local Scalars ..
-      REAL AM,D,SIGN_LOC
+      REAL AM,D
       INTEGER I,I1,II,J,J1,JJ
 C     ..
 C     .. Local Arrays ..
       REAL C(4,4),X(3,3)
 C     ..
 C
-C---Determinant for 4x4 matrix should be calculated directly.
-C---This way is clear but not fast.
-      SIGN_LOC = -1.0
       DO 40 II = 1,4
         DO 30 JJ = 1,4
-          SIGN_LOC = -SIGN_LOC
           I = 0
 C
           DO 20 I1 = 1,4
@@ -1081,7 +1077,7 @@ C
           AM = X(1,1)*X(2,2)*X(3,3) - X(1,1)*X(2,3)*X(3,2) +
      +         X(1,2)*X(2,3)*X(3,1) - X(1,2)*X(2,1)*X(3,3) +
      +         X(1,3)*X(2,1)*X(3,2) - X(1,3)*X(2,2)*X(3,1)
-          C(II,JJ) = SIGN_LOC*AM
+          C(II,JJ) = (-1)** (II+JJ)*AM
    30   CONTINUE
    40 CONTINUE
 C
@@ -1402,17 +1398,15 @@ C     .. Array Arguments ..
       REAL A(4,4),AI(4,4)
 C     ..
 C     .. Local Scalars ..
-      REAL AM,D,SIGN_LOC
+      REAL AM,D
       INTEGER I,I1,II,J,J1,JJ
 C     ..
 C     .. Local Arrays ..
       REAL C(4,4),X(3,3)
 C     ..
 C
-      SIGN_LOC = -1.0
       DO 40 II = 1,4
         DO 30 JJ = 1,4
-          SIGN_LOC = -SIGN_LOC
           I = 0
           DO 20 I1 = 1,4
             IF (I1.NE.II) THEN
@@ -1430,7 +1424,7 @@ C
           AM = X(1,1)*X(2,2)*X(3,3) - X(1,1)*X(2,3)*X(3,2) +
      +         X(1,2)*X(2,3)*X(3,1) - X(1,2)*X(2,1)*X(3,3) +
      +         X(1,3)*X(2,1)*X(3,2) - X(1,3)*X(2,2)*X(3,1)
-          C(II,JJ) = SIGN_LOC*AM
+          C(II,JJ) = (-1)** (II+JJ)*AM
    30   CONTINUE
    40 CONTINUE
 C
