@@ -279,7 +279,7 @@ C  .... matched subkey (if set)
       return
       
       entry parsesubreal (key, subkey, nth, flag, rval)
-C     KEY + n'th integer after subkey -- returned in IVAL
+C     KEY + n'th real after subkey -- returned in RVAL
 C     ERROR only if flag=true
       if (memokey.eq.key) then
 C  ... matched key
@@ -311,7 +311,7 @@ C  .... matched subkey (if set)
       return
       
       entry parsesubchar (key, subkey, nth, flag, rest)
-C     KEY + n'th integer after subkey -- returned in IVAL
+C     KEY + n'th string after subkey -- returned in REST
       if (memokey.eq.key) then
 C  ... matched key
        success(1) = .true.
@@ -330,7 +330,7 @@ C  ... matched key
   120  if (k.le.ntok) then
 C  .... matched subkey (if set)
         success(k) = .true.
-        if (ntok.ge.nth+k .and. (ityp(nth+k).eq.1 .or. .not.flag) ) then
+        if (ntok.ge.nth+k .and. (ityp(nth+k).ne.0 .or. .not.flag) ) then
          rest = line(ibeg(nth+k):iend(nth+k))
          success(nth+k) = .true.
         else if (flag) then
