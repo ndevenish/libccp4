@@ -777,6 +777,16 @@ FORTRAN_SUBR ( SETGRD, setgrd,
 
 }
 
+FORTRAN_SUBR ( FNDSMP, fndsmp,
+	       (const int *minsmp, const int *nmul, const float *sample, int *nsampl),
+	       (const int *minsmp, const int *nmul, const float *sample, int *nsampl),
+	       (const int *minsmp, const int *nmul, const float *sample, int *nsampl))
+{
+
+  *nsampl = get_grid_sample(*minsmp, *nmul, *sample);
+
+}
+
 FORTRAN_SUBR ( CALC_ORIG_PS, calc_orig_ps,
 	       (fpstr namspg_cif, int *nsym, float rsym[192][4][4], int *norig,
 		float orig[96][3], ftn_logical *lpaxisx, ftn_logical *lpaxisy,
