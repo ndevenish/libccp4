@@ -101,6 +101,7 @@ test-lib : $(srcdir)/testlib.f $L(library.o) $L(unix.o) $L(ccplib.o) \
 
 # mosflm stuff, some of which we'd like to disown:
 mosflm-stuff : $L(graflib.o) $L(chelp.o) $L(pack_c.o) $L(pack_f.o)
+	$(RANLIB) $L
 
 # explicit building of the real targets, sigh...
 # include the pwd info for ease of symbolic debugging
@@ -386,8 +387,8 @@ test : testlib
 
 tags TAGS : unix.f
 	etags ${srcdir}/*.[fch] #${srcdir}/unix.m4
-#	sed -e -e 's|^\([a-zA-Z_]*.c\),|$(srcdir)/\1,|' \
-# 		-e 's/unix.f/unix.m4/' tagdir/TAGS > TAGS
+	sed -e 's/unix.f/unix.m4/' TAGS > TAGS.x
+	mv TAGS.x TAGS
 	rm -f unix.f
 
 # Local Variables:
