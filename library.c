@@ -150,6 +150,10 @@
 #  endif
 #endif
 
+#ifdef _AIX
+#  include <time.h>
+#endif
+
 /****************************************************************************
  * Defaults and Customisable items                                          *
  ****************************************************************************/
@@ -1273,6 +1277,53 @@ int  Lstr;
 } /* End of gerror (str, Lstr) */
 
 #endif				/* defined (__hpux) || defined (_AIX) */
+
+#if defined(_AIX)
+
+/****************************************************************************
+ * Routine: itime                                                           *
+ ****************************************************************************/
+
+void itime (h, m, s)
+     int h, m, s;
+{
+     struct tm *lt;
+     time_t tim;
+     tim = time(NULL);
+     lt = localtime(&tim);
+     h = lt->tm_hour; m = lt->tm_min; h = lt->tm_sec;
+}
+
+/****************************************************************************
+ * Routine: idate                                                           *
+ ****************************************************************************/
+
+void idate (y, m, d)
+     int y, m, d;
+{
+     struct tm *lt;
+     time_t tim;
+     tim = time(NULL);
+     lt = localtime(&tim);
+     y = lt->tm_year; m = lt->tm_mon; d = lt->tm_wday;
+}
+
+/****************************************************************************
+ * Routine: dtime                                                           *
+ ****************************************************************************/
+
+float dtime (tarray)
+     float tarray[2];
+{
+  struct tms *buffer;
+  time_t utime, stime, old_utime = 0, old_stime = 0;
+  (void) times(buffer);
+  utime = buffer->tms_utime; stime = buffer->tms_stime;
+  tarray[0] = ((float)(utime - old_utime)) / (float)CLOCKS_PER_SEC;
+  tarray[1] = ((float)(stime - old_stime)) / (float)CLOCKS_PER_SEC;
+  old_utime = utime; old_stime = stime; 
+}
+#endif
 
 #if defined (__hpux)
 
