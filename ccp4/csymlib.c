@@ -1807,7 +1807,7 @@ int ccp4spg_load_laue(CCP4SPG *spacegroup, const int nlaue)
 int ccp4spg_check_symm_cell(int nsym, float rsym[][4][4], float cell[6]) {
 
   CCP4SPG *spacegroup;
-  int i,k,l,status=0;
+  int i,k,l,status=1;
   ccp4_symop *op1;
 
   /* identify spacegroup from supplied symops */
