@@ -4860,7 +4860,7 @@
   -X,-Y,1/2+Z
  1/2-X,Y,1/2-Z 
   X,1/2-Y,1/2-Z
-1059 8 8 Pmmn2 PGmmm ORTHORHOMBIC 'P 21/m 21/m 2/n'
+1059 8 8 Pmmn2 PGmmm ORTHORHOMBIC 'P 21/m 21/m 2/n a'
  X,Y,Z
  1/2-X,1/2-Y,Z
  -X,1/2+Y,-Z
