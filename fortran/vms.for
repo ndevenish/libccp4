@@ -1011,6 +1011,9 @@ C     ..
       INCLUDE '($SSDEF)'
       INCLUDE '($JPIDEF)'
 C
+C     This should be included (either VAX C or DEC C version, determined
+C     by the logical name) to link with the C version of the library.
+C     However, it's not clear that it's actually necessary...
       INCLUDE 'CRTLINIT'
 C     
 C     Don't print anything if it hasn't been initialised (by CCPFYP/INITFYP).
