@@ -42,13 +42,10 @@ WARRANTY
 As usual, absolutly none. But you can address your complains during
 next few months to
 
-zelinka@uk.ac.york,yorvic      (from the U.K.)
+zelinka@uk.ac.york,yorvic      (from the U.K. - Janet convention)
 zelinka@yorvic.york.ac.uk      (from the rest of the world)
 
 NOTE
-
-Do you use the new binsortint version, which allows usage of binsort
-from fortran programs?
 
 Do not critisize the programing style. This is a compromise between
 ANSI & old-fasioned C
