@@ -6,32 +6,6 @@
 #  define CALL_LIKE_HPUX 1
 #endif
 
-#if defined (alliant)
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_SUN 1
-#endif
-
-#if defined (ardent) || defined (titan)
-#  ifndef stardent
-#    define stardent
-#  endif
-#endif
-
-#if defined (stardent)
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_STARDENT 1
-#endif
-
-#if defined (__convex__) || defined (__convexc__)
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_SUN 1
-#endif
-
-#if defined (ESV)
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_SUN 1
-#endif
-
 #if defined (__hpux) 
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_HPUX 1
@@ -48,12 +22,6 @@
 #  define CALL_LIKE_SUN 1
 #endif
 
-#if defined (solbourne) 
-#  ifndef sun
-#   define sun               /* don't know whether it's defined or not */
-#  endif
-#endif
-
 #if defined (sun) || defined (__sun)
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_SUN 1
@@ -65,7 +33,7 @@
 #  endif
 #endif
 
-#if defined (ultrix) || defined(__OSF1__) || defined(__osf__)
+#if defined(__OSF1__) || defined(__osf__)
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_SUN 1
 #endif
@@ -127,13 +95,7 @@
 #  endif
 #endif
 
-#ifdef stardent                 /* who knows if this works anyhow... */
-#  include <sys/types.h>
-#  include <malloc.h>           /* non-POSIX */
-#else
-#  include <stddef.h>
-#endif
-
+#include <stddef.h>
 #include <string.h>
 
 #ifndef NOUNISTD
@@ -232,7 +194,7 @@
 #  define NATIVEIT DFNTI_IBO
 #endif
 
-#if defined(MIPSEL) || defined(alliant) || defined(i386) || defined(i860)
+#if defined(MIPSEL) || defined(i386) || defined(i860)
 #  define NATIVEIT DFNTI_IBO
 #  define NATIVEFT DFNTF_LEIEEE
 #endif
@@ -260,18 +222,6 @@
 #  define NATIVEFT DFNTF_BEIEEE
 #endif
 
-#if defined(__convex__) || defined(__convexc__)
-#  define NATIVEIT DFNTI_MBO
-#  ifdef _IEEE_FLOAT_
-#    define NATIVEFT DFNTF_BEIEEE
-#  else
-#    ifdef _CONVEX_FLOAT_
-#      define NATIVEFT DFNTF_CONVEXNATIVE
-#    else
-#      error "Can't determine Convex floating point type. Use native compiler"
-#    endif
-#  endif
-#endif
 #ifndef NATIVEFT
 #  error "Can't determine machine number format"
 #endif

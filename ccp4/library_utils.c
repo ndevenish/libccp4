@@ -84,11 +84,10 @@ void ccp4_utils_print (const char *message)
 int ccp4_utils_setenv (char *str)
 {
 #if defined (sgi) || defined (sun) || defined (__hpux) || \
-    defined(_AIX) || defined(ultrix) || defined (__OSF1__) || \
+    defined(_AIX) || defined (__OSF1__) || \
     defined (__osf__) || defined (__FreeBSD__) || defined (linux) || \
-    defined (titan) || defined (_WIN32)
+    defined (_WIN32)
   /* putenv is the POSIX.1, draft 3 proposed mechanism */
-      /* ESV seems to have it in the SysVile universe */
   int putenv ();
   char *param;
 
@@ -120,7 +119,7 @@ int ccp4_utils_setenv (char *str)
 int ccp4_utils_outbuf(void)
 {
 #if defined (sgi) || defined (sun) || \
-    defined(ultrix) || defined (__OSF1__) || \
+    defined (__OSF1__) || \
     defined (__FreeBSD__)
   return setlinebuf(stdout);
 #else

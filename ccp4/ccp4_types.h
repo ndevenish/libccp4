@@ -19,14 +19,6 @@ union float_uint_uchar {
 
 typedef   char     *        pstr;
 
-#if defined (ardent) || defined (titan) || defined (stardent)
-  struct Str_Desc {
-    char *Str_pointer;
-    int  Str_length;
-    int id;
-  };
-#endif
-
 /* CCP4 library.c macro definitions */
 
 #ifndef FALSE

@@ -4,6 +4,7 @@
 #include "ccp4_types.h"
 static char rcsidhh[] = "$Id$";
 
+/* stardent is now obsolete, but we retain this category in case it is useful later */
 #ifdef CALL_LIKE_STARDENT
   /* SStrParam is used in Ardent-like machines' fortran calls */
   /* for passing a string parameter */
