@@ -55,6 +55,8 @@ extern "C" {
 
 /*------------------------------------------------------------------*/
 
+void ccp4_mem_tidy(void);
+
 int ccperror(int ierr, char* message);
 
 int ccp4printf(int level, char *format, ...);
