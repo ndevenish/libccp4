@@ -1,7 +1,8 @@
     
-C---String length for various dimensioning.
-      integer cfllen
-      parameter(cfllen=80)
+C---cfllen is string length for various dimensioning.
+C   cftxtlen is maximum total length for multi-line text.
+      integer cfllen,cftxtlen
+      parameter(cfllen=80,cftxtlen=800)
 
 c  Various mnemonic declarations:
 

@@ -1305,16 +1305,17 @@ CDOC                                          in _audit.update_record
       character*(*) update_record
       
       integer i, ncntxt,istat,lenval,IMONTH,IDAY,IYEAR,lenstr,
-     & btype,sline,istatus,ival
+     & btype,sline,istatus,ival,nline,itmpos
       character*(cfllen) val*733,cval,audit_itmnam(4),audit_catnam
-      character progname*80
+      character progname*80,ciftime*25
+      character*(cftxtlen) txtval
       
       audit_itmnam(1) = '_audit.revision_id'
       audit_itmnam(2) = '_audit.creation_date'
       audit_itmnam(3) = '_audit.creation_method'
       audit_itmnam(4) = '_audit.update_record'
 
-c_____Check type of data item is character
+c_____Check type of data item is character or text
       btype = 1
       call ccp4ccif_check_type(audit_itmnam(1), btype, sline)
       btype = 1
@@ -1359,17 +1360,21 @@ C--- oh dear, will they be using this code in 100 years' time?
 
 C--- audit creation_method
       istat = keep_context
-      call ccif_get_char(audit_itmnam(3),val,cval,lenval,ncntxt,istat)
+      itmpos = 1
+      call ccif_get_text(audit_itmnam(3),itmpos,nline,txtval,
+     +                        cftxtlen/80,ncntxt,istat)
       if (istat.ne.single_value.and.istat.ne.loop_value) then
         cval = 'created by CCP4 suite'
         istat = keep_context
-        call ccif_put_char(audit_itmnam(3), cval, ncntxt, istat)
+        call ccif_put_text(audit_itmnam(3),1,cval,1,ncntxt,istat,' ')
       endif
 
 C--- audit update_record
+      CALL Hciftime(ciftime)
       call CCPPNM (PROGNAME)
-      cval = PROGNAME(1:lenstr(PROGNAME))//': '//
-     +                  update_record(1:lenstr(update_record))
+      cval =  '  '//ciftime(1:10)//'    '//
+     +        PROGNAME(1:lenstr(PROGNAME))//': '//
+     +        update_record(1:lenstr(update_record))
       istat = keep_context
       call ccif_put_text(audit_itmnam(4),1,cval,1,ncntxt,istat,' ')
 
