@@ -105,7 +105,7 @@
 #include <errno.h>
 #include <ctype.h>
 
-#if defined(_AIX) || defined (__hpux) || defined(f2c) ||\
+#if defined(_AIX) || defined (__hpux) || defined(F2C) ||\
     defined(G77) /* would do no harm on others, though */
 #  include <time.h>
 #endif
