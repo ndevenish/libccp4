@@ -659,8 +659,8 @@ C     .. Intrinsic Functions ..
       INTRINSIC ABS
 C
 C
-      IF (ISTAT.LE.2) THEN
-      call ccp4h_summary_beg()
+      IF (ABS(ISTAT).LE.2) THEN
+        call ccp4h_summary_beg()
       ENDIF
       IF (ISTAT.LT.0) THEN
         CALL UGERR(0,ERRBUF)
@@ -694,18 +694,24 @@ C     report messages and exit if appropriate
           IF (ISTAT.EQ.0) THEN
             CALL GETELAPSED
 C           success
+            call ccp4h_pre_end()
             call ccp4h_summary_end()
+            call ccp4h_html_close()
             CALL CEXIT(1)
           ELSE
 C           FOR$_NOTFORSPE, "Not a FORTRAN-specific error"
+            call ccp4h_pre_end()
             call ccp4h_summary_end()
+            call ccp4h_html_close()
             CALL CEXIT(1605644)
           ENDIF
         ELSE
 C         duplicate message to stderr, assumed to be connected to unit 0
           IF (ISTAT.EQ.1) WRITE (0,*) ERRBUF
           CALL GETELAPSED
+          call ccp4h_pre_end()
           call ccp4h_summary_end()
+          call ccp4h_html_close()
           CALL CEXIT(ISTAT)
         ENDIF
       ELSEIF (ISTAT.EQ.2) THEN
@@ -713,6 +719,7 @@ C         duplicate message to stderr, assumed to be connected to unit 0
         CALL QPRINT(0,' $TEXT:Warning: $$ comment $$ ')
         CALL QPRINT(0,ERRBUF)
         CALL QPRINT(0,' $$')
+        call ccp4h_summary_end()
       ELSE
         CALL QPRINT(0,ERRBUF)
       END IF
@@ -2516,7 +2523,6 @@ C
      + ' Crystallography". Acta Cryst. D50, 760-763.',/,/,
      + ' as well as any specific reference in the program write-up.',
      + /,/)
-      call ccp4h_pre_end()
       call ccp4h_summary_end()
 C
       RETURN
