@@ -714,11 +714,12 @@ int ccp4_lrsymm(const MTZ *mtz, int *nsymx, float rsymx[192][4][4]);
 
 /** Uses LABIN or LABOUT line to convert program labels to user labels.
  * This is a helper function, but does not access reflection structure at all.
- * @param labin_line
- * @param prog_labels
- * @param nlprgi
- * @param user_labels
- * @return Number of program labels matched.
+ * @param labin_line (I) LABIN/LABOUT line from Parser.
+ * @param prog_labels (I) Progam labels.
+ * @param nlprgi (I) Number of program labels.
+ * @param user_labels (O) On output, user-supplied file labels in corresponding
+ *  positions. For unassigned program labels, user_labels is empty string.
+ * @return Number of program labels matched, or -1 if there was an error.
  */
 int MtzParseLabin(char *labin_line, const char prog_labels[][31], 
 	   const int nlprgi, char user_labels[][2][31]);
