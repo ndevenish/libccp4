@@ -94,10 +94,10 @@ C_END_CCFILL
 C
 C     .. Scalar Arguments ..
       INTEGER NTIMES
-      INTEGER*1 SCAL
+      BYTE SCAL
 C     ..
 C     .. Array Arguments ..
-      INTEGER*1 ARR1(*)
+      BYTE ARR1(*)
 C     ..
 C     .. Local Scalars ..
       INTEGER N
@@ -253,8 +253,8 @@ C SPECIFICATION STATEMENTS
 C ------------------------
 C
       INTEGER IA(*)
-      INTEGER*1 IBYT(*)
-      INTEGER*1 JBYT(4)
+      BYTE IBYT(*)
+      BYTE JBYT(4)
       EQUIVALENCE (JA,JBYT(1))
       LOGICAL CALLED, LITEND
       INTEGER IND
@@ -348,9 +348,9 @@ C
 C====== Specification statements
 C
       INTEGER IA(*)
-      INTEGER*1 IB(*)
+      BYTE IB(*)
       INTEGER*2 J2(2)
-      INTEGER*1 JBYT(4)
+      BYTE JBYT(4)
       EQUIVALENCE (JA,J2(1),JBYT(1))
       LOGICAL CALLED, LITEND
       EXTERNAL LITEND
@@ -1229,8 +1229,8 @@ C
 C SPECIFICATION STATEMENTS
 C ------------------------
 C
-      INTEGER*1 IA(*)
-      INTEGER*1 JBYT(4)
+      BYTE IA(*)
+      BYTE JBYT(4)
       EQUIVALENCE (JA,JBYT(1))
       LOGICAL CALLED, LITEND
       EXTERNAL LITEND
@@ -1360,8 +1360,8 @@ C SPECIFICATION STATEMENTS
 C ------------------------
 C
       INTEGER IA(*)
-      INTEGER*1 IBYT(*)
-      INTEGER*1 JBYT(4)
+      BYTE IBYT(*)
+      BYTE JBYT(4)
       EQUIVALENCE (JA,JBYT(1))
       LOGICAL CALLED, LITEND
       EXTERNAL LITEND
@@ -1590,7 +1590,7 @@ C     .. Scalar Arguments ..
       INTEGER I1,I2,NTOMOV
 C     ..
 C     .. Array Arguments ..
-      INTEGER*1 ARR1(*),ARR2(*)
+      BYTE ARR1(*),ARR2(*)
 C     ..
 C     .. Local Scalars ..
       INTEGER I,J,N
@@ -2243,8 +2243,8 @@ C
 C SPECIFICATION STATEMENTS
 C ------------------------
 C
-      INTEGER*1 IA(*)
-      INTEGER*1 JBYT(4)
+      BYTE IA(*)
+      BYTE JBYT(4)
       EQUIVALENCE (JA,JBYT(1))
       EQUIVALENCE (JA,JBYT(1))
       LOGICAL CALLED, LITEND
@@ -2390,7 +2390,7 @@ C     .. Local Scalars ..
       INTEGER IA,NB,NIH,NW
 C     ..
 C     .. Local Arrays ..
-      INTEGER*1 IBYT(4),JBYT(4)
+      BYTE IBYT(4),JBYT(4)
       INTEGER*2 JHALF(2)
 C     ..
 C     .. Intrinsic Functions ..
@@ -2688,7 +2688,7 @@ C_END_CCPZBI
 C
 C  Arguments ......
       INTEGER NUM
-      INTEGER*1 ARR1(*)
+      BYTE ARR1(*)
 C
       INTEGER J
 C
@@ -2819,7 +2819,7 @@ C    IDUM (D)   DUMMY
 C_END_LITEND
 C
          INTEGER I, IDUM
-         INTEGER*1 B(4)
+         BYTE B(4)
          EQUIVALENCE (I,B(1))
 C
 C---- Initialise B
