@@ -2051,6 +2051,8 @@ FORTRAN_SUBR ( LWSYMM, lwsymm,
 		int spgrnx_len, fpstr pgnamx, int pgnamx_len))
 {
  char *temp_ltypex, *temp_spgrnx, *temp_pgnamx;
+ int i,j,k,nsym;
+ float rsym[MAXSYM][4][4];
 
  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWSYMM");)
 
@@ -2060,8 +2062,29 @@ FORTRAN_SUBR ( LWSYMM, lwsymm,
  temp_spgrnx = ccp4_FtoCString(FTN_STR(spgrnx), FTN_LEN(spgrnx));
  temp_pgnamx = ccp4_FtoCString(FTN_STR(pgnamx), FTN_LEN(pgnamx));
 
-  ccp4_lwsymm(mtzdata[*mindx-1], nsymx, nsympx, rsymx, temp_ltypex, 
-            nspgrx, temp_spgrnx, temp_pgnamx);
+ /* deal with array conventions */
+ nsym = *nsymx;
+ if (nsym > MAXSYM) nsym = MAXSYM;
+ for (i = 0; i < nsym; ++i)
+   for (j = 0; j < 4; ++j)
+     for (k = 0; k < 4; ++k) 
+       rsym[i][j][k] = rsymx[i][k][j];
+
+ /* if there is a cell, check specified symmetry is consistent with it */
+ if (mtzdata[*mindx-1]->xtal[0]->cell[0] != 0.0 ) 
+   if (!ccp4spg_check_symm_cell(nsym,rsym,mtzdata[*mindx-1]->xtal[0]->cell)) {
+     printf(" LWSYMM: severe warning - specified symmetry not consistent with cell dimensions! \n");
+     printf(" Spacegroup %s \n",temp_spgrnx);
+     printf(" Cell dimensions %f %f %f %f %f %f \n",mtzdata[*mindx-1]->xtal[0]->cell[0],
+       mtzdata[*mindx-1]->xtal[0]->cell[1],mtzdata[*mindx-1]->xtal[0]->cell[2],
+       mtzdata[*mindx-1]->xtal[0]->cell[3],mtzdata[*mindx-1]->xtal[0]->cell[4],
+	    mtzdata[*mindx-1]->xtal[0]->cell[5]);
+     ccperror(1,"Error in spacegroup or cell dimensions.");
+   }
+
+  ccp4_lwsymm(mtzdata[*mindx-1], nsym, *nsympx, rsym, temp_ltypex, 
+            *nspgrx, temp_spgrnx, temp_pgnamx);
+
   free(temp_ltypex);
   free(temp_spgrnx);
   free(temp_pgnamx);
