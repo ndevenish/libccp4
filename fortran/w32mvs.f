@@ -1086,25 +1086,3 @@ c
 c
       return
       end
-
-      SUBROUTINE CCPZBI (ARR1,NUM)
-C     ============================
-C
-C  This routine zeros NUM bytes of the array ARR1
-C
-C Arguments:
-C
-C    ARR1 (O)   BYTE ARRAY(*): array to be zeroed
-C     NUM (I)   INTEGER: Number of bytes
-C_END_CCPZBI
-C
-C  Arguments ......
-      INTEGER NUM
-      BYTE ARR1(*)
-C
-      INTEGER J
-C
-      DO 10 J=1,NUM
-   10 ARR1(J)=0
-      END
-
