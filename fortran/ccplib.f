@@ -2399,7 +2399,7 @@ C
       CALL UTIME(CTIME)
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
  6000 FORMAT (
-     +     '1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.13: ',
+     +     '1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.14: ',
      +     A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
      +     ///
      +     ' Please reference: Collaborative Computational Project,',
@@ -2541,7 +2541,7 @@ C_BEGIN_FROOT
       CHARACTER*(*) FUNCTION FROOT(FILNAM)
 C     ====================================
 C
-C---- Returns a file name minus an extension.C
+C---- Returns a file name minus an extension.
 C
 C Arguments:
 C
