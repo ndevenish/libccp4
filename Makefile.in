@@ -380,9 +380,9 @@ clean :
 	-rm -rf tagdir
 
 realclean : clean
-	-rm -rf $L *.dir TAGS unix.f Makefile libccp4.so
+	-rm -rf $L *.dir TAGS unix.f libccp4.so
 
-dist : realclean
+distclean : realclean
 	-rm -f Makefile
 
 test : testlib
