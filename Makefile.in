@@ -74,7 +74,7 @@ RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
 
 # modules to go in libccp4.a:
 LIBTARGETS = ccplib fftlib maplib parser rwbrook modlib \
-           symlib mtzlib diskio unix plot84lib libhtml \
+           symlib lgglib mtzlib diskio unix plot84lib libhtml \
            binsortint library plotsubs keyparse pack_f pack_c
 
 .PRECIOUS : $L # don't zap the library if a component fails
@@ -93,7 +93,7 @@ all :  $L
 
 $L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) \
-	  $L(mtzlib.o) $L(diskio.o) $L(unix.o) \
+	  $L(mtzlib.o) $L(lgglib.o) $L(diskio.o) $L(unix.o) \
 	  $L(binsortint.o) $L(library.o) $L(plot84lib.o) \
 	  $L(libhtml.o) $L(plotsubs.o) $L(keyparse.o) \
 	  $L(pack_c.o) $L(pack_f.o)
@@ -212,6 +212,18 @@ $L(mtzlib.o) : $(srcdir)/mtzlib.f
 	  && $(AR) ../$L *.o
 	rm -f mtzlib.dir/*.o
 mtzlib : $L(mtzlib.o)
+	$(RANLIB) $L
+
+$L(lgglib.o) : $(srcdir)/lgglib.f
+	-rm -rf lgglib.dir; mkdir lgglib.dir
+	echo '      SUBROUTINE LGGLIB' > lgglib.dir/lgglib.$F
+	echo '      END' >> lgglib.dir/lgglib.$F
+	cd lgglib.dir && fsplit $(srcdir)/lgglib.f >/dev/null && $(RMEMPTY) && \
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
+	rm -f lgglib.dir/*.o
+lgglib : $L(lgglib.o)
 	$(RANLIB) $L
 
 $L(diskio.o) : $(srcdir)/diskio.f
