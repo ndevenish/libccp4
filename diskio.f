@@ -206,6 +206,7 @@ C
         CALL CCPERR (-1,ERRSTR)
       END IF
 
+      call ccp4h_summary_beg()
       CALL UGTUID(USRNAM)
       WRITE (ERRSTR,'(1X,A,I2)') '(Q)QOPEN allocated # ',IUNIT
       CALL QPRINT(1,ERRSTR)
@@ -213,6 +214,7 @@ C
       CALL QPRINT(1,ERRSTR)
       ERRSTR = 'Status: '//MODES(JSTAT)//' Filename: '//FNAME
       CALL QPRINT(1,ERRSTR)
+      call ccp4h_summary_end()
       END
 C
 C
