@@ -182,12 +182,12 @@ void ccp4_cmap_set_datamode(CMMFile *mfile, unsigned int datamode)
   \param mfile (const CMMFile *)
   \param min (float *)
   \param max (float *)
-  \param mean (float *)
-  \param rms (float *) */
+  \param mean (double *)
+  \param rms (double *) */
 void ccp4_cmap_get_mapstats(const CMMFile *mfile, float *min, float* max, 
-                           float *mean, float *rms)
+                           double *mean, double *rms)
 {
-  float f1,f2,f3;
+  double f1,f2,f3;
   *min = mfile->stats.min;
   *max = mfile->stats.max;
   if (ccp4_file_is_write(mfile->stream)  && mfile->close_mode == 0) {
@@ -195,7 +195,7 @@ void ccp4_cmap_get_mapstats(const CMMFile *mfile, float *min, float* max,
     f2 = (mfile->stats.total != 0) ? mfile->stats.rms / mfile->stats.total : 0;
     f3 = f2 - f1*f1; 
     *rms = (f3 > 0) ? sqrt(f3) : 0;
-    *mean = f1 - mfile->stats.offset;
+    *mean = f1 - (double) mfile->stats.offset;
   } else {
     *mean = mfile->stats.mean;
     *rms = mfile->stats.rms;
@@ -208,10 +208,10 @@ void ccp4_cmap_get_mapstats(const CMMFile *mfile, float *min, float* max,
   \param mfile (CMMFile *)
   \param min (float)
   \param max (float)
-  \param mean (float)
-  \param rms (float) */
+  \param mean (double)
+  \param rms (double) */
 void ccp4_cmap_set_mapstats(CMMFile *mfile, const float min, const float max,
-                           const float mean, const float rms)
+                           const double mean, const double rms)
 {
   if (ccp4_file_is_write(mfile->stream)) {
     mfile->stats.min = min;

@@ -14,6 +14,7 @@ int parse_mapheader(CMMFile *mfile)
   const size_t header_size = 1024U, n_byt_symop = 80U;
   unsigned char buffer[224];
   int result;
+  float fmean,frms;
   
    ccp4_file_rewind(mfile->stream);
 
@@ -44,12 +45,14 @@ int parse_mapheader(CMMFile *mfile)
   memcpy(&mfile->axes_order[0],&buffer[64],sizeof(mfile->axes_order));
   memcpy(&mfile->stats.min,&buffer[76],sizeof(float));
   memcpy(&mfile->stats.max,&buffer[80],sizeof(float));
-  memcpy(&mfile->stats.mean,&buffer[84],sizeof(float));
+  memcpy(&fmean,&buffer[84],sizeof(float));
+  mfile->stats.mean = (double) fmean;
   memcpy(&mfile->spacegroup,&buffer[88],sizeof(int));
   memcpy(&mfile->symop.size,&buffer[92],sizeof(int));
   memcpy(&mfile->user_access,&buffer[180],sizeof(mfile->user_access));
   memcpy(&mfile->data.header_size,&buffer[204],sizeof(int));
-  memcpy(&mfile->stats.rms,&buffer[216],sizeof(float));
+  memcpy(&frms,&buffer[216],sizeof(float));
+  mfile->stats.rms = (double) frms;
   memcpy(&mfile->labels.number,&buffer[220],sizeof(int));
   
   memcpy(&result,&buffer[96],sizeof(int));
@@ -80,6 +83,7 @@ int write_mapheader(CMMFile *mfile)
   const int write_total = 74;
   unsigned char buffer[224];
   int result;
+  float fmean,frms;
     
   memset(buffer,'\0',224);
   memcpy(&buffer[0],&mfile->map_dim[0],sizeof(mfile->map_dim));
@@ -90,13 +94,15 @@ int write_mapheader(CMMFile *mfile)
   memcpy(&buffer[64],&mfile->axes_order[0],sizeof(mfile->axes_order));
   memcpy(&buffer[76],&mfile->stats.min,sizeof(float));
   memcpy(&buffer[80],&mfile->stats.max,sizeof(float));
-  memcpy(&buffer[84],&mfile->stats.mean,sizeof(float));
+  fmean = (float) mfile->stats.mean;
+  memcpy(&buffer[84],&fmean,sizeof(float));
   memcpy(&buffer[88],&mfile->spacegroup,sizeof(int));
   memcpy(&buffer[92],&mfile->symop.size,sizeof(int));
   memcpy(&buffer[180],&mfile->user_access,sizeof(mfile->user_access));
   memcpy(&buffer[204],&mfile->data.header_size,sizeof(int));
   memcpy(&buffer[208],"MAP ",4U);
-  memcpy(&buffer[216],&mfile->stats.rms,sizeof(float));
+  frms = (float) mfile->stats.rms;
+  memcpy(&buffer[216],&frms,sizeof(float));
   memcpy(&buffer[220],&mfile->labels.number,sizeof(int));
   
   if (skew_set(&mfile->skew) == TRUE) {

@@ -57,7 +57,7 @@ static int HeaderInit(CMMFile *mfile, const char *title, int mode,
                     const int *order, const int *grid,
                     int nc_start, int nc_end, int nr_start, int nr_end,
                     int ns_start, int nsecs, int lspgrp, const float *cell,
-                    float min, float max, float mean, float rms)
+                    float min, float max, double mean, double rms)
 {
   int tmp_array[3];
 
@@ -86,11 +86,12 @@ static int HeaderReturn(const CMMFile *mfile, char *title, int *mode,
                 int *order, int *grid,
                 int *nc_start, int *nc_end, int *nr_start,
                 int *nr_end, int *ns_start, int *nsecs, int *spacegroup,
-                float *cell, float *min, float *max, float *mean,
-                float *rms)
+                float *cell, float *min, float *max, double *mean,
+                double *rms)
 {
   int tmp_array[3];
   char *tmp_label;
+  double dmean,drms;
 
   if (ccp4_cmap_number_label(mfile)) 
     if ((tmp_label = ccp4_cmap_get_label(mfile,0)) != NULL)
@@ -108,7 +109,7 @@ static int HeaderReturn(const CMMFile *mfile, char *title, int *mode,
   *nr_end = *nr_start + tmp_array[1] -1;
   *nsecs = tmp_array[2];
 
-  ccp4_cmap_get_mapstats(mfile,min,max,mean,rms);
+  ccp4_cmap_get_mapstats(mfile,min,max,&dmean,&drms);
 
   ccp4_cmap_get_order(mfile,order);
   ccp4_cmap_get_grid(mfile,grid);
@@ -154,9 +155,9 @@ static int HeaderPrint(const CMMFile *mfile)
   fprintf(stdout,"           Maximum density .................................%12.5f\n",
           mfile->stats.max);
   fprintf(stdout,"           Mean density ....................................%12.5f\n",
-          mfile->stats.mean);
+          (float) mfile->stats.mean);
   fprintf(stdout,"           Rms deviation from mean density .................%12.5f\n",
-          mfile->stats.rms);
+          (float) mfile->stats.rms);
   fprintf(stdout,"           Space-group .....................................%5d\n",
           mfile->spacegroup);
   fprintf(stdout,"           Number of titles ................................%5d\n",
@@ -474,7 +475,7 @@ FORTRAN_SUBR ( MWRHDL, mwrhdl,
 
   HeaderInit(ioArray[ii]->mapfile, temp_title, *lmode, iuvw, mxyz,
 		       *nu1, *nu2, *nv1, *nv2, *nw1, *nsecs,
-		       *lspgrp, cell, 0.0f, 0.0f, 0.0f, 0.0f);
+		       *lspgrp, cell, 0.0f, 0.0f, 0.0, 0.0);
 
   /* Record for FORTRAN API */
   last_Write = ii;
@@ -519,7 +520,7 @@ FORTRAN_SUBR ( CCP4_MAP_WRITE_OPEN_HEADER_BY_NAME,
 
   HeaderInit(ioArray[ii]->mapfile, temp_title, *lmode, iuvw, mxyz,
 		       *nu1, *nu2, *nv1, *nv2, *nw1, *nsecs,
-		       *lspgrp, cell, 0.0f, 0.0f, 0.0f, 0.0f);
+		       *lspgrp, cell, 0.0f, 0.0f, 0.0, 0.0);
 
   /* Record for FORTRAN API */
   last_Write = ii;
@@ -586,7 +587,7 @@ FORTRAN_SUBR ( MWRHDR, mwrhdr,
 
   HeaderInit(ioArray[ii]->mapfile, temp_title, *lmode, iuvw, mxyz,
 	     *nu1, *nu2, *nv1, *nv2, *nw1, *nsecs,
-	     *lspgrp, cell, 0.0f, 0.0f, 0.0f, 0.0f);
+	     *lspgrp, cell, 0.0f, 0.0f, 0.0, 0.0);
 
   free(temp_title);
 
@@ -630,7 +631,7 @@ FORTRAN_SUBR ( CCP4_MAP_WRITE_OPEN_HEADER_BY_ID,
 
   HeaderInit(ioArray[ii]->mapfile, temp_title, *lmode, iuvw, mxyz,
 	     *nu1, *nu2, *nv1, *nv2, *nw1, *nsecs,
-	     *lspgrp, cell, 0.0f, 0.0f, 0.0f, 0.0f);
+	     *lspgrp, cell, 0.0f, 0.0f, 0.0, 0.0);
 
   free(temp_title);
 
@@ -688,6 +689,7 @@ FORTRAN_SUBR( MRDHDS, mrdhds,
 {
   char temp_title[80], *temp_map, *file;
   int ii;
+  double drhmean,drhrms;
 
   temp_map = ccp4_FtoCString(FTN_STR(mapnam), FTN_LEN(mapnam) );
 
@@ -716,7 +718,9 @@ FORTRAN_SUBR( MRDHDS, mrdhds,
 
   HeaderReturn(ioArray[ii]->mapfile, temp_title, lmode, iuvw, 
 	       mxyz, nu1, nu2, nv1, nv2, nw1, 
-	       nsec, lspgrp, cell, rhmin, rhmax, rhmean, rhrms);
+	       nsec, lspgrp, cell, rhmin, rhmax, &drhmean, &drhrms);
+  *rhmean = (float) drhmean;
+  *rhrms = (float) drhrms;
   if (*iprint != 0) {
     ioArrayPrint(ioArray[ii]);
     HeaderPrint(ioArray[ii]->mapfile);
@@ -752,6 +756,7 @@ FORTRAN_SUBR( CCP4_MAP_READ_OPEN_HEADER_CHECK,
 {
   char temp_title[80], *temp_map, *file;
   int ii;
+  double drhmean,drhrms;
 
   temp_map = ccp4_FtoCString(FTN_STR(mapnam), FTN_LEN(mapnam) );
 
@@ -780,7 +785,9 @@ FORTRAN_SUBR( CCP4_MAP_READ_OPEN_HEADER_CHECK,
 
   HeaderReturn(ioArray[ii]->mapfile, temp_title, lmode, iuvw, 
 	       mxyz, nu1, nu2, nv1, nv2, nw1, 
-	       nsec, lspgrp, cell, rhmin, rhmax, rhmean, rhrms);
+	       nsec, lspgrp, cell, rhmin, rhmax, &drhmean, &drhrms);
+  *rhmean = (float) drhmean;
+  *rhrms = (float) drhrms;
   if (*iprint != 0) {
     ioArrayPrint(ioArray[ii]);
     HeaderPrint(ioArray[ii]->mapfile);
@@ -835,6 +842,7 @@ FORTRAN_SUBR( MRDHDR, mrdhdr,
 {  
   char temp_title[80], *temp_map, *file;
   int ii;
+  double drhmean,drhrms;
 
   temp_map = ccp4_FtoCString(FTN_STR(mapnam), FTN_LEN(mapnam) );
 
@@ -858,7 +866,9 @@ FORTRAN_SUBR( MRDHDR, mrdhdr,
 
   HeaderReturn(ioArray[ii]->mapfile, temp_title, lmode, iuvw, 
 	       mxyz, nu1, nu2, nv1, nv2, nw1, 
-	       nsec, lspgrp, cell, rhmin, rhmax, rhmean, rhrms);
+	       nsec, lspgrp, cell, rhmin, rhmax, &drhmean, &drhrms);
+  *rhmean = (float) drhmean;
+  *rhrms = (float) drhrms;
   ioArrayPrint(ioArray[ii]);
   HeaderPrint(ioArray[ii]->mapfile);
 
@@ -889,6 +899,7 @@ FORTRAN_SUBR( CCP4_MAP_READ_OPEN_HEADER,
 {
   char temp_title[80], *temp_map, *file;
   int ii;
+  double drhmean,drhrms;
 
   temp_map = ccp4_FtoCString(FTN_STR(mapnam), FTN_LEN(mapnam) );
 
@@ -912,7 +923,9 @@ FORTRAN_SUBR( CCP4_MAP_READ_OPEN_HEADER,
 
   HeaderReturn(ioArray[ii]->mapfile, temp_title, lmode, iuvw, 
 	       mxyz, nu1, nu2, nv1, nv2, nw1, 
-	       nsec, lspgrp, cell, rhmin, rhmax, rhmean, rhrms);
+	       nsec, lspgrp, cell, rhmin, rhmax, &drhmean, &drhrms);
+  *rhmean = (float) drhmean;
+  *rhrms = (float) drhrms;
   ioArrayPrint(ioArray[ii]);
   HeaderPrint(ioArray[ii]->mapfile);
 
@@ -994,7 +1007,7 @@ FORTRAN_SUBR( MCLOSE, mclose,
 		"MCLOSE", NULL);
 
   ccp4_cmap_closemode(ioArray[ii]->mapfile, 2);
-  ccp4_cmap_set_mapstats(ioArray[ii]->mapfile,*min, *max, *mean, *rms);
+  ccp4_cmap_set_mapstats(ioArray[ii]->mapfile,*min, *max, (double) *mean, (double) *rms);
   ccp4_cmap_close(ioArray[ii]->mapfile);
 
   /* record for FORTRAN API */
@@ -1019,7 +1032,7 @@ FORTRAN_SUBR( CCP4_MAP_WRITE_CLOSE_USER_SUM,
 		"MCLOSE", NULL);
 
   ccp4_cmap_closemode(ioArray[ii]->mapfile, 2);
-  ccp4_cmap_set_mapstats(ioArray[ii]->mapfile,*min, *max, *mean, *rms);
+  ccp4_cmap_set_mapstats(ioArray[ii]->mapfile,*min, *max, (double) *mean, (double) *rms);
   ccp4_cmap_close(ioArray[ii]->mapfile);
 
   /* record for FORTRAN API */
@@ -1054,7 +1067,7 @@ FORTRAN_SUBR( MCLOSC, mclosc,
 		"MCLOSC", NULL);
 
   ccp4_cmap_closemode(ioArray[ii]->mapfile, 1);
-  ccp4_cmap_set_mapstats(ioArray[ii]->mapfile,*min, *max, *mean, *rms);
+  ccp4_cmap_set_mapstats(ioArray[ii]->mapfile,*min, *max, (double) *mean, (double) *rms);
   ccp4_cmap_close(ioArray[ii]->mapfile);
 
   /* record for FORTRAN API */
@@ -1079,7 +1092,7 @@ FORTRAN_SUBR( CCP4_MAP_WRITE_CLOSE_USER_MEAN,
 		"MCLOSC", NULL);
 
   ccp4_cmap_closemode(ioArray[ii]->mapfile, 1);
-  ccp4_cmap_set_mapstats(ioArray[ii]->mapfile,*min, *max, *mean, *rms);
+  ccp4_cmap_set_mapstats(ioArray[ii]->mapfile,*min, *max, (double) *mean, (double) *rms);
   ccp4_cmap_close(ioArray[ii]->mapfile);
 
   /* record for FORTRAN API */

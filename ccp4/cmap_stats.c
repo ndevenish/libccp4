@@ -13,14 +13,13 @@ int stats_update(CMMFile_Stats *stats, void *section_begin,
                          void *section_end)
 {        
   float *ufp = (float *) section_begin;
-  float val;
+  double val;
       
   if (stats->total == 0 && *ufp < -1.0e10 ) {         
     stats->offset = *ufp;
   } 
-  
   while (ufp < (float *) section_end) {
-    val = *ufp - stats->offset;
+    val = (double) (*ufp - stats->offset);
     stats->mean += val;
     stats->rms += val * val;
     stats->min = MIN( stats->min, *ufp);

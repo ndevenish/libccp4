@@ -52,8 +52,8 @@ struct _CMMFile_Stats {
   float offset;                /* pseudo zero value */
   float min;                   /* minimum density value */
   float max;                   /* maximum density value */
-  float mean;               /* sum of densities (less offset) */
-  float rms;              /* sum of square of densities (less offset) */
+  double mean;               /* sum of densities (less offset) */
+  double rms;              /* sum of square of densities (less offset) */
   int total;                    /* number of summed densities */
 };
 
@@ -127,7 +127,7 @@ void ccp4_cmap_get_order(const CMMFile *mfile, int *axes_order);
 void ccp4_cmap_get_dim(const CMMFile *mfile, int *map_dim);
 int ccp4_cmap_get_spacegroup(const CMMFile *mfile);
 void ccp4_cmap_get_mapstats(const CMMFile *mfile, float *min, float* max, 
-                           float *mean, float *rms);
+                           double *mean, double *rms);
 
 /* set the header parameters */
 void ccp4_cmap_set_cell(CMMFile *mfile, const float *cell);
@@ -137,7 +137,7 @@ void ccp4_cmap_set_order(CMMFile *mfile, const int *axes_order);
 void ccp4_cmap_set_dim(CMMFile *mfile, const int *map_dim);
 void ccp4_cmap_set_spacegroup(CMMFile *mfile, int spacegroup);
 void ccp4_cmap_set_mapstats(CMMFile *mfile, const float min, const float max,
-                           const float mean, const float rms);
+                           const double mean, const double rms);
 
 /* get map file datamode */
 unsigned int ccp4_cmap_get_datamode(const CMMFile *mfile);

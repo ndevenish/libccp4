@@ -33,7 +33,7 @@ void ccp4_cmap_close(CMMFile *mfile)
         mfile->stats.rms /= mfile->stats.total;
         mfile->stats.rms -= mfile->stats.mean*mfile->stats.mean;
         mfile->stats.rms = (mfile->stats.rms > 0) ? sqrt(mfile->stats.rms) : 0;
-        mfile->stats.mean += mfile->stats.offset;
+        mfile->stats.mean += (double) mfile->stats.offset;
         break;
       }
     }
