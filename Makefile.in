@@ -621,8 +621,8 @@ csymlib_pl_wrap.o: $(srcdir)/csymlib_pl_wrap.c
 # test program for libraries
 #
 
-testlib : $(srcdir)/testlib.c  $(LF)
-	$(CC) -o testlib $(CFLAGS) $(SHARED_LIB_CFLAGS) $(srcdir)/testlib.c -all $(LDCFLAGS)
+testlib : $(srcdir)/testlib.f  $(LF)
+	$(FC) -o testlib $(FFLAGS) $(SHARED_LIB_FFLAGS) $(srcdir)/testlib.f -all $(LDFLAGS)
 
 #
 # standard targets
