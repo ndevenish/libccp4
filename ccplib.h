@@ -65,7 +65,8 @@ int ccp4fyp(int argc, char **argv);
 
 int ccp4fyp_cleanup(int ienv, char **envname, char **envtype, char **envext,
 		    char *logical_name, char *file_name, char *file_type,
-		    char *file_ext, char *env_file, char *def_file);
+		    char *file_ext, char *env_file, char *def_file,
+		    CCP4PARSERARRAY *parser);
 
 int ccp4setenv(char *logical_name, char* value, char **envname,
 	       char **envtype, char **envext, int *ienv, int no_overwrt,
