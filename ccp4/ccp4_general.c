@@ -10,7 +10,7 @@
  */
 
 /*   ccplib.c
-     Peter Briggs CCP4 May 2001
+     Peter Briggs CCP4 May 2001/Feb 2003
 
      General library functions and utilities
 
@@ -32,7 +32,6 @@
      no_overwrt)
      Set up file names and associate with logical_name in
      environment
-     FIXME doesn't properly handle unrecognised input
 
      ccpexists(filename)
      Check if file exists and can be opened for reading
@@ -52,9 +51,9 @@
 
 /* Library header files */
 #include "ccp4_fortran.h"
-#include "ccplib.h"
 #include "ccp4_lib.h"
 #include "ccp4_parser.h"
+#include "ccplib.h"
 #include "ccp4_program.h"
 #include "cmtzlib.h"
 #include "csymlib.h"
@@ -224,16 +223,18 @@ int ccp4fyp(int argc, char **argv)
   /* Decoding environ/defaults files */
   char line[CCP4_MAXLINE];
   char *logical_name=NULL,*file_name=NULL,*file_type=NULL,*file_ext=NULL;
-  CCP4PARSERARRAY *parser;
+  CCP4PARSERARRAY *parser=NULL;
 
   /* Environ.def file */
   int  env_init=1;
   char *env_file=NULL;
+  char *env_logical_name=NULL,*env_file_type=NULL,*env_file_ext=NULL;
   FILE *envfp;
 
   /* Default.def file */
   int  def_init=1;
   char *def_file=NULL;
+  char *def_logical_name=NULL,*def_file_name=NULL;
   FILE *deffp;
 
   /* Used for error messages from ccp4setenv */
@@ -434,7 +435,7 @@ int ccp4fyp(int argc, char **argv)
 	/* Couldn't allocate memory to store filename 
 	   Do clean up and exit */
 	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			file_type,file_ext,env_file,def_file);
+			file_type,file_ext,env_file,def_file,parser);
 	ccperror(1,"Can't fetch filename for -e option");
       }
       strcpy(env_file,argv[ienviron]);
@@ -445,7 +446,7 @@ int ccp4fyp(int argc, char **argv)
 	 Do clean up and exit */
       if (diag) printf(" no filename found\n");
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-		      file_type,file_ext,env_file,def_file);
+		      file_type,file_ext,env_file,def_file,parser);
       ccperror(1,"Use: -e filename");
     }
   }
@@ -462,7 +463,7 @@ int ccp4fyp(int argc, char **argv)
 	/* Failed to make full path name for environ.def
 	   Do clean up and exit */
 	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			file_type,file_ext,env_file,def_file);
+			file_type,file_ext,env_file,def_file,parser);
 	ccperror(1,"Couldn't set filename for environ.def");
       }
       if (diag) printf("--> Full path for environ.def is \"%s\"\n",env_file);
@@ -488,7 +489,7 @@ int ccp4fyp(int argc, char **argv)
       /* Failed to open the file
        Do clean up and exit */
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-		      file_type,file_ext,env_file,def_file);
+		      file_type,file_ext,env_file,def_file,parser);
       ccperror(1,"CCP4FYP: failed to open environ.def");
     } else {
       /* Set up a ccp4_parser array to deal with the contents of
@@ -505,15 +506,15 @@ int ccp4fyp(int argc, char **argv)
 	/* Use ccp4_parse to get the tokens on each line */
 	ccp4_parse_reset(parser);
 	if (ccp4_parse(line,parser) == 3) {
-	  logical_name = parser->token[0].fullstring;
-	  file_type    = parser->token[1].fullstring;
-	  file_ext     = parser->token[2].fullstring;
+	  env_logical_name = parser->token[0].fullstring;
+	  env_file_type    = parser->token[1].fullstring;
+	  env_file_ext     = parser->token[2].fullstring;
 	  /* Check that we have values for all three components */
-	  if (!logical_name || !file_type || !file_ext) {
+	  if (!env_logical_name || !env_file_type || !env_file_ext) {
 	    /* Error parsing the line 
 	       Do clean up and exit */
 	    ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			    file_type,file_ext,env_file,def_file);
+			    file_type,file_ext,env_file,def_file,parser);
 	    if (envfp) fclose(envfp); 
 	    ccperror(-1,"CCP4FYP: couldn't parse line from environ.def");
 	  } else {
@@ -523,22 +524,22 @@ int ccp4fyp(int argc, char **argv)
 	      /* Exceeded the allowed number of logical names
 		 Do clean up and exit */
 	      ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			      file_type,file_ext,env_file,def_file);
+			      file_type,file_ext,env_file,def_file,parser);
 	      if (envfp) fclose(envfp);
 	      ccperror(1,"CCP4FYP: too many logical names in environ.def file");
 	    } else {
 	      /* Store logical name in envname */
 	      envname[ienv] = (char *)
-		ccp4_utils_malloc(sizeof(char)*(strlen(logical_name)+1));
-	      strcpy(envname[ienv],logical_name);
+		ccp4_utils_malloc(sizeof(char)*(strlen(env_logical_name)+1));
+	      strcpy(envname[ienv],env_logical_name);
 	      /* Store file type in envtype */
 	      envtype[ienv] = (char *)
-		ccp4_utils_malloc(sizeof(char)*(strlen(file_type)+1));
-	      strcpy(envtype[ienv],file_type);
+		ccp4_utils_malloc(sizeof(char)*(strlen(env_file_type)+1));
+	      strcpy(envtype[ienv],env_file_type);
 	      /* File extension in envext */
 	      envext[ienv] = (char *)
-		ccp4_utils_malloc(sizeof(char)*(strlen(file_ext)+1));
-	      strcpy(envext[ienv],file_ext);
+		ccp4_utils_malloc(sizeof(char)*(strlen(env_file_ext)+1));
+	      strcpy(envext[ienv],env_file_ext);
 	
 	      if (diag) printf("Decoded line: %s = %s.%s\n",envname[ienv],
 			       envtype[ienv],envext[ienv]);
@@ -560,6 +561,7 @@ int ccp4fyp(int argc, char **argv)
 
       /* Finished with the parser array */
       ccp4_parse_end(parser);
+      parser = NULL;
     }
   }
 
@@ -579,7 +581,7 @@ int ccp4fyp(int argc, char **argv)
 	/* Couldn't allocate memory to store filename
 	   Do clean up and exit */
 	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			file_type,file_ext,env_file,def_file);
+			file_type,file_ext,env_file,def_file,parser);
 	ccperror(1,"Can't fetch filename for -d option");
       }
       strcpy(def_file,argv[idefault]);
@@ -590,7 +592,7 @@ int ccp4fyp(int argc, char **argv)
 	 Do clean up and exit */
       if (diag) printf(" no filename found\n");
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-		      file_type,file_ext,env_file,def_file);
+		      file_type,file_ext,env_file,def_file,parser);
       ccperror(1,"Use: -d filename");
     }
   }
@@ -606,7 +608,7 @@ int ccp4fyp(int argc, char **argv)
 	/* Unable to set the filename
 	   Do clean up and exit */
 	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			file_type,file_ext,env_file,def_file);
+			file_type,file_ext,env_file,def_file,parser);
 	ccperror(1,"Couldn't set filename for default.def");
       }
       if (diag) printf("--> Full path for default.def is \"%s\"\n",def_file);
@@ -630,7 +632,7 @@ int ccp4fyp(int argc, char **argv)
       /* Failed to open the file
 	 Do clean up and exit */
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-		      file_type,file_ext,env_file,def_file);
+		      file_type,file_ext,env_file,def_file,parser);
       ccperror(1,"CCP4FYP: failed to open default.def");
     }
     /* Set a ccp4_parser array to deal with the contents of default.def */
@@ -648,28 +650,29 @@ int ccp4fyp(int argc, char **argv)
       /* Use ccp4_parse to get the tokens on each line */
       ccp4_parse_reset(parser);
       if (ccp4_parse(line,parser) == 2) {
-	logical_name = parser->token[0].fullstring;
-	file_name    = parser->token[1].fullstring;
-	if (!logical_name || !file_name) {
+	def_logical_name = parser->token[0].fullstring;
+	def_file_name    = parser->token[1].fullstring;
+	if (!def_logical_name || !def_file_name) {
 	  /* Failed to parse the line - 
 	     do clean up and exit */
 	  ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			  file_type,file_ext,env_file,def_file);
+			  file_type,file_ext,env_file,def_file,parser);
 	  if (deffp) fclose(deffp);
 	  ccperror(-1,"CCP4FYP: couldn't parse line from default.def");
 	}
-	if (diag) printf("Decoded line: %s = %s\n",logical_name,file_name);
+	if (diag) printf("Decoded line: %s = %s\n",def_logical_name,def_file_name);
 
 	/* Set up the environment for this pair
 	   Don't overwrite any existing logical name */
-	ierr = ccp4setenv(logical_name,file_name,envname,envtype,envext,&ienv,
-			   1,errmsg);
+	ierr = ccp4setenv(def_logical_name,def_file_name,
+			  envname,envtype,envext,&ienv,
+			  1,errmsg);
 	if (ierr) {
 	  /* An error from ccp4setenv
 	     Clean up and exit */
 	  if (deffp) fclose(deffp);
 	  ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			  file_type,file_ext,env_file,def_file);
+			  file_type,file_ext,env_file,def_file,parser);
 	  ccperror(ierr,errmsg);
 	}
 	/* Reset number of tokens before reading next line */
@@ -682,6 +685,7 @@ int ccp4fyp(int argc, char **argv)
 
     /* Finished with the parser array */
     ccp4_parse_end(parser);
+    parser = NULL;
   }
 
   /* ------------------------------------------------------ */
@@ -696,7 +700,7 @@ int ccp4fyp(int argc, char **argv)
   ccp4printf(2,"Processing Command Line Arguments\n");
   while (iarg < argc) {
     /* Get logical name and uppercase it */
-    if (logical_name) free(logical_name);
+    if (logical_name) free(logical_name); 
     logical_name = (char *) ccp4_utils_malloc((strlen(argv[iarg])+1)*sizeof(char));
     if (diag) printf("--> Raw logical name: \"%s\"\n",argv[iarg]);
     strtoupper(logical_name,argv[iarg]);
@@ -713,11 +717,12 @@ int ccp4fyp(int argc, char **argv)
 	 Do overwrite any existing logical name */
       ierr = ccp4setenv(logical_name,file_name,envname,envtype,envext,&ienv,
 			 0,errmsg);
+      if (diag) printf("CCP4FYP: returned from ccp4setenv, ierr = %d\n",ierr);
       if (ierr) {
 	/* An error from ccp4setenv
 	   Clean up and exit */
 	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-			file_type,file_ext,env_file,def_file);
+			file_type,file_ext,env_file,def_file,parser);
 	ccperror(ierr,errmsg);
       }
       iarg++;
@@ -726,7 +731,7 @@ int ccp4fyp(int argc, char **argv)
 	 Do clean up and exit with error */
       if (diag) printf("  no associated file name\n");
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-		      file_type,file_ext,env_file,def_file);
+		      file_type,file_ext,env_file,def_file,parser);
       if (deffp) fclose(deffp);
       ccperror(1,"Use: <logical name> <filename> ...");
     }
@@ -739,7 +744,7 @@ int ccp4fyp(int argc, char **argv)
   /* ------------------------------------------------------ */
 
   ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
-		  file_type,file_ext,env_file,def_file);
+		  file_type,file_ext,env_file,def_file,parser);
   if (diag) printf("CCP4FYP: ending\n");
   return 0;
 }
@@ -754,16 +759,19 @@ int ccp4fyp(int argc, char **argv)
 */
 int ccp4fyp_cleanup(int ienv, char **envname, char **envtype, char **envext,
 		    char *logical_name, char *file_name, char *file_type,
-		    char *file_ext, char *env_file, char *def_file)
+		    char *file_ext, char *env_file, char *def_file,
+		    CCP4PARSERARRAY *parser)
 {
   int i;
+  /* Parser */
+  if (parser) ccp4_parse_end(parser);
   /* Free single valued pointers, if set */
-  if (logical_name) free(logical_name);
-  if (file_name) free(file_name);
   if (file_type) free(file_type);
   if (file_ext) free(file_ext);
   if (env_file) free(env_file);
   if (def_file) free(def_file);
+  if (logical_name) free(logical_name);
+  if (file_name) free(file_name);
   /* Free arrays of pointers */
   if (ienv > 0) {
     for (i=0; i<ienv; ++i) {
