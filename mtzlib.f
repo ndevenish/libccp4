@@ -9447,7 +9447,7 @@ C
  6060 FORMAT(
      . '   Start & stop Phi angles (degrees).',2F9.3/
      . '   Range of Phi angles (degrees).....',F9.3/
-     . '   Start & stop time (minutes).......',2F9.0)
+     . '   Start & stop time (minutes).......',2F9.2)
  6065 FORMAT(
      + '   Batch scale & SD .................',2F9.4/
      + '   Batch B-factor & SD ..............',2F9.4)
