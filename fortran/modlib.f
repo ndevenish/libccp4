@@ -366,6 +366,8 @@ C     ..Array arguments
 C     ..Local arrays
       REAL CT(3,3)
 C
+      EXTERNAL MATMUL
+C
 C_END_MATMULTRANS
 C
       CALL TRANSP(CT,C)
