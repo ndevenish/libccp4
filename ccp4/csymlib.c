@@ -4,11 +4,8 @@
      in the CCP4 manual for a copyright statement.
 */
 
-/** @file csymlib.c
- *  C library for reading, writing and manipulating symmetry operations.
- *  @date Created Sept. 2001 
- *  @author Martyn Winn 
- */
+/* DO NOT put Doxygen comments here - put in csymlib.h */
+/* See csymlib.h for descriptions of functions */
 
 #include <stdio.h>
 #include <string.h>

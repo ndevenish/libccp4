@@ -4,9 +4,26 @@
      in the CCP4 manual for a copyright statement.
 */
 
+/** @page csym_f_page Fortran API to CSYM 
+ *
+ *  @section csym_f_file_list File list
+
+<ul>
+<li>csymlib_f.c
+</ul>
+ *
+ *  @section csym_f_overview Overview
+
+This library consists of a set of wrappers to the CSYM library
+giving the same API as the original symlib.f
+
+ */
+ 
 /** @file csymlib_f.c
- *  Fortran API to csymlib.c.
- *  Created Sept. 2001 by Martyn Winn
+ *
+ *  @brief Fortran API for symmetry information.
+ *
+ *  @author Martyn Winn 
  */
 
 /*#define FORTRAN_CALL_DEBUG 1*/

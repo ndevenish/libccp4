@@ -4,9 +4,28 @@
      in the CCP4 manual for a copyright statement.
 */
 
+/** @page utilities_page CCP4 Library Utilities
+ *
+ *  @section utilities_list File list
+
+<ul>
+<li>library_utils.c
+<li>ccp4_general.c
+<li>ccp4_parser.c
+<li>ccp4_program.c
+</ul>
+
+ *  @section utilities_overview Overview
+ 
+The CCP4 C-library provides many utility functions which either give
+specific CCP4 functionality (e.g. traditional keyword parsing) or
+are just generally useful (platform independent date).
+
+ */
+
 /** @file library_utils.c
- *  Utility functions.
- *  Charles Ballard
+ *  @brief   Utility functions.
+ *  @author  Charles Ballard
  */
 
 #include <time.h>
@@ -22,6 +41,10 @@ static char rcsid[] = "$Id$";
 static uint16 nativeIT = NATIVEIT; /* machine integer type */
 static uint16 nativeFT = NATIVEFT; /* machine float type */
 
+/** .
+ * 
+ * @return 
+ */
 int ccp4_utils_translate_mode_float(float *out, const void *buffer, int dim, int mode)
 {
   unsigned char *ucp;
@@ -66,8 +89,10 @@ int ccp4_utils_translate_mode_float(float *out, const void *buffer, int dim, int
   return (ctr);
 }
 
-/* This gets the length of a Fortran string with trailing blanks removed. 
-   Previous version fixed for empty strings  */
+/** Gets the length of a Fortran string with trailing blanks removed.
+ * 
+ * @return length of string
+ */
 size_t ccp4_utils_flength (char *s, int len)
 {
   while (s[--len] == ' ')
@@ -75,12 +100,20 @@ size_t ccp4_utils_flength (char *s, int len)
   return (++len);
 }
 
+/** .
+ * 
+ * @return 
+ */
 void ccp4_utils_print (const char *message)
 {
   printf ("%s\n",message);
  }
 
 #if ! defined (VMS)
+/** .
+ * 
+ * @return 
+ */
 int ccp4_utils_setenv (char *str)
 {
 #if defined (sgi) || defined (sun) || defined (__hpux) || \
@@ -116,6 +149,10 @@ int ccp4_utils_setenv (char *str)
 #endif
 
 #if ! defined (VMS)
+/** .
+ * 
+ * @return 
+ */
 int ccp4_utils_outbuf(void)
 {
 #if defined (sgi) || defined (sun) || \
@@ -131,6 +168,10 @@ int ccp4_utils_outbuf(void)
 #endif
 }
 
+/** .
+ * 
+ * @return 
+ */
 int ccp4_utils_noinpbuf(void)
 {
   return setvbuf(stdin, NULL, _IONBF, 0);
@@ -161,6 +202,10 @@ union float_uint_uchar ccp4_nan ()
   return (realnum);
 }
 
+/** .
+ * 
+ * @return 
+ */
 int ccp4_utils_isnan (const union float_uint_uchar *realnum)
 {
     switch (nativeFT) {
@@ -178,6 +223,10 @@ int ccp4_utils_isnan (const union float_uint_uchar *realnum)
 }
 
 #define MDFBIG -1.0E10          /* BIOMOL absence flag value */
+/** .
+ * 
+ * @return 
+ */
 void ccp4_utils_bml (int ncols, union float_uint_uchar cols[])
 {
   int i;
@@ -186,6 +235,10 @@ void ccp4_utils_bml (int ncols, union float_uint_uchar cols[])
       if (cols[i].f <= MDFBIG) cols[i].f = 0.0;
 }
 
+/** .
+ * 
+ * @return 
+ */
 void ccp4_utils_wrg (int ncols, union float_uint_uchar cols[], float wminmax[])
 {
   int i;
@@ -196,12 +249,20 @@ void ccp4_utils_wrg (int ncols, union float_uint_uchar cols[], float wminmax[])
          if (cols[i].f > wminmax[1+2*i]) wminmax[1+2*i] = cols[i].f; }
 }
 
+/** .
+ * 
+ * @return 
+ */
 void ccp4_utils_hgetlimits (int *IValueNotDet, float *ValueNotDet)
 {
   *IValueNotDet = INT_MAX;
   *ValueNotDet  = FLT_MAX;
 }
 
+/** .
+ * 
+ * @return 
+ */
 int ccp4_utils_mkdir (const char *path, const char *cmode)
 #if !defined (_MVS) && !defined(_WIN32)
 {  
@@ -254,6 +315,10 @@ int ccp4_utils_mkdir (const char *path, const char *cmode)
    }
 #endif
 
+/** .
+ * 
+ * @return 
+ */
 int ccp4_utils_chmod (const char *path, const char *cmode)
 #if !defined (_MVS) || !defined(_WIN32)
 { mode_t mode = 0;
@@ -297,12 +362,12 @@ int ccp4_utils_chmod (const char *path, const char *cmode)
    }
 #endif
 
-/* CCP4_UTILS_MALLOC
-   This is a wrapper for the malloc function, which adds some
-   error trapping */
-
+/** This is a wrapper for the malloc function, which adds some
+ * error trapping.
+ * 
+ * @return void
+ */
 void *ccp4_utils_malloc(size_t size)
-/* Wrapper for malloc function; should trap for errors */
 
 { void *val; 
 
@@ -314,10 +379,11 @@ void *ccp4_utils_malloc(size_t size)
     }
   return val;}
 
-/* CCP4_UTILS_REALLOC
-   This is a wrapper for the realloc function, which adds some
-   error trapping */
-
+/** This is a wrapper for the realloc function, which adds some
+ * error trapping.
+ * 
+ * @return 
+ */
 void *ccp4_utils_realloc(void *ptr, size_t size)
 { void *val; 
 
@@ -329,10 +395,11 @@ void *ccp4_utils_realloc(void *ptr, size_t size)
     }
   return val;}
 
-/* CCP4_UTILS_CALLOC
-   This is a wrapper for the calloc function, which adds some
-   error trapping */
-
+/** This is a wrapper for the calloc function, which adds some
+ * error trapping.
+ * 
+ * @return 
+ */
 void *ccp4_utils_calloc(size_t nelem , size_t elsize)
 { void *val; 
 
@@ -477,6 +544,10 @@ char *ccp4_utils_joinfilenames(char *dir, char *file)
   return join;
 }
 
+/** .
+ * 
+ * @return 
+ */
 void ccp4_utils_idate (int iarray[3])
 {
      struct tm *lt=NULL;
@@ -488,6 +559,10 @@ void ccp4_utils_idate (int iarray[3])
      iarray[2] = lt->tm_year + 1900;
 }
 
+/** .
+ * 
+ * @return 
+ */
 char *ccp4_utils_date(char *date)
 {
   int iarray[3];

@@ -4,7 +4,58 @@
      in the CCP4 manual for a copyright statement.
 */
 
+/** @page cmtz_page CMTZ library
+ *
+ *  @section cmtz_file_list File list
+
+<ul>
+<li>cmtzlib.h
+<li>mtzdata.h
+</ul>
+
+ *  @section cmtz_overview Overview
+ 
+The CMTZ library is centred around a data structure, defined in
+mtzdata.h Reading an MTZ file causes a data structure to be
+created and populated from the MTZ header. There are a variety of functions 
+for manipulating the data structure, for example adding crystals, datasets
+or columns. The data structure can be dumped to an output MTZ data file.
+<p>
+The library operates in two modes with respect to the reflection data.
+If <tt>mtz->refs_in_memory = 1</tt> (as set e.g. by the argument to 
+<tt>MtzGet</tt>), then all reflection data is read into memory from
+the file, and can be manipulated in memory. Else if 
+<tt>mtz->refs_in_memory = 0</tt> then explicit calls to <tt>ccp4_lrrefl</tt>,
+<tt>ccp4_lrreff</tt> and <tt>ccp4_lwrefl</tt> are required to read
+and write reflections from/to disk.
+<p>
+Information on the data structure is given in mtzdata.h
+
+ *  @section cmtz_princ_func Principal Functions
+ *  @subsection cmtz_reading Reading MTZ files
+
+Start by looking at <tt>MtzGet</tt> and <tt>ccp4_lrrefl</tt> / <tt>ccp4_lrreff</tt>.
+
+ *  @subsection cmtz_writing Writing MTZ files
+
+If you have a structure in memory already, use <tt>MtzPut</tt> followed
+by <tt>MtzFree</tt> to release the memory. 
+<p>
+If you need to create a structure from scratch (i.e. without reading
+from an input file) then use <tt>MtzMalloc</tt>, <tt>MtzOpenForWrite</tt>, 
+<tt>ccp4_lwsymm</tt>, <tt>MtzAddXtal</tt>, <tt>MtzAddDataset</tt>, 
+<tt>MtzAddColumn</tt> and <tt>ccp4_lwrefl</tt>.
+
+ *  @section cmtz_examples Examples
+
+See examples on <a href="ftp://ftp.ccp4.ac.uk/pub/mdw/cmtz">ftp area</a>
+
+ */
+
 /** @file cmtzlib.h
+ *
+ *  @brief C-level library for input, output and manipulation of MTZ files.
+ *
  *  Functions defining the C-level API for accessing MTZ files.
  *  MtzGet and MtzPut read and write MTZ files to/from a data
  *  structure defined in mtzdata.h  Other functions allow one
@@ -12,6 +63,7 @@
  *  and the values of structure members. Functions with names
  *  beginning <tt>ccp4_lr</tt> or <tt>ccp4_lw</tt> are primarily 
  *  to support the Fortran API.
+ *
  *  @author Martyn Winn 
  */
 

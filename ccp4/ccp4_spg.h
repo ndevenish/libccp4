@@ -4,6 +4,17 @@
      in the CCP4 manual for a copyright statement.
 */
 
+/** @file ccp4_spg.h
+ *
+ *  @brief Data structure for symmetry information.
+ *
+ *  A data structure for spacegroup information and related
+ *  quantities. Some items are loaded from syminfo.lib while
+ *  others are calculated on the fly.
+ *
+ *  @author Martyn Winn 
+ */
+
 #ifndef __CCP4_SPG__
 #define __CCP4_SPG__
 static char rcsidhsp[] = "$Id$";

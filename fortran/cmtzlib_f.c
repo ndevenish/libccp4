@@ -4,9 +4,26 @@
      in the CCP4 manual for a copyright statement.
 */
 
+/** @page cmtz_f_page Fortran API to CMTZ 
+ *
+ *  @section cmtz_f_file_list File list
+
+<ul>
+<li>cmtzlib_f.c
+</ul>
+
+ *  @section cmtz_f_overview Overview
+
+This library consists of a set of wrappers to the CMTZ library
+giving the same API as the original mtzlib.f
+
+ */
+ 
 /** @file cmtzlib_f.c
- *  Fortran API to cmtzlib.c.
- *  Created Sept. 2000 by Martyn Winn
+ *
+ *  @brief Fortran API for input, output and manipulation of MTZ files.
+ *
+ *  @author Martyn Winn 
  */
 
 /*#define FORTRAN_CALL_DEBUG 1*/

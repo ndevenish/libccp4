@@ -4,13 +4,8 @@
      in the CCP4 manual for a copyright statement.
 */
 
-/** @file cmtzlib.c
- *  C library for reading, writing and manipulating MTZ files.
- *  @date Created Sept. 2000 
- *  @author Martyn Winn 
- */
-
-/* see cmtzlib.h for descriptions of functions */
+/* DO NOT put Doxygen comments here - put in cmtzlib.h */
+/* See cmtzlib.h for descriptions of functions */
 
 #include <stdio.h>
 #include <string.h>

@@ -4,8 +4,35 @@
      in the CCP4 manual for a copyright statement.
 */
 
+/** @page csym_page CSYM library
+ *
+ *  @section csym_file_list File list
+
+<ul>
+<li>csymlib.h
+<li>ccp4_spg.h
+</ul>
+ *
+ *  @section csym_overview Overview
+ 
+The CSYM library is centred around a data file syminfo.lib which is
+auto-generated from sgtbx. A particular spacegroup in a particular setting
+is loaded into an in-memory data structure by requesting a particular
+spacegroup name, number, or set of operators. See the functions
+<tt>ccp4spg_load_by_standard_num</tt>, <tt>ccp4spg_load_by_ccp4_num</tt>, 
+<tt>ccp4spg_load_by_spgname</tt> and <tt>ccp4_spgrp_reverse_lookup</tt>.
+<p>
+Information on the data structure is given in ccp4_spg.h
+
+*/
+
 /** @file csymlib.h
+ *
+ *  @brief C-level library for symmetry information.
+ *
  *  Functions defining the C-level API for accessing spacegroup properties.
+ *  The primary spacegroup information comes from the data file syminfo.lib
+ *
  *  @author Martyn Winn 
  */
 

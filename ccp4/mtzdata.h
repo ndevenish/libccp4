@@ -5,8 +5,13 @@
 */
 
 /** @file mtzdata.h
- *  Definition of MTZ data structure.
- *  Martyn Winn 
+ *
+ *  @brief Definition of MTZ data structure.
+ *
+ *  The file defines a hierarchy of structs which hold the
+ *  MTZ data structure.
+ *
+ *  @author Martyn Winn 
  */
 
 #ifndef __CMTZData__
@@ -18,13 +23,13 @@
 #define SIZE1 20                    /**< size of pre-reflection block */
 #define MTZRECORDLENGTH 80          /**< length of records */
 
-#define NBATCHWORDS 185             /**< dimensioning of batch headers */
-#define NBATCHINTEGERS 29
-#define NBATCHREALS 156
+#define NBATCHWORDS 185       /**< total size of batch header buffer */
+#define NBATCHINTEGERS 29     /**< size of integer section of batch header buffer */
+#define NBATCHREALS 156       /**< size of float section of batch header buffer */
 
-#define MXTALS      100
-#define MSETS      1000
-#define MCOLUMNS  10000
+#define MXTALS      100      /**< maximum number of crystals (for a few arrays - to be removed!) */
+#define MSETS      1000      /**< maximum number of datasets (for a few arrays - to be removed!) */
+#define MCOLUMNS  10000      /**< maximum number of columns (for a few arrays - to be removed!) */
 
 /** MTZ column struct. */
 typedef struct { char label[31];       /**< column name as given by user */
@@ -96,9 +101,11 @@ typedef struct bathead { int num;              /**< batch number */
 		 float sdbscale;       /**< sd bscale */
 		 float sdbfac;         /**< sd bbfac */
                  float phirange;       /**< phi range */
-		 float e1[3];
-		 float e2[3];
-		 float e3[3];          /**< vectors ("Cambridge" laboratory axes)
+		 float e1[3];          /**< vector 1 ("Cambridge" laboratory axes)
+					  defining ngonax goniostat axes */
+		 float e2[3];          /**< vector 2 ("Cambridge" laboratory axes)
+					  defining ngonax goniostat axes */
+		 float e3[3];          /**< vector 3 ("Cambridge" laboratory axes)
 					  defining ngonax goniostat axes */
 		 float source[3];      /**< idealised source vector */
 		 float so[3];          /**< source vector */
