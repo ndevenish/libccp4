@@ -277,16 +277,18 @@ C
         IF(P(1,4).NE.0.OR.P(2,4).NE.0.OR.P(3,4).NE.0)WRITE(MSG2,1008)
         GO TO 500
 C
-C---- 'ter' card found
-C
-      ELSE IF (IRTYPE.EQ.'TER ') THEN
-        ITYP=3
-        IFTER=.TRUE.
-        GO TO 450
-C
 C---- Atom/hetatm card processing
 C
-      ELSE IF (IRTYPE.EQ.'ATOM' .OR. IRTYPE.EQ.'HETA') THEN
+      ELSE IF (IRTYPE.EQ.'TER ' .OR. IRTYPE.EQ.'ATOM' .OR. 
+     +       IRTYPE.EQ.'HETA') THEN
+        IF (IRTYPE.EQ.'TER ') THEN
+C
+C---- 'ter' card found
+C
+          ITYP=3
+          IFTER=.TRUE.
+          GO TO 450
+        ENDIF
         IF (IRTYPE.EQ.'ATOM') ITYP=4
         IF (IRTYPE.EQ.'HETA') ITYP=5
 400     READ(BROOKA,1005)IS,X,Y,Z,OCC,B,I
@@ -490,6 +492,7 @@ C
       LOGICAL IFCRYS,IFSCAL,IFEND,MATRIX
       COMMON /RBRKXX/IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE,IBRKFL
+      SAVE /ORTHOG/, /RBRKXX/
 C
 C PARAMETERS
 C
@@ -611,7 +614,7 @@ C
       DIMENSION DD(6)
       COMMON/RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /RBREC/AC(6)
-      SAVE /RBRKZZ/
+      SAVE /RBRKZZ/, /RBREC/
 C
 C---- Initialisations
 C
@@ -770,7 +773,7 @@ C     .. Common blocks ..
       COMMON /RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
 C     ..
 C     .. Save statement ..
-      SAVE /RBRKZZ/
+      SAVE /RBRKZZ/, /RBREC/
 C     ..
 C
 C---- Initialisations
@@ -1202,7 +1205,7 @@ C
 C
 C
       COMMON /RBREC/AC(6)
-      SAVE 
+      SAVE /RBREC/
 C
       S = 
      .(AC(1)*IH*IH+AC(2)*IK*IK+AC(3)*IL*IL
