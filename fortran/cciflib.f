@@ -1211,7 +1211,8 @@ CDOC  A(4,4)          (I)     REAL            MATRIX TO BE INVERTED
 CDOC
 CDOC  AI(4,4)         (O)     REAL            INVERSE MATRIX
 
-      REAL A(4,4),AI(4,4),C(4,4),X(3,3)
+      REAL A(4,4),AI(4,4),C(4,4),X(3,3),AM,D
+      INTEGER II,JJ,I,I1,J,J1
 C
 C---- Get cofactors of 'a' in array 'c'
 C
@@ -1236,7 +1237,7 @@ C
 C
 C---- Calculate determinant
 C
-      D=0
+      D=0.
       DO 50 I=1,4
       D=D+A(I,1)*C(I,1)
 50    CONTINUE
