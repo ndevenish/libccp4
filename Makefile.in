@@ -74,11 +74,17 @@ AR          = ar r
 RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
 
 # modules to go in libccp4.a:
-LIBTARGETS = ccplib fftlib maplib parser rwatom rwbrook modlib \
+LIBTARGETS = ccplib fftlib maplib parser rwbrook modlib \
            symlib lcflib mtzlib diskio unix plot84lib \
            binsortint library plotsubs 
 
 .PRECIOUS : $L # don't zap the library if a component fails
+
+# for some reason the SysVile make insists on re-building the `unix' target
+# each time unless we zap the default suffixes -- gmake doesn't.  give it a
+# dummy one to avoid a `No suffixes.' message
+.SUFFIXES:
+.SUFFIXES:	.dummy
 
 # probably only recognised by GNU make:
 .PHONY : all clean install $(LIBTARGETS) ranlib realclean distclean \
@@ -86,7 +92,7 @@ LIBTARGETS = ccplib fftlib maplib parser rwatom rwbrook modlib \
 
 all :  $L binsort $(MAYBEMOSFLM)
 
-$L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) $L(rwatom.o) \
+$L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	  $L(rwbrook.o) $L(modlib.o) $L(symlib.o) $L(lcflib.o) \
 	  $L(mtzlib.o) $L(diskio.o) $L(unix.o) \
 	  $L(binsortint.o) $L(library.o) \
@@ -168,19 +174,6 @@ $L(rwbrook.o) : $(srcdir)/rwbrook.f
           && $(AR) ../$L *.o
 	rm -f rwbrook.dir/*.o
 rwbrook : $L(rwbrook.o)
-	$(RANLIB) $L
-
-
-$L(rwatom.o) : $(srcdir)/rwatom.f
-	-rm -rf rwatom.dir; mkdir rwatom.dir
-	echo '      SUBROUTINE RWATOM' > rwatom.dir/rwatom.$F
-	echo '      END' >> rwatom.dir/rwatom.$F
-	cd rwatom.dir && fsplit $(srcdir)/rwatom.f >/dev/null && $(RMEMPTY) && \
-          for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $$i; done\
-          && $(AR) ../$L *.o
-	rm -f rwatom.dir/*.o
-rwatom : $L(rwatom.o)
 	$(RANLIB) $L
 
 $L(modlib.o) : $(srcdir)/modlib.f
@@ -328,7 +321,9 @@ unix.f : $(srcdir)/unix.m4 gdummy.f
 	$(M4) $(srcdir)/unix.m4 >unix.f
 gdummy.f : $(srcdir)/gdummy.f
 	-$(LNS)	$(srcdir)/gdummy.f .
-$L(unix.o) : unix.f
+# this shouldn't depend on unix.f since we zap that each time
+$L(unix.o) : $(srcdir)/unix.m4 gdummy.f
+	$(M4) $(srcdir)/unix.m4 >unix.f
 	-rm -rf unix.dir; mkdir unix.dir
 	echo '      SUBROUTINE UNIX' > unix.dir/unix.f
 	echo '      END' >> unix.dir/unix.f
@@ -377,7 +372,7 @@ clean :
 	-rm -rf tagdir
 
 realclean : clean
-	-rm -rf $L ../../src/binsort binsort *.dir TAGS
+	-rm -rf $L ../../src/binsort binsort *.dir TAGS unix.f Makefile
 
 dist : realclean
 	-rm -f Makefile
