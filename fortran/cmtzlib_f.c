@@ -163,7 +163,6 @@ FORTRAN_SUBR ( LRTITL, lrtitl,
   *len = ccp4_lrtitl(mtzdata[*mindx-1], temp_title);
   ccp4_CtoFString(FTN_STR(ftitle),FTN_LEN(ftitle),temp_title);
 
-  free (temp_title);
 }
 
 /* Fortran wrapper for ccp4_lrhist */
