@@ -31,7 +31,7 @@ C
 C     =======================
 C
 C
-C
+C     compute A = B cross C
 C
 C     .. Array Arguments ..
       REAL             A(3),B(3),C(3)
