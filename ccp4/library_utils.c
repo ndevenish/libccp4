@@ -168,7 +168,7 @@ int ccp4_utils_setenv (char *str)
 #if defined (sgi) || defined (sun) || defined (__hpux) || \
     defined(_AIX) || defined (__OSF1__) || \
     defined (__osf__) || defined (__FreeBSD__) || defined (linux) || \
-    defined (_WIN32)
+    defined (_WIN32) || ( defined __linux__ && defined __PPC__ )
   /* putenv is the POSIX.1, draft 3 proposed mechanism */
   int putenv ();
   char *param;
@@ -212,7 +212,7 @@ int ccp4_utils_outbuf(void)
 #if defined (_MVS)
   return setvbuf(stdout, NULL, _IONBF, 80);
 #else
-#  if defined (_AIX)
+#  if defined (_AIX) || ( defined __linux__ && defined __PPC__ )
   return -1;
 #  else
   /* Windows requires size argument, though 0 works on unix */

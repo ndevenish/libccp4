@@ -670,7 +670,7 @@ int /* logical */ btest_ (a, b)
 }
 #endif              /* F2C support  */
 
-#if defined (__hpux) || defined (_AIX)
+#if defined (__hpux) || defined (_AIX) || ( defined __linux__ && defined __PPC__ )
 /* <AIX and HPUX support>=                                                  */
 
 #ifdef _AIX

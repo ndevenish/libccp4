@@ -110,6 +110,12 @@
 #  define CALL_LIKE_SUN 1
 #endif
 
+#if defined __linux__ && defined ___PPC__ 
+#  undef CALL_LIKE_SUN
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_HPUX 1
+#endif
+
 #if defined (__FreeBSD__)
 #  undef CALL_LIKE_SUN
 #  define KNOWN_MACHINE
@@ -177,7 +183,7 @@
 #include <ctype.h>
 
 #if defined(_AIX) || defined (__hpux) || defined(F2C) ||\
-    defined(G77) || defined(_WIN32)/* would do no harm on others, though */
+    defined(G77) || defined(_WIN32) || ( defined __linux__ && defined __PPC__ )/* would do no harm on others, though */
 #  include <time.h>
 #endif
 
@@ -282,7 +288,7 @@
 #  define NATIVEIT DFNTI_IBO
 #endif
 
-#if defined(MIPSEB) || defined(__hpux) || defined(_AIX) || defined(m68k) || defined(mc68000) || defined(sparc) || defined (__sparc__)
+#if defined(MIPSEB) || defined(__hpux) || defined(_AIX) || defined(m68k) || defined(mc68000) || defined(sparc) || defined (__sparc__) || ( defined __linux__ && defined __PPC__ )
 #  define NATIVEIT DFNTI_MBO
 #  define NATIVEFT DFNTF_BEIEEE
 #endif
