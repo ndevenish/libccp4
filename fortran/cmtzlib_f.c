@@ -824,6 +824,50 @@ FORTRAN_SUBR ( LRIDX, lridx,
 
 }
 
+/* Return cell parameters associated with the specified dataset id
+ * @param mindx MTZ file index
+ * @param iset On input: integer specifying the setid for which the
+ * cell parameters are required.
+ * @param mtzcell array of 6 reals. On output: populated with the 
+ * required cell parameters.
+ */
+FORTRAN_SUBR ( LRCELX, lrcelx,
+	       (const int *mindx, const int *iset, float *mtzcell),
+	       (const int *mindx, const int *iset, float *mtzcell),
+	       (const int *mindx, const int *iset, float *mtzcell))
+{
+  MTZ *mtz;
+  MTZXTAL *xtal;
+  int iiset,i,j,k;
+
+  /* NB This function interacts directly with the mtz data structure stored
+     in memory */
+  CMTZLIB_DEBUG(puts("CMTZLIB_F: LRCELX");)
+
+  if (MtzCheckSubInput(*mindx,"LRCELX",1)) return;
+
+  /* Datasets are numbered in order of xtals, then sets within xtals */
+  iiset = -1;
+  mtz = mtzdata[*mindx-1];
+  for (i = 0; i < mtz->nxtal; ++i) {
+    xtal = mtz->xtal[i];
+    for (j = 0; j < xtal->nset; ++j) {
+      ++iiset;
+      /* Check if we have found the set in question */
+      if (iiset == *iset) {
+	/* Copy the cell for this crystal */
+	for (k = 0; k < 6; ++k) {
+	  mtzcell[k] = xtal->cell[k];
+	}
+	/* Job done - escape! */
+	return;
+      }
+    }
+  }
+  printf("LRCELX: error, dataset %d not found\n",*iset);
+  return;
+}
+
 /* Fortran wrapper for ccp4_lridx */
 FORTRAN_SUBR ( LRIDC, lridc,
 	       (const int *mindx, fpstr project_name, fpstr dataset_name,
