@@ -50,7 +50,8 @@
 #include <math.h>
 #include <stdarg.h>
 
-/* Library header file */
+/* Library header files */
+#include "ccp4_fortran.h"
 #include "ccplib.h"
 #include "ccp4_lib.h"
 #include "ccp4_parser.h"
@@ -99,13 +100,13 @@ int ccperror(int ierr, char* message)
     /* If ierr=-1 then print last system error
        N.B. Use of perror in this context is untested by me */
     if (ierr < 0) perror("Last system error message");
-    /* Need to get the amount of time elapsed since start of
-       program
-       This would be initialised by ccp4fyp */
     /* Send the message to the standard error */
     fprintf(stderr," %s:  %s\n",prog_name,message);
     /* Also to the standard out */
     ccp4printf(0," %s:  %s\n",prog_name,message);
+    /* Get the amount of time elapsed since start of
+       program. Initialised by ccp4fyp */
+    ccp4ProgramTime(0);
     exit(1);
 
   } else if (ierr==2) {
@@ -160,19 +161,71 @@ int ccp4printf(int level, char *format, ...)
 
    Initialise environment for CCP4 programs and parse the
    command line arguments
+
+   Background:
+   This function processes the command line arguments supplied via
+   the argv array, and performs initialisations of the CCP4
+   environment within the program based on these arguments.
+
+   CCP4 programs which use ccp4fyp should be called with the following
+   syntax:
+
+   <progname> [switches] <logical_name1> <value1> <logical_name2> <value2>...
+
+   The command switches all start with a hyphen (-) and immediately
+   follow the program name. The remainer of the arguments are logical
+   name-value pairs.
+
+   The logic for locating the "environ.def" and "default.def" files
+   is as follows (from the original Fortran version):
+   If the file is defined on the command line then
+      If a directory is specified then
+	 Use the filename as is.
+      Else if the HOME variable is defined then
+         Use "$HOME/filename"
+      Else
+         Use the filename as is (in current directory).
+   Else
+      If the CINCL variable is defined then
+         Use "$CINCL/filename"
+      Else if the HOME variable is defined then
+         Use "$HOME/filename"
+      Else
+         Use the filename as is (in current directory).
 */
 int ccp4fyp(int argc, char **argv)
 {
-  int  i,iarg=1,arg_end=0,ienv=0,diag=0;
-  int  ihelp,def_init=1,env_init=1;
-  char *testarg=NULL,line[CCP4_MAXLINE];
+  /* Diagnostics/debug output */
+  int diag=0;
+
+  int  i,iarg=1,arg_end=0,ienv=0;
   char *envname[CCP4_MAXNAMES],*envtype[CCP4_MAXNAMES],*envext[CCP4_MAXNAMES];
-  char *def_file=NULL,*env_file=NULL,*cinclude=NULL;
-  FILE *envfp,*deffp;
+
+  /* Flags for processing command line switches */
+  int  info=0,ihelp=0,idefault=0,ienviron=0,nohtml=0,nosummary=0;
+  char *testarg=NULL;
+
+  /* Filenames, directories etc */
+  char *cinclude=NULL,*home=NULL,*dir=NULL;
+
+  /* Decoding environ/defaults files */
+  char line[CCP4_MAXLINE];
   char *logical_name=NULL,*file_name=NULL,*file_type=NULL,*file_ext=NULL;
-  int  lfilename;
-  char *envfilename,*deffilename;
   CCP4PARSERARRAY *parser;
+
+  /* Environ.def file */
+  int  env_init=1;
+  char *env_file=NULL;
+  FILE *envfp;
+
+  /* Default.def file */
+  int  def_init=1;
+  char *def_file=NULL;
+  FILE *deffp;
+
+  /* Used for error messages from ccp4setenv */
+  int  ierr;
+  char errmsg[81];
 
   /* Begin */
   if (diag) printf("CCP4FYP: starting\n");
@@ -181,19 +234,27 @@ int ccp4fyp(int argc, char **argv)
    for (i = 0; i < argc; ++i) 
       printf("ccp4fyp: comand line argument %d %s\n",i,argv[i]);
 
-  /* Initialise timing information */
+  /* ------------------------------------------------------ */
+  /* Initialise program name and timing information */
+  /* ------------------------------------------------------ */
   ccp4ProgramTime(1);
 
   ccp4ProgramName(ccp4_utils_basename(argv[0])); 
 
-  /* Process command line option switches first
-     Ignore iarg=0 because this is the executable name */
-
+  /* ------------------------------------------------------ */
+  /* Process command line option switches */
+  /* ------------------------------------------------------ */
+  /* Nb ignore the first argument (iarg=0),
+     because this is just the executable name */
   while (iarg < argc && !arg_end) {
     if (diag) printf("CCP4FYP: command line argument %d = \"%s\"\n",iarg,argv[iarg]);
+
     if (argv[iarg][0] == '-') {
+      /* An argument of the form -option */
       if (diag) printf("--> This is an option switch\n");
-      testarg = (char *) ccp4_utils_malloc((strlen(argv[iarg])+1)*sizeof(char));
+      
+      /* Remove the leading hyphen */
+      testarg = (char *) ccp4_utils_realloc(testarg,(strlen(argv[iarg])+1)*sizeof(char));
       strtoupper(testarg,&(argv[iarg][1]));
       if (diag) printf("--> Truncated and uppercased it is now \"%s\"\n",testarg);
 
@@ -208,88 +269,43 @@ int ccp4fyp(int argc, char **argv)
 	 -nohtml         suppress printing of html tags
 	 -nosummary      suppress printing of summary tags
       */
-
-      /* Verbose option
-	 -v <0-9>
-	 -h <0-9>
-      */
-      /* The message levels need to be store somewhere globally
-	 accessible
-	 Level 0 switches off all output (silent mode)
-	 Level 9 prints everything
-	 Level 1 is normal I guess
-	 It is not clear from documentation precisely what is/is not
-	 output for the levels between 0 and 9
-      */
       if (testarg[0] == 'V' || testarg[0] == 'H') {
-	iarg++;
+	/* -v|h <0-9>: Verbose option */
 	if (diag) printf("--> Identified -v option:");
-	if (iarg < argc) {
-	  if (strlen(argv[iarg]) == 1 && isdigit(argv[iarg][0])) {
-	    ihelp = atoi(argv[iarg]);
-	  } else {
-	    ihelp = 1;
-	  }
-	  if (diag) printf(" level %d\n",ihelp);
-	} else {
-	  ihelp = 1;
-	  if (diag) printf(" no help level - defaulting to 1\n");
+	/* Set ihelp to point to the argument which should
+	   hold the verbosity level, and process later */
+	ihelp = ++iarg;
+
+      } else if (testarg[0] == 'N') {
+	/* -n, -nohtml, -nosummary */
+	if (strlen(testarg) == 1) {
+	  /* -n: Don't read environ.def and default.def */
+	  if (diag) printf("--> Identified -n option\n");
+	  def_init = 0;
+	  env_init = 0;
+	} else if (strncmp("NOHTML",testarg,3)==0) {
+	  /* -nohtml: Don't write html tags into logfile */
+	  nohtml = -1;
+	} else if (strncmp("NOSUMMARY",testarg,3)==0) {
+	  /* -nosummary: Don't write summary tags into logfile */
+	  nosummary = -1;
 	}
-
-	/* Don't read environ.def and default.def
-	   -n
-	*/
-      } else if (testarg[0] == 'N' && strlen(testarg) == 1) {
-	if (diag) printf("--> Identified -n option\n");
-	def_init = 0;
-	env_init = 0;
-
-	/* Use non-default default.def file
-	   -d <filename>
-	*/
       } else if (testarg[0] == 'D') {
-	iarg++;
+	/* -d <filename>: Use non-default default.def file */
 	if (diag) printf("--> Identified -d option:");
-	if (iarg < argc) {
-	  def_file = (char *) ccp4_utils_malloc(sizeof(char)*(strlen(argv[iarg])+1));
-	  if (!def_file) ccperror(1,"Can't fetch filename for -d option");
-	  strcpy(def_file,argv[iarg]);
-	  def_init = 1;
-	  if (diag) printf(" default.def file is \"%s\"\n",def_file);
-	} else {
-	  if (diag) printf(" no filename found\n");
-	  ccperror(1,"Use: -d filename");
-	}
-
-	/* Use non-default environ.def file
-	   -e <filename>
-	*/
+	/* Set idefault to point to the argument which should
+	   hold the default.def file, and process later */
+	idefault = ++iarg;
       } else if (testarg[0] == 'E') {
-	iarg++;
+	/* -e <filename>: Use non-default environ.def file */
 	if (diag) printf("--> Identified -e option:");
-	if (iarg < argc) {
-	  env_file = (char *) ccp4_utils_malloc(sizeof(char)*(strlen(argv[iarg])+1));
-	  if (!env_file) ccperror(1,"Can't fetch filename for -d option");
-	  strcpy(env_file,argv[iarg]);
-	  def_init = 1;
-	  if (diag) printf(" environ.def file is \"%s\"\n",env_file);
-	} else {
-	  if (diag) printf(" no filename found\n");
-	  ccperror(1,"Use: -e filename");
-        }
-
-	/* Info option
-	   -i(nfo)
-	*/
+	/* Set ienviron to point to the argument which should
+	   hold the environ.def file, and process later */
+	ienviron = ++iarg;
       } else if (testarg[0] == 'I') {
+	/* -i(nfo): Info option */
 	if (diag) printf("--> Identified -i(nfo) option\n");
-	/* Print program information and stop */
-	printf("CCP4 software suite: library version %s\n",CCP4_VERSION_NO);
-	printf("CCP4 software suite: patch level     %s\n",CCP4_PATCH_LEVEL);
-	printf("Program:             %s",ccp4ProgramName(NULL));
-	if (ccp4_prog_vers(NULL)) printf("; version %s",ccp4_prog_vers(NULL));
-	printf("\n");
-	exit(0);
+	info = 1;
 
 	/* Unrecognised switch */
       } else {
@@ -306,188 +322,358 @@ int ccp4fyp(int argc, char **argv)
       arg_end = 1;
     }
   }
+  /* Release the memory associated with the temporary argument pointer */
+  if (testarg) free(testarg);
 
-  /* Initialise debug (verbosity) level */
+  /* ------------------------------------------------------ */
+  /* Finished processing command line options */
+  /* ------------------------------------------------------ */
+
+  /* At this point we may need to perform some actions based
+     on the switches supplied by the user */
+
+  /* Program information requested by -i(nfo) option */
+  if (info) {
+    /* Print program information and stop */
+    printf("CCP4 software suite: library version %s\n",CCP4_VERSION_NO);
+    printf("CCP4 software suite: patch level     %s\n",CCP4_PATCH_LEVEL);
+    printf("Program:             %s",ccp4ProgramName(NULL));
+    if (ccp4_prog_vers(NULL)) printf("; version %s",ccp4_prog_vers(NULL));
+    printf("\n");
+    exit(0);
+  }
+
+  /* Initialise debug (verbosity) level
+     Level 0 switches off all output (silent mode)
+     Level 9 prints everything
+     Level 1 is normal I guess
+     It is not clear from documentation precisely what is/is not
+     output for the levels between 0 and 9 */
+  if (ihelp > 0) {
+    /* Extract the level from the argument list - ihelp
+       points to which argument should hold it */
+    if (ihelp < argc) {
+      if (strlen(argv[ihelp]) == 1 && isdigit(argv[ihelp][0])) {
+	ihelp = atoi(argv[ihelp]);
+      } else {
+	ihelp = 1;
+      }
+      if (diag) printf("Verbose level %d\n",ihelp);
+    } else {
+      ihelp = 1;
+      if (diag) puts("No verbose level - defaulting to 1.");
+    }
+  }
   ccp4VerbosityLevel(ihelp);
 
-  /* Initialise html, summary tags */
-  /* NOT IMPLEMENTED */
+  /* ------------------------------------------------------ */
+  /* Initialise HTML and SUMMARY tags */
+  /* ------------------------------------------------------ */
+
+  /* Initialise html, summary tags with a call to the
+     Fortran html library */
+  FORTRAN_CALL ( CCP4H_INIT_LIB, ccp4h_init_lib,
+		(&nohtml,&nosummary),
+		(&nohtml,&nosummary),
+		(&nohtml,&nosummary));
+
+  /* ------------------------------------------------------ */
+  /* Get useful directories (CINCL and HOME) */
+  /* ------------------------------------------------------ */
+
+  /* Get value of CINCL variable -
+     Note that (1) getenv returns a null pointer if no name is
+     found, (2) we should not free the resulting address */
+  cinclude = (char *) getenv("CINCL");
+  if (!cinclude) {
+    if (diag) printf("--> CINCL env var has no value assigned\n");
+  } else {
+    if (diag) printf("--> CINCL is \"%s\"\n",cinclude);
+  }
+
+  /* Get value of HOME variable (same notes apply as for CINCL) */
+  home = (char *) getenv("HOME");
+  if (!home) {
+    if (diag) printf("--> HOME env var has no value assigned\n");
+  } else {
+    if (diag) printf("--> HOME is \"%s\"\n",home);
+  }    
+
+  /* ------------------------------------------------------ */
+  /* Environ.def file */
+  /* ------------------------------------------------------ */
+
+  /* Use a non-standard environ.def file specified by the user */
+  /* Search logic is:
+     If a directory is specified then
+	 Use the filename as is.
+      Else if the HOME variable is defined then
+         Use "$HOME/filename"
+      Else
+         Use the filename as is (in current directory).
+  */
+  if (ienviron > 0) {
+    /* Non-standard environ.def was specified */
+    if (ienviron < argc) {
+      if (env_file) free(env_file);
+      env_file = (char *) ccp4_utils_malloc(sizeof(char)*(strlen(argv[ienviron])+1));
+      if (!env_file) {
+	/* Couldn't allocate memory to store filename 
+	   Do clean up and exit */
+	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+			file_type,file_ext,env_file,def_file);
+	ccperror(1,"Can't fetch filename for -e option");
+      }
+      strcpy(env_file,argv[ienviron]);
+      env_init = 1;
+      if (diag) printf(" environ.def file is \"%s\"\n",env_file);
+    } else {
+      /* Not enough arguments in the arg list
+	 Do clean up and exit */
+      if (diag) printf(" no filename found\n");
+      ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+		      file_type,file_ext,env_file,def_file);
+      ccperror(1,"Use: -e filename");
+    }
+  }
+
+  if (!env_file) {
+    /* Use the standard environ.def file in CINCL */
+    if (diag) printf("--> use standard environ.def file\n");
+    if (cinclude) {
+      if (diag) printf("--> CINCL is \"%s\"\n",cinclude);
+      /* Set the full path for the environ.def file */
+      if (env_file) free(env_file);
+      env_file = ccp4_utils_joinfilenames(cinclude,"environ.def");
+      if (!env_file) {
+	/* Failed to make full path name for environ.def
+	   Do clean up and exit */
+	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+			file_type,file_ext,env_file,def_file);
+	ccperror(1,"Couldn't set filename for environ.def");
+      }
+      if (diag) printf("--> Full path for environ.def is \"%s\"\n",env_file);
+    } else {
+      if (diag) printf("--> CINCL env var has no value assigned\n");
+    }
+  }
 
   /* Read in environ.def */
-  if (env_init) {
+
+  /* environ.def contains lines of the form
+     LOGICALNAME=type.ext # comments
+     where type is "in", "out" or "inout"
+     and ext is the default extension, e.g. "mtz" or "scr"
+  */
+  if (env_init && env_file) {
     if (diag) printf("CCP4FYP: reading environ.def file\n");
-    /* Non-standard file? */
-    if (env_file) {
-      if (diag) printf("--> environ.def file was supplied on the command line\n");
+    if (diag) printf("--> Full path for environ.def is \"%s\"\n",env_file);
+    /* Open the environ.def file as read-only*/
+    ccp4printf(2,"Opening file \"%s\"\n",env_file);
+    envfp = fopen(env_file,"r");
+    if (!envfp) {
+      /* Failed to open the file
+       Do clean up and exit */
+      ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+		      file_type,file_ext,env_file,def_file);
+      ccperror(1,"CCP4FYP: failed to open environ.def");
     } else {
-      /* Use the standard environ.def in $CINCL */
-      if (diag) printf("--> use standard environ.def file\n");
-      /* Get value of CINCL variable */
-      cinclude = (char *) getenv("CINCL");
-      if (!cinclude) {
-	if (diag) printf("--> CINCL env var has no value assigned\n");
-      } else {
-	if (diag) printf("--> CINCL is \"%s\"\n",cinclude);
-	/* Set the full path for the environ.def file */
-	lfilename = strlen(cinclude) + strlen("environ.def") + 2;
-	envfilename = (char *) ccp4_utils_malloc(sizeof(char)*lfilename);
-	if (!envfilename)
-	  ccperror(-1,"CCP4FYP: cannot set environ.def pathname");
-	strcpy(envfilename,cinclude);
-        envfilename[strlen(cinclude)] = PATH_SEPARATOR;
-        envfilename[strlen(cinclude)+1] = '\0';
-	strcat(envfilename,"environ.def");
-	if (diag) printf("--> Full path for environ.def is \"%s\"\n",envfilename);
-	/* Open the environ.def file as read-only*/
-	ccp4printf(2,"Opening file \"%s\"\n",envfilename);
-	envfp = fopen(envfilename,"r");
-	if (!envfp)
-	  ccperror(1,"CCP4FYP: failed to open environ.def");
-
-        /* Set a ccp4_parser array to deal with input from
-	   environ.def */
-	parser = (CCP4PARSERARRAY *) ccp4_parse_start(CCP4_MAXTOKS);
-
-	/* Set the delimiters to whitespace, = and .
-	   This should split lines into the three components */
-	ccp4_parse_delimiters(parser," \t=.",NULL);
-
-	/* Read from the file until EOF*/
-	while (fgets(line,CCP4_MAXLINE,envfp)) {
-
-	  /* Remove the trailing newline from fgets */
-	  line[strlen(line)-1] = '\0';
-
-	  /* Use ccp4_parse to get the tokens on each line */
-	  ccp4_parse_reset(parser);
-	  if (ccp4_parse(line,parser) == 3) {
-	    logical_name = parser->token[0].fullstring;
-	    file_type    = parser->token[1].fullstring;
-	    file_ext     = parser->token[2].fullstring;
-	    if (!logical_name || !file_type || !file_ext)
-	      ccperror(-1,"CCP4FYP: couldn't parse line from environ.def");
-
-	    /* environ.def contains lines of the form
-	       LOGICALNAME=type.ext # comments
-	       where type is "in", "out" or "inout"
-	       and ext is the default extension, e.g. "mtz" or "scr"
-	    */
-
+      /* Set up a ccp4_parser array to deal with the contents of
+	 environ.def */
+      parser = (CCP4PARSERARRAY *) ccp4_parse_start(CCP4_MAXTOKS);
+      /* Set the delimiters to whitespace, = and .
+	 This should split lines into the three components */
+      ccp4_parse_delimiters(parser," \t=.",NULL);
+      
+      /* Read from the file until EOF*/
+      while (fgets(line,CCP4_MAXLINE,envfp)) {
+	/* Remove the trailing newline from fgets */
+	line[strlen(line)-1] = '\0';
+	/* Use ccp4_parse to get the tokens on each line */
+	ccp4_parse_reset(parser);
+	if (ccp4_parse(line,parser) == 3) {
+	  logical_name = parser->token[0].fullstring;
+	  file_type    = parser->token[1].fullstring;
+	  file_ext     = parser->token[2].fullstring;
+	  /* Check that we have values for all three components */
+	  if (!logical_name || !file_type || !file_ext) {
+	    /* Error parsing the line 
+	       Do clean up and exit */
+	    ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+			    file_type,file_ext,env_file,def_file);
+	    if (envfp) fclose(envfp); 
+	    ccperror(-1,"CCP4FYP: couldn't parse line from environ.def");
+	  } else {
 	    /* Store in arrays for use when decoding default.def
 	       and logical names on command line */
-	    if (ienv+1 == CCP4_MAXNAMES)
+	    if (ienv+1 == CCP4_MAXNAMES) {
+	      /* Exceeded the allowed number of logical names
+		 Do clean up and exit */
+	      ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+			      file_type,file_ext,env_file,def_file);
+	      if (envfp) fclose(envfp);
 	      ccperror(1,"CCP4FYP: too many logical names in environ.def file");
+	    } else {
+	      /* Store logical name in envname */
+	      envname[ienv] = (char *)
+		ccp4_utils_malloc(sizeof(char)*(strlen(logical_name)+1));
+	      strcpy(envname[ienv],logical_name);
+	      /* Store file type in envtype */
+	      envtype[ienv] = (char *)
+		ccp4_utils_malloc(sizeof(char)*(strlen(file_type)+1));
+	      strcpy(envtype[ienv],file_type);
+	      /* File extension in envext */
+	      envext[ienv] = (char *)
+		ccp4_utils_malloc(sizeof(char)*(strlen(file_ext)+1));
+	      strcpy(envext[ienv],file_ext);
+	
+	      if (diag) printf("Decoded line: %s = %s.%s\n",envname[ienv],
+			       envtype[ienv],envext[ienv]);
 
-	    /* Logical name in envname */
-	    envname[ienv] = (char *)
-	      ccp4_utils_malloc(sizeof(char)*(strlen(logical_name)+1));
-	    strcpy(envname[ienv],logical_name);
-
-	    /* File type in envtype */
-	    envtype[ienv] = (char *)
-	      ccp4_utils_malloc(sizeof(char)*(strlen(file_type)+1));
-	    strcpy(envtype[ienv],file_type);
-
-	    /* File extension in envext */
-	    envext[ienv] = (char *)
-	      ccp4_utils_malloc(sizeof(char)*(strlen(file_ext)+1));
-	    strcpy(envext[ienv],file_ext);
-	    
-	    if (diag) printf("Decoded line: %s = %s.%s\n",envname[ienv],
-		   envtype[ienv],envext[ienv]);
-
-	    /* Increment ienv counter for number of name-pairs
-	       read in */
-	    ienv++;
-
-	    /* Reset number of tokens before reading next line */
-	    ccp4_parse_reset(parser);
-
-	  } 
+	      /* Increment ienv counter for number of name-pairs
+		 read in */
+	      ienv++;
+	    }
+	  }
+	  /* Reset number of tokens before reading next line */
+	  ccp4_parse_reset(parser);
 	}
-	/* Close the environ.def file */
-	fclose(envfp);
-
-	/* Finished with the parser array */
-	ccp4_parse_end(parser);
+	/* End of loop over lines in file */
       }
+      /* Close the environ.def file and free memory storing
+	 the filename*/
+      fclose(envfp);
+      if (env_file) free(env_file);
+
+      /* Finished with the parser array */
+      ccp4_parse_end(parser);
+    }
+  }
+
+  /* ------------------------------------------------------ */
+  /* Default.def file */
+  /* ------------------------------------------------------ */
+
+  /* If the user specified a non-standard default.def in the
+     command line switches then sort this out first */
+  if (idefault > 0) {
+    /* Extract the filename from the argument list - idefault
+       points to which argument should hold it */
+    if (idefault < argc) {
+      if (def_file) free(def_file);
+      def_file = (char *) ccp4_utils_malloc(sizeof(char)*(strlen(argv[idefault])+1));
+      if (!def_file) {
+	/* Couldn't allocate memory to store filename
+	   Do clean up and exit */
+	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+			file_type,file_ext,env_file,def_file);
+	ccperror(1,"Can't fetch filename for -d option");
+      }
+      strcpy(def_file,argv[idefault]);
+      def_init = 1;
+      if (diag) printf(" default.def file is \"%s\"\n",def_file);
+    } else {
+      /* Not enough arguments in the arg list
+	 Do clean up and exit */
+      if (diag) printf(" no filename found\n");
+      ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+		      file_type,file_ext,env_file,def_file);
+      ccperror(1,"Use: -d filename");
+    }
+  }
+
+  if (!def_file) {
+    /* Use the standard default.def file in CINCL */
+    if (diag) printf("--> use standard default.def file\n");
+    if (cinclude) {
+      if (diag) printf("--> CINCL is \"%s\"\n",cinclude);
+      /* Set the full path for the default.def file */
+      def_file = ccp4_utils_joinfilenames(cinclude,"default.def");
+      if (!def_file) {
+	/* Unable to set the filename
+	   Do clean up and exit */
+	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+			file_type,file_ext,env_file,def_file);
+	ccperror(1,"Couldn't set filename for default.def");
+      }
+      if (diag) printf("--> Full path for default.def is \"%s\"\n",def_file);
+    } else {
+      if (diag) printf("--> CINCL env var has no value assigned\n");
     }
   }
 
   /* Read in default.def */
-  if (def_init) {
+
+  /* default.def contains lines of the form
+	   LOGICALNAME=FILENAME # comments
+  */
+  if (def_init && def_file) {
     if (diag) printf("CCP4FYP: reading default.def file\n");
-    /* Non-standard file? */
-    if (def_file) {
-      if (diag) printf("--> default.def file was supplied on the command line\n");
-    } else {
-      /* Use the standard environ.def in $CINCL */
-      if (diag) printf("--> use standard default.def file\n");
-      /* Get value of CINCL variable */
-      cinclude = (char *) getenv("CINCL");
-      if (!cinclude) {
-	if (diag) printf("--> CINCL env var has no value assigned\n");
-      } else {
-	if (diag) printf("--> CINCL is \"%s\"\n",cinclude);
-	/* Set the full path for the default.def file */
-	lfilename = strlen(cinclude) + strlen("default.def") + 2;
-	deffilename = (char *) ccp4_utils_malloc(sizeof(char)*lfilename);
-	if (!deffilename)
-	  ccperror(-1,"CCP4FYP: cannot set default.def pathname");
-	strcpy(deffilename,cinclude);
-        deffilename[strlen(cinclude)] = PATH_SEPARATOR;
-        deffilename[strlen(cinclude)+1] = '\0';
-	strcat(deffilename,"default.def");
-	if (diag) printf("--> Full path for default.def is \"%s\"\n",deffilename);
-	/* Open the default.def file as read-only*/
-	ccp4printf(2,"Opening file \"%s\"\n",deffilename);
-	deffp = fopen(deffilename,"r");
-	if (!deffp)
-	  ccperror(1,"CCP4FYP: failed to open default.def");
-
-        /* Set a ccp4_parser array to deal with input from
-	   default.def */
-	parser = (CCP4PARSERARRAY *) ccp4_parse_start(CCP4_MAXTOKS);
-
-	/* Set the delimiters to whitespace and =
-	   This should split lines into the two components */
-	ccp4_parse_delimiters(parser," \t=",NULL);
-
-	/* Read from the file until EOF*/
-	while (fgets(line,CCP4_MAXLINE,deffp)) {
-
-	  /* Remove the trailing newline from fgets */
-	  line[strlen(line)-1] = '\0';
-
-	  /* Use ccp4_parse to get the tokens on each line */
-	  ccp4_parse_reset(parser);
-	  if (ccp4_parse(line,parser) == 2) {
-	    logical_name = parser->token[0].fullstring;
-	    file_name    = parser->token[1].fullstring;
-	    if (!logical_name || !file_name)
-	      ccperror(-1,"CCP4FYP: couldn't parse line from default.def");
-
-	    /* default.def contains lines of the form
-	       LOGICALNAME=FILENAME # comments
-	    */
-	    if (diag) printf("Decoded line: %s = %s\n",logical_name,file_name);
-
-	    /* Set up the environment for this pair
-	       Don't overwrite any existing logical name */
-	    ccp4setenv(logical_name,file_name,envname,envtype,envext,ienv,1);
-
-      	    /* Reset number of tokens before reading next line */
-            ccp4_parse_reset(parser);
-	  }  
-	}
-	/* Close the default.def file */
-	fclose(deffp);
-
-	/* Finished with the parser array */
-	ccp4_parse_end(parser);
-      }
+    if (diag) printf("--> Full path for default.def is \"%s\"\n",def_file);
+    /* Open the default.def file as read-only*/
+    ccp4printf(2,"Opening file \"%s\"\n",def_file);
+    deffp = fopen(def_file,"r");
+    if (!deffp) {
+      /* Failed to open the file
+	 Do clean up and exit */
+      ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+		      file_type,file_ext,env_file,def_file);
+      ccperror(1,"CCP4FYP: failed to open default.def");
     }
+    /* Set a ccp4_parser array to deal with the contents of default.def */
+    parser = (CCP4PARSERARRAY *) ccp4_parse_start(CCP4_MAXTOKS);
+    /* Set the delimiters to whitespace and =
+       This should split lines into the two components */
+    ccp4_parse_delimiters(parser," \t=",NULL);
+
+    /* Read from the file until EOF*/
+    while (fgets(line,CCP4_MAXLINE,deffp)) {
+
+      /* Remove the trailing newline from fgets */
+      line[strlen(line)-1] = '\0';
+
+      /* Use ccp4_parse to get the tokens on each line */
+      ccp4_parse_reset(parser);
+      if (ccp4_parse(line,parser) == 2) {
+	logical_name = parser->token[0].fullstring;
+	file_name    = parser->token[1].fullstring;
+	if (!logical_name || !file_name) {
+	  /* Failed to parse the line - 
+	     do clean up and exit */
+	  ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+			  file_type,file_ext,env_file,def_file);
+	  if (deffp) fclose(deffp);
+	  ccperror(-1,"CCP4FYP: couldn't parse line from default.def");
+	}
+	if (diag) printf("Decoded line: %s = %s\n",logical_name,file_name);
+
+	/* Set up the environment for this pair
+	   Don't overwrite any existing logical name */
+	ierr = ccp4setenv(logical_name,file_name,envname,envtype,envext,&ienv,
+			   1,errmsg);
+	if (ierr) {
+	  /* An error from ccp4setenv
+	     Clean up and exit */
+	  if (deffp) fclose(deffp);
+	  ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+			  file_type,file_ext,env_file,def_file);
+	  ccperror(ierr,errmsg);
+	}
+	/* Reset number of tokens before reading next line */
+	ccp4_parse_reset(parser);
+      }  
+    }
+    /* Close the default.def file */
+    fclose(deffp);
+    if (def_file) free(def_file);
+
+    /* Finished with the parser array */
+    ccp4_parse_end(parser);
   }
+
+  /* ------------------------------------------------------ */
+  /* Process remaining command line arguments */
+  /* ------------------------------------------------------ */
 
   /* Read in the rest of the command line arguments
      These should consist of pairs of arguments i.e.
@@ -497,6 +683,7 @@ int ccp4fyp(int argc, char **argv)
   ccp4printf(2,"Processing Command Line Arguments\n");
   while (iarg < argc) {
     /* Get logical name and uppercase it */
+    if (logical_name) free(logical_name);
     logical_name = (char *) ccp4_utils_malloc((strlen(argv[iarg])+1)*sizeof(char));
     if (diag) printf("--> Raw logical name: \"%s\"\n",argv[iarg]);
     strtoupper(logical_name,argv[iarg]);
@@ -505,24 +692,73 @@ int ccp4fyp(int argc, char **argv)
     iarg++;
     /* Get associated filename */
     if (iarg < argc) {
+      if (file_name) free(file_name);
       file_name = (char *) ccp4_utils_malloc((strlen(argv[iarg])+1)*sizeof(char));
       strcpy(file_name,argv[iarg]);
       if (diag) printf("   file name: \"%s\"\n",file_name);
       /* Set up the environment for this pair
 	 Do overwrite any existing logical name */
-      ccp4setenv(logical_name,file_name,envname,envtype,envext,ienv,0);
+      ierr = ccp4setenv(logical_name,file_name,envname,envtype,envext,&ienv,
+			 0,errmsg);
+      if (ierr) {
+	/* An error from ccp4setenv
+	   Clean up and exit */
+	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+			file_type,file_ext,env_file,def_file);
+	ccperror(ierr,errmsg);
+      }
       iarg++;
     } else {
-      /* No associated filename - exit with error */
-      if (diag) printf("   no associated logical name\n");
+      /* No associated filename
+	 Do clean up and exit with error */
+      if (diag) printf("  no associated file name\n");
+      ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+		      file_type,file_ext,env_file,def_file);
+      if (deffp) fclose(deffp);
       ccperror(1,"Use: <logical name> <filename> ...");
     }
     /* Next pair of arguments */
   }
   ccp4printf(2,"End of pre-processing stage\n");
 
-  /* End of CCP4FYP */
+  /* ------------------------------------------------------ */
+  /* Finished processing - do local clean up */
+  /* ------------------------------------------------------ */
+
+  ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
+		  file_type,file_ext,env_file,def_file);
   if (diag) printf("CCP4FYP: ending\n");
+  return 0;
+}
+
+/*------------------------------------------------------------------*/
+
+/* ccp4fyp_cleanup
+
+   Internal function.
+   Called on exit from ccp4fyp - free memory associated with
+   pointers used inside ccp4fyp.
+*/
+int ccp4fyp_cleanup(int ienv, char **envname, char **envtype, char **envext,
+		    char *logical_name, char *file_name, char *file_type,
+		    char *file_ext, char *env_file, char *def_file)
+{
+  int i;
+  /* Free single valued pointers, if set */
+  if (logical_name) free(logical_name);
+  if (file_name) free(file_name);
+  if (file_type) free(file_type);
+  if (file_ext) free(file_ext);
+  if (env_file) free(env_file);
+  if (def_file) free(def_file);
+  /* Free arrays of pointers */
+  if (ienv > 0) {
+    for (i=0; i<ienv; ++i) {
+      if (envname[i]) free(envname[i]);
+      if (envtype[i]) free(envtype[i]);
+      if (envext[i]) free(envext[i]);
+    }
+  }
   return 0;
 }
 
@@ -537,32 +773,38 @@ int ccp4fyp(int argc, char **argv)
    environ.def, which may be used to modify the value before
    assignment.
 
-   If no_overwrt is true then any existing logical_name are not
+   If no_overwrt is true then any existing logical_names are not
    redefined.
+
+   ccp4setenv returns 0 on sucess, non-zero values on failure.
+   In the case of failure an error message is written to the
+   character array "errmsg"
+   "errmsg" is supplied by the calling subprogram and must be
+   at least 80 characters long.
 */
 int ccp4setenv(char *logical_name, char* value, char **envname,
-	      char **envtype, char **envext, int ienv, int no_overwrt)
+		char **envtype, char **envext, int *ienv, int no_overwrt,
+		char *errmsg)
 {
   int  diag=0;
   int  icount,lext=0,lroot=0,lpath=0,lname,procid;
-  char tmp_name[]="programX",*clibd,*cscr;
+  char *clibd,*cscr;
   char *file_ext=NULL,*file_root=NULL,*file_path=NULL,*file_name=NULL;
-  char *prog_name,*tmpstr1;
-  char errstr[81];
+
+  /* tmpstr1 only used for diagnostics */
+  char *tmpstr1=NULL;
 
   /* Begin */
-  if (diag) printf("CCP4SETENV: started, ienv = %d\n",ienv);
+  if (diag) printf("CCP4SETENV: started, ienv = %d\n",*ienv);
 
   /* Exit if the logical name already exists and we are in
      no-overwrite mode */
-  if (getenv(logical_name) && no_overwrt) return 0;
-  
-  /* Get the program (executable) name */
-  /* This is actually the first argument from the argument list
-     argv[0] which will need to be passed to ccp4setenv, or accessed
-     from some global variable */
-  prog_name = tmp_name;
-  if (diag) printf("CCP4SETENV: program name = \"%s\"\n",prog_name);
+  if (getenv(logical_name) && no_overwrt) {
+    /* Set message but don't return an error */
+    strncpy(errmsg,"Logical name already exists",80);
+    ccp4setenv_cleanup(file_ext,file_root,file_path,file_name);
+    return 0;
+  }
 
   /* Look for a match between logical_name and the names from
      environ.def */
@@ -570,14 +812,45 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
 		   logical_name);
   /* compare on strlen(envname[icount]) characters, so that e.g. HKLIN1 will match */
   icount = 0;
-  while (icount<ienv && strncmp(logical_name,envname[icount],strlen(envname[icount]))) {
+  while (icount<*ienv && strncmp(logical_name,envname[icount],strlen(envname[icount]))) {
     icount++;
   }
-  if (icount == ienv) {
+  if (icount == *ienv) {
     /* Not in the list - non-standard logical name */
     if (diag) printf("%s is non-standard logical name\n",logical_name);
-    /* Add it to the list */
-    /* FIXME: This means altering ienv etc ... not doing it now */
+    /* Add it to the list
+       Name is logical name
+       Type is "undef"
+       Extension is the extension of the filename */
+    if ((*ienv)+1 == CCP4_MAXNAMES) {
+      /* Exceeded the allowed number of logical names
+	 Clean up, set message and return an error */
+      ccp4setenv_cleanup(file_ext,file_root,file_path,file_name);
+      strncpy(errmsg,"ccp4setenv: too many logical names",80);
+      return 1;
+    } else {
+      /* Store logical name in envname */
+      if (diag) printf("Storing non-standard logical name ... \n");
+      envname[*ienv] = (char *)
+	ccp4_utils_malloc(sizeof(char)*(strlen(logical_name)+1));
+      strcpy(envname[*ienv],logical_name);
+      if (diag) printf("... done logical name:\"%s\" ... \n",envname[*ienv]);
+      /* Store file type "undef" in envtype */
+      envtype[*ienv] = (char *)
+	ccp4_utils_malloc(sizeof(char)*(strlen("undef")+1));
+      strcpy(envtype[*ienv],"undef");
+      if (diag) printf("... done type:\"%s\" ... \n",envtype[*ienv]);
+      /* File extension in envext */
+      if (file_ext) free(file_ext);
+      file_ext = ccp4_utils_extension(value);
+      envext[*ienv] = (char *)
+	ccp4_utils_malloc(sizeof(char)*(strlen(file_ext)+1));
+      strcpy(envext[*ienv],file_ext);
+      if (diag) printf("... done extension:\"%s\" ... \n",envext[*ienv]);
+      /* Increment the number of values stored */
+      ++(*ienv);
+      if (diag) printf("CCP4SETENV: now storing %d entries\n",*ienv);
+    }
   } else {
     if (diag) printf("CCP4SETENV: Matched logical name for number %d\n",icount);
   }
@@ -586,30 +859,34 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
      file extension, the file root (i.e. name less extension) and
      the file path
      It is possible there is no path and/or no extension */
-  if (diag) printf("CCP4SETENV: supplied file = \"%s\"\n",value); 
+  if (diag) printf("CCP4SETENV: supplied file = \"%s\"\n",value);
 
   /* Get file path */
+  if (file_path) free(file_path);
   file_path = ccp4_utils_pathname(value);
   lpath = strlen(file_path)-1;
   if (diag) printf("CCP4SETENV: path = \"%s\"\n",file_path); 
 
   /* Get file extension */
+  if (file_ext) free(file_ext);
   file_ext = ccp4_utils_extension(value);
   lext = strlen(file_ext);
   if (diag) printf("CCP4SETENV: extension = \"%s\"\n",file_ext); 
 
   /* Get file root */
+  if (file_root) free(file_root);
   file_root = ccp4_utils_basename(value);
   lroot = strlen(file_root);
-  if (diag) printf("CCP4SETENV: root = \"%s\"\n",file_root); 
+  if (diag) printf("CCP4SETENV: root = \"%s\"\n",file_root);
 
   /* Add the appropriate file extension if none was supplied
      The exception is for /dev/null or NL: */
   if (!strmatch(value,"/dev/null") && !strmatch(value,"NL:")) {
     if (lext <= 0) {
       /* Add extension */
-      if (icount < ienv) {
-	lext = strlen(envext[icount]);
+      if (icount < *ienv) {
+	lext = strlen(envext[icount]); 
+	if (file_ext) free(file_ext);
 	file_ext = (char *) ccp4_utils_malloc(sizeof(char)*(lext+1));
 	strncpy(file_ext,envext[icount],(lext+1));
 	if (diag) printf("CCP4SETENV: added extension \"%s\"\n",file_ext);
@@ -633,12 +910,18 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
 	  if (diag) printf("CCP4SETENV: CLIBD = \"%s\"\n",clibd);
 	  /* Store in file_path */
 	  lpath = strlen(clibd);
+	  if (file_path) free(file_path);
 	  file_path = (char *) ccp4_utils_malloc(sizeof(char)*(lpath+1));
 	  strncpy(file_path,clibd,(lpath+1));
 	  if (diag) printf("CCP4SETENV: set file path to CLIBD = \"%s\"\n",file_path);
 	} else {
-	  /* Couldn't get CLIBD */
-	  ccperror(1,"CCP4SETENV: couldn't get CLIBD from environment - check setup");
+	  /* Couldn't get CLIBD 
+	     Clean up, set message and return an error */
+	  ccp4setenv_cleanup(file_ext,file_root,file_path,file_name);
+	  strncpy(errmsg,
+		  "ccp4setenv: couldn't get CLIBD from environment - check setup",
+		  80);
+	  return 1;
 	}
 
       } else if (strmatch(file_ext,"scr")) {
@@ -648,18 +931,22 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
 	  if (diag) printf("CCP4SETENV: CCP4_SCR = \"%s\"\n",cscr);
 	  /* Store in file_path */
 	  lpath = strlen(cscr);
+	  if (file_path) free(file_path);
 	  file_path = (char *) ccp4_utils_malloc(sizeof(char)*(lpath+1));
 	  strncpy(file_path,cscr,(lpath+1));
 	  if (diag) printf("CCP4SETENV: set file path to CCP4_SCR = \"%s\"\n",file_path);
 	} else {
-	  /* Couldn't get CCP4_SCR */
-	  ccperror(1,"CCP4SETENV: couldn't get CCP4_SCR from environment - check setup");
+	  /* Couldn't get CCP4_SCR
+	     Clean up, set message and return an error */
+	  ccp4setenv_cleanup(file_ext,file_root,file_path,file_name);
+	  strncpy(errmsg,
+		  "ccp4setenv: couldn't get CCP4_SCR from environment - check setup",
+		  80);
+	  return 1;
 	}
 	/* Replace scr extension with the process id
 	 In fact to guarantee that it is always 5 characters,
-	 take the id number modulo 100,000
-	 FIXME there maybe rounding problems doing it this
-	 way - should be fixed up */
+	 take the id number modulo 100,000 */
 	procid = (int) getpid();
 	if (diag) printf("CCP4SETENV: initial procid = %d\n",procid);
         procid = procid % CCP4_MODULO;
@@ -708,16 +995,19 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
   if (diag) printf("CCP4SETENV: building filename = \"%s\"\n",file_name);
 
   /* Test that (non-default) input files exist */
-  if (icount < ienv) {
+  if (icount < *ienv) {
     if (strmatch(envtype[icount],"in") && !no_overwrt) {
-      /* Does file exist? */
+      /* Does the file exist? */
       if (diag) printf("CCP4SETENV: checking for existence of input file\n");
       if (ccpexists(file_name)) {
 	if (diag) printf("CCP4SETENV: \"%s\" can be opened for reading\n",file_name);
       } else {
+	/* File doesn't exist/cannot be opened for reading
+	   Clean up, set message and return an error */
 	if (diag) printf("CCP4SETENV: \"%s\" cannot be opened for reading\n",file_name);
-        sprintf(errstr,"Cannot find file: \"%s\" ",file_name);
-	ccperror(-1,errstr);
+        sprintf(errmsg,"Cannot find file: \"%s\" ",file_name);
+	ccp4setenv_cleanup(file_ext,file_root,file_path,file_name);
+	return -1;
       }
     }
   } else {
@@ -728,7 +1018,11 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
   if (ccpputenv(logical_name,file_name)) {
     if (diag) printf("CCP4SETENV: ccpputenv returned okay\n");
   } else {
-    ccperror(-1,"Cannot create environment variable");
+    /* Unable to set environment variable
+       Clean up and exit the program */
+    strncpy(errmsg,"ccp4setenv: cannot create environment variable",80);
+    ccp4setenv_cleanup(file_ext,file_root,file_path,file_name);
+    return -1;
   }
 
   if (diag) {
@@ -741,11 +1035,25 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
   }
 
   /* Free dynamically allocated memory before returning */
+  ccp4setenv_cleanup(file_ext,file_root,file_path,file_name);
+  return 0;
+}
+
+/*------------------------------------------------------------------*/
+
+/* ccp4setenv_cleanup
+
+   Internal function.
+   Called on exit from ccp4setenv - free memory associated with
+   pointers used inside ccp4setenv.
+*/
+int ccp4setenv_cleanup(char *file_ext, char *file_root, char *file_path,
+		       char *file_name)
+{
   if (file_ext) free(file_ext);
   if (file_root) free(file_root);
   if (file_path) free(file_path);
   if (file_name) free(file_name);
-
   return 1;
 }
 
@@ -779,13 +1087,18 @@ int ccpexists(char *filename)
 
 /* ccpputenv
 
-   This is a wrapper for the C putenv command. It must be supplied
-   with a logical name (the name of a variable which will set in the
-   environment) and a file name (which will be assigned to that
-   variable).
-   FIXME For some systems might also need to use setenv
+   This is a wrapper for the ccp4_utils_setenv command.
+
+   It must be supplied with a logical name (the name of a variable
+   which will be set in the environment) and a file name (the value which
+   will be assigned to that variable).
 
    Returns 1 if successful and 0 otherwise.
+
+   Notes:
+   1. Platform-dependency is encoded in ccp4_utils_setenv.
+   2. Dynamically allocated strings passed to ccpputenv should be
+   freed by the calling subprogram to avoid memory leaks.
 */
 int ccpputenv(char *logical_name, char *file_name)
 {
@@ -802,8 +1115,8 @@ int ccpputenv(char *logical_name, char *file_name)
       strcat(tmpstr,"=");
       strcat(tmpstr,file_name);
       tmpstr[ltmpstr] = '\0';
-      if (diag) printf("CCPPUTENV: string going into putenv is \"%s\"\n",tmpstr);
-      /* putenv returns 0 on success */
+      if (diag) printf("CCPPUTENV: string going into ccp4_utils_setenv is \"%s\"\n",tmpstr);
+      /* ccp4_utils_setenv returns 0 on success */
       if (ccp4_utils_setenv(tmpstr) == 0) {
         /* free tmpstr here as ccp4_utils_setenv does separate malloc */
         free (tmpstr);
@@ -814,6 +1127,12 @@ int ccpputenv(char *logical_name, char *file_name)
   return 0;
 }
 
+/*------------------------------------------------------------------*/
+
+/* ccp4_banner
+
+   Write CCP4 banner to standard output.
+*/
 void ccp4_banner(void) {
 
   int diag=0;
