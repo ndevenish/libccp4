@@ -36,8 +36,8 @@
 # INSTALL_PROGRAM INSTALL_DATA SHARE_LIB SHARE_INST
 
 SHELL       = /bin/sh
-srcdir	    = $(top_srcdir)/lib/newsrc
-mmdbsrcdir  = $(top_srcdir)/lib/newsrc/mmdb
+srcdir	    = $(top_srcdir)/lib/src
+mmdbsrcdir  = $(top_srcdir)/lib/src/mmdb
 LIB_DIR     = .
 fsplit_dir  = $(srcdir)#directory where fsplit has been made/lives
 
