@@ -104,6 +104,11 @@ c
       subroutine dna_end
       include 'dna_header.fh'
  1    format('</dna_tables>')
+
+c     close any ongoing tables
+      if (dnainlist) call dna_list_end
+      if (dnaintable) call dna_table_end
+
       if(dnaout) write(dnafd, 1)
       if(dnaout) close(dnafd)
       dnaout = .false.
@@ -118,6 +123,15 @@ c
       include 'dna_header.fh'
       character *(*) name
       real value
+ 1    format('      <item name="', a, '">', e15.6, '</item>')
+      if(dnaout) write(dnafd, 1) name(1:lenstr(name)), value
+      return
+      end
+
+      subroutine dna_double_item(name, value)      
+      include 'dna_header.fh'
+      character *(*) name
+      double precision value
  1    format('      <item name="', a, '">', e15.6, '</item>')
       if(dnaout) write(dnafd, 1) name(1:lenstr(name)), value
       return
@@ -158,7 +172,33 @@ c
       include 'dna_header.fh'
       character *(*) name
  1    format('    <list name="', a, '">')
+
+c     check that we are not already in a list, and if we are
+c     close it!
+
+      if (dnainlist) call dna_list_end
+      dnainlist = .true.
+
       if(dnaout) write(dnafd, 1) name
+      return
+      end
+
+      subroutine dna_ilist_start(name, index)
+c     this is the same as the above but with an integer index
+c     so that you can have any lists with the same name - very 
+c     important for tabular output.
+      include 'dna_header.fh'
+      character *(*) name
+      integer index
+ 1    format('    <list name="', a, '" index="', i5, '">')
+
+c     check that we are not already in a list, and if we are
+c     close it!
+
+      if (dnainlist) call dna_list_end
+      dnainlist = .true.
+
+      if(dnaout) write(dnafd, 1) name, index
       return
       end
 
@@ -168,8 +208,14 @@ c
 
       subroutine dna_list_end
       include 'dna_header.fh'
+
  1    format('    </list>')
-      if(dnaout) write(dnafd, 1)
+
+c     check that we are in a list
+      if (dnainlist) then
+         if(dnaout) write(dnafd, 1)
+      end if
+      dnalist = .false.
       return
       end
 
@@ -182,6 +228,11 @@ c
       character *(*) name
  1    format('  <table name="', a, '" image="', a, '">')
  2    format('  <table name="', a, '">')
+
+c     check that we are not already inside a table
+      if (dnaintable) call dna_table_end
+      dnaintable = .true.
+
       if (dna_image .eq. ' ') then
          if(dnaout) write(dnafd, 2) name(1:lenstr(name))
       else
@@ -198,7 +249,17 @@ c
       subroutine dna_table_end
       include 'dna_header.fh'
  1    format('  </table>')
-      if(dnaout) write(dnafd, 1)
+
+c     check we are not still inside a list
+
+      if (dnainlist) then
+         call dna_list_end
+      end if
+
+      if (dnaintable) then
+         if(dnaout) write(dnafd, 1)
+      end if
+      dnaintable = .false.
       return
       end
 
@@ -207,6 +268,18 @@ c
 
       call dna_table_start('error')
       call dna_list_start('error')
+      call dna_character_item('message', message(1:lenstr(message)))
+      call dna_list_end
+      call dna_table_end
+
+      return
+      end
+
+      subroutine dna_warning(message)
+      character*(*) message
+
+      call dna_table_start('warning')
+      call dna_list_start('warning')
       call dna_character_item('message', message(1:lenstr(message)))
       call dna_list_end
       call dna_table_end
