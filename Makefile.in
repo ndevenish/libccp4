@@ -99,7 +99,7 @@ $L : $L(cciflib.o) $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	  $L(libhtml.o) $L(plotsubs.o) $L(keyparse.o) \
 	  $L(pack_c.o) $L(pack_f.o) $L(pxxml.o)
 # titan special:
-	-(test -f /usr/lib/fortran/time.o && make '$L(time.o)') || true
+	-(test -f /usr/lib/fortran/time.o && $(MAKE) '$L(time.o)') || true
 # we could presumably avoid the next two steps if we haven't changed anything
 	$(RANLIB) $@
 # maybe create shared library
@@ -108,7 +108,7 @@ $L : $L(cciflib.o) $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 test-lib : $(srcdir)/testlib.f $L(library.o) $L(library_f.o) $L(unix.o) $L(ccplib.o) \
 	$L(diskio.o)
 # titan special:
-	-(test -f /usr/lib/fortran/time.o && make '$L(time.o)') || true
+	-(test -f /usr/lib/fortran/time.o && $(MAKE) '$L(time.o)') || true
 	$(RANLIB) $L
 
 
