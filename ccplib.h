@@ -61,8 +61,6 @@ int ccp4printf(int level, char *format, ...);
 
 int ccp4fyp(int argc, char **argv);
 
-void *ccp4malloc(size_t size, char *message);
-
 int ccp4setenv(char *logical_name, char* value, char **envname,
 		       char **envtype, char **envext, int ienv, int no_overwrt);
 

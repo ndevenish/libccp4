@@ -28,11 +28,6 @@
      FIXME doesn't obey the CCP4FYP search logic for environ.def
      and default.def
 
-     ccp4malloc(size,message)
-     Allocate memory or exit program with message on failure
-     FIXME need to decide if this is actually useful in its
-     current form
-
      ccp4setenv(logical_name,value,envname,envtype,envext,ienv,
      no_overwrt)
      Set up file names and associate with logical_name in
@@ -533,31 +528,6 @@ int ccp4fyp(int argc, char **argv)
 
 /*------------------------------------------------------------------*/
 
-/* ccp4malloc
-
-   This is a wrapper for the standard malloc command which
-   traps for a NULL result and exits
-
-   On a fatal error, the string "message" is passed to
-   ccperror.
-*/
-void *ccp4malloc(size_t size, char *message)
-{
-  void *ptr;
-
-  ptr = (void *) malloc(size);
-  if (!ptr && size) {
-    if (message) {
-      ccperror(1,message);
-    } else {
-      ccperror(1,"CCP4MALLOC: failed to allocate memory");
-    }
-  }
-  return ptr;
-}
-
-/*------------------------------------------------------------------*/
-
 /* ccp4setenv
 
    Set environment variables
@@ -640,7 +610,7 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
       /* Add extension */
       if (icount < ienv) {
 	lext = strlen(envext[icount]);
-	file_ext = (char *) ccp4malloc(sizeof(char)*(lext+1),NULL);
+	file_ext = (char *) ccp4_utils_malloc(sizeof(char)*(lext+1));
 	strncpy(file_ext,envext[icount],(lext+1));
 	if (diag) printf("CCP4SETENV: added extension \"%s\"\n",file_ext);
       } else {
@@ -663,7 +633,7 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
 	  if (diag) printf("CCP4SETENV: CLIBD = \"%s\"\n",clibd);
 	  /* Store in file_path */
 	  lpath = strlen(clibd);
-	  file_path = (char *) ccp4malloc(sizeof(char)*(lpath+1),NULL);
+	  file_path = (char *) ccp4_utils_malloc(sizeof(char)*(lpath+1));
 	  strncpy(file_path,clibd,(lpath+1));
 	  if (diag) printf("CCP4SETENV: set file path to CLIBD = \"%s\"\n",file_path);
 	} else {
@@ -678,7 +648,7 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
 	  if (diag) printf("CCP4SETENV: CCP4_SCR = \"%s\"\n",cscr);
 	  /* Store in file_path */
 	  lpath = strlen(cscr);
-	  file_path = (char *) ccp4malloc(sizeof(char)*(lpath+1),NULL);
+	  file_path = (char *) ccp4_utils_malloc(sizeof(char)*(lpath+1));
 	  strncpy(file_path,cscr,(lpath+1));
 	  if (diag) printf("CCP4SETENV: set file path to CCP4_SCR = \"%s\"\n",file_path);
 	} else {
@@ -695,8 +665,9 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
         procid = procid % CCP4_MODULO;
 	if (diag) printf("CCP4SETENV: procid = %d",procid);
 	if (file_ext) free(file_ext);
-	file_ext = (char*) ccp4malloc(sizeof(char)*6,NULL);
+	file_ext = (char*) ccp4_utils_malloc(sizeof(char)*6);
 	sprintf(file_ext,"%05d",procid);
+        lext = 5;
 	if (diag) printf(" giving file extension \"%s\"\n",file_ext);
       }
       /* No special path for this particular extension */
@@ -707,7 +678,7 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
 
   /* Build the filename */
   lname = lpath + 1;
-  file_name = (char *) realloc(file_name,sizeof(char)*(lname + 1));
+  file_name = (char *) ccp4_utils_realloc(file_name,sizeof(char)*(lname + 1));
   if (lpath < 0) {
     file_name[0] = '\0';
   } else if (lpath == 0) {
@@ -720,18 +691,19 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
   }
   if (diag) printf("CCP4SETENV: building filename = \"%s\"\n",file_name);
   lname = lname + lroot;
-  file_name = (char *) realloc(file_name,sizeof(char)*(lname + 1));
+  file_name = (char *) ccp4_utils_realloc(file_name,sizeof(char)*(lname + 1));
   if (lroot) {
     strcat(file_name,file_root);
   }
   if (diag) printf("CCP4SETENV: building filename = \"%s\"\n",file_name);
   if (lext > 0) {
     lname = lname + lext + 1;
-    file_name = (char *) realloc(file_name,sizeof(char)*(lname + 1));
+    file_name = (char *) ccp4_utils_realloc(file_name,sizeof(char)*(lname + 1));
     strcat(file_name,".");
     if (lext) {
       strcat(file_name,file_ext);
     }
+    file_name[lname] = '\0';
   }
   if (diag) printf("CCP4SETENV: building filename = \"%s\"\n",file_name);
 
@@ -823,18 +795,21 @@ int ccpputenv(char *logical_name, char *file_name)
   if (logical_name && file_name) {
     /* Allocate memory for temporary string */
     ltmpstr = strlen(logical_name) + strlen(file_name) + 1;
-    tmpstr = (char *) malloc(sizeof(char)*(ltmpstr+1));
+    tmpstr = (char *) ccp4_utils_malloc(sizeof(char)*(ltmpstr+1));
     /* putenv requires a string of the form "logical_name=file_name" */
     if (tmpstr) {
       strcpy(tmpstr,logical_name);
       strcat(tmpstr,"=");
       strcat(tmpstr,file_name);
+      tmpstr[ltmpstr] = '\0';
       if (diag) printf("CCPPUTENV: string going into putenv is \"%s\"\n",tmpstr);
       /* putenv returns 0 on success */
-      if (putenv(tmpstr) == 0) return 1;
+      if (ccp4_utils_setenv(tmpstr) == 0) {
+        /* free tmpstr here as ccp4_utils_setenv does separate malloc */
+        free (tmpstr);
+        return 1;
+      }
     }
-    /* Don't free tmpstr as this causes an error - see man pages for
-       putenv */
   }
   return 0;
 }
