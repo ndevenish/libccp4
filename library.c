@@ -1537,7 +1537,7 @@ void *ccp4calloc(size_t nelem , size_t elsize)
     }
   return val;}
 
-#if defined (_MVS)
+#if defined (_MVS) || defined (IFC)
 double ccp4_erfc( double x )
 {
   double t,z,ans;
