@@ -1637,7 +1637,8 @@ int ccp4_file_writecomp (CCP4File *cfile, const char *buffer, size_t nitems)
   n = nitems * _item_sizes[COMP64];
   
   if (cfile->fconvert != nativeFT) {
-    char out_buffer[8], *out_ptr = buffer;
+    char out_buffer[8];
+    const char *out_ptr = buffer;
     size_t i;
     for (i = 0; i != nitems; i++) {
       switch (nativeFT) {
@@ -1745,7 +1746,8 @@ int ccp4_file_writeshortcomp (CCP4File *cfile, const char *buffer, size_t nitems
   n = nitems * _item_sizes[COMP32];
 
   if (cfile->iconvert != nativeIT) {
-    char out_buffer[4], *out_ptr = buffer;
+    char out_buffer[4];
+    const char *out_ptr = buffer;
     size_t i;
     for (i = 0; i != nitems; i++) {
       if ((cfile->iconvert==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
@@ -1803,7 +1805,8 @@ int ccp4_file_writefloat (CCP4File *cfile, const char *buffer, size_t nitems)
   n = nitems * _item_sizes[FLOAT32];
 
   if (cfile->fconvert != nativeFT) {
-    char out_buffer[4], *out_ptr = buffer;
+    char out_buffer[4];
+    const char *out_ptr = buffer;
     size_t i;
     for (i = 0; i != nitems; i++) {
       switch (nativeFT) {
@@ -1901,7 +1904,8 @@ int ccp4_file_writeint (CCP4File *cfile, const char *buffer, size_t nitems)
   n = nitems * _item_sizes[INT32];
 
   if (cfile->iconvert != nativeIT) {
-    char out_buffer[4], *out_ptr = buffer;
+    char out_buffer[4];
+    const char *out_ptr = buffer;
     size_t i;
     for (i = 0; i != nitems; i++) {
       if ((cfile->iconvert==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
@@ -1959,7 +1963,8 @@ int ccp4_file_writeshort (CCP4File *cfile, const char *buffer, size_t nitems)
   n = nitems * _item_sizes[INT16];
   
   if (cfile->iconvert != nativeIT) {
-    char out_buffer[2], *out_ptr = buffer;
+    char out_buffer[2];
+    const char *out_ptr = buffer;
     size_t i;
     for (i = 0; i != nitems; i++) {
       if ((cfile->iconvert==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
