@@ -1013,6 +1013,7 @@ int size;
 /*                                                                          */
 /* <miscellaneous routines>=                                                */
 #ifndef VMS                     /* we'll use the Fortran version in VMS*/
+#ifndef _MVS
 #if CALL_LIKE_HPUX
   void ccpal1 (routne, n, type, length)
   void (* routne) ();
@@ -1120,6 +1121,7 @@ int size;
     free (pointer[i+1]);
 }
 #endif /* VMS */
+#endif
 /* \section{Diskio routines}                                                */
 /*                                                                          */
 /* \subsection{{\tt subroutine copen(\meta{iunit}, \meta{filename},         */
@@ -2687,7 +2689,7 @@ int __stdcall ISATTY (int *lunit)
 #if defined (PROTOTYPE)
   void *ccp4realloc(void *ptr, size_t size)
 #else
-  void *ccp4realloc(size)
+  void *ccp4realloc(ptr, size)
   void *ptr
   size_t size;
 #endif
