@@ -51,7 +51,7 @@ INSTALL_DATA = cp# fixme: should be set by configure
 AR          = ar r
 
 # modules to go in libccp4.a:
-LIBTARGETS = ccplib fftlib maplib parser rwatom rwbrook modlib mthlib \
+LIBTARGETS = ccplib fftlib maplib parser rwatom rwbrook modlib \
            symlib lcflib mtzlib diskio unix frodo_maplib plot84lib graflib \
            graphics binsortint library ucurse hlplib gdummy
 
@@ -172,7 +172,8 @@ $L(frodo_maplib.o) : $(srcdir)/frodo_maplib.for
 	-rm -rf frodo_maplib.dir; mkdir frodo_maplib.dir
 	cd frodo_maplib.dir; fsplit $(srcdir)/frodo_maplib.for; \
 	  $(FC) -c $(FFLAGS) *.$F; touch frodo_maplib.o; \
-	  $(AR) ../$L *_maplib.o
+	  $(AR) ../$L *.o
+	rm -rf frodo_maplib.dir
 
 $L(plot84lib.o) : $(srcdir)/plot84lib.for
 	-rm -rf plot84lib.dir; mkdir plot84lib.dir
@@ -228,12 +229,11 @@ binsort : $(srcdir)/binsort.c $(incdir)/binsort.h
 	$(LNS) binsort ../../src/binsort
 
 # the unix-specific bits need preprocessing for different unix variants
-unix.$F : $(srcdir)/unix.m4
+$L(unix.o) : $(srcdir)/unix.m4
 	$(M4) $(srcdir)/unix.m4 >unix.$F
-$L(unix.o) : unix.$F
 	-rm -rf unix.dir; mkdir unix.dir
 	cd unix.dir; fsplit ../unix.$F; \
-	  $(FC) -c $(FFLAGS) *.$F; \
+	  $(FC) -c $(FFLAGS) *.$F; touch unix.o ;\
 	  $(AR) ../$L *.o
 	rm -r unix.dir
 
