@@ -2189,7 +2189,7 @@ C     ============================
 C
 C---- The function lookup returns the value nfind (which was input when
 C     setting up the function in the subroutine setup) for the large
-C     range variable nser
+C     range variable nser.  Uses hashing.
 C
       INTEGER KPRI
       PARAMETER (KPRI=1009)
