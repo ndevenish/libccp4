@@ -64,6 +64,7 @@ C    ccp4_hash_zeroit
 C
 C 7) Miscellaneous subroutines.
 C    setrsl        sthlsq        sts3r4        pstoph
+C    handchange
 C
 C_END_SYMLIB
 C_BEGIN_OUTLINE
@@ -809,6 +810,14 @@ C***   Convert PSIX,PSIY,PSIZ (= epsx,epsy,epsz) to PHIX,PHIY,PHIZ ,
 C***    using AVPHI
 C      All angles in radians
 C
+C
+C---- SUBROUTINE HANDCHANGE(LSPGRP,CX,CY,CZ)
+C
+C   Set origin shift for phase changes
+C                I41    80 (0.0   0.5  0.0)
+C                I4122  98 (0.0   0.5  0.25)
+C                F4132 210 (0.75  0.25 0.75)
+C                I4132 214 (0.25  0.25 0.25)
 C
 C  End of Brief Description.
 C +++++++++++++++++++++++++
@@ -6605,13 +6614,46 @@ c          ENDDO
       RETURN
       END
 
-
-
-
-
-
-
-
-
-
+C     =============================================================
+      SUBROUTINE HANDCHANGE(LSPGRP,CX,CY,CZ)
+C     =============================================================
+C
+C Find hand change centre
+C    
+C
+C     .. Scalar Arguments ..
+      INTEGER LSPGRP
+C     ..
+C     .. Scalars ..
+      REAL CX,CY,CZ
+C     ..
+      CX = 0.0
+      CY = 0.0
+      CZ = 0.0
+C     ..
+C   Phase Change also requires origin shift for 
+C                I41    80 (0.0   0.5  0.0)
+C                I4122  98 (0.0   0.5  0.25)
+C                F4132 210 (0.75  0.25 0.75)
+C                I4132 214 (0.25  0.25 0.25)
+C
+      IF (LSPGRP.EQ.80) THEN
+         CY = 0.5
+      ELSEIF (LSPGRP.EQ.98) THEN
+         CY = 0.5
+         CZ = 0.25
+      ELSEIF (LSPGRP.EQ.210) THEN
+         CX = 0.75
+         CY = 0.25
+         CZ = 0.75
+      ELSEIF (LSPGRP.EQ.214) THEN
+         CX = 0.25
+         CY = 0.25
+         CZ = 0.25
+      ENDIF
+      WRITE(6,'(A,3F5.2)') 
+     + ' Changing Phase hand means Phi2 = 2PI(H*CX+K*CY+L*CZ)-PHI',
+     +   CX,CY,CZ
+      RETURN
+      END
 
