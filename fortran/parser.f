@@ -164,7 +164,7 @@ C     .. Local Scalars ..
       INTEGER IFAIL,K,KSTREAM,LENLIN,LINLEN,LSTREAM,MSTREAM,N,
      +        NITEM
       LOGICAL FIRST, HAVLIN
-      CHARACTER FLNAME*60,LINEX*800,LINEK1
+      CHARACTER FLNAME*60,LINEX*1500,LINEK1
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -177,7 +177,7 @@ C     .. Intrinsic Functions ..
       INTRINSIC LEN,MAX
 C     ..
 C     .. Scalars in Common ..
-      CHARACTER STROUT*800
+      CHARACTER STROUT*1500
 C     ..
 C     .. Save statement ..
       SAVE NITEM, LSTREAM
@@ -437,7 +437,7 @@ C     .. Local Scalars ..
      +        NITEM,NPLACE,NSPDLM,OPER,NDDELM,NDSDLM,INTLEN
       LOGICAL NULL,NUMBER,OPRATR,QUOTE,TOKEN,TQUOTE,COMMNT
       CHARACTER BLANK*1,LETQT*1,OLDQUT*1,DBLQT*1,TAB*1
-      CHARACTER LINERR*800,ICOMM1*1,ICOMM2*1
+      CHARACTER LINERR*1500,ICOMM1*1,ICOMM2*1
 C     ..
 C     .. Local Arrays ..
       INTEGER ISGN(2)
