@@ -814,7 +814,12 @@ C       scratch file
 C
 C     check for `logical name' referencing real file
       CALL UGTENV(LOGNAM,NAMFIL)
-      IF (NAMFIL.EQ.' ') NAMFIL = LOGNAM
+      IF (NAMFIL.EQ.' ') THEN
+        ERRSTR = 'CCPOPN Logical name '//LOGNAM
+        ERRSTR(LENSTR(ERRSTR)+2:) = 'has not been assigned to a file'
+        CALL CCPERR(2,ERRSTR)
+        NAMFIL = LOGNAM
+      END IF
 C     Unix null device (defined as canonical if programs need it)
       IF (NAMFIL.EQ.'/dev/null') NAMFIL = 'NL:'
 C     Opening /dev/null is necessary in Unix; not sure if this is needed
