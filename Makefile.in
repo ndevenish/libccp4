@@ -1,0 +1,205 @@
+
+# Makefile tail for CCP4 Library.  This will be modified by configure.
+
+# $Header$
+
+# Usage: make                 - to make the library in this directory
+#        make <module>        - to make that particular module
+#        make binsort         - for the binsort program in this directory
+#        make install         - to copy the results into binary directory
+#        make test            - to compile and run the library testbed
+
+# This is horrible in the hope of being able to cater for all makes
+# and still have the advantage of not re-making the library
+# un-necessarily without sentinel files.  A combination of makes not
+# understanding VPATH and not dealing with foo(bar) targets well and
+# the fact that the Fortran sources are stored as .for means that we
+# need to do everything explicitly -- ugh.  Note that we do assume
+# that the make recognises a target foo.a(bar.o) as a library member.
+# Life would be so much easier if we could rely on using GNU make; I
+# wonder whether we should distribute it...
+
+# The following variables are expected to be set by configure:
+# top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
+
+SHELL       = /bin/sh
+incdir      = $(top_srcdir)/include
+srcdir	    = $(top_srcdir)/lib/src
+L           = libccp4.a#        convenient abbreviation only
+
+INSTALL_BIN = cp# fixme: should be set by configure
+INSTALL_DATA = cp# fixme: should be set by configure
+
+# how to add a member to an archive (second and first args
+# respectively); this might need to be set by configure:
+AR          = ar rv
+
+# modules to go in libccp4.a:
+LIBTARGETS = ccplib fftlib maplib parser rwatom rwbrook modlib mthlib \
+           symlib lcflib mtzlib diskio unix frodo_maplib plot84lib graflib \
+           graphics binsortint library ucurse hlplib
+
+all :  $L binsort
+
+.PRECIOUS : $L $(libdir)/$L     # don't zap the library if a component fails
+
+# probably only recognised by GNU make:
+.PHONY : all clean install $(LIBTARGETS) ranlib realclean distclean \
+         test help
+
+$L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) $L(rwatom.o) \
+	  $L(rwbrook.o) $L(modlib.o) $L(mthlib.o) $L(symlib.o) $L(lcflib.o) \
+	  $L(mtzlib.o) $L(diskio.o) $L(unix.o) $L(frodo_maplib.o) \
+	  $L(binsortint.o) $L(library.o) $L(ucurse.o) $L(hlplib.o) \
+	  $L(plot84lib.o) $L(graflib.o) $L(graphics.o)
+	$(RANLIB) $@
+
+ranlib: ; $(RANLIB) $L
+
+$(LIBTARGETS) : ; $(MAKE) $(MFLAGS) "$L($@.o)"
+
+# explicit building of the real targets, sigh...
+
+$L(ccplib.o) : $(srcdir)/ccplib.for
+	-rm -f ccplib.$F; $(LNS) $(srcdir)/ccplib.for ccplib.$F
+	$(FC) -c $(FFLAGS) ccplib.$F
+	$(AR) $L ccplib.o; rm ccplib.o
+
+$L(fftlib.o) : $(srcdir)/fftlib.for
+	-rm -f fftlib.$F; $(LNS) $(srcdir)/fftlib.for fftlib.$F
+	$(FC) -c $(FFLAGS) fftlib.f
+	$(AR) $L fftlib.o; rm fftlib.o
+
+$L(maplib.o) : $(srcdir)/maplib.for
+	-rm -f maplib.$F; $(LNS) $(srcdir)/maplib.for maplib.$F
+	$(FC) -c $(FFLAGS) maplib.$F
+	$(AR) $L maplib.o; rm maplib.o
+
+$L(parser.o) : $(srcdir)/parser.for
+	-rm -f parser.$F; $(LNS) $(srcdir)/parser.for parser.$F
+	$(FC) -c $(FFLAGS) parser.$F
+	$(AR) $L parser.o; rm parser.o
+
+$L(rwatom.o) : $(srcdir)/rwatom.for
+	-rm -f rwatom.$F; $(LNS) $(srcdir)/rwatom.for rwatom.$F
+	$(FC) -c $(FFLAGS) rwatom.$F
+	$(AR) $L rwatom.o; rm rwatom.o
+
+$L(rwbrook.o) : $(srcdir)/rwbrook.for
+	-rm -f rwbrook.$F; $(LNS) $(srcdir)/rwbrook.for rwbrook.$F
+	$(FC) -c $(FFLAGS) rwbrook.$F
+	$(AR) $L rwbrook.o; rm rwbrook.o
+
+$L(modlib.o) : $(srcdir)/modlib.for
+	-rm -f modlib.$F; $(LNS) $(srcdir)/modlib.for modlib.$F
+	$(FC) -c $(FFLAGS) modlib.$F
+	$(AR) $L modlib.o; rm modlib.o
+
+$L(mthlib.o) : $(srcdir)/mthlib.for
+	-rm -f mthlib.$F; $(LNS) $(srcdir)/mthlib.for mthlib.$F
+	$(FC) -c $(FFLAGS) mthlib.$F
+	$(AR) $L mthlib.o; rm mthlib.o
+
+$L(symlib.o) : $(srcdir)/symlib.for
+	-rm -f symlib.$F; $(LNS) $(srcdir)/symlib.for symlib.$F
+	$(FC) -c $(FFLAGS) symlib.$F
+	$(AR) $L symlib.o; rm symlib.o
+
+$L(lcflib.o) : $(srcdir)/lcflib.for
+	-rm -f lcflib.$F; $(LNS) $(srcdir)/lcflib.for lcflib.$F
+	$(FC) -c $(FFLAGS) lcflib.$F
+	$(AR) $L lcflib.o; rm lcflib.o
+
+$L(mtzlib.o) : $(srcdir)/mtzlib.for
+	-rm -f mtzlib.$F; $(LNS) $(srcdir)/mtzlib.for mtzlib.$F
+	$(FC) -c $(FFLAGS) mtzlib.$F
+	$(AR) $L mtzlib.o; rm mtzlib.o
+
+$L(diskio.o) : $(srcdir)/diskio.for
+	-rm -f diskio.$F; $(LNS) $(srcdir)/diskio.for diskio.$F
+	$(FC) -c $(FFLAGS) diskio.$F
+	$(AR) $L diskio.o; rm diskio.o
+
+$L(hlplib.o) : $(srcdir)/hlplib.for
+	-rm -f hlplib.$F; $(LNS) $(srcdir)/hlplib.for hlplib.$F
+	$(FC) -c $(FFLAGS) hlplib.$F
+	$(AR) $L hlplib.o; rm hlplib.o
+
+# fixme: change >14 characters name!
+$L(frodo_maplib.o) : $(srcdir)/frodo_maplib.for
+	-rm -f frodo_maplib.$F; $(LNS) $(srcdir)/frodo_maplib.for frodo_maplib.$F
+	$(FC) -c $(FFLAGS) frodo_maplib.$F
+	$(AR) $L frodo_maplib.o; rm frodo_maplib.o
+
+$L(plot84lib.o) : $(srcdir)/plot84lib.for
+	-rm -f plot84lib.$F; $(LNS) $(srcdir)/plot84lib.for plot84lib.$F
+	$(FC) -c $(FFLAGS) plot84lib.$F
+	$(AR) $L plot84lib.o; rm plot84lib.o
+
+$L(graflib.o) : $(srcdir)/graflib.for
+	-rm -f graflib.$F; $(LNS) $(srcdir)/graflib.for graflib.$F
+	$(FC) -c $(FFLAGS) graflib.$F
+	$(AR) $L graflib.o; rm graflib.o
+
+$L(graphics.o) : $(srcdir)/graphics.for
+	-rm -f graphics.$F; $(LNS) $(srcdir)/graphics.for graphics.$F
+	$(FC) -c $(FFLAGS) graphics.$F
+	$(AR) $L graphics.o; rm graphics.o
+
+# C stuff:
+
+$L(library.o) : $(srcdir)/library.c $(incdir)/machine.h \
+   $(incdir)/dfconvert.h  $(incdir)/diconvert.h
+	$(CC) $(CFLAGS) -c $(srcdir)/library.c
+	$(AR) $L library.o; rm library.o
+
+$L(binsortint.o) : $(srcdir)/binsortint.c $(incdir)/binsort.h
+	$(CC) $(CFLAGS) -c $(srcdir)/binsortint.c
+	$(AR) $L binsortint.o; rm binsortint.o
+
+$L(ucurse.o) : $(srcdir)/ucurse.c
+	$(CC) $(CFLAGS) -c $(srcdir)/ucurse.c
+	$(AR) $L ucurse.o; rm ucurse.o
+
+#
+# specials
+#
+
+#  a program:
+binsort : $(srcdir)/binsort.c $(incdir)/binsort.h
+	$(CC) $(CFLAGS) -o $@ $(srcdir)/binsort.c
+# for testing with src directory in path:
+	$(LNS) binsort ../../src/binsort
+
+# the unix-specific bits need preprocessing for different unix variants
+unix.$F : $(srcdir)/unix.m4
+	$(M4) $(srcdir)/unix.m4 >unix.$F
+$L(unix.o) : unix.$F
+	$(FC) -c $(FFLAGS) unix.$F
+	$(AR) $L unix.o; rm unix.o
+
+# testbed for library.c:
+testlib : $(srcdir)/testlib.for $L(library.o) $L(unix.o) $L(ccplib.o) \
+          $L(diskio.o) ranlib
+	-rm -f testlib.$F; $(LNS) $(srcdir)/testlib.for testlib.$F
+	$(FC) -o testlib $(FFLAGS) testlib.$F $L
+
+#
+# standard targets
+#
+
+install :
+	$(INSTALL_BIN) binsort $(bindir)
+	$(INSTALL_DATA) $L $(libdir)/$L
+
+clean :
+	-rm -f core *.o *~ testlib disc.dft a.out
+
+realclean: clean
+	-rm -f $L *.f *.c ../../src/binsort
+
+dist: realclean
+	-rm -f Makefile
+
+test: testlib
+	./testlib -v 3 testenv foo diskio disc.dft
