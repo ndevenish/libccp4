@@ -11,7 +11,7 @@ C     .. Local Scalars ..
       INTEGER I,IBYTE,IDAY,IER,II,ILENGTH,ILOOP,IMON,ISEC,ISTAT,
      +        IYEAR,IYES,LDUM,LUN,LUNIN,LUNOUT,NREC
       CHARACTER ERRSTR*40,HANDLE* (LSTR),NAME1* (LSTR),NAME2* (LSTR),
-     +          ENVNAM* (LSTR),USRNAM* (LSTR),UDATE* (LSTR),
+     +          ENVNAM* (LBUF),USRNAM* (LSTR),UDATE* (LSTR),
      +          USRTIM* (LSTR),REPLY* (LSTR),TSTNAM*(LSTR)
 C     ..
 C     .. Local Arrays ..
