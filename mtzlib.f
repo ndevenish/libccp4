@@ -4960,7 +4960,7 @@ C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
 C                               	points to both input and output files
 C
 C     PNAME     (O)     CHARACTER       array of dimension at least NDATASETS
-C                               	containing the protein name on exit
+C                               	containing the project name on exit
 C
 C     DNAME     (O)     CHARACTER       array of dimension at least NDATASETS
 C                               	containing the dataset name on exit
@@ -5019,13 +5019,13 @@ C     New dataset to be added to header
 C
 C
 C     ====================================================
-      SUBROUTINE LWID(MINDX,PROTEIN_NAME,DATASET_NAME)
+      SUBROUTINE LWID(MINDX,PROJECT_NAME,DATASET_NAME)
 C     ====================================================
 C
 C---- Subroutine to add dataset information to the output MTZ file header.
-C     Datasets identified by the PROTEIN_NAME/DATASET_NAME pair are 
+C     Datasets identified by the PROJECT_NAME/DATASET_NAME pair are 
 C     appended to the MTZ header one at a time.
-C     Checks to see if the PROTEIN_NAME/DATASET_NAME pair is already
+C     Checks to see if the PROJECT_NAME/DATASET_NAME pair is already
 C     included; if so, the dataset is not appended.
 C     Redundant datasets are removed in LWCLOS.
 C
@@ -5034,7 +5034,7 @@ C
 C     MINDX         (I)	    INTEGER        indicates which MTZ file - 1 index
 C                                          points to both input and output files
 C
-C     PROTEIN_NAME  (I)     CHARACTER      protein name of dataset to be added
+C     PROJECT_NAME  (I)     CHARACTER      project name of dataset to be added
 C                                          (strings longer than 64 will be truncated)
 C
 C     DATASET_NAME  (I)     CHARACTER      dataset name of dataset to be added
@@ -5048,7 +5048,7 @@ C     .. Parameters ..
 C     ..
 C     .. Scalar Arguments ..
       INTEGER MINDX
-      CHARACTER PROTEIN_NAME*(*),DATASET_NAME*(*)
+      CHARACTER PROJECT_NAME*(*),DATASET_NAME*(*)
 C     ..
 C     .. Local Scalars ..
       INTEGER ISET,ISTAT,IFAIL,JDO50,MAXSETID
@@ -5078,9 +5078,9 @@ C
       ENDIF
 
       MAXSETID = 0
-C     Check whether this protein/dataset already exists.
+C     Check whether this project/dataset already exists.
       DO 50 JDO50 = 1,NSETW(MINDX)
-        IF (PROTEIN_NAME(1:LENSTR(PROTEIN_NAME)).EQ.
+        IF (PROJECT_NAME(1:LENSTR(PROJECT_NAME)).EQ.
      +    ENTRY_ID(JDO50,MINDX) .AND. 
      +    DATASET_NAME(1:LENSTR(DATASET_NAME)).EQ.
      +    DIFFRN_ID(JDO50,MINDX)) RETURN
@@ -5088,9 +5088,9 @@ C     Check whether this protein/dataset already exists.
      +    MAXSETID = SET_ID(JDO50,MINDX)
  50   CONTINUE
 
-C     Check if PROTEIN_NAME / DATASET_NAME are too long.
-      IF (LENSTR(PROTEIN_NAME).GT.64)
-     +  PROTEIN_NAME = PROTEIN_NAME(1:64)
+C     Check if PROJECT_NAME / DATASET_NAME are too long.
+      IF (LENSTR(PROJECT_NAME).GT.64)
+     +  PROJECT_NAME = PROJECT_NAME(1:64)
       IF (LENSTR(DATASET_NAME).GT.64)
      +  DATASET_NAME = DATASET_NAME(1:64)
 
@@ -5098,7 +5098,7 @@ C     New dataset to be added to header
       NSETW(MINDX) = NSETW(MINDX) + 1
       ISET = NSETW(MINDX)
       SET_ID(ISET,MINDX) = MAXSETID + 1
-      ENTRY_ID(ISET,MINDX) = PROTEIN_NAME(1:LENSTR(PROTEIN_NAME))
+      ENTRY_ID(ISET,MINDX) = PROJECT_NAME(1:LENSTR(PROJECT_NAME))
       DIFFRN_ID(ISET,MINDX) = DATASET_NAME(1:LENSTR(DATASET_NAME))
 
       END
@@ -8500,7 +8500,7 @@ C              ***********************
      +        NSETW(MINDX)
             CALL PUTLIN(STROUT,'CURWIN')
             CALL BLANK('CURWIN',1)
-            CALL PUTLIN('* Dataset ID, protein name, dataset name:',
+            CALL PUTLIN('* Dataset ID, project name, dataset name:',
      +        'CURWIN')
             CALL BLANK('CURWIN',1)
             DO 30 JDO30 = 1,NSETW(MINDX)
