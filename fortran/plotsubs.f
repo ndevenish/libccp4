@@ -1,9 +1,3 @@
-C
-C----  Plotting subroutines:
-C      general routines first, followed by routines specific for
-C      particular plotting package
-C
-C
       SUBROUTINE PLTAXS(VWPORT,XLOW,XHIGH,NXTICK,NXSTCK,LXTICK,XLABEL,
      .                         YLOW,YHIGH,NYTICK,NYSTCK,LYTICK,YLABEL)
 C     ================================================================
@@ -107,11 +101,395 @@ C
 C Set up user transformation
       CALL PLTWIN(VWPORT,WINDOW)
 C
-      RETURN
       END
+      SUBROUTINE PLTCHS(SCALE)
+C     ========================
+C
+C Set character scale as fraction of space 0-1
+C
+      REAL SCALE
+C
+      CALL GSSCLC(SCALE,SCALE)
+      END
+      SUBROUTINE PLTCTX(STRING,X,Y,SIZE,MODE,ANGLE)
+C     =============================================
+C
+C*** Plot84 version
+C  Plot STRING at X,Y, rotated by ANGLE, relative size SIZE
+C    MODE = 1, 2, 3 justify left, middle, right
+C
+      CHARACTER*(*) STRING
+      REAL X,Y,ANGLE,DTOR,SIZE
+      INTEGER MODE
 C
 C
+      DTOR=ATAN(1.)/45.
+      CALL GSANCU(X,Y)
+      CALL GSCROT(ANGLE*DTOR,(ANGLE+90.)*DTOR)
+      CALL GSCETS(STRING,SIZE,SIZE,MODE)
+      END
+      SUBROUTINE PLTDBU(X,Y)
+C     ======================
 C
+C Draw by point X,Y (user units)
+C
+      REAL X,Y,XV,YV
+C
+C  transform coordinates
+      CALL PLTTNF(X,Y,XV,YV)
+      CALL PLTDBY(XV,YV)
+      END
+      SUBROUTINE PLTDBY(X,Y)
+C     ======================
+C
+C*** Plot84 version
+C   Draw to X,Y
+C
+      REAL X,Y
+      CALL GSDWBY(X,Y)
+      END
+      SUBROUTINE PLTDRW(X,Y)
+C     ======================
+C
+C*** Plot84 version
+C   Draw to X,Y
+C
+      REAL X,Y
+      CALL GSDWTO(X,Y)
+      END
+      SUBROUTINE PLTDSH(M,R,D,T)
+C     ==========================
+C
+C  Set dash parameters
+C
+C   M =0 SOLID LINE
+C   M=1 DASHED LINE (DOT DUMMY PARAMETER)
+C   M=2  CHAINED LINE
+C   R == REPEAT repeat length
+C   D == DASH  dash length
+C   T == DOT   not used
+C  REPEAT DASH DOT  are in basic picture units (ie range 0 to 1 )
+C
+      INTEGER M
+      REAL R,D,T
+C
+      COMMON /DASH/ LPT,MODE,REPEAT,DASH,DOT,A1,B1
+      REAL REPEAT,DASH,DOT,A1,B1
+      INTEGER LPT,MODE
+C
+C
+      MODE=M
+      REPEAT=R
+      DASH=D
+      DOT=T
+      LPT=0
+      END
+      SUBROUTINE PLTDWU(X,Y)
+C     ======================
+C
+C Draw to point X,Y (user units)
+C
+      REAL X,Y,XV,YV
+C
+C  transform coordinates
+      CALL PLTTNF(X,Y,XV,YV)
+      CALL PLTDRW(XV,YV)
+      END
+      SUBROUTINE PLTFNM(FNUM,NDIG,NAFTER,X,Y,SIZE,MODE,ANGLE)
+C     ========================================================
+C
+C*** Plot84 version
+C  Plot real FNUM at X,Y, rotated by ANGLE
+C   NDIG digits, NAFTER digits after decimal point
+C    MODE = 1, 2, 3 justify left, middle, right
+C
+      REAL FNUM,X,Y,ANGLE,DTOR,SIZE
+      INTEGER NDIG,NAFTER,MODE
+C
+C
+      DTOR=ATAN(1.)/45.
+      CALL GSANCU(X,Y)
+      CALL GSCROT(ANGLE*DTOR,(ANGLE+90.)*DTOR)
+      CALL GSFNUM(FNUM,NDIG,NAFTER,SIZE,SIZE,MODE)
+      END
+      SUBROUTINE PLTINI
+C     =================
+C
+C*** Plot84 version
+C  Initialize plot on logical name PLOT
+C
+      REAL XSIZE,YSIZE,CSIZE
+      DATA XSIZE,YSIZE,CSIZE/200.,200.,0.015/
+C
+      CALL GSINIT('PLOT')
+      CALL GSBSIZ(XSIZE,YSIZE)
+C
+10    CALL GSPICT
+C  User coordinates in range 0 - 1 on x & y
+      CALL GSORGD(0.01*XSIZE,0.01*YSIZE)
+      CALL GSSCLU(XSIZE*0.99,YSIZE*0.99)
+C  Scale characters to CSIZE (user units)
+      CALL GSTLNK(1)
+      CALL GSSCLC(CSIZE,CSIZE)
+C  Centred characters
+      CALL GSCENC(1)
+      RETURN
+C
+      ENTRY PLTPIC
+C       =============
+C
+C Start new picture
+C
+      CALL GSENDP
+      GO TO 10
+      END
+      SUBROUTINE PLTINM(INUM,NDIG,X,Y,SIZE,MODE,ANGLE)
+C     ============================================
+C
+C*** Plot84 version
+C  Plot integer INUM at X,Y, rotated by ANGLE
+C   NDIG digits
+C    MODE = 1, 2, 3 justify left, middle, right
+C
+      REAL X,Y,ANGLE,DTOR,SIZE
+      INTEGER INUM,NDIG,MODE
+C
+C
+      DTOR=ATAN(1.)/45.
+      CALL GSANCU(X,Y)
+      CALL GSCROT(ANGLE*DTOR,(ANGLE+90.)*DTOR)
+      CALL GSINUM(INUM,NDIG,SIZE,SIZE,MODE)
+      END
+      SUBROUTINE PLTLIN(X,Y,NPT)
+C     =========================
+C
+C Draw lines to join NPT points X,Y
+C Coordinates are in user units
+C
+      INTEGER NPT
+      REAL X(NPT),Y(NPT)
+C
+      COMMON /DASH/ LPT,MODE,REPEAT,DASH,DOT,A1,B1
+      REAL REPEAT,DASH,DOT,A1,B1
+      INTEGER LPT,MODE
+C
+      REAL SMALL,GAP,A,B,X1,Y1,X2,Y2,DX,DY,R,XD,YD,XG,YG,D
+      INTEGER I,J
+      DATA SMALL/0.001/
+C
+C MODE =0 FOR SOLID LINES
+      IF(NPT.LE.1) RETURN
+      IF(MODE.GT.0) GO TO 10
+C
+C SOLID
+      CALL PLTMVU(X(1),Y(1))
+      DO 1 I=2,NPT
+1     CALL PLTDWU(X(I),Y(I))
+      RETURN
+C
+C
+C DASHED LINES, REPEAT IS REPEAT LENGTH, DASH IS DASH LENGTH
+C DOT IS DUMMY (NO CHAIN LINES)
+10    GAP=REPEAT-DASH
+      A=DASH
+      B=GAP
+C LPT=0 IF 1ST CALL SINCE CALL TO S/R DASHED, OTHERWISE KEEP DASHES IN PHASE
+      IF(LPT.EQ.0) GO TO 11
+      A=A1
+      B=B1
+C
+11    LPT=1
+C  Convert user units to picture units before working out dashing
+      CALL PLTTNF(X(1),Y(1),X1,Y1)
+CC      X1=X(1)
+CC      Y1=Y(1)
+      I=2
+      CALL PLTMOV(X1,Y1)
+C
+C COME HERE FOR NEW LINE
+15    CALL PLTTNF(X(I),Y(I),X2,Y2)
+CC15    X2=X(I)
+CC      Y2=Y(I)
+      DX=X2-X1
+      DY=Y2-Y1
+      D=SQRT(DX*DX+DY*DY)
+      IF(D.LT.SMALL) GO TO 30
+      DX=DX/D
+      DY=DY/D
+      R=D
+      A1=0.
+      B1=0.
+      J=-1
+C
+C R IS REMAINING LINE LENGTH
+C COME HERE FOR EACH DASH REPEAT
+20    IF(R.LT.(A+B)) GO TO 25
+      IF(J) 26,26,27
+C
+C LAST BIT, GET REMAINING DASH LENGTH
+25    IF(R.LT.A) GO TO 21
+C LAST PART IS IN GAP
+      A1=0.
+      B1=B-R+A
+      B=R-A
+      GO TO 22
+C LAST PART IS IN DASH
+21    A1=A-R
+      B1=GAP
+      A=R
+      B=0.
+22    J=-2
+C
+26    J=J+1
+      XD=A*DX
+      YD=A*DY
+      XG=B*DX
+      YG=B*DY
+C
+27    IF(A.GT.SMALL) CALL PLTDBY(XD,YD)
+      IF(B.GT.SMALL) CALL PLTMBY(XG,YG)
+      R=R-A-B
+      IF(J) 30,28,20
+C RESET DASH LENGTH AFTER 1ST REPEAT
+28    A=DASH
+      B=GAP
+      J=0
+      GO TO 20
+C
+C END OF LINE, RESTORE UNUSED DASH LENGTH
+30    I=I+1
+      IF(I.GT.NPT) RETURN
+      X1=X2
+      Y1=Y2
+      A=A1
+      B=B1
+      GO TO 15
+C
+      END
+      SUBROUTINE PLTMBU(X,Y)
+C     ======================
+C
+C Move by point X,Y (user units)
+C
+      REAL X,Y,XV,YV
+C
+C  transform coordinates
+      CALL PLTTNF(X,Y,XV,YV)
+      CALL PLTMBY(XV,YV)
+      END
+      SUBROUTINE PLTMBY(X,Y)
+C     ======================
+C
+C*** Plot84 version
+C   Move by X,Y
+C
+      REAL X,Y
+      CALL GSMVBY(X,Y)
+      END
+      SUBROUTINE PLTMOV(X,Y)
+C     ======================
+C
+C*** Plot84 version
+C   Move to X,Y
+C
+      REAL X,Y
+      CALL GSMVTO(X,Y)
+      END
+      SUBROUTINE PLTMVU(X,Y)
+C     ======================
+C
+C Move to point X,Y (user units)
+C
+      REAL X,Y,XV,YV
+C
+C  transform coordinates
+      CALL PLTTNF(X,Y,XV,YV)
+      CALL PLTMOV(XV,YV)
+      END
+      SUBROUTINE PLTNDG(LOW,HIGH,NLAB)
+C     ================================
+C
+C Try to determine "best" number format for axis labelling
+C   Input:
+C       low, high       low & high values for tick marks
+C       nlab            number of tick marks
+C
+C   Output in COMMON /PLTDIG/
+C       ndec    number of digits in number
+C       idec    number of digits after decimal point (0 for integer)
+C
+      REAL RANGE,LOW,HIGH,DVAL,BIG
+      INTEGER NLAB,N
+      LOGICAL LINT
+C
+      COMMON /PLTDIG/ NDEC,IDEC
+      INTEGER NDEC,IDEC
+C
+      RANGE=HIGH-LOW
+      BIG=MAX(ABS(LOW),ABS(HIGH))
+C
+      NDEC=5
+      IDEC=1
+      LINT=.FALSE.
+C
+      DVAL=1.0
+      IF(NLAB.GT.1) DVAL=RANGE/(NLAB-1)
+      IDEC=1-ALOG10(ABS(DVAL))
+C
+      IF(ABS(RANGE).GT.9.99) THEN
+            LINT=.TRUE.
+            NDEC=2+ALOG10(BIG)
+      ENDIF
+C
+      IF(AMOD(DVAL,1.0).EQ.0.0 .AND.
+     .     AMOD(LOW,1.0).EQ.0.0) LINT=.TRUE.
+C
+      IF(LINT) IDEC=0
+      IF((LOW.LT.0.0.OR.HIGH.LT.0.0)) THEN
+            N=0
+            IF(IDEC.GT.0) N=2+IDEC
+            IF(NDEC.LT.N) NDEC=NDEC+1
+      ENDIF
+C
+      END
+      SUBROUTINE PLTSTP
+C     =================
+C
+C*** Plot84 version
+C  Stop plotting
+C
+      CALL GSENDP
+      CALL GSSTOP
+      END
+      SUBROUTINE PLTTNF(X,Y,XV,YV)
+C     ============================
+C
+C Transform user X,Y to plotter XV,YV (range 0 to 1)
+C
+C
+      REAL X,Y,XV,YV
+C
+      COMMON /PLTTRN/ ORIGX,ORIGY,VSCALX,VSCALY
+      REAL ORIGX,ORIGY,VSCALX,VSCALY
+C
+      XV=X*VSCALX+ORIGX
+      YV=Y*VSCALY+ORIGY
+      END
+      SUBROUTINE PLTWIN(VWPORT,WINDOW)
+C     ================================
+C
+C Set up mapping of viewport VWPORT to user window WINDOW
+C
+      REAL VWPORT(2,2),WINDOW(2,2)
+C
+      COMMON /PLTTRN/ ORIGX,ORIGY,VSCALX,VSCALY
+      REAL ORIGX,ORIGY,VSCALX,VSCALY
+C
+      VSCALX=(VWPORT(1,2)-VWPORT(1,1))/(WINDOW(1,2)-WINDOW(1,1))
+      VSCALY=(VWPORT(2,2)-VWPORT(2,1))/(WINDOW(2,2)-WINDOW(2,1))
+      ORIGX=VWPORT(1,1)-WINDOW(1,1)*VSCALX
+      ORIGY=VWPORT(2,1)-WINDOW(2,1)*VSCALY
+      END
       SUBROUTINE UGLNAX(LSUB,TSUB,TFLG,XCLO,YCLO,XCHI,YCHI,
      X                  LOLB,HILB,NLAB,NSUBTK,LLTICK)
 C
@@ -149,7 +527,7 @@ C *********************************************************************
 C  PRE 28/7/88 bodged
 C
       EXTERNAL      LSUB,TSUB
-      INTEGER       TFLG(*)
+      INTEGER       TFLG
       REAL          XCLO,YCLO,XCHI,YCHI,LOLB,HILB
       INTEGER       NLAB,NSUBTK,LLTICK
 C
@@ -234,9 +612,6 @@ C
 C
 C
       END
-C
-C
-C
       SUBROUTINE UGLNDX(LODA,HIDA,MINL,MAXL,LOLB,HILB,NLAB)
 C
 C *******************  THE UNIFIED GRAPHICS SYSTEM  *******************
@@ -345,8 +720,6 @@ C
       RETURN
 C
       END
-C
-C
       SUBROUTINE LINSUB(X,Y,IFLAG)
 C     ============================
 C
@@ -361,11 +734,7 @@ C
       ELSE
             CALL PLTDRW(X,Y)
       ENDIF
-      RETURN
       END
-C
-C
-C
       SUBROUTINE TXTSUB(X,Y,VALU,IFLAG)
 C     =================================
 C
@@ -401,475 +770,5 @@ C
             CALL PLTFNM(VALU,NDEC,IDEC,XX,YY,SIZE,MODE,ANGLE)
       ENDIF
 C
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE PLTNDG(LOW,HIGH,NLAB)
-C     ================================
-C
-C Try to determine "best" number format for axis labelling
-C   Input:
-C       low, high       low & high values for tick marks
-C       nlab            number of tick marks
-C
-C   Output in COMMON /PLTDIG/
-C       ndec    number of digits in number
-C       idec    number of digits after decimal point (0 for integer)
-C
-      REAL RANGE,LOW,HIGH,DVAL,BIG
-      INTEGER NLAB,N
-      LOGICAL LINT
-C
-      COMMON /PLTDIG/ NDEC,IDEC
-      INTEGER NDEC,IDEC
-C
-      RANGE=HIGH-LOW
-      BIG=MAX(ABS(LOW),ABS(HIGH))
-C
-      NDEC=5
-      IDEC=1
-      LINT=.FALSE.
-C
-      DVAL=1.0
-      IF(NLAB.GT.1) DVAL=RANGE/(NLAB-1)
-      IDEC=1-ALOG10(ABS(DVAL))
-C
-      IF(ABS(RANGE).GT.9.99) THEN
-            LINT=.TRUE.
-            NDEC=2+ALOG10(BIG)
-      ENDIF
-C
-      IF(AMOD(DVAL,1.0).EQ.0.0 .AND.
-     .     AMOD(LOW,1.0).EQ.0.0) LINT=.TRUE.
-C
-      IF(LINT) IDEC=0
-      IF((LOW.LT.0.0.OR.HIGH.LT.0.0)) THEN
-            N=0
-            IF(IDEC.GT.0) N=2+IDEC
-            IF(NDEC.LT.N) NDEC=NDEC+1
-      ENDIF
-C
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE PLTWIN(VWPORT,WINDOW)
-C     ================================
-C
-C Set up mapping of viewport VWPORT to user window WINDOW
-C
-      REAL VWPORT(2,2),WINDOW(2,2)
-C
-      COMMON /PLTTRN/ ORIGX,ORIGY,VSCALX,VSCALY
-      REAL ORIGX,ORIGY,VSCALX,VSCALY
-C
-      VSCALX=(VWPORT(1,2)-VWPORT(1,1))/(WINDOW(1,2)-WINDOW(1,1))
-      VSCALY=(VWPORT(2,2)-VWPORT(2,1))/(WINDOW(2,2)-WINDOW(2,1))
-      ORIGX=VWPORT(1,1)-WINDOW(1,1)*VSCALX
-      ORIGY=VWPORT(2,1)-WINDOW(2,1)*VSCALY
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE PLTTNF(X,Y,XV,YV)
-C     ============================
-C
-C Transform user X,Y to plotter XV,YV (range 0 to 1)
-C
-C
-      REAL X,Y,XV,YV
-C
-      COMMON /PLTTRN/ ORIGX,ORIGY,VSCALX,VSCALY
-      REAL ORIGX,ORIGY,VSCALX,VSCALY
-C
-      XV=X*VSCALX+ORIGX
-      YV=Y*VSCALY+ORIGY
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE PLTMVU(X,Y)
-C     ======================
-C
-C Move to point X,Y (user units)
-C
-      REAL X,Y,XV,YV
-C
-C  transform coordinates
-      CALL PLTTNF(X,Y,XV,YV)
-      CALL PLTMOV(XV,YV)
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE PLTDWU(X,Y)
-C     ======================
-C
-C Draw to point X,Y (user units)
-C
-      REAL X,Y,XV,YV
-C
-C  transform coordinates
-      CALL PLTTNF(X,Y,XV,YV)
-      CALL PLTDRW(XV,YV)
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE PLTMBU(X,Y)
-C     ======================
-C
-C Move by point X,Y (user units)
-C
-      REAL X,Y,XV,YV
-C
-C  transform coordinates
-      CALL PLTTNF(X,Y,XV,YV)
-      CALL PLTMBY(XV,YV)
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE PLTDBU(X,Y)
-C     ======================
-C
-C Draw by point X,Y (user units)
-C
-      REAL X,Y,XV,YV
-C
-C  transform coordinates
-      CALL PLTTNF(X,Y,XV,YV)
-      CALL PLTDBY(XV,YV)
-      RETURN
-      END
-C
-C
-C
-C***************************************************************************
-      SUBROUTINE PLTDSH(M,R,D,T)
-C     ==========================
-C
-C  Set dash parameters
-C
-C   M =0 SOLID LINE
-C   M=1 DASHED LINE (DOT DUMMY PARAMETER)
-C   M=2  CHAINED LINE
-C   R == REPEAT repeat length
-C   D == DASH  dash length
-C   T == DOT   not used
-C  REPEAT DASH DOT  are in basic picture units (ie range 0 to 1 )
-C
-      INTEGER M
-      REAL R,D,T
-C
-      COMMON /DASH/ LPT,MODE,REPEAT,DASH,DOT,A1,B1
-      REAL REPEAT,DASH,DOT,A1,B1
-      INTEGER LPT,MODE
-C
-C
-      MODE=M
-      REPEAT=R
-      DASH=D
-      DOT=T
-      LPT=0
-      RETURN
-      END
-C
-C
-C*********************************************************************
-C
-      SUBROUTINE PLTLIN(X,Y,NPT)
-C     =========================
-C
-C Draw lines to join NPT points X,Y
-C Coordinates are in user units
-C
-      INTEGER NPT
-      REAL X(NPT),Y(NPT)
-C
-      COMMON /DASH/ LPT,MODE,REPEAT,DASH,DOT,A1,B1
-      REAL REPEAT,DASH,DOT,A1,B1
-      INTEGER LPT,MODE
-C
-      REAL SMALL,GAP,A,B,X1,Y1,X2,Y2,DX,DY,R,XD,YD,XG,YG,D
-      INTEGER I,J
-      DATA SMALL/0.001/
-C
-C MODE =0 FOR SOLID LINES
-      IF(NPT.LE.1) RETURN
-      IF(MODE.GT.0) GO TO 10
-C
-C SOLID
-      CALL PLTMVU(X(1),Y(1))
-      DO 1 I=2,NPT
-1     CALL PLTDWU(X(I),Y(I))
-      RETURN
-C
-C
-C DASHED LINES, REPEAT IS REPEAT LENGTH, DASH IS DASH LENGTH
-C DOT IS DUMMY (NO CHAIN LINES)
-10    GAP=REPEAT-DASH
-      A=DASH
-      B=GAP
-C LPT=0 IF 1ST CALL SINCE CALL TO S/R DASHED, OTHERWISE KEEP DASHES IN PHASE
-      IF(LPT.EQ.0) GO TO 11
-      A=A1
-      B=B1
-C
-11    LPT=1
-C  Convert user units to picture units before working out dashing
-      CALL PLTTNF(X(1),Y(1),X1,Y1)
-CC      X1=X(1)
-CC      Y1=Y(1)
-      I=2
-      CALL PLTMOV(X1,Y1)
-C
-C COME HERE FOR NEW LINE
-15    CALL PLTTNF(X(I),Y(I),X2,Y2)
-CC15    X2=X(I)
-CC      Y2=Y(I)
-      DX=X2-X1
-      DY=Y2-Y1
-      D=SQRT(DX*DX+DY*DY)
-      IF(D.LT.SMALL) GO TO 30
-      DX=DX/D
-      DY=DY/D
-      R=D
-      A1=0.
-      B1=0.
-      J=-1
-C
-C R IS REMAINING LINE LENGTH
-C COME HERE FOR EACH DASH REPEAT
-20    IF(R.LT.(A+B)) GO TO 25
-      IF(J) 26,26,27
-C
-C LAST BIT, GET REMAINING DASH LENGTH
-25    IF(R.LT.A) GO TO 21
-C LAST PART IS IN GAP
-      A1=0.
-      B1=B-R+A
-      B=R-A
-      GO TO 22
-C LAST PART IS IN DASH
-21    A1=A-R
-      B1=GAP
-      A=R
-      B=0.
-22    J=-2
-C
-26    J=J+1
-      XD=A*DX
-      YD=A*DY
-      XG=B*DX
-      YG=B*DY
-C
-27    IF(A.GT.SMALL) CALL PLTDBY(XD,YD)
-      IF(B.GT.SMALL) CALL PLTMBY(XG,YG)
-      R=R-A-B
-      IF(J) 30,28,20
-C RESET DASH LENGTH AFTER 1ST REPEAT
-28    A=DASH
-      B=GAP
-      J=0
-      GO TO 20
-C
-C END OF LINE, RESTORE UNUSED DASH LENGTH
-30    I=I+1
-      IF(I.GT.NPT) RETURN
-      X1=X2
-      Y1=Y2
-      A=A1
-      B=B1
-      GO TO 15
-C
-      END
-C
-C**********************************************************************8
-C
-C
-C***************************************************************************
-C
-C General plotting
-C    PLOT84 version: change these routines for conversion to other plotting
-C                    systems
-C
-C
-      SUBROUTINE PLTINI
-C     =================
-C
-C*** Plot84 version
-C  Initialize plot on logical name PLOT
-C
-      REAL XSIZE,YSIZE,CSIZE
-      DATA XSIZE,YSIZE,CSIZE/200.,200.,0.015/
-C
-      CALL PLT$INIT('PLOT')
-      CALL PLT$BSIZ(XSIZE,YSIZE)
-C
-10    CALL PLT$PICT
-C  User coordinates in range 0 - 1 on x & y
-      CALL PLT$ORGD(0.01*XSIZE,0.01*YSIZE)
-      CALL PLT$SCLU(XSIZE*0.99,YSIZE*0.99)
-C  Scale characters to CSIZE (user units)
-      CALL PLT$TLNK(1)
-      CALL PLT$SCLC(CSIZE,CSIZE)
-C  Centred characters
-      CALL PLT$CENC(1)
-      RETURN
-C
-      ENTRY PLTPIC
-C       =============
-C
-C Start new picture
-C
-      CALL PLT$ENDP
-      GO TO 10
-      END
-C
-C
-      SUBROUTINE PLTSTP
-C     =================
-C
-C*** Plot84 version
-C  Stop plotting
-C
-      CALL PLT$ENDP
-      CALL PLT$STOP
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE PLTCHS(SCALE)
-C     ========================
-C
-C Set character scale as fraction of space 0-1
-C
-      REAL SCALE
-C
-      CALL PLT$SCLC(SCALE,SCALE)
-      RETURN
-      END
-C
-C
-C
-C
-      SUBROUTINE PLTMOV(X,Y)
-C     ======================
-C
-C*** Plot84 version
-C   Move to X,Y
-C
-      REAL X,Y
-      CALL PLT$MVTO(X,Y)
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE PLTDRW(X,Y)
-C     ======================
-C
-C*** Plot84 version
-C   Draw to X,Y
-C
-      REAL X,Y
-      CALL PLT$DWTO(X,Y)
-      RETURN
-      END
-C
-      SUBROUTINE PLTMBY(X,Y)
-C     ======================
-C
-C*** Plot84 version
-C   Move by X,Y
-C
-      REAL X,Y
-      CALL PLT$MVBY(X,Y)
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE PLTDBY(X,Y)
-C     ======================
-C
-C*** Plot84 version
-C   Draw to X,Y
-C
-      REAL X,Y
-      CALL PLT$DWBY(X,Y)
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE PLTCTX(STRING,X,Y,SIZE,MODE,ANGLE)
-C     =============================================
-C
-C*** Plot84 version
-C  Plot STRING at X,Y, rotated by ANGLE, relative size SIZE
-C    MODE = 1, 2, 3 justify left, middle, right
-C
-      CHARACTER*(*) STRING
-      REAL X,Y,ANGLE,DTOR,SIZE
-      INTEGER MODE
-C
-C
-      DTOR=ATAN(1.)/45.
-      CALL PLT$ANCU(X,Y)
-      CALL PLT$CROT(ANGLE*DTOR,(ANGLE+90.)*DTOR)
-      CALL PLT$CETS(STRING,SIZE,SIZE,MODE)
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE PLTFNM(FNUM,NDIG,NAFTER,X,Y,SIZE,MODE,ANGLE)
-C     ========================================================
-C
-C*** Plot84 version
-C  Plot real FNUM at X,Y, rotated by ANGLE
-C   NDIG digits, NAFTER digits after decimal point
-C    MODE = 1, 2, 3 justify left, middle, right
-C
-      REAL FNUM,X,Y,ANGLE,DTOR,SIZE
-      INTEGER NDIG,NAFTER,MODE
-C
-C
-      DTOR=ATAN(1.)/45.
-      CALL PLT$ANCU(X,Y)
-      CALL PLT$CROT(ANGLE*DTOR,(ANGLE+90.)*DTOR)
-      CALL PLT$FNUM(FNUM,NDIG,NAFTER,SIZE,SIZE,MODE)
-      RETURN
-      END
-C
-C
-C
-      SUBROUTINE PLTINM(INUM,NDIG,X,Y,SIZE,MODE,ANGLE)
-C     ============================================
-C
-C*** Plot84 version
-C  Plot integer INUM at X,Y, rotated by ANGLE
-C   NDIG digits
-C    MODE = 1, 2, 3 justify left, middle, right
-C
-      REAL X,Y,ANGLE,DTOR,SIZE
-      INTEGER INUM,NDIG,MODE
-C
-C
-      DTOR=ATAN(1.)/45.
-      CALL PLT$ANCU(X,Y)
-      CALL PLT$CROT(ANGLE*DTOR,(ANGLE+90.)*DTOR)
-      CALL PLT$INUM(INUM,NDIG,SIZE,SIZE,MODE)
       RETURN
       END
