@@ -2551,7 +2551,8 @@ C
 C
 C     ===================================
 C_BEGIN_FDIR
-      CHARACTER*(*) FUNCTION FDIR(FILNAM)
+      FUNCTION FDIR(FILNAM)
+      CHARACTER*(*) FDIR
 C     ===================================
 C
 C---- Returns the path (directory) of a file name or ' '
@@ -2570,7 +2571,8 @@ C
 C
 C     ====================================
 C_BEGIN_FEXTN
-      CHARACTER*(*) FUNCTION FEXTN(FILNAM)
+      FUNCTION FEXTN(FILNAM)
+      CHARACTER*(*) FEXTN
 C     ====================================
 C
 C---- Returns the extension of a file name or ' '
@@ -2589,7 +2591,8 @@ C
 C
 C     ====================================
 C_BEGIN_FROOT
-      CHARACTER*(*) FUNCTION FROOT(FILNAM)
+      FUNCTION FROOT(FILNAM)
+      CHARACTER*(*) FROOT
 C     ====================================
 C
 C---- Returns a file name minus an extension.
