@@ -115,7 +115,7 @@ mosflm-stuff : $L(graflib.o) $L(chelp.o) $L(pack_c.o) $L(pack_f.o)
 # chelp.o drags in curses stuff and we get unresolved stuff at load time
 # unless we have curses around, sigh.  chelp will go when the next mosflm
 # includes it
-	$(SHARE_LIB) -lcurses
+	if test -z "$(SHARE_LIB)"; then true; else $(SHARE_LIB) -lcurses; fi
 
 # explicit building of the real targets, sigh...
 # include the pwd info for ease of symbolic debugging
