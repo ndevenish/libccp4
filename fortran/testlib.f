@@ -193,7 +193,7 @@ C
       ISTAT = LDUM*LBUF*LBUF
       IF (ISTAT.NE.ILENGTH) THEN
         WRITE (ERRSTR,6018) 'DISKIO should be ',ISTAT,' bytes'
-        CALL CCPERR(2,ERRTSR)
+        CALL CCPERR(2,ERRSTR)
       ENDIF
 C
 C---- Seed random Number Generator
