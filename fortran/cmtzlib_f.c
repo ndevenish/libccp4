@@ -114,6 +114,7 @@ FORTRAN_SUBR ( LROPEN, lropen,
                (int *mindx, fpstr filename, int filename_len, int *iprint, int *ifail))
 
 { 
+  int i;
   char *temp_name, *fullfilename;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LROPEN");)
@@ -156,6 +157,9 @@ FORTRAN_SUBR ( LROPEN, lropen,
  }
  rlun[*mindx-1] = 1;
 
+ /* Make sure HKL are in base dataset */
+ MtzAssignHKLtoBase(mtzdata[*mindx-1]);
+
  if (*iprint > 0) {
    printf("\n HEADER INFORMATION FROM INPUT MTZ FILE \n");
    printf(" Logical Name: %s   Filename: %s \n\n",
@@ -167,8 +171,13 @@ FORTRAN_SUBR ( LROPEN, lropen,
  irref[*mindx-1] = 0;
  if (mtzdata[*mindx-1]->n_orig_bat > 0)
    rbat[*mindx-1] = mtzdata[*mindx-1]->batch;
+
  /* calculate hkl coefficients and store in coefhkl */
- MtzHklcoeffs(mtzdata[*mindx-1]->xtal[0]->cell, coefhkl[*mindx-1]);
+ for (i = 0; i < mtzdata[*mindx-1]->nxtal; ++i)
+   if (mtzdata[*mindx-1]->xtal[i]->cell[0] > 0.001) {
+     MtzHklcoeffs(mtzdata[*mindx-1]->xtal[i]->cell, coefhkl[*mindx-1]);
+     break;
+   }
 
  free(fullfilename); 
  free(temp_name);
@@ -1414,11 +1423,14 @@ FORTRAN_SUBR ( LWOPEN, lwopen,
  if (getenv("CMTZ_IN_MEMORY")) cmtz_in_memory = 1;
 
  /* no corresponding read file, so set up empty structure with
-    default crystal and dataset. Label set ID 0, so added ones
+    HKL_base crystal and dataset. Label set ID 0, so added ones
     start at 1. */
  if (rlun[*mindx-1] == 0) {
   mtzdata[*mindx-1] = MtzMalloc(nxtal,nset);
+  strcpy(mtzdata[*mindx-1]->xtal[0]->xname,"HKL_base");
+  strcpy(mtzdata[*mindx-1]->xtal[0]->pname,"HKL_base");
   mtzdata[*mindx-1]->xtal[0]->set[0]->setid = 0;
+  strcpy(mtzdata[*mindx-1]->xtal[0]->set[0]->dname,"HKL_base");
   mtzdata[*mindx-1]->refs_in_memory = cmtz_in_memory;
  }
 
@@ -1732,6 +1744,7 @@ FORTRAN_SUBR ( LWIDAS, lwidas,
   char *project_name;
   char *crystal_name;
   char *dataset_name;
+  MTZSET *baseset=NULL;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWIDAS");)
 
@@ -1785,10 +1798,18 @@ FORTRAN_SUBR ( LWIDAS, lwidas,
   istart = 0;
   if (*iappnd == 1) istart = MtzNumActiveCol(mtzdata[*mindx-1]);
 
+  /* get base dataset if it exists */
+  baseset = MtzSetLookup(mtzdata[*mindx-1],"HKL_base/HKL_base");
+
   for (i = 0; i < *nlprgo; ++i) {
-    if (strlen(crystal_name+i*(pname_len+1)) && strlen(dataset_name+i*(dname_len+1)))
+    if (baseset && (strcmp(collookup_out[*mindx-1][i+istart]->type,"H") == 0) ) {
+      MtzAssignColumn(mtzdata[*mindx-1], collookup_out[*mindx-1][i+istart], 
+          "HKL_base","HKL_base");
+    } else if (strlen(crystal_name+i*(pname_len+1)) && 
+               strlen(dataset_name+i*(dname_len+1))) {
       MtzAssignColumn(mtzdata[*mindx-1], collookup_out[*mindx-1][i+istart], 
           crystal_name+i*(pname_len+1), dataset_name+i*(dname_len+1));
+    }
   }
 
   free(project_name);
@@ -1807,6 +1828,7 @@ FORTRAN_SUBR ( LWIDASX, lwidasx,
 {int i,j,k,istart;
   char *crystal_name;
   char *dataset_name;
+  MTZSET *baseset=NULL;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWIDASX");)
 
@@ -1841,10 +1863,18 @@ FORTRAN_SUBR ( LWIDASX, lwidasx,
   istart = 0;
   if (*iappnd == 1) istart = MtzNumActiveCol(mtzdata[*mindx-1]);
 
+  /* get base dataset if it exists */
+  baseset = MtzSetLookup(mtzdata[*mindx-1],"HKL_base/HKL_base");
+
   for (i = 0; i < *nlprgo; ++i) {
-    if (strlen(crystal_name+i*(xname_len+1)) && strlen(dataset_name+i*(dname_len+1)))
+    if (baseset && (strcmp(collookup_out[*mindx-1][i+istart]->type,"H") == 0) ) {
+      MtzAssignColumn(mtzdata[*mindx-1], collookup_out[*mindx-1][i+istart], 
+          "HKL_base","HKL_base");
+    } else if (strlen(crystal_name+i*(xname_len+1)) && 
+               strlen(dataset_name+i*(dname_len+1))) {
       MtzAssignColumn(mtzdata[*mindx-1], collookup_out[*mindx-1][i+istart], 
           crystal_name+i*(xname_len+1), dataset_name+i*(dname_len+1));
+    }
   }
 
   free(crystal_name);
@@ -1852,7 +1882,8 @@ FORTRAN_SUBR ( LWIDASX, lwidasx,
 }
 
 /* Fortran wrapper for MtzAssignColumn 
-   This is a simpler version of LWIDASX to assign all columns to one dataset */
+   This is a simpler version of LWIDASX to assign all columns to one dataset 
+   (except for HKL which are assigned to base dataset). */
 FORTRAN_SUBR ( LWIDALL, lwidall,
 	       (const int *mindx, fpstr xname, fpstr dname,
                       int xname_len, int dname_len),
@@ -1863,12 +1894,16 @@ FORTRAN_SUBR ( LWIDALL, lwidall,
   MTZCOL **colarray;
   char *crystal_name;
   char *dataset_name;
+  MTZSET *baseset=NULL;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWIDALL");)
   if (MtzCheckSubInput(*mindx,"LWIDALL",2)) return;
 
   crystal_name = ccp4_FtoCString(FTN_STR(xname), FTN_LEN(xname));
   dataset_name = ccp4_FtoCString(FTN_STR(dname), FTN_LEN(dname));
+
+  /* get base dataset if it exists */
+  baseset = MtzSetLookup(mtzdata[*mindx-1],"HKL_base/HKL_base");
 
   if (strlen(crystal_name) && strlen(dataset_name)) {
 
@@ -1880,8 +1915,13 @@ FORTRAN_SUBR ( LWIDALL, lwidall,
       for (k = 0; k < mtzdata[*mindx-1]->xtal[i]->set[j]->ncol; ++k)
         colarray[l++] = mtzdata[*mindx-1]->xtal[i]->set[j]->col[k];
 
-   for (l = 0; l < MtzNcol(mtzdata[*mindx-1]); ++l)
-     MtzAssignColumn(mtzdata[*mindx-1], colarray[l], crystal_name, dataset_name);
+   for (l = 0; l < MtzNcol(mtzdata[*mindx-1]); ++l) {
+     if (baseset && (strcmp(colarray[l]->type,"H") == 0) ) {
+       MtzAssignColumn(mtzdata[*mindx-1], colarray[l], "HKL_base","HKL_base");
+     } else {
+       MtzAssignColumn(mtzdata[*mindx-1], colarray[l], crystal_name, dataset_name);
+     }
+   }
 
    free(colarray);
 

@@ -55,7 +55,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   char mkey[4], keyarg[76], hdrrec[MTZRECORDLENGTH+1], label[30], type[3];
   int i, j, hdrst, ntotcol, nref, ntotset=0, nbat, nhist=0, icolin;
   int ixtal, jxtal, iset, iiset, icset, nxtal=0, nset[MCOLUMNS]={0}, isym=0;
-  int indhigh[3],indlow[3],isort[5],debug=0;
+  int indhigh[3],indlow[3],isort[5],ind_xtal,ind_set,ind_col[3],debug=0;
   float min,max,totcell[6],minres,maxres;
   float refldata[MCOLUMNS];
   double coefhkl[6];
@@ -139,12 +139,19 @@ MTZ *MtzGet(const char *logname, int read_refs)
      Position at top of header */
   ccp4_file_seek(filein, hdrst-1, SEEK_SET);
 
+  /* set up base dataset in case it is in not in file */
+  iiset = 0;
+  nxtal = 1;
+  jxtalin[0]=0;
+  strcpy(projin[0],"HKL_base");
+  strcpy(crysin[0],"HKL_base");
+  nset[0] = 1;
+
   if (debug) 
     printf(" Start first pass \n");
 
   strcpy(project,"dummy");
   strcpy(crystal,"dummy");
-  iiset = -1;
   ccp4_file_setmode(filein,0);
   istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
   hdrrec[MTZRECORDLENGTH] = '\0';
@@ -225,7 +232,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
         cell[i] = (float) token[i+2].value;
       /* If old crystal but cell dimensions differ, make new crystal.
          This is primarily for old files with no CRYSTAL cards. */
-      if (jxtal > -1 && iiset > 0 && 
+      if (jxtal > 0 && iiset > 0 && 
                 (cellin[jxtal][0] != cell[0] || cellin[jxtal][1] != cell[1]
               || cellin[jxtal][2] != cell[2] || cellin[jxtal][3] != cell[3]
               || cellin[jxtal][4] != cell[4] || cellin[jxtal][5] != cell[5] )) {
@@ -262,12 +269,6 @@ MTZ *MtzGet(const char *logname, int read_refs)
   if (debug) 
     printf(" MtzGet: end of 1st pass \n");
 
-  /* If no datasets found in the input MTZ file, create a single
-     dataset in a single crystal */
-  if (ntotset == 0) {
-    nxtal = 1; nset[0] = 1;
-  }
-
   /* Allocate memory for input MTZ file */
   if (! (mtz = MtzMalloc(nxtal, nset))) return NULL;
   if (debug) 
@@ -279,6 +280,19 @@ MTZ *MtzGet(const char *logname, int read_refs)
   mtz->batch = NULL;
   mtz->refs_in_memory = read_refs;
 
+  /* set up base dataset in case it is in not in file */
+  nset[0] = 0;
+  for (i = 1; i < nxtal; ++i) 
+    nset[i] = -1;
+  iiset = 0;
+  strcpy(mtz->xtal[0]->pname,"HKL_base");
+  strcpy(mtz->xtal[0]->xname,"HKL_base");
+  mtz->xtal[0]->xtalid = 0;
+  mtz->xtal[0]->cell[0] = 0.0;
+  mtz->xtal[0]->set[0]->setid = 0;
+  strcpy(mtz->xtal[0]->set[0]->dname,"HKL_base");
+  mtz->xtal[0]->set[0]->wavelength = 0.0;
+
   if (debug) 
     printf(" MtzGet: starting 2nd pass \n");
 
@@ -288,9 +302,6 @@ MTZ *MtzGet(const char *logname, int read_refs)
   ccp4_file_seek(filein, hdrst-1, SEEK_SET);
 
   /* Read dataset information */
-  for (i = 0; i < nxtal; ++i) 
-    nset[i] = -1;
-  iiset = -1;
   ccp4_file_setmode(filein,0);
   istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
   hdrrec[MTZRECORDLENGTH] = '\0';
@@ -341,18 +352,6 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
   if (debug) 
     printf(" MtzGet: end of 2nd pass \n");
-
-  /* If no datasets found in the input MTZ file, create a single
-     dataset in a single crystal */
-  if (ntotset == 0) {
-    mtz->xtal[0]->xtalid = 1;
-    strcpy(mtz->xtal[0]->xname,"dummy");
-    strcpy(mtz->xtal[0]->pname,"dummy");
-    mtz->xtal[0]->cell[0] = 0.0;
-    mtz->xtal[0]->set[0]->setid = 1;
-    strcpy(mtz->xtal[0]->set[0]->dname,"dummy");
-    mtz->xtal[0]->set[0]->wavelength = 0.0;
-  }
 
   /* 3rd Pass: Position at top of header */
   ccp4_file_setmode(filein,6);
@@ -589,12 +588,16 @@ MTZ *MtzGet(const char *logname, int read_refs)
     }
 
     /* Recalculate resolution limits */
+
+    /* Find dataset of indices */
+    MtzFindInd(mtz,&ind_xtal,&ind_set,ind_col);
+
     for (i = 0; i < mtz->nxtal; ++i) {
       MtzHklcoeffs(mtz->xtal[i]->cell, coefhkl);
       for (j = 0; j < mtz->nref; ++j) {
-        indhigh[0] = (int) mtz->xtal[0]->set[0]->col[0]->ref[j];
-        indhigh[1] = (int) mtz->xtal[0]->set[0]->col[1]->ref[j];
-        indhigh[2] = (int) mtz->xtal[0]->set[0]->col[2]->ref[j];
+        indhigh[0] = (int) mtz->xtal[ind_xtal]->set[ind_set]->col[ind_col[0]]->ref[j];
+        indhigh[1] = (int) mtz->xtal[ind_xtal]->set[ind_set]->col[ind_col[1]]->ref[j];
+        indhigh[2] = (int) mtz->xtal[ind_xtal]->set[ind_set]->col[ind_col[2]]->ref[j];
         maxres = MtzInd2reso(indhigh, coefhkl);
         if (maxres > mtz->xtal[i]->resmax) mtz->xtal[i]->resmax = maxres;
         if (maxres < mtz->xtal[i]->resmin) mtz->xtal[i]->resmin = maxres;
@@ -1160,7 +1163,7 @@ int ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64],
 int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int iref) {
 
   int i,j,k;
-  int ind[3],ixtal=0;
+  int ind[3],ixtal;
   unsigned int colin;
   float refldata[MCOLUMNS];
   double coefhkl[6];
@@ -1186,17 +1189,26 @@ int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int i
            adata[colin - 1] = refldata[colin - 1];
 	 }
          logmss[colin - 1] = ccp4_ismnf(mtz, adata[colin - 1]);
+         if (mtz->xtal[i]->set[j]->col[k]->type[0] == 'H') {
+           if (strcmp(mtz->xtal[i]->set[j]->col[k]->label,"H") == 0)
+             ind[0] = (int) adata[colin - 1];
+           if (strcmp(mtz->xtal[i]->set[j]->col[k]->label,"K") == 0)
+             ind[1] = (int) adata[colin - 1];
+           if (strcmp(mtz->xtal[i]->set[j]->col[k]->label,"L") == 0)
+             ind[2] = (int) adata[colin - 1];
+	 }
        }
      }
     }
   }
 
   /* calculate resolution of this reflection, based on cell of 
-     first crystal */
-  ind[0] = (int) adata[0];
-  ind[1] = (int) adata[1];
-  ind[2] = (int) adata[2];
-  MtzHklcoeffs(mtz->xtal[ixtal]->cell, coefhkl);
+     first crystal with non-zero cell dimensions */
+  for (ixtal = 0; ixtal < mtz->nxtal; ++ixtal)
+   if (mtz->xtal[ixtal]->cell[0] > 0.001) {
+     MtzHklcoeffs(mtz->xtal[ixtal]->cell, coefhkl);
+     break;
+   }
   *resol = MtzInd2reso(ind, coefhkl);
   /* kludge taken from mtzlib.f */
   if (*resol > mtz->xtal[ixtal]->resmax) *resol = mtz->xtal[ixtal]->resmax;
@@ -1208,8 +1220,8 @@ int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int i
 int ccp4_lrreff(const MTZ *mtz, float *resol, float adata[], int logmss[],
    const MTZCOL *lookup[], const int ncols, const int iref) {
 
-  int icol;
-  int ind[3],ixtal=0;
+  int icol,l;
+  int ind[3],ixtal,ind_xtal,ind_set,ind_col[3];
   unsigned int colin;
   float refldata[MCOLUMNS];
   double coefhkl[6];
@@ -1249,10 +1261,31 @@ int ccp4_lrreff(const MTZ *mtz, float *resol, float adata[], int logmss[],
     }
   }
 
-  ind[0] = (int) adata[0];
-  ind[1] = (int) adata[1];
-  ind[2] = (int) adata[2];
-  MtzHklcoeffs(mtz->xtal[ixtal]->cell, coefhkl);
+  /* Check if HKL are first 3 columns */
+  if (lookup[0]->type[0] == 'H' && lookup[1]->type[0] == 'H' && 
+      lookup[2]->type[0] == 'H') {
+    ind[0] = (int) adata[0];
+    ind[1] = (int) adata[1];
+    ind[2] = (int) adata[2];
+  } else {
+    MtzFindInd(mtz,&ind_xtal,&ind_set,ind_col);
+    for (l = 0; l < ncols; ++l) {
+      if (lookup[l] == mtz->xtal[ind_xtal]->set[ind_set]->col[ind_col[0]])
+        ind[0] = (int) adata[l];
+      if (lookup[l] == mtz->xtal[ind_xtal]->set[ind_set]->col[ind_col[1]])
+        ind[1] = (int) adata[l];
+      if (lookup[l] == mtz->xtal[ind_xtal]->set[ind_set]->col[ind_col[2]])
+        ind[2] = (int) adata[l];
+    }
+  }
+
+  /* calculate resolution of this reflection, based on cell of 
+     first crystal with non-zero cell dimensions */
+  for (ixtal = 0; ixtal < mtz->nxtal; ++ixtal)
+   if (mtz->xtal[ixtal]->cell[0] > 0.001) {
+     MtzHklcoeffs(mtz->xtal[ixtal]->cell, coefhkl);
+     break;
+   }
   *resol = MtzInd2reso(ind, coefhkl);
   /* kludge taken from mtzlib.f */
   if (*resol > mtz->xtal[ixtal]->resmax) *resol = mtz->xtal[ixtal]->resmax;
@@ -1274,20 +1307,35 @@ int ccp4_ismnf(const MTZ *mtz, const float datum) {
 
 int ccp4_lhprt(const MTZ *mtz, int iprint) {
 
-  int i,j,k,numbat,isort[5];
+  int i,j,k,numbat,isort[5],base_set_exists=0;
   float maxres=0.0,minres=100.0;
   char buffer[MTZRECORDLENGTH+1],symline[81];
+  MTZSET *baseset=NULL;
 
   if (iprint <= 0) return 2;
 
   printf(" * Title:\n\n");
   printf(" %s\n\n",mtz->title);
-  printf(" * Number of Datasets = %d\n\n",MtzNumActiveSet(mtz));
+
+  if (baseset = MtzSetLookup(mtz,"HKL_base/HKL_base")) {
+    if ( MtzNumActiveColsInSet(baseset) ||
+         MtzNbatchesInSet(mtz,baseset) ) {
+      printf(" * Base dataset:\n\n");
+      printf(" %8d %s\n",baseset->setid,"HKL_base");
+      printf("          %s\n","HKL_base");
+      printf("          %s\n","HKL_base");
+      base_set_exists=1;
+    }
+  }
+
+  printf("\n * Number of Datasets = %d\n\n",MtzNumActiveSet(mtz)-base_set_exists);
   printf(" * Dataset ID, project/crystal/dataset names, cell dimensions, wavelength:\n\n");
  /* Loop over crystals */
   for (i = 0; i < mtz->nxtal; ++i) {
  /* Loop over datasets for each crystal */
     for (j = 0; j < mtz->xtal[i]->nset; ++j) {
+      /* is this the base dataset? */
+      if (mtz->xtal[i]->set[j] == baseset) continue;
       /* check if dataset contains any active columns */
       if ( (MtzNumActiveColsInSet(mtz->xtal[i]->set[j]) == 0) &&
            (MtzNbatchesInSet(mtz,mtz->xtal[i]->set[j]) == 0) ) continue;
@@ -1401,9 +1449,13 @@ int ccp4_lhprt(const MTZ *mtz, int iprint) {
 
   /* write overall cell - just for scripts which grep for this */
   printf("\n\n * Cell Dimensions : (obsolete - use crystal cells)\n\n");
-  printf(" %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f \n\n",
-        mtz->xtal[0]->cell[0],mtz->xtal[0]->cell[1],mtz->xtal[0]->cell[2],
-        mtz->xtal[0]->cell[3],mtz->xtal[0]->cell[4],mtz->xtal[0]->cell[5]);
+  for (i = 0; i < mtz->nxtal; ++i) 
+    if (mtz->xtal[i]->cell[0] > 0.001) {
+      printf(" %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f \n\n",
+        mtz->xtal[i]->cell[0],mtz->xtal[i]->cell[1],mtz->xtal[i]->cell[2],
+        mtz->xtal[i]->cell[3],mtz->xtal[i]->cell[4],mtz->xtal[i]->cell[5]);
+      break;
+    }
 
   /* Calculate overall  resolution limits */
   for (i = 0; i < mtz->nxtal; ++i) {
@@ -1734,6 +1786,32 @@ int ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
   return 1;
 }
 
+int MtzAssignHKLtoBase(MTZ *mtz)
+{
+  int i,j,k,l=0;
+  MTZSET *baseset=NULL;
+  MTZCOL *colarray[3];
+
+  /* get base dataset if it exists */
+  baseset = MtzSetLookup(mtz,"HKL_base/HKL_base");
+
+  if (baseset) {
+
+   for (i = 0; i < mtz->nxtal; ++i)
+    for (j = 0; j < mtz->xtal[i]->nset; ++j)
+     for (k = 0; k < mtz->xtal[i]->set[j]->ncol; ++k) 
+       if ( strcmp(mtz->xtal[i]->set[j]->col[k]->type,"H") == 0 ) {
+        colarray[l++] = mtz->xtal[i]->set[j]->col[k];
+        if (l == 3) goto assign;
+       }
+
+    assign:
+    for (l = 0; l < 3; ++l)
+      if (colarray[l]) MtzAssignColumn(mtz, colarray[l], "HKL_base","HKL_base");
+
+  }
+}
+
 int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],  
      const char dataset_name[]) 
 {
@@ -1810,14 +1888,10 @@ int ccp4_lwsymm(MTZ *mtz, int *nsymx, int *nsympx, float rsymx[192][4][4],
 
 MTZCOL **ccp4_lwassn(MTZ *mtz, const char labels[][31], const int nlabels, 
              const char types[][3], const int iappnd) 
-
-/* Assign columns for writing. Check to see if columns already exist,
-   else create them. If iappnd = 0, then deactivate columns which are
-   not selected (allows one to write out a subset of columns) */
-
 {
   int i,j,k,ilab;
   MTZCOL *col, **lookup;
+  MTZSET *defaultset;
 
   lookup = (MTZCOL **) ccp4_utils_malloc(nlabels*sizeof(MTZCOL *));
 
@@ -1835,6 +1909,11 @@ MTZCOL **ccp4_lwassn(MTZ *mtz, const char labels[][31], const int nlabels,
    }
   } 
 
+  /* new columns need to be assigned to a dataset. Set this
+     as the base dataset if it exists, else the first dataset. */
+  if ( !(defaultset = MtzSetLookup(mtz,"HKL_base/HKL_base")) )
+    defaultset = mtz->xtal[0]->set[0];
+
   /* Loop over labels */
   for (ilab = 0; ilab < nlabels; ++ilab) {
     if (strcmp(types[ilab],"Y") == 0 && strcmp(labels[ilab],"M/ISYM") == 0) {
@@ -1848,10 +1927,10 @@ MTZCOL **ccp4_lwassn(MTZ *mtz, const char labels[][31], const int nlabels,
     } else {
       /* add new column to first dataset - MtzAssignColumn corrects this */
       if (strcmp(types[ilab],"Y") == 0 && strcmp(labels[ilab],"M/ISYM") == 0) {
-        lookup[ilab] = MtzAddColumn(mtz, mtz->xtal[0]->set[0], 
+        lookup[ilab] = MtzAddColumn(mtz, defaultset, 
                       "M/ISYM", types[ilab]);
       } else {
-        lookup[ilab] = MtzAddColumn(mtz, mtz->xtal[0]->set[0], 
+        lookup[ilab] = MtzAddColumn(mtz, defaultset, 
                       labels[ilab], types[ilab]);
       }
     }
@@ -1973,7 +2052,7 @@ int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[],
   float refldata[MCOLUMNS],res;
   double coefhkl[6];
 
-  /* if this is extra reflection, check memory */
+  /* if this is extra reflection, check memory for in-memory mode */
   if (mtz->refs_in_memory && iref > mtz->nref) {
     if (iref > ccp4array_size(lookup[0]->ref)) {
      /* Loop over crystals */
@@ -1989,10 +2068,11 @@ int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[],
     }
   }
 
+  /* update variables held in memory */
   icol = -1;
   for (i = 0; i < ncol; ++i) {
     if (lookup[i]) {
-      /* update reflection in memory or add to refldata array. */
+      /* update reflection for in-memory mode */
       if (mtz->refs_in_memory) {
         lookup[i]->ref[iref-1] = adata[i];
       } 
@@ -2004,6 +2084,7 @@ int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[],
     }
   }
 
+  /* write reflection for on-disk mode */
   if (!mtz->refs_in_memory) {
 
     icol = -1;
@@ -2024,22 +2105,26 @@ int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[],
      MtzWrefl(mtz->fileout, icol+1, refldata);
 
      /* Update resolution limits. For in-memory mode, this is done in MtzPut. */
-
-     ind[0] = (int) adata[0];
-     ind[1] = (int) adata[1];
-     ind[2] = (int) adata[2];
-     MtzFindInd(mtz,&ind_xtal,&ind_set,ind_col);
-     for (l = 0; l < ncol; ++l) {
-       if (lookup[l] == mtz->xtal[ind_xtal]->set[ind_set]->col[ind_col[0]])
-         ind[0] = (int) adata[l];
-       if (lookup[l] == mtz->xtal[ind_xtal]->set[ind_set]->col[ind_col[1]])
-         ind[1] = (int) adata[l];
-       if (lookup[l] == mtz->xtal[ind_xtal]->set[ind_set]->col[ind_col[2]])
-         ind[2] = (int) adata[l];
+     /* Check if HKL are first 3 columns */
+     if (lookup[0]->type[0] == 'H' && lookup[1]->type[0] == 'H' && 
+         lookup[2]->type[0] == 'H') {
+       ind[0] = (int) adata[0];
+       ind[1] = (int) adata[1];
+       ind[2] = (int) adata[2];
+     } else {
+       MtzFindInd(mtz,&ind_xtal,&ind_set,ind_col);
+       for (l = 0; l < ncol; ++l) {
+         if (lookup[l] == mtz->xtal[ind_xtal]->set[ind_set]->col[ind_col[0]])
+           ind[0] = (int) adata[l];
+         if (lookup[l] == mtz->xtal[ind_xtal]->set[ind_set]->col[ind_col[1]])
+           ind[1] = (int) adata[l];
+         if (lookup[l] == mtz->xtal[ind_xtal]->set[ind_set]->col[ind_col[2]])
+           ind[2] = (int) adata[l];
+       }
      }
 
      for (i = 0; i < mtz->nxtal; ++i) {
-      if (mtz->xtal[i]->cell[0] > 0.0) {
+      if (mtz->xtal[i]->cell[0] > 0.001) {
        MtzHklcoeffs(mtz->xtal[i]->cell, coefhkl);
        res = MtzInd2reso(ind, coefhkl);
        if (res > 0.0) {
@@ -3096,7 +3181,6 @@ MTZCOL *MtzColLookup(const MTZ *mtz, const char *label)
 
 MTZSET *MtzSetLookup(const MTZ *mtz, const char *label)
 {
-  /* Returns a pointer to the dataset of mtz with the given `label`, or NULL */
   int x,s;
   char *path1, path2[200];
 

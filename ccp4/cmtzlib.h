@@ -143,7 +143,13 @@ int MtzDeleteRefl(MTZ *mtz, int iref);
 
 /**** Memory allocation ****/
 
-/** Allocates memory for an MTZ header structure. 
+/** Allocates memory for an MTZ header structure. The structure can
+ * contain 0, 1 or more crystals, and for each crystal 0, 1 or more 
+ * datasets. Crystals have a name based on the time "NULL_xnameHHMMSS"
+ * to ensure uniqueness (compared to crystals defined elsewhere - all
+ * new crystals created here will (probably) have the same name).
+ * Crystals have the project name "NULL_pname", and datasets have the
+ * name "NULL_dname".
  * @param nxtal Number of crystals to allocate.
  * @param nset Number of datasets for each crystal to allocate.
  * @return pointer to MTZ header struct
@@ -341,8 +347,13 @@ MTZXTAL *MtzSetXtal(const MTZ *mtz, const MTZSET *set);
  */
 char *MtzSetPath(const MTZ *mtz, const MTZSET *set);
 
+/** Returns a pointer to the dataset of MTZ with the given label.
+ * @param mtz pointer to MTZ struct.
+ * @param label Label of desired set. This could be <dname> or
+ *   <xname>/<dname>.
+ * @return pointer to set or NULL if not found
+ */
 MTZSET *MtzSetLookup(const MTZ *mtz, const char *label);
-/* Returns a pointer to the dataset of mtz with the given `label`, or NULL */
 
 MTZSET *MtzAddDataset(MTZ *mtz, MTZXTAL *xtl, const char *dname,
                     const float wavelength);
@@ -397,6 +408,11 @@ MTZCOL *MtzIcolInSet(const MTZSET *set, const int icol);
 /* Add a column to dataset set and create + fill with NAN */
 MTZCOL *MtzAddColumn(MTZ *mtz, MTZSET *set, const char *label,
                    const char *type);
+
+/** Assigns HKL columns to the base dataset.
+ * @param mtz pointer to MTZ struct
+ */
+int MtzAssignHKLtoBase(MTZ *mtz);
 
 /** Assigns a column to a dataset identified by crystal_name and
  * dataset_name. First, the function checks whether the
@@ -697,6 +713,19 @@ int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nli
 int ccp4_lwsymm(MTZ *mtz, int *nsymx, int *nsympx, float rsymx[192][4][4], 
 		char ltypex[], int *nspgrx, char spgrnx[], char pgnamx[]);
 
+
+/* Assign columns for writing. Check to see if columns already exist,
+ * else create them. New columns are assigned to the base dataset if it 
+ * exists, else the first dataset.
+ * @param mtz pointer to MTZ struct
+ * @param labels Input array of column labels to be assigned.
+ * @param nlabels Number of columns.
+ * @param types Input array of column types of columns.
+ * @param iappnd If iappnd = 0, then deactivate columns which are
+ *   not selected (allows one to write out a subset of columns). Else
+ *   if iappnd = 1, append these columns to existing ones.
+ * @return Array of pointers to columns in MTZ struct.
+ */
 MTZCOL **ccp4_lwassn(MTZ *mtz, const char labels[][31], const int nlabels, 
              const char types[][3], const int iappnd);
 
