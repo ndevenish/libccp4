@@ -40,7 +40,7 @@ extern "C" {
 
 char *ccp4_prog_vers(char *progvers);
 
-char *ccp4ProgramName(char *progname);
+char *ccp4ProgramName(const char *progname);
 
 void ccp4ProgramTime(int init);
 

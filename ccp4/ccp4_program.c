@@ -51,7 +51,7 @@ char *ccp4_prog_vers(char *progvers)
    NB Default program name will be returned as "CCP4",
    until reset by the calling subprogram.
 */
-char *ccp4ProgramName(char *progname)
+char *ccp4ProgramName(const char *progname)
 {
   static char programname[MAXLEN_PROGNAME]="CCP4";
   int         i;
