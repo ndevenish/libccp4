@@ -2555,6 +2555,8 @@ int __stdcall ISATTY (int *lunit)
   *ValueNotDet  = FLT_MAX;
 }
 
+/* Wrap-around for mkdir function. Returns 0 if successful, 1 if directory already exists,  */
+/* and -1 if other error.                                                                   */
 #ifndef _MVS
 #if CALL_LIKE_HPUX
   void cmkdir (path, cmode, result, Lpath, Lmode)
@@ -2591,6 +2593,14 @@ int __stdcall ISATTY (int *lunit)
   sscanf(cmode,"%o",&mode);
    
   *result = mkdir(name,mode); 
+
+  if (*result == -1) {
+/* Distinguish directory-exists error from others, since usually not a problem. */
+    if (errno == EEXIST) {
+      *result = 1;
+    }
+  }
+    
 }
 
 #if CALL_LIKE_HPUX
