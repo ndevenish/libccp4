@@ -19,12 +19,13 @@
 # cmap_py  - make shared library for use as python module
 # csym_py  - make shared library for use as python module
 # mmdb_py  - make shared library for use as python module
-# cmtz_tcl  - make shared library for use as python module
-# cmap_tcl  - make shared library for use as python module
-# csym_tcl  - make shared library for use as python module
-# cmtz_pl  - make shared library for use as python module
-# cmap_pl  - make shared library for use as python module
-# csym_pl  - make shared library for use as python module
+# cmtz_tcl  - make shared library for use as tcl module
+# cmap_tcl  - make shared library for use as tcl module
+# csym_tcl  - make shared library for use as tcl module
+# mmdb_tcl  - make shared library for use as tcl module
+# cmtz_pl  - make shared library for use as perl module
+# cmap_pl  - make shared library for use as perl module
+# csym_pl  - make shared library for use as perl module
 # umtz     - make micro C language library for MTZ
 # mmtz     - make milli C language library for MTZ
 
@@ -65,6 +66,7 @@ MMDBPYMODULE = $(LIB_DIR)/MMDBc.so
 CMTZTCLPACKAGE = $(LIB_DIR)/cmtz_tcl.so
 CMAPTCLPACKAGE = $(LIB_DIR)/cmap_tcl.so
 CSYMTCLPACKAGE = $(LIB_DIR)/csym_tcl.so
+MMDBTCLPACKAGE = $(LIB_DIR)/mmdb_tcl.so
 CMTZPLPACKAGE = $(LIB_DIR)/cmtz_pl.so
 CMAPPLPACKAGE = $(LIB_DIR)/cmap_pl.so
 CSYMPLPACKAGE = $(LIB_DIR)/csym_pl.so
@@ -78,7 +80,7 @@ MMDBOBJS = bfgs_min.o mmdb_chain.o    mmdb_manager.o  mmdb_symop.o \
            mattype_.o mmdb_file.o     mmdb_rwbrook.o  mmdb_atom.o \
            mmdb_graph.o  mmdb_selmngr.o  mmdb_align.o \
            mmdb_tables.o math_.o mmdb_sbase.o mmdb_uddata.o \
-           mmdb_xml.o   mmdb_bondmngr.o
+           mmdb_xml.o   mmdb_bondmngr.o mmdb_ficif.o
 CORELIBOBJS = library_err.o library_file.o  library_utils.o \
               ccp4_array.o ccp4_parser.o cvecmat.o
 CGENERALOBJS = ccp4_program.o ccp4_general.o
@@ -102,6 +104,7 @@ MMDBPYOBJS = mmdb_python_wrap.o
 CMTZTCLOBJS = cmtzlib_tcl_wrap.o
 CMAPTCLOBJS = cmaplib_tcl_wrap.o
 CSYMTCLOBJS = csymlib_tcl_wrap.o
+MMDBTCLOBJS = mmdb_tcl_wrap.o
 CMTZPLOBJS = cmtzlib_pl_wrap.o
 CMAPPLOBJS = cmaplib_pl_wrap.o
 CSYMPLOBJS = csymlib_pl_wrap.o
@@ -204,6 +207,11 @@ csym_tcl: $(CSYMTCLPACKAGE)
 $(CSYMTCLPACKAGE): $(CSYMOBJS) $(CORELIBOBJS) $(CSYMTCLOBJS)
 	$(SHARE_MODULE) $(CSYMOBJS) $(CORELIBOBJS) $(CSYMTCLOBJS) -o $(CSYMTCLPACKAGE)
 
+mmdb_tcl: $(MMDBTCLPACKAGE)
+
+$(MMDBTCLPACKAGE): $(LMMDB) $(MMDBTCLOBJS)
+	$(SHARE_MODULE) $(LMMDB) $(MMDBTCLOBJS) -o $(MMDBTCLPACKAGE) -lC
+
 cmtz_pl: $(CMTZPLPACKAGE)
 
 $(CMTZPLPACKAGE): $(LCMTZ) $(CMTZPLOBJS)
@@ -235,6 +243,10 @@ $(CMTZPYOBJS) $(CMAPPYOBJS) $(CSYMPYOBJS):
 
 $(MMDBPYOBJS): 
 	$(CCPP) $(CPPFLAGS) -I$(mmdbsrcdir) -I$(PYTHON_INCLUDE) \
+            -c $(mmdbsrcdir)/`basename $@ .o`.cpp
+
+$(MMDBTCLOBJS): 
+	$(CCPP) $(CPPFLAGS) -I$(mmdbsrcdir) -I$(TCL_INCLUDE) \
             -c $(mmdbsrcdir)/`basename $@ .o`.cpp
 
 $(CMTZTCLOBJS) $(CMAPTCLOBJS) $(CSYMTCLOBJS): 
@@ -469,6 +481,10 @@ $(srcdir)/csymlib_tcl_wrap.c: $(srcdir)/csymlib.i $(srcdir)/csymlib.h
 	/ccpstaff/ccp4/mdw/cmtz/swig/swig -tcl -dhtml \
            -o $(srcdir)/csymlib_tcl_wrap.c $(srcdir)/csymlib.i
 
+$(mmdbsrcdir)/mmdb_tcl_wrap.cpp: $(mmdbsrcdir)/mmdb_python.i
+	/ccpstaff/ccp4/mdw/cmtz/swig/swig -c++ -tcl8 \
+            -o $(mmdbsrcdir)/mmdb_tcl_wrap.cpp $(mmdbsrcdir)/mmdb_python.i
+
 $(srcdir)/cmtzlib_pl_wrap.c: $(srcdir)/cmtzlib.i $(srcdir)/cmtzlib.h
 	/ccpstaff/ccp4/mdw/cmtz/swig/swig -perl5 -dhtml \
            -o $(srcdir)/cmtzlib_pl_wrap.c $(srcdir)/cmtzlib.i
@@ -512,6 +528,7 @@ math_.o:          $(mmdbsrcdir)/math_.cpp
 mmdb_bondmngr.o:  $(mmdbsrcdir)/mmdb_bondmngr.cpp
 mmdb_uddata.o:    $(mmdbsrcdir)/mmdb_uddata.cpp
 mmdb_xml.o:       $(mmdbsrcdir)/mmdb_xml.cpp
+mmdb_ficif.o:     $(mmdbsrcdir)/mmdb_ficif.cpp
 
 library_err.o:    $(srcdir)/library_err.c
 library_f.o:      $(srcdir)/library_f.c
@@ -560,6 +577,7 @@ mmdb_python_wrap.o: $(mmdbsrcdir)/mmdb_python_wrap.cpp
 cmtzlib_tcl_wrap.o: $(srcdir)/cmtzlib_tcl_wrap.c  $(srcdir)/mtzdata.h 
 cmaplib_tcl_wrap.o: $(srcdir)/cmaplib_tcl_wrap.c 
 csymlib_tcl_wrap.o: $(srcdir)/csymlib_tcl_wrap.c 
+mmdb_tcl_wrap.o: $(mmdbsrcdir)/mmdb_tcl_wrap.cpp 
 cmtzlib_pl_wrap.o: $(srcdir)/cmtzlib_pl_wrap.c  $(srcdir)/mtzdata.h 
 cmaplib_pl_wrap.o: $(srcdir)/cmaplib_pl_wrap.c 
 csymlib_pl_wrap.o: $(srcdir)/csymlib_pl_wrap.c 
