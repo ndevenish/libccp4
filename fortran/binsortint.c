@@ -37,6 +37,8 @@ For information about key type values see binsortkey.h
 #include <stdlib.h>
 #ifndef NOUNISTD		/* ESV, for instance doesn't have it */
 #  include <unistd.h>
+#else
+#  include <sts/types.h>	/* necessary on Titan, at least */
 #endif
 #include <stddef.h>
 
