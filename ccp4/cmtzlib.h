@@ -116,9 +116,14 @@ int MtzPut(MTZ *mtz, const char *logname);
  */
 CCP4File *MtzOpenForWrite(const char *logname);
 
+/** Write header record to fileout. Record is filled from
+ *   nitems to MTZRECORDLENGTH by blanks.
+ * @param fileout Pointer to output file.
+ * @param nitems
+ * @param buffer
+ * @return 
+ */
 int MtzWhdrLine(CCP4File *fileout, int nitems, char buffer[]);
-/* write header record to fileout. Record is filled from
-     nitems to MTZRECORDLENGTH by blanks */
 
 /** Write ncol column entries to fileout from refldata.
  * @param fileout pointer to output MTZ file.
@@ -165,34 +170,55 @@ MTZCOL *MtzMallocCol(MTZ *mtz, int nref);
  */
 int MtzFreeCol(MTZCOL *col);
 
+/** Allocates memory for a single batch header.
+ * @return 
+ */
 MTZBAT *MtzMallocBatch(void);
-/* Allocates memory for a single batch header */
 
+/** Frees the memory reserved for 'batch'.
+ * @param batch
+ * @return 
+ */
 int MtzFreeBatch(MTZBAT *batch);
-/* Frees the memory reserved for 'batch' */
   
+/** Allocates memory for the mtz history with 'nhist' lines.
+ * @param nhist
+ * @return 
+ */
 char *MtzCallocHist(int nhist);
-/* Allocates memory for the mtz history with 'nhist' lines */
 
+/** Frees the memory reserved for 'hist'.
+ * @param hist
+ * @return 
+ */
 int MtzFreeHist(char *hist);
-/* Frees the memory reserved for 'hist' */
 
 /** Free all memory malloc'd from static pointers.
  * To be called before program exit. The function can be
  * registered with atexit.
+ * @return void
  */
 void MtzMemTidy(void);
 
 /**** Header operations ****/
   
+/** Get the number of batches in the mtz.
+ * @param mtz pointer to MTZ struct
+ * @return Number of batches.
+ */
 int MtzNbat(const MTZ *mtz);
-/* get the number of batches in the mtz */
 
+/** Get the number of reflections in the mtz.
+ * @param mtz pointer to MTZ struct
+ * @return Number of reflections.
+ */
 int MtzNref(const MTZ *mtz);
-/* get the number of reflections in the mtz */
 
+/** Get the spacegroup number (likely CCP4 convention).
+ * @param mtz pointer to MTZ struct
+ * @return Spacegroup number.
+ */
 int MtzSpacegroupNumber(const MTZ *mtz);
-/* get the spacegroup number (likely CCP4 convention) */
 
 /** Return the overall resolution limits of the MTZ structure.
  * These are the widest limits over all crystals present.
@@ -238,12 +264,22 @@ MTZXTAL *MtzIxtal(const MTZ *mtz, const int ixtal);
  */
 char *MtzXtalPath(const MTZXTAL *xtal);
 
+/** Returns a pointer to the crystal of mtz with the given `label`, or NULL.
+ * @param mtz pointer to MTZ struct
+ * @param label
+ * @return 
+ */
 MTZXTAL *MtzXtalLookup(const MTZ *mtz, const char *label);
-/* Returns a pointer to the crystal of mtz with the given `label`, or NULL */
 
+/** Add a crystal to header mtz.
+ * @param mtz pointer to MTZ struct
+ * @param xname Crystal name.
+ * @param pname Name of associated project.
+ * @param cell Cell dimensions of crystal.
+ * @return Pointer to crystal.
+ */
 MTZXTAL *MtzAddXtal(MTZ *mtz, const char *xname, const char *pname,
                   const float cell[6]);
-/* Add a crystal to header mtz */
 
 /** For a given crystal, return number of datasets in that crystal.
  * @param xtal pointer to the crystal struct
@@ -489,28 +525,82 @@ int MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf);
  */
 int ccp4_lrtitl(const MTZ *mtz, char *title);
 
+/** Get history lines from MTZ structure.
+ * @param mtz Pointer to MTZ struct.
+ * @param history
+ * @return 
+ */
 int ccp4_lrhist(const MTZ *mtz, char history[][MTZRECORDLENGTH]);
 
+/** Get sort order from MTZ structure.
+ * @param mtz Pointer to MTZ struct.
+ * @param isort
+ * @return 
+ */
 int ccp4_lrsort(const MTZ *mtz, int isort[5]);
 
+/** Get batch numbers from MTZ structure.
+ * @param mtz Pointer to MTZ struct.
+ * @param nbatx
+ * @param batchx
+ * @return 
+ */
 int ccp4_lrbats(const MTZ *mtz, int *nbatx, int batchx[]);
 
+/** Get cell dimensions for a particular crystal.
+ * @param xtl Pointer to crystal.
+ * @param cell Output cell dimensions.
+ * @return 
+ */
 int ccp4_lrcell(const MTZXTAL *xtl, float cell[]);
 
+/** Get spacegroup information as held in MTZ header.
+ * @param mtz Pointer to MTZ struct.
+ * @param nsympx Number of primitive symmetry operators.
+ * @param ltypex Lattice type (P,A,B,C,I,F,R).
+ * @param nspgrx Spacegroup number.
+ * @param spgrnx Spacegroup name.
+ * @param pgnamx Pointgroup name.
+ * @return Spacegroup number.
+ */
 int ccp4_lrsymi(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx, 
        char *spgrnx, char *pgnamx);
 
+/** Get symmetry matrices from MTZ structure.
+ * @param mtz Pointer to MTZ struct.
+ * @param nsymx Number of symmetry operators held in MTZ header.
+ * @param rsymx Symmetry operators as 4 x 4 matrices, in the order they
+ *   are held in the MTZ header.
+ * @return Number of symmetry operators.
+ */
 int ccp4_lrsymm(const MTZ *mtz, int *nsymx, float rsymx[192][4][4]);
 
+/** Uses LABIN or LABOUT line to convert program labels to user labels.
+ * This is a helper function, but does not access reflection structure at all.
+ * @param labin_line
+ * @param prog_labels
+ * @param nlprgi
+ * @param user_labels
+ * @return Number of program labels matched.
+ */
 int MtzParseLabin(char *labin_line, const char prog_labels[][31], 
 	   const int nlprgi, char user_labels[][2][31]);
-/* Uses LABIN or LABOUT line to convert program labels to user labels */
-/* This is a helper function, but does not access reflection structure at all */
-/* Returns the number of program labels matched */
 
+/** Finds columns in an MTZ struct according to column labels. Column types
+ *  are checked for agreement between requested type (in argument 'types')
+ *  and file type. If requested type is blank, file type is returned in 
+ *  argument 'types'. Note, this function is different from Fortranic LRASSN, 
+ *  in that any conversion from program labels to user labels should have been done
+ *  previously.
+ * @param mtz Pointer to MTZ struct.
+ * @param labels Input array of column labels to be found in MTZ struct.
+ * @param nlabels Number of columns to be found.
+ * @param types Input array of column types of columns to be found.
+ * @return Array of pointers to columns in MTZ struct. Array element is
+ *  NULL if column not found.
+ */
 MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels, 
 		char types[][3]);
-/* Assigns labels in lsprgi to file mtz, and returns pointers to columns */
 
 /** Report information on a particular dataset. This represents the
  * collection of data held in one series of dataset records in the MTZ header.
