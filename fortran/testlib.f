@@ -18,13 +18,14 @@ C     .. Local Arrays ..
       REAL BUFFER(LBUF)
 C     ..
 C     .. External Functions ..
+      CHARACTER RCSDAT*8
       LOGICAL LITEND,VAXVMS
-      EXTERNAL LITEND,VAXVMS
+      EXTERNAL LITEND,RCSDAT,VAXVMS
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CCPERR,CCPFYP,NOCRLF,QCLOSE,QMODE,QOPEN,QQINQ,QREAD,
      +         QSEEK,QWRITE,SRAND,UBYTES,UCPUTM,UGERR,UGTENV,UGTUID,
-     +         UIDATE,UISATT,URENAM,USTIME,UTIME
+     +         UIDATE,UISATT,URENAM,USTIME,UTIME,CCPVRS,CCPDPN,NOCRLF
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC NINT,COS
@@ -39,9 +40,14 @@ C
       SEC = -1.0
       CALL UCPUTM(SEC)
 C
-C---- Parse command line arguments
+C---- Parse command line arguments, open printer stream and print
+C     version 
 C
       CALL CCPFYP
+      I = 0
+      CALL CCPDPN(LUNOUT,'PRINTER','PRINTER','F',0,I)
+      IF (I.NE.0) CALL CCPERR(1,'Can''t open printer stream')
+      CALL CCPVRS(6,'TESLIB',RCSDAT('$DATE'))
 C
 C---- Other initialisations
 C
@@ -135,6 +141,11 @@ C
       CALL UCPUTM(SEC)
       WRITE (REPLY,FMT=6016) SEC
       WRITE (LUNOUT,FMT=6002) ' UCPUTM',REPLY,'Show elapsed CPU time'
+C
+C---- NOCRLF
+C     
+      CALL NOCRLF('NOCRLF')
+      WRITE(LUNOUT,'(15X,A)') 'Should be on same line'
 C
 C---- End of tests
 C
