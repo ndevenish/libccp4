@@ -850,8 +850,6 @@ CCP4 library.c macro definitions
 #define TRUE 1
 #endif
 
-typedef char BOOLEAN;
-
 typedef struct { double r;             /* real component and */
                  double i;             /* imaginary component of */
                } COMPLEX;              /* a complex number */
