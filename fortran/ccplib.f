@@ -168,7 +168,7 @@ C     ..
 C
 C
 C_BEGIN_CCPALE
-      SUBROUTINE CCPALE(ROUTNE, N, TYPE, LENGTH, LENDEF)
+      SUBROUTINE CCPALE(ROUTNE, N, TYPE, LENGTH, LENDEF, PRINT)
 C     =================================================
 C
 C     Arrange to call subroutine ROUTNE with N array arguments each of
@@ -195,21 +195,30 @@ C                       of elements in each (array) argument of ROUTNE
 C     LENDEF (I)   INTEGER (*): default lengths for the argument arrays
 C     used if the appropriate LENGTH argument doesn't represent a
 C     defined logical
+C     PRINT  (I)   LOGICAL: whether or not to print the values of the
+C     array lengths
 C_END_CCPALE
 C
 C     .. Scalar Arguments ..
       INTEGER N
+      LOGICAL PRINT
 C     ..
 C     .. Array Arguments ..
       CHARACTER TYPE (*),  LENGTH (*)*(*)
       INTEGER LENDEF (*)
 C     ..
-      EXTERNAL ROUTNE, CCPE2I, CCPALC
-      INTEGER I, LENG (9), CCPE2I
+      EXTERNAL ROUTNE, CCPE2I, CCPALC, LUNSTO
+      INTEGER I, LENG (9), CCPE2I, LUNSTO
 C     ..
       DO 10 I=1,N
         LENG (I) = CCPE2I (LENGTH (I), LENDEF (I))
  10   CONTINUE
+      IF (PRINT) THEN
+        WRITE (LUNSTO(), '(/
+     +       '' Memory allocation (logical name, type, elements):'')')
+        WRITE (LUNSTO(), '(3X, A, 1X, A, 3X, I10)')
+     +       (LENGTH (I), TYPE (I), LENG (I), I=1,N)
+      ENDIF
       CALL CCPALC (ROUTNE, N, TYPE, LENG)
       END
 C
@@ -925,7 +934,7 @@ C
       IF (DINIT) THEN
         II = -1
         IF (RDLOGF.GT.0) THEN
-          IF (FDIR(ENVFIL).NE.' ') II=0
+          IF (FDIR(LOGFIL).NE.' ') II=0
         ELSE
           CALL UGTENV('CINCL',FILNAM)
           IF (FILNAM.NE.' ') THEN
@@ -1561,8 +1570,6 @@ C
       ITERM = 6
       CALL UISATT(ITERM,IYES)
       CCPONL = IYES.EQ.1
-CC      CCPONL = (ISATTY(6))  direct fortran call
-C
       END
 C
 C
@@ -2352,7 +2359,7 @@ C
       CALL UGTUID(UID)
       CALL UTIME(CTIME)
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
- 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.2: ',
+ 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.3: ',
      +       A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
      +       /)
 C
