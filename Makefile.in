@@ -622,7 +622,7 @@ csymlib_pl_wrap.o: $(srcdir)/csymlib_pl_wrap.c
 #
 
 testlib : $(srcdir)/testlib.f  $(LF)
-	$(FC) -o testlib $(FFLAGS) $(SHARED_LIB_FFLAGS) $(srcdir)/testlib.f -all $(LDFLAGS)
+	$(FC) -o testlib $(FFLAGS) $(SHARED_LIB_FFLAGS) $(srcdir)/testlib.f $(LDFLAGS)
 
 #
 # standard targets
