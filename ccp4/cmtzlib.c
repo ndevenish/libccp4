@@ -1191,6 +1191,7 @@ int ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64],
   return 1;
 }
 
+/* Return MTZ record in file order */
 int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int iref) {
 
   int i,j,k;
@@ -1248,6 +1249,7 @@ int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int i
   return 0;
 }
 
+/* Return MTZ record in lookup order */
 int ccp4_lrreff(const MTZ *mtz, float *resol, float adata[], int logmss[],
    const MTZCOL *lookup[], const int ncols, const int iref) {
 
