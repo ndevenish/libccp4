@@ -299,6 +299,8 @@ FORTRAN_SUBR(PARSER,parser,
   /* On input ntok is the maximum number of fields to be parsed
      If ntok < 20 then set to 20 */
   if (*ntok < 20) *ntok = 20;
+  /* also reset if ntok is silly - this is a trap for uninitialised ntok */
+  if (*ntok > 10000) *ntok = 10000;
 
   PARSER_DEBUG({
     printf("PARSER: set maximum number of tokens to %d\n",*ntok);
