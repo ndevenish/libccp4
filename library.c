@@ -1447,14 +1447,40 @@ void ccp4_hgetlimits (int *IValueNotDet, float *ValueNotDet)
 int ccp4_mkdir (const char *path, const char *cmode)
 #ifndef _MVS
 {  
-  mode_t mode;
+  mode_t mode=0;
   int result; 
+#if defined (__APPLE__)
+  static const unsigned short TBM = 0x07;
 
+  switch (strlen(cmode)) {
+  case 4: 
+    mode |= (*cmode & TBM) << 9 ;
+    mode |= (*(cmode+1) & TBM) << 6 ;
+    mode |= (*(cmode+2) & TBM) << 3 ;
+    mode |= (*(cmode+3) & TBM) ;
+    break;
+  case 3:
+    mode |= (*cmode & TBM) << 6 ;
+    mode |= (*(cmode+1) & TBM) << 3 ;
+    mode |= (*(cmode+2) & TBM) ;  
+    break;
+  case 2:
+    mode |= (*cmode & TBM) << 3 ; 
+    mode |= (*(cmode+1) & TBM) ;
+    break;
+  case 1:
+    mode |= (*cmode & TBM) ;    
+    break;
+  default:     
+    mode = 0x0fff ;
+  } 
+#else
 /* Possible modes (see stat.h)
   Currently pass 3-character string and interpret as octal.
   Try also S_IRWXU, S_IRWXG, etc. */
   sscanf(cmode,"%o",&mode);
-   
+#endif
+ 
   result = mkdir(path,mode); 
 
   if (result == -1) {
@@ -1474,13 +1500,38 @@ int ccp4_mkdir (const char *path, const char *cmode)
 
 int ccp4_chmod (const char *path, const char *cmode)
 #ifndef _MVS
-{ mode_t mode;
+{ mode_t mode=0;
+#if defined (__APPLE__)
+  static const unsigned short TBM = 0x07;
 
+  switch (strlen(cmode)) {
+  case 4:
+    mode |= (*cmode & TBM) << 9 ;
+    mode |= (*(cmode+1) & TBM) << 6 ;
+    mode |= (*(cmode+2) & TBM) << 3 ;  
+    mode |= (*(cmode+3) & TBM) ;
+    break;
+  case 3:
+    mode |= (*cmode & TBM) << 6 ;
+    mode |= (*(cmode+1) & TBM) << 3 ;
+    mode |= (*(cmode+2) & TBM) ;
+    break;
+  case 2:
+    mode |= (*cmode & TBM) << 3 ;
+    mode |= (*(cmode+1) & TBM) ;
+    break;
+  case 1:
+    mode |= (*cmode & TBM) ;
+    break;
+  default:
+    mode = 0x0fff ;
+  }
+#else
 /* Possible modes (see stat.h)
   Currently pass 3-character string and interpret as octal.
   Try also S_IRWXU, S_IRWXG, etc. */
   sscanf(cmode,"%o",&mode);
-
+#endif
   return (chmod(path,mode)); 
 }
 #else
