@@ -157,7 +157,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
   ccp4_file_seek (filein, 0, SEEK_SET);
   ccp4_file_setmode(filein,0);
-  istat = ccp4_file_readchar(filein, hdrrec, 4);
+  istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, 4);
   hdrrec[4] = '\0';
   ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
 
@@ -196,7 +196,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   strcpy(project,"dummy");
   strcpy(crystal,"dummy");
   ccp4_file_setmode(filein,0);
-  istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+  istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
   /* We don't test all reads, but this one should trap for e.g. truncated files */
   if (istat == EOF) {
     ccp4_signal(CCP4_ERRLEVEL(4) | CMTZ_ERRNO(CMTZERR_ReadFail),"MtzGet",NULL);
@@ -307,7 +307,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
         cellin[nxtal-1][i] = cell[i];
     }
 
-    istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+    istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
     hdrrec[MTZRECORDLENGTH] = '\0';
     ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   }
@@ -356,7 +356,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
   /* Read dataset information */
   ccp4_file_setmode(filein,0);
-  istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+  istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
   hdrrec[MTZRECORDLENGTH] = '\0';
   ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   while (strncmp((strncpy(mkey,hdrrec,4)),"END",3) != 0) {
@@ -403,7 +403,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
       mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]]->wavelength = (float) token[2].value;
     }
 
-    istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+    istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
     hdrrec[MTZRECORDLENGTH] = '\0';
     ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   }
@@ -417,7 +417,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
 
   icolin = -1;
   ccp4_file_setmode(filein,0);
-  istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+  istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
   hdrrec[MTZRECORDLENGTH] = '\0';
   ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   while (strncmp((strncpy(mkey,hdrrec,4)),"END",3) != 0) {
@@ -539,7 +539,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
       }
     }
 
-    istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+    istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
     hdrrec[MTZRECORDLENGTH] = '\0';
     ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   }
@@ -554,7 +554,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
     printf(" MtzGet: end of 3rd pass \n");
 
   /* Now read history if any */
-  istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+  istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
   hdrrec[MTZRECORDLENGTH] = '\0';
   ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   while (!ccp4_keymatch(key,"MTZE")) {
@@ -566,14 +566,14 @@ MTZ *MtzGet(const char *logname, int read_refs)
       mtz->histlines = nhist;
 
       for (i = 0; i < nhist; ++i) {
-        istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+        istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
         strncpy(mtz->hist + MTZRECORDLENGTH*i,hdrrec,MTZRECORDLENGTH);
       }
 
     } else if (ccp4_keymatch(key, "MTZB")) {
       for (ibat = 0; ibat < nbat; ++ibat) {
 
-        istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+        istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
         hdrrec[MTZRECORDLENGTH] = '\0';
         ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
         if (!ccp4_keymatch(key, "BH")) {
@@ -595,7 +595,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
         nintegers = (int) token[3].value;
         nreals = (int) token[4].value;
 	/* read batch title */
-        istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+        istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
         strncpy(batch->title,hdrrec+6,70); 
         batch->title[70]='\0';
 
@@ -607,7 +607,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
         MtzArrayToBatch(intbuf, fltbuf, batch);
 
         ccp4_file_setmode(filein,0);
-	istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH); 
+	istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH); 
         hdrrec[MTZRECORDLENGTH] = '\0';
         ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
         if (ntok == 4) {
@@ -621,7 +621,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
       }
     }
 
-    istat = ccp4_file_readchar(filein, hdrrec, MTZRECORDLENGTH);
+    istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
     hdrrec[MTZRECORDLENGTH] = '\0';
     ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   }
@@ -2536,7 +2536,7 @@ int MtzPut(MTZ *mtz, const char *logname)
      ccp4_file_write(fileout, (uint8 *) buf, nwords);
      ccp4_file_setmode(fileout,0);
      if (batch->gonlab[0] != "") {
-       sprintf(hdrrec,"BHCH %8s%8s%8s",batch->gonlab,batch->gonlab[1],batch->gonlab[2]);
+       sprintf(hdrrec,"BHCH %8s%8s%8s",batch->gonlab[0],batch->gonlab[1],batch->gonlab[2]);
      } else {
        sprintf(hdrrec,"BHCH                         ");
      }
@@ -2695,7 +2695,7 @@ CCP4File *MtzOpenForWrite(const char *logname)
 
  /* Write initial info */
  ccp4_file_setmode(fileout,0);
- ccp4_file_writechar(fileout,"MTZ ",4);
+ ccp4_file_writechar(fileout, (uint8 *) "MTZ ",4);
  ccp4_file_setmode(fileout,2);
  hdrst = SIZE1 + 1;
  ccp4_file_write(fileout,(uint8 *) &hdrst,1);
@@ -2813,7 +2813,7 @@ int MtzWhdrLine(CCP4File *fileout, int nitems, char buffer[]) {
  for (j = i; j < MTZRECORDLENGTH; ++j)
    hdrrec[j] = ' ';
 
- return (ccp4_file_writechar(fileout,hdrrec,MTZRECORDLENGTH));
+ return (ccp4_file_writechar(fileout, (uint8 *) hdrrec,MTZRECORDLENGTH));
 
 }
 
