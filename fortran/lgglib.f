@@ -379,7 +379,10 @@ C
       CALL ARRAD(3,1,XOUT(1,I),T,XOUT(1,I))
       END DO
       END
-      SUBROUTINE CRYSTAL(CELL,CELLS,DEOR,ORTH,DEORS,ORTHS)
+      SUBROUTINE LGG_CRYSTAL(CELL,CELLS,DEOR,ORTH,DEORS,ORTHS)
+C PJX - renamed from CRYSTAL to avoid clashes with similarly named
+C common block in mapmask, ncsmask and dm
+C
 C this is a routine which input a cell parameter,CELL and calculate
 c CELLS*6 --- cells dimension in reciprocal space
 c DEOR3*3 --- Deorthongalization matraix in real space 
@@ -438,8 +441,8 @@ c
       REAL BUFF(3,3),CELL1(6)
       DIMENSION B1(3),B2(3),IUF(3)
 c Get a PDB convention 
-      CALL CRYSTAL(CELL,CELLS,DEOR,ORTH,DEORS,ORTHS)
-      CALL CRYSTAL(CELLS,CELL1,DEORS,ORTHS,DEOR,ORTH)
+      CALL LGG_CRYSTAL(CELL,CELLS,DEOR,ORTH,DEORS,ORTHS)
+      CALL LGG_CRYSTAL(CELLS,CELL1,DEORS,ORTHS,DEOR,ORTH)
 c
       end
 c This is a subroutine to separate one line into several lines by recognize
@@ -2958,7 +2961,7 @@ c...  data statements.  Seperate declaration and init required for f2c
      9   1., 1.,-1.,    1., 1.,0.,    1., 1.,1./
 c
       nmove = 1
-      call crystal(CELL,CELLS,DEOR,ORTH,deors,orths)
+      call lgg_crystal(CELL,CELLS,DEOR,ORTH,deors,orths)
       call averg(3,natom,xyz,ave)
 c	WRITE(6,*)  'Average xyz',ave
       do isym = 1, nsym
@@ -3161,7 +3164,10 @@ C
       E(2,3) =          - C1*S2
       E(3,3) = C2
       END 
-      function radii(natm,xyz)
+      real function lgg_radii(natm,xyz)
+c pjx: renamed from radii to avoid clash with common block
+c of same name in refmac4
+c Explicitly typed to real
 c
 c--calculate averge radii of a group of atoms.
 c first caculate the center of the gravity
@@ -3174,9 +3180,9 @@ c
       call averg(3,natm,xyz,b1)
       do i = 1, natm
        call arrps(3,1,xyz(1,i),b1,b2)
-       radii = radii + vem(3,b2)
+       lgg_radii = lgg_radii + vem(3,b2)
       end do
-      radii = radii/float(natm)
+      lgg_radii = lgg_radii/float(natm)
       end
 c this is a subroutine to change orthogonization matrix according to
 c cell dimension raxis spindle and xray axis 
@@ -3194,8 +3200,12 @@ c AND COMMON/DET/ DET 3*3 MATRIX transfer from statnd X-a orthogonal matrix
 c
 c Guoguang 930723
 c
+c PJX 010125 renamed common block det to lggdet to avoid
+c clash with subroutine det in rsps.
+c This common block doesn't appear to be used anywhere else?
+c
       subroutine raxcrystl(cell,aspin,axray,cells,deor,orth,deors,orths)
-      common/det/ det
+      common/lggdet/ det
       real det(3,3),buf(3,3),buf2(3,3)
       real cell(6),cells(6)
       real deor(3,3),orth(3,3)
@@ -3216,7 +3226,7 @@ c...  data statements.  Seperate declaration and init required for f2c
 c
 c standard orthongonization matrix
 c
-      call crystal(cell,cells,deor,orth,deors,orths)
+      call lgg_crystal(cell,cells,deor,orth,deors,orths)
 c
 c transfering  matrix from new system to old det
 c
