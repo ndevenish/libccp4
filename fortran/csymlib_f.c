@@ -69,6 +69,7 @@ ISYM column is present.
 #include <stdlib.h>
 #include <math.h>
 #include "ccp4_fortran.h"
+#include "ccp4_general.h"
 #include "ccp4_parser.h"
 #include "csymlib.h"
 #include "cmtzlib.h"
@@ -1244,7 +1245,7 @@ FORTRAN_SUBR ( CENTRIC, centric,
 		const int *iprint))
 {
   int i,k,l;
-  ccp4_symop *op1;
+  ccp4_symop *op1=NULL;
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: CENTRIC");)
 
