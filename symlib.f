@@ -873,7 +873,8 @@ C     ..
 C     ..
 C     .. Local Scalars ..
       INTEGER I, NCENT, IH, IK, IL, J, NC, ISYM, ICENT
-      REAL RR,SS,PIDEG,PI2,CONV,EPS_LOC,TEST_LOC,PHASE_LOC
+      REAL RR,SS,PIDEG,PI2,CONV,EPS_LOC,TEST_LOC,PHASE_LOC,CENPHS,Xtest
+     .  ,Ytest,Ztest,Asf,Bsf,Xs,Ys,Zs
       LOGICAL SETUP
       CHARACTER STROUT*400
 C     ..
@@ -1915,7 +1916,9 @@ C     .. Array Arguments ..
       REAL RlSymmMatrx(4,4,*),ROTCHK(4,4)
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,J,IFAIL,ISG,NLIN,NTOK,VALUE,IVAL
+      INTEGER I,J,IFAIL,ISG,NLIN,NTOK,VALUE,IVAL,ILEN,NAMLGTH,ITOK
+     .  ,LGTHCHK,N,ISYM,JSYM,IGOOD
+      REAL DET,DCHK
       CHARACTER LINE*400,LINERR*400
       LOGICAL   NUMBER
 C      INTEGER NLINS
@@ -1928,7 +1931,8 @@ C     .. Local Arrays ..
       LOGICAL NAMFIT
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPDPN,CCPUPC,PARSE,SYMFR2,LERROR
+      INTEGER LENSTR
+      EXTERNAL CCPDPN,CCPUPC,PARSE,SYMFR2,LERROR,LENSTR
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC NINT,ICHAR
@@ -2006,8 +2010,8 @@ C
            END DO
            IF (NUMBER) THEN
              WRITE(6,FMT='(1X,A,A,A)')
-     +       'MSYMLB3: the supplied spacegroup name \"',
-     +       NAMSPG_CIFS(1:LENSTR(NAMSPG_CIFS)),'\" is an integer'
+     +       'MSYMLB3: the supplied spacegroup name "',
+     +       NAMSPG_CIFS(1:LENSTR(NAMSPG_CIFS)),'" is an integer'
              WRITE(LINERR,FMT='(A,I5)')
      +       'MSYMLB3: resetting spacegroup number to ',VALUE
              CALL CCPERR(2,LINERR)
@@ -2568,7 +2572,7 @@ C     .. Array Arguments ..
       REAL ROT(4,4,*)
 C     ..
 C     .. Local Scalars ..
-      REAL A,REALN,RECIP,S,T
+      REAL A,REALN,RECIP,S,T,AXIS
       INTEGER I,ICOMST,IERR,IFOUND,IMAX,IP,ISL,J,K,NOP,NP,NSYM
       CHARACTER ICH*1, OUTLIN*100
 C     ..
@@ -3100,7 +3104,8 @@ C     .. Array Arguments ..
       CHARACTER SYMCHS(*)*(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER I1,I2,ICH,IST,ITR,JCOUNT,JDO10,JDO20,JDO30,JDO40
+      INTEGER I1,I2,ICH,IST,ITR,JCOUNT,JDO10,JDO20,JDO30,JDO40,IRSM,LSTR
+     .  ,ICOUNT,ISTART,INEG,ISTR
       CHARACTER STROUT*400,SYMCHK*80
 C     ..
 C     .. Local Arrays ..
@@ -4113,6 +4118,9 @@ C***   Convert PSIX,PSIY,PSIZ (= epsx,epsy,epsz) to PHIX,PHIY,PHIZ ,
 C***    using AVPHI
 C      All angles in radians
 C
+      REAL CP1,PSIX,SP1,CP2,PSIY,SP2,CP3,PSIZ,SP3,CP,AVPHI,SP,SPX,CPX
+     .  ,PHIX,SPY,CPY,PHIY,P11,P21,SPZ,CPZ,PHIZ
+C
       CP1 = COS(PSIX)
       SP1 = SIN(PSIX)
       CP2 = COS(PSIY)
@@ -4292,7 +4300,7 @@ C     ..
 C     .. Local Scalars ..
       REAL DET,DX,DXY,DXYZ,DXZ,DY,DYZ,DZ
       INTEGER I,IH,IHR,IK,IKR,IL,ILR,IRAXIS,IRMIN,IROT,ISCR,ISM1,ISM2,
-     +        ISS,ISYM,J,JMIN,JROT,JSM,JUNIQU,N,NREP,NREPET
+     +        ISS,ISYM,J,JMIN,JROT,JSM,JUNIQU,N,NREP,NREPET,IDO
 C     ..
 C     .. Local Arrays ..
       REAL RJUNK(4,4,MAXSYM)
@@ -5106,7 +5114,7 @@ C
 C Functions
       INTEGER LENSTR
 C Locals
-      INTEGER I, L
+      INTEGER I, J, L
       CHARACTER*100 STROUT, NAME*8, LAUNAM*8
 C
 C Get point group and primitive-only operations from symmetry matrices
@@ -6646,7 +6654,7 @@ C
       INTEGER NUMSGP
       PARAMETER (NUMSGP=89)
       REAL ONE,HALF,THRD,TWTD,SIXT,QUAR,EIGH,TWLT,ROUND,ROUND2
-      REAL ONEL,HALFL,THRDL,SIXTL,QUARL
+      REAL ONEL,HALFL,THRDL,SIXTL,QUARL,THRQ
       PARAMETER (ROUND=0.00001, ROUND2=2.0*ROUND)
       PARAMETER (ONE=1.0+ROUND,HALF=0.5+ROUND,THRD=1./3.+ROUND,
      $     TWTD=2./3.+ROUND,SIXT=1./6.+ROUND,THRQ=0.75+ROUND,
@@ -6787,9 +6795,9 @@ C -------------------------------------------------------------
        CHARACTER LINE*80
        REAL RSYM(4,4,*)
 
-       REAL      ORIG(3,*),RSYMD(3,3)
+       REAL      ORIG(3,*),RSYMD(3,3),X,Y,Z,XX,YY,ZZ,CHK
 C ******
-      INTEGER   IS(3),ID(6)
+      INTEGER   IS(3),ID(6),IFX,IFY,IFZ,I,NSYM,NORIG,K1,K2,K3,J,K,L
       LOGICAL   LPAXISX,LPAXISY,LPAXISZ
 C   These 6 fractions can represent an origin shift
       DATA      ID/0,6,4,8,3,9/
