@@ -6243,8 +6243,8 @@ C     .. Local Arrays ..
       EQUIVALENCE (JXY,JJXY)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL GSLVCK,QBACK,QCLOSE,QOPEN,QREADI,QSEEK,
-     +         QSKIP,QWRITI,QMODE
+      EXTERNAL GSLVCK,QBACK,QCLOSE,QOPEN,QREAD,QSEEK,
+     +         QSKIP,QWRITE,QMODE
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC INDEX
@@ -6370,7 +6370,7 @@ C
       PASWRD = FILE84
       IUNIT = IUNITR
 C
-      CALL QWRITR(IUNITR,IREC,NRECL)
+      CALL QWRITE(IUNITR,IREC,NRECL)
       IF (IPRINT.GE.2) WRITE (LUNOUT,FMT=6000) AREC(1),IREC(2),
      +   IREC(3),(AREC(I),I=4,16), (IREC(I),I=17,22),
      + AREC(23),TITLEH,PASWRD
@@ -6386,7 +6386,7 @@ C
       JXY(1) = IX
       JXY(2) = IY
       IF (IPRINT.GE.3) WRITE (LUNOUT,FMT=*) JXY(1),JXY(2)
-      CALL QWRITI(IUNITR,JJXY,4)
+      CALL QWRITE(IUNITR,JJXY,4)
       RETURN
 C
       ENTRY GSUHDR()
@@ -6411,7 +6411,7 @@ C
      +IREC(2),IREC(3), (AREC(I),I=4,16), 
      +(IREC(I),I=17,22),AREC(23),
      +      TITLEH,PASWRD
-        CALL QWRITR(IUNITR,IREC,NRECL)
+        CALL QWRITE(IUNITR,IREC,NRECL)
            KRECORD = AREC(1)*4
         CALL QSKIP(IUNITR,KRECORD)
       END IF
@@ -6429,7 +6429,7 @@ C     is terminated by an empty header.
 C
       KEOF = 0
       IER = 0
-      CALL QREADR(IUNITR,IREC,NRECL,IER)
+      CALL QREAD(IUNITR,IREC,NRECL,IER)
 C
 C---- Check for empty or end of file
 C
@@ -6453,7 +6453,7 @@ C---- Read in ix,iy  return to statement * on  eof
 C
       KKEOF = 0
       IER = 0
-      CALL QREADI(IUNITR,JJXY,4,IER)
+      CALL QREAD(IUNITR,JJXY,4,IER)
       IF (IER.NE.0) THEN
         KKEOF = 1
       ELSE
@@ -6493,7 +6493,7 @@ C     ===========================
 C
 C---- Write an integer array of nbyte bytes
 C
-      CALL QWRITR(IUNITR,IARRAY,NBYTE)
+      CALL QWRITE(IUNITR,IARRAY,NBYTE)
       RETURN
 C
       ENTRY GSFLRR(IARRAY,NBYTE,KKKEOF)
@@ -6503,7 +6503,7 @@ C---- Read an integer array of nbyte bytes
 C
       KKKEOF = 0
       IER = 0
-      CALL QREADR(IUNITR,IARRAY,NBYTE,IER)
+      CALL QREAD(IUNITR,IARRAY,NBYTE,IER)
       IF (IER.NE.0) KKKEOF = 1
 C
 C---- Format statements
@@ -8714,7 +8714,7 @@ C     .. Local Arrays ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL GSBFTM,GSGRTM,GSSLTM,GSTIM0,GSTIMR,
-     +         GSTYTM,QCLOSE,QOPEN,QREADI
+     +         GSTYTM,QCLOSE,QOPEN,QREAD
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
@@ -8752,7 +8752,7 @@ C---- Start reading rows
 C     and put them onto screen from top to bottom
 C
       DO 10 NROW = NRWMAX,NRWMIN,-4
-        CALL QREADI(IUNIT,SCREEN,512,IERR)
+        CALL QREAD(IUNIT,SCREEN,512,IERR)
         IF (IERR.EQ.1) THEN
           GO TO 20
         ELSE
@@ -9664,7 +9664,7 @@ C     .. Local Arrays ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL GSBFTM,GSGRTM,GSRDTM,GSTIM0,GSTIMR,
-     +         QCLOSE,QOPEN,QWRITI
+     +         QCLOSE,QOPEN,QWRITE
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
@@ -9701,7 +9701,7 @@ C
 C---- Start writing rows
 C
       DO 10 NROW = NRWMAX,NRWMIN,-4
-        CALL QWRITI(IUNIT,SCREEN(0, (NROW-3)),512)
+        CALL QWRITE(IUNIT,SCREEN(0, (NROW-3)),512)
    10 CONTINUE
 C
 C---- Close disc file
@@ -12265,7 +12265,7 @@ C     .. External Functions ..
       EXTERNAL CCPONL
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QOPEN,QWRITI, QMODE
+      EXTERNAL QCLOSE,QOPEN,QWRITE, QMODE
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
@@ -12372,8 +12372,8 @@ C     ==========================
 C
       NBYTES (1) = LENGTH + 3
       NL = 1
-      CALL QWRITI(IUNIT,NBYTES,1)
-      CALL QWRITI(IUNIT,LINE,LENGTH)
+      CALL QWRITE(IUNIT,NBYTES,1)
+      CALL QWRITE(IUNIT,LINE,LENGTH)
       CALL QWRITC(IUNIT,LINEFEED)
       PC(4:4) = CHAR(0)
       RETURN
@@ -12383,9 +12383,9 @@ C     ================================
 C
       NBYTES (1) = LENGTH + IOFF + 3
       NL = 1
-      CALL QWRITI(IUNIT,NBYTES,1)
+      CALL QWRITE(IUNIT,NBYTES,1)
       IF (IOFF.GT.0) CALL QWRITC(IUNIT,BLANK)
-      CALL QWRITI(IUNIT,LINE,LENGTH)
+      CALL QWRITE(IUNIT,LINE,LENGTH)
       CALL QWRITC(IUNIT,LINEFEED)
       PC(4:4) = CHAR(0)
       RETURN
@@ -12857,7 +12857,7 @@ C     .. Local Arrays ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL CLOSETRIPLOT,INITRIPLOT,GSLRSB,GSTIM0,GSTIMR,
-     +         QCLOSE,QOPEN,QREADI,TRICOLOUR,TRIFORM,TRIPLOTC,TRIROW
+     +         QCLOSE,QOPEN,QREAD,TRICOLOUR,TRIFORM,TRIPLOTC,TRIROW
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC MIN,REAL
@@ -12919,7 +12919,7 @@ C
       CALL TRIROW(NSPARE)
       NFORM = 1
       NLNSKP = 0
-      CALL QREADI(IUNIT,MREC,80,IER)
+      CALL QREAD(IUNIT,MREC,80,IER)
       IF ((IER.EQ.0) .AND. (NREC.GT.0)) THEN
 C
 C---- Rescale for different dot densities
@@ -13004,7 +13004,7 @@ C---- NDOT remembers when a dot code was last issued
 C
         NDOT = 0
         DO 50 IRECX = 1,NREC
-          CALL QREADI(IUNIT,KXY,4,IER)
+          CALL QREAD(IUNIT,KXY,4,IER)
           IF (IER.NE.0) THEN
             GO TO 80
           ELSE
@@ -13213,7 +13213,7 @@ C
 C
 C---- Read header
 C
-      CALL QREADR(IUNIT,IREC,512,IER)
+      CALL QREAD(IUNIT,IREC,512,IER)
 C
 C---- End File if block length wrong
 C
