@@ -8,7 +8,6 @@ C   SYMLIB
 C
 C $Date$
 C
-C
 C 1) Subroutines for manipulating symmetry operators.
 C   
 C    invsym        msyget        msymlb        pgdefn    
@@ -38,7 +37,6 @@ C
 C 6) Subroutines for permuting symmetry operators, etc.
 C    prmvci        prmvcr        rotfix      
 C
-C
 C_END_SYMLIB
 C_BEGIN_OUTLINE
 C  Brief Description.
@@ -59,7 +57,6 @@ C
 C                x'(I)=Sum(J=1,3)ROT(I,J,NS)*x(J) + ROT(I,4,NS)
 C                 ROT(I,4,NS)    contains the fractional translations
 C
-C
 C---- SUBROUTINE INVSYM(S,ST)
 C          Input S    - 4*4 matrix
 C          Output ST  - 4*4 matrix
@@ -75,15 +72,12 @@ C                from library file on stream IST, logical name SYMOP.
 C         Returns NSYM           = number of symmetry operations
 C                 ROT(4,4,NSYM)  = rotation/translation  matrices
 C
-C.....  Calls SYMFR2
-C
 C   SUBROUTINE MSYMLB(IST,LSPGRP,NAMSPG,NAMPG,NSYMP,NSYM,RSYM)
 C
 C Get symmetry operations from library file
 C on stream IST, logical name SYMOP.
 C  Space group defined by LSPGRP - spacegroup number or
 C                         NAMSPG - spacegroup name.
-C
 C
 C Returns
 C   LSPGRP      spacegroup number
@@ -92,9 +86,6 @@ C   NAMPG       pointgroup name
 C   NSYMP        number of primitive symmetry operations
 C   NSYM         number of symmetry operations
 C   ROT(4,4,NSYM)  rotation/translation  matrices
-C
-C.....  Calls SYMFR2
-C
 C
 C---- SYMTRN(NSM,RSM)
 C           symmetry translation from matrix back to characters
@@ -156,7 +147,6 @@ C     On exit:
 C     NLAUE     Laue group number ( integer)
 C     LAUNAM    Laue group name ( character)
 C
-C
 C       This subroutine returns a laue code number used to choose
 C      the unique region of reciprocal space for
 C      each point group.  
@@ -192,8 +182,6 @@ C     pgm3bar
 C  15 pg432   m3m        hkl:h>=0, k>=0, l>=0  with  k>=l
 C     pg4bar3m pgm3barm
 C
-C
-C
 C Part 2:
 C======================================================================
 C
@@ -209,7 +197,6 @@ C         If h*zone(1) + k*zone(2) + l*zone(3) is equal to 0.0,
 C         that reflection is in that zone.  all that is needed is the
 C         most general conditions--a reflection is either centric or
 C         not.
-C
 C
 C---- SUBROUTINE CENTR(IH,IC)
 C
@@ -254,10 +241,7 @@ C        Returns  ISYSAB flag.
 C       Systematic absences flagged with ISYSAB = 1
 C       Only reflns with EPSI gt 1 need be considered
 C
-C
-C     .. Array Arguments ..
 C      REAL RSYM(4,4,96)
-C     ..
 C
 C Part 3:
 C======================================================================
@@ -288,7 +272,6 @@ C    PGNAME  point-group name ( character)
 C    MSYMP   number of primitive symmetry operations
 C    MLAUE   Laue group number - See PGNLAU for details
 C
-C
 C---- SUBROUTINE ASUPUT(IHKL,JHKL,ISYM)
 C
 C Put reflection into asymmetric unit defined by call to ASUSET
@@ -305,8 +288,6 @@ C               real-space symmetry operation number L = (ISYM-1)/2 + 1
 C
 C  The real-space symmetry matrices are applied by premultiplying them
 C  by a row vector hkl,  ie  (h'k'l') = (hkl)R
-C
-C
 C
 C--- SUBROUTINE ASUGET(IHKL,JHKL,ISYM)
 C
@@ -330,7 +311,6 @@ C  So here we calculate (hkl) = (h'k'l') R**-1
 
 C---- SUBROUTINE ASUPHP(JHKL,LSYM,ISIGN,PHASIN,PHSOUT)
 C
-C
 C---- Generate phase of symmetry equivalent JHKL from that of IHKL
 C
 C     On input:
@@ -344,8 +324,6 @@ C
 C     On output:
 C
 C    PHSOUT     phase for reflection JHKL(3)
-C
-C
 C
 C    Internal cals to:
 C
@@ -367,8 +345,6 @@ C
 C  The real-space symmetry matrices are applied by premultiplying them
 C  by a row vector hkl,  ie  (h'k'l') = (hkl)R
 C
-C
-
 C Part 4:
 C======================================================================
 C
@@ -399,8 +375,6 @@ C     xyzlim(2,3)  minimum, maximum limits on x,y,z (fractions of cell)
 C                  if spacegroup not recognized, returns xzylim(1,1) = -1.0
 C                  Note that the minimum limits (xyzlim(1,)) will always
 C                   = 0.0
-
-
 C
 C---- SUBROUTINE PATSGP(SPGNAM, PGNAME, PATNAM, LPATSG)
 C
@@ -435,7 +409,7 @@ C     1) approximately SAMPLE * minimum sampling
 C     2) no prime factor .gt. 19
 C     3) special restrictions for particular space-groups
 C
-C  Subsiduary calls:
+C  Subsidiary calls:
 C     SUBROUTINE FNDSMP(MINSMP, NMUL, SAMPLE, NSAMPL)
 C
 C----  Find suitable grid sample, approximately = SAMPLE/2 * maximum index,
@@ -488,8 +462,6 @@ C     DO 20 I = 1,3
 C       JV(N,I) = NINT(BV(I))
 C  20 CONTINUE
 C
-C
-C
 C---- SUBROUTINE PRMVCR(PERM,AV,N,N1)
 C          Input PERM - 4*4 matrix  (real)
 C          Input AV   - N1*3 matrix (real)
@@ -506,15 +478,10 @@ C     =======================
       SUBROUTINE CENTR(IH,IC)
 C     =======================
 C
-C
 C---- Determine whether a reflection is centric (return ic=1)
 C     or not (ic=0).  if none of the zone tests is satisfied,
 C     the reflection is non-centric.
 C_END_CENTR
-C
-C
-C
-C
 C
 C     .. Scalar Arguments ..
       INTEGER IC
@@ -538,16 +505,13 @@ C     .. Save statement ..
       SAVE /CP/
 C     ..
 C
-C
       IC = 0
       IF (NCENT.NE.0) THEN
-C
 C
         DO 10 I = 1,NCENT
           IF ((CPROJ(1,I)*IH(1)+CPROJ(2,I)*IH(2)+CPROJ(3,I)*IH(3)).EQ.
      +        0.0) GO TO 20
    10   CONTINUE
-C
 C
         RETURN
    20   IC = 1
