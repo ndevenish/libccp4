@@ -716,7 +716,7 @@ C
          RETURN
       ELSE IF (ISTAT.NE.NORMAL) THEN
          WRITE(6,1006) ISTAT
- 1006    FORMAT(' Sort fail : RETURN, status='Z9)
+ 1006    FORMAT(' Sort fail : RETURN, status=',Z9)
          CALL LIB$STOP(%VAL(ISTAT))
          STOP
       ENDIF
