@@ -56,7 +56,7 @@ int MtzRrefl(CCP4File *filein, int ncol, float *refldata);
  * @param logname logical name for output file or blank.
  * @return void
  */
-void MtzPut(MTZ *mtz, const char *logname);
+int MtzPut(MTZ *mtz, const char *logname);
 
 /** Opens a new MTZ file for writing.
  * @param logname logical name for output file.
@@ -65,7 +65,7 @@ void MtzPut(MTZ *mtz, const char *logname);
  */
 CCP4File *MtzOpenForWrite(const char *logname, int *hdrst);
 
-void MtzWhdrLine(CCP4File *fileout, int nitems, char buffer[]);
+int MtzWhdrLine(CCP4File *fileout, int nitems, char buffer[]);
 /* write header record to fileout. Record is filled from
      nitems to MTZRECORDLENGTH by blanks */
 
@@ -98,7 +98,7 @@ MTZ *MtzMalloc(int nxtal, int nset[]);
  * @param mtz pointer to MTZ header struct. 
  * @return void
  */
-void MtzFree(MTZ *mtz);
+int MtzFree(MTZ *mtz);
 
 /** Allocates memory for an MTZ column. Space is allocated for
  * the reflection data if and only if mtz->refs_in_memory is set.
@@ -112,18 +112,18 @@ MTZCOL *MtzMallocCol(MTZ *mtz, int nref);
  * @param col pointer to MTZ column.
  * @return void
  */
-void MtzFreeCol(MTZCOL *col);
+int MtzFreeCol(MTZCOL *col);
 
 MTZBAT *MtzMallocBatch(void);
 /* Allocates memory for a single batch header */
 
-void MtzFreeBatch(MTZBAT *batch);
+int MtzFreeBatch(MTZBAT *batch);
 /* Frees the memory reserved for 'batch' */
   
 char *MtzCallocHist(int nhist);
 /* Allocates memory for the mtz history with 'nhist' lines */
 
-void MtzFreeHist(char *hist);
+int MtzFreeHist(char *hist);
 /* Frees the memory reserved for 'hist' */
 
 /** Free all memory malloc'd from static pointers.
@@ -314,7 +314,7 @@ MTZCOL *MtzAddColumn(MTZ *mtz, MTZSET *set, const char *label,
  * @param crystal_name name of crystal containing dataset
  * @param dataset_name name of dataset
  */
-void MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],  
+int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],  
 	     const char dataset_name[]);
 
 /* Toggle active flag of column */
@@ -344,7 +344,7 @@ int MtzNumActiveCol(const MTZ *mtz);
  */
 char *MtzColPath(const MTZ *mtz, const MTZCOL *col);
 
-void MtzRJustPath(char *path, const char *partial, const int njust);
+int MtzRJustPath(char *path, const char *partial, const int njust);
 /* Complete a right-justified path by prefixing with wildcards */
 
 int MtzPathMatch(const char *path1, const char *path2);
@@ -405,7 +405,7 @@ int MtzHklcoeffs(const float cell[6], double coefhkl[6]);
  */
 int MtzArrayToBatch(const int *intbuf, const float *fltbuf, MTZBAT *batch);
 
-void MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf);
+int MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf);
 /* Writes batch info into the structure `batch`. */
 
 /**** pseudo-mtzlib routines ****/
@@ -454,7 +454,7 @@ MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels,
  * @param datwave
  * @return void
  */
-void ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64], 
+int ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64], 
             char dataset_name[64], char project_name[64], int *isets, 
             float datcell[6], float *datwave);
 
@@ -494,15 +494,15 @@ int ccp4_lrreff(const MTZ *mtz, float *resol, float adata[], int logmss[],
 
 int ccp4_ismnf(const MTZ *mtz, const float datum);
 
-void ccp4_lhprt(const MTZ *mtz, int iprint);
+int ccp4_lhprt(const MTZ *mtz, int iprint);
 
-void ccp4_lhprt_adv(const MTZ *mtz, int iprint);
+int ccp4_lhprt_adv(const MTZ *mtz, int iprint);
 
-void ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint);
+int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint);
 
-void MtzPrintBatchHeader(MTZBAT *batch);
+int MtzPrintBatchHeader(MTZBAT *batch);
 
-void ccp4_lwtitl(MTZ *mtz, char ftitle[], int flag);
+int ccp4_lwtitl(MTZ *mtz, char ftitle[], int flag);
 
 /** Sets the sort order in the MTZ header. The sort order is
  * a list of columns to be used for sorting, to be applied in
@@ -512,7 +512,7 @@ void ccp4_lwtitl(MTZ *mtz, char ftitle[], int flag);
  * @param colsort Array of pointers to columns.
  * @return void
  */
-void MtzSetSortOrder(MTZ *mtz, MTZCOL *colsort[5]);
+int MtzSetSortOrder(MTZ *mtz, MTZCOL *colsort[5]);
 
 /** Adds history lines to the MTZ header in front of existing history lines.
  * @param mtz pointer to MTZ struct
@@ -525,7 +525,7 @@ int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nli
 MTZCOL **ccp4_lwassn(MTZ *mtz, const char labels[][31], const int nlabels, 
              const char types[][3], const int iappnd);
 
-void ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
+int ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
 	const char project_name[], const float datcell[6], const float *datwave);
 
 
@@ -541,12 +541,12 @@ void ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
  * @param iref index of reflection.
  * @return void
  */
-void ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[], 
+int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[], 
 		 const int ncol, const int iref);
 
-void ccp4_lwbat(MTZ *mtz, MTZBAT *batch, const int batno, const float *buf, const char *charbuf);
+int ccp4_lwbat(MTZ *mtz, MTZBAT *batch, const int batno, const float *buf, const char *charbuf);
 
-void ccp4_lwbsetid(MTZ *mtz, MTZBAT *batch, const char xname[], const char dname[]);
+int ccp4_lwbsetid(MTZ *mtz, MTZBAT *batch, const char xname[], const char dname[]);
 
 /* -- Below here there are no implementations -- */
 

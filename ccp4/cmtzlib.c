@@ -1089,7 +1089,7 @@ MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels,
    return lookup;
 }
 
-void ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64], 
+int ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64], 
             char dataset_name[64], char project_name[64], int *isets, 
             float datcell[6], float *datwave)
 {
@@ -1111,7 +1111,7 @@ void ccp4_lridx(const MTZ *mtz, const MTZSET *set, char crystal_name[64],
      datcell[i] = xtl->cell[i];
   *datwave = set->wavelength;
 
-  return;
+  return 1;
 }
 
 int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int iref) {
@@ -1229,13 +1229,13 @@ int ccp4_ismnf(const MTZ *mtz, const float datum) {
   return 0;
 }
 
-void ccp4_lhprt(const MTZ *mtz, int iprint) {
+int ccp4_lhprt(const MTZ *mtz, int iprint) {
 
   int i,j,k,numbat,isort[5];
   float maxres=0.0,minres=100.0;
   char buffer[MTZRECORDLENGTH+1],symline[81];
 
-  if (iprint <= 0) return;
+  if (iprint <= 0) return 2;
 
   printf(" * Title:\n\n");
   printf(" %s\n\n",mtz->title);
@@ -1397,9 +1397,11 @@ void ccp4_lhprt(const MTZ *mtz, int iprint) {
     printf(" * Space group = %s (number     %d)\n\n",mtz->mtzsymm.spcgrpname,
        mtz->mtzsymm.spcgrp);
   }
+
+  return 1;
 }
 
-void ccp4_lhprt_adv(const MTZ *mtz, int iprint) {
+int ccp4_lhprt_adv(const MTZ *mtz, int iprint) {
 
   int i,j,k;
   char buffer[MTZRECORDLENGTH+1];
@@ -1450,9 +1452,10 @@ void ccp4_lhprt_adv(const MTZ *mtz, int iprint) {
     printf(" %s\n",buffer);
   }
 
+  return 1;
 }
 
-void ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint)
+int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint)
 
 { int nwords=NBATCHWORDS,nintegers=NBATCHINTEGERS,nreals=NBATCHREALS;
   int *intbuf = (int *) buf;
@@ -1472,9 +1475,11 @@ void ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint)
   if (iprint > 0) {
     MtzPrintBatchHeader(batch);
   }
+
+  return 1;
 }
 
-void MtzPrintBatchHeader(MTZBAT *batch) {
+int MtzPrintBatchHeader(MTZBAT *batch) {
 
   int i;
   char labtype[20],axes[5],string1[40],string2[40];
@@ -1585,9 +1590,10 @@ void MtzPrintBatchHeader(MTZBAT *batch) {
 
   /* sorry, bored now ... */
 
+  return 1;
 }
 
-void ccp4_lwtitl(MTZ *mtz, char ftitle[], int flag) {
+int ccp4_lwtitl(MTZ *mtz, char ftitle[], int flag) {
 
   size_t length;
 
@@ -1604,15 +1610,17 @@ void ccp4_lwtitl(MTZ *mtz, char ftitle[], int flag) {
 
   }
 
+  return 1;
 }
 
-void MtzSetSortOrder(MTZ *mtz, MTZCOL *colsort[5]) {
+int MtzSetSortOrder(MTZ *mtz, MTZCOL *colsort[5]) {
 
   int i;
 
   for (i = 0; i < 5; ++i) 
     if (colsort[i]) mtz->order[i] = colsort[i];
 
+  return 1;
 }
 
 int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nlines) {
@@ -1637,7 +1645,7 @@ int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nli
   return mtz->histlines;
 }
 
-void ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
+int ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
        const char project_name[], const float datcell[6], const float *datwave) {
 
   MTZXTAL *xtl;
@@ -1670,9 +1678,10 @@ void ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
         set->wavelength = *datwave;
     }
   }
+  return 1;
 }
 
-void MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],  
+int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],  
      const char dataset_name[]) 
 {
 
@@ -1695,7 +1704,7 @@ void MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],
   strcat( path1, dataset_name );
   if ( MtzPathMatch( path1, path2 ) ) {
     free (path2);
-    return;
+    return 1;
   }
   free (path2);
 
@@ -1721,9 +1730,10 @@ void MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],
     ccp4array_resize(set->col, set->ncol + 9);
   set->col[set->ncol - 1] = col;
 
+  return 1;
 }
 
-void ccp4_lwsymm(MTZ *mtz, int *nsymx, int *nsympx, float rsymx[192][4][4], 
+int ccp4_lwsymm(MTZ *mtz, int *nsymx, int *nsympx, float rsymx[192][4][4], 
    char ltypex[], int *nspgrx, char spgrnx[], char pgnamx[])
 {
   int i,j,k;
@@ -1742,6 +1752,7 @@ void ccp4_lwsymm(MTZ *mtz, int *nsymx, int *nsympx, float rsymx[192][4][4],
   ccp4spg_to_shortname(mtz->mtzsymm.spcgrpname,spgrnx);
   strcpy(mtz->mtzsymm.pgname,pgnamx);
 
+  return 1;
 }
 
 MTZCOL **ccp4_lwassn(MTZ *mtz, const char labels[][31], const int nlabels, 
@@ -1796,7 +1807,7 @@ MTZCOL **ccp4_lwassn(MTZ *mtz, const char labels[][31], const int nlabels,
   return lookup;
 }
 
-void ccp4_lwbat(MTZ *mtz, MTZBAT *batch, const int batno, const float *buf, const char *charbuf)
+int ccp4_lwbat(MTZ *mtz, MTZBAT *batch, const int batno, const float *buf, const char *charbuf)
 
 /* write new batch information to 'batch' or if 'batch' is NULL create   */
 /* new batch header with batch number 'batno'                           */
@@ -1821,13 +1832,13 @@ void ccp4_lwbat(MTZ *mtz, MTZBAT *batch, const int batno, const float *buf, cons
     } else {
       if (batch->num == batno) {
         printf("From ccp4_lwbat: warning: attempt to add new batch with existing batch number %d!\n",batno);
-        return;
+        return 0;
       }
       while (batch->next != NULL) {
         batch = batch->next;
         if (batch->num == batno) {
           printf("From ccp4_lwbat: warning: attempt to add new batch with existing batch number %d!\n",batno);
-          return;
+          return 0;
         }
       }
       batch->next = MtzMallocBatch();
@@ -1842,7 +1853,7 @@ void ccp4_lwbat(MTZ *mtz, MTZBAT *batch, const int batno, const float *buf, cons
       while (otherbat != NULL) {
         if (otherbat->num == batno && otherbat != batch) {
           printf("From ccp4_lwbat: warning: attempt to change batch number to existing batch number %d!\n",batno);
-          return;
+          return 0;
         }
         otherbat = otherbat->next;
       }
@@ -1861,9 +1872,10 @@ void ccp4_lwbat(MTZ *mtz, MTZBAT *batch, const int batno, const float *buf, cons
   strncpy(batch->gonlab[2],cbatch+86,8); 
   batch->gonlab[0][9] = batch->gonlab[1][9] = batch->gonlab[2][9] = '\0';
 
+  return 1;
 }
 
-void ccp4_lwbsetid(MTZ *mtz, MTZBAT *batch, const char xname[], const char dname[])
+int ccp4_lwbsetid(MTZ *mtz, MTZBAT *batch, const char xname[], const char dname[])
 
 {
   MTZXTAL *xtl;
@@ -1877,11 +1889,12 @@ void ccp4_lwbsetid(MTZ *mtz, MTZBAT *batch, const char xname[], const char dname
     strcat( path1, dname );
     if ((set = MtzSetLookup(mtz,path1)) != NULL) {
       batch->nbsetid = set->setid;
-      return;
+      return 1;
     }
   }
-  printf("From ccp4_lwbsetid: warning: dataset id not found!\n");
 
+  printf("From ccp4_lwbsetid: warning: dataset id not found!\n");
+  return 0;
 }
 
 int MtzDeleteRefl(MTZ *mtz, int iref)
@@ -1898,9 +1911,10 @@ int MtzDeleteRefl(MTZ *mtz, int iref)
     --mtz->nref;
   }
 
+  return 1;
 }
 
-void ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[], 
+int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[], 
            const int ncol, const int iref)
 
 { int i,j,k,l,icol,ind[3],ind_xtal,ind_set,ind_col[3];
@@ -1987,9 +2001,11 @@ void ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[],
   /* increment nref if we are adding new reflections */
   if (iref > mtz->nref)
     mtz->nref = iref;
+
+  return 1;
 }
 
-void MtzPut(MTZ *mtz, const char *logname)
+int MtzPut(MTZ *mtz, const char *logname)
 
 { char hdrrec[81],symline[81];
  CCP4File *fileout;
@@ -2292,6 +2308,7 @@ void MtzPut(MTZ *mtz, const char *logname)
  if (debug) 
    printf(" MtzPut: bye bye \n");
 
+ return 1;
 }
 
 CCP4File *MtzOpenForWrite(const char *logname, int *hdrst)
@@ -2331,7 +2348,7 @@ CCP4File *MtzOpenForWrite(const char *logname, int *hdrst)
  return fileout;
 }
 
-void MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf)
+int MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf)
 
 /* Writes batch info into the structure `batch`. */
 
@@ -2398,9 +2415,10 @@ void MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf)
     fltbuf[115 + (i * 6)] = batch->detlm[i][1][0];
     fltbuf[116 + (i * 6)] = batch->detlm[i][1][1];}
 
+  return 1;
 }
 
-void MtzWhdrLine(CCP4File *fileout, int nitems, char buffer[]) {
+int MtzWhdrLine(CCP4File *fileout, int nitems, char buffer[]) {
 
   /* write header record to fileout. Record is filled from
      nitems to MTZRECORDLENGTH by blanks */
@@ -2413,7 +2431,7 @@ void MtzWhdrLine(CCP4File *fileout, int nitems, char buffer[]) {
  for (i = nitems; i < MTZRECORDLENGTH; ++i)
    hdrrec[i] = ' ';
 
- ccp4_file_writechar(fileout,hdrrec,MTZRECORDLENGTH);
+ return (ccp4_file_writechar(fileout,hdrrec,MTZRECORDLENGTH));
 
 }
 
@@ -2476,7 +2494,7 @@ MTZ *MtzMalloc(int nxtal, int nset[])
   return(mtz);
 }
 
-void MtzFree(MTZ *mtz)
+int MtzFree(MTZ *mtz)
 
 /* Frees the memory reserved for 'mtz' */
 
@@ -2515,6 +2533,7 @@ void MtzFree(MTZ *mtz)
     MtzFreeHist(mtz->hist);
 
   free((void *) mtz);
+  return 1;
 }
 
 MTZBAT *MtzMallocBatch()
@@ -2531,7 +2550,7 @@ MTZBAT *MtzMallocBatch()
   return(batch);
 }
 
-void MtzFreeBatch(MTZBAT *batch) 
+int MtzFreeBatch(MTZBAT *batch) 
 
 /* Frees the memory reserved for 'batch' */
 
@@ -2540,6 +2559,7 @@ void MtzFreeBatch(MTZBAT *batch)
     MtzFreeBatch(batch->next);
     free(batch);
   }
+  return 1;
 }
 
 MTZCOL *MtzMallocCol(MTZ *mtz, int nref)
@@ -2562,10 +2582,11 @@ MTZCOL *MtzMallocCol(MTZ *mtz, int nref)
   return(col);
 }
 
-void MtzFreeCol(MTZCOL *col)
+int MtzFreeCol(MTZCOL *col)
 
 { if (col->ref) ccp4array_free(col->ref);
   free((void *) col);
+  return 1;
 }
 
 char *MtzCallocHist(int nhist)
@@ -2578,12 +2599,13 @@ char *MtzCallocHist(int nhist)
  return(hist);
 }
 
-void MtzFreeHist(char *hist)
+int MtzFreeHist(char *hist)
 
 /* Frees the memory reserved for 'hist' */
 
 { 
   free((void *) hist);
+  return 1;
 }
 
 MTZXTAL *MtzAddXtal(MTZ *mtz, const char *xname, const char *pname,
@@ -2933,7 +2955,7 @@ char *MtzColPath(const MTZ *mtz, const MTZCOL *col)
   return ( path );
 }
 
-void MtzRJustPath(char *path, const char *partial, const int njust)
+int MtzRJustPath(char *path, const char *partial, const int njust)
 {
   /* Complete a right-justified path by prefixing with wildcards */
   int i, j;
@@ -2944,6 +2966,8 @@ void MtzRJustPath(char *path, const char *partial, const int njust)
   if ( j++ < njust ) strcat( path, "/" );
   while ( j++ < njust ) strcat( path, "*/" );
   strcat( path, partial );
+
+  return 1;
 }
 
 int MtzPathMatch(const char *path1, const char *path2)
