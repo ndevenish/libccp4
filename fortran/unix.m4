@@ -74,6 +74,7 @@ C UISATT - Is file a terminal?
 C USTIME - Get absolute time in seconds (-1 for VMS)
 C UTIME  - Get current time
 C VAXVMS - Logical function returns TRUE if VAX/VMS
+C TTSEND - Write string to terminal with various carriage control options
 C
 C  
 C           ===============================
@@ -684,4 +685,64 @@ C Usage:     VAXVMS ()
 C
       VAXVMS = .FALSE.
 C
+      END
+C
+C
+C SUBROUTINE 'TTSEND'
+C ===================
+C
+C Write a string to a terminal with various carriage control options
+C [for LAUE]
+C
+      SUBROUTINE TTSEND (IUN, STR, ICC)
+C
+C Parameters:
+C
+C         IUN (I)   Unit number for the output
+C         STR (I)   The string to be output
+C         ICC (I)   = 0, no carriage control at the end of the string
+C                        (for prompts)
+C                        e.g. for routine TPROMP
+C                   = 1, normal carriage control
+C                        e.g. for routine TWRITE
+C                   = 2, no carriage control (for sending escape/control
+C                        character sequences to ANSI/T4014 terminals)
+C                        e.g. for QSCREEN graphics routines
+C                   = 3, Output line at current point on screen (no leading
+C                        line feed or carriage return - trailing does not
+C                        matter)
+C
+C Machine dependence examples: Convex   1000  FORMAT (A,$)
+C                                       1001  FORMAT (A)
+C                                       1002  FORMAT (A,$)
+C                                       1003  FORMAT (A)
+C                              
+C                              Vax      1000  FORMAT (' ',A,$)
+C                                       1001  FORMAT (' ',A)
+C                                       1002  FORMAT ('+',A,$)
+C                                       1003  FORMAT ('+',A)
+C
+C====== Specification statements
+C
+      CHARACTER*(*) STR
+C
+C====== Write string
+C
+      IF (ICC.EQ.0) THEN
+         WRITE (IUN,1000) STR
+      ELSE IF (ICC.EQ.2) THEN
+         WRITE (IUN,1002) STR
+      ELSE IF (ICC.EQ.3) THEN
+         WRITE (IUN,1003) STR
+      ELSE
+         WRITE (IUN,1001) STR
+      ENDIF
+      RETURN
+C
+C====== Format statements
+C
+1000  FORMAT (A,$)
+1001  FORMAT (A)
+1002  FORMAT (A,$)
+1003  FORMAT (A)
       END
