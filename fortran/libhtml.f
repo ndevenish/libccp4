@@ -73,12 +73,12 @@ C     level=0-6. Header size. 0= plain text
 C
       subroutine ccp4h_init()
 C   ccp4h_init() - write initial comment to identify file
-      integer lpt
+      integer lpt, idum
       logical html
       character cbin*160,chtml*160,cpid*160,dummy*160
       common /ccp4hdat/lpt,html,cbin,chtml,cpid
       save   /ccp4hdat/
-      lpt=lunsto()
+      lpt=lunsto(idum)
       call ugtenv('CBIN',cbin)
       call ugtenv('CHTML',chtml)
       call ugtenv('CCP_PROGRAM_ID',cpid)
