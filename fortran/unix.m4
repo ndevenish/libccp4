@@ -25,6 +25,10 @@ dnl Changed in `DEC fortran' as opposed to (old) MIPS compiler on Ultrix:
 _dec_fortran,1,
   [define(_ubytes,'WORDS')],
   [define(_ubytes,'BYTES')])dnl
+dnl BYTE definition
+ifelse(_f90,1,
+  [define(_byte,INTEGER*1)],
+  [define(_byte,BYTE)])
 dnl
 dnl * fortran compiler may or may not accept READONLY specifier on OPEN.
 dnl   specifying it might catch the occasional bug.
@@ -32,8 +36,10 @@ ifelse(
 _convex,1,
   [define(_readonly,[,READONLY])],
 _sgi,1,
-  [define(_readonly,[,READONLY])],
+  [ifelse(_f90,1,[define(_readonly,[])],[define(_readonly,[,READONLY])])],
 _pgf,1,
+  [define(_readonly,[,READONLY])],
+_ifc,1,
   [define(_readonly,[,READONLY])],
 dnl * in Dec Fortran V3.0-2, at least, this seems to be *necessary*:
 _dec_fortran,1,
@@ -45,11 +51,13 @@ ifelse(
 _convex,1,
   [define(_carriagecontrol,[,CARRIAGECONTROL=CCNTRL])],
 _sgi,1,
-  [define(_carriagecontrol,[,CARRIAGECONTROL=CCNTRL])],
+  [ifelse(_f90,1,[define(_carriagecontrol,[])],[define(_carriagecontrol,[,CARRIAGECONTROL=CCNTRL])])],
 _lf95,1,
   [define(_carriagecontrol,[,CARRIAGECONTROL=CCNTRL])],
 _concentrix,1,
   [define(_carriagecontrol,[,CARRIAGECONTROL=CCNTRL])],
+_pgf,1,
+  [define(_dispose,[,DISPOSE=DISP])],
   [define(_carriagecontrol,)])dnl
 dnl
 dnl * sometimes we can use IOINIT to specify carriagecontrol:
@@ -832,7 +840,7 @@ C====== Write string
 C
 C     'LIST' is the equivalent of the normal Unix state
       CCNTRL = 'LIST'
-ifdef(_carriagecontrol,[],,
+ifdef(_carriagecontrol,[],
 [      INQUIRE(IUN _carriagecontrol)]
 )dnl
 C     in the case of systems obeying the carriagecontrol specifier, 
@@ -939,12 +947,12 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER           I,ICOL,ICOL2,IER,I4INTS,I4INTP
-      BYTE              IR,IM
+      _byte              IR,IM
 C     ..
 C     .. Local Arrays ..
 cejd      INTEGER*2         IBUF(18)
       INTEGER*2         IBUF(19)
-      BYTE              B(2)
+      _byte              B(2)
 C     ..
 C     .. External Subroutines ..
       EXTERNAL          QREAD
