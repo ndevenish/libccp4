@@ -1,0 +1,115 @@
+##########################################################################
+# Makefile for CCP4 library                                              #
+##########################################################################
+#
+#
+CCP4_MASTER      = /public/xtal
+#
+#    for nfs mounted source directory
+#
+#SOURCE          = /nfs/al/public/xtal
+SOURCE           = .
+CCP4_BIN         = ${CCP4_MASTER}/bin
+CCP4_LIB         = ${CCP4_MASTER}/ccp4/lib
+#
+FCOMP      = fortran
+FFLAGS     = -c -save -Og -ieee -uniproc -padcommon
+RANLIB     = ranlib
+SHELL      = /bin/sh
+CCOMP      = fxc 
+CFLAGS     = -Og -lcurses -ltermcap -uniproc
+#
+#   Iris stuff-york
+#FCOMP = f77 -c -O2 -static -vms_cc
+#CCOMP = cc -c  -O2
+# Following line is used on SGI for ANSI compiling
+#CCOMP = cc -c  -O2 -acpp -prototypes -DFUNCPROTO -DPOSIX -Dsgi
+#CCOMP1 = cc -c
+
+
+# FLOOP is the main loop procedure for compiling fortran modules
+#
+# $?  for the list of prerequisites that are out of date
+# $@ for the full target name
+# $* stands for the target name with suffix deleted
+# $< for the complete list of prerequisites
+#
+
+FLOOP=		-@for i in $?; 					\
+			do		 			\
+				/bin/rm -f *.f *.o;		\
+				echo Using fsplit on $$i; 	\
+				fsplit $$i; 			\
+				echo compiling $$i; 		\
+				${FCOMP} ${FFLAGS} *.f; 	\
+				touch $@; 			\
+				/bin/rm -f zzz00?.o; 		\
+				ar r ${CCP4_LIB}/libccp4.a *.o ;\
+				/bin/rm -f *.o *.f ;		\
+				${RANLIB} ${CCP4_LIB}/libccp4.a ;\
+				echo Make done on $$i; 		\
+		done
+
+
+
+FTARGETS =		diskio.for    ccplib.for  fftlib.for  maplib.for\
+			parser.for    rwatom.for  rwbrook.for mtzlib.for\
+			modlib.for    symlib.for  lcflib.for  graflib.for\
+			plot84lib.for unix.for    hlplib.for\
+			gdummy.for    frodo_maplib.for
+
+CTARGETS   = 		library.c ucurse.c binsortint.c
+
+
+help:
+	@echo "Use: make libs    - to make library libccp4.a"
+	@echo "     make sort    - to make binsort"
+	@echo "     make all     - to make libs and sort"
+	@echo "     make clean   - to tidy directory and leave as new"
+
+clean:
+	-rm -f *.f *.o 
+
+all:		libs sort
+
+libs:		libs_f libs_c 
+
+libs_f:		${SOURCE}/${FTARGETS}
+		@${FLOOP}
+
+libs_c:		${SOURCE}/${CTARGETS}
+		@echo Making library C routines
+		-@rm -f *.o
+		${CCOMP} -c ${CFLAGS} $?
+		ar r ${CCP4_LIB}/libccp4.a *.o
+		-@rm -f *.o *.f
+		-${RANLIB} ${CCP4_LIB}/libccp4.a
+		@touch libs_c
+		@echo Make done on library_c
+
+
+sort:		binsort
+		mv binsort ${CCP4_BIN}/.
+		/bin/rm -f binsort.o
+		@touch sort
+		@echo Make done on binsort
+
+binsort:	binsort.o
+		${CCOMP} ${CFLAGS} binsort.o -o binsort
+
+binsort.o:	${SOURCE}/binsort.c ${SOURCE}/binsort.h
+		${CCOMP} -c ${CFLAGS} ${SOURCE}/binsort.c
+
+
+
+
+opt:	optfftlib.for
+	-/bin/rm -f *.f *.o
+	fsplit optfftlib.for
+	fortran *.f -c -O -DAS
+	fortran realft_p.f -c -Og 
+	ar r ${CCP4_LIB}/liboptfft.a *.o 
+	/bin/rm -f *.o *.f
+	${RANLIB} ${CCP4_LIB}/liboptfft.a
+	echo Make done on optfft
+	
