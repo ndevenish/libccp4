@@ -2,6 +2,7 @@ C
 C  cross.f        dot.f          ea06c.f      ea08c.f     ea09c.f
 C  fa01as.f       fa01bs.f       fa01cs.f     fa01ds.f    fm02ad.f
 C  icross.f       idot.f         iminv3       match.f     matmul.f
+C  matmulnm.f
 C  matvec.f       mc04b.f        minvn.f      minv3.f     ranmar.f
 C  scalev.f       transp.f       unit.f       vdif.f      vset.f
 C  vsum.f         zipin.f        zipout.f
@@ -628,6 +629,34 @@ C     ..
           DO 20 J = 1,3
             A(I,J) = 0.0
               DO 10 K = 1,3
+                  A(I,J) = B(I,K)*C(K,J) + A(I,J)
+   10             CONTINUE
+   20         CONTINUE
+   30     CONTINUE
+      END
+C
+C
+C_BEGIN_MATMULNM
+C
+      SUBROUTINE MATMULNM(N,M,A,B,C)
+C     ========================
+C
+C      Multiply  NxM  MXN matrices
+C
+C      A = BC
+C
+C     .. Array Arguments ..
+      REAL              A(N,N),B(N,M),C(M,N)
+C
+C_END_MATMUL
+C     ..
+C     .. Local Scalars ..
+      INTEGER           I,J,K
+C     ..
+      DO 30 I = 1,N
+          DO 20 J = 1,N
+            A(I,J) = 0.0
+              DO 10 K = 1,M
                   A(I,J) = B(I,K)*C(K,J) + A(I,J)
    10             CONTINUE
    20         CONTINUE
