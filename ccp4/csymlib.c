@@ -58,7 +58,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   int i,j,k,l,debug=0,nsym2,symops_provided=0;
   float sg_chb[4][4],limits[2],rot1[4][4],rot2[4][4];
   FILE *filein;
-  char *symopfile, filerec[80];
+  char *symopfile, *ccp4dir, filerec[80];
   ccp4_symop *op2,opinv;
 
   /* spacegroup variables */
@@ -96,13 +96,24 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
 
   /* Open the symop file: */
   if (!(symopfile = getenv("SYMINFO"))) {
-    printf("No SYMINFO file! \n");
-    return NULL;
-  }
-  filein = fopen(symopfile,"r");
+    printf("Environment variable SYMINFO not set ... guessing location of symmetry file. \n");
+    if (!(ccp4dir = getenv("CCP4"))) {
+      printf("Environment variable CCP4 not set ... big trouble! \n");
+      return NULL;
+    }
 
+    symopfile = ccp4_utils_malloc((strlen(ccp4dir)+22)*sizeof(char));
+    strcpy(symopfile,ccp4dir);
+    strcat(symopfile,"/lib/data/syminfo.lib");
+    symopfile[strlen(ccp4dir)+21] = '\0';
+    printf(" SYMINFO file set to %s \n",symopfile);
+  }
+
+  filein = fopen(symopfile,"r");
   if (debug) 
     printf(" SYMINFO file %s opened \n",symopfile);
+
+  if (!(getenv("SYMINFO"))) free(symopfile);
 
   parser = ccp4_parse_start(20);
   if (parser == NULL) 
