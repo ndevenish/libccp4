@@ -3,20 +3,14 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
-C          CCP4 PARSER Routines       ( 13-Sep-1993 )
+C          CCP4 PARSER Routines
 C          ====================
 C
 C  Original Author: Based on Mike Levitt's routine of the same name.
-C  Modified By: Peter Brick, Phil Evans, Eleanor Dodson
+C  Modified By: Peter Brick, Phil Evans, Eleanor Dodson, Dave Love
 C
-C
-C  19/2/93  added RDRESL, GTTREA, GTTINT  Phil Evans
-C
-C
-C  Library PARSER.FOR contains the following subroutines and functions
-C
-C
-C
+C     Library parser.f contains the following subroutines and functions,
+C     some of which are currently unsued and commented out.
 C
 C  SUBROUTINES 
 C
@@ -54,9 +48,27 @@ C    GTTINT(N,I,LFLAG,NTOK,ITYP,FVALUE)
 C
 C FUNCTIONS
 C
-C  [ REAL FUNCTION DOCALC(VALUE,OPER,VALUE0) ] - internal (PARSE)
 C    LOGICAL FUNCTION CMATCH(STRING1,STRING2,NCHAR)
 C
+C_BEGIN_INTRO
+C          CCP4 PARSER Routines
+C          ====================
+C
+C The PARSER module of the CCP4 library contains routines which are
+C mainly used for `free-format' `keyworded' input of control data for
+C programs.  Most programs have a loop over input records which are
+C initially fed to the routine PARSER to tokenise them and extract the
+C initial keyword.  PARSER can cope with continued, commented input
+C lines and included files.  It calls PARSE to tokenise individual
+C records and PARSE is sometimes useful itself to compensate for the
+C lack of free-format internal READs in the fortran77 standard.  See
+C the entries below for details.
+C
+C The library also contains routines to decode the parameters
+C following the `standard' program keywords SYMMETRY, RESOLUTION,
+C SCALE and CELL and to extract real and integer numbers from fields.
+C 
+C_END_INTRO
 C
 C_BEGIN_PARSER
 C     =================================================================
@@ -64,35 +76,39 @@ C     =================================================================
      +                  LEND,PRINT)
 C     =================================================================
 C
-C---- Read control card from stream (default = 5), and interpret
-C     Stream 5 is the standard input stream (= terminal or batch 
-C     stream), but a line beginning with @name starts reading 
-C     reading from a file of name 'name' (on stream 11), 
-C     until end-of-file
+C     The normal behaviour is to read `keyworded' data from the input
+C     stream, and interpret it.  This is the case if LINE is initially
+C     blank.  Stream 5 is the standard input stream, but a line
+C     beginning with @<name> starts reading from a file <name> (on
+C     stream 11), until end-of-file.
 C
-C---- Each logical 'card' may be continued on next line by
-C     the continuation character '&' or '-'  at the end of
-C     the line: this character is dropped from the list
-C     returned to the calling routine.
+C     Each logical 'card' may be continued on next line by the
+C     continuation characters '&' or '-'  at the end of the line: this
+C     character is dropped from the list returned to the calling routine.
 C
-C     Comment may be present on the line, following the
-C     character '#': any continuation character ('&' or '-')
-C     must  PRECEED the comment character '#'.
+C     Trailing comments may be present, following the
+C     character '#' or '!': any continuation character ('&' or '-')
+C     must PRECEED the comment character -- comments can't be continued.
+C     The complete (continued) line, less any comments, is returned in
+C     LINE.  Lines containing ONLY comments (or blank) will not be
+C     returned from this routine -- reading will continue.
 C
-C---- Lines containing ONLY comment will not be returned from
-C     this routine E3.1
+C     Strings may be quoted or unquoted.  See also PARSE for details of
+C     token delimiters etc.
 C
-C---- For strings, the routine will accept quoted or
-C     unquoted strings
-C
+C     Alternatively, if LINE is non-blank it will be interpreted before
+C     possibly reading further data on the standard input if LINE ends
+C     with a continuation character.
 C
 C---- Arguments :
 C
 C   KEY    (O)  CHARACTER*4    Keyword at beginning of line (if present),
 C                              uppercased before returning.
 C
-C   LINE   (I)  CHARACTER*(*)  Parse this input string,
-C                              if blank read a line from unit 5.
+C   LINE   (I/O) CHARACTER*(*) Parse this input string.  If blank read
+C                              lines from unit 5.  LINE will be updated to
+C                              contain the entire line read, including
+C                              continuations.
 C
 C   IBEG   (O)  INTEGER(*)     Array of size at least NTOK.
 C                              1st column number of tokens in field 
@@ -131,22 +147,8 @@ C                              .TRUE.  for end-of-file
 C
 C   PRINT   (I)  LOGICAL       .TRUE. echo line to unit 6 via PUTLIN
 C                              .FALSE. don't echo
-C
-C
-C  7-12-89  EJD: Two corrections
-C      1) There was no check if there were more than the permitted
-C         number of items(nitem) on each line ( currently nitem = 20)
-C         The first call to PARSER now should transfer nitem in the
-C         NTOK.  If NTOK .lt.20 I will set NITEM = 20
-C
-C      2) Line needed a ' ' as the last character.
-C         Now you are warned if either of these faults has occurred.
 C                  
 C_END_PARSER
-C
-C     .. Parameter ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
 C
 C     .. Scalar Arguments ..
       INTEGER NTOK
@@ -159,11 +161,10 @@ C     .. Array Arguments ..
       CHARACTER CVALUE(*)*4
 C     ..
 C     .. Local Scalars ..
-      INTEGER IFAIL,J,K,KSTREAM,LENLIN,LINLEN,LSTREAM,MSTREAM,N,
-     +        NITEM,ISTERR,IFGERR
+      INTEGER IFAIL,K,KSTREAM,LENLIN,LINLEN,LSTREAM,MSTREAM,N,
+     +        NITEM
       LOGICAL FIRST, HAVLIN
-      CHARACTER IAMP*1,IDASH*1,FLNAME*60,LINERR*800,LINEX*800
-      CHARACTER ICOMM1*1,ICOMM2*1
+      CHARACTER FLNAME*60,LINEX*800,LINEK1
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -179,18 +180,16 @@ C     .. Scalars in Common ..
       CHARACTER STROUT*800
 C     ..
 C     .. Save statement ..
-      SAVE
+      SAVE NITEM, LSTREAM
 C     ..
 C     .. Data statements ..
       DATA LSTREAM/5/,KSTREAM/11/,MSTREAM/5/
-      DATA IAMP/'&'/,IDASH/'-'/,NITEM/0/
-C Comment characters
-      DATA ICOMM1,ICOMM2/'#','!'/
+      DATA NITEM/0/
 C     ..
 C
       LINEX = ' '
       NINCHR = 0
-      ICX = 0
+      K = 1
 C     We need a flag to avoid the echoing of data when parser is called
 C     during processing of an `@'-included file, as in RDSYMM typically
 C     called from agrovata
@@ -204,25 +203,21 @@ C
 C
 C---- Find out dimensions of ibeg etc                        
 C
-      J = 1
       LEND = .FALSE.
 C
 C---- Initialisations
 C     - on first call check if NTOK has been set = NITEM.
 C       Default NITEM = 20 - you would only want to increase it!
 C
-      IF (NITEM.EQ.0) NITEM = MAX(NTOK,20)
+      IF (NITEM.EQ.0) NITEM = MAX(ABS(NTOK),20)
       NTOK = 0
-C
-C---- Use Negative N to pass NITEM To PARSE for first call.
-C
-      N = -NITEM
 C
 C---- Skip read if LINE already has something in it
 C                                            
-      IF (LINE.NE.'    ') GO TO 30
+      IF (LINE.NE.' ') GO TO 30
 C
    20 CONTINUE
+      LINEX = ' '
       READ (LSTREAM,FMT='(A)',END=40) LINEX
       GO TO 45
 C     End-of-file; if processing an included file switch to main input,
@@ -230,6 +225,7 @@ C     else return
    40 IF (LSTREAM.NE.MSTREAM) THEN
         CLOSE (UNIT=LSTREAM)
         LSTREAM = MSTREAM
+        LINEX = ' '
         READ (LSTREAM,FMT='(A)',END=40) LINEX
       ELSE
         LEND = .TRUE.
@@ -238,133 +234,63 @@ C     else return
  45   CONTINUE
       HAVLIN = .FALSE.
 C
-      IF(LINEX(1:1).EQ.ICOMM1 .OR. LINEX(1:1).EQ.ICOMM2) THEN
-        STROUT = ' '
-        WRITE(STROUT,FMT=6666) LINEX(2:LENSTR(LINEX))
- 6666   FORMAT(' Comment line--- ',A)
-        GO TO 20
-      END IF
-C
       LX = LENSTR(LINEX)
-      IF (LX.EQ.0) GO TO 20
-C
 C---- Count total number of characters on line
-C    
-      NINCHR = NINCHR + LX + 1
+      NINCHR = NINCHR + LX
       IF (NINCHR .GT. LINLEN) THEN
-C----- Line overflow
-        WRITE (6, FMT='(A,I5,A/(A))') ' *** WARNING - More than ',
+C-----  Line overflow
+        WRITE (6, FMT='(A,I5,A/1X,A/1X,A)') ' *** WARNING - More than ',
      .       LINLEN,' characters in (continued) line ***',
-     .       ' *** Parsing truncated line ***',LINEX(1:LX)
-CCC        WRITE (LINERR, FMT='(A,I5,A/(A))') ' *** WARNING - More than ',
-CCC     .       LINLEN,' characters in (continued) line ***',
-CCC     .       ' *** Parsing truncated line ***',LINEX(1:LX)
-CCC        ISTERR = 1
-CCC        IFGERR = 0
-CCC        CALL LERROR(ISTERR,IFGERR,LINERR)
-C---- Reset LX to truncate line
-        LX = LX - NINCHR + LINLEN
+     .       ' *** Parsing truncated line:',LINEX(1:LX)
+        NINCHR = LINLEN
       ENDIF
-C
-C---- Continuation line
-C
-      IF (LINEX(LX:LX).EQ.'-' .OR. LINEX(LX:LX).EQ.'&') THEN
-C      
-        LINEX(LX:LX) = ' '
-        LL = LENSTR(LINE) + 1
-C
-        IF (FIRST) THEN
-          LINE = LINEX   // ' '
-          FIRST = .FALSE.
-        ELSE
-          LINE(LL:) = ' ' // LINEX(1:LX) // ' '
-        END IF
-        GO TO 20
-C
-      END IF
-C
-C---- Not a continuation line
-C
       IF (FIRST) THEN
-         LINE = LINEX   // ' '
-         FIRST = .FALSE.
-         GO TO 30
+C       Not a continuation line
+        LINE = LINEX
+        FIRST = .FALSE.
       ELSE
-      LX = LENSTR(LINEX)
-      LL = LENSTR(LINE) + 1
-      LINE(LL:) = ' ' // LINEX(1:LX) // ' '
+C       continuation -- append record just read to previous line
+        LINE(K:) = LINEX
       END IF
-C
    30 LENLIN = LENSTR(LINE)
       IF (LENLIN.EQ.0) GO TO 20
+C---- Use Negative N to pass NITEM To PARSE for first call (effectively
+C     always first call)
+      N = -NITEM
 C
 C---- Interpret
-C     (note that PARSE likes a terminating space in its input string
-C      I suppose this is a bug)
-C
-C  2-12-89
-C  EJD : attempt to fix it; OK unless LENLIN gt.LINLEN (80 characters)
-C
-      IF (LENLIN.LT.LINLEN) THEN
-        LINE(LENLIN+1:LENLIN+1) = ' '
-        LENLIN = LENLIN + 1
-      ELSE
-C
-        IF (LINE(LENLIN:LENLIN).NE.' ') THEN
-          CALL CCPERR (1, '  *** Internal error: ' //
-     +         'PARSER needs a terminating space ****')
-CCC          WRITE (6,FMT='(A)') 
-CCC     +  '  *** WARNING - PARSER likes a terminating space ****'
-CCC          WRITE (LINERR,FMT='(A)') 
-CCC     +  '  *** WARNING - PARSER likes a terminating space ****'
-CCC          ISTERR = 1
-CCC          IFGERR = 0
-CCCC
-CCCC              ****************************
-CCC          CALL LERROR(ISTERR,IFGERR,LINERR)
-CCCC              ****************************
-CCCC         NB this format is no good for internal writes, but we never
-CCCC         get here with the ccperr call above
-CCC          WRITE (LINERR,FMT='(A,/,4x,A)') 
-CCC     +      '  ***  This line may not be parsed correctly ***',
-CCC     +      LINE(1:120)
-CCC          ISTERR = 1
-CCC          IFGERR = 0
-CCCC
-CCCC              ****************************
-CCC          CALL LERROR(ISTERR,IFGERR,LINERR)
-CCCC              ****************************
-CCCC
-         ENDIF
-C
-      END IF
-C
-      IF (.NOT. HAVLIN .AND. (PRINT .OR. LSTREAM.NE.MSTREAM)) THEN
-        STROUT = ' '
-        WRITE (STROUT,FMT=6002) LINE(1:LENSTR(LINE))
- 6002   FORMAT (' Data line--- ',A)
-        CALL PUTLIN(STROUT,'HLPWIN')
-      END IF 
+C     (Don't hand more to PARSE than necessary since we already know the
+C     length.)
 C
 C          ********************************************************
-      CALL PARSE(LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,N)
+      CALL PARSE(LINE(:LENLIN),IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,N)
 C          ********************************************************
 C
 C---- Count fields
 C
-      IF (N.GT.0) NTOK = NTOK + N
-C
-C---- Copy keyword string to KEY if present
-C
-      IF (NTOK.GT.0 .AND. ITYP(1).EQ.1 ) THEN
-        KEY = CVALUE(1) (1:4)
-        CALL CCPUPC(KEY)
+      IF (N.GT.0) THEN
+        NTOK = NTOK + N
+C----   Copy keyword string to KEY if present
+        IF (ITYP(1).EQ.1 ) THEN
+          KEY = CVALUE(1)
+          CALL CCPUPC(KEY)
+        ELSE
+C         avoid retaining previous KEY if one not present this time
+          KEY = ' '
+        END IF
       ELSE
-C     avoid retaining previous KEY
-        KEY = ' '
-      END IF
+C       comment line
+        IF (.NOT. HAVLIN .AND. (PRINT .OR. LSTREAM.NE.MSTREAM)) THEN
+          STROUT = ' '
+          WRITE (STROUT,FMT=6002) 'Comment', LINE(1:LENSTR(LINE))
+ 6002     FORMAT (A,' line--- ',A)
+          CALL PUTLIN(STROUT,'HLPWIN')
+        ENDIF
+        FIRST = .TRUE.
+        GO TO 20
+      END IF 
 C
-C---- Test if first field begins '@'
+C---- Test if first field begins '@' and include file if so
 C
       IF (NTOK.GT.0 .AND. ITYP(1).EQ.1 .AND.
      +    CVALUE(1) (1:1).EQ.'@') THEN
@@ -396,11 +322,8 @@ C
 C---- Failed to open file
 C
             LSTREAM = MSTREAM
-            WRITE (LINERR,FMT='(A,A)') 
-     +           ' Can''t open file ', FLNAME(1:LENSTR(FLNAME))
-            ISTERR = 1
-            IFGERR = 0
-            CALL LERROR(ISTERR,IFGERR,LINERR)
+            CALL LERROR(1,0,' Can''t open file ' //
+     +           FLNAME(1:LENSTR(FLNAME)))
             NTOK = 0
           END IF
         END IF
@@ -408,53 +331,65 @@ C
         RETURN
       END IF
 C
-C---- PARSE returns N = 0 for lines containing only comment,
-C           Ignore these
-C
-      IF (N.LE.0) THEN
-        LINE = ' '
-        GO TO 20
-      END IF
+C     Check for contined line.  If there's a trailing continuation
+C     character not followed by a quote (which would indicate it's part
+C     of a string) back up one character and append the next line of
+C     input to the current buffer (above).  The new buffer will be fed
+C     afresh to PARSE.
 C
       K = IEND(NTOK)
-      IF (LINE(K:K).EQ.IAMP .OR. LINE(K:K).EQ.IDASH) THEN
-C
-C---- Continuation
-C
-        FIRST = .FALSE.
-        J = NTOK
-C
-C---- Overwrite continuation character
-C
-        NTOK = NTOK - 1
-C
-C---- Read next line
-C
-        GO TO 20
+      IF (K+1 .LE. LEN(LINE)) THEN
+        LINEK1 = LINE(K+1:K+1)
+      ELSE
+        LINEK1 = ' '
       END IF
-C
+      IF ((LINE(K:K).EQ.'&' .OR. LINE(K:K).EQ.'-')
+     +     .AND. LINEK1 .NE. '''' .AND. LINEK1.NE.'"') THEN
+C       zap continuation character
+        LINE(K:) = ' '
+C       reset line length
+        NINCHR = IEND(NTOK)-1
+C       ready to start again
+        NTOK = 0
+        FIRST = .FALSE.
+C       Read next line
+        GO TO 20
+      ELSE IF (.NOT. HAVLIN .AND. (PRINT .OR. LSTREAM.NE.MSTREAM)) THEN
+C       not a continued line -- maybe echo it
+        STROUT = ' '
+        WRITE (STROUT,FMT=6002) 'Data', LINE(1:LENSTR(LINE))
+        CALL PUTLIN(STROUT,'HLPWIN')
+      END IF
       END
-C            
 C
 C_BEGIN_PARSE
 C     ==========================================================
       SUBROUTINE PARSE(LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,N)
 C     ==========================================================
-C---- Free format read routine
 C
-C---- For strings, the routine will accept
-C     quoted or unquoted strings
+C     Free format read routine.  This is really a scanner, not a parser.
+C     It scans the LINE into N tokens which are separated by delimiters
+C     and updates the information arrays for each, as below.  The
+C     default delimiters are space, tab, comma and equals; they may be
+C     changed using PARSDL.  Adjacent commas delimit `null' fields (the
+C     same as empty strings).  Strings may be unquoted or single- or
+C     double-quoted if they don't contain delimiters, but must be
+C     surrounded by delimiters to be recognised.  This allows literal
+C     quotes to be read, e.g. "ab"c" will be recognised as the token `ab"c'.
+C     An unquoted `!' or `#' in LINE introduces a trailing comment,
+C     which is ignored.
 C
 C---- Arguments:
 C
 C   LINE  (I)     CHARACTER*(*)  String to be parsed
 C
-C   N     (I/O)   INTEGER        On first entry .lt. 0,
-C                                -N = maximum number of fields to interpret.
-C                                On subsequent entries for continuation lines,
-C                                = number of items so far.
-C                                Returns number of fields, 0 if blank or comment
-C
+C   N     (I/O)   INTEGER        Usually <0, when abs(N) is the maximum
+C                                number of fields to interpret and should
+C                                be <= the array dimensions.  If N>0 it
+C                                is the number of tokens read so far,
+C                                intended for continuation lines with PARSER.
+C                                Returns number of fields scanned or 0 if
+C                                line is blank or just contains a comment
 C
 C  For I=1,N :
 C
@@ -466,7 +401,8 @@ C   ITYP(I)   (O) INTEGER(*)     =0  null field
 C                                =1  character string
 C                                =2  number
 C
-C   FVALUE(I) (O) REAL(*)        Value of number.
+C   FVALUE(I) (O) REAL(*)        Value of number.  Use NINT(FVALUE(I)) to
+C                                extract an integer.
 C
 C   CVALUE(I) (O) CHARACTER(*)*4 Character string (1st 4 characters)
 C                                for numbers as well as strings
@@ -480,16 +416,12 @@ C                                for real number,
 C                                (number of digits before point+1)*100
 C                                +number of digits after point
 C
-C
-C   30/4/91 Changed to restrict number of delimiters
-C                Phil Evans
-C
 C_END_PARSE
+C     This routine is truly horrible and really ought to be re-written
+C     in an understandable form with an outer loop over tokens rather
+C     than characters...
 C
-C     .. Parameter ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
-C
+C     ..
 C     .. Scalar Arguments ..
       INTEGER N, NNEWDL, NSPECD
       CHARACTER LINE* (*)
@@ -501,9 +433,9 @@ C     .. Array Arguments ..
 C     ..
 C     .. Local Scalars ..
       REAL F10,SIGN,SIGN0,VALUE,VALUE0
-      INTEGER I,IDOT,J,L,LENG,LENLIM,LINLEN,NCHK,NDELM,NDIGS,NDONE,
+      INTEGER I,IDOT,J,L,LENG,LINLEN,NCHK,NDELM,NDIGS,NDONE,
      +        NITEM,NPLACE,NSPDLM,OPER,NDDELM,NDSDLM
-      LOGICAL NULL,NUMBER,OPRATR,QUOTE,TOKEN,TQUOTE
+      LOGICAL NULL,NUMBER,OPRATR,QUOTE,TOKEN,TQUOTE,COMMNT
       CHARACTER BLANK*1,LETQT*1,OLDQUT*1,DBLQT*1,TAB*1
       CHARACTER LINERR*800,ICOMM1*1,ICOMM2*1
 C     ..
@@ -514,15 +446,14 @@ C     .. Local Arrays ..
       CHARACTER DELIM(MAXDLM)*1,DDELIM(MAXDLM)*1,DIGS(18)*1
 C     ..
 C     .. External Functions ..
-      REAL DOCALC
-      EXTERNAL DOCALC
+      INTEGER LENSTR
+      EXTERNAL LENSTR
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC LEN
 C     ..
       SAVE DELIM,NDELM,NSPDLM,DDELIM,NDDELM,NDSDLM
 C     .. Data statements ..
-C
       DATA LETQT,DBLQT/'''','"'/,BLANK/' '/,ICOMM1,ICOMM2/'#','!'/
       DATA DIGS/'0','1','2','3','4','5','6','7','8','9','+','-','*','/',
      +     'E','.','e',' '/
@@ -547,11 +478,10 @@ C Setup delimiters if not done
         DO 1, I = 1, MAXDLM
           DELIM(I)=DDELIM(I)
  1      CONTINUE
-C  Set tab
+C       Set tab (assumes ASCII)
         TAB = CHAR(9)
         DELIM(2) = TAB
       ENDIF
-C
 C
 C---- First call  - N = - NITEM ; NDONE = 0
 C
@@ -563,9 +493,9 @@ C---- Continuation line: N = number already read
 C
       ELSE IF (N.GE.0) THEN
         NDONE = N
+        NITEM = N
       END IF
 C
-      LENLIM = LEN(LINE) - 1
       N = 1
       TOKEN = .FALSE.
       VALUE = 0.0
@@ -577,65 +507,76 @@ C
       QUOTE = .FALSE.
       TQUOTE = .FALSE.
       NUMBER = .FALSE.
+      COMMNT = .FALSE.
 C
-C---- First scan line for comment character,
-C     any characters beyond this are ignored
-C
-      DO 10 I = 1,LENLIM + 1
-        IF (LINE(I:I).EQ.ICOMM1 .OR. LINE(I:I).EQ.ICOMM2) GO TO 20
-   10 CONTINUE
-      I = LENLIM + 2
-   20 LINLEN = I - 2
-C
-      IF (LINLEN.LT.0) THEN
+      LINLEN = LENSTR (LINE)
+      IF (LINLEN.LE.0) THEN
         N = 0
-      ELSE
+        RETURN
+      END IF
 C
-C---- Main loop over character buffer
+C---- Main loop over character buffer.  The loop goes one past the end,
+C     but we're careful not to index this character.
 C
-        DO 70 I = 1,LINLEN + 1
+        DO 70 I = 1,LINLEN+1
+C
+C----     check for comment character (not in string)
+C
+          IF (.NOT.QUOTE .AND.
+     +         (LINE(I:I).EQ.ICOMM1 .OR. LINE(I:I).EQ.ICOMM2)) THEN
+            COMMNT = .TRUE.
+C           special case; comment line:
+            IF (N.EQ.1) THEN
+              N = 0
+              RETURN
+            END IF
+          END IF
 C
 C---- Look for quotation marks
 C
-          IF (LINE(I:I).EQ.LETQT .OR. LINE(I:I).EQ.DBLQT) THEN
-C----  1st quote must come at beginning of string, otherwise treat as normal
-            IF (OLDQUT.EQ.BLANK .AND. .NOT. TOKEN) THEN
-              OLDQUT = LETQT
-C
-C---- Start of quoted string
-C
-              QUOTE = .TRUE.
-            ELSE IF (OLDQUT.EQ.LETQT) THEN
-              OLDQUT = BLANK
-              QUOTE = .FALSE.
-C
-C---- End of quoted string
-C
+          IF (I.LE.LINLEN) THEN
+            IF (LINE(I:I).EQ.LETQT .OR. LINE(I:I).EQ.DBLQT) THEN
+C             1st quote must come at beginning of string, otherwise
+C             treat as normal
+              IF (OLDQUT.EQ.BLANK .AND. .NOT. TOKEN) THEN
+C               Start of quoted string
+                OLDQUT = LETQT
+                QUOTE = .TRUE.
+              ELSE IF (OLDQUT.EQ.LETQT) THEN
+C               End of quoted string
+                OLDQUT = BLANK
+                QUOTE = .FALSE.
+              END IF
+              GOTO 70
             END IF
-C
           ELSE
+            QUOTE = .FALSE.
+          END IF
 C
 C---- Check for delimiting characters
 C
-            DO 30 J = 1,NDELM
-              IF (LINE(I:I).EQ.DELIM(J)) GO TO 40
-   30       CONTINUE
+            IF (I.LE.LINLEN) THEN
+              DO 30 J = 1,NDELM
+                IF (LINE(I:I).EQ.DELIM(J)) GO TO 40
+ 30           CONTINUE
+            END IF
             J = NDELM + 1
    40       CONTINUE
 C
-            IF (.NOT.QUOTE .AND. (J.LE.NDELM.OR.I.GT.LINLEN)) THEN
+            IF ((.NOT.QUOTE .AND. (J.LE.NDELM.OR.I.GT.LINLEN))
+     +           .OR. COMMNT) THEN
 C
 C---- Have found a delimiter
 C
               NULL = .FALSE.
-              IF (.NOT.TOKEN .AND. J.GT.NSPDLM) THEN
+              IF (.NOT.TOKEN .AND. .NOT.COMMNT .AND. J.GT.NSPDLM) THEN
 C
 C---- Allow delimiters other than
 C     <space> & <tab> to delimit null fields
 C
                 IBEG(N) = I
-                IEND(N) = I
                 ITYP(N) = 0
+                IEND(N) = I
                 NULL = .TRUE.
               END IF
               IF (TOKEN) THEN
@@ -643,10 +584,8 @@ C
 C---- End of token
 C
                 IEND(N) = I - 1
-C
-C---- Exclude quote from token
-C
-                IF (TQUOTE) IEND(N) = I - 2
+C               Exclude quote from token
+                IF (TQUOTE .AND. OLDQUT.EQ.BLANK) IEND(N) = I - 2
 C
 C---- Store first 4 characters in cvalue for all types
 C
@@ -660,8 +599,13 @@ C
                 IF (NUMBER) THEN
                   ITYP(N) = 2
                   FVALUE(N) = VALUE*SIGN
-                  IF (OPER.GT.0) FVALUE(N) = DOCALC(FVALUE(N),OPER,
-     +                SIGN0*VALUE0)
+CCC                  IF (OPER.GT.0) FVALUE(N) = DOCALC(FVALUE(N),OPER,
+CCC     +                SIGN0*VALUE0)
+                  IF (OPER.EQ.1) THEN
+                    FVALUE(N) = FVALUE(N) - SIGN0*VALUE0
+                  ELSE IF (OPER.EQ.2) THEN
+                    FVALUE(N) = FVALUE(N) - SIGN0*VALUE0
+                  END IF
                   IDEC(N) = 100*IDOT + NPLACE
                 ELSE
 C
@@ -685,28 +629,21 @@ C
 C
 C---- Check number of items.
 C
-                IF (NCHK.GT.NITEM) THEN
-                  GO TO 80
-                ELSE
-C
-                END IF
+                IF (NCHK.GT.NITEM) GO TO 80
               END IF
+C             there's nothing else to do with a comment
+              IF (COMMNT) GOTO 75
 C
-C
-C---- If delimiter was "+" or "-", also
-C     treat it as part of the next token
-C
+C             If delimiter was "+" or "-", also treat it as part of the
+C             next token
               IF (DELIM(J).EQ.'+' .OR. DELIM(J).EQ.'-') THEN
                 J = NDELM + 1
                 GO TO 40
-              ELSE
-                GO TO 70
               END IF
-C
+              GO TO 70
             END IF
 C
-C---- Not a delimiter so must be a token
-C      Suspect numeric token
+C---- Not a delimiter so must be a token -- suspect numeric token
 C
             IF (.NOT.TQUOTE .AND. (.NOT.TOKEN.OR.NUMBER)) THEN
               IF (.NOT.QUOTE) THEN
@@ -716,38 +653,31 @@ C
                 J = NDIGS + 1
 C
  60             CONTINUE
-C---- Change "e" to "E"
+C----           Change "e" to "E"
                 IF (J.EQ.17) J=15
 C
-           IF (J.LE.NDIGS) THEN
+                IF (J.LE.NDIGS) THEN
 C
-C---- May be number
+C----             May be number
 C
                   NUMBER = .TRUE.
 C
-C---- Have a digit 0-9
-C
                   IF (J.LE.10) THEN
+C                   Have a digit 0-9
                     IF (IDOT.EQ.0) VALUE = VALUE*10 + (J-1)
-C
-C---- Before decimal point
-C
                     IF (IDOT.EQ.1) THEN
+C                     Before decimal point
                       VALUE = (J-1)*F10 + VALUE
                       F10 = F10*0.1
-C
-C---- After decimal point
-C
+C                     After decimal point
                       NPLACE = NPLACE + 1
                     END IF
                     OPRATR = .FALSE.
-C
-C---- Find + or - as signs not operators
-C
                   ELSE IF (OPRATR .AND. (J.EQ.11.OR.J.EQ.12)) THEN
+C                   Find + or - as signs not operators
                     OPRATR = .FALSE.
 C
-C---- Set sign of number
+C----               Set sign of number
 C
                     SIGN = ISGN(J-10)
 CCCC
@@ -776,10 +706,8 @@ C
                     IDOT = IDOT + 1
                     NPLACE = 0
                     F10 = 0.1
+C                   A valid number has one point
                     IF (IDOT.EQ.2) NUMBER = .FALSE.
-C
-C---- A valid number has one point
-C
                     OPRATR = .FALSE.
                   END IF
                 ELSE
@@ -808,41 +736,28 @@ C
                 END IF
               END IF
             END IF
-          END IF
    70   CONTINUE
-        N = N - 1
+   75   N = N - 1
         RETURN
    80   CONTINUE
 C
-C
-          WRITE (LINERR,FMT='(A,I4,A)') 
-     +    '  ***** WARNING - MORE THAN ',NITEM,
-     +    ' ITEMS IN THIS LINE - IGNORING THE REST****'
-          ISTERR = 1
-          IFGERR = 0
-C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
-          WRITE (LINERR,FMT='(A)')  LINE(1:LENSTR(LINE)) 
-          ISTERR = 1
-          IFGERR = 0
-C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
+        WRITE (LINERR,FMT='(A,I4,A)') 
+     +       '  ***** WARNING - MORE THAN ',NITEM,
+     +       ' ITEMS IN THIS LINE - IGNORING THE REST****'
+        CALL LERROR(1,0,LINERR)
+        CALL LERROR(1,0,LINE(1:LENSTR(LINE)))
         N = N - 1
-      END IF
       RETURN
 C
-C
-C_BEGIN_PARSDL
-C     =================================
+C     ==================================
       ENTRY PARSDL(NEWDLM,NNEWDL,NSPECD)
-C     =================================
-C Entry point in PARSE. Call to change delimiters
+C     ==================================
+C_BEGIN_PARSDL
+C     =======================================
+C     SUBROUTINE PARSDL(NEWDLM,NNEWDL,NSPECD)
+C     =======================================
+C
+C     Call to change delimiters used by PARSE(R)
 C
 C  NEWDLM  (I) CHARACTER*(*)  Array containing NNEWDL new delimiters
 C
@@ -854,7 +769,6 @@ C  NSPECD  (I) INTEGER        Number of special delimiters which
 C                             cannot delimit a null field. These are
 C                             at the beginning of the delimiter array.
 C                             (defaults in NDSDLM)
-C
 C_END_PARSDL
 C
       IF (NNEWDL .LE. 0) THEN
@@ -878,7 +792,6 @@ C
       ENDIF
 C
       END
-C
 C
 C_BEGIN_KEYNUM
 C     ====================================================
@@ -906,9 +819,6 @@ C
 C  NTOK   (I) INTEGER        Number of fields (from PARSER)
 C
 C_END_KEYNUM
-C     .. Parameter ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
 C
 C     .. Scalar Arguments ..
       INTEGER           N,NSTART,NTOK
@@ -918,13 +828,12 @@ C     .. Array Arguments ..
       INTEGER           IBEG(*),IEND(*),ITYP(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER           I,ISTERR,IFGERR
+      INTEGER           I
       CHARACTER   LINERR*200
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL          KEYERR,LERROR
+      EXTERNAL          KEYERR,LERROR, CCPERR
 C     ..
-C
 C
       DO 10 I = NSTART,NSTART + N - 1
           IF (I.GT.NTOK) THEN
@@ -934,39 +843,26 @@ C
           END IF
    10 CONTINUE
 C
-C
       RETURN
 C
 C          *******************************
    20 CALL KEYERR(I,2,LINE,IBEG,IEND,ITYP)
 C          *******************************
 C
-      CALL CCPERR(1,' STOP IN PARSER 7777')
+      CALL CCPERR(1, 'Keyword error')
    30 CONTINUE
 C
           WRITE (LINERR,FMT='(A,I4,A,I4,A)') 
-     +   ' *** TOO FEW NUMBERS - ',
-     +    (I - NSTART),
-     +   ' FOUND WHEN ',N,' EXPECTED'
-          ISTERR = 1
-          IFGERR = 0
-C
-C              ****************************
-C          CALL LERROR(ISTERR,IFGERR,LINERR)
+     +     ' *** TOO FEW NUMBERS - ', (I - NSTART),
+     +     ' FOUND WHEN ',N,' EXPECTED'
           CALL CCPERR(1, LINERR)
 C
-C
       END
-C
 C
       SUBROUTINE KEYERR(I,MODE,LINE,IBEG,IEND,ITYP)
 C     =============================================
 C  Print warning when token not of correct type.
 C  Internal subroutine, called from KEYNUM.
-C
-C     .. Parameter ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
 C
 C     .. Scalar Arguments ..
       INTEGER           I,MODE
@@ -991,17 +887,14 @@ C     .. Data statements ..
 C     ..
 C
 C
-C
       IF (MODE.EQ.0) THEN
           WRITE (LINERR,FMT='(A,A,A)') 
      +  ' ** ERROR : Key word < ',
      +  LINE(IBEG(I) : IEND(I)),
      +  ' > not recognized and has therefore been ignored'
-          ISTERR = 1
-          IFGERR = 0
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(1,0,LINERR)
 C              ****************************
 C
       ELSE
@@ -1011,236 +904,212 @@ C
      + ' > is ',
      + TYPE(ITYP(I)),
      + ' while a ',TYPE(I),' token was expected'
-          ISTERR = 1
-          IFGERR = 0
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(1,0,LINERR)
 C              ****************************
       END IF
 C
-C
       END
-C
-C
-      SUBROUTINE CHKNUM(ISYSW,N1,N2,NTOK,ITYP,IBEG,IEND,LINE)
-C     ======================================================
-C  Used with the parser routine to check that correct number
-C  of numbers are present on line
-C
-C  Not currently used by anything (Sep 1993). Hide it!
-C  Alternative is KEYNUM (?).  WRR
-C
-C     .. Parameter ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
-C
-C     .. Scalar Arguments ..
-      INTEGER           ISYSW,N1,N2,NTOK
-      CHARACTER         LINE*(*)
-C     ..
-C     .. Array Arguments
-      INTEGER           IBEG(*),IEND(*),ITYP(*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER           I,I1,I2,ISTERR,IFGERR
-      CHARACTER LINERR*200
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL          CHKTOK,LERROR
-C
-      SAVE
-C
-      IF (N2.GT.NTOK) THEN
-          I1 = N2 - N1 + 1
-          I2 = NTOK - N1 + 1
-C
-C
-          WRITE (LINERR,FMT='(A,I4,A,I4,A)') 
-     +  ' *** TOO FEW NUMBERS :',I2,' FOUND WHEN',I1,
-     +       ' EXPECTED'
-          ISTERR = 2
-          IFGERR = 1
-C
-C              ****************************
-C          CALL LERROR(ISTERR,IFGERR,LINERR)
-          CALL CCPERR(1, LINERR)
-      ELSE
-C
-          DO 10 I = N1,N2
-C
-C                 ******************************************
-             CALL CHKTOK(ISYSW,I,2,NTOK,ITYP,IBEG,IEND,LINE)
-C                 ******************************************
-C
-   10     CONTINUE
-C
-      END IF
-C
-C
-      END
-C
-      SUBROUTINE CHKTOK(ISYSW,I,IWANT,NTOK,ITYP,IBEG,IEND,LINE)
-C     ========================================================
-C  Check token is of correct type
-C
-C Currently (Sep 1993) called only from CHKNUM which itself is not used.
-C                                                    WRR
-C      I     is token position in string line
-C      iwant is code for desired token
-C
-C     .. Parameter ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
-C
-C     .. Scalar Arguments ..
-      INTEGER           I,ISYSW,IWANT,NTOK
-      CHARACTER         LINE*(*)
-C     ..
-C     .. Array Arguments ..
-      INTEGER          ITYP(*),IBEG(*),IEND(*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER ISTERR,IFGERR
-      CHARACTER LINERR*200
-C     ..
-C     .. Local Arrays ..
-      CHARACTER        TYPE(3)*12
-C
-      SAVE
-C     ..
-C     .. Data statements ..
-      DATA              TYPE/'ALPHANUMERIC','NUMERIC     ',
-     +                  'QUOTED      '/
-C     ..
-C
-C                   
-      IF (ITYP(I).NE.IWANT) THEN
-          WRITE (LINERR,FMT='(A,A,A,A,A,A,A)') 
-     +  ' Token ',
-     +  LINE(IBEG(I) : IEND(I)),
-     +  ' is ',
-     +  TYPE(ITYP(I)),
-     +  ' while a ',
-     +  TYPE(IWANT),
-     + ' token was expected'
-C
-          ISTERR = 2
-          IFGERR = 1
-C
-          CALL CCPERR (1, LINERR)
-      END IF
-C
-C
-      END
-C
-C
-      SUBROUTINE GETREA(N,X,NTOK,ITYP,FVALUE)
-C     ======================================
-C Extract real number X from N'th value Parser array FVALUE, if possible
-C If no value, X = 0.0 . If illegal, write message
-C
-C Not currently used in any ccp4 programs, Sep 1993, WRR
-C
-C     .. Parameter ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
-C
-C     .. Scalar Arguments ..
-      REAL              X
-      INTEGER           N,NTOK
-C     ..
-C     .. Array Arguments ..
-      REAL              FVALUE(*)
-      INTEGER           ITYP(*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER ISTERR,IFGERR
-      CHARACTER LINERR*200
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL LERROR
-C     ..
-C
-C
-      X = 0.0
-C
-C
-      IF (N.LE.NTOK) THEN
-C
-C
-          IF (ITYP(N).EQ.2) THEN
-              X = FVALUE(N)
-          ELSE IF (ITYP(N).EQ.1) THEN
-          WRITE (LINERR,FMT='(A,I4)') 
-     +    ' Illegal number in field ',N
-          ISTERR = 1
-          IFGERR = 0
-C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
-          END IF
-      END IF
-C
-C
-      END
-C
-C
-      SUBROUTINE GETINT(N,I,NTOK,ITYP,FVALUE)
-C     ======================================
-C Extract integer I from N'th value Parser array FVALUE, if possible
-C If no value, I = 0  . If illegal, write message
-C
-C Not currently used in any ccp4 programs, WRR, Sep 1993
-C
-C     .. Parameter ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
-C
-C     .. Scalar Arguments ..
-      INTEGER           I,N,NTOK
-C     ..
-C     .. Array Arguments ..
-      REAL              FVALUE(*)
-      INTEGER           ITYP(*)
-C     ..
-C     .. Local scalars ..
-      INTEGER ISTERR,IFGERR
-      CHARACTER LINERR*100
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC         NINT
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL LERROR
-C     ..
-C
-C
-      I = 0
-C
-C
-      IF (N.LE.NTOK) THEN
-          IF (ITYP(N).EQ.2) THEN
-              I = NINT(FVALUE(N))
-          ELSE IF (ITYP(N).EQ.1) THEN
-C 
-          WRITE (LINERR,FMT='(A,I4)') 
-     +   ' Illegal number in field ',N
-          ISTERR = 1
-          IFGERR = 0
-C
-C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
-C              ****************************
-C
-          END IF
-      END IF
-C
-C
-      END
-C
+CCCC
+CCCC
+CCC      SUBROUTINE CHKNUM(ISYSW,N1,N2,NTOK,ITYP,IBEG,IEND,LINE)
+CCCC     ======================================================
+CCCC  Used with the parser routine to check that correct number
+CCCC  of numbers are present on line
+CCCC
+CCCC  Not currently used by anything (Sep 1993). Hide it!
+CCCC  Alternative is KEYNUM (?).  WRR
+CCCC
+CCCC     .. Scalar Arguments ..
+CCC      INTEGER           ISYSW,N1,N2,NTOK
+CCC      CHARACTER         LINE*(*)
+CCCC     ..
+CCCC     .. Array Arguments
+CCC      INTEGER           IBEG(*),IEND(*),ITYP(*)
+CCCC     ..
+CCCC     .. Local Scalars ..
+CCC      INTEGER           I,I1,I2,ISTERR,IFGERR
+CCC      CHARACTER LINERR*200
+CCCC     ..
+CCCC     .. External Subroutines ..
+CCC      EXTERNAL          CHKTOK,LERROR
+CCCC
+CCC      SAVE
+CCCC
+CCC      IF (N2.GT.NTOK) THEN
+CCC          I1 = N2 - N1 + 1
+CCC          I2 = NTOK - N1 + 1
+CCCC
+CCCC
+CCC          WRITE (LINERR,FMT='(A,I4,A,I4,A)') 
+CCC     +  ' *** TOO FEW NUMBERS :',I2,' FOUND WHEN',I1,
+CCC     +       ' EXPECTED'
+CCC          ISTERR = 2
+CCC          IFGERR = 1
+CCCC
+CCCC              ****************************
+CCCC          CALL LERROR(ISTERR,IFGERR,LINERR)
+CCC          CALL CCPERR(1, LINERR)
+CCC      ELSE
+CCCC
+CCC          DO 10 I = N1,N2
+CCCC
+CCCC                 ******************************************
+CCC             CALL CHKTOK(ISYSW,I,2,NTOK,ITYP,IBEG,IEND,LINE)
+CCCC                 ******************************************
+CCCC
+CCC   10     CONTINUE
+CCCC
+CCC      END IF
+CCCC
+CCCC
+CCC      END
+CCCC
+CCC      SUBROUTINE CHKTOK(ISYSW,I,IWANT,NTOK,ITYP,IBEG,IEND,LINE)
+CCCC     ========================================================
+CCCC  Check token is of correct type
+CCCC
+CCCC Currently (Sep 1993) called only from CHKNUM which itself is not used.
+CCCC                                                    WRR
+CCCC      I     is token position in string line
+CCCC      iwant is code for desired token
+CCCC
+CCCC     .. Scalar Arguments ..
+CCC      INTEGER           I,ISYSW,IWANT,NTOK
+CCC      CHARACTER         LINE*(*)
+CCCC     ..
+CCCC     .. Array Arguments ..
+CCC      INTEGER          ITYP(*),IBEG(*),IEND(*)
+CCCC     ..
+CCCC     .. Local Scalars ..
+CCC      CHARACTER LINERR*200
+CCCC     ..
+CCCC     .. Local Arrays ..
+CCC      CHARACTER        TYPE(3)*12
+CCCC
+CCC      SAVE
+CCCC     ..
+CCCC     .. Data statements ..
+CCC      DATA              TYPE/'ALPHANUMERIC','NUMERIC     ',
+CCC     +                  'QUOTED      '/
+CCCC     ..
+CCCC
+CCCC                   
+CCC      IF (ITYP(I).NE.IWANT) THEN
+CCC          WRITE (LINERR,FMT='(A,A,A,A,A,A,A)') 
+CCC     +  ' Token ',
+CCC     +  LINE(IBEG(I) : IEND(I)),
+CCC     +  ' is ',
+CCC     +  TYPE(ITYP(I)),
+CCC     +  ' while a ',
+CCC     +  TYPE(IWANT),
+CCC     + ' token was expected'
+CCCC
+CCC          CALL CCPERR (1, LINERR)
+CCC      END IF
+CCCC
+CCCC
+CCC      END
+CCCC
+CCCC
+CCC      SUBROUTINE GETREA(N,X,NTOK,ITYP,FVALUE)
+CCCC     ======================================
+CCCC Extract real number X from N'th value Parser array FVALUE, if possible
+CCCC If no value, X = 0.0 . If illegal, write message
+CCCC
+CCCC Not currently used in any ccp4 programs, Sep 1993, WRR
+CCCC
+CCCC     .. Scalar Arguments ..
+CCC      REAL              X
+CCC      INTEGER           N,NTOK
+CCCC     ..
+CCCC     .. Array Arguments ..
+CCC      REAL              FVALUE(*)
+CCC      INTEGER           ITYP(*)
+CCCC     ..
+CCCC     .. Local Scalars ..
+CCC      INTEGER ISTERR,IFGERR
+CCC      CHARACTER LINERR*200
+CCCC     ..
+CCCC     .. External Subroutines ..
+CCC      EXTERNAL LERROR
+CCCC     ..
+CCCC
+CCCC
+CCC      X = 0.0
+CCCC
+CCCC
+CCC      IF (N.LE.NTOK) THEN
+CCCC
+CCCC
+CCC          IF (ITYP(N).EQ.2) THEN
+CCC              X = FVALUE(N)
+CCC          ELSE IF (ITYP(N).EQ.1) THEN
+CCC          WRITE (LINERR,FMT='(A,I4)') 
+CCC     +    ' Illegal number in field ',N
+CCC          ISTERR = 1
+CCC          IFGERR = 0
+CCCC
+CCCC              ****************************
+CCC          CALL LERROR(ISTERR,IFGERR,LINERR)
+CCCC              ****************************
+CCCC
+CCC          END IF
+CCC      END IF
+CCCC
+CCCC
+CCC      END
+CCCC
+CCCC
+CCC      SUBROUTINE GETINT(N,I,NTOK,ITYP,FVALUE)
+CCCC     ======================================
+CCCC Extract integer I from N'th value Parser array FVALUE, if possible
+CCCC If no value, I = 0  . If illegal, write message
+CCCC
+CCCC Not currently used in any ccp4 programs, WRR, Sep 1993
+CCCC
+CCCC     .. Scalar Arguments ..
+CCC      INTEGER           I,N,NTOK
+CCCC     ..
+CCCC     .. Array Arguments ..
+CCC      REAL              FVALUE(*)
+CCC      INTEGER           ITYP(*)
+CCCC     ..
+CCCC     .. Local scalars ..
+CCC      INTEGER ISTERR,IFGERR
+CCC      CHARACTER LINERR*100
+CCCC     ..
+CCCC     .. Intrinsic Functions ..
+CCC      INTRINSIC         NINT
+CCCC     ..
+CCCC     .. External Subroutines ..
+CCC      EXTERNAL LERROR
+CCCC     ..
+CCCC
+CCCC
+CCC      I = 0
+CCCC
+CCCC
+CCC      IF (N.LE.NTOK) THEN
+CCC          IF (ITYP(N).EQ.2) THEN
+CCC              I = NINT(FVALUE(N))
+CCC          ELSE IF (ITYP(N).EQ.1) THEN
+CCCC 
+CCC          WRITE (LINERR,FMT='(A,I4)') 
+CCC     +   ' Illegal number in field ',N
+CCC          ISTERR = 1
+CCC          IFGERR = 0
+CCCC
+CCCC              ****************************
+CCC          CALL LERROR(ISTERR,IFGERR,LINERR)
+CCCC              ****************************
+CCCC
+CCC          END IF
+CCC      END IF
+CCCC
+CCCC
+CCC      END
 C
 C_BEGIN_GTNREA
 C     ========================================
@@ -1268,10 +1137,6 @@ C FVALUE (I) REAL(*)     Array of numbers to be extracted (from PARSER)
 C
 C_END_GTNREA
 C
-C     .. Parameter ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
-C
 C     .. Scalar Arguments ..
       INTEGER           M,N,NTOK
 C     ..
@@ -1287,11 +1152,9 @@ C     .. External Subroutines ..
       EXTERNAL LERROR
 C     ..
 C
-C
       DO 10 I = 1,M
           K = I + N - 1
           X(I) = 0.0
-C
 C
           IF (K.LE.NTOK) THEN
               IF (ITYP(K).EQ.2) THEN
@@ -1299,20 +1162,15 @@ C
               ELSE IF (ITYP(K).EQ.1) THEN
            WRITE (LINERR,FMT='(A,I4)') 
      +    ' Illegal number in field ',K
-          ISTERR = 1
-          IFGERR = 0
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(1,0,LINERR)
 C              ****************************
 C
               END IF
           END IF
    10 CONTINUE
-C
-C
       END
-C
 C
 C_BEGIN_GTNINT
 C     ========================================
@@ -1338,9 +1196,6 @@ C
 C FVALUE (I) REAL(*)     Array of numbers to be extracted (from PARSER)
 C
 C_END_GTNINT
-C     .. Parameter ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
 C
 C     .. Scalar Arguments ..
       INTEGER           M,N,NTOK
@@ -1360,7 +1215,6 @@ C     .. External Subroutines ..
       EXTERNAL LERROR
 C     ..
 C
-C
       DO 10 I = 1,M
           K = I + N - 1
           J(I) = 0
@@ -1370,20 +1224,16 @@ C
               ELSE IF (ITYP(K).EQ.1) THEN
            WRITE (LINERR,FMT='(A,I4)') 
      +    ' Illegal number in field ',K
-          ISTERR = 1
-          IFGERR = 0
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(1,0,LINERR)
 C              ****************************
 C
               END IF
           END IF
    10 CONTINUE
 C
-C
       END
-C
 C
 C_BEGIN_GTPREA
 C     ======================================
@@ -1408,10 +1258,6 @@ C FVALUE (I) REAL(*)     Array of numbers to be extracted (from PARSER)
 C
 C_END_GTPREA
 C
-C     .. Parameters ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
-C     ..
 C     .. Scalar Arguments ..
       REAL X
       INTEGER N,NTOK
@@ -1427,7 +1273,6 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL LERROR
 C     ..
-C
 C
       IF (N.LE.NTOK) THEN
         IF (ITYP(N).EQ.2) THEN
@@ -1445,9 +1290,7 @@ C
         END IF
       END IF
 C
-C
       END
-C
 C
 C_BEGIN_GTPINT
 C     ======================================
@@ -1472,10 +1315,6 @@ C FVALUE (I) REAL(*)     Array of numbers to be extracted (from PARSER)
 C
 C_END_GTPINT
 C
-C     .. Parameters ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
-C     ..
 C     .. Scalar Arguments ..
       INTEGER I,N,NTOK
 C     ..
@@ -1494,7 +1333,6 @@ C     .. Intrinsic Functions ..
       INTRINSIC NINT
 C     ..
 C
-C
       IF (N.LE.NTOK) THEN
         IF (ITYP(N).EQ.2) THEN
           I = NINT(FVALUE(N))
@@ -1511,114 +1349,102 @@ C
         END IF
       END IF
 C
-C
       END
-C
-C
-C_BEGIN_GETSTR
-C     ===================================================
-      SUBROUTINE GETSTR(N,STRING,NTOK,ITYP,IBEG,IEND,LINE)
-C     ===================================================
-C Extract string STRING from N'th value Parser array CVALUE, if possible
-C If no value, STRING  = blank '    '.
-C
-C--- Arguments:
-C
-C N      (I) INTEGER        Number of 1st field of LINE to be extracted
-C
-C STRING (O) CHARACTER*(*)  Extracted string put here
-C
-C NTOK   (I) INTEGER        Total number of fields (from PARSER)
-C
-C ITYP   (I) INTEGER(*)     =0  null field
-C                           =1  character string
-C                           =2  number
-C                           (from PARSER)
-C
-C IBEG   (I) INTEGER(*)     1st column number in field (from PARSER)
-C
-C IEND   (I) INTEGER(*)     last column number in field (from PARSER)
-C
-C LINE   (I) CHARACTER*(*)  String extracted from here. (from PARSER)
-C
-C
-C NB. This subroutine not currently used in any CCCP4 programs. WRR, Sep 1993
-C
-C_END_GETSTR
-C
-C     .. Parameter ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
-C
-C     .. Scalar Arguments ..
-      INTEGER           N,NTOK
-      INTEGER           ITYP(*),IBEG(*),IEND(*)
-      CHARACTER         STRING*(*), LINE*(*)
-C     ..
-C
-C
-      STRING = ' '
-      IF (N.LE.NTOK .AND. ITYP(N).NE.0) STRING = LINE(IBEG(N):IEND(N))
-C
-C
-      END
-C
-C
-C_BEGIN_DOCALC
-C     =======================================
-      REAL FUNCTION DOCALC(VALUE,OPER,VALUE0)
-C     =======================================
-C Do simple arithmetic on two arguments
-C
-C--- Arguments:
-C
-C VALUE  (I) REAL     Value of first argument
-C
-C OPER   (I) INTEGER  =1 add
-C                     =2 subtract
-C                     =3 mutliply
-C                     =4 divide
-C                     =5 evaluate VALUE0 * 10**VALUE
-C
-C VALUE0 (I) REAL     Value of second argument
-C
-C NB. This subroutine not currently used in any CCCP4 programs. WRR, Sep 1993
-C
-C_END_DOCALC
-C     .. Scalar Arguments ..
-      REAL                 VALUE,VALUE0
-      INTEGER              OPER
-C     ..
-C     .. Local Scalars ..
-      INTEGER              DIVIDE,EENOTN,MINUS,MULT,PLUS
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC            ABS
-C     ..
-C     .. Data statements ..
-      DATA                 PLUS,MINUS,MULT,DIVIDE,EENOTN/1,2,3,4,5/
-C     ..
-C
-C
-      IF (OPER.EQ.PLUS) DOCALC = VALUE0 + VALUE
-      IF (OPER.EQ.MINUS) DOCALC = VALUE0 - VALUE
-      IF (OPER.EQ.MULT) DOCALC = VALUE0*VALUE
-C
-C
-      IF (OPER.EQ.DIVIDE) THEN
-          IF (VALUE.NE.0.0) DOCALC = VALUE0/VALUE
-          IF (VALUE.EQ.0.0) DOCALC = 0.0
-      END IF
-C
-C
-      IF (OPER.EQ.EENOTN) THEN
-          IF (ABS(VALUE).LE.76.0) DOCALC = VALUE0* (10.0**VALUE)
-          IF (ABS(VALUE).GT.76.0) DOCALC = 0.0
-      END IF
-C
-C
-      END
-C
+CCCC
+CCCC_BEGIN_GETSTR
+CCCC     ===================================================
+CCC      SUBROUTINE GETSTR(N,STRING,NTOK,ITYP,IBEG,IEND,LINE)
+CCCC     ===================================================
+CCCC Extract string STRING from N'th value Parser array CVALUE, if possible
+CCCC If no value, STRING  = blank '    '.
+CCCC
+CCCC--- Arguments:
+CCCC
+CCCC N      (I) INTEGER        Number of 1st field of LINE to be extracted
+CCCC
+CCCC STRING (O) CHARACTER*(*)  Extracted string put here
+CCCC
+CCCC NTOK   (I) INTEGER        Total number of fields (from PARSER)
+CCCC
+CCCC ITYP   (I) INTEGER(*)     =0  null field
+CCCC                           =1  character string
+CCCC                           =2  number
+CCCC                           (from PARSER)
+CCCC
+CCCC IBEG   (I) INTEGER(*)     1st column number in field (from PARSER)
+CCCC
+CCCC IEND   (I) INTEGER(*)     last column number in field (from PARSER)
+CCCC
+CCCC LINE   (I) CHARACTER*(*)  String extracted from here. (from PARSER)
+CCCC
+CCCC NB. This subroutine not currently used in any CCCP4 programs. WRR, Sep 1993
+CCCC
+CCCC_END_GETSTR
+CCCC
+CCCC     .. Scalar Arguments ..
+CCC      INTEGER           N,NTOK
+CCC      INTEGER           ITYP(*),IBEG(*),IEND(*)
+CCC      CHARACTER         STRING*(*), LINE*(*)
+CCCC     ..
+CCC      STRING = ' '
+CCC      IF (N.LE.NTOK .AND. ITYP(N).NE.0) STRING = LINE(IBEG(N):IEND(N))
+CCC      END
+CCCC
+CCCC
+CCCC_BEGIN_DOCALC
+CCCC     =======================================
+CCC      REAL FUNCTION DOCALC(VALUE,OPER,VALUE0)
+CCCC     =======================================
+CCCC Do simple arithmetic on two arguments
+CCCC
+CCCC--- Arguments:
+CCCC
+CCCC VALUE  (I) REAL     Value of first argument
+CCCC
+CCCC OPER   (I) INTEGER  =1 add
+CCCC                     =2 subtract
+CCCC                     =3 mutliply
+CCCC                     =4 divide
+CCCC                     =5 evaluate VALUE0 * 10**VALUE
+CCCC
+CCCC VALUE0 (I) REAL     Value of second argument
+CCCC
+CCCC NB. This subroutine not currently used in any CCCP4 programs. WRR, Sep 1993
+CCCC
+CCCC_END_DOCALC
+CCCC     .. Scalar Arguments ..
+CCC      REAL                 VALUE,VALUE0
+CCC      INTEGER              OPER
+CCCC     ..
+CCCC     .. Local Scalars ..
+CCC      INTEGER              DIVIDE,EENOTN,MINUS,MULT,PLUS
+CCCC     ..
+CCCC     .. Intrinsic Functions ..
+CCC      INTRINSIC            ABS
+CCCC     ..
+CCCC     .. Data statements ..
+CCC      DATA                 PLUS,MINUS,MULT,DIVIDE,EENOTN/1,2,3,4,5/
+CCCC     ..
+CCCC
+CCCC
+CCC      IF (OPER.EQ.PLUS) DOCALC = VALUE0 + VALUE
+CCC      IF (OPER.EQ.MINUS) DOCALC = VALUE0 - VALUE
+CCC      IF (OPER.EQ.MULT) DOCALC = VALUE0*VALUE
+CCCC
+CCCC
+CCC      IF (OPER.EQ.DIVIDE) THEN
+CCC          IF (VALUE.NE.0.0) DOCALC = VALUE0/VALUE
+CCC          IF (VALUE.EQ.0.0) DOCALC = 0.0
+CCC      END IF
+CCCC
+CCCC
+CCC      IF (OPER.EQ.EENOTN) THEN
+CCC          IF (ABS(VALUE).LE.76.0) DOCALC = VALUE0* (10.0**VALUE)
+CCC          IF (ABS(VALUE).GT.76.0) DOCALC = 0.0
+CCC      END IF
+CCCC
+CCCC
+CCC      END
 C
 C_BEGIN_SBLANK
 C     ==============================
@@ -1642,126 +1468,113 @@ C
          ARRAY(I)=' '
 10     CONTINUE
 C
-C
       RETURN
       END
-C
-C
-C_BEGIN_GTCFLD
-C     ====================================================
-      SUBROUTINE GTCFLD(NFIELD,ITEXT,NCHAR,MIN,MAX,IGFLAG)
-C     ====================================================
-C
-C---- This subroutine finds the minimum and maximum character 
-C     numbers in a packed text string for a requested field number. 
-C     The character fields are assumed to be separated by spaces
-C
-C
-C---- Arguments: 
-C
-C NFIELD (I) INTEGER            The number of the field to be retrieved
-C
-C ITEXT  (I) CHARACTER*1(NCHAR) Array containing the packed character string
-C                               to be interpreted
-C
-C NCHAR  (I) INTEGER            The no. of characters in the text string
-C
-C MIN    (O) INTEGER            The no. of the first character
-C                               in the requested field
-C
-C MAX    (O) INTEGER            The no. of the final character
-C                               in the requested field
-C
-C IGFLAG (O) INTEGER            = -1 blank field found (end of text string)
-C
-C
-C NB. Not currently called by anything in ccp4. WRR, Sep 1993
-C
-C_END_GTCFLD
-C
-      CHARACTER*1 ITEXT(NCHAR)
-C
-C---- initialisations
-C
-      IGFLAG=0
-      IFIELD=0
-      I=0
-      MIN=0
-      MAX=NCHAR
-C
-C---- skip spaces up to start of next field
-C
-10    I=I+1
-C
-C
-      IF(I.GT.NCHAR) THEN
-       IGFLAG = -1
-       RETURN 
-       ENDIF
-C
-C
-      IF(ITEXT(I).EQ.' ')GO TO 10
-C
-C---- character field found
-C
-      IFIELD=IFIELD+1
-      MIN=I
-C
-C---- search for end of the character field
-C
-20    I=I+1
-      IF(I.GT.NCHAR)GO TO 100
-      IF(ITEXT(I).NE.' ')GO TO 20
-C
-C---- end of character field found.  see if required field
-C     has been found
-C
-      IF(IFIELD.NE.NFIELD)GO TO 10
-      MAX=I-1
-      RETURN
-C
-C---- end of string reached
-C
-100   IF(IFIELD.NE.NFIELD) THEN
-            IGFLAG=-1
-            RETURN 
-            END IF
-      RETURN
-      END
-C
-C
-C_BEGIN_CPYCHR
-C     ========================================
-      SUBROUTINE CPYCHR(STRINGA,STRINGB,NCHAR)
-C     ========================================
-C---- Copy nchar characters from character array b to a
-C
-C---- Arguments:
-C
-C STRINGA (O) CHARACTER*1(*)  Array to copy to
-C
-C STRINGB (I) CHARACTER*1(*)  Array to copy from
-C
-C NCHAR   (I) INTEGER         Number of characters to copy
-C
-C
-C NB. Not currently called by anything in ccp4. WRR, Sep 1993
-
-C
-C_END_CPYCHR
-C
-      INTEGER NCHAR
-      CHARACTER*1 STRINGA(*),STRINGB(*)
-C
-C
-      DO 10 I=1,NCHAR
-      STRINGA(I)=STRINGB(I)
-10    CONTINUE
-C
-C
-      RETURN
-      END
-C
+CCCC
+CCCC_BEGIN_GTCFLD
+CCCC     ====================================================
+CCC      SUBROUTINE GTCFLD(NFIELD,ITEXT,NCHAR,MIN,MAX,IGFLAG)
+CCCC     ====================================================
+CCCC
+CCCC---- This subroutine finds the minimum and maximum character 
+CCCC     numbers in a packed text string for a requested field number. 
+CCCC     The character fields are assumed to be separated by spaces
+CCCC
+CCCC---- Arguments: 
+CCCC
+CCCC NFIELD (I) INTEGER            The number of the field to be retrieved
+CCCC
+CCCC ITEXT  (I) CHARACTER*1(NCHAR) Array containing the packed character string
+CCCC                               to be interpreted
+CCCC
+CCCC NCHAR  (I) INTEGER            The no. of characters in the text string
+CCCC
+CCCC MIN    (O) INTEGER            The no. of the first character
+CCCC                               in the requested field
+CCCC
+CCCC MAX    (O) INTEGER            The no. of the final character
+CCCC                               in the requested field
+CCCC
+CCCC IGFLAG (O) INTEGER            = -1 blank field found (end of text string)
+CCCC
+CCCC NB. Not currently called by anything in ccp4. WRR, Sep 1993
+CCCC
+CCCC_END_GTCFLD
+CCCC
+CCC      CHARACTER*1 ITEXT(NCHAR)
+CCCC
+CCCC---- initialisations
+CCCC
+CCC      IGFLAG=0
+CCC      IFIELD=0
+CCC      I=0
+CCC      MIN=0
+CCC      MAX=NCHAR
+CCCC
+CCCC---- skip spaces up to start of next field
+CCCC
+CCC10    I=I+1
+CCCC
+CCC      IF(I.GT.NCHAR) THEN
+CCC       IGFLAG = -1
+CCC       RETURN 
+CCC       ENDIF
+CCCC
+CCC      IF(ITEXT(I).EQ.' ')GO TO 10
+CCCC
+CCCC---- character field found
+CCCC
+CCC      IFIELD=IFIELD+1
+CCC      MIN=I
+CCCC
+CCCC---- search for end of the character field
+CCCC
+CCC20    I=I+1
+CCC      IF(I.GT.NCHAR)GO TO 100
+CCC      IF(ITEXT(I).NE.' ')GO TO 20
+CCCC
+CCCC---- end of character field found.  see if required field
+CCCC     has been found
+CCCC
+CCC      IF(IFIELD.NE.NFIELD)GO TO 10
+CCC      MAX=I-1
+CCC      RETURN
+CCCC
+CCCC---- end of string reached
+CCCC
+CCC100   IF(IFIELD.NE.NFIELD) THEN
+CCC            IGFLAG=-1
+CCC            RETURN 
+CCC            END IF
+CCC      END
+CCCC
+CCCC_BEGIN_CPYCHR
+CCCC     ========================================
+CCC      SUBROUTINE CPYCHR(STRINGA,STRINGB,NCHAR)
+CCCC     ========================================
+CCCC---- Copy nchar characters from character array b to a
+CCCC
+CCCC---- Arguments:
+CCCC
+CCCC STRINGA (O) CHARACTER*1(*)  Array to copy to
+CCCC
+CCCC STRINGB (I) CHARACTER*1(*)  Array to copy from
+CCCC
+CCCC NCHAR   (I) INTEGER         Number of characters to copy
+CCCC
+CCCC NB. Not currently called by anything in ccp4. WRR, Sep 1993
+CCC
+CCCC
+CCCC_END_CPYCHR
+CCCC
+CCC      INTEGER NCHAR
+CCC      CHARACTER*1 STRINGA(*),STRINGB(*)
+CCCC
+CCCC
+CCC      DO 10 I=1,NCHAR
+CCC      STRINGA(I)=STRINGB(I)
+CCC10    CONTINUE
+CCC      END
 C
 C_BEGIN_CMATCH
 C     ==============================================
@@ -1784,52 +1597,44 @@ C
       CHARACTER*(*) STRING1,STRING2
       INTEGER NCHAR
 C
-C
       IF(STRING1(1:NCHAR).EQ.STRING2(1:NCHAR)) THEN
           CMATCH=.TRUE.
       ELSE
           CMATCH=.FALSE.
       ENDIF
-      RETURN
       END
-C
-C
-C_BEGIN_CMOVE
-C     =======================================
-      SUBROUTINE CMOVE(STRINGA,STRINGB,NCHAR)
-C     =======================================
-C---- Copy nchar characters from stringb to stringa :  
-C     (only used for character data  IN FORTRAN77
-C
-C---- Arguments:
-C
-C STRINGA (O) CHARACTER*1(*)  Array to copy to
-C
-C STRINGB (I) CHARACTER*1(*)  Array to copy from
-C
-C NCHAR   (I) INTEGER         Number of characters to copy
-C
-C NB. Not currently called by anything in ccp4. WRR, Sep 1993
-C NB. Alternative is CMATCH
-C
-C_END_CMOVE
-C
-C
-      CHARACTER*1 STRINGA(*),STRINGB(*)
-      INTEGER NCHAR
-C
-C
-      IF(NCHAR.LE.0)RETURN
-C
-C
-      DO 10 I=1,NCHAR
-      STRINGA(I)=STRINGB(I)
-10    CONTINUE
-C
-C
-      RETURN
-      END
-C
+CCCC
+CCCC_BEGIN_CMOVE
+CCCC     =======================================
+CCC      SUBROUTINE CMOVE(STRINGA,STRINGB,NCHAR)
+CCCC     =======================================
+CCCC
+CCCC---- Copy NCHAR characters from STRINGB to STRINGA
+CCCC
+CCCC---- Arguments:
+CCCC
+CCCC STRINGA (O) CHARACTER*1(*)  Array to copy to
+CCCC
+CCCC STRINGB (I) CHARACTER*1(*)  Array to copy from
+CCCC
+CCCC NCHAR   (I) INTEGER         Number of characters to copy
+CCCC
+CCCC NB. Not currently called by anything in ccp4. WRR, Sep 1993
+CCCC NB. Alternative is CMATCH
+CCCC
+CCCC_END_CMOVE
+CCCC
+CCC      CHARACTER*1 STRINGA(*),STRINGB(*)
+CCC      INTEGER NCHAR
+CCCC
+CCC      IF(NCHAR.LE.0)RETURN
+CCCC
+CCC      DO 10 I=1,NCHAR
+CCC      STRINGA(I)=STRINGB(I)
+CCC10    CONTINUE
+CCCC
+CCC      RETURN
+CCC      END
 C
 C_BEGIN_CHKKEY
 C     ========================================
@@ -1854,6 +1659,8 @@ C                                  = -1 if ambiguous
 C
 C_END_CHKKEY
 C
+      INTEGER NFMAX
+      PARAMETER (NFMAX=20)
 C     .. Scalar Arguments ..
       INTEGER NWORDS, IKEY
       CHARACTER KEY*(*)
@@ -1862,8 +1669,8 @@ C     .. Array Arguments ..
       CHARACTER WORDS(NWORDS)*(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER LK,I,L,NFOUND,NFMAX,ISTERR,IFGERR
-      CHARACTER OUTWIN*6,LINERR*200
+      INTEGER LK,I,L,NFOUND
+      CHARACTER LINERR*200
 C     ..
 C     .. Local Arrays ..
       INTEGER LFOUND(20)
@@ -1875,12 +1682,6 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL PUTLIN,LERROR
 C     ..
-C     .. Scalars in Common ..
-      CHARACTER STROUT*800
-C     ..
-      SAVE
-C
-      DATA NFMAX/20/
 C
 C---- Get minimum significant length of KEY 
 C     ( function LENSTR returns the length
@@ -1898,26 +1699,21 @@ C
 C
       IF(KEY(1:1).EQ.'?') THEN
 C  
-       STROUT = ' Possible keywords are:'
-C
 C           ****************
-       CALL PUTLIN(STROUT,'HLPWIN')
+       CALL PUTLIN(' Possible keywords are:','HLPWIN')
 C           ****************
 C
        DO 10 JDO = 1,NWORDS
-        STROUT = WORDS(JDO)
 C
 C            ****************
-        CALL PUTLIN(STROUT,'HLPWIN')
+        CALL PUTLIN(WORDS(JDO),'HLPWIN')
 C            ****************
 C
 10      CONTINUE
 C
-C
             IKEY=0
             RETURN
       ENDIF
-C
 C
       NFOUND=0
 C
@@ -1938,22 +1734,19 @@ C
       IF(INDEX(WORDS(I),KEY(1:L)).EQ.1) THEN
             NFOUND=NFOUND+1
 C
-C
             IF(NFOUND.GT.NFMAX) THEN
           WRITE (LINERR,FMT='(A,I5)') 
      +  ' CHKKEY: too many ambiguities : ',NFMAX
-          ISTERR = 1
-          IFGERR = 0
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(1,0,LINERR)
 C              ****************************
 C
                   NFOUND=NFMAX
             ELSE
                   LFOUND(NFOUND)=I
             ENDIF
-      ENDIF
+       ENDIF
 20     CONTINUE
 C
 C---- If keyword is ambiguous, list possibilities
@@ -1963,18 +1756,15 @@ C
      +   ' Keyword ',
      +   KEY(1:LK),
      +  ' is ambiguous: possibilities are -'
-          ISTERR = 1
-          IFGERR = 0
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(1,0,LINERR)
 C              ****************************
 C
        DO 30 JDO = 1,NWORDS
-        STROUT = WORDS(JDO)
 C
 C            ****************
-        CALL PUTLIN(STROUT,'HLPWIN')
+        CALL PUTLIN(WORDS(JDO),'HLPWIN')
 C            ****************
 C
 30      CONTINUE
@@ -1985,10 +1775,7 @@ C---- Success if only 1 found
 C
             IKEY=LFOUND(1)
       ENDIF
-C
-      RETURN
       END
-C
 C
 C_BEGIN_PUTLIN
 C     ================================
@@ -2019,11 +1806,8 @@ C     .. External Functions ..
       EXTERNAL LENSTR
 C     ..
 C     .. Data statements ..
-C
-C
       DATA LUNOUT/6/
 C     ..
-C
 C
       LL = LENSTR(STROUT)
       IF (LL.GE.133) THEN
@@ -2049,9 +1833,7 @@ C---- Format statements
 C
  6000 FORMAT (' ',A)
 C
-C
       END
-C
 C
 C_BEGIN_BLANK
 C     ===============================
@@ -2070,10 +1852,7 @@ C_END_BLANK
 C
 C     .. Scalar Arguments ..
       INTEGER NLINES
-      CHARACTER OUTWIN*6
-C     ..
-C     .. Scalars in Common ..
-      CHARACTER STROUT*800
+      CHARACTER OUTWIN*(*)
 C     ..
 C     .. Local Scalars ..
       INTEGER JDO10
@@ -2081,23 +1860,15 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL PUTLIN
 C     ..
-      SAVE
-C
-C
-      STROUT = ' '
-C
 C
       DO 10 JDO10 = 1,MAX(NLINES,1)
 C
 C            **************
-        CALL PUTLIN(STROUT,OUTWIN)
+        CALL PUTLIN(' ',OUTWIN)
 C            **************
 C
    10 CONTINUE
-C
-C
       END
-C
 C
 C_BEGIN_LERROR
 C     =======================================
@@ -2122,9 +1893,6 @@ C     .. Scalar Arguments ..
       INTEGER ERRFLG,IFAIL
       CHARACTER ERRMSG* (*)
 C     ..
-C     .. Scalars in Common ..
-      CHARACTER STROUT*800
-C     ..
 C     .. External Functions ..
       INTEGER LENSTR
       EXTERNAL LENSTR
@@ -2132,43 +1900,25 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL BLANK,PUTLIN
 C     ..
-      SAVE
-C
 C
       IF (ERRFLG.EQ.1) THEN
 C
 C---- Output a warning message and return
 C
-C            *****************
         CALL BLANK('ERRWIN',1)
-C            *****************
-C
-        STROUT = '***  Warning'
-C
-C            ****************
-        CALL PUTLIN(STROUT,'ERRWIN')
-C            ****************
-C
-        WRITE (STROUT,FMT='(A)') ERRMSG(1:LENSTR(ERRMSG))
-C
-C            ****************
-        CALL PUTLIN(STROUT,'ERRWIN')
+        CALL PUTLIN('***  Warning','ERRWIN')
+        CALL PUTLIN(ERRMSG,'ERRWIN')
         CALL BLANK('ERRWIN',1)
-C            *****************
 C
       ELSE IF (ERRFLG.EQ.2) THEN
 C
 C---- Output a fatal message, and quit or return depending on IFAIL
 C
         CALL BLANK('ERRWIN',1)
-        STROUT = '***  Error'
-        CALL PUTLIN(STROUT,'ERRWIN')
-        WRITE (STROUT,FMT='(A)') ERRMSG(1:LENSTR(ERRMSG))
-        CALL PUTLIN(STROUT,'ERRWIN')
+        CALL PUTLIN('***  Error','ERRWIN')
+        CALL PUTLIN(ERRMSG,'ERRWIN')
         IF (IFAIL.LT.0) THEN
-          STROUT = '*** Program Terminated '
-          CALL PUTLIN(STROUT,'ERRWIN')
-          call ccperr(1,' stop in parser 7733')
+          call ccperr(1,'*** Program Terminated ')
         ELSE
           CALL BLANK('ERRWIN',1)
         END IF
@@ -2178,20 +1928,13 @@ C
 C---- Bad errflg, output message and continue
 C
         CALL BLANK('ERRWIN',1)
-        STROUT = '*** Unrecognised  error'
-        CALL PUTLIN(STROUT,'ERRWIN')
-        WRITE (STROUT,FMT='(A)') ERRMSG(1:LENSTR(ERRMSG))
-        CALL PUTLIN(STROUT,'ERRWIN')
-        STROUT = 'Program continuing ...'
-        CALL PUTLIN(STROUT,'ERRWIN')
+        CALL PUTLIN('*** Unrecognised  error','ERRWIN')
+        CALL PUTLIN(ERRMSG,'ERRWIN')
+        CALL PUTLIN('Program continuing ...','ERRWIN')
         CALL BLANK('ERRWIN',1)
 C
       END IF
-C
-C
       END
-C
-C
 C
 C
 C_BEGIN_RDSYMM
@@ -2246,9 +1989,6 @@ C
       INTEGER NUMSGP,NSYM,NSYMP
       REAL RSYM(4,4,*)
 C     
-      CHARACTER*100 STROUT
-C     
-C     
 C---- Look at next field on line: this can be
 C     (a) a space-group number
 C     (b) a space-group name, ie a string beginning P,I,R,F,A,B or C
@@ -2258,15 +1998,12 @@ C---- for cases (a) & (b), this is a single field:
 C     case (c) is more than 1 field
 C     
       IF (JTOK.GT.NTOK) THEN
-         WRITE (STROUT,FMT='(A)') ' No symmetry data !!!'
-         CALL  PUTLIN(STROUT,'CURWIN')
+         CALL  PUTLIN(' No symmetry data !!!','CURWIN')
       ELSE
          IF (JTOK.EQ.NTOK) THEN
             SPGNAM = ' '
             IF (NSYM.GT.0) THEN
-               WRITE (STROUT,FMT='(A)')
-     +             'Warning: symmetry already given'
-               CALL  PUTLIN(STROUT,'CURWIN')
+               CALL  PUTLIN('Warning: symmetry already given','CURWIN')
             ENDIF
 C     
 C---- A single field, see if it is a number or a string
@@ -2305,11 +2042,7 @@ C
 C     
          END IF
       END IF
-C     
-      RETURN
       END
-C     
-C     
 C     
 C_BEGIN_RDHEAD
 C     ======================================================
@@ -2366,8 +2099,6 @@ C
       CHARACTER*(*) LINE
       INTEGER MTZPRT,MTZBPR
 C     
-      CHARACTER*100 STROUT
-C     
 C     Locals
       INTEGER I,IKEY
       CHARACTER KEY*12
@@ -2389,9 +2120,9 @@ C     Loop keywords
             CALL CCPUPC(KEY)
             CALL CHKKEY(KEY,KEYS,NKEYS,IKEY)
             IF (IKEY .LE. 0) THEN
-               WRITE(STROUT,FMT='(A,A)')
-     $      'Unrecognized or ambiguous subkeyword to HEADER: ',KEY
-               CALL PUTLIN(STROUT,'CURWIN')
+              CALL PUTLIN
+     +             ('Unrecognized or ambiguous subkeyword to HEADER: '
+     +             // KEY,'CURWIN')
             ELSE
                IF (IKEY .EQ. 1) MTZPRT = 0
                IF (IKEY .EQ. 2) MTZPRT = 1
@@ -2403,8 +2134,6 @@ C     Loop keywords
             ENDIF
  10      CONTINUE 
       ENDIF
-C     
-      RETURN
       END
 C     
 C_BEGIN_RDCELL
@@ -2426,7 +2155,6 @@ C   FVALUE (I) REAL(*)     Array of numbers. (from PARSER)
 C
 C   NTOK   (I) INTEGER     The number of fields parsed. (from PARSER)
 C
-C
 C   CELL   (O) REAL(6)     Cell parameters a, b, c, alpha, beta, gamma.
 C
 C_END_RDCELL
@@ -2438,11 +2166,9 @@ C     .. Array Arguments ..
       REAL              CELL(6),FVALUE(*)
       INTEGER           ITYPE(*)
 C     ..
-C     ..
 C     .. External Subroutines ..
       EXTERNAL          GTPREA
 C     ..
-C     
 C     
       CELL(4) = 90.0
       CELL(5) = 90.0
@@ -2459,9 +2185,6 @@ C     *********************************************
       IF (ITOK+4.LE.NTOK) CALL GTPREA(ITOK+4,CELL(5),NTOK,ITYPE,FVALUE)
       IF (ITOK+5.LE.NTOK) CALL GTPREA(ITOK+5,CELL(6),NTOK,ITYPE,FVALUE)
 C     *********************************************
-C     
-C     
-      RETURN
       END
 C     
 C     
@@ -2601,7 +2324,6 @@ C  FVALUE (I) REAL(*)       Array of numbers. (from PARSER)
 C
 C  NTOK   (I) INTEGER       The number of fields parsed. (from PARSER)
 C
-C
 C  LSPRGI (I) CHARACTER(MCOLS)*30  Program label strings.
 C                                  L(abel) S(tring) PRG(ram) I(nput)
 C
@@ -2624,8 +2346,6 @@ C
       CHARACTER LSPRGI(MCOLS)*30,CWORK*30
       REAL SCAL,BB
 C     
-      CHARACTER*100 STROUT
-C     
       CWORK = LINE(IBEG(ITOK) :IEND(ITOK))
       DO 10 JDO = 1,NLPRGI
 C     
@@ -2633,16 +2353,13 @@ C
 C     
  10   CONTINUE
 C     
-      STROUT = ' **** Error input assignment does not match'//
-     +               ' program labels'
-C     
 C     ***********************
-      CALL PUTLIN(STROUT,'ERRWIN')
+      CALL PUTLIN('**** Error input assignment does not match'//
+     +     ' program labels','ERRWIN')
 C     ***********************
 C     
       ITOK = -2
       RETURN
-C     
 C     
  20   ILPRGI = JDO
       IF(ITOK+1.GT.NTOK) THEN
@@ -2672,7 +2389,6 @@ C
 C     
       RETURN
       END 
-C
 C
 C
 C_BEGIN_RDRESL
@@ -2857,11 +2573,7 @@ C
             SMIN = STEM
          ENDIF
       ENDIF
-C     
-C     
-      RETURN
       END
-C     
 C
 C_BEGIN_GTTREA
 C     =============================================
@@ -2893,10 +2605,6 @@ C  FVALUE (I) REAL(*)     Array of numbers to be extracted (from PARSER)
 C
 C_END_GTTREA
 C
-C     .. Parameters ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
-C     ..
 C     .. Scalar Arguments ..
       REAL X
       INTEGER N,NTOK,LFLAG
@@ -2906,13 +2614,11 @@ C     .. Array arguments ..
       INTEGER ITYP(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER ISTERR,IFGERR
       CHARACTER LINERR*200
 C     ..
 C     .. External Subroutines ..
       EXTERNAL LERROR
 C     ..
-C
 C
       LFLAG = 0
       IF (N.LE.NTOK) THEN
@@ -2921,11 +2627,9 @@ C
         ELSE IF (ITYP(N).EQ.1) THEN
            WRITE (LINERR,FMT='(A,I4)') 
      +    ' Illegal number in field ',N
-          ISTERR = 1
-          IFGERR = 0
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(1,0,LINERR)
 C              ****************************
 C
           LFLAG = +1
@@ -2933,7 +2637,6 @@ C
       ELSE
          LFLAG = -1
       END IF
-C
 C
       END
 C
@@ -2968,10 +2671,6 @@ C
 C_END_GTTINT
 C
 C      IMPLICIT NONE
-C     .. Parameters ..
-      INTEGER NPARM
-      PARAMETER (NPARM=200)
-C     ..
 C     .. Scalar Arguments ..
       INTEGER I,N,NTOK,LFLAG
 C     ..
@@ -2980,7 +2679,6 @@ C     .. Arrays arguments ..
       INTEGER ITYP(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER ISTERR,IFGERR
       CHARACTER LINERR*100
 C     ..
 C     .. External Subroutines ..
@@ -2990,19 +2688,15 @@ C     .. Intrinsic Functions ..
       INTRINSIC NINT
 C     ..
 C
-C
       LFLAG = 0
       IF (N.LE.NTOK) THEN
         IF (ITYP(N).EQ.2) THEN
           I = NINT(FVALUE(N))
         ELSE IF (ITYP(N).EQ.1) THEN
-           WRITE (LINERR,FMT='(A,I4)') 
-     +    ' Illegal number in field ',N
-          ISTERR = 1
-          IFGERR = 0
+           WRITE (LINERR,FMT='(A,I4)') ' Illegal number in field ',N
 C
 C              ****************************
-          CALL LERROR(ISTERR,IFGERR,LINERR)
+          CALL LERROR(1,0,LINERR)
 C              ****************************
 C
           LFLAG = +1
@@ -3010,6 +2704,4 @@ C
       ELSE
          LFLAG = -1
       END IF
-C
-C
       END
