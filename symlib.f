@@ -4784,7 +4784,7 @@ C     .. Scalar Arguments ..
       CHARACTER NAMPG*(*), LAUNAM*(*)
 C     ..
       INTEGER LPG
-      CHARACTER LOCNAM*12
+      CHARACTER LOCNAM*12, ERRLINE*80
       INTEGER LENSTR
       EXTERNAL LENSTR
       INTEGER HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
@@ -4967,8 +4967,11 @@ C     pg6bar  6/m        and k> 0 if h>0
         LRNG0 = 0
       END IF
 C     
-      IF (NLAUE.EQ.0)           CALL CCPERR(1,
-     +  'You have not defined PG name properly')
+      IF (NLAUE.EQ.0) THEN
+        WRITE(ERRLINE,*) 'PGNLAU: point group name ',
+     +    NAMPG(1:LENSTR(NAMPG)), ' not recognised.'
+        CALL CCPERR(1,ERRLINE)
+      ENDIF
 C     
       END
 C
@@ -6002,7 +6005,7 @@ C
       INTEGER I,J
 C
       INTEGER NUMSGP
-      PARAMETER (NUMSGP=89)
+      PARAMETER (NUMSGP=105)
       REAL ONE,HALF,THRD,TWTD,SIXT,QUAR,EIGH,TWLT,ROUND,ROUND2
       REAL ONEL,HALFL,THRDL,SIXTL,QUARL
       PARAMETER (ROUND=0.00001, ROUND2=2.0*ROUND)
@@ -6027,7 +6030,9 @@ C  Space group numbers
      $ 151, 152, 153,  154, 155, 162, 164,  166, 168, 169, 170,  171,  
      $ 172, 173, 175,  177, 178, 179, 180,  181, 182, 191, 195,  196,  
      $ 197, 198, 199,  200, 202, 204, 207,  208, 209, 210, 211,  212,  
-     $ 213, 214, 221,  225, 229/
+     $ 213, 214, 221,  225, 229, 1003, 1004, 1005, 1017, 1020, 
+     $ 1021, 1022, 1023, 1094, 1197, 2005, 2017, 2018, 3004, 
+     $ 3005, 3018/
 C
       DATA ((ASULIM(II,JJ),II=1,3),JJ=1,73)/
 C        1:  P1          2:  P-1         3:  P2            4:  P21
@@ -6037,7 +6042,7 @@ C        5:  C2         10:  P2/m       16:  P222         17:  P2221
 C       18: P21212    1018: P21212      19: P212121       20:C2221
      $ ONEL,QUAR,ONEL, ONEL,QUAR,ONEL, ONEL,ONEL,QUAR, HALF,QUAR,ONEL,
 C       21:  C222       22:  F222       23:  I222         24: I212121
-     $ HALF,QUAR,ONEL, QUAR,QUAR,ONEL, HALF,QUAR,ONE, HALF,QUAR,ONEL,
+     $ HALF,QUAR,ONEL, QUAR,QUAR,ONEL, HALF,QUAR,ONE, HALF,HALF,HALF,
 C       47:  Pmmm       65:  Cmmm       69:  Fmmm         71:  Immm
      $ HALF,HALF,HALF, HALF,QUAR,HALF, QUAR,QUAR,HALF, HALF,QUAR,HALF,
 C       75:  P4         76:  P41        77:  P42          78:  P43
@@ -6076,9 +6081,17 @@ C      204: Im-3       207: P432       208: P4232        209: F432
 C      210: F4132      211: I432       212: P4332        213: P4132
      $ HALF,ONEL,EIGH, HALF,HALF,QUAR, ONEL,ONEL,EIGH, ONEL,ONEL,EIGH,
 C      214: I4132      221: Pm-3m      225: Fm-3m        229: Im-3m
-     $ HALF,ONEL,EIGH, HALF,HALF,HALF, HALF,QUAR,QUAR, HALF,HALF,QUAR/
+     $ HALF,ONEL,EIGH, HALF,HALF,HALF, HALF,QUAR,QUAR, HALF,HALF,QUAR,
+C     1003: P2        1004: P1121     1005: B2          1017: P2122
+     $ HALF,ONEL,ONEL, ONEL,ONEL,HALFL, ONEL,HALF,HALFL, ONEL,HALF,HALF,
+C     1020: C2221a    1021: C222a     1022: F222a       1023: I222a       
+     $ QUAR,HALF,ONEL, ONEL,QUAR,HALF, QUAR,QUAR,ONEL, HALF,ONEL,QUAR,
+C     1094: P42212a   1197: I23a      2005: A2          2017: P2212
+     $ HALF,HALF,HALF, ONEL,ONEL,HALF, ONEL,HALF,HALFL, HALF,ONEL,HALF,
+C     2018: P21221    3004: I21       3005: C21         3018: P22121
+     $ QUAR,ONEL,ONEL, ONEL,HALFL,ONEL, QUAR,ONEL,ONEL, ONEL,ONEL,QUAR/
 C
-      DO 10, J=1,NUMSGP
+      DO 10 J=1,NUMSGP
          IF (LSPGRP .EQ. NSPGRP(J)) GO TO 20
  10   CONTINUE
 C
@@ -6330,7 +6343,7 @@ C       18: P21212    1018: P21212      19: P212121       20:C2221
 CCP4 $ ONEL,QUAR,ONEL, ONEL,QUAR,ONEL, ONEL,ONEL,QUAR, HALF,QUAR,ONEL,
 C       21:  C222       22:  F222       23:  I222         24: I212121
      $ QUAR,HALF,ONE,  ONE,QUAR,QUAR,  HALF,HALF,HALF, HALF,HALF,HALF,
-CCP4 $ HALF,QUAR,ONEL, QUAR,QUAR,ONEL, HALF,QUAR,ONE, HALF,QUAR,ONEL,
+CCP4 $ HALF,QUAR,ONEL, QUAR,QUAR,ONEL, HALF,QUAR,ONE, HALF,HALF,HALF,
 C       47:  Pmmm       65:  Cmmm       69:  Fmmm         71:  Immm
      $ half,half,half, half,quar,half, quar,quar,half, half,quar,half,
 CCP4 $ HALF,HALF,HALF, HALF,QUAR,HALF, QUAR,QUAR,HALF, HALF,QUAR,HALF,
