@@ -13,7 +13,7 @@ C        Calls to QMODE so that subsequent Q... calls count
 C        items rather than bytes. This complicates things,
 C        since the header is counted in full words, the
 C        symmetry operations in characters, and the map
-C        in variable items, but it should make it more portabl
+C        in variable items, but it should make it more portable
 C        Phil Evans 2/5/84
 C
 C---- CCP4 VERSION      JOHN CAMPBELL,  JAN 1985
@@ -52,7 +52,7 @@ C     binary direct access routines DISKIO SUBROUTINES
 C     (QOPEN,QCLOSE,QREAD,QWRITE,QSEEK,QBACK,QSKIP).
 C
 C              CCPLIB SUBROUTINES CCPBYT, CCPMDE, CCPMVB,
-C              UXSUPPORT.C routines VAXVMS
+C              unix.m4 routines VAXVMS
 C              VMSSUPPORT.FOR routines VAXVMS
 C
 C
@@ -991,7 +991,7 @@ C     .. Arrays in Common ..
       INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ
 C     ..
 C     .. Local Scalars ..
-      INTEGER LSEC,NBHDR,NREC
+      INTEGER LSEC,NREC
 C     ..
 C     .. External Subroutines ..
       EXTERNAL QSEEK
@@ -1004,9 +1004,6 @@ C     .. Common blocks ..
 C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MOHDR/
-C     ..
-C     .. Data statements ..
-      DATA NBHDR/256/
 C     ..
 C
 C---- Section length in items
@@ -1073,18 +1070,8 @@ C     .. Array Arguments ..
       REAL CELL(6)
       INTEGER IUVW(3),MXYZ(3)
 C     ..
-C     .. Scalars in Common ..
-      REAL AMAX,AMEAN,AMIN,ARMS
-      INTEGER ISPG,LSKFLG,MODE,NC,NC1,NLAB,NR,NR1,NS,NS1,NSYMBT
-C     ..
-C     .. Arrays in Common ..
-      REAL CEL,SKWMAT,SKWTRN
-      INTEGER ITMHDR,ITMSC1,JSYMBT,JUNK,LABELS,LSTRM,MAPCRS,MODES,NC1S,
-     +        NCHITM,NCS,NR1S,NRS,NS1S,NSS,NXYZ
-C     ..
 C     .. Local Scalars ..
       INTEGER I,IER,J,KMODE,NBHDR,NCHHDR,NFILSZ,NW2
-      CHARACTER FILE*255
 
 C     ..
 C     .. Error and print control ..
@@ -1094,30 +1081,11 @@ C     .. Error and print control ..
 C     ..
 C     .. Local Arrays ..
       REAL HEADER(256)
-      CHARACTER LXYZ(3)*1
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QMODE,QQINQ,QOPEN,QREAD,QSEEK,LENSTR
+      EXTERNAL MRDHDS
       INTEGER LENSTR
 C     ..
-C     .. Common blocks ..
-      COMMON /MIHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
-     +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
-     +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCS(12),NRS(12),NSS(12),
-     +       MODES(12),NC1S(12),NR1S(12),NS1S(12),JSYMBT(12),NCHITM(12),
-     +       ITMHDR(12),ITMSC1(12)
-      COMMON /MSTRM/LSTRM(12)
-C     ..
-C     .. Equivalences ..
-      EQUIVALENCE (NC,HEADER(1))
-
-C     ..
-C     .. Save statement ..
-      SAVE /MSTRM/,/MIHDR/,FILE
-C     ..
-C     .. Data statements ..
-      DATA NBHDR/256/
-      DATA LXYZ/'X','Y','Z'/
 
       IFAIL  = 0
       IPRINT = 1
@@ -1435,7 +1403,7 @@ C     .. Arrays in Common ..
      +        NCHITM,NCS,NR1S,NRS,NS1S,NSS,NXYZ
 C     ..
 C     .. Local Scalars ..
-      INTEGER LSEC,NBHDR,NREC
+      INTEGER LSEC,NREC
 C     ..
 C     .. External Subroutines ..
       EXTERNAL QSEEK
@@ -1450,9 +1418,6 @@ C     .. Common blocks ..
 C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/
-C     ..
-C     .. Data statements ..
-      DATA NBHDR/256/
 C     ..
 C
 C---- Section length in items
@@ -1762,10 +1727,10 @@ C     .. Arrays in Common ..
       INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IFAIL,ISG,LDUM,NBHDR,NBLIN,NCLIN,NLIN
+      INTEGER I,IFAIL,ISG,LDUM,NBLIN,NCLIN,NLIN
 C     ..
 C     .. Local Arrays ..
-      INTEGER JLINE(20)
+      REAL JLINE(20)
 C     ..
 C     .. External Functions ..
       INTEGER NBYTXX
@@ -1782,9 +1747,6 @@ C     .. Common blocks ..
 C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MOHDR/
-C     ..
-C     .. Data statements ..
-      DATA NBHDR/256/
 C     ..
 C
       NCLIN = NBYTXX(20)
@@ -1910,7 +1872,7 @@ C     .. Local Scalars ..
       CHARACTER LINE*80
 C     ..
 C     .. Local Arrays ..
-      INTEGER JLINE(20)
+      REAL JLINE(20)
 C     ..
 C     .. External Functions ..
       INTEGER NBYTXX
@@ -2005,8 +1967,8 @@ C
 C---- Format statements
 C
  6000 FORMAT (/' Symmetry operations : ',A)
- 6002 FORMAT (/21X,'Symmetry matrix',I5,5X,3F10.5,5X,F10.5,
-     +       /2 (46X,3F10.5,5X,F10.5,/))
+C 6002 FORMAT (/21X,'Symmetry matrix',I5,5X,3F10.5,5X,F10.5,
+C     +       /2 (46X,3F10.5,5X,F10.5,/))
  6004 FORMAT (20A4)
  6006 FORMAT (/' **MAP FILE HANDLING ERROR**',//' **MSYMOP: ERROR ON R',
      +       'EADING SYMMETRY OPERATIONS FROM MAP FILE**',//' **PROGRA',
@@ -2045,7 +2007,7 @@ C     .. Local Scalars ..
       INTEGER I,IER,NBLIN,NIN,NLIN,NOUT
 C     ..
 C     .. Local Arrays ..
-      INTEGER LINE(20)
+      REAL LINE(20)
 C     ..
 C     .. External Functions ..
       INTEGER NBYTXX
