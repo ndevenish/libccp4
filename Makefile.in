@@ -102,6 +102,8 @@ $L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 
 test-lib : $(srcdir)/testlib.f $L(library.o) $L(unix.o) $L(ccplib.o) \
           $L(diskio.o)
+# titan special:
+	-(test -f /usr/lib/fortran/time.o && make '$L(time.o)') || true
 	$(RANLIB) $L
 
 # mosflm stuff, some of which we'd like to disown:

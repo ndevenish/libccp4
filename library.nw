@@ -580,7 +580,8 @@ int *result;
   name[Length] = '\0'; 
 #if defined (sgi) || defined (sun) || defined (__hpux) || \
     defined(_AIX) || defined(ultrix) || defined (__OSF1__) || \
-    defined (__osf__) || defined (__FreeBSD__) || defined (linux)
+    defined (__osf__) || defined (__FreeBSD__) || defined (linux) || \
+    defined (titan)
       /* putenv is the POSIX.1, draft 3 proposed mechanism */
       /* ESV seems to have it in the SysVile universe */
   temp = (char *) malloc (MAXFLEN);
@@ -1044,9 +1045,13 @@ of bytes read.
   int Lbuffer;
   char * buffer;
 #endif
-#if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
+#ifdef VMS
   void QREADC (iunit, buffer, result)
   struct dsc$descriptor_s *buffer;
+#endif
+#if CALL_LIKE_STARDENT
+  void QREADC (iunit, buffer, result)
+  struct Str_Desc *buffer;
 #endif
 #if CALL_LIKE_SUN
   void qreadc_ (iunit, buffer, result, Lbuffer)
@@ -1134,9 +1139,13 @@ stream \meta{iunit} in byte mode.
   int Lbuffer;
   char * buffer;
 #endif
-#if defined (VMS) || CALL_LIKE_STARDENT
+#if defined (VMS)
   void QWRITC (iunit, buffer)
   struct dsc$descriptor_s *buffer;
+#endif
+#if defined CALL_LIKE_STARDENT
+  void QWRITC (iunit, buffer)
+  struct Str_Desc *buffer;
 #endif
 #if CALL_LIKE_SUN
   void qwritc_ (iunit, buffer, Lbuffer)
