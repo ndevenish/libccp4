@@ -193,7 +193,7 @@ C     Check args:
       IF (ISTAT.LT.1 .OR. ISTAT.GT.6 .OR. ITYPE.LT.1 .OR. ITYPE.GT.4)
      +     THEN 
         IF (IFAIL.EQ.0) THEN
-          CALL CCPERR(LUNSTO (1),
+          CALL CCPERR(1,
      +         '**CCPOPN ERROR** Invalid parameters in call')
         ELSE
           WRITE (LUNSTO(1),
@@ -631,10 +631,10 @@ _hpux,1,
       ANSWER = 0
       IF (ISATTY(%VAL(FNUM(FLUN))) .EQ.1) ANSWER = 1],
 dnl (else)
-[      INTEGER ISATTY
+[      LOGICAL ISATTY
       EXTERNAL ISATTY
       ANSWER = 0
-      IF (ISATTY(FLUN) .EQ.1) ANSWER = 1])
+      IF (ISATTY(FLUN)) ANSWER = 1])
 C
       END
 C
