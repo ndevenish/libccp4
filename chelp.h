@@ -137,6 +137,41 @@ struct treenode {                       /* definition of a tree node .... */
 
 
 
+/**************************************************************************
+ * Prototype subroutines                                                  *
+ **************************************************************************/
+
+void read_input_file(FILE *in);
+
+void show_tree(FILE *in);
+
+void process_file(FILE *in);
+
+void manipulate_tree(struct treenode *tree);
+
+void read_input_file (FILE *fptr);
+
+void show_tree (FILE *fptr);
+
+void process_file (FILE *fptr);
+
+void insert_into_tree (int level, struct block *line);
+
+int show_children (struct list *node);
+
+struct treenode *create_node (struct block *line);
+
+struct list *join_node (struct treenode *ptr);
+
+void manipulate_tree (struct treenode *ptr);
+
+void list_topics (struct list *ptr);
+
+int get_response (struct list *ptr);
+
+
+ 
+
 
 
 
