@@ -176,6 +176,9 @@ C
       IF (FNAME.EQ.'/dev/null') THEN
         JSTAT = 1
       ELSE IF (FNAME.EQ.' ') THEN
+        ERRSTR = '(Q)QOPEN Logical name '//LNAME
+        ERRSTR(LENSTR(ERRSTR)+2:) = 'has not been assigned to a file'
+        CALL CCPERR(2,ERRSTR)
         FNAME = LNAME
       END IF
       IF (REWRIT.EQ.'UNKNOWN') 
