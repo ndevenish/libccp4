@@ -1778,6 +1778,7 @@ C
       END
 C
 C
+C
 C     =========================================================
       SUBROUTINE MSYMLB3(IST,LSPGRP,NAMSPG_CIF,NAMSPG_CIFS,
      +                   NAMPG,NSYMP,NSYM,RlSymmMatrx)
@@ -1823,7 +1824,7 @@ C     .. Parameters ..
 C     ..
 C     .. Scalar Arguments ..
       INTEGER IST,LSPGRP,NSYM,NSYMP
-      CHARACTER NAMPG* (*),NAMSPG_CIF* (*),NAMSAV*20,NAMSPG_CIFS*20
+      CHARACTER NAMPG* (*),NAMSPG_CIF* (*),NAMSPG_CIFS* (*),NAMSAV*20
 C     ..
 C     .. Array Arguments ..
       REAL RlSymmMatrx(4,4,*),ROTCHK(4,4)
@@ -1851,8 +1852,24 @@ C     ..
 C
       NTOK = 0
       NSYM = 0
+C  Remove all spaces from SG name
+C
+      ILEN = LENSTR(NAMSPG_CIF)
+C
+         NAMSPG_CIFS = NAMSPG_CIF(1:1)
+
+         IF(ILEN.GE.2) THEN
+          J = 1
+          DO I = 2,ILEN
+           IF( NAMSPG_CIF(I:I).NE.' ') THEN
+            NAMSPG_CIFS = NAMSPG_CIFS(1:J)//NAMSPG_CIF(I:I)
+            J = J + 1
+           END IF
+          END DO 
+         END IF
 C
    10 CONTINUE
+
 C
 C---- Find correct space-group in file.
 C     Each space-group has header line of space-group number,
@@ -1883,6 +1900,7 @@ C
         NAMLGTH = 1
         NAMSAV = ' '
         NAMFIT = .false.
+C  Set NAMSAV to longest name ana maybe find a match to NAMSPG_CIF..
         DO 15 ITOK = 3,NTOK
 C Spacegroup name must begin P A B C F I "H " R
           IF (LINE(IBEG(ITOK):IBEG(ITOK)).NE.'P' .AND.
@@ -1904,8 +1922,9 @@ C
      +       NAMSPG_CIFS.NE.LINE(IBEG(ITOK):IEND(ITOK))) GO TO 15
 C   Found a suitable match to space group name
              NAMFIT = .true.
-             GO TO 40
   15    CONTINUE
+C  Move this - we need to check ALL tokens, not just till we find a match
+             IF(NAMFIT) GO TO 40
 C
 C
 C---- No name match; check for spacegroup number if given
@@ -1925,9 +1944,10 @@ C----- Reset space group name to longest on offer
           LSPGRP = ISG
           NAMSPG_CIF = NAMSAV
 C
-C  Remove all spaces from SG name
+C  Repeat the removal of all spaces from SG name
 C
       ILEN = LENSTR(NAMSPG_CIF)
+C
          NAMSPG_CIFS = NAMSPG_CIF(1:1)
 
          IF(ILEN.GE.2) THEN
@@ -1939,6 +1959,7 @@ C
            END IF
           END DO 
          END IF
+C
 C
 C---- Space-group found, convert NLIN lines of
 C     symmetry operators to matrices
@@ -2039,7 +2060,7 @@ C
       CALL LERROR(2,-1,LINERR)
       END
 C
-C
+C
 C     =====================================
       SUBROUTINE PGMDF(JLASS,JCENTR,JSCREW)
 C     =====================================
