@@ -102,7 +102,7 @@ FORTRAN_SUBR ( QOPEN, qopen,
 #else
     if (_stricmp(getenv("CCP4_OPEN"),"UNKNOWN"))
 #endif
-      istat = 1;
+      istat = 0;
     break;
   case 'R':
   case 'r':
