@@ -1980,6 +1980,12 @@ C
 C---- it's a string, treat as space-group name
 C     
                SPGNAM = LINE(IBEG(JTOK) :IEND(JTOK))
+               CALL  CCPUPC(SPGNAM)
+C---- Rs are brocken anyway
+               IF (SPGNAM(1:1).EQ.'R') THEN
+                 SPGNAM(1:1)='H'
+                 CALL PUTLIN('Warning: R switched to H','CURWIN')
+                 ENDIF
                NUMSGP = 0
             END IF
 C     
@@ -1987,7 +1993,6 @@ C---- Read symmetry (all operations) from SYMOP
 C     open symop on channel 24 - closed at end of reading
 C     NSYMP returns number of primitive operations
 C     
-            CALL  CCPUPC(SPGNAM)
 C           CALL  MSYMLB(24,NUMSGP,SPGNAM,PGNAME,NSYMP,NSYM,RSYM)
             CALL  MSYMLB3(24,NUMSGP,SPGNAM,SPGNAMS,PGNAME,NSYMP,NSYM,
      +                    RSYM)
