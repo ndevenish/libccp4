@@ -110,9 +110,6 @@ C
 C  Call:  CALL MWRHDR(IUNIT,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
 C        +            NV1,NV2,CELL,LSPGRP,LMODE)
 C 
-C  Call:  CALL MWRHDL(IUNIT,MAPNAM,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
-C        +            NV1,NV2,CELL,LSPGRP,LMODE)
-C
 C Note on the difference between the subroutines 'MWRHDR' and 'MWRHDL'
 C 
 C---- These subroutines are used to open an output map file and 
@@ -193,9 +190,6 @@ C
 C
 C---- Put map header into common block /MOHDR/ and open map file on unit
 C     IUNIT with logical name 'MAPOUT'
-C 
-C  Call:  CALL MWRHDR(IUNIT,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
-C        +            NV1,NV2,CELL,LSPGRP,LMODE)
 C 
 C  Call:  CALL MWRHDL(IUNIT,MAPNAM,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
 C        +            NV1,NV2,CELL,LSPGRP,LMODE)
@@ -1299,166 +1293,165 @@ C---- Check valid IUNIT
 C
 
       IF (IUNIT.LT.0 .OR. IUNIT.GT.12) THEN
-C
-C---- Error conditions
-C
-        WRITE (LUNOUT,FMT=6010) IUNIT
-        CALL CCPERR(1, '**MAP FILE HANDLING ERROR**')
-      ELSE
-C
-C---- Open file
-C
-        CALL QOPEN(LSTRM(IUNIT),MAPNAM,'RO')
-C       set up transparent numbers if necessary:
-        CALL QRARCH (LSTRM (IUNIT), 53, IRESLT)
-        IF (IRESLT.EQ.0) CALL QPRINT(1,
-     +       ' WARNING: no architecture information in file --'//
-     +       ' assuming native.')
-        CALL QSEEK (LSTRM (IUNIT), 1, 1, 1)
-C
-C---- Get and print file name
-C
-        IF ( IPRINT .NE. 0 ) THEN
-          CALL QQINQ(LSTRM(IUNIT),MAPNAM,FILE,NFILSZ)
-          IF (NFILSZ.GE.0) WRITE (LUNOUT,FMT=6000) IUNIT,
-     +                          FILE(1:LENSTR(FILE)),NFILSZ,MAPNAM
-          IF (NFILSZ.LT.0) WRITE (LUNOUT,FMT=6002) IUNIT,
-     +                          FILE(1:LENSTR(FILE)),MAPNAM
-        ENDIF
-C
-Cdw---- Read header, modes 2 & 6 in real and integer blocks
-Cdw---- Mode 0 for characters
-Cdw---- Unfortunately need to call QMODE each time we change
-C
-        NITHDR = 10
-        CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREADI(LSTRM(IUNIT),IHDR1,NITHDR,IER)
-        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
-C
-        NITHDR = 6
-        CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-        CALL QREADR(LSTRM(IUNIT),RHDR1,NITHDR,IER)
-        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
-C
-        NITHDR = 3
-        CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREADI(LSTRM(IUNIT),IHDR2,NITHDR,IER)
-        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
-C
-        NITHDR = 3
-        CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-        CALL QREADR(LSTRM(IUNIT),RHDR2,NITHDR,IER)
-        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
-C
-        NITHDR = 3
-        CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREADI(LSTRM(IUNIT),IHDR3,NITHDR,IER)
-        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
-C
-        NITHDR = 12
-        CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-        CALL QREADR(LSTRM(IUNIT),RHDR3,NITHDR,IER)
-        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
-C
-        NITHDR = 17
-        CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREADI(LSTRM(IUNIT),IHDR4,NITHDR,IER)
-        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
-C
-        NITHDR = 1
-        CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-        CALL QREADR(LSTRM(IUNIT),RHDR4,NITHDR,IER)
-        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
-C
-        NITHDR = 1
-        CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREADI(LSTRM(IUNIT),IHDR5,NITHDR,IER)
-        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
-C
-Cdw---- Read labels as bytes
-C
-        NITHDR = 800
-        CALL QMODE(LSTRM(IUNIT),0,NCHHDR)
-        CALL QREADI(LSTRM(IUNIT),IHDR6,NITHDR,IER)
-C
-        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
-C
-C---- Change mode 5 to mode 0
-C
-        IF (MODE.EQ.5) MODE = 0
-C       
-C----   Set correct mode, changing 10 & 11(12) to 0 & 2
-C       
-        KMODE = MODE
-        IF (MODE.EQ.10) KMODE = 0
-        IF (MODE.EQ.11 .OR. MODE.EQ.12) KMODE = 2
-        CALL QMODE(LSTRM(IUNIT),KMODE,NCHITM(IUNIT))
-C       
-        NU1 = NC1
-        NV1 = NR1
-        NW1 = NS1
-        NSEC = NS
-        NU2 = NU1 + NC - 1
-        NV2 = NV1 + NR - 1
-        NW2 = NW1 + NSEC - 1
-C       
-C----   Write out header information
-C       
-        IF ( IPRINT .NE. 0 ) THEN
-          WRITE (LUNOUT,FMT=6003) NC,NR,NS,MODE,NU1,NU2,NV1,NV2,NW1,
-     +         NW2,NXYZ,CEL, (LXYZ(MAPCRS(I)),I=1,3)
-          IF(MODE.NE.0) WRITE (LUNOUT,FMT=6004) AMIN,AMAX,AMEAN,ARMS
-          WRITE (LUNOUT,FMT=6005) ISPG,NLAB,
-     +         ((LABELS(I,J),I=1,20),J=1,NLAB)
-
-C----     Copy header information for return to calling routine
-C         
-C----     Convert integer title to characters
-C         
-          WRITE (TITLE,FMT=6006) (LABELS(I,1),I=1,20)
-C         
-          DO 10 I = 1,3
-            IUVW(I) = MAPCRS(I)
- 10       CONTINUE
-          DO 20 I = 1,3
-            MXYZ(I) = NXYZ(I)
- 20       CONTINUE
-          DO 30 I = 1,6
-            CELL(I) = CEL(I)
- 30       CONTINUE
-          LSPGRP = ISPG
-          LMODE = MODE
-          MODES(IUNIT) = MODE
-          NCS(IUNIT) = NC
-          NRS(IUNIT) = NR
-          NSS(IUNIT) = NS
-          NC1S(IUNIT) = NC1
-          NR1S(IUNIT) = NR1
-          NS1S(IUNIT) = NS1
-          IF (ISPG.EQ.0) NSYMBT = 0
-          JSYMBT(IUNIT) = NSYMBT
-          RHMIN = AMIN
-          RHMAX = AMAX
-          RHMEAN = AMEAN
-          RHRMS = ARMS
-C         
-C----     Get length of header in items (1024 bytes)
-C         
-          ITMHDR(IUNIT) = NBHDR*4/NCHITM(IUNIT)
-C         
-C----     and position of first section
-C         
-          ITMSC1(IUNIT) = NSYMBT/NCHITM(IUNIT) + ITMHDR(IUNIT) + 1
-C         
-C----     Position to 1st section
-C         
-          CALL QSEEK(LSTRM(IUNIT),1,ITMSC1(IUNIT),1)
-C         
+        IF ( IFAIL .EQ. 0 ) THEN
+          WRITE (LUNOUT,FMT=6010) IUNIT
+          CALL CCPERR(1, '**MAP FILE HANDLING ERROR**')
+        ELSE
+          IFAIL = -1
           RETURN
-        END IF
-      END IF
-
-      IF ( IFAIL .EQ. 0 ) THEN
+        ENDIF
+      ENDIF
+C     
+C---- Open file
+C     
+      CALL QOPEN(LSTRM(IUNIT),MAPNAM,'RO')
+C     set up transparent numbers if necessary:
+      CALL QRARCH (LSTRM (IUNIT), 53, IRESLT)
+      IF (IRESLT.EQ.0) CALL QPRINT(1,
+     +     ' WARNING: no architecture information in file --'//
+     +     ' assuming native.')
+      CALL QSEEK (LSTRM (IUNIT), 1, 1, 1)
+C     
+C---- Get and print file name
+C     
+      IF ( IPRINT .NE. 0 ) THEN
+        CALL QQINQ(LSTRM(IUNIT),MAPNAM,FILE,NFILSZ)
+        IF (NFILSZ.GE.0) WRITE (LUNOUT,FMT=6000) IUNIT,
+     +       FILE(1:LENSTR(FILE)),NFILSZ,MAPNAM
+        IF (NFILSZ.LT.0) WRITE (LUNOUT,FMT=6002) IUNIT,
+     +       FILE(1:LENSTR(FILE)),MAPNAM
+      ENDIF
+C     
+C     dw---- Read header, modes 2 & 6 in real and integer blocks
+C     dw---- Mode 0 for characters
+C     dw---- Unfortunately need to call QMODE each time we change
+C     
+      NITHDR = 10
+      CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
+      CALL QREADI(LSTRM(IUNIT),IHDR1,NITHDR,IER)
+      IF (IER.NE.0) GOTO 99
+C     
+      NITHDR = 6
+      CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
+      CALL QREADR(LSTRM(IUNIT),RHDR1,NITHDR,IER)
+      IF (IER.NE.0) GOTO 99
+C     
+      NITHDR = 3
+      CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
+      CALL QREADI(LSTRM(IUNIT),IHDR2,NITHDR,IER)
+      IF (IER.NE.0) GOTO 99
+C     
+      NITHDR = 3
+      CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
+      CALL QREADR(LSTRM(IUNIT),RHDR2,NITHDR,IER)
+      IF (IER.NE.0) GOTO 99
+C     
+      NITHDR = 3
+      CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
+      CALL QREADI(LSTRM(IUNIT),IHDR3,NITHDR,IER)
+      IF (IER.NE.0) GOTO 99
+C     
+      NITHDR = 12
+      CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
+      CALL QREADR(LSTRM(IUNIT),RHDR3,NITHDR,IER)
+      IF (IER.NE.0) GOTO 99
+C     
+      NITHDR = 17
+      CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
+      CALL QREADI(LSTRM(IUNIT),IHDR4,NITHDR,IER)
+      IF (IER.NE.0) GOTO 99
+C     
+      NITHDR = 1
+      CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
+      CALL QREADR(LSTRM(IUNIT),RHDR4,NITHDR,IER)
+      IF (IER.NE.0) GOTO 99
+C     
+      NITHDR = 1
+      CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
+      CALL QREADI(LSTRM(IUNIT),IHDR5,NITHDR,IER)
+      IF (IER.NE.0) GOTO 99
+C     
+C     dw---- Read labels as bytes
+C     
+      NITHDR = 800
+      CALL QMODE(LSTRM(IUNIT),0,NCHHDR)
+      CALL QREADI(LSTRM(IUNIT),IHDR6,NITHDR,IER)
+      IF (IER.NE.0) GOTO 99
+C     
+C---- Change mode 5 to mode 0
+C     
+      IF (MODE.EQ.5) MODE = 0
+C     
+C---- Set correct mode, changing 10 & 11(12) to 0 & 2
+C     
+      KMODE = MODE
+      IF (MODE.EQ.10) KMODE = 0
+      IF (MODE.EQ.11 .OR. MODE.EQ.12) KMODE = 2
+      CALL QMODE(LSTRM(IUNIT),KMODE,NCHITM(IUNIT))
+C     
+      NU1 = NC1
+      NV1 = NR1
+      NW1 = NS1
+      NSEC = NS
+      NU2 = NU1 + NC - 1
+      NV2 = NV1 + NR - 1
+      NW2 = NW1 + NSEC - 1
+C     
+C---- Write out header information
+C     
+      IF ( IPRINT .NE. 0 ) THEN
+        WRITE (LUNOUT,FMT=6003) NC,NR,NS,MODE,NU1,NU2,NV1,NV2,NW1,
+     +       NW2,NXYZ,CEL, (LXYZ(MAPCRS(I)),I=1,3)
+        IF(MODE.NE.0) WRITE (LUNOUT,FMT=6004) AMIN,AMAX,AMEAN,ARMS
+        WRITE (LUNOUT,FMT=6005) ISPG,NLAB,
+     +       ((LABELS(I,J),I=1,20),J=1,NLAB)
+      ENDIF
+C---- Copy header information for return to calling routine
+C     
+C---- Convert integer title to characters
+C     
+      WRITE (TITLE,FMT=6006) (LABELS(I,1),I=1,20)
+C     
+      DO 10 I = 1,3
+        IUVW(I) = MAPCRS(I)
+ 10   CONTINUE
+      DO 20 I = 1,3
+        MXYZ(I) = NXYZ(I)
+ 20   CONTINUE
+      DO 30 I = 1,6
+        CELL(I) = CEL(I)
+ 30   CONTINUE
+      LSPGRP = ISPG
+      LMODE = MODE
+      MODES(IUNIT) = MODE
+      NCS(IUNIT) = NC
+      NRS(IUNIT) = NR
+      NSS(IUNIT) = NS
+      NC1S(IUNIT) = NC1
+      NR1S(IUNIT) = NR1
+      NS1S(IUNIT) = NS1
+      IF (ISPG.EQ.0) NSYMBT = 0
+      JSYMBT(IUNIT) = NSYMBT
+      RHMIN = AMIN
+      RHMAX = AMAX
+      RHMEAN = AMEAN
+      RHRMS = ARMS
+C     
+C---- Get length of header in items (1024 bytes)
+C     
+      ITMHDR(IUNIT) = NBHDR*4/NCHITM(IUNIT)
+C     
+C---- and position of first section
+C     
+      ITMSC1(IUNIT) = NSYMBT/NCHITM(IUNIT) + ITMHDR(IUNIT) + 1
+C     
+C---- Position to 1st section
+C     
+      CALL QSEEK(LSTRM(IUNIT),1,ITMSC1(IUNIT),1)
+C     
+      RETURN
+C       diskio error:
+ 99   IF ( IFAIL .EQ. 0 ) THEN
         CALL CCPERR(1, '**MAP FILE HANDLING ERROR**')
       ELSE
         IFAIL = -1
