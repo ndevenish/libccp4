@@ -1536,3 +1536,8 @@ void *ccp4calloc(size_t nelem , size_t elsize)
       abort ();
     }
   return val;}
+
+#if defined (__APPLE__)
+void _carbon_init(int argc, char **argv) {}
+void _objcInit(void) {}
+#endif
