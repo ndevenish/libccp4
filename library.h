@@ -184,6 +184,12 @@
 #  define CALL_LIKE_MVS 1
 #  define KNOWN_MACHINE
 #endif
+/* Generic linux, may not have the G77 compilers */
+#if defined (linux)
+#  undef CALL_LIKE_SUN
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_SUN 1
+#endif
 
 /* {\tt f2c}\index{f2c@{\tt f2c}} misses the MIL--STD                       */
 /* \idx{bit-twiddling intrinsics}.  Its calling                             */
