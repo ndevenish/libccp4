@@ -114,7 +114,7 @@ test-lib : $(srcdir)/testlib.f $L(library.o) $L(library_f.o) $L(unix.o) $L(ccpli
 
 #test to see if fsplit is in fsplit_dir already otherwise make it if you can
 fsplit : $(srcdir)/fsplit.c
-	test ! -x $(fsplit_dir)/fsplit && $(CC) -o $(fsplit_dir)/fsplit fsplit.c || true 
+	test ! -x $(fsplit_dir)/fsplit && $(CC) $(CFLAGS) -o $(fsplit_dir)/fsplit fsplit.c || true 
 
 # explicit building of the real targets, sigh...
 # include the pwd info for ease of symbolic debugging
