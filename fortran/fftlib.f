@@ -56,6 +56,7 @@ C     ..
 C     .. Local Scalars ..
       INTEGER           PMAX,PSYM,TWOGRP
       LOGICAL           ERROR
+      CHARACTER EMESS*80
 C     ..
 C     .. Local Arrays ..
       INTEGER           FACTOR(15),SYM(15),UNSYM(15)
@@ -70,8 +71,8 @@ C
           CALL SRFP(N,PMAX,TWOGRP,FACTOR,SYM,PSYM,UNSYM,ERROR)
           IF (ERROR) THEN
 C
-              WRITE (6,FMT=9000) N
-              call ccperr(1,' stop in fftlib.for 1000')
+              WRITE (EMESS,FMT=9000) N
+              call ccperr(1, EMESS)
           ELSE
 C
               CALL MDFTKD(N,FACTOR,D,X,Y)
@@ -81,7 +82,7 @@ C
 C
 C---- Format statements
 C
- 9000 FORMAT ('0INVALID NUMBER OF POINTS FOR CMPL FT.  N =',I10,//)
+ 9000 FORMAT ('FFTLIB: invalid number of points for CMPL FT.  N =',I10)
       END
 C
 C
@@ -199,8 +200,8 @@ C
 C
 C---- Format statements
 C
- 9000 FORMAT ('0LARGEST FACTOR EXCEEDS ',I3,'.  N = ',I6,'.')
- 9010 FORMAT ('0FACTOR COUNT EXCEEDS ',I3,'.  N = ',I6,'.')
+ 9000 FORMAT (' FFTLIB: Largest factor exceeds ',I3,'.  N = ',I6,'.')
+ 9010 FORMAT (' FFTLIB: Factor count exceeds ',I3,'.  N = ',I6,'.')
       END
 C
 C
@@ -1392,9 +1393,10 @@ C     .. Array Arguments ..
 C     ..
 C     .. Local Scalars ..
       REAL              A,ANGLE,B,C,CO,D,SI,TWON,TWOPI
-      INTEGER           D1,D2,D3,D4,D5,I,I0,I1,I2,II,J,J0,J1,J2,K,K0,K1,
-     +                  K2,L,M,MJ,MK,ML,MM,MOD,N2,NN,NOVER2,NOVER4,TEST,
+      INTEGER           D1,D2,D3,D4,D5,I,I0,I1,I2,II,J,J0,J1,K,K0,K1,
+     +                  K2,L,M,MJ,MK,ML,MM,NN,NOVER2,NOVER4,
      +                  TWOD2
+      CHARACTER EMESS*80
 C     ..
 C     .. External Subroutines ..
       EXTERNAL          HERMFT
@@ -1407,8 +1409,8 @@ C     ..
           NOVER4 = N/4
           IF (4*NOVER4.NE.N) THEN
 C
-              WRITE (6,FMT=9000) N
-              call ccperr(1,' stop in fftlib.for 2000')
+              WRITE (EMESS,FMT=9000) N
+              call ccperr(1, EMESS)
           ELSE
               D1 = DIM(1)
               D2 = DIM(2)
@@ -1550,7 +1552,7 @@ C
 C
 C---- Format statements
 C
- 9000 FORMAT ('0N NOT A MULTIPLE OF 4 IN R SYM FT.  N =',I10,//)
+ 9000 FORMAT ('FFTLIB: N not a multiple of 4 in R SYM FT.  N =',I10,//)
       END
 C
 C
@@ -1595,8 +1597,9 @@ C     .. Array Arguments ..
 C     ..
 C     .. Local Scalars ..
       REAL             A,ANGLE,C,S,TWON,TWOPI
-      INTEGER          D1,D2,D3,D4,D5,I,J,K,K0,K1,K2,L,M,MM,MN,NN,NOVER2
+      INTEGER          D1,D2,D3,D4,D5,I,J,K,K0,K1,K2,L,M,MN,NN,NOVER2
       LOGICAL          FOLD
+      CHARACTER EMESS*80
 C     ..
 C     .. External Subroutines ..
       EXTERNAL         CMPLFT
@@ -1607,8 +1610,8 @@ C     ..
       NOVER2 = N/2
       IF (2*NOVER2.NE.N) THEN
 C
-          WRITE (6,FMT=9000) N
-          call ccperr(1,' stop in fftlib.for 3000')
+          WRITE (EMESS,FMT=9000) N
+          call ccperr(1, EMESS)
       ELSE
           TWON = REAL(2*N)
           TWOPI = 6.2831852
@@ -1733,7 +1736,7 @@ C
 C
 C---- Format statements
 C
- 9000 FORMAT ('0SDIAD N ODD.  N =',I10)
+ 9000 FORMAT ('FFT error: SDIAD: N odd.  N =',I10)
       END
 C
 C
