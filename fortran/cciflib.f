@@ -1350,6 +1350,8 @@ CDOC                                          in _audit.update_record
       audit_itmnam(3) = '_audit.creation_method'
       audit_itmnam(4) = '_audit.update_record'
 
+      cval = ' '
+
 c_____Check type of data item is character or text
       btype = 1
       call ccp4ccif_check_type(audit_itmnam(1), btype, sline)
@@ -1396,6 +1398,8 @@ C--- audit creation_method
         istat = keep_context
         call ccif_put_text(audit_itmnam(3),1,cval,1,ncntxt,istat,' ')
       endif
+
+      ciftime = ' '
 
 C--- audit update_record
       CALL Hciftime(ciftime)

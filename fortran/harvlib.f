@@ -850,7 +850,7 @@ C     ..
 C     .. Local Scalars ..
       INTEGER chmodRet,Jdo,mkdirPT
       CHARACTER ciftime*50,Buffer*256,EnvWork*256,
-     +          FileName*256,mkdirMode*3,chmodMode*3
+     +          FileName*256,mkdirMode*3,chmodMode*3,dummy*160
 C     ..
 C     .. External Functions ..
       LOGICAL VAXVMS, WINMVS
@@ -872,16 +872,25 @@ C     .. Data statements ..
       DATA Harvest/.false./
       DATA MirDerSiteID/0/, rom_context/-1/,restraints_context/-1/
 C     ..
-c
 C
       call Hgetlimits(IValueNotDet,ValueNotDet)
       IVALND = IValueNotDet
       VALND  = ValueNotDet
       SoftwareName = ProgName
       SoftwareVersion = ProgVersion
+c
+c     ability to suppress Harvesting completely from the outside (a la
+c     various other CCP_SUPPRESS_* settings)
+c
+      dummy = ' '
+      call ugtenv('CCP_SUPPRESS_HARVEST',dummy)
+      if (dummy.ne.' ') then
+        Harvest = .false.
+        RETURN
+      end if
 C
-C
-      IF (ProjectName(1:1) .eq. ' ') THEN
+      IF ( ( LENSTR(ProjectName).EQ.  0 ) .OR.
+     .     ( ProjectName(1:1)   .eq. ' ')     ) THEN
         WRITE (6,FMT=6000)
  6000   FORMAT (
      +' Harvest: NO ProjectName given - no deposit file created')
@@ -890,7 +899,8 @@ C
       END IF
 C
 C
-      IF (DataSetName(1:1) .eq. ' ') THEN
+      IF ( ( LENSTR(DataSetName).EQ.  0 ) .OR.
+     .     ( DataSetName(1:1)   .eq. ' ')     ) THEN
         WRITE (6,FMT=6002)
  6002   FORMAT (
      +' Harvest: NO DataSetName given - no deposit file created')

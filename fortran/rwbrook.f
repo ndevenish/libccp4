@@ -392,6 +392,7 @@ C
       ENDIF
 C...
 C...  MMDB open channel (need to test for failures)
+      FILNAM = ' '
       CALL UGTENV(LOGNAM,FILNAM)
       IF (LRWSTAT(1:5) .EQ. 'INPUT' .AND. FILNAM.EQ.' ') THEN
         CALL MMDB_F_OPEN(LOGNAM,LRWSTAT,LFILTYP,IUNIT,IRET)

@@ -634,7 +634,18 @@ int /* logical */ btest_ (a, b)
 
 #if defined (__hpux) || defined (_AIX)
 /* <AIX and HPUX support>=                                                  */
-void gerror (str, Lstr)
+
+#ifdef _AIX
+int isatty_ (FILE *fd) {
+  return(isatty(fd));
+}
+#endif
+
+#if defined (_AIX)
+void gerror_ (str, Lstr)
+#else
+void gerror  (str, Lstr)
+#endif
 char *str;
 int  Lstr;      
 {

@@ -211,6 +211,7 @@ C
 C
 C---- Seed random Number Generator
 C
+      REPLY = ' '
       CALL UGTENV('SEED',REPLY)
       IF (REPLY.NE.' ') READ (REPLY,*) ISEED
 C

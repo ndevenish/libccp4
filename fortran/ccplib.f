@@ -567,6 +567,7 @@ C_END_CCPE2I
       CHARACTER BUFFER*80, EMESS*100
       INTEGER DEFVAL, LENSTR
       EXTERNAL UGTENV, LENSTR
+      BUFFER = ' '
       CALL UGTENV (NAME, BUFFER)
       IF (BUFFER.EQ.' ') THEN
         CCPE2I = DEFVAL
@@ -717,7 +718,7 @@ C
 C====== Specification statements
 C
       LOGICAL SIGNED, SWAPB
-      INTEGER IA(*)
+      INTEGER IA(*),JA
       INTEGER*2 I2(*)
       INTEGER*2 J2(2)
       INTEGER*2 IEIGHT, I255
@@ -725,7 +726,7 @@ C
       EQUIVALENCE (JA,J2(1))
       LOGICAL CALLED, LITEND
       EXTERNAL LITEND
-      INTEGER IND
+      INTEGER IND,I,NE
       SAVE CALLED, IND
       DATA CALLED/.FALSE./
 C
@@ -1160,7 +1161,8 @@ C SPECIFICATION STATEMENTS
 C ------------------------
 C
       CHARACTER*(*) FILNAM,PATH,NAME,TYPE,VERS
-      EXTERNAL VAXVMS, WINMVS, RTNBKS
+      INTEGER LMAX,LMIN,L,LSC,LDOT,NDOT,LENSTR
+      EXTERNAL VAXVMS, WINMVS, RTNBKS, LENSTR
       LOGICAL VAXVMS, WINMVS, VMS, MVS
       CHARACTER RTNBKS*1, BKS*1
 C
@@ -1346,6 +1348,9 @@ C
      +     CALL CCPERR(1,'Too many logical names')
       ENAME(ICOUNT) = LNAME
       ETYPE(ICOUNT) = 'undef'
+      IF (LENSTR(FEXTN(FILNAM)).GT.4)
+     +  CALL CCPERR(2,
+     +  'Extension too long in s/r CSETNV: '//FEXTN(FILNAM))
       EXTN(ICOUNT) = FEXTN(FILNAM)
       JJ = ICOUNT
 C
@@ -1541,6 +1546,7 @@ C ------------------------
 C
       INTEGER*2 IA(*)
       INTEGER*2 JBYT(2)
+      INTEGER   JA,IVAL,N
       EQUIVALENCE (JA,JBYT(1))
       LOGICAL CALLED, LITEND
       EXTERNAL LITEND
@@ -1787,7 +1793,7 @@ C
 C     .. Scalar Arguments ..
       CHARACTER*(*) PATCH_LEVEL
 
-      PATCH_LEVEL = '4.2.2'
+      PATCH_LEVEL = '5.0f'
 
       END
 C
@@ -1986,9 +1992,9 @@ C     ..
       LENSTR = LEN(STRING)
  10   CONTINUE
       IF (LENSTR.NE.0) THEN
-        IF(STRING(LENSTR:LENSTR).EQ.' ' .OR.   
-     .       ICHAR(STRING(LENSTR:LENSTR)).EQ.0 .OR.
-     .       ICHAR(STRING(LENSTR:LENSTR)).EQ.13) THEN
+        IF(  ICHAR(STRING(LENSTR:LENSTR)).EQ.0   .OR.
+     .       ICHAR(STRING(LENSTR:LENSTR)).EQ.13  .OR.
+     .             STRING(LENSTR:LENSTR) .EQ.' '      ) THEN
           LENSTR = LENSTR - 1
           GO TO 10
         END IF
@@ -2012,6 +2018,8 @@ C
 C       IDUM (D)   Dummy
 C_END_LUNSTI
 C
+      INTEGER LUNSTI,IDUM
+C
       LUNSTI = 5
       END
 C
@@ -2030,6 +2038,8 @@ C ==========
 C
 C       IDUM (I)   Dummy argument
 C_END_LUNSTO
+C
+      INTEGER LUNSTO,IDUM
 C
       LUNSTO = 6
       END
@@ -2057,6 +2067,8 @@ C                   than the word length)
 C_END_NBITST
 C
 C====== Get the bit value
+C
+      INTEGER IWORD,LSB,NBITS,IVAL,KMSK,KVAL
 C
       KMSK = 2**NBITS - 1
       NBITST = IAND(ISHFT(IWORD,-LSB),KMSK)

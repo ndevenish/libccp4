@@ -121,6 +121,10 @@ C
       data htmlinit/-1/
       if (htmlinit.lt.0) then
         lpt=lunsto(idum)
+        cbin = ' '
+        chtml = ' '
+        cpid = ' '
+        dummy = ' '
         call ugtenv('CBIN',cbin)
         call ugtenv('CHTML',chtml)
         call ugtenv('CCP_PROGRAM_ID',cpid)

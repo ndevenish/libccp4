@@ -1188,6 +1188,7 @@ c       call ccpdpn(31,'GETNAM','old','F',0,0)
 c	read(31,'(a)') getnam
 c	call spstrunct(getnam)
 c	close (31)
+      getnam = ' '
       call ugtenv(filnam,getnam)
       end
       SUBROUTINE GETPDB(X,ATOM,RES,SEQ,NATM,FILNAM)
