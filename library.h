@@ -194,6 +194,12 @@
 #  define CALL_LIKE_SUN 1
 #endif
 
+#if defined (__APPLE__)
+#  undef CALL_LIKE_SUN
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_SUN 1
+#endif
+
 /* {\tt f2c}\index{f2c@{\tt f2c}} misses the MIL--STD                       */
 /* \idx{bit-twiddling intrinsics}.  Its calling                             */
 /* convention is like \idx{Sun} only for a {\em single\/} [[CHARACTER]]     */
@@ -462,7 +468,7 @@
 /* both big-endian and little-endian OS's under software control. The       */
 /* symbol "powerpc" appears in gcc-2.8.1/config/rs6000/linux.h and appears  */
 /* to distinguish LinuxPPC from other OS's for this chip.                   */
-#if defined (powerpc)
+#if defined (powerpc) || defined (__ppc__)
 #  define NATIVEIT DFNTI_MBO
 #  define NATIVEFT DFNTF_BEIEEE
 #endif
@@ -491,7 +497,7 @@
 /*                                                                          */
 /* <[[#define]]s>=                                                          */
 /* the VAX VMS compiler objected to splitting the following line */
-#if defined(MIPSEB) || defined(__hpux) || defined(_AIX) || defined(m68k) || defined(mc68000) || defined(sparc) || defined (__sparc__)
+#if defined(MIPSEB) || defined(__hpux) || defined(_AIX) || defined(m68k) || defined(mc68000) || defined(sparc) || defined (__sparc__) 
 #  define NATIVEIT DFNTI_MBO
 #  define NATIVEFT DFNTF_BEIEEE
 #endif
