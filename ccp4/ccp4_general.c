@@ -60,17 +60,6 @@ static char rcsid[] = "$Id$";
 
 /*------------------------------------------------------------------*/
 
-/** Free all memory malloc'd from static pointers.
- * To be called before program exit. The function can be
- * registered with atexit.
- */
-void ccp4_mem_tidy(void) {
-  MtzMemTidy();
-  ccp4spg_mem_tidy();
-}
-
-/*------------------------------------------------------------------*/
-
 /* ccperror
 
    Error reporting and program termination
@@ -104,7 +93,6 @@ int ccperror(int ierr, char* message)
     /* Get the amount of time elapsed since start of
        program. Initialised by ccp4fyp */
     ccp4ProgramTime(0);
-    ccp4_mem_tidy();
     exit(0);
 
   } else if (ierr==1 || ierr==-1) {
@@ -119,7 +107,6 @@ int ccperror(int ierr, char* message)
     /* Get the amount of time elapsed since start of
        program. Initialised by ccp4fyp */
     ccp4ProgramTime(0);
-    ccp4_mem_tidy();
     exit(1);
 
   } else if (ierr==2) {
@@ -379,12 +366,11 @@ int ccp4fyp(int argc, char **argv)
   /* Initialise HTML and SUMMARY tags */
   /* ------------------------------------------------------ */
 
-  /* Initialise html, summary tags with a call to the
-     Fortran html library */
-  FORTRAN_CALL ( CCP4H_INIT_LIB, ccp4h_init_lib,
-		(&nohtml,&nosummary),
-		(&nohtml,&nosummary),
-		(&nohtml,&nosummary));
+  /* Initialise html, summary tags by setting environment variables
+     for Fortran html library to pick up. No direct call, as
+     C programs may not link to Fortran library. */
+  if (nohtml) ccpputenv("CCP_SUPPRESS_HTML","1");
+  if (nosummary) ccpputenv("CCP_SUPPRESS_SUMMARY","1");
 
   /* ------------------------------------------------------ */
   /* Get useful directories (CINCL and HOME) */

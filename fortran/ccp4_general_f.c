@@ -21,6 +21,15 @@
 #include "ccp4_general.h"
 static char rcsid[] = "$Id$";
 
+/** Free all memory malloc'd from static pointers in Fortran interface.
+ * To be called before program exit. The function can be
+ * registered with atexit.
+ */
+void ccp4f_mem_tidy(void) {
+  MtzMemTidy();
+  ccp4spg_mem_tidy();
+}
+
 FORTRAN_SUBR ( CCPFYP, ccpfyp,
                (),
                (),
@@ -131,6 +140,9 @@ FORTRAN_SUBR ( CCPERR, ccperr,
   length = (FTN_LEN(errstr) < TMP_LENGTH-1) ? FTN_LEN(errstr) : TMP_LENGTH-1 ; 
   strncpy(tmp_errstr,errstr,length);
   tmp_errstr[length]='\0';
+
+  if (*istat==0 || *istat==1) ccp4f_mem_tidy();
+
   ccperror(*istat, tmp_errstr);
 }
 

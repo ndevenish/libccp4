@@ -79,7 +79,7 @@ extern "C" {
 
 /*------------------------------------------------------------------*/
 
-void ccp4_mem_tidy(void);
+void ccp4f_mem_tidy(void);
 
 int ccperror(int ierr, char* message);
 
