@@ -615,6 +615,7 @@ C
      +                  (RF(2,J),J=1,4),(RO(2,K),K=1,4),
      +                  (RF(3,J),J=1,4),(RO(3,K),K=1,4),
      +                  (RF(4,J),J=1,4),(RO(4,K),K=1,4)
+        GO TO 500
 C
 C---- Scale cards - extract and calculate rotation and trans matrices
 C
