@@ -1179,7 +1179,7 @@ int ccp4_ismnf(const MTZ *mtz, const float datum) {
 
 void ccp4_lhprt(const MTZ *mtz, int iprint) {
 
-  int i,j,k,isort[5];
+  int i,j,k,numbat,isort[5];
   float maxres=0.0,minres=100.0;
   char buffer[MTZRECORDLENGTH+1],symline[81];
 
@@ -1212,8 +1212,15 @@ void ccp4_lhprt(const MTZ *mtz, int iprint) {
   } else {
    printf(" * Missing value set to %f in input mtz file\n\n",mtz->mnf.fmnf);
   }
-  if (MtzNbat(mtz) > 0)
-    printf(" * Number of Batches = %d\n\n",MtzNbat(mtz));
+
+  /* if new batch headers have been written, lose the old ones */
+  if (MtzNbat(mtz) > mtz->nbat) {
+    numbat = MtzNbat(mtz) - mtz->nbat;
+  } else {
+    numbat = mtz->nbat;
+  }
+  if (numbat > 0)
+    printf(" * Number of Batches = %d\n\n",numbat);
 
   if (iprint == 2 || iprint == 3) {
     printf(" * HISTORY for current MTZ file :\n\n");
@@ -2715,11 +2722,20 @@ int MtzNumActiveColsInSet(const MTZSET *set)
 
 int MtzNbatchesInSet(const MTZ *mtz, const MTZSET *set)
 {
-  int ibatch=0;
+  int i,ibatch=0;
   MTZBAT *batch;
 
-  for (batch = mtz->batch ; batch != NULL ; batch = batch->next ) 
+  batch = mtz->batch;
+
+  /* if new batch headers have been written, lose the old ones */
+  if (MtzNbat(mtz) > mtz->nbat) 
+    for (i=0; i < mtz->nbat; ++i)
+       batch = batch->next;
+
+  while (batch) {
     if (batch->nbsetid == set->setid) ++ibatch;
+    batch = batch->next;
+  }
 
   return ibatch;
 }
