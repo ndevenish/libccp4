@@ -158,7 +158,7 @@ double ccp4uc_frac_orth_mat(const double cell[6], const int ncode,
 
    /* now calculate rf from ro, determinant gives cell volume */
 
-  return invert3matrix(ro, rf);
+  return invert3matrix((const double (*)[3]) ro, rf);
 
 }
 
@@ -234,8 +234,8 @@ void ccp4uc_orthu_to_fracu(const double rf[3][3], const double uo[6], double uf[
     for ( j = 0; j < 3; j++ ) 
       rft[i][j] = rf[j][i];
 
-  ccp4_3matmul(temp,uomat,rft);
-  ccp4_3matmul(ufmat,rf,temp);
+  ccp4_3matmul(temp,(const double (*)[3]) uomat,(const double (*)[3]) rft);
+  ccp4_3matmul(ufmat,rf,(const double (*)[3]) temp);
 
   uf[0] = ufmat[0][0]; uf[1] = ufmat[1][1]; uf[2] = ufmat[2][2]; 
   uf[3] = ufmat[0][1]; uf[4] = ufmat[0][2]; uf[5] = ufmat[1][2]; 
@@ -255,8 +255,8 @@ void ccp4uc_fracu_to_orthu(const double ro[3][3], const double uf[6], double uo[
     for ( j = 0; j < 3; j++ ) 
       rot[i][j] = ro[j][i];
 
-  ccp4_3matmul(temp,ufmat,rot);
-  ccp4_3matmul(uomat,ro,temp);
+  ccp4_3matmul(temp,(const double (*)[3]) ufmat,(const double (*)[3]) rot);
+  ccp4_3matmul(uomat,ro,(const double (*)[3]) temp);
 
   uo[0] = uomat[0][0]; uo[1] = uomat[1][1]; uo[2] = uomat[2][2]; 
   uo[3] = uomat[0][1]; uo[4] = uomat[0][2]; uo[5] = uomat[1][2]; 
