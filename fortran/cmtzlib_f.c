@@ -1619,21 +1619,25 @@ FORTRAN_SUBR ( LRCLOS, lrclos,
  * immediately to file, need to open now.
  * @param mindx MTZ file index.
  * @param filename Output file name.
+ * @param ifail (O) Returns 0 if successful, non-zero otherwise.
  */
-FORTRAN_SUBR ( LWOPEN, lwopen,
-	       (const int *mindx, fpstr filename, int filename_len),
-	       (const int *mindx, fpstr filename),
-	       (const int *mindx, fpstr filename, int filename_len))
+FORTRAN_SUBR ( LWOPEN_NOEXIT, lwopen_noexit,
+	       (const int *mindx, fpstr filename, int *ifail, int filename_len),
+	       (const int *mindx, fpstr filename, int *ifail),
+	       (const int *mindx, fpstr filename, int filename_len, int *ifail))
 
 { 
   char *temp_name, err_str[200];
   int nxtal=1, nset[1]={1};
   int i,j,k,icol;
 
-  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWOPEN");)
+  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWOPEN_NOEXIT");)
+
+ *ifail = 0;
 
  if (*mindx <= 0 || *mindx > MFILES) {
    printf("Error: mindx out of range!\n");
+   *ifail = 1;
    return;
  }
 
@@ -1659,9 +1663,12 @@ FORTRAN_SUBR ( LWOPEN, lwopen,
 
  if (!cmtz_in_memory) {
    if ( !(mtzdata[*mindx-1]->fileout = MtzOpenForWrite(temp_name)) ) {
-     strcpy(err_str,"LWOPEN: failed to open output file ");
+     strcpy(err_str,"LWOPEN_NOEXIT: failed to open output file ");
      strncat(err_str,temp_name,160);
-     ccperror(1,err_str);
+     ccperror(2,err_str);
+     free(temp_name);
+     *ifail = 1;
+     return;
    }
 
    /* assign existing columns for output */
@@ -1675,6 +1682,30 @@ FORTRAN_SUBR ( LWOPEN, lwopen,
  }
 
  free(temp_name);
+}
+
+/** Fortran wrapper to open output MTZ file. In fact, if 
+ * reflection data is being held in memory, defer opening
+ * until MtzPut call. But if reflections are written
+ * immediately to file, need to open now.
+ * @param mindx MTZ file index.
+ * @param filename Output file name.
+ */
+FORTRAN_SUBR ( LWOPEN, lwopen,
+	       (const int *mindx, fpstr filename, int filename_len),
+	       (const int *mindx, fpstr filename),
+	       (const int *mindx, fpstr filename, int filename_len))
+
+{ 
+  int ifail;
+
+  FORTRAN_CALL ( LWOPEN_NOEXIT, lwopen_noexit,
+	       (mindx, filename, &ifail, filename_len),
+	       (mindx, filename, &ifail),
+	       (mindx, filename, filename_len, &ifail));
+
+ if ( ifail )
+   ccperror(1,"LWOPEN: failed to open output file");
 }
 
 /* Fortran wrapper for ccp4_lwtitl */
@@ -2781,39 +2812,84 @@ FORTRAN_SUBR ( RESET_MAGIC, reset_magic,
 
 }
 
-/* Fortran wrapper for ccp4_lwrefl */
+/** Write a one array of reflection data to output file. 
+ * This is a wrapper for ccp4_lwrefl.
+ * @param mindx (I) MTZ file index
+ * @param adata (I) Array of reflection data to write.
+ * @param ifail (O) Returns 0 if successful, non-zero otherwise.
+ */
+FORTRAN_SUBR ( LWREFL_NOEXIT, lwrefl_noexit,
+	       (const int *mindx, const float adata[], int *ifail),
+	       (const int *mindx, const float adata[], int *ifail),
+	       (const int *mindx, const float adata[], int *ifail))
+{
+ /*  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWREFL_NOEXIT");) */
+
+ *ifail = 0;
+
+ if (MtzCheckSubInput(*mindx,"LWREFL_NOEXIT",2)) {
+   *ifail = 1;
+   return;
+ }
+
+ ++iwref[*mindx-1];
+ if (!ccp4_lwrefl(mtzdata[*mindx-1],adata,collookup_out[*mindx-1],
+		  MtzNumActiveCol(mtzdata[*mindx-1]),iwref[*mindx-1]) ) {
+   *ifail = 1;
+   return;
+ }
+}
+
+/** Write a one array of reflection data to output file. 
+ * This is a wrapper for ccp4_lwrefl. This routine exits upon
+ * failure.
+ * @param mindx (I) MTZ file index
+ * @param adata (I) Array of reflection data to write.
+ */
 FORTRAN_SUBR ( LWREFL, lwrefl,
 	       (const int *mindx, const float adata[]),
 	       (const int *mindx, const float adata[]),
 	       (const int *mindx, const float adata[]))
 {
- /*  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWREFL");) */
+  int ifail;
 
- if (MtzCheckSubInput(*mindx,"LWREFL",2)) return;
+  FORTRAN_CALL ( LWREFL_NOEXIT, lwrefl_noexit,
+	       (mindx, adata, &ifail),
+	       (mindx, adata, &ifail),
+	       (mindx, adata, &ifail));
 
- ++iwref[*mindx-1];
- if (!ccp4_lwrefl(mtzdata[*mindx-1],adata,collookup_out[*mindx-1],
-		  MtzNumActiveCol(mtzdata[*mindx-1]),iwref[*mindx-1]) )
+ if ( ifail )
    ccperror(1,"LWREFL: failed to write reflection");
 }
 
-/* Fortran wrapper for MtzPut */
-FORTRAN_SUBR ( LWCLOS, lwclos,
-	       (const int *mindx, int *iprint),
-	       (const int *mindx, int *iprint),
-	       (const int *mindx, int *iprint))
+/** Write MTZ file header and close output file. Wrapper for MtzPut.
+ * @param mindx (I) MTZ file index
+ * @param iprint (I) Specify whether to write output file header to log.
+ * @param ifail (O) Returns 0 if successful, non-zero otherwise.
+ */
+FORTRAN_SUBR ( LWCLOS_NOEXIT, lwclos_noexit,
+	       (const int *mindx, int *iprint, int *ifail),
+	       (const int *mindx, int *iprint, int *ifail),
+	       (const int *mindx, int *iprint, int *ifail))
 
 {
   char *fullfilename;
 
-  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWCLOS");)
+  CMTZLIB_DEBUG(puts("CMTZLIB_F: LWCLOS_NOEXIT");)
 
- if (MtzCheckSubInput(*mindx,"LWCLOS",2)) return;
+ *ifail = 0;
+
+ if (MtzCheckSubInput(*mindx,"LWCLOS_NOEXIT",2)) {
+   *ifail = 1;
+   return;
+ }
 
  /* fix number of reflections at the number "written out" */
  mtzdata[*mindx-1]->nref = iwref[*mindx-1];
- if ( !MtzPut(mtzdata[*mindx-1],fileout[*mindx-1]) )
-   ccperror(1,"LWCLOS: failed to write output file");
+ if ( !MtzPut(mtzdata[*mindx-1],fileout[*mindx-1]) ) {
+   *ifail = 1;
+   return;
+ }
 
  if (getenv(fileout[*mindx-1]) != NULL) {
    fullfilename = strdup(getenv(fileout[*mindx-1]));
@@ -2831,6 +2907,27 @@ FORTRAN_SUBR ( LWCLOS, lwclos,
  }
 
  free(fullfilename); 
+}
+
+/** Write MTZ file header and close output file. Wrapper for MtzPut.
+ * @param mindx (I) MTZ file index
+ * @param iprint (I) Specify whether to write output file header to log.
+ */
+FORTRAN_SUBR ( LWCLOS, lwclos,
+	       (const int *mindx, int *iprint),
+	       (const int *mindx, int *iprint),
+	       (const int *mindx, int *iprint))
+
+{
+  int ifail;
+
+  FORTRAN_CALL ( LWCLOS_NOEXIT, lwclos_noexit,
+	       (mindx, iprint, &ifail),
+	       (mindx, iprint, &ifail),
+	       (mindx, iprint, &ifail));
+
+ if ( ifail )
+   ccperror(1,"LWCLOS: failed to write output file");
 }
 
 /* old internal routines - obsolete! */
