@@ -1,6 +1,16 @@
+C
+C---- This version based on dl version removing aed subs
+C     but block data for
+ccx       COMMON /TRIKKDAT/INIT,IUNIT,PC(4),PL(6),PF(6)
+ccx       DATA INIT/0/
+ccx       moved to 
+ccx       SUBROUTINE INITRIPLOT(ISTREAM,NAME,IFLAG)
+C
+C
 C     Routines which call AED... commented out to avoid link-time
 C     problems.  (These seem to be sensitive to the order in which the
 C     library is built, or the phase of the moon :-))  DJGL 6/7/92
+C
 C     
 C       SUBROUTINE GSSTRD(TEXT,DX,DY)
 C       ERROR XCOLD and YCOLD not defined
@@ -420,13 +430,6 @@ C
       END
 C
 C
-      BLOCK DATA
-      INTEGER INIT, IUNIT
-      CHARACTER *1 PC,PF,PL
-      COMMON /TRIKKDAT/INIT,IUNIT,PC(4),PL(6),PF(6)
-      DATA INIT/0/
-      END
-C
 C
       SUBROUTINE BOPENW
 C     =================
@@ -491,50 +494,6 @@ C
       IFLAG4 = 1
 C
       END
-CCCC
-CCCC
-CCCC
-CCC      SUBROUTINE CHNCOL(NCOL,NBACK,TEXT)
-CCCC     ==================================
-CCCC
-CCCC---- Change AED colour to colour NCOL, unless this is the
-CCCC     same as the background colour NBACK:
-CCCC     if it is, set to black or white
-CCCC
-CCCC---- If TEXT .true., set colours in upper 4 bits
-CCCC
-CCCC     .. Scalar Arguments ..
-CCC      INTEGER NBACK,NCOL
-CCC      LOGICAL TEXT
-CCCC     ..
-CCCC     .. Scalars in Common ..
-CCC      INTEGER LUNIN,LUNOUT
-CCCC     ..
-CCCC     .. Local Scalars ..
-CCC      INTEGER N
-CCCC     ..
-CCCC     .. External Subroutines ..
-CCC      EXTERNAL AEDSEC
-CCCC     ..
-CCCC     .. Common blocks ..
-CCC      COMMON /PINOUT/LUNIN,LUNOUT
-CCCC
-CCCC     .. Save Statement ..
-CCCC
-CCC      SAVE
-CCCC
-CCC      N = NCOL
-CCC      IF (N.EQ.NBACK) THEN
-CCC        IF (NBACK.EQ.0) THEN
-CCC          N = 7
-CCC        ELSE
-CCC          N = 0
-CCC        END IF
-CCC      END IF
-CCC      IF (TEXT) N = N*16
-CCC      CALL AEDSEC(N)
-CCCC
-CCC      END
 C
 C
 C
@@ -684,319 +643,6 @@ C
 C
 C
       END
-CCCC
-CCCC
-CCCC
-CCC      SUBROUTINE DRAWPC
-CCCC     =================
-CCCC
-CCCC---- Draw picture
-CCCC     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
-CCCC     They were ICHAR
-CCCC
-CCCC     .. Scalars in Common ..
-CCC      REAL DOTMMX,DOTMMY,DVXMAX,DVXMIN,DVYMAX,DVYMIN,DWLIMX,DWLIMY,
-CCC     +     SCALX,SCALY,TX,TY
-CCC      INTEGER ICOLOR,IPICT,IUNIT,IXMAX,IXMIN,IYMAX,IYMIN,KXMAX,KXMIN,
-CCC     +        KYMAX,KYMIN,LINWT,LUNIN,LUNOUT,MCNTFL,MDEVIC,MDIREC,
-CCC     +        MIXCOLOR,MOUT,MPIC,MSCAFL,NBACK,NPICS,NREC
-CCC      LOGICAL AAV,CLEAR,EOF,HTEXT,PAN,PICTURE,ROTATE,TABLE,UNIFORM
-CCC      CHARACTER PASWRD*8,TITLEH*80
-CCCC     ..
-CCCC     .. Arrays in Common ..
-CCC      REAL RM,SPARE1,SPARE2
-CCC      INTEGER PENS,PFLAGS
-CCCC     ..
-CCCC     .. Local Scalars ..
-CCC      INTEGER I,IDOT,IDXY,IEND,IERAS,IFLAG5,ILWT,IND,IPAP,IPEN,IX,
-CCC     +        IXDRAW,IXMOVE,IXOLD,IY,IYDRAW,IYMOVE,IYOLD,J,JL,JX,JY,
-CCC     +        MASK,MASKFULL,MASKPICT,N,NDOT,NPOLL
-CCC      CHARACTER*1 ICHAR
-CCC      LOGICAL MOVE
-CCCC     ..
-CCCC     .. Local Arrays ..
-CCC      INTEGER LOFFX(16),LOFFY(16)
-CCCC     ..
-CCCC     .. External Subroutines ..
-CCC      EXTERNAL AEDAAV,AEDDMF,AEDDPA,AEDDVA,AEDEPA,AEDESC,AEDFFD,AEDFSC,
-CCC     +         AEDMOV,AEDRSC,AEDSBC,AEDSIF,AEDSRM,AEDSWM,CHNCOL,IROT,
-CCC     +         GSFLRI,GSFLSR,SETTBL
-CCCC     ..
-CCCC     .. Intrinsic Functions ..
-CCC      INTRINSIC ABS,MOD,NINT
-CCCC     ..
-CCCC     .. Common blocks ..
-CCC      COMMON /FLAGS/NBACK,PENS(8),PFLAGS(8),RM(2,2),TX,TY,SCALX,SCALY,
-CCC     +       KXMIN,KXMAX,KYMIN,KYMAX,IPICT,AAV,PAN,ROTATE,CLEAR,UNIFORM,
-CCC     +       TABLE,PICTURE,HTEXT,EOF
-CCC      COMMON /PINOUT/LUNIN,LUNOUT
-CCC      COMMON /GSFHD/
-CCC     + IUNIT,  NREC,   DOTMMX, DOTMMY,   IXMIN,  IXMAX,  IYMIN,
-CCC     + IYMAX,  LINWT,  ICOLOR, MIXCOLOR, MDEVIC, MDIREC, MOUT,
-CCC     + MPIC,   MSCAFL, MCNTFL, DWLIMX,   DWLIMY, DVXMIN, DVXMAX,
-CCC     + DVYMIN, DVYMAX, NPICS,
-CCC     + PASWRD, 
-CCC     + SPARE1(15),
-CCC     + TITLEH,
-CCC     + SPARE2(68)
-CCCC     .. Save Statement ..
-CCCC
-CCC      SAVE
-CCCC
-CCCC     .. Data statements ..
-CCCC
-CCCC---- Plotfile command codes
-CCCC
-CCC      DATA IEND/-1/,IDOT/-2/,ILWT/-3/,IPEN/-4/,IPAP/-5/,IERAS/-6/
-CCC      DATA LOFFX/1,-1,2,-2,3,-3,4,-4,8*0/
-CCC      DATA LOFFY/8*0,1,-1,2,-2,3,-3,4,-4/
-CCC      DATA NPOLL/20/
-CCCC
-CCCC---- AED masks for picture (lower 4 bits) and text (upper 4 bits)
-CCCC
-CCC      DATA MASKPICT,MASKTEXT,MASKFULL/15,240,255/
-CCCC
-CCCC---- Do actual plotting Flush keyboard buffer
-CCCC
-CCC      CALL AEDSIF
-CCCC
-CCCC---- Flag for text
-CCCC
-CCC      HTEXT = .FALSE.
-CCCC
-CCC      IF (AAV) THEN
-CCC        MASK = MASKFULL
-CCC      ELSE
-CCC        MASK = MASKPICT
-CCC      END IF
-CCC      CALL AEDSWM(MASK)
-CCC      CALL AEDSRM(MASK,MASK,MASK,MASK)
-CCCC
-CCC      IF (CLEAR) THEN
-CCCC
-CCCC---- Set background colour
-CCCC
-CCC        CALL AEDSBC(NBACK)
-CCC        CALL AEDFFD
-CCC        CALL AEDESC
-CCC        CALL SETTBL
-CCC      END IF
-CCCC
-CCCC---- Set default colour = pen 1
-CCCC
-CCC      CALL CHNCOL(PENS(1),NBACK,.FALSE.)
-CCCC
-CCCC---- Reset pen flags
-CCCC
-CCC      DO 10 I = 1,8
-CCC        PFLAGS(I) = 1
-CCC   10 CONTINUE
-CCCC
-CCCC----- Anti-aliased vectors
-CCCC
-CCC      IF (NBACK.NE.0) AAV = .FALSE.
-CCC      IF (AAV) THEN
-CCC        CALL AEDAAV(2)
-CCC        TABLE = .FALSE.
-CCC      ELSE
-CCC        CALL AEDAAV(0)
-CCC      END IF
-CCCC
-CCCC---- If full memory, enable panning
-CCCC
-CCC      IF (PAN) THEN
-CCC        CALL AEDEPA
-CCC      ELSE
-CCC        CALL AEDDPA
-CCC      END IF
-CCCC
-CCCC---- NDOT remembers when a dot code was last issued
-CCCC
-CCC      NDOT = 0
-CCC      IXOLD = 0
-CCC      IYOLD = 0
-CCC      DO 30 J = 1,NREC
-CCC        IFLAG5 = 0
-CCC        CALL GSFLRI(JX,JY,IFLAG5)
-CCC        IF (IFLAG5.EQ.1) THEN
-CCC          GO TO 50
-CCC        ELSE
-CCC          NDOT = NDOT - 1
-CCC          IF (JX.EQ.ILWT) THEN
-CCC            LINWT = JY
-CCC          ELSE IF (JX.EQ.IPEN) THEN
-CCCC
-CCCC---- Change colour
-CCCC
-CCC            CALL CHNCOL(PENS(JY),NBACK,.FALSE.)
-CCCC
-CCCC---- Mark which pens used
-CCCC
-CCC            PFLAGS(JY) = 2
-CCC          ELSE IF (JX.EQ.IDOT) THEN
-CCC            NDOT = 2
-CCCC
-CCC          ELSE IF (JX.GE.0) THEN
-CCCC
-CCC            IF (JY.LT.0) THEN
-CCC              MOVE = .TRUE.
-CCC              JY = -JY
-CCC            ELSE
-CCC              MOVE = .FALSE.
-CCC            END IF
-CCCC
-CCCC---- Rotate coordinates
-CCCC
-CCC            IF (ROTATE) THEN
-CCC              CALL IROT(IX,IY,RM,JX,JY)
-CCC            ELSE
-CCC              IX = JX
-CCC              IY = JY
-CCC            END IF
-CCCC
-CCC            IF (MOVE) THEN
-CCC              IXOLD = NINT(SCALX*IX+TX)
-CCC              IYOLD = NINT(SCALY*IY+TY)
-CCC              CALL AEDMOV(IXOLD,IYOLD)
-CCC            ELSE
-CCC              IX = NINT(SCALX*IX+TX)
-CCC              IY = NINT(SCALY*IY+TY)
-CCC              IF (NDOT.LT.1) THEN
-CCC                CALL AEDDVA(IX,IY)
-CCC              ELSE
-CCC                CALL AEDMOV(IX,IY)
-CCC                CALL AEDDVA(IX,IY)
-CCC              END IF
-CCCC
-CCCC---- Here for multiple wt lines
-CCCC
-CCC              IF (LINWT.GT.1) THEN
-CCC                IDXY = -1
-CCC                IF (ABS(IX-IXOLD).GT.ABS(IY-IYOLD)) IDXY = 7
-CCC                DO 20 JL = 2,LINWT
-CCC                  IND = JL + IDXY
-CCC                  IXMOVE = LOFFX(IND) + IXOLD
-CCC                  IYMOVE = LOFFY(IND) + IYOLD
-CCC                  IF (IXMOVE.LT.KXMIN) IXMOVE = KXMIN
-CCC                  IF (IYMOVE.LT.KYMIN) IYMOVE = KYMIN
-CCC                  IF (IXMOVE.GT.KXMAX) IXMOVE = KXMAX
-CCC                  IF (IYMOVE.GT.KYMAX) IYMOVE = KYMAX
-CCC                  CALL AEDMOV(IXMOVE,IYMOVE)
-CCC                  IXDRAW = LOFFX(IND) + IX
-CCC                  IYDRAW = LOFFY(IND) + IY
-CCC                  IF (IXDRAW.LT.KXMIN) IXDRAW = KXMIN
-CCC                  IF (IYDRAW.LT.KYMIN) IYDRAW = KYMIN
-CCC                  IF (IXDRAW.GT.KXMAX) IXDRAW = KXMAX
-CCC                  IF (IYDRAW.GT.KYMAX) IYDRAW = KYMAX
-CCC                  IF (NDOT.LT.1) THEN
-CCC                    CALL AEDDVA(IXDRAW,IYDRAW)
-CCC                  ELSE
-CCC                    CALL AEDMOV(IXDRAW,IYDRAW)
-CCC                    CALL AEDDVA(IXDRAW,IYDRAW)
-CCC                  END IF
-CCC   20           CONTINUE
-CCC              END IF
-CCC              IXOLD = IX
-CCC              IYOLD = IY
-CCC            END IF
-CCC          END IF
-CCCC
-CCCC---- Poll keyboard every NPOLL vector for any character to interrupt plotting
-CCCC
-CCC          IF (MOD(J,NPOLL).EQ.0) THEN
-CCC            CALL AEDFSC(ICHAR)
-CCC            IF (ICHAR.NE.CHAR(0)) THEN
-CCCC
-CCCC---- Character found, wait for another character
-CCCC
-CCC              CALL AEDRSC(ICHAR)
-CCCC
-CCCC---- If <space> continue, otherwise stop
-CCCC
-CCC              IF(ICHAR.NE.' ') GO TO 50
-CCC            END IF
-CCC          END IF
-CCC        END IF
-CCC   30 CONTINUE
-CCCC
-CCCC
-CCCC---- Flush buffer
-CCCC
-CCC      CALL AEDDMF
-CCCC
-CCC      RETURN
-CCCC
-CCCC---- Position file to end of current picture
-CCCC   code unreachable
-CCCC
-CCC      N = NREC - J
-CCC      IF (N.GT.0) CALL GSFLSR(N*4)
-CCC      RETURN
-CCCC
-CCC   50 call ccperr(1,' stop 50 in plot84lib.for')
-CCCC
-CCC      END
-CCCC
-CCCC
-CCCC
-CCC      SUBROUTINE DTEXT(BUFFER)
-CCCC     ========================
-CCCC
-CCCC---- Write character string BUFFER to AED, no terminal cr lf,
-CCCC     include trailing spaces
-CCCC
-CCCC     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
-CCCC     They were LINE
-CCCC
-CCCC     .. Scalar Arguments ..
-CCC      CHARACTER BUFFER* (*)
-CCCC     ..
-CCCC     .. Scalars in Common ..
-CCC      INTEGER LUNIN,LUNOUT
-CCCC     ..
-CCCC     .. Local Scalars ..
-CCC      INTEGER I,IC,J,K
-CCCC     ..
-CCCC     .. Local Arrays ..
-CCC      CHARACTER*1 LINE(100)
-CCCC     ..
-CCCC     .. External Subroutines ..
-CCC      EXTERNAL AEDTXT
-CCCC     ..
-CCCC     .. Intrinsic Functions ..
-CCC      INTRINSIC ICHAR,LEN,CHAR
-CCCC     ..
-CCCC     .. Common blocks ..
-CCC      COMMON /PINOUT/LUNIN,LUNOUT
-CCCC
-CCCC     .. Save Statement ..
-CCCC
-CCC      SAVE
-CCCC
-CCCC---- Get length of string
-CCCC
-CCC      I = LEN(BUFFER)
-CCCC
-CCCC---- Copy string to local array to allow room to insert cr lf at end
-CCCC
-CCC      K = 0
-CCC      DO 10 J = 1,I
-CCC        IC = ICHAR(BUFFER(J:J))
-CCC        K = K + 1
-CCC        IF (IC.EQ.35) THEN
-CCCC
-CCCC---- Character is # - Replace character # by cr lf
-CCCC
-CCC          LINE(K)=CHAR(15)
-CCC          LINE(K+1)=CHAR(12)
-CCC          K = K + 1
-CCC        ELSE
-CCC          LINE(K) = CHAR(IC)
-CCC        END IF
-CCC   10 CONTINUE
-CCC      CALL AEDTXT(LINE,K)
-CCCC
-CCC      END
 C
 C
 C
@@ -1080,110 +726,6 @@ C
       END IF
 C
       END
-CCCC
-CCCC
-CCCC  commented-out since it clashes with system routine & isn't used by
-CCCC     ccp4 programs
-CCC      SUBROUTINE FREAD(CARD,XNUMS,NFIELDS)
-CCCC     ===================================
-CCCC
-CCCC---- Decode string CARD into floating numbers in XNUMS, returns
-CCCC     number of numbers in NFIELDS
-CCCC
-CCCC     If NFIELDS .gt. 0 on entry, only this number of fields will be read
-CCCC
-CCCC     .. Scalar Arguments ..
-CCC      INTEGER NFIELDS
-CCC      CHARACTER CARD* (*)
-CCCC     ..
-CCCC     .. Array Arguments ..
-CCC      REAL XNUMS(*)
-CCCC     ..
-CCCC     .. Scalars in Common ..
-CCC      INTEGER LUNIN,LUNOUT
-CCCC     ..
-CCCC     .. Local Scalars ..
-CCC      INTEGER I,IEND,ISTART,N,NCHAR,NPC,NPOINT
-CCC      CHARACTER BLANK*1,COMMA*1
-CCCC     ..
-CCCC     .. Intrinsic Functions ..
-CCC      INTRINSIC INDEX,LEN
-CCCC     ..
-CCCC     .. Common blocks ..
-CCC      COMMON /PINOUT/LUNIN,LUNOUT
-CCCC
-CCCC     .. Save Statement ..
-CCCC
-CCC      SAVE
-CCCC
-CCCC     .. Data statements ..
-CCC      DATA BLANK/' '/,COMMA/','/
-CCCC
-CCC      NCHAR = LEN(CARD)
-CCCC
-CCCC---- Numeric string
-CCCC
-CCC      ISTART = 1
-CCC      IF (NFIELDS.LE.0) NFIELDS = 10000
-CCC      N = 0
-CCC   10 CONTINUE
-CCCC
-CCCC---- Search for starting point
-CCCC
-CCC      IF (CARD(ISTART:ISTART).EQ.BLANK .OR.
-CCC     +    CARD(ISTART:ISTART).EQ.COMMA) THEN
-CCC        ISTART = ISTART + 1
-CCC        IF (ISTART.GT.NCHAR) THEN
-CCC          GO TO 50
-CCC        ELSE
-CCC          GO TO 10
-CCC        END IF
-CCC      END IF
-CCC   20 CONTINUE
-CCCC
-CCCC---- Decode fields
-CCCC
-CCC      IF (ISTART.LE.NCHAR .AND. N.LT.NFIELDS) THEN
-CCC        N = N + 1
-CCC        NPOINT = INDEX(CARD(ISTART:),BLANK) - 1
-CCC        NPC = INDEX(CARD(ISTART:),COMMA) - 1
-CCC        IF (NPC.GE.0 .AND. NPC.LT.NPOINT) NPOINT = NPC
-CCC        IEND = ISTART + NPOINT - 1
-CCC        READ (CARD(ISTART:IEND),FMT=6333,ERR=40) XNUMS(N)
-CCCC
-CCCC----   6333 FORMAT(F<NPOINT>.0)
-CCCC
-CCC6333    FORMAT(F10.0)
-CCC        ISTART = IEND + 2
-CCC   30   CONTINUE
-CCCC
-CCCC---- Skip over recurring blanks
-CCCC
-CCC        IF (CARD(ISTART:ISTART).EQ.BLANK .OR.
-CCC     +      CARD(ISTART:ISTART).EQ.COMMA) THEN
-CCC          ISTART = ISTART + 1
-CCC          IF (ISTART.GT.NCHAR) THEN
-CCC            GO TO 50
-CCC          ELSE
-CCC            GO TO 30
-CCC          END IF
-CCC        END IF
-CCCC
-CCC        I = I + 1
-CCC        GO TO 20
-CCC      ELSE
-CCC        GO TO 50
-CCC      END IF
-CCCC
-CCC   40 NFIELDS = -1
-CCC      RETURN
-CCCC
-CCCC---- All numeric fields decoded
-CCCC
-CCC   50 NFIELDS = N
-CCCC
-CCCC
-CCC      END
 C
 C
 C
@@ -11480,75 +11022,6 @@ C
    40 CONTINUE
 C
       END
-CCCC
-CCCC
-CCCC
-CCC      SUBROUTINE GSTXT(BUFFER)
-CCCC     =========================
-CCCC
-CCCC---- Write character string BUFFER to AED
-CCCC     9/2/90 - PJD: Changed definition of several BYTEs to CHARACTER*1.
-CCCC     They were LINE
-CCCC
-CCCC     .. Scalar Arguments ..
-CCC      CHARACTER BUFFER* (*)
-CCCC     ..
-CCCC     .. Scalars in Common ..
-CCC      INTEGER LUNIN,LUNOUT
-CCCC     ..
-CCCC     .. Local Scalars ..
-CCC      INTEGER I,IC,J,K
-CCCC     ..
-CCCC     .. Local Arrays ..
-CCC      CHARACTER*1 LINE(130)
-CCCC     ..
-CCCC     .. External Subroutines ..
-CCC      EXTERNAL AEDTXT
-CCCC     ..
-CCCC     .. Intrinsic Functions ..
-CCC      INTRINSIC ICHAR,LEN,CHAR
-CCCC     ..
-CCCC     .. Common blocks ..
-CCC      COMMON /PINOUT/LUNIN,LUNOUT
-CCCC
-CCCC     .. Save Statement ..
-CCCC
-CCC      SAVE
-CCCC
-CCCC---- Get length of string
-CCCC
-CCC      J = LEN(BUFFER)
-CCCC
-CCCC---- Find last non-blank character
-CCCC
-CCC      DO 10 I = J,1,-1
-CCC        IF (BUFFER(I:I).NE.' ') GO TO 20
-CCC   10 CONTINUE
-CCC      RETURN
-CCCC
-CCCC---- Copy string to local array to allow room
-CCCC     to insert cr lf at end
-CCCC
-CCC   20 K = 0
-CCC      DO 30 J = 1,I
-CCC        IC = ICHAR(BUFFER(J:J))
-CCC        K = K + 1
-CCC        IF (IC.EQ.35) THEN
-CCCC
-CCCC---- Character is # - Replace character # by cr lf
-CCCC
-CCC        LINE(K)= CHAR(13)
-CCC        LINE(K+1)= CHAR(10)
-CCC          K = K + 1
-CCC        ELSE
-CCC          LINE(K) = CHAR(IC)
-CCC        END IF
-CCC   30 CONTINUE
-CCC      LINE(K+1)= CHAR(13)
-CCC      LINE(K+2)= CHAR(10)
-CCC      CALL AEDTXT(LINE,K+2)
-CCCC
-CCC      END
 C
 C
 C
@@ -12829,199 +12302,6 @@ C
       OLDLSX = LSX
 C
       END
-CCCC
-CCCC
-CCCC
-CCC      SUBROUTINE HELPTXT(IOPT)
-CCCC     ========================
-CCCC
-CCCC---- Display help text and current options.
-CCCC     IOPT is option number currently active
-CCCC
-CCCC     .. Scalar Arguments ..
-CCC      INTEGER IOPT
-CCCC     ..
-CCCC     .. Scalars in Common ..
-CCC      REAL SCALX,SCALY,TX,TY
-CCC      INTEGER IPICT,KXMAX,KXMIN,KYMAX,KYMIN,LUNIN,LUNOUT,NBACK
-CCC      LOGICAL AAV,CLEAR,EOF,HTEXT,PAN,PICTURE,ROTATE,TABLE,UNIFORM
-CCCC     ..
-CCCC     .. Arrays in Common ..
-CCC      REAL RM
-CCC      INTEGER PENS,PFLAGS
-CCCC     ..
-CCCC     .. Local Scalars ..
-CCC      INTEGER I,IP,IX,IY,JX,JY,MASKTEXT,NOPT
-CCC      CHARACTER BUFFER*80,OUTLIN*400
-CCCC     ..
-CCCC     .. Local Arrays ..
-CCC      CHARACTER IDENT(13)*8,SW(3)*8,SWFL(13)*8,TEXT(13)*50
-CCCC     ..
-CCCC     .. External Subroutines ..
-CCC      EXTERNAL AEDDPA,AEDESC,AEDFFD,AEDHOM,AEDMOV,AEDRCP,AEDSBC,AEDSRM,
-CCC     +         AEDSWM,CHNCOL,DTEXT,GSTXT,SETTBL
-CCCC     ..
-CCCC     .. Common blocks ..
-CCC      COMMON /FLAGS/NBACK,PENS(8),PFLAGS(8),RM(2,2),TX,TY,SCALX,SCALY,
-CCC     +       KXMIN,KXMAX,KYMIN,KYMAX,IPICT,AAV,PAN,ROTATE,CLEAR,UNIFORM,
-CCC     +       TABLE,PICTURE,HTEXT,EOF
-CCC      COMMON /PINOUT/LUNIN,LUNOUT
-CCCC
-CCCC     .. Save Statement ..
-CCCC
-CCC      SAVE
-CCCC
-CCCC     .. Data statements ..
-CCC      DATA IDENT/' H',' E','<return>',' D',' N',' P',' C',' V',' R',
-CCC     +     ' F',' A',' W',' U'/
-CCC      DATA SW/'        ','  on    ','  off   '/
-CCC      DATA NOPT/13/
-CCC      DATA TEXT/'display this text','exit',
-CCC     +     'display or redraw current picture','redraw picture',
-CCC     +     'draw next picture','select picture number','change colours',
-CCC     +     'change viewport (area of screen used)','rotate picture',
-CCC     +     'read new input filename',
-CCC     +     'switch anti-aliasing (smoothing of vectors) on/off',
-CCC     +     'switch flag to superimpose pictures',
-CCC     +     'switch for uniform scaling on x and y'/
-CCC      DATA MASKTEXT/240/
-CCCC
-CCCC---- Option number here includes <return>, so adjust
-CCCC
-CCC      IP = IOPT
-CCC      IF (IOPT.GT.2) IP = IOPT + 1
-CCCC
-CCCC
-CCC      IF (.NOT.TABLE) THEN
-CCCC
-CCCC---- Set colour table
-CCCC
-CCC        CALL SETTBL
-CCCC
-CCCC---- Set flag
-CCCC
-CCC        TABLE = .TRUE.
-CCC      END IF
-CCCC
-CCC      IF (.NOT.HTEXT) THEN
-CCCC
-CCCC---- Set masks
-CCCC
-CCC        CALL AEDSWM(MASKTEXT)
-CCC        CALL AEDSRM(MASKTEXT,MASKTEXT,MASKTEXT,MASKTEXT)
-CCCC
-CCCC---- Erase screen, set cursor to top, set colour black, disable pan
-CCCC
-CCC        CALL AEDSBC(NBACK*16)
-CCC        CALL AEDFFD
-CCC        CALL AEDESC
-CCC        CALL AEDHOM
-CCC        CALL CHNCOL(0,NBACK,.TRUE.)
-CCC        CALL AEDDPA
-CCCC
-CCC        OUTLIN = '#When a picture has been plotted, '//
-CCC     +      'the program waits for a single character command,'//
-CCC     +      ' listed below'
-CCC        CALL GSTXT(OUTLIN)
-CCCC
-CCC        OUTLIN = 'If anti-aliasing is switched off (default),'//
-CCC     +        ' the current picture is preserved while text is on'
-CCC        CALL GSTXT(OUTLIN)
-CCCC
-CCC        OUTLIN = 'the screen: if anti-aliasing is switched on, '//
-CCC     +      'the picture is redrawn after this text is'
-CCC        CALL GSTXT(OUTLIN)
-CCCC
-CCC        OUTLIN = 'displayed. Anti-aliasing smoothes out vectors,'//
-CCC     +    ' at the expense of some loss of resolution#'
-CCC        CALL GSTXT(OUTLIN)
-CCCC
-CCC        OUTLIN = 'Plotting may be interrupted by pressing '//
-CCC     +          'any key, and be resumed by <space>.'
-CCC        CALL GSTXT(OUTLIN)
-CCCC
-CCC        OUTLIN = 'Typing any other key abandons the plot#'
-CCC        CALL GSTXT(OUTLIN)
-CCCC
-CCCC---- Blank all switch flags
-CCCC
-CCC        DO 10 I = 1,NOPT
-CCC          SWFL(I) = SW(1)
-CCC   10   CONTINUE
-CCCC
-CCCC---- Set switches for anti-aliasing, superimposition, and uniform scaling
-CCCC
-CCC        IF (AAV) THEN
-CCC          SWFL(11) = SW(2)
-CCC        ELSE
-CCC          SWFL(11) = SW(3)
-CCC        END IF
-CCCC
-CCC        IF (CLEAR) THEN
-CCC          SWFL(12) = SW(3)
-CCC        ELSE
-CCC          SWFL(12) = SW(2)
-CCC        END IF
-CCCC
-CCC        IF (UNIFORM) THEN
-CCC          SWFL(13) = SW(2)
-CCC        ELSE
-CCC          SWFL(13) = SW(3)
-CCC        END IF
-CCCC
-CCCC---- Display
-CCCC
-CCC        DO 20 I = 1,NOPT
-CCC          CALL DTEXT(IDENT(I))
-CCC          CALL DTEXT(SWFL(I))
-CCC          OUTLIN = TEXT(I)
-CCC          CALL GSTXT(OUTLIN)
-CCC   20   CONTINUE
-CCCC
-CCC        IF (PICTURE .AND. IPICT.GT.0) THEN
-CCC          WRITE (BUFFER,FMT=6000) IPICT
-CCC          CALL GSTXT(BUFFER)
-CCC        ELSE IF (EOF) THEN
-CCC          OUTLIN = '# End of file found'
-CCC          CALL GSTXT(OUTLIN)
-CCC        END IF
-CCCC
-CCC        HTEXT = .TRUE.
-CCCC
-CCC      END IF
-CCCC
-CCCC---- If IOPT .gt. 0 , overwrite option selection letter in colour
-CCCC
-CCC      IF (IOPT.GT.0) THEN
-CCCC
-CCCC---- Record current alpha cursor position
-CCCC
-CCC        CALL AEDRCP(JX,JY)
-CCCC
-CCCC---- Position to appropriate line, home = 1, 563, line spacing = 12
-CCCC
-CCC        IX = 1
-CCC        IY = 563 - (8+IP)*12
-CCC        CALL AEDMOV(IX,IY)
-CCCC
-CCCC---- Colour current option
-CCCC
-CCC        CALL CHNCOL(5,NBACK,.TRUE.)
-CCC        CALL DTEXT(IDENT(IP))
-CCC        CALL CHNCOL(0,NBACK,.TRUE.)
-CCCC
-CCCC---- Restore position
-CCCC
-CCC        CALL AEDMOV(JX,JY)
-CCC      ELSE
-CCCC
-CCC      END IF
-CCCC
-CCCC---- Format statements
-CCCC
-CCC 6000 FORMAT ('#  Current picture number is:',I5)
-CCCC
-CCC      END
 C                   
 C
 C
@@ -13075,6 +12355,7 @@ C
 C     .. Save Statement ..
 C
       SAVE
+      DATA INIT/0/
 C
 C     .. Equivalences .. character*1 to integer
       EQUIVALENCE (NBYTES,PC)
@@ -14288,66 +13569,6 @@ C
      +       'LEFT ')
 C
       END
-CCCC
-CCCC
-CCCC
-CCC      SUBROUTINE SETTBL
-CCCC     =================
-CCCC
-CCCC---- Set colour lookuptable for lower 4 bits (picture)
-CCCC     and upper 4 bits (for text)
-CCCC
-CCCC---- ITABLE    0,0,0,            ! black
-CCCC                 255,0,0,            ! red
-CCCC                 0,255,0,      ! green
-CCCC                 255,255,0,      ! yellow
-CCCC                 0,0,255,      ! blue
-CCCC                 255,0,255,      ! magenta
-CCCC                 0,255,255,      ! cyan
-CCCC                 255,255,255,      ! white
-CCCC                 255,100,128,      ! pink
-CCCC                 150,30,30,      ! brick
-CCCC                 255,128,0,      ! orange
-CCCC                 170,255,170,      ! aqua
-CCCC                 100,100,100,      ! grey
-CCCC                 150,100,50,      ! brown
-CCCC                 150,180,255,      ! sky
-CCCC                 200,100,255      ! lilac
-CCCC
-CCCC     .. Scalars in Common ..
-CCC      INTEGER LUNIN,LUNOUT
-CCCC     ..
-CCCC     .. Local Scalars ..
-CCC      INTEGER I,N
-CCCC     ..
-CCCC     .. Local Arrays ..
-CCC      INTEGER ITABLE(3,16)
-CCCC     ..
-CCCC     .. External Subroutines ..
-CCC      EXTERNAL AEDSCT
-CCCC     ..
-CCCC     .. Common blocks ..
-CCC      COMMON /PINOUT/LUNIN,LUNOUT
-CCCC
-CCCC     .. Save Statement ..
-CCCC
-CCC      SAVE
-CCCC
-CCCC     .. Data statements ..
-CCC      DATA ITABLE/0,0,0,255,0,0,0,255,0,255,255,0,0,0,255,255,0,255,0,
-CCC     +     255,255,255,255,255,255,100,128,150,30,30,255,128,0,170,255,
-CCC     +     170,100,100,100,150,100,50,150,180,255,200,100,255/
-CCCC     ..
-CCCC
-CCCC---- Set colour table
-CCCC
-CCC      DO 10 I = 1,16
-CCC        CALL AEDSCT(I-1,1,ITABLE(1,I),ITABLE(2,I),ITABLE(3,I))
-CCC        N = (I-1)*16
-CCC        CALL AEDSCT(N,1,ITABLE(1,I),ITABLE(2,I),ITABLE(3,I))
-CCC   10 CONTINUE
-CCCC
-CCC      END
 C
 C
 C
@@ -14569,35 +13790,3 @@ C
       CALL GSTRES(NTRSAV)
 C
       END
-CCCC     
-CCCC
-CCCC commented-out because of reported clash with system routine
-CCC      SUBROUTINE ZERO(A,N)
-CCCC     ====================
-CCCC
-CCCC---- zero n bytes of a
-CCCC
-CCCC     .. Scalar Arguments ..
-CCC      INTEGER N
-CCCC     ..
-CCCC     .. Array Arguments ..
-CCC      INTEGER A(N)
-CCCC     ..
-CCCC     .. Scalars in Common ..
-CCC      INTEGER LUNIN,LUNOUT
-CCCC     ..
-CCCC     .. Local Scalars ..
-CCC      INTEGER I
-CCCC     ..
-CCCC     .. Common blocks ..
-CCC      COMMON /PINOUT/LUNIN,LUNOUT
-CCCC
-CCCC     .. Save Statement ..
-CCCC
-CCC      SAVE
-CCCC
-CCC      DO 10 I = 1,N
-CCC        A(I) = 0
-CCC   10 CONTINUE
-CCCC
-CCC      END
