@@ -183,9 +183,9 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
           if (nsym2 == nsym1) {
             op2 = (ccp4_symop *) ccp4_utils_malloc(nsym2*sizeof(ccp4_symop));
             for (i = 0; i < sg_num_cent; ++i) {
-             symop_to_mat4(sg_cenop[i],sg_cenop[i]+strlen(sg_cenop[i]),cent_ops);
+             symop_to_mat4(sg_cenop[i],sg_cenop[i]+strlen(sg_cenop[i]),cent_ops[0]);
              for (j = 0; j < sg_nsymp; ++j) {
-              symop_to_mat4(sg_symop[j],sg_symop[j]+strlen(sg_symop[j]),rot2);
+              symop_to_mat4(sg_symop[j],sg_symop[j]+strlen(sg_symop[j]),rot2[0]);
               ccp4_4matmul(rot1,cent_ops,rot2);
               op2[i*sg_nsymp+j] = mat4_to_rotandtrn(rot1);
 	     }
@@ -232,7 +232,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   /* change of basis */
   if (debug) 
     printf(" Change of basis %s \n",sg_basisop);
-  symop_to_mat4(sg_basisop,sg_basisop+strlen(sg_basisop),sg_chb);
+  symop_to_mat4(sg_basisop,sg_basisop+strlen(sg_basisop),sg_chb[0]);
   /* this is wrong - check later */
   for (i = 0; i < 3; ++i) {
    for (j = 0; j < 3; ++j) {
@@ -259,10 +259,10 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
    }
   } else {
    for (i = 0; i < sg_num_cent; ++i) {
-    symop_to_mat4(sg_cenop[i],sg_cenop[i]+strlen(sg_cenop[i]),cent_ops);
+    symop_to_mat4(sg_cenop[i],sg_cenop[i]+strlen(sg_cenop[i]),cent_ops[0]);
     for (j = 0; j < sg_nsymp; ++j) {
      strncpy(filerec,sg_symop[j],80);   /* symop_to_mat4 overwrites later sg_symop */
-     symop_to_mat4(filerec,filerec+strlen(filerec),rot2);
+     symop_to_mat4(filerec,filerec+strlen(filerec),rot2[0]);
      ccp4_4matmul(rot1,cent_ops,rot2);
      invert4matrix(rot1,rot2);
      for (k = 0; k < 3; ++k) {

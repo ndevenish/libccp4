@@ -67,7 +67,7 @@ FORTRAN_SUBR ( SYMFR3, symfr3,
   CSYMLIB_DEBUG(puts("CSYMLIB_F: SYMFR3");)
 
   temp_name = ccp4_FtoCString(FTN_STR(icol)+(*i1-1), FTN_LEN(icol)-(*i1-1));
-  nsym = symop_to_mat4( temp_name, temp_name+strlen(temp_name), tmp_rot);
+  nsym = symop_to_mat4( temp_name, temp_name+strlen(temp_name), tmp_rot[0]);
   for (i = 0; i < nsym; ++i)
     for (j = 0; j < 4; ++j) 
       for (k = 0; k < 4; ++k) 
@@ -109,7 +109,7 @@ FORTRAN_SUBR( SYMFR2, symfr2,
   CSYMLIB_DEBUG(puts("CSYMLIB_F: SYMFR2");)
 
   temp_name = ccp4_FtoCString(FTN_STR(symchs)+(*icol-1), FTN_LEN(symchs)-(*icol-1));
-  ns = symop_to_mat4( temp_name, temp_name+strlen(temp_name), tmp_rot);
+  ns = symop_to_mat4( temp_name, temp_name+strlen(temp_name), tmp_rot[0]);
   for (i = 0; i < ns; ++i)
     for (j = 0; j < 4; ++j) 
       for (k = 0; k < 4; ++k) 
