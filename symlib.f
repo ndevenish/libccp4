@@ -59,6 +59,7 @@ C    ccp4_hash_zeroit
 C
 C 7) Miscellaneous subroutines.
 C    setrsl        sthlsq        sts3r4        pstoph
+C    CALC_ORIG_PS
 C
 C_END_SYMLIB
 C_BEGIN_OUTLINE
@@ -761,6 +762,15 @@ C***   *****  PSTOPH  *****
 C***   Convert PSIX,PSIY,PSIZ (= epsx,epsy,epsz) to PHIX,PHIY,PHIZ ,
 C***    using AVPHI
 C      All angles in radians
+C
+C -P- CALC_ORIG_PS - creats list of equivalent origins.
+C                    NORIG - number of origins.
+C                    ORIG(3,i) - vector of alternate origin
+C                               (for example : 0.5,0.0,0.5)
+C                               only positive components.
+C                               include vector: (0,0,0)
+C    Taken from Alexei Vagin
+C
 C
 C  End of Brief Description.
 C +++++++++++++++++++++++++
@@ -6043,3 +6053,179 @@ C---- Failure
 C
       FACTRZ = .FALSE.
       END
+
+C ******
+       SUBROUTINE CALC_ORIG_PS(NAMSPG_CIF,NSYM,RSYM,NORIG,ORIG,
+     +                         LPAXISX,LPAXISY,LPAXISZ)
+
+C -P- CALC_ORIG_PS - creats list of equivalent origins.
+C                    NORIG - number of origins.
+C                    ORIG(3,i) - vector of alternate origin 
+C                               (for example : 0.5,0.0,0.5)
+C                               only positive components.
+C                               include vector: (0,0,0)
+C    Taken from Alexei Vagin
+C -------------------------------------------------------------
+       CHARACTER*(*) NAMSPG_CIF
+       CHARACTER LINE*80
+       REAL RSYM(4,4,*)
+
+       REAL      ORIG(3,*),RSYMD(3,3)
+C ******
+      INTEGER   IS(3),ID(6)
+      LOGICAL   LPAXISX,LPAXISY,LPAXISZ
+C   These 6 fractions can represent an origin shift
+      DATA      ID/0,6,4,8,3,9/
+C                   1/2 1/3 2/3 1/4 3/4
+C -------------------------------------------------------------
+C    Find which axes are "polar" and cannot have alternate origins.
+      IFX=0
+      IFY=0
+      IFZ=0
+C   0.13, 0.17, 0.19 cannot be special positions in any spacegroup.
+      X=0.13
+      Y=0.17
+      Z=0.19
+      DO I=2,NSYM
+
+        XX=     RSYM(1,1,I)*X + RSYM(1,2,I)*Y + RSYM(1,3,I)*Z
+        YY=     RSYM(2,1,I)*X + RSYM(2,2,I)*Y + RSYM(2,3,I)*Z
+        ZZ=     RSYM(3,1,I)*X + RSYM(3,2,I)*Y + RSYM(3,3,I)*Z
+
+        IF((ABS(X-XX)).GT.0.01) LPAXISX=.FALSE.
+        IF((ABS(Y-YY)).GT.0.01) LPAXISY=.FALSE.
+        IF((ABS(Z-ZZ)).GT.0.01) LPAXISZ=.FALSE. 
+      ENDDO
+
+C  First origin is 0,0,0
+      NORIG=1
+      ORIG(1,1)=0.0
+      ORIG(2,1)=0.0
+      ORIG(3,1)=0.0
+
+C  Check which points can be an alternate origin.
+C                   1/2 1/3 2/3 1/4 3/4
+C--- Only six possibilities which are 0,  1/2 1/3 2/3 1/4 3/4
+
+      DO K1=1,6
+       DO K2=1,6
+        DO K3=1,6
+         IF(K1.EQ.1.AND.K2.EQ.1.AND.K3.EQ.1) GO TO 200
+          IS(1)=ID(K1)
+          IS(2)=ID(K2)
+          IS(3)=ID(K3)
+
+          IF( LPAXISX.AND.IS(1).NE.0) GO TO 200
+          IF( LPAXISY.AND.IS(2).NE.0) GO TO 200
+          IF( LPAXISZ.AND.IS(3).NE.0) GO TO 200
+
+C   Let [Si] =[RSYMi] be (3x4) symmetry operator.
+C   Need to Check if the symmetry operator shifts of each alternate origin 
+C   [ORx,ORy,ORz)  are preserved for each symmetry operator.
+C   Origin (0,0,0) shifts to        Ti(1),     Ti(2)      Ti(3) 
+C                             == RSYMi(1,4),RSYMi(2,4),RSYMi(3,4) 
+
+C  [RSYMi] [OR]  =  [OR] + [Ti] + n[I]  = [1 0 0 RSYMi(1,4)] [OR1] +  n[I]
+C                                         [0 1 0 RSYMi(2,4)] [OR2]
+C                                         [0 0 1 RSYMi(3,4)] [OR3]
+
+C  Hence  [RSYMi(1,1) -1   RSYMi(1,2)      RSYMi(1,3)      0] [OR1]   = n[I]
+C         [RSYMi(2,1)      RSYMi(2,2) -1   RSYMi(2,3)      0] [OR2] 
+C         [RSYMi(3,1)      RSYMi(3,2) -1   RSYMi(3,3) -1   0] [OR3] 
+C         [   0                0               0           1] [1  ]
+
+C   Use RSYM(..1) to respresent indentity.. Enough to use 3x3 matrix..
+c          DO I=1,NSYM-1
+c          DO J=I+1,NSYM
+c            DO K=1,3
+c            DO L=1,3
+c              M(K,L)=ISYM(K,L,I)-ISYM(K,L,J)
+c            ENDDO
+c            ENDDO
+c            DO K=1,3
+c              JS=M(1,K)*IS(1)+M(2,K)*IS(2)+M(3,K)*IS(3)
+c              IF(MOD(JS,12).NE.0) GO TO 200
+c            ENDDO
+c          ENDDO
+c          ENDDO
+
+          DO J=2,NSYM
+            DO K=1,3
+             DO L=1,3
+              RSYMD(K,L)=RSYM(K,L,J)-RSYM(K,L,1)
+             ENDDO
+            ENDDO
+            DO K=1,3
+              CHK= RSYMD(K,1)*IS(1)+RSYMD(K,2)*IS(2)+RSYMD(K,3)*IS(3) 
+     +           + 12000
+              IF(ABS(MOD(CHK,12.0)).GT.0.05) GO TO 200
+            ENDDO
+          ENDDO
+          NORIG=NORIG+1
+          ORIG(1,NORIG)=IS(1)/12.0
+          ORIG(2,NORIG)=IS(2)/12.0
+          ORIG(3,NORIG)=IS(3)/12.0
+ 200      CONTINUE
+        ENDDO
+       ENDDO
+      ENDDO
+ 100  CONTINUE
+       WRITE(6,'(///,3A,I4)') 
+     +  ' Number of Alternate origins for Spacegroup:  ',NAMSPG_CIF,
+     +  ' is:',NORIG
+      LINE = ' '
+
+      IF( LPAXISX)    LINE=
+     + ' This is a Polar spacegroup: Origin is not fixed along A axis'
+      IF( LPAXISY)    LINE=
+     + ' This is a Polar spacegroup: Origin is not fixed along B axis'
+      IF( LPAXISZ)    LINE=
+     + ' This is a Polar spacegroup: Origin is not fixed along C axis'
+      IF( LPAXISX .AND. LPAXISY)    LINE=
+     + ' This is a Polar+ spacegroup: Origin anywhere in A B plane'
+      IF( LPAXISX .AND. LPAXISZ)    LINE=
+     + ' This is a Polar+ spacegroup: Origin anywhere in A C plane'
+      IF( LPAXISY .AND. LPAXISZ)    LINE=
+     + ' This is a Polar+ spacegroup: Origin anywhere in B C plane'
+
+       IF(LINE.NE.' ') WRITE(6,'(/,A)')LINE
+
+      LINE = ' Norigin     Ox      Oy      Oz'
+      IF( LPAXISX)    LINE =
+     + ' Norigin     ??      Oy      Oz'
+      IF( LPAXISY)    LINE =
+     + ' Norigin     Ox      ??      Oz'
+      IF( LPAXISZ)    LINE =
+     + ' Norigin     Ox      Oy      ??'
+      IF( LPAXISX .AND. LPAXISY)    LINE=
+     + ' Norigin     ??      ??      Oz'
+      IF( LPAXISX .AND. LPAXISZ)    LINE=
+     + ' Norigin     ??      Oy      ??'
+      IF( LPAXISY .AND. LPAXISZ)    LINE=
+     + ' Norigin     Ox      ??      ??'
+       WRITE(6,'(//,A)')LINE
+       DO I=1,NORIG
+         IF(.NOT. (LPAXISX.OR.LPAXISY.OR.LPAXISZ)) 
+     +     WRITE(6,'(i8,3F8.4)') I,ORIG(1,I),ORIG(2,I),ORIG(3,I)
+         IF(LPAXISX .AND. .NOT. (LPAXISY.OR.LPAXISZ))  
+     +     WRITE(6,'(i8,A8,2F8.4)') I,'     ?? ',ORIG(2,I),ORIG(3,I)
+         IF(LPAXISY .AND. .NOT. (LPAXISX.OR.LPAXISZ))  
+     +     WRITE(6,'(i8,F8.4,A8,F8.4)') I,ORIG(1,I),'     ?? ',ORIG(3,I)
+         IF(LPAXISZ .AND. .NOT. (LPAXISX.OR.LPAXISY))  
+     +     WRITE(6,'(i8,2F8.4,A8)') I,ORIG(1,I),ORIG(2,I),'     ?? '
+         IF(LPAXISX .AND. LPAXISY)  
+     +     WRITE(6,'(i8,2A8,F8.4)') I,'     ?? ','     ?? ',ORIG(3,I)
+         IF(LPAXISX .AND. LPAXISZ)  
+     +     WRITE(6,'(i8,A8,F8.4,A8)') I,'     ?? ',ORIG(2,I),'     ?? '
+         IF(LPAXISY .AND. LPAXISZ)  
+     +     WRITE(6,'(i8,F8.4,2A8)') I,ORIG(1,I),'     ?? ','     ?? '
+       ENDDO
+
+      RETURN
+      END
+
+
+
+
+
+
