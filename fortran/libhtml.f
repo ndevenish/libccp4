@@ -111,9 +111,10 @@ C              isumm = 0 (use default settings for summary tags)
 C                     -1 (switch off summary tags)
 C
       integer ihtml,isumm
-      integer lpt, idum, htmlinit
+      integer lpt, idum, htmlinit,lunsto
       logical html,logsumm,summopen
       character cbin*160,chtml*160,cpid*160,dummy*160
+      external lunsto
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
      .                 summopen
       save   /ccp4hdat/
