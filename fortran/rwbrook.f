@@ -269,6 +269,16 @@ C
 250     CONTINUE
         IORTH=0
 255     NCODE=IORTH
+C   Correct inaccuracy of SCALEi input due to FORMAT, replace RF,RO 
+C    with RR(...,NCODE) if possible.
+        IF(NCODE.GT.0) THEN
+          DO 256 I = 1,3
+          DO 256 J = 1,3
+           RO(I,J) = RR(I,J,NCODE)
+256       CONTINUE
+        CALL RBRINV(RO,RF)
+        END IF
+
         IF(MSG2.LE.0)GO TO 500
 C
         WRITE(MSG2,1002)(RF(1,J),J=1,4),(RO(1,K),K=1,4),
@@ -357,7 +367,7 @@ C
      *//,'            RF                                   RO',/,
      *4(/,1X,4F8.3,5X,4F8.3),//)
 1003  FORMAT(6X,3F9.3,3F7.2)
-1004  FORMAT(10X,3F10.5,5X,F10.5)
+1004  FORMAT(10X,3F10.6,5X,F10.6)
 1005  FORMAT(27X,I2,1X,3F8.3,2F6.2,I4)
 1006  FORMAT(6X,I5,11X,I4)
 1007  FORMAT(/,' ORTHOGONALISATION CODE: ',A40,/)
