@@ -878,6 +878,100 @@ C
        CALL SYSTEM(STRING)
        END
 C
+      SUBROUTINE CCPAL1 (ROUTNE, N, TYPE, LENGTH)
+C
+C     Arrange to call ROUTNE with N TYPEd array arguments of given
+C     LENGTH (see CCPALC)
+C
+      EXTERNAL ROUTNE
+      INTEGER N, TYPE (*), LENGTH (*)
+      INTEGER I, SIZES (5), POINTER (12), ISTAT
+C     bytes per word (assuming 32 bit words...)
+      DATA SIZES /4,4,8,8,1/
+
+C     The calling routine, CCPALC, will have checked that the arguments
+C     are in range
+      DO I=1,N
+        POINTER(I) = malloc(SIZES(TYPE (I))*LENGTH(I))
+        IF (POINTER(I) .eq. 0)
+     +       CALL CCPERR (-1, 'CCPALC: can''t allocate memory')
+        CALL CCPZBI (%VAL(POINTER(I)), SIZES(TYPE (I))*LENGTH(I))
+      ENDDO
+      IF (N.EQ.1) THEN
+        CALL ROUTNE (LENGTH (1), %VAL(POINTER(1)))
+      ELSE IF (N.EQ.2) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)))
+      ELSE IF (N.EQ.3) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)))
+      ELSE IF (N.EQ.4) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)))
+      ELSE IF (N.EQ.5) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)))
+      ELSE IF (N.EQ.6) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)))
+      ELSE IF (N.EQ.7) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)),
+     +       LENGTH (7), %VAL(POINTER(7)))
+      ELSE IF (N.EQ.8) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)),
+     +       LENGTH (7), %VAL(POINTER(7)), LENGTH (8), %VAL(POINTER(8)))
+      ELSE IF (N.EQ.9) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)),
+     +       LENGTH (7), %VAL(POINTER(7)), LENGTH (8), %VAL(POINTER(8)),
+     +       LENGTH (9), %VAL(POINTER(9)))
+      ELSE IF (N.EQ.10) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)),
+     +       LENGTH (7), %VAL(POINTER(7)), LENGTH (8), %VAL(POINTER(8)),
+     +       LENGTH (9), %VAL(POINTER(9)),
+     +       LENGTH (10), %VAL(POINTER(10)))
+      ELSE IF (N.EQ.11) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)),
+     +       LENGTH (7), %VAL(POINTER(7)), LENGTH (8), %VAL(POINTER(8)),
+     +       LENGTH (9), %VAL(POINTER(9)),
+     +       LENGTH (10), %VAL(POINTER(10)),
+     +       LENGTH (11), %VAL(POINTER(11)))
+      ELSE IF (N.EQ.12) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)),
+     +       LENGTH (7), %VAL(POINTER(7)), LENGTH (8), %VAL(POINTER(8)),
+     +       LENGTH (9), %VAL(POINTER(9)),
+     +       LENGTH (10), %VAL(POINTER(10)),
+     +       LENGTH (11), %VAL(POINTER(11)),
+     +       LENGTH (12), %VAL(POINTER(12)))
+      ENDIF
+      DO I=1,N
+        CALL free(POINTER(I))
+      ENDDO
+      END
+C
       SUBROUTINE CEXIT (ICODE)
 C     trivial interface to system-dependent EXIT routine
       INTEGER ICODE
