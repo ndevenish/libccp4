@@ -345,7 +345,6 @@ $L(pack_c.o):	$(srcdir)/pack_c.c
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/pack_c.c
 	$(AR) $L pack_c.o && rm pack_c.o
 $L(pack_f.o):	$(srcdir)/pack_f.f
-	-rm -f pack_f.$(F) 2>/dev/null
 	$(FC) -c $(FFLAGS) $(srcdir)/pack_f.$(F) && $(AR) $(L) pack_f.o \
           && rm pack_f.o
 pack:	$L(pack_c.o) $L(pack_f.o)
