@@ -119,7 +119,11 @@ static char rcsid[] = "$Id$";
 */
 int ccperror(int ierr, const char *message)
 {
+  /* Execute user-defined function callback */
+  ccp4InvokeCallback(ierr,message);
+  /* Do messaging */
   ccperror_noexit(ierr, message);
+  /* Exit if necessary */
   if (ierr==0) {
     exit(0);
   } else if (ierr==1 || ierr==-1) {
