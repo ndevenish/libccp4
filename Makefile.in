@@ -352,3 +352,7 @@ tags :
  		-e 's|^\([a-zA-Z_]*.c\),|$(srcdir)/\1,|' \
  		-e 's/unix.for/unix.m4/' tagdir/TAGS > TAGS
 	rm -rf tagdir
+
+# Local Variables:
+# mode:makefile
+# End:
