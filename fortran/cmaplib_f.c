@@ -76,6 +76,7 @@ This document covers some peculiarities of the C implementation.
 #include"ccp4_fortran.h"
 #include"ccp4_parser.h"
 #include"csymlib.h"
+#include"ccp4_general.h"
 static char rcsid[] = "$Id$";
 
 static struct _IOConvMap *ioArray[MAXFILES];
@@ -1863,6 +1864,9 @@ FORTRAN_SUBR( MTTREP, mttrep,
 {
   char *temp_label;
 
+  /* no output map, nothing to do */
+  if (last_Write == -1) return;
+
   temp_label = ccp4_FtoCString(FTN_STR(label), FTN_LEN(label));
 
   ccp4_cmap_set_label(ioArray[last_Write]->mapfile, temp_label,*posn-1 );
@@ -1878,6 +1882,9 @@ FORTRAN_SUBR( CCP4_MAP_WRITE_REPLACE_TITLE,
      /* see MTTREP */
 {
   char *temp_label;
+
+  /* no output map, nothing to do */
+  if (last_Write == -1) return;
 
   temp_label = ccp4_FtoCString(FTN_STR(label), FTN_LEN(label));
 
@@ -1899,15 +1906,21 @@ FORTRAN_SUBR( MTTCPY, mttcpy,
 	      (const fpstr label, int label_len))
 {
   char *temp_label;
-  int nlabel,i;
+  int nlabel=0,i;
+
+  /* no output map, nothing to do */
+  if (last_Write == -1) return;
 
   temp_label = ccp4_FtoCString(FTN_STR(label), FTN_LEN(label));
-  
-  nlabel = ccp4_cmap_number_label(ioArray[last_Read]->mapfile);
-  for (i=0 ; i != nlabel ; ++i) 
-    ccp4_cmap_set_label(ioArray[last_Write]->mapfile,
+
+  if (last_Read != -1) {
+    nlabel = ccp4_cmap_number_label(ioArray[last_Read]->mapfile);
+    for (i=0 ; i != nlabel ; ++i) 
+      ccp4_cmap_set_label(ioArray[last_Write]->mapfile,
 			ccp4_cmap_get_label(ioArray[last_Read]->mapfile,i),
 			i);
+  }
+
   ccp4_cmap_set_label(ioArray[last_Write]->mapfile, temp_label,nlabel);
 
   free(temp_label);
@@ -1921,15 +1934,21 @@ FORTRAN_SUBR( CCP4_MAP_COPY_TITLE,
      /* see MTTCPY */
 {
   char *temp_label;
-  int nlabel,i;
+  int nlabel=0,i;
+
+  /* no output map, nothing to do */
+  if (last_Write == -1) return;
 
   temp_label = ccp4_FtoCString(FTN_STR(label), FTN_LEN(label));
   
-  nlabel = ccp4_cmap_number_label(ioArray[last_Read]->mapfile);
-  for (i=0 ; i != nlabel ; ++i) 
-    ccp4_cmap_set_label(ioArray[last_Write]->mapfile,
+  if (last_Read != -1) {
+    nlabel = ccp4_cmap_number_label(ioArray[last_Read]->mapfile);
+    for (i=0 ; i != nlabel ; ++i) 
+      ccp4_cmap_set_label(ioArray[last_Write]->mapfile,
 			ccp4_cmap_get_label(ioArray[last_Read]->mapfile,i),
 			i);
+  }
+
   ccp4_cmap_set_label(ioArray[last_Write]->mapfile, temp_label,nlabel);
 
   free(temp_label);
