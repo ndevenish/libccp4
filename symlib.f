@@ -150,10 +150,11 @@ C       this purpose.
 C
 C   Pointgroup Laue group        Limits
 C
-C   3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
+C   3 pg1     1bar       hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
 C     pg1bar
-C   4 pg2     2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
+C   4 pg2 (b) 2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
 C     pgm pg2/m
+C   5 pg2 (c) 2/m        hkl:k>=0, l>=0  h0l:h>=0       1003,1004
 C   6 pg222   mmm        hkl:h>=0, k>=0, l>=0            16 ...
 C     pgmm2 pgmmm 
 C   7 pg4     4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
@@ -713,17 +714,21 @@ C
 C   Set up this common block for use when searching for systematic absences
 C
 C     ..
+C     .. Parameters ..
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+C     ..
 C     .. Common blocks ..
       INTEGER NSMT
       REAL RSMM,RSMTT
-      COMMON /SYSABS/NSMT,RSMM(4,4,96),RSMTT(4,4,96)
+      COMMON /SYSABS/NSMT,RSMM(4,4,MAXSYM),RSMTT(4,4,MAXSYM)
 C
 C     .. Scalar Arguments ..
       INTEGER NSM,NSMP,IPRINT
 C     ..
 C     .. Array Arguments ..
-      REAL RSMT(4,4,96)
-      REAL RSM(4,4,96)
+      REAL RSMT(4,4,MAXSYM)
+      REAL RSM(4,4,*)
 C     ..
 C     .. Scalars in Common ..
       INTEGER NEZONE
@@ -1374,9 +1379,9 @@ C
         IF (KLASS.EQ.14) WRITE (6,FMT='(//,A)')
      +      '  CUBIC       II  M3_BARM (PG432)  sgs 207 - 214'
         IF (KLASS.EQ.15) WRITE (6,FMT='(//,A)')
-     +      '  MONOCLINIC  II  2/M (??)  A UNIQUE  sgs 3 -   5'
+     +      '  MONOCLINIC  II  2/M (PG2c)  C UNIQUE  sgs 3 -   5'
         IF (KLASS.EQ.16) WRITE (6,FMT='(//,A)')
-     +      '  MONOCLINIC III  2/M (??)  C UNIQUE sgs 3 -   5'
+     +      '  MONOCLINIC III  2/M (PG2a)  A UNIQUE sgs 3 -   5'
 C
       END IF
 C
@@ -1463,6 +1468,10 @@ C     =================
       SUBROUTINE ROTFIX
 C     =================
 C
+C     .. Parameters ..
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+C     ..
 C     .. Scalars in Common ..
       INTEGER NSYM
 C     ..
@@ -1478,7 +1487,8 @@ C     .. Local Arrays ..
       CHARACTER NAME(3)*1
 C     ..
 C     .. Common blocks ..
-      COMMON /ATSYM/ROT(4,4,96),ROTT(4,4,96),NSYM,PERM(4,4),JJJNK(9)
+      COMMON /ATSYM/ROT(4,4,MAXSYM),ROTT(4,4,MAXSYM),NSYM,PERM(4,4),
+     +              JJJNK(9)
 C     ..
 C     .. Save statement ..
       SAVE
@@ -1936,8 +1946,12 @@ C
 C---- Inverse symmetry needed to test systematic absences -
 C     copy rsmm rsmtt this common block.
 C
-C      COMMON /SYSABS/ NSMT,RSMM(4,4,96),RSMTT(4,4,96)
+C      COMMON /SYSABS/ NSMT,RSMM(4,4,MAXSYM),RSMTT(4,4,MAXSYM)
 C
+C     .. Parameters ..
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+C     ..
 C     .. Scalar Arguments ..
       INTEGER NSM
 C     ..
@@ -1948,8 +1962,8 @@ C     .. Local Scalars ..
       INTEGER I,ICH,IST,J,K,NS
 C     ..
 C     .. Local Arrays ..
-      REAL RSMT(4,4,96)
-      CHARACTER HKLCR(3)*1,SYMCHS(96)*80
+      REAL RSMT(4,4,MAXSYM)
+      CHARACTER HKLCR(3)*1,SYMCHS(MAXSYM)*80
 C     ..
 C     .. External Subroutines ..
       EXTERNAL INVSYM, SYMTR3, LUNSTO
@@ -2024,8 +2038,12 @@ C     Systematic absences flagged with ISYSAB = 1
 C
 C---- Inverse symmetry needed to test systematic absences
 C     - copy into this common block.
-C      COMMON /SYSABS/ NSM,RSM(4,4,96),RSMT(4,4,96)
+C      COMMON /SYSABS/ NSM,RSM(4,4,MAXSYM),RSMT(4,4,MAXSYM)
 C
+C     .. Parmaters ..
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+C     ..
 C     .. Scalar Arguments ..
       INTEGER ISYSAB
 C     ..
@@ -2046,7 +2064,7 @@ C     .. Intrinsic Functions ..
       INTRINSIC ABS,NINT
 C     ..
 C     .. Common blocks ..
-      COMMON /SYSABS/NSM,RSM(4,4,96),RSMT(4,4,96)
+      COMMON /SYSABS/NSM,RSM(4,4,MAXSYM),RSMT(4,4,MAXSYM)
 C     ..
 C     .. Save statement ..
       SAVE
@@ -2101,7 +2119,7 @@ C     ie have occupancies less than 1.0
 C     from consideration of the Symmetry Operations.
 C
 C     .. Array Arguments ..
-      REAL RSM(4,4,96)
+      REAL RSM(4,4,*)
 C     ..
 C     .. Scalar Arguments ..
       REAL XF,YF,ZF
@@ -2537,6 +2555,10 @@ C
 C      Returns KROT=0  correct operation
 C                  =1  if not
 C
+C     .. Parameters ..
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+C     ..
 C     .. Scalar Arguments ..
       INTEGER NS
 C     ..
@@ -2561,7 +2583,7 @@ C     .. Common blocks ..
      +       JZ2,IUVW(3),NSEC,KP(3),CELL(6),LSPGRP,RHMIN,RHMAX,RHMEAN,
      +       IBCD
       COMMON /POINTS/JP(3),LP(3),LSEC,NXYZ10(3)
-      COMMON /SYM/NSYM,NAU(3),JS(3,3,96),JT(3,96)
+      COMMON /SYM/NSYM,NAU(3),JS(3,3,MAXSYM),JT(3,MAXSYM)
       COMMON /INOUT/ LUNIN,LUNOUT,INMAP,OUTMAP,SYMFIL
       SAVE /INPUT/, /POINTS/, /SYM/, /INOUT/
 C     ..
@@ -2713,8 +2735,8 @@ C      11    HEXAGONAL    I  6/M  (PG6)                   168 - 173
 C      12    HEXAGONAL   II  6/MMM (PG622)                177 - 182
 C      13    CUBIC        I  M3_BAR (PG23)                195 - 199
 C      14    CUBIC       II  M3_BARM (PG432)              207 - 214
-C      15    MONOCLINIC  II  2/M (??)  A UNIQUE           3 -   5
-C      16    MONOCLINIC III  2/M (??)  C UNIQUE           3 -   5
+C      15    MONOCLINIC  II  2/M (PG2c)  C UNIQUE         3 -   5
+C      16    MONOCLINIC III  2/M (PG2a)  A UNIQUE         3 -   5
 C
 C---- In this table only the enantiomorphic spacegroups are
 C     included. For the other spacgroups (which contain (glide)
@@ -2724,6 +2746,8 @@ C
 C   3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
 C     pg1bar
 C   4 pg2     2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
+C     pgm pg2/m
+C   5 pg2     2/m        hkl:k>=0, l>=0  h0l:h>=0       1003,1004
 C     pgm pg2/m
 C   6 pg222   mmm        hkl:h>=0, k>=0, l>=0            16 ...
 C     pgmm2 pgmmm 
@@ -3132,19 +3156,17 @@ C
 C
 C--- 6 pg222  mmm     KLASS = 3
 C   11 pg312  3/m     KLASS = 8
-C   ?? pg2c   2       KLASS = 16    monoclinic C unique.
+C   ?? pg2a   2       KLASS = 16    monoclinic A unique.
 C
       ELSE IF (NROTS(JUNIQU).GT.30) THEN
         IF (NROTS(2).EQ.13) THEN
           NAMPG = 'PG312'
           KLASS = 8
-        END IF
-        IF (NROTS(2).EQ.12 .AND. NROTS(3).EQ.22) THEN
+        ELSE IF (NROTS(2).EQ.12 .AND. NROTS(3).EQ.22) THEN
           NAMPG = 'PG222'
           KLASS = 3
-        END IF
-        IF (NROTS(JUNIQU).EQ.12) THEN
-          NAMPG = 'PG2C'
+        ELSE IF (NROTS(JUNIQU).EQ.32) THEN
+          NAMPG = 'PG2A'
           KLASS = 16
         END IF
 C
@@ -3155,7 +3177,7 @@ C
         KLASS = 2
 C
 C---- 3 pg1     1bar          KLASS 1
-C    ?? pg2A    2/m  A unique KLASS 15
+C     5 pg2c    2/m  C unique KLASS 15
 C     7 pg4    4/m            KLASS 4
 C     9 pg3     3bar          KLASS 6
 C    12 pg6    6/m            KLASS 11
@@ -3163,7 +3185,7 @@ C
       ELSE IF (NROTS(JUNIQU).LT.20) THEN
         IF (NROTS(JUNIQU).EQ.11) NAMPG = 'PG1'
         IF (NROTS(JUNIQU).EQ.11) KLASS = 1
-        IF (NROTS(JUNIQU).EQ.12) NAMPG = 'PG2A'
+        IF (NROTS(JUNIQU).EQ.12) NAMPG = 'PG2C'
         IF (NROTS(JUNIQU).EQ.12) KLASS = 15
         IF (NROTS(JUNIQU).EQ.13) NAMPG = 'PG3'
         IF (NROTS(JUNIQU).EQ.13) KLASS = 6
@@ -3296,9 +3318,9 @@ C
         ELSE IF (KLASS.EQ.14) THEN 
           STROUT = '  CUBIC       II  M3_BARM (PG432)  sgs 207 - 214'
         ELSE IF (KLASS.EQ.15) THEN
-          STROUT = '  MONOCLINIC  II  2/M (??)  A UNIQUE  sgs 3 -   5'
+          STROUT = '  MONOCLINIC  II  2/M (PG2c)  C UNIQUE sgs 3 -   5'
         ELSE IF (KLASS.EQ.16) THEN
-          STROUT = '  MONOCLINIC III  2/M (??)  C UNIQUE sgs 3 -   5'
+          STROUT = '  MONOCLINIC III  2/M (PG2a)  A UNIQUE sgs 3 -   5'
         END IF
         CALL PUTLIN(STROUT,'CURWIN')
       ENDIF
@@ -3444,13 +3466,22 @@ C     pgmm2 pgmmm
         KRNG0 = 0
         LRNG0 = 0
         LAUNAM = 'mmm'
+C
+C----   5 pg2 pgm pg2/m - Laue   2/m    C axis unique
+C
+C   5 pg2     2/m        hkl:k>=0, l>=0  h0l:h>=0       1003,1004
+C     pgm pg2/m
+      ELSE IF (LOCNAM.EQ.'2C') THEN
+        NLAUE = 5
+        HRNG0 = 0
+        KRNG0 = 0
+        LAUNAM = '2/m'
 C       
 C----   4 pg2 pgm pg2/m - Laue   2/m
 C       
 C   4 pg2     2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
 C     pgm pg2/m
       ELSE IF (LOCNAM.EQ.'2'
-     +       .OR.LOCNAM.EQ.'2A'
      +       .OR.LOCNAM.EQ.'M'
      +       .OR.LOCNAM.EQ.'2/M') THEN
         NLAUE = 4
@@ -3512,7 +3543,7 @@ C     ==============================================================
 C     
 C---- Return HKL ranges chosen in PGNLAUE
 C     
-       INTEGER IHRNG0,IHRNG1,IKRGN0,IKRNG1,ILRNG0,ILRNG1
+       INTEGER IHRNG0,IHRNG1,IKRNG0,IKRNG1,ILRNG0,ILRNG1
        INTEGER HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
        COMMON/HKLLMS/HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
 C     ..
@@ -3611,6 +3642,8 @@ C
           STROUT = '[-1] hkl:l>=0  hk0:h>=0  0k0:k>=0'
         ELSEIF (NLAUE .EQ. 4) THEN
           STROUT = '[2/m] hkl:k>=0, l>=0  hk0:h>=0'
+        ELSEIF (NLAUE .EQ. 5) THEN
+          STROUT = '[2/m] hkl:k>=0, l>=0  h0l:h>=0'
         ELSEIF (NLAUE .EQ. 6) THEN
           STROUT = '[mmm] hkl:h>=0, k>=0, l>=0'
         ELSEIF (NLAUE .EQ. 7) THEN
@@ -3832,6 +3865,8 @@ Code:3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0
 C           Space group numbers :   1,2
 Code:4 pg2    2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
 C           Space group numbers :   3 -15 B axis unique.
+Code:5 pg2    2/m        hkl:k>=0, l>=0  h0l:>=0        1003,1004
+C           Space group numbers :   3 -15 C axis unique.
 Code:6 pg222  mmm        hkl:h>=0, k>=0, l>=0            16 ...
 C           Space group numbers :   16-74
 Code:7 pg4    4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
@@ -3904,6 +3939,8 @@ C     0K0 --    K.GE.0
  205  IF (J) 7,210,5
  210  IF (K) 7,5,5
 C
+C  Corresponds to Data reduction unique set for  pg2
+C   4 pg2    2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
  250  CONTINUE
 C----2/M (ALTERNATE 1)
 C     HKL --    K.GE.0 AND L.GE.0
@@ -3913,14 +3950,14 @@ C     HK0 --    H.GE.0
  260  IF (J) 7,5,5
 C
 C  Corresponds to Data reduction unique set for  pg2
-C   4 pg2    2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
+C   5 pg2    2/m        hkl:k>=0, l>=0  h0l:h>=0       1003,1004
  300  CONTINUE
 C----2/M (ALTERNATE 2)
 C     HKL --    L.GE.0 AND H.GE.0
-C     0KL --    K.GE.0
+C     H0L --    H.GE.0
       IF (L) 7,305,305
- 305  IF (J) 7,310,5
- 310  IF (K) 7,5,5
+ 305  IF (K) 7,310,5
+ 310  IF (J) 7,5,5
 C
 C  Corresponds to Data reduction unique set for  pg222
 C   6 pg222  mmm        hkl:h>=0, k>=0, l>=0            16 ...
@@ -4422,6 +4459,7 @@ C  For grid restrictions we only need to know the laue number.
 C Here is the table:
 C   3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
 C   4 pg2    2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
+C   5 pg2(c) 2/m        hkl:k>=0, l>=0  h0l:h>=0       1003,1004
 C   6 pg222  mmm        hkl:h>=0, k>=0, l>=0            16 ...
 C   7 pg4    4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
 C   8 pg422 4/mmm       hkl:h>=0, k>=0, l>=0            89..
