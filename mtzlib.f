@@ -7927,27 +7927,27 @@ C
 C---- Search for first blank to skip flag sym symtr symmetry
 C     or whatever
 C
-      IF (I1.NE.1) THEN
-        I1 = 1
-        IF (ICOL(I1:I1).EQ.'s' .OR. ICOL(I1:I1).EQ.'S') THEN
-   10     CONTINUE
-C
-          IF (ICOL(I1:I1).EQ.' ') THEN
-            GO TO 20
-          ELSE
-            I1 = I1 + 1
-            IF (I1.LE.80) GO TO 10
-          END IF
-C
-C              ***********************
-          CALL PUTLIN(' Error - no space between codeword SYM and ' //
-     +         'first operator','ERRWIN')
-C              ***********************
-C
-          EFLAG = EFLAG + 1
-          RETURN
-        END IF
-      END IF
+CCC      IF (I1.NE.1) THEN
+CCC        I1 = 1
+CCC        IF (ICOL(I1:I1).EQ.'s' .OR. ICOL(I1:I1).EQ.'S') THEN
+CCC   10     CONTINUE
+CCCC
+CCC          IF (ICOL(I1:I1).EQ.' ') THEN
+CCC            GO TO 20
+CCC          ELSE
+CCC            I1 = I1 + 1
+CCC            IF (I1.LE.80) GO TO 10
+CCC          END IF
+CCCC
+CCCC              ***********************
+CCC          CALL PUTLIN(' Error - no space between codeword SYM and ' //
+CCC     +         'first operator','ERRWIN')
+CCCC              ***********************
+CCCC
+CCC          EFLAG = EFLAG + 1
+CCC          RETURN
+CCC        END IF
+CCC      END IF
 C
    20 I = I1 - 1
       NS = NS - 1

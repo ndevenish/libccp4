@@ -1800,20 +1800,20 @@ C---- Search for first blank to skip flag sym symtr symmetry
 C     or whatever
 C
       I11 = I1
-      IF (I11.NE.1) THEN
-        I11 = 1
-        IF (ICOL(I11:I11).EQ.'s' .OR. ICOL(I11:I11).EQ.'S') THEN
-   10     CONTINUE
-          IF (ICOL(I11:I11).EQ.' ') THEN
-            GO TO 20
-          ELSE
-            I11 = I11 + 1
-            IF (I11.LE.IMAX) GO TO 10
-          END IF
-          CALL CCPERR(1,
-     +         'No space between keyword SYM... and first operator')
-        END IF
-      END IF
+CCC      IF (I11.NE.1) THEN
+CCC        I11 = 1
+CCC        IF (ICOL(I11:I11).EQ.'s' .OR. ICOL(I11:I11).EQ.'S') THEN
+CCC   10     CONTINUE
+CCC          IF (ICOL(I11:I11).EQ.' ') THEN
+CCC            GO TO 20
+CCC          ELSE
+CCC            I11 = I11 + 1
+CCC            IF (I11.LE.IMAX) GO TO 10
+CCC          END IF
+CCC          CALL CCPERR(1,
+CCC     +         'No space between keyword SYM... and first operator')
+CCC        END IF
+CCC      END IF
 C
    20 I = I11 - 1
       NS = NS - 1
