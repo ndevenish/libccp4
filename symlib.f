@@ -1684,7 +1684,7 @@ C     symmetry operators to matrices
 C
       LSPGRP = ISG
       NAMSPG_CIF = LINE(IBEG(7) :IEND(7))
-      NAMPG = LINE(IBEG(8) :IEND(8))
+      NAMPG = LINE(IBEG(5) :IEND(5))
 C
       DO 50 I = 1,NLINS
         READ (IST,FMT='(A)') LINE
