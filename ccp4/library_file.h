@@ -92,7 +92,7 @@ struct _CFileStruct {
 };
 
 
-CCP4File *ccp4_file_open (const char *, int);
+CCP4File *ccp4_file_open (const char *, const int);
 
 CCP4File *ccp4_file_open_file (const FILE *, const int);
 
@@ -106,13 +106,13 @@ int ccp4_file_close ( CCP4File*);
 
 int ccp4_file_mode ( const CCP4File*);
 
-int ccp4_file_setmode ( CCP4File*, int);
+int ccp4_file_setmode ( CCP4File*, const int);
 
-int ccp4_file_setstamp( CCP4File *, size_t);
+int ccp4_file_setstamp( CCP4File *, const size_t);
 
 int ccp4_file_itemsize( const CCP4File*);
 
-int ccp4_file_setbyte( CCP4File *, int);
+int ccp4_file_setbyte( CCP4File *, const int);
 
 int ccp4_file_byteorder( CCP4File *);
 
@@ -179,7 +179,7 @@ char *ccp4_file_print(CCP4File *, char *, char *);
 int ccp4_file_raw_seek( CCP4File *, long, int);
 int ccp4_file_raw_read ( CCP4File*, char *, size_t);
 int ccp4_file_raw_write ( CCP4File*, const char *, size_t);
-int ccp4_file_raw_setstamp( CCP4File *, size_t);
+int ccp4_file_raw_setstamp( CCP4File *, const size_t);
 #ifdef __cplusplus
 }
 }

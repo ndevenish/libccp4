@@ -703,7 +703,8 @@ int ccp4_lrcell(const MTZXTAL *xtl, float cell[]);
 int ccp4_lrsymi(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx, 
        char *spgrnx, char *pgnamx);
 
-/** Get symmetry matrices from MTZ structure.
+/** Get symmetry matrices from MTZ structure. Note: ordering of matrices
+ * in rsymx was changed in April 2004.
  * @param mtz Pointer to MTZ struct.
  * @param nsymx Number of symmetry operators held in MTZ header.
  * @param rsymx Symmetry operators as 4 x 4 matrices, in the order they
@@ -861,7 +862,8 @@ int MtzSetSortOrder(MTZ *mtz, MTZCOL *colsort[5]);
 int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nlines);
 
 /** Write or update symmetry information for MTZ header. This provides support
- * for the Fortran API, and is not particularly convenient for C programs.
+ * for the Fortran API, and is not particularly convenient for C programs. 
+ * Note: ordering of matrices in rsymx was changed in November 2003.
  * @param mtz pointer to MTZ struct
  * @param nsymx number of symmetry operators
  * @param nsympx number of primitive symmetry operators

@@ -217,7 +217,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
     /* read total number of datasets over all projects/crystals */
     else if (ccp4_keymatch(key, "NDIF")) {
       ntotset = (int) token[1].value;
-      if (debug) printf(" MtzGet: NDIF is \n",ntotset);
+      if (debug) printf(" MtzGet: NDIF is %d\n",ntotset);
     }
 
     /* PROJECT line. Projects are not part of data structure, but

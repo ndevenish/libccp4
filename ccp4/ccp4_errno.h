@@ -172,7 +172,7 @@ int ccp4_liberr_verbosity(int iverb);
  * @param callback (point to routine void (*)(void) )
  * @return void
  */
-void ccp4_signal(int, const char *const, void (*)());
+void ccp4_signal(const int, const char *const, void (*)());
 
 int cfile_perror(const char *);
 
