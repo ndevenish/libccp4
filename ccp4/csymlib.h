@@ -140,7 +140,7 @@ int ASU_m3bm  (const int h, const int k, const int l);
  * @param sp pointer to spacegroup
  * @return pointer to Hall symbol for spacegroup
  */
-char *ccp4spg_symbol_Hall(const CCP4SPG* sp);
+char *ccp4spg_symbol_Hall(CCP4SPG* sp);
 
 ccp4_symop ccp4_symop_invert( const ccp4_symop op1 );
 
@@ -152,7 +152,7 @@ ccp4_symop ccp4_symop_invert( const ccp4_symop op1 );
  * @param spgname2 Second spacegroup name.
  * @return 1 if they are equal else 0.
 */
-int ccp4spg_name_equal(char *spgname1, char *spgname2);
+int ccp4spg_name_equal(const char *spgname1, const char *spgname2);
 
 /** Function to create "short" name of spacegroup. Blanks
  * are removed, as are " 1" elements.
@@ -215,7 +215,7 @@ void ccp4spg_generate_indices(const CCP4SPG* sp, const int isym,
 and optional sign change. Return in range 0,360 */
 float ccp4spg_phase_shift(const int hin, const int kin, const int lin,
 			  const float phasin, const float trans[3], const int isign);
-int ccp4spg_do_chb(float chb[3][3]);
+int ccp4spg_do_chb(const float chb[3][3]);
 void ccp4spg_set_centric_zones(CCP4SPG* sp);
 int ccp4spg_is_centric(const CCP4SPG* sp, const int h, const int k, const int l);
 int ccp4spg_check_centric_zone(const int nzone, const int h, const int k, const int l);

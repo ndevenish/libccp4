@@ -607,7 +607,7 @@ int ASU_m3b  (const int h, const int k, const int l)
 int ASU_m3bm  (const int h, const int k, const int l)
   { return (h>=0 && k>=l && l>=h); }
 
-char *ccp4spg_symbol_Hall(const CCP4SPG* sp) 
+char *ccp4spg_symbol_Hall(CCP4SPG* sp) 
   { return sp->symbol_Hall; }
 
 ccp4_symop ccp4_symop_invert( const ccp4_symop op1 )
@@ -619,7 +619,7 @@ ccp4_symop ccp4_symop_invert( const ccp4_symop op1 )
   return (mat4_to_rotandtrn(rot2));
 }
 
-int ccp4spg_name_equal(char *spgname1, char *spgname2) {
+int ccp4spg_name_equal(const char *spgname1, const char *spgname2) {
 
   /* TODO some xHM symbols have :1 or :2 which should be removed */
 
@@ -669,7 +669,8 @@ int ccp4spg_name_equal(char *spgname1, char *spgname2) {
 
 char *ccp4spg_to_shortname(char *shortname, const char *longname) {
 
-  char *ch1, *ch2;
+  const char *ch1;
+  char *ch2;
 
   ch1 = longname;
   ch2 = shortname;
@@ -817,7 +818,7 @@ float ccp4spg_phase_shift(const int hin, const int kin, const int lin,
 
 }
 
-int ccp4spg_do_chb(float chb[3][3]) {
+int ccp4spg_do_chb(const float chb[3][3]) {
 
   return ( chb[0][0] != 1 || chb[1][1] != 1 || chb[2][2] != 1 ||
 	   chb[0][1] != 0 || chb[0][2] != 0 || chb[1][2] != 0 ||
