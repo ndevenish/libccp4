@@ -572,3 +572,17 @@ C     .. Scalar Arguments ..
 
       RETURN
       END
+C
+C
+C     =========================================================
+      SUBROUTINE Hpdbx_phasing_DM_shell(Hrres,Hrefls,Hsfomn,
+     +     Hsphicn,Hnres,Hmaxbin)
+C     =========================================================
+C
+      INTEGER Hmaxbin
+      REAL Hrres(Hmaxbin+1),Hrefls(Hmaxbin),Hsfomn(Hmaxbin)
+      REAL Hsphicn(Hmaxbin)
+      INTEGER Hnres
+C
+      RETURN
+      END
