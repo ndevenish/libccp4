@@ -38,7 +38,7 @@ C_END_XYZINIT
 C
 C     .. Parameters ..
       INTEGER MAXFILESOPEN
-      PARAMETER (MAXFILESOPEN=10)
+      PARAMETER (MAXFILESOPEN=90)
 C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL
@@ -130,7 +130,7 @@ C_END_RBINIT
 C
 C     .. Parameters ..
       INTEGER MAXFILESOPEN
-      PARAMETER (MAXFILESOPEN=10)
+      PARAMETER (MAXFILESOPEN=90)
 C     ..
 C     .. Scalar Arguments ..
       INTEGER IUNIT
@@ -211,9 +211,8 @@ C     =====================================================
 C
 C_BEGIN_XYZOPEN
 C
-C      Opens a coordinate file for input or output. The channel number can
-C be determined automatically or set on input. The header info.
-C is also read: cell, orthog. matrix and symmetry.
+C      Calls XYZOPEN2 which has an extra paramater for ignoring
+C      Symmetry and Cryst cards
 C
 C Parameters:
 C
@@ -243,12 +242,69 @@ C_END_XYZOPEN
 C
 C   
       implicit none
-C     .. Parameters ..
-      INTEGER MAXFILESOPEN,MAXSYM
-      PARAMETER (MAXFILESOPEN=10,MAXSYM=96)
 C     ..
 C     .. Arguments ..
-      INTEGER IFAIL,IUNIT,II,JJ,K,ISYM
+      INTEGER IUNIT, IFAIL,ICRYST
+      CHARACTER*(*) FILTYP,LOGNAM,RWSTAT
+      ICRYST = 0
+
+      CALL XYZOPEN2(LOGNAM,RWSTAT,FILTYP,IUNIT,IFAIL,ICRYST)
+
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE XYZOPEN2(LOGNAM,RWSTAT,FILTYP,IUNIT,IFAIL,ICRYST)
+C     =====================================================
+C
+C_BEGIN_XYZOPEN2
+C
+C      Opens a coordinate file for input or output. The channel number can
+C be determined automatically or set on input. The header info.
+C is also read: cell, orthog. matrix and symmetry.
+C This is a version of XYZOPEN with an extra argument to flag whether or
+C not the CRYST and SCALE cards are required.
+C
+C Parameters:
+C
+C         LOGNAM (I)   CHARACTER*(*) but maximum of eight? The logical unit 
+C                                    to which the file is assigned
+C         RWSTAT (I)   CHARACTER*(*) if 'INPUT' then file is readonly
+C                                    if 'OUTPUT' then file is an output file.
+C         FILTYP (I)   CHARACTER*(*) if 'CIF' then the file type is treated as
+C                                    CIF. If 'PDB' then the file type is 
+C                                    treated as PDB. If blank then file type is
+C                                    automatically determined for input files 
+C                                    and for output file the file type will be
+C                                    the same as the first file opened or 
+C                                    defaulted to PDB.
+C         IUNIT  (I/O) INTEGER       If zero then unit is decided else
+C		  	             file opened on that unit
+C                                    checked against previous data if 
+C                                    applicable. NOT used with output files.
+C         IFAIL  (I/O) INTEGER       On input    = 0 stop on failure 
+C                                                = 1 continue on failure
+C
+C                                    On output   unchanged if OK
+C                                                = -1  if error
+C
+C         ICRYST (I/O) INTEGER       If zero, then check for and use CRYST
+C                                    and SCALE cards in input PDB.
+C                                    If one, ignore these cards even if
+C                                    present.
+C
+C
+C_END_XYZOPEN2
+C
+C   
+      implicit none
+C     .. Parameters ..
+      INTEGER MAXFILESOPEN,MAXSYM
+      PARAMETER (MAXFILESOPEN=90,MAXSYM=96)
+C     ..
+C     .. Arguments ..
+      INTEGER IFAIL,IUNIT,ICRYST,II,JJ,K,ISYM
       REAL AM,BM,RCHK1,RCHK2,FAC
       CHARACTER*(*) FILTYP,LOGNAM,RWSTAT
 C     ..
@@ -404,7 +460,7 @@ C---REMARK 290       4555   1/2+X,1/2-Y,-Z
              READ(BROOKA(11:18),'(I8)')NSYMCHK
              CALL  symfr2 (BROOKA,22,nsymchk,rsymchk)
               write(6,'(a,i3,4(/,4f10.3))')' remark 290',nsymchk,
-     + ((rsymchk(ii,jj,nsymchk),jj=1,4),ii=1,4)
+     + ((rsymchk(ii,jj,nsymchk),ii=1,4),jj=1,4)
            ENDIF
           ENDIF
 C
@@ -448,7 +504,7 @@ C---- Cell card found - calculate standard orthogonalising matrix
 C     Check if you already have a cell which is inconsistent with 
 C     this one
 C
-          ELSE IF (IRTYPE.EQ.'CRYS') THEN
+          ELSE IF (IRTYPE.EQ.'CRYS' .AND. ICRYST.EQ.0) THEN
             ITYP=1
             IFCRYS=.TRUE.
             BRKSPGRP = ' '
@@ -506,7 +562,7 @@ C  Read symmetry operators..
 C
 C---- Scale cards - extract and calculate rotation and trans matrices
 C
-          ELSE IF (IRTYPE.EQ.'SCAL') THEN
+          ELSE IF (IRTYPE.EQ.'SCAL' .AND. ICRYST.EQ.0) THEN
             ITYP=2
             IFSCAL = .TRUE.
             MATRIX=.FALSE.
@@ -665,7 +721,8 @@ C     Generate ROU and RFU for AnisoU stuff
          CALL RBRINV(RFU,ROU)
        END IF 
 C     If reading in: check SCAL and CRYST1 cards
-      IF (IFILTYP.EQ.1 .AND. LRWSTAT(1:5).EQ.'INPUT') THEN
+      IF (IFILTYP.EQ.1 .AND. LRWSTAT(1:5).EQ.'INPUT' .AND. ICRYST.EQ.0)
+     +              THEN
         IF (.NOT.IFCRYS) THEN
           WRITE(ERRLIN,FMT='(A,A)') ' NO CRYST CARDS READ FROM ',LOGNAM
           CALL CCPERR (2,ERRLIN)
@@ -695,7 +752,7 @@ C_END_XYZCLOSE
 C
 C     .. Parameters ..
       INTEGER MAXFILESOPEN
-      PARAMETER (MAXFILESOPEN=10)
+      PARAMETER (MAXFILESOPEN=90)
 C     ..
 C     .. Arguments ..
       INTEGER IUNIT
@@ -771,7 +828,7 @@ C_END_XYZADVANCE
 C
 C     .. Paramters ..
       INTEGER MAXFILESOPEN
-      PARAMETER (MAXFILESOPEN=10)
+      PARAMETER (MAXFILESOPEN=90)
 C     ..
 C     .. Arguments ..
       INTEGER IOUT,ITER,IUNIT
@@ -949,7 +1006,7 @@ C_END_XYZATOM
 C     
 C     .. Paramters ..
       INTEGER MAXFILESOPEN
-      PARAMETER (MAXFILESOPEN=10)
+      PARAMETER (MAXFILESOPEN=90)
 C     ..
 C     .. Arguments ..
       INTEGER IRESN,ISER,IUNIT,IZ
@@ -1144,7 +1201,7 @@ C_END_XYZCOORD
 C     
 C     .. Paramters ..
       INTEGER MAXFILESOPEN
-      PARAMETER (MAXFILESOPEN=10)
+      PARAMETER (MAXFILESOPEN=90)
 C     ..
 C     .. Arguments ..
       REAL U(6),BISO,X,Y,Z
@@ -1282,7 +1339,7 @@ C_END_XYZREWD
 C
 C     .. Parameters ..
       INTEGER MAXFILESOPEN
-      PARAMETER (MAXFILESOPEN=10)
+      PARAMETER (MAXFILESOPEN=90)
 C     ..
 C     .. Arguments ..
       INTEGER IUNIT
@@ -1346,7 +1403,7 @@ C_END_XYZBKSP
 C
 C     .. Parameters ..
       INTEGER MAXFILESOPEN
-      PARAMETER (MAXFILESOPEN=10)
+      PARAMETER (MAXFILESOPEN=90)
 C     ..
 C     .. Arguments ..
       INTEGER IUNIT
@@ -2965,7 +3022,7 @@ C_END_WBCELL
 C
 C     .. Parameters ..
       INTEGER MAXFILESOPEN
-      PARAMETER (MAXFILESOPEN=10)
+      PARAMETER (MAXFILESOPEN=90)
 C     ..
 C     .. Agruments ..
       REAL ARGCELL(6)
@@ -3068,7 +3125,7 @@ C_END_WREMARK
 C
 C     .. Parameters ..
       INTEGER MAXFILESOPEN
-      PARAMETER (MAXFILESOPEN=10)
+      PARAMETER (MAXFILESOPEN=90)
 C     ..
 C     .. Arguments ..
       INTEGER IUNIT
@@ -3207,3 +3264,4 @@ C
       END
 C
 C
+
