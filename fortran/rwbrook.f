@@ -7,6 +7,10 @@ C
 C**************************************************************************
 C
 C
+C Modifications
+C
+C     CCB 23/4/01
+C     test to determine if H or R spacegroup, XYZOPEN2
 C
       SUBROUTINE XYZINIT()
 C     ====================
@@ -527,8 +531,30 @@ C
                END DO
                BRKSPGRP = SPGCHK
              END IF 
-C  Read symmetry operators..
+C  Read symmetry operators.
              IF (BRKSPGRP.NE.' ') THEN
+C  Consistency check for R and H space groups.
+C      (using angles only)
+C---- H name associated with a=b; Gamma = 120
+                IF( BRKSPGRP(1:1) .EQ. 'R' ) THEN
+                   IF(abs(cell(4)-90.0).LT.0.001 .AND.
+     +                  abs(cell(5)-90.0).LT.0.001 .AND.
+     +                  abs(cell(6)-120.0).LT.0.001) THEN
+                      BRKSPGRP(1:1)='H'
+                      CALL CCPERR(2,
+     +                     ' Changing "rhombhedral" to "hexagonal"')
+                   END IF
+C---- R name associated with a=b=c; Alpha=Beta=Gamma 
+                ELSE IF( BRKSPGRP(1:1) .EQ. 'H' ) THEN
+                   IF(abs(cell(4)-cell(5)).LT.0.001.AND.
+     +                  abs(cell(5)-cell(6)).LT.0.001.AND.
+     +                  abs(cell(6)-cell(4)).LT.0.001) THEN
+                      BRKSPGRP(1:1)='R'
+                      CALL CCPERR(2,
+     +                     ' Changing "hexagonal" to "rhombhedral"')
+                   END IF
+                END IF
+C
                IST = CCPNUN()
                call MSYMLB3(IST,LSPGRP,BRKSPGRP,NAMSPG_CIFS,
      +                   NAMPG,NSYMPpdbs,NSYMpdbs,RSYMpdbs)

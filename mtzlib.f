@@ -3,6 +3,9 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
+C     14/3/01 CCB/EJD
+C     test to determine if H or R spacegroup, LROPEN
+C
 C     15/6/00 CCB
 C     begin task of increasing number of permitted columns in mtz file.
 C
@@ -2607,6 +2610,32 @@ C     ============================
 C
   200       CONTINUE
 C
+C----  Use Cell to check whether space group name should be H or R
+C      (using angles only)
+C----  H name associated with a=b; Gamma = 120
+            IF( SPGNAM(MINDX)(1:1) .EQ. 'R' ) THEN
+               IF(abs(cell(4,MINDX)-90.0).LT.0.001 .AND.
+     +             abs(cell(5,MINDX)-90.0).LT.0.001 .AND.
+     +             abs(cell(6,MINDX)-120.0).LT.0.001) THEN
+                  SPGNAM(MINDX)(1:1)='H'
+                  LTYPE(MINDX) = 'H'
+                  NSPGRP(MINDX) = 155
+                  CALL CCPERR(2,
+     +              ' Changing "rhombhedral" to "hexagonal"')
+               END IF
+C----  R name associated with a=b=c; Alpha=Beta=Gamma 
+            ELSE IF( SPGNAM(MINDX)(1:1) .EQ. 'H' ) THEN
+               IF(abs(cell(4,MINDX)-cell(5,MINDX)).LT.0.001.AND.
+     +             abs(cell(5,MINDX)-cell(6,MINDX)).LT.0.001.AND.
+     +             abs(cell(6,MINDX)-cell(4,MINDX)).LT.0.001) THEN
+                  SPGNAM(MINDX)(1:1)='R'
+                  LTYPE(MINDX) = 'R'
+                  NSPGRP(MINDX) = 1155
+                  CALL CCPERR(2,
+     +              ' Changing "hexagonal" to "rhombhedral"')
+               END IF
+            END IF
+C
 C---- Output information
 C
 C                                 ******************
@@ -3616,7 +3645,7 @@ C
 C     NSYMPX    (O)	INTEGER         no. of primitive symmetry ops
 C
 C     LTYPEX    (O)	CHARACTER*1     single character denoting the lattice
-C                               	type (possible values are P,A,B,C,I,F,R)
+C                               	type (possible values are P,A,B,C,I,F,H)
 C                               	if blank then not present in header
 C
 C     NSPGRX    (O)	INTEGER         space group number, 0 if not present
@@ -6784,7 +6813,7 @@ C     RSYMX     (I)	REAL            array of dimensions (4,4,N) of
 C                               	symmetry ops on entry, where N>=NSYMX
 C
 C     LTYPEX    (I)	CHARACTER*1     single character denoting the lattice
-C                               	type (possible values are P,A,B,C,I,F,R)
+C                               	type (possible values are P,A,B,C,I,F,H)
 C                               	if blank then current value not changed
 C
 C     NSPGRX    (I)	INTEGER         space group number, if 0 not changed
