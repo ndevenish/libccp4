@@ -101,7 +101,7 @@
 #  define CALL_LIKE_SUN 1
 #  define strerror(i) sys_errlist[i] /* k&r compiler doesn't have it */
 #endif
-#if defined (ultrix)                                       /* DEC unix */
+#if defined (ultrix) || defined(__OSF1__) || defined(__osf__)
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_SUN 1
 #endif
