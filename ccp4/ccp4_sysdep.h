@@ -199,7 +199,7 @@
 #  define NATIVEIT DFNTI_IBO
 #endif
 
-#if defined(MIPSEL) || defined(i386) || defined(i860)
+#if defined(MIPSEL) || defined(i386) || defined(i860) || defined(__ia64__)
 #  define NATIVEIT DFNTI_IBO
 #  define NATIVEFT DFNTF_LEIEEE
 #endif
