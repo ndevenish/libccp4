@@ -336,7 +336,7 @@ $L(unix.o) : unix.f
           for i in `pwd`/*.$F; do \
             $(FC) -c $(FFLAGS) $$i; done\
           && $(AR) ../$L *.o
-	rm -f unix.dir/*.o
+	rm -f unix.dir/*.o unix.f
 unix : $L(unix.o)
 	$(RANLIB) $L
 
