@@ -2406,8 +2406,18 @@ C     =================================
 C     =================================
 C
 C---- Read and interpret symmetry operations
-C                                    
-C     On entry I1 is the first character of ICOL to look at (say after
+C
+C     SYMFR2 recognises the following types of input:
+C     real space symmetry operations, e.g. X+1/2,Y-X,Z
+C     reciprocal space operations,    e.g. h,l-h,-k
+C     reciprocal axis vectors,        e.g. a*+c*,c*,-b*
+C     real space axis vectors,        e.g. a,c-a,-b
+C
+C     The subroutine returns the appropriate 4x4 transformation
+C     matrix for each operation. The calling program must
+C     interpret the resulting matrix(ces) correctly.
+C
+C On entry I1 is the first character of ICOL to look at (say after
 C     keyword 'SYMM')
 C
 C NS is the number of the first symmetry operation to be read, & returns
@@ -2473,6 +2483,7 @@ C
       NS = NS + 1
       REAL = 0.0
       RECIP = 0.0
+      AXIS = 0.0
       NOP = 1
 C
       DO 50 J = 1,4
@@ -2502,26 +2513,31 @@ C
         ICH = ICOL(I:I)
         IF (ICH.EQ.' ') THEN
           GO TO 70
+        ELSE IF (ICH.EQ.'*' .AND. AXIS.NE.0.0) THEN
+          GO TO 70
         ELSE IF (ICH.NE.',' .AND. ICH.NE.'*') THEN
           IFOUND = 1
           IF (ICH.EQ.'X' .OR. ICH.EQ.'x' .OR. ICH.EQ.'H' .OR.
-     +        ICH.EQ.'h') THEN
+     +        ICH.EQ.'h' .OR. ICH.EQ.'A' .OR. ICH.EQ.'a') THEN
             IF (ICH.EQ.'X' .OR. ICH.EQ.'x') REAL = REAL + 1.0
             IF (ICH.EQ.'H' .OR. ICH.EQ.'h') RECIP = RECIP + 1.0
+            IF (ICH.EQ.'A' .OR. ICH.EQ.'a') AXIS = AXIS + 1.0
             J = 1
             IF (T.EQ.0.0) T = S
             GO TO 70
           ELSE IF (ICH.EQ.'Y' .OR. ICH.EQ.'y' .OR. ICH.EQ.'K' .OR.
-     +             ICH.EQ.'k') THEN
+     +             ICH.EQ.'k' .OR. ICH.EQ.'B' .OR. ICH.EQ.'b') THEN
             IF (ICH.EQ.'Y' .OR. ICH.EQ.'y') REAL = REAL + 1.0
             IF (ICH.EQ.'K' .OR. ICH.EQ.'k') RECIP = RECIP + 1.0
+            IF (ICH.EQ.'B' .OR. ICH.EQ.'b') AXIS = AXIS + 1.0
             J = 2
             IF (T.EQ.0.0) T = S
             GO TO 70
           ELSE IF (ICH.EQ.'Z' .OR. ICH.EQ.'z' .OR. ICH.EQ.'L' .OR.
-     +             ICH.EQ.'l') THEN
+     +             ICH.EQ.'l' .OR. ICH.EQ.'C' .OR. ICH.EQ.'c') THEN
             IF (ICH.EQ.'Z' .OR. ICH.EQ.'z') REAL = REAL + 1.0
             IF (ICH.EQ.'L' .OR. ICH.EQ.'l') RECIP = RECIP + 1.0
+            IF (ICH.EQ.'C' .OR. ICH.EQ.'c') AXIS = AXIS + 1.0
             J = 3
             IF (T.EQ.0.0) T = S
             GO TO 70
@@ -2619,7 +2635,7 @@ C
       END IF
       NS = NS - 1
   130 NSYM = NS
-      IF (REAL.LT.3.0 .AND. RECIP.LT.3.0) IERR = 1
+      IF (REAL.LT.3.0 .AND. RECIP.LT.3.0 .AND. AXIS.LT.3.0) IERR = 1
       IF (RECIP.GE.3.0) NSYM = -NSYM
       IF (IERR.NE.1) RETURN          
   140 WRITE (6,FMT='(A,I4,2F6.1,4(/,4F10.3))') ' NSYM REAL RECIP ROT',
