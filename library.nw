@@ -1084,19 +1084,19 @@ Writes [[CHARACTER*(*)]] \meta{buffer} to [[qopen]]ed
 stream \meta{iunit} in byte mode.
 <<diskio routines>>=
 #if CALL_LIKE_HPUX
-  void qwritec (iunit, buffer, Lbuffer)
+  void qwritc (iunit, buffer, Lbuffer)
   int Lbuffer;
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void QWRITEC (iunit, buffer)
+  void QWRITC (iunit, buffer)
   struct dsc$descriptor_s *buffer;
 #endif
 #if CALL_LIKE_SUN
-  void qwritec_ (iunit, buffer, Lbuffer)
+  void qwritc_ (iunit, buffer, Lbuffer)
   int Lbuffer;
 #endif
 #if CALL_LIKE_IRIS
-  fortran qwritec_ (Lbuffer, iunit, nitems)
+  fortran qwritc_ (Lbuffer, iunit, nitems)
   int Lbuffer;
 #endif
 char * buffer;
