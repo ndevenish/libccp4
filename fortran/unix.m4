@@ -751,7 +751,7 @@ c
      +        localhours,localminutes,localmonth,localseconds,
      +        localyear,nhours,nminutes,stime,diff
 c
-      character gmt_diff*1
+      character gmt_diff*1, timstr*8
 c
       integer gmtarray(9),tarray(9)
       integer time
@@ -770,7 +770,11 @@ dnl * len is quoted since also m4 macro
         return
       end if
 c
-      stime = time()
+ifelse(_ifc,1,
+[      stime = time(timstr)
+],
+[
+      stime = time()])
       call gmtime(stime,gmtarray)
 dnl * for AIX - ltime is not resolved on linking - only ltime_ exists
 dnl   in the Fortran library.
