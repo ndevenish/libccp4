@@ -25,13 +25,7 @@ For information about key type values see binsortkey.h
 				Good Luck	J. Zelinka
 ***************************************************************************/
 
-#define __STDC__
-
-#ifdef  POSIX
-#define __EXTENSIONS__
-#endif
-
-#include	"binsort.h"
+#include "binsort.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -67,7 +61,7 @@ KEYBUF consist of NKEYS entries, each of the form:
 	                                comparison (if 0 no mask applied)
 =======================================================*/
 
-#if defined (__hpux) || defined (_AIX)
+#if defined (hewlett_packard) || defined (ibm)
   int srtbeg (nkeys, keybuf, lrecl, memsize)
 #endif
 
@@ -191,7 +185,7 @@ SRTRLS:	Release one record into Sort
                                         errno otherwise
 =======================================================*/
 
-#if defined (__hpux) || defined (_AIX)
+#if defined (hewlett_packard) || defined (ibm)
   int srtrls (record)
 #endif
 
@@ -265,7 +259,7 @@ SRTRET:	Return 1 record from sort
 					errno otherwise
 =======================================================*/
 
-#if defined (__hpux) || defined (_AIX)
+#if defined (hewlett_packard) || defined (ibm)
   int srtret (record)
 #endif
 

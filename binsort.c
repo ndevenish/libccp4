@@ -1,6 +1,6 @@
 /****************************************************************************
   binsort.c
-  Z300692
+  Z090792
 
 HOW TO USE
 
@@ -49,9 +49,8 @@ Do not critisize the programing style. This is a compromise between
 ANSI & old-fasioned C
 *****************************************************************************/
 
-#ifndef __convex__
-#define __STDC__
-#endif /* __convex__ */
+/*#define FUNCPROTO   1       Good for debugging under ANSI C */
+
 
 #ifdef VAX_VMS
 #    include    stdio
@@ -62,52 +61,20 @@ ANSI & old-fasioned C
 #else      /* UNIX */
 #    include <stdio.h>
 #    include <string.h>           /* string operations */
-
 #    include <fcntl.h>            /* for i/o */
 #    include <sys/types.h>        /* for statistics & io */
 #    include <sys/stat.h>         /* for i/o */
 #    include <errno.h>
 #    include <sys/param.h>        /* for statistics */
 #    include <sys/times.h>        /* for statistics */
+
+#    ifndef  SEEK_SET
+#       include <unistd.h>
+#    endif /* SEEK_SET */
 #endif     /* VAX_VMS - UNIX */
 
 #include "binsort.h"              /* key data types definition */
 
-#ifdef POSIX
-#  include <stdlib.h>             /* for qsort, getenv prototypes */
-#  include <unistd.h>
-#endif /* POSIX */
-
-
-#ifdef SYSV
-#  include <unistd.h>
-
-    extern char       *getenv(
-#ifdef FUNCPROTO
-			      char *name
-#endif /* FUNCPROTO */
-			      );
-    extern void        qsort(
-#ifdef FUNCPROTO
-			     char  *base,
-			     size_t nel,
-			     size_t size,
-			     int (*compar)(void *e1, void *e2)
-#endif /* FUNCPROTO */
-			     );
-#endif /* SYSV */
-
-
-#ifdef BSD         /*** This is somtehing really special for Kim ***/
-    extern char       *getenv();
-    extern void        qsort();
-
-#include <sys/file.h>
-
-#define SEEK_SET L_SET
-#define SEEK_CUR L_INCR
-#define SEEK_END L_XTND
-#endif /* BSD */
 
 #define  tolower(c)     ((c > 'A' && c < 'Z') ? c + ('a'-'A') : c)
 
@@ -119,7 +86,7 @@ ANSI & old-fasioned C
 /*** Site dependent, please modify if necessary***/
 
 #define SCRPATH            "/usr/tmp"          /* default scratch file path */
-#define	WORKASZ            2048000             /* Default work area size */
+#define	WORKASZ            1024000             /* Default work area size */
 
 /*** Low level compare function ("prototype")                            ***
  *** Returns 1 if rec1 > rec2    0 if rec1 == rec2     -1 if rec1 < rec2 ***/
@@ -250,14 +217,14 @@ static int              cmp_ushort_mask(
 			       );
 static int              cmproutine(
 #ifdef FUNCPROTO
-			       const void      *e1,
-			       const void      *e2
+			       void            *e1,
+			       void            *e2
 #endif /* FUNCPROTO */
 			       );
 static int              pointer_cmproutine(
 #ifdef FUNCPROTO
-			       const void      *pe1,
-			       const void      *pe2
+			       void            *pe1,
+			       void            *pe2
 #endif /* FUNCPROTO */
 			       );
 static int              fillworka(
@@ -368,7 +335,7 @@ static void             sort(
 			       );
 static void             pointer_sort(
 #ifdef FUNCPROTO
-			       int               nrecords,
+			       int               nrecords
 #endif /* FUNCPROTO */
 			       );
 static void             testprint(
@@ -454,7 +421,7 @@ Notes:\n\
 	Current work area size %dB,\n\
 	Current scratch file path %s.\n\
 \n\
-Version Z300692                            Good Luck\n\
+Version Z090792                            Good Luck\n\
                                               J. Zelinka\n\
 ", workasz, scrpath);
 }
@@ -798,7 +765,7 @@ int          nrecords;
 /*=================================================================*/
 static int
 cmproutine(e1, e2)
-const void    *e1, *e2;           /* basics elements - records */
+void    *e1, *e2;           /* basics elements - records */
 {
   register struct key_dsc      *pkey;
   register int                  i, j;
@@ -813,8 +780,8 @@ const void    *e1, *e2;           /* basics elements - records */
 /*=================================================================*/
 static int
 pointer_cmproutine(pe1, pe2)
-const void      *pe1;
-const void      *pe2;
+void      *pe1;
+void      *pe2;
 {
   register struct key_dsc      *pkey;
   register int                  i, j;
