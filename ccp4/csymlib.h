@@ -110,6 +110,11 @@ different form. There are also the following conversion functions:
 Note that the order of symmetry operators may be important in some cases, for
 example in MTZ files with a M/ISYM column where ISYM encodes the symmetry operation
 used.
+
+ *  @section csym_examples Examples
+
+See examples on <a href="ftp://ftp.ccp4.ac.uk/pub/mdw/csym">ftp area</a>
+
 */
 
 /** @file csymlib.h
