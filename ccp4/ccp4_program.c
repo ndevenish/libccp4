@@ -87,7 +87,7 @@ char *ccp4ProgramName(const char *progname)
 char *ccp4RCSDate(const char *rcs_string)
 {
   static char RCSDate[MAXLEN_RCSDATE]="";
-  char        tmpstr1[MAXLEN_RCSDATE],tmpstr2[3];
+  char        tmpstr1[8],tmpstr2[3];
   int         i;
 
   /* Deconstruct the RCS string passed to this
@@ -95,10 +95,10 @@ char *ccp4RCSDate(const char *rcs_string)
   if (rcs_string) {
     /* Extract useful data from RCS string for examination */
     strncpy(tmpstr1,rcs_string,7);
-    if (strlen(tmpstr1) >= MAXLEN_RCSDATE) tmpstr1[MAXLEN_RCSDATE-1] = '\0';
-    strncpy(tmpstr2,rcs_string,3);
-    if (strlen(tmpstr2) >= 3) tmpstr2[2] = '\0';
-    if (strcmp(tmpstr1,"$Date: ") == 0) {
+    tmpstr1[7] = '\0';
+    strncpy(tmpstr2,rcs_string,2);
+    tmpstr2[2] = '\0';
+    if (strncmp(tmpstr1,"$Date: ",7) == 0) {
       /* Raw form of RCS string (not exported) i.e.:
 	 "$Date$"
       */
@@ -109,7 +109,7 @@ char *ccp4RCSDate(const char *rcs_string)
       strncat(RCSDate,"/",1);
       strncat(RCSDate,rcs_string+9,2);
     } else if (strlen(rcs_string) > 10 &&
-	       (strcmp(tmpstr2,"19") == 0 || strcmp(tmpstr2,"20")) ) {
+	       (strncmp(tmpstr2,"19",2) == 0 || strncmp(tmpstr2,"20",2)) ) {
       /* RCS string after export i.e.:
 	 "2003/05/14 11:45:13 ..." */
       /* Build the date string in the form DD/MM/YY */
