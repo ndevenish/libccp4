@@ -3,40 +3,53 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
+C_BEGIN_SYMLIB
 C   SYMLIB
 C
 C $Date$
 C
 C
-C    centr.f       centric.f     determ.f     epsln.f
-C    epslon.f      invsym.f      keyhkl.f     maxval.f
-C    msyget.f      msymlb.f      pgdefn.f     pgmdf.f
-C    pgnlau.f      prmvci.f      prmvcr.f     
-C    rotfix.f      symfr2.f      symtrn.f     sysab.f
-C    xspecials.f   patsgp
-C       RDSYMM       ASUSET       ASUPUT       ASUGET	ASUPHP
-C       PRTRSM       INASU 
+C 1) Subroutines for manipulating symmetry operators.
+C   
+C    invsym        msyget        msymlb        pgdefn    
+C    pgmdf         pgnlau        symfr2        symtrn       
+c  Internal routines:-
+C    determ     
 C
-C-------------------------------------  Changes  -----
+C 2) Subroutines for testing reflection  data.
+C    centr         centric       epsln        epslon     
+C    sysab        
+C
+C 3) Subroutines for choosing asymmetric units for reflection
+C    data.
+C    asuset       asuput         asuget  	asuphp
+c  Internal routines:-
+C    prtrsm       inasu 
+C
+C 4) Subroutines for testing coordinate  data.
+C    xspecials     
+C
+C 5) Subroutines for choosing asymmetric units for Fourier
+C    maps consistent with FFT expectations; FFT grids etc.
+C    setlim        patsgp        setgrd 
+c  Internal routines:-
+C    fndsmp    factrz
+C
+C 6) Subroutines for permuting symmetry operators, etc.
+C    prmvci        prmvcr        rotfix      
 C
 C
-C  Modified LOOKUP/SETUP/ZEROIT --- increased prime number to 1009
-C   Now checks for overflow of hash table            26/7/93  PRE
-C
-C  Added PATSGP                  15/12/92  PRE
-C  MSYMLB ignores blank lines in SYMOP file
-C
-C  Change call to EPSLN           4/10/91  PRE
-C
-C    SYMMAT opens a file PGIN  and then uses PGIN as a variable name.
-C  Disaster on SGI - I have changed the file assignment to PGDATA
-C   July 1989  - this file contains the following subroutines
-C
-C
+C_END_SYMLIB
+C_BEGIN_OUTLINE
 C  Brief Description.
 C  =================
+C Part 1:
+C======================================================================
 C
 C---- SUBROUTINE SYMFR2(ICOL,I1,NS,ROT)
+C         Input ICOL - character string
+C               I1   - first character to interpret from.
+C
 C                translates a character string  into a 4*4 matrix.
 C         On exit, ROT(4,4,NS) contains the real-space symmetry
 C                  matrices, in standard convention, ie
@@ -48,35 +61,13 @@ C                 ROT(I,4,NS)    contains the fractional translations
 C
 C
 C---- SUBROUTINE INVSYM(S,ST)
+C          Input S    - 4*4 matrix
+C          Output ST  - 4*4 matrix
 C                Inverts 4*4 matrices - used here to get inverse
 C                symmetry operation for generating equivalent h k l.
 C                    ie                 [h']    = [h][St]
 C
 C                   h'(j) =Sum(I=1,3)[ h(i)*St(I,J,NS)]
-C
-C---- ROTFIX PRMVCI PRMVCR DETERM
-C
-C        Three subroutines for permuting symmetry operations
-C        They do not really belong here but they are widely used
-C        invisibly in FFT routines using symmetry operations to
-C        permute axes for easier fast fourier calculations.
-C
-C---- SUBROUTINE ROTFIX
-C                Permutes inverse symmetry operations
-C
-C---- SUBROUTINE PRMVCI(PERM,JV,N,N1)
-C                Permute integer vector JV(N,3) by permutation
-C                vector KP
-C                   KP  is set in a common block
-C                   N1 is first dimension of JV
-C
-C
-C---- SUBROUTINE PRMVCR(PERM,AV,N,N1)
-C                Permute real vector AV(N,3) by permutation
-C                vector KP
-C                   KP  is set in a common block
-C                   N1 is first dimension of AV
-C
 C
 C---- SUBROUTINE MSYGET(IST,LSPGRP,NSYM,ROT)
 C                Get symmetry operations for space-group LSPGRP
@@ -86,7 +77,6 @@ C                 ROT(4,4,NSYM)  = rotation/translation  matrices
 C
 C.....  Calls SYMFR2
 C
-C  Suggested:
 C   SUBROUTINE MSYMLB(IST,LSPGRP,NAMSPG,NAMPG,NSYMP,NSYM,RSYM)
 C
 C Get symmetry operations from library file
@@ -122,98 +112,54 @@ C          centric zones and the epslin zones for h k l
 C          It also sets up the common block needed to test systematic
 C           absences.
 C
-C---- CENTRIC(NSM,RSMT,IPRINT)
-C       This is Randy Read's method of defining centric reflections.
-C       subroutine centric works out the numbers from Symmetry
+C---- SUBROUTINE DETERM(det,a)  
+C          Input A - 4*4 matrix  (real)
+C          Output DET - determinant of A.
 C
-C         Read number of centric zones, then centric zone cards.
-C         Zones are encoded using an idea from a program by bricogne.
-C         If h*zone(1) + k*zone(2) + l*zone(3) is equal to 0.0,
-C         that reflection is in that zone.  all that is needed is the
-C         most general conditions--a reflection is either centric or
-C         not. Some care is warranted in setting up these cards.  For
-C         example, for the zone 0 k 0, the most obvious test would be
-C         1 0 1.  However, if l can take negative values, then
-C         reflections of the type h k -h could incorrectly satisfy
-C         the test. If the maximum h is < 100, then 1 0 100 would work.
-C         So it is necessary to think, for each test, about what
-C         other reflections in the data set could spuriously satisfy
-C         it.
-C
-C
-C---- CENTR(IH,IC)
-C
-C         Determine whether a reflection is centric (return ic=1)
-C         or not (ic=0).  If none of the zone tests is satisfied,
-C         the reflection is non-centric.
-C
-C---- SUBROUTINE EPSLN(NSM,NSMP,RSMT,IPRINT)
-C
-C       It works out the epsilon cards from consideration of the
-C       Symmetry and a set of standard reflections.
-C       This is Randys program description
-C
-C         Read number of epsilon zones (see rollett p. 126)
-C         then epsilon cards. zones defined as for centric zones, but
-C         fourth number on each line is the multiplicity corresponding
-C         to this zone.  last card should always be 0 0 0 n, where n is
-C         appropriate for the lattice (1 for primitive, 2 for face-
-C         centred, etc.), so that general reflections get a value
-C         for epsilon. be very careful of the order of the zones. cards
-C         for reciprocal lattice rows should be given before those for
-C         planes, because the first test that is satisfied defines
-C         the zone.
-C
-C       set up tests for
-C        h00 0k0 00l hh0 h0h 0kk h,-h0 h0-h 0k-k -h2h0 2h-h0 hhh
-C
-C
-C---- SUBROUTINE EPSLON(IH,EPSI,ISYSAB)
-C     Systematic absences flagged with ISYSAB = 1
-C
-C       Find the zone a reflection falls into, and return the
-C       appropriate value for the reflection multiplicity factor.
-C       each reflection must have a zone.
-C
-C---- SUBROUTINE SYSAB(IN,ISYSAB)
-C     Systematic absences flagged with ISYSAB = 1
-C
-C       Test reflections for Systematic absences
-C       Only reflns with EPSI gt 1 need be considered
-C
-C
-C---- SUBROUTINE PGDEFN(NAMPG,NSYMP,NSYM,RSYMT,IPRINT)
+C---- SUBROUTINE PGDEFN(NAMPG,NSYMP,NSYM,RSYMT,LPRINT)
+C        Input NSYM  - number of symmetry operators. ( integer)
+C        Input RSYMT - 4*4 symmetry matrices. ( real)
+C        Input LPRINT  - printing flag. ( logical)
+C        Returns  NAMPG - character - name of point group.
+C        Returns  NSYMP - integer - number of primitive symmetry operators.
+C        Returns  RSYMT - possibly reordered.
 C
 C      This subroutine chooses the primitive set of symmetry operators.
 C
-C         It re-orders the symmetry operators to give the primitive ones
-C      first.
+C      If necessary it re-orders the symmetry operators to give the 
+C      primitive ones first.
 C
-C      This subroutine works out the NAMPG read from PGDATA.LIB
-C      from the primitive   symmetry operators.
+C      This subroutine works out the point group name NAMPG 
 C      That is ; it checks rotation axes, etc etc and recognises these
 C      point groups.  (It DOES NOT cope with mirror planes etc)
 C
-C       MDF stuff:  It now sets up the common block MDFPAR for MDF file
-C       mods and  fills in the symmetry info.  See subroutine for
+C       Gronigen MDF stuff:  It now sets up the common block MDFPAR for 
+C       MDF file mods and  fills in the symmetry info.  See subroutine for
 C       details
-C
-C      COMMON /MDFPAR/MAXR,MAXB,CELL(6),ISLOW,INTER,IFAST,KLASS,ICENTR,
-C     +       ISCREW(3),IVERSN
 C
 C
 C---- SUBROUTINE PGMDF(JLASS,JCENTR,JSCREW)
 C
+C       Gronigen subroutine.
 C     Use this subroutine to transfer information to and from MDFPAR.
 C  If JLASS eq 0   then fill JLASS JCENTR JSCREW from common block.
 C  If JLASS gt 0   then fill KLASS ICENTR ISCREW in common block.
 C
 C
 C---- SUBROUTINE PGNLAU(NAMPG,NLAUE,LAUNAM)
+C---- Choose Laue group from PG name.
+C
+C     On entry:
+C     NAMPG      point-group name ( character)
+C
+C     On exit:
+C     NLAUE     Laue group number ( integer)
+C     LAUNAM    Laue group name ( character)
+C
 C
 C       This subroutine returns a laue code number used to choose
 C      the unique region of reciprocal space for
-C      each point group.
+C      each point group.  
 C       The number nlaue is the same as the one set in CAD for
 C       this purpose.
 C
@@ -238,15 +184,315 @@ C  14 pg23   m3         hkl:h>=0, k>=0, l>=0 with l>=h,  k>=h
 C  15 pg432  m3m        hkl:h>=0, k>=0, l>=0  with  k>=l
 C
 C
-C---- DETERM(det,a)  - Mini subroutine to evaluate determinant of matrix
-C                      [A].
+C
+C Part 2:
+C======================================================================
+C
+C---- SUBROUTINE CENTRIC(NSM,RSMT,IPRINT)
+C       This is Randy Read's method of defining centric reflections.
+C       It uses NSM and the symmetry operators stored in RSMT(4,4,NSM)
+C
+C         It decides how many centric zones there are, and flags them.
+C----     set up tests for 0kl h0l hk0 hhl hkh hkk h,-hl hk-h hk-k
+C          -h 2h l   2h -h l  hkl
+C         Zones are encoded using an idea from a program by bricogne.
+C         If h*zone(1) + k*zone(2) + l*zone(3) is equal to 0.0,
+C         that reflection is in that zone.  all that is needed is the
+C         most general conditions--a reflection is either centric or
+C         not.
 C
 C
+C---- SUBROUTINE CENTR(IH,IC)
+C
+C        Input IH(3) - reflection indices
+C        Returns IC
+C         Determine whether a reflection is centric (return ic=1)
+C         or not (ic=0).  If none of the zone tests is satisfied,
+C         the reflection is non-centric.
+C
+C---- SUBROUTINE EPSLN(NSM,NSMP,RSMT,IPRINT)
+C
+C       It works out the epsilon cards
+C       It uses NSM and the symmetry operators stored in RSMT(4,4,NSM)
+C       This is Randys program description
+C
+C         zones defined as for centric zones, but
+C         fourth number on each line is the multiplicity corresponding
+C         to this zone.  last card should always be 0 0 0 n, where n is
+C         appropriate for the lattice (1 for primitive, 2 for face-
+C         centred, etc.), so that general reflections get a value
+C         for epsilon. be very careful of the order of the zones. cards
+C         for reciprocal lattice rows should be given before those for
+C         planes, because the first test that is satisfied defines
+C         the zone.
+C
+C       set up tests for
+C        h00 0k0 00l hh0 h0h 0kk h,-h0 h0-h 0k-k -h2h0 2h-h0 hhh hkl
+C
+C
+C---- SUBROUTINE EPSLON(IH,EPSI,ISYSAB)
+C        Input IH(3) - reflection indices
+C        Returns EPSI ( epsilon zone) , and ISYSAB flag.
+C        Systematic absences flagged with ISYSAB = 1
+C
+C       Find the zone a reflection falls into, and return the
+C       appropriate value for the reflection multiplicity factor.
+C       each reflection must have a zone.
+C
+C---- SUBROUTINE SYSAB(IN,ISYSAB)
+C        Input IN(3) - reflection indices
+C        Returns  ISYSAB flag.
+C       Systematic absences flagged with ISYSAB = 1
+C       Only reflns with EPSI gt 1 need be considered
+C
+C
+C     .. Array Arguments ..
+C      REAL RSYM(4,4,96)
+C     ..
+C
+C Part 3:
+C======================================================================
+c       ASUSET  set up symmetry for ASUPUT & ASUGET, print it
+c       ASUPUT  put reflection into asymmetric unit defined in ASUSET
+c       ASUGET  recover original indices, ie reverse of ASUPUT
+c       ASUPHP  change phase for symmetry related reflection
+c  Internal routines:-
+c       PRTRSM  print reciprocal space symmetry, called by ASUSET
+c       INASU   (function) test if reflection is in asymmetric unit
+c               called by ASUPUT
+C
+C----   SUBROUTINE ASUSET(
+C    .     SPGNAM,NUMSGP,PGNAME,MSYM,RRSYM,MSYMP,MLAUE,LPRINT)
+C
+C  Set up & store symmetry informtion for later use in ASUPUT or ASUGET
+C
+C  On input:
+C    SPGNAM  space-group name (not used) ( character)
+C    NUMSGP  space-group number (not used)
+C    PGNAME  point-group name (if returned from SYMOP.LIB) ( character)
+C    MSYM    total number of symmetry operations
+C    RRSYM(4,4,MSYM) symmetry matrices (real-space)
+C    LPRINT  - printing flag. ( logical)
+C
+C  On output:
+C    PGNAME  point-group name ( character)
+C    MSYMP   number of primitive symmetry operations
+C    MLAUE   Laue group number - See PGNLAU for details
+C
+C
+C---- SUBROUTINE ASUPUT(IHKL,JHKL,ISYM)
+C
+C Put reflection into asymmetric unit defined by call to ASUSET
+C
+C On input:
+C    IHKL(3)    input indices hkl
+C
+C On output:
+C    JHKL(3)    output indices hkl
+C    ISYM       symmetry number for output
+C                 odd  numbers are for I+
+C                 even numbers are for I-
+C               real-space symmetry operation number L = (ISYM-1)/2 + 1
+C
+C  The real-space symmetry matrices are applied by premultiplying them
+C  by a row vector hkl,  ie  (h'k'l') = (hkl)R
+C
+C
+C
+C--- SUBROUTINE ASUGET(IHKL,JHKL,ISYM)
+C
+C Get original indices of reflection from  asymmetric unit,
+C   ie reverse operation of ASUPUT
+C   symmetry defined by call to ASUSET
+C
+C On input:
+C    IHKL(3)    input unique indices hkl
+C    ISYM       symmetry number for output
+C                 odd  numbers are for I+
+C                 even numbers are for I-
+C               real-space symmetry operation number L = (ISYM-1)/2 + 1
+C
+C On output:
+C    JHKL(3)    output original indices hkl
+C
+C  The real-space symmetry matrices are applied in ASUPUT by
+C premultiplying them by a row vector hkl,  ie  (h'k'l') = (hkl)R
+C  So here we calculate (hkl) = (h'k'l') R**-1
+
+C---- SUBROUTINE ASUPHP(JHKL,LSYM,ISIGN,PHASIN,PHSOUT)
+C
+C
+C---- Generate phase of symmetry equivalent JHKL from that of IHKL
+C
+C     On input:
+C
+C    JHKL(3)    indices hkl generated in ASUPUT
+C    LSYM       symmetry number for generating JHKL ( found by ASUPUT)
+C    ISIGN         =  1   for I+
+C                  = -1   for I-
+C    PHASIN     phase for reflection IHKL(3)
+C
+C     On output:
+C
+C    PHSOUT     phase for reflection JHKL(3)
+C
+C
+C
+C    Internal cals to:
+C
+C-1-- INTEGER FUNCTION INASU(IH, NLAUE)
+C
+C  Arguments:                                               
+C   NLAUE - code number for this pointgroup
+C   IH(3) - indices
+C
+C Returns:
+C   INASU = +1  if  h k l chosen
+C   INASU = -1  if -h-k-l chosen
+C   INASU =  0   if reflection is out-of-bounds
+
+C-2-- SUBROUTINE PRTRSM(PGNAME, NSYMP, RSYMIV)
+C
+C Print reciprocal space symmetry operations
+C
+C  The real-space symmetry matrices are applied by premultiplying them
+C  by a row vector hkl,  ie  (h'k'l') = (hkl)R
+C
+C
+
+C Part 4:
+C======================================================================
+C
+C---- SUBROUTINE XSPECIALS(NSYM,RSYM,XF,YF,ZF,NSPEC)
+C        Input NSYM  - number of symmetry operators. ( integer)
+C        Input RSYM - 4*4*NSYM symmetry matrices. ( real)
+C        Input XF YF ZF - a coordinate in fractional coordinates.
+C        Output NSPEC - the multiplicity of the coordinate.
+C                       eg: NSPEC = 3 for an atom on a 3fod axis.
+C
+C---- This subroutine finds what coordinates occupy special positions
+C     ie have occupancies less than 1.0
+C     from consideration of the Symmetry Operations.
+C
+C Part 5:
+C======================================================================
+C---- SUBROUTINE SETLIM(LSPGRP,XYZLIM)
+C
+C Set appropriate box (asymmetric unit) for spacegroup (true spacegroup)
+C     LSPGRP. For cubic symmetry spacegroups, this will be more than
+C     one asymmetric unit
+C
+C On entry:
+C     lspgrp    true spacegroup (not FFT spacegroup)
+C
+C On exit
+C     xyzlim(2,3)  minimum, maximum limits on x,y,z (fractions of cell)
+C                  if spacegroup not recognized, returns xzylim(1,1) = -1.0
+C                  Note that the minimum limits (xyzlim(1,)) will always
+C                   = 0.0
+
+
+C
+C---- SUBROUTINE PATSGP(SPGNAM, PGNAME, PATNAM, LPATSG)
+C
+C Determine Patterson spacegroup from true space-group
+C
+C On entry:
+C     SPGNAM    space-group name. Only used to determine lattice centering
+C     PGNAME    point-group name
+C
+C On exit:
+C     PATNAM    name of Patterson spacegroup
+C     LPATSG    number of Patterson spacegroup
+C
+C---- SUBROUTINE SETGRD(NLAUE,SAMPLE,NXMIN,NYMIN,NZMIN,NX,NY,NZ)
+C
+C Set up a suitable sampling grid for FFT
+C
+C Input:
+C     NLAUE         Laue-group for FFT/SF calculation
+C     SAMPLE        default fineness of sample, ie if = 1.0 (minimum),
+C                   try to get sampling as close to minimum as possible
+C                   Typically = 1.5 to get sample at traditional
+C                   3 * maximum index
+C     NXMIN NYMIN NZMIN minimum sampling (true XYZ)
+C
+C Output:
+C     NX,NY,NZ       sampling intervals along X,Y,Z
+C
+C  The sampling intervals must satisfying the following conditions:
+C
+C     1) approximately SAMPLE * minimum sampling
+C     2) no prime factor .gt. 19
+C     3) special restrictions for particular space-groups
+C
+C  Subsiduary calls:
+C     SUBROUTINE FNDSMP(MINSMP, NMUL, SAMPLE, NSAMPL)
+C
+C----  Find suitable grid sample, approximately = SAMPLE/2 * maximum index,
+C     with required factor, & no prime factor .gt. 19
+C
+C  On entry:
+C     MINSMP     minimum sample, approximately 2 * maximum index
+C     NMUL       required factor
+C     SAMPLE     desired sample factor, ie if = 1.0 (minimum), try to
+C                get sample close to MINSMP
+C
+C  On exit:
+C     nsampl     grid sample
+C                if MINSMP<=0, nsampl=nmul
+C     LOGICAL FUNCTION FACTRZ(N)
+C
+C---- Returns true if N has all prime factors .le. 19
+C
+C Part 6:
+C======================================================================
+C
+C---- ROTFIX PRMVCI PRMVCR DETERM
+C
+C        Three subroutines for permuting symmetry operations
+C        They do not really belong here but they are widely used
+C        invisibly in FFT routines using symmetry operations to
+C        permute axes for easier fast fourier calculations.
+C
+C---- SUBROUTINE ROTFIX
+C                Permutes inverse symmetry operations
+C                Matrices passed in Common block ATSYM
+C
+C---- SUBROUTINE PRMVCI(PERM,JV,N,N1)
+C          Input PERM - 4*4 matrix  (real)
+C          Input JV   - N1*3 matrix (integer)
+C          Output JV  - N1*3 matrix (integer) 
+C                       This has been modified by permuting the  
+C                       Nth column by matrix PERM.
+C           Here is the code for clarity.
+C---- Permute
+C
+C     DO 10 I = 1,3
+C       BV(I) = PERM(I,1)*JV(N,1) + PERM(I,2)*JV(N,2) +
+C    +          PERM(I,3)*JV(N,3)
+C  10 CONTINUE
+C
+C---- Copy back
+C
+C     DO 20 I = 1,3
+C       JV(N,I) = NINT(BV(I))
+C  20 CONTINUE
+C
+C
+C
+C---- SUBROUTINE PRMVCR(PERM,AV,N,N1)
+C          Input PERM - 4*4 matrix  (real)
+C          Input AV   - N1*3 matrix (real)
+C          Output AV  - N1*3 matrix (real)
+C                       This has been modified by permuting the  
+C                       Nth column by matrix PERM.
+C      See PRMVCI - real equivalent.
 C
 C  End of Brief Description.
 C +++++++++++++++++++++++++
-C
-C
+C_END_OUTLINE
+C_BEGIN_CENTR
 C     =======================
       SUBROUTINE CENTR(IH,IC)
 C     =======================
@@ -255,6 +501,7 @@ C
 C---- Determine whether a reflection is centric (return ic=1)
 C     or not (ic=0).  if none of the zone tests is satisfied,
 C     the reflection is non-centric.
+C_END_CENTR
 C
 C
 C
@@ -301,15 +548,17 @@ C
       END
 C
 C
+C_BEGIN_CENTRIC
 C     ============================
       SUBROUTINE CENTRIC(NSM,RSM,IPRINT)
 C     ============================
 C
 C
 C---- This is Randy Read's method of defining centric reflections.
-C     subroutine centric works out the numbers from Symmetry
+C       It uses NSM and the symmetry operators stored in RSMT(4,4,NSM)
 C
-C     read number of centric zones, then centric zone cards.
+C---- set up tests for 0kl h0l hk0 hhl hkh hkk h,-hl hk-h hk-k
+C      -h 2h l   2h -h l  hkl
 C     zones are encoded using an idea from a program by bricogne.
 C     if h*zone(1) + k*zone(2) + l*zone(3) is equal to 0.0,
 C     that reflection is in that zone.  all that is needed is the
@@ -322,6 +571,7 @@ C     the test. if the maximum h is < 100, then 1 0 100 would work.
 C     so it is necessary to think, for each test, about what
 C     other reflections in the data set could spuriously satisfy
 C     the test.
+C_END_CENTRIC
 C
 C---- SIGMAA commons
 C
@@ -369,11 +619,11 @@ C      -h 2h l   2h -h l  hkl
 C
       DATA REFTYP/'0kl','h0l','hk0','hhl','hkh','hkk','h -hl',' hk-h',
      +     ' hk-k','-h 2h l','2h -h l','hkl'/
-      DATA IHKL/0,1,2,1,0,2,1,2,0,1,1,10,1,10,1,10,1,1,1,-1,10,1,10,-1,
-     +     10,1,-1,-1,2,10,2,-1,10,1,4,8/
-      DATA CPRJ/1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,-1.0,0.0,1.0,
-     +     0.0,-1.0,0.0,1.0,-1.0,1.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,
-     +     2.0,1.0,0.0,1.0,2.0,0.0,0.0,0.0,0.0/
+      DATA IHKL/0,1,2, 1,0,2, 1,2,0, 1,1,10, 1,10,1, 10,1,1, 1,-1,10,
+     +          1,10,-1, 10,1,-1, -1,2,10, 2,-1,10, 1,4,8/
+      DATA CPRJ/1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,-1.0,0.0,
+     +     1.0,0.0,-1.0, 0.0,1.0,-1.0, 1.0,1.0,0.0, 1.0,0.0,1.0, 
+     +     0.0,1.0,1.0, 2.0,1.0,0.0, 1.0,2.0,0.0, 0.0,0.0,0.0/
 C     ..
 C
 C
@@ -426,6 +676,7 @@ C
 C
 C
 C     ========================
+C_BEGIN_DETERM
       SUBROUTINE DETERM(DET,A)
 C     ========================
 C
@@ -436,6 +687,7 @@ C
 C
 C          A (I)     4*4 matrix to be inverted
 C          DET       Determinant of A
+C_END_DETERM
 C
 C
 C
@@ -530,7 +782,7 @@ C     the zone.
 C
 C
 C    set up tests for
-C     h00 0k0 00l hh0 h0h 0kk h,-h0 h0-h 0k-k -h2h0 2h-h0 hhh
+C     h00 0k0 00l hh0 h0h 0kk h,-h0 h0-h 0k-k -h2h0 2h-h0 hhh hkl
 C
 C---- SIGMAA commons
 C      COMMON /CP/ CPROJ(3,20),NCENT
@@ -876,47 +1128,6 @@ C
           AI(I,J) = C(J,I)/D
    60   CONTINUE
    70 CONTINUE
-C
-C
-      END
-C
-C
-C     =====================================
-      SUBROUTINE MAXVAL(F2MOD,NREF,FKP,JKP)
-C     =====================================
-C
-C
-C
-C     .. Scalar Arguments ..
-      INTEGER NREF
-C     ..
-C     .. Array Arguments ..
-      REAL F2MOD(NREF),FKP(15)
-      INTEGER JKP(15)
-C     ..
-C     .. Local Scalars ..
-      REAL FMAX
-      INTEGER I,J,JMAX
-C     ..
-C
-C
-      DO 20 I = 1,15
-        FMAX = 0
-        JMAX = 0
-C
-C
-        DO 10 J = 1,NREF
-          IF (FMAX.LT.F2MOD(J)) THEN
-            JMAX = J
-            FMAX = F2MOD(J)
-          END IF
-   10   CONTINUE
-C
-C
-        FKP(I) = F2MOD(JMAX)
-        JKP(I) = JMAX
-        F2MOD(JMAX) = 0.0
-   20 CONTINUE
 C
 C
       END
@@ -1442,7 +1653,7 @@ C     ===============================
       SUBROUTINE PRMVCI(PERM,JV,N,N1)
 C     ===============================
 C
-C---- Permute vector JV(N,3) by permutation vector KP
+C---- Permute vector JV(N,3) by permutation matrix PERM
 C      N1 is first dimension of JV
 C
 C
@@ -1604,6 +1815,7 @@ C
       END
 C
 C
+C_BEGIN_SYMFR2
 C     =================================
       SUBROUTINE SYMFR2(ICOL,I1,NS,ROT)
 C     =================================
@@ -1621,6 +1833,7 @@ C                     standard convention, ie
 C                     x'(I)=Sum(J=1,3)ROT(I,J,NS)*x(J) + ROT(I,4,NS)
 C          ROT(I,4,NS)    contains the fractional translations
 C
+C_END_SYMFR2
 C
 C
 C     .. Scalar Arguments ..
@@ -2709,28 +2922,13 @@ C
 C
       END
 C----------------------------------------------------------------
-C
-c  this file contains bits for symlib
-c
-c       PGDEFN  new version with extra argument, print flag
-c       PGNLAU  new version with extra argument, Laue group name returned
-c                 both PGDEFN & PGNLAU are called by ASUSET
-c
-c  New routines
-c       RDSYMM  parse SYMMETRY command, return symmetry operations
-c       ASUSET  set up symmetry for ASUPUT & ASUGET, print it
-c       ASUPUT  put reflection into asymmetric unit defined in ASUSET
-c       ASUGET  recover original indices, ie reverse of ASUPUT
-c	ASUPHP  change phase for symmetry related reflection
-c  Internal routines:-
-c       PRTRSM  print reciprocal space symmetry, called by ASUSET
-c       INASU   (function) test if reflection is in asymmetric unit
-c               called by ASUPUT                        
-C
-C
-C
       SUBROUTINE PGDEFN(NAMPG,NSYMP,NSYM,RSMT,LPRINT)
 C     ==============================================
+C
+c  this subroutine contains bits for symlib
+C
+C
+C
 C
 C  Things for MDF files... Draft for Bauke...
 C
@@ -4075,9 +4273,6 @@ C  Arguments
 C
       CHARACTER*(*) PGNAME
 C
-C Functions
-      INTEGER LENSTR
-      EXTERNAL LENSTR
 C
 C Locals
       INTEGER I,J,K,L,M,ISYM,ISGN,LP,NLINC,NLMAX
@@ -4364,5 +4559,413 @@ C
          PATNAM = ' '
       ENDIF
 C
+      RETURN
+      END
+
+
+C
+C     ==========================================================
+      SUBROUTINE SETGRD(NLAUE,SAMPLE,NXMIN,NYMIN,NZMIN,NX,NY,NZ)
+C     ==========================================================
+C
+C Set up a suitable sampling grid for FFT
+C
+C Input:
+C     NLAUE         Laue-group for FFT/SF calculation
+C     SAMPLE        default fineness of sample, ie if = 1.0 (minimum),
+C                   try to get sampling as close to minimum as possible
+C                   Typically = 1.5 to get sample at traditional
+C                   3 * maximum index
+C     NXMIN NYMIN NZMIN minimum sampling (true XYZ)
+C
+C Output:
+C     NX,NY,NZ       sampling intervals along X,Y,Z
+C
+C  The sampling intervals must satisfying the following conditions:
+C
+C     1) approximately SAMPLE * minimum sampling
+C     2) no prime factor .gt. 19
+C     3) special restrictions for particular space-groups
+C
+C      IMPLICIT NONE
+C
+      INTEGER NLAUE,NXMIN,NYMIN,NZMIN,NX,NY,NZ
+      REAL SAMPLE
+      EXTERNAL FNDSMP
+C
+C  This is ALL the point groups.
+C PG1 PG1bar PG2 PGm PG2/m PG222 PGmm2 PGmmm 
+C PG4 PG4bar PG4/m PG422 PG4mm PG4bar2m PG4/mmm 
+C PG3 PG3bar PG32 PG3m PG3barm 
+C PG6 PG6bar PG6/m PG622 PG6mm PG6bar2m  PG6/mmm
+C PG23 PGm/3bar PG432 PG4bar3m PGm3bar m
+C
+C  We use:
+C PG1 PG1bar PG2  PG2/m PG222  PGmmm 
+C PG4 PG4/m PG422 PG4/mmm 
+C PG3 PG3bar PG32 PG3bar/m 
+C PG6 PG6/m PG622 PG6/mmm
+C PG23 PGm/3bar PG432 PGm3barm
+C  For grid restrictions we only need to know the laue number.
+C Here is the table:
+C   3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
+C   4 pg2    2/m        hkl:k>=0, l>=0  hk0:h>=0       3/b,4/b....
+C   6 pg222  mmm        hkl:h>=0, k>=0, l>=0            16 ...
+C   7 pg4    4/m        hkl:h>=0, l>=0 with k>=0 if  h=0  and
+C   8 pg422 4/mmm       hkl:h>=0, k>=0, l>=0            89..
+C   9 pg3     3bar      hkl:h>=0, k>0  00l:l>0         143..
+C  10 pg312  3/m        hkl:h>=0, k>=0 with k<=h for all l.
+C                           if k = 0  l>=0
+C           Space group numbers :   149-151-153
+C  11 pg321  3/m        hkl:h>=0, k>=0 with k<=h for all l.
+C                           if h = k  l>=0
+C           Space group numbers :   150-152-154
+C  12 pg6    6/m        hkl:h>=0, k>=0, l>=0 with k=0 if  h=0
+C  13 pg622  6/mmm
+C  14 pg23   m3
+C  15 pg432  m3m
+C 
+C Tables of restrictions for FFT Laue-groups
+C  NRESTR(1,) lauegroup number
+C        (2-4,) factors for NX,NY,NZ
+      INTEGER MAXLAU
+      PARAMETER (MAXLAU=15)
+      INTEGER NRESTR(4,MAXLAU), I
+      DATA NRESTR/
+C          Nsg    NX NY NZ
+C     P1 or P1bar - disallowed:
+     $     -1,    2, 2, 2,
+C     P1 or P1bar - disallowed:
+     $     -2,    2, 2, 2,
+C     P1 or P1bar :
+     $      3,    2, 2, 2,
+C     P2 or P2bar :
+     $      4,    2, 4, 2,
+C     P2/m:
+     $      5,    2, 8, 4,
+C     P222 or Pmmm:
+     $      6,    4, 4, 4,
+C     P4   or P4/m:
+     $      7,    4, 4, 8,
+C     P422 or P4/mmm:
+     $      8,    4, 4, 8,
+C     P3   or P3bar:
+     $      9,    6, 6, 6,
+C     P32  or P3/m:
+     $     10,    6, 6, 6,
+C     P32  or P3/m:
+     $     11,    6, 6, 6,
+C     P6   or P6/m:
+     $     12,    6, 6, 6,
+C     P6222   or P6/mmmm:
+     $     13,    6, 6, 6,
+C     P23:
+     $     14,    4, 4, 4,
+C     P432 or Pmmm:
+     $     15,    8, 8, 8/
+C
+      DO 1, I=1,MAXLAU
+         IF (NLAUE .EQ. NRESTR(1,I)) GO TO 10
+ 1    CONTINUE
+C
+C Unrecognized Laue-group
+      NX = -1
+      RETURN
+C
+ 10   CALL FNDSMP(NXMIN, NRESTR(2,I), SAMPLE, NX)
+      CALL FNDSMP(NYMIN, NRESTR(3,I), SAMPLE, NY)
+      CALL FNDSMP(NZMIN, NRESTR(4,I), SAMPLE, NZ)
+C
+      RETURN
+      END
+C
+C
+C
+C     ================================
+      SUBROUTINE SETLIM(LSPGRP,XYZLIM)
+C     ================================
+C
+C Set appropriate box (asymmetric unit) for spacegroup (true spacegroup)
+C     LSPGRP. For high symmetry spacegroups, this will be more than
+C     one asymmetric unit
+C
+C On entry:
+C     lspgrp    true spacegroup (not FFT spacegroup)
+C
+C On exit
+C     xyzlim(2,3)  minimum, maximum limits on x,y,z (fractions of cell)
+C                  if spacegroup not recognized, returns xzylim(1,1) = -1.0
+C                  Note that the minimum limits (xyzlim(1,)) will always
+C                   = 0.0
+C
+C      IMPLICIT NONE
+C
+      INTEGER LSPGRP
+      REAL XYZLIM(2,3)
+C
+      INTEGER I,J
+C
+      INTEGER NUMSGP
+      PARAMETER (NUMSGP=88)
+      REAL ONE,HALF,THRD,TWTD,SIXT,QUAR,EIGH,TWLT,ROUND,ROUND2
+      REAL ONEL,HALFL,THRDL,SIXTL,QUARL,EIGHL
+      PARAMETER (ROUND=0.00001, ROUND2=2.0*ROUND)
+      PARAMETER (ONE=1.0+ROUND,HALF=0.5+ROUND,THRD=1./3.+ROUND,
+     $     TWTD=2./3.+ROUND,SIXT=1./6.+ROUND,
+     $     QUAR=0.25+ROUND,EIGH=0.125+ROUND,TWLT=1./12.+ROUND)
+      PARAMETER (ONEL=ONE-ROUND2,HALFL=HALF-ROUND2,THRDL=THRD-ROUND2,
+     $     SIXTL=SIXT-ROUND2,QUARL=QUAR-ROUND2,EIGHL=EIGH-ROUND2)
+C
+      INTEGER NSPGRP(NUMSGP)
+      REAL ASULIM(3,NUMSGP)
+C
+C  asulim contains maximum limit on x,y,z: the box is always assumed to
+C     start at 0,0,0
+C
+C  Space group numbers
+      DATA NSPGRP/
+     $   1,   2,   3,    4,   5,  10,  16,   17,  18,1018,  19,   20,
+     $  21,  22,  23,   24,  47,  65,  69,   71,  75,  76,  77,   78,
+     $  79,  80,  83,   87,  89,  90,  91,   92,  93,  94,  95,   96,
+     $  97,  98, 123,  139, 143, 144, 145,  146, 147, 148, 149,  150,
+     $ 151, 152, 153,  154, 155, 162, 166,  168, 169, 170, 171,  172,
+     $ 173, 175, 177,  178, 179, 180, 181,  182, 191, 195, 196,  197,
+     $ 198, 199, 200,  202, 204, 207, 208,  209, 210, 211, 212,  213,
+     $ 214, 221, 225,  229/
+C
+      DATA ((ASULIM(II,JJ),II=1,3),JJ=1,76)/
+C        1:  P1          2:  P-1         3:  P2            4:  P21
+     $ ONEL,ONEL,ONEL, ONEL,HALF,ONEL, HALF,ONEL,ONEL, ONEL,HALFL,ONEL,
+C        5:  C2         10:  P2/m       16:  P222         17:  P2221
+     $ HALF,HALFL,ONEL, HALF,HALF,ONEL,HALF,HALF,ONEL, HALF,HALF,ONEL,
+C       18: P21212    1018: P21212      19: P212121       20:C2221
+     $ ONEL,QUAR,ONEL, ONEL,QUAR,ONEL, ONEL,ONEL,QUAR, HALF,QUAR,ONEL,
+C       21:  C222       22:  F222       23:  I222         24: I212121
+     $ HALF,QUAR,ONEL, QUAR,QUAR,ONEL, HALF,QUAR,ONE, HALF,QUAR,ONEL,
+C       47:  Pmmm       65:  Cmmm       69:  Fmmm         71:  Immm
+     $ HALF,HALF,HALF, HALF,QUAR,HALF, QUAR,QUAR,HALF, HALF,QUAR,HALF,
+C       75:  P4         76:  P41        77:  P42          78:  P43
+     $ HALF,HALF,ONEL,ONEL,ONEL,QUARL, HALF,ONEL,HALFL,ONEL,ONEL,QUARL,
+C       79:  I4         80:  I41        83:  P4/m         87:  I4/m
+     $ HALF,HALF,HALF,HALF,ONEL,QUARL, HALF,HALF,HALF, HALF,HALF,QUAR,
+C       89: P422        90: P4212       91: P4122         92: P41212
+     $ HALF,HALF,HALF, HALF,HALF,HALF, ONEL,ONEL,EIGH, ONEL,ONEL,EIGH,
+C       93: P4222       94: P42212      95: P4322         96: P43212
+     $ HALF,ONEL,QUAR, HALF,HALF,HALF, ONEL,ONEL,EIGH, ONEL,ONEL,EIGH,
+C       97: I422        98: I4122      123: P4/mmm       139: I4/mmm
+     $ HALF,HALF,QUAR, HALF,ONEL,EIGH, HALF,HALF,HALF,  HALF,HALF,QUAR,
+C      143:  P3        144:  P31       145: P32          146:  R3
+     $ TWTD,TWTD,ONEL,ONEL,ONEL,THRDL,ONEL,ONEL,THRDL, TWTD,TWTD,THRDL,
+C      147:  P-3       148:  R-3       149: P312         150:  P321
+     $ TWTD,TWTD,HALF, TWTD,TWTD,SIXT, TWTD,TWTD,HALF, TWTD,TWTD,HALF,
+C      151: P3112      152: P3121      153: P3212        154: P3221
+     $ ONEL, ONEL,SIXT, ONEL,ONEL,SIXT, ONEL,ONEL,SIXT, ONEL,ONEL,SIXT,
+C      155: R32        162:  P-31m     166:  R-3m        168:  P6
+     $ TWTD,TWTD,SIXT, TWTD,HALF,HALF, TWTD,TWTD,SIXT, TWTD,HALF,ONEL,
+C      169:  P61       170:  P65       171:  P62         172:  P64
+     $ ONEL,ONEL,SIXTL,ONEL,ONEL,SIXTL,ONEL,ONEL,THRDL,ONEL,ONEL,THRDL,
+C      173:  P63       175:  P6/m      177: P622         178: P6122
+     $ TWTD,TWTD,HALFL, TWTD,TWTD,HALF,TWTD,HALF,HALF, ONEL,ONEL,TWLT,
+C      179: P6522      180: P6222      181: P6422        182: P6322
+     $ ONEL,ONEL,TWLT, ONEL,ONEL,SIXT, ONEL,ONEL,SIXT, TWTD,TWTD,QUAR,
+C      191: P6/mmm     195: P23        196: F23          197: I23
+     $ TWTD,THRD,HALF, ONEL,ONEL,HALF, QUAR,QUAR,ONEL, ONEL,ONEL,HALF,
+C      198: P213       199: I213       200: Pm-3         202: Fm-3
+     $ HALF,HALF,ONEL, HALF,HALF,HALF, HALF,HALF,HALF, HALF,HALF,QUAR/
+      DATA ((ASULIM(II,JJ),II=1,3),JJ=77,88)/
+C      204: Im-3       207: P432       208: P4232        209: F432
+     $ HALF,HALF,HALF, ONEL,HALF,HALF, HALF,ONEL,QUAR, HALF,HALF,HALF,
+C      210: F4132      211: I432       212: P4332        213: P4132
+     $ HALF,ONEL,EIGH, HALF,HALF,QUAR, ONEL,ONEL,EIGH, ONEL,ONEL,EIGH,
+C      214: I4132      221: Pm-3m      225: Fm-3m        229: Im-3m
+     $ HALF,ONEL,EIGH, HALF,HALF,HALF, HALF,QUAR,QUAR, HALF,HALF,QUAR/
+C
+C
+      DO 10, J=1,NUMSGP
+         IF (LSPGRP .EQ. NSPGRP(J)) GO TO 20
+ 10   CONTINUE
+C
+C Spacegroup not found
+      XYZLIM(1,1) = -1.0
+      RETURN
+C
+C
+ 20   DO 30, I=1,3
+         XYZLIM(1,I) = 0.0
+         XYZLIM(2,I) = ASULIM(I,J)
+ 30   CONTINUE
+C
+      RETURN
+C
+      END
+C
+C     =============================================
+      SUBROUTINE FNDSMP(MINSMP, NMUL, SAMPLE, NSAMPL)
+C     =============================================
+C
+C----  Find suitable grid sample, approximately = SAMPLE/2 * maximum index,
+C     with required factor, & no prime factor .gt. 19
+C
+C  On entry:
+C     MINSMP     minimum sample, approximately 2 * maximum index
+C     NMUL       required factor
+C     SAMPLE     desired sample factor, ie if = 1.0 (minimum), try to
+C                get sample close to MINSMP
+C
+C  On exit:
+C     nsampl     grid sample
+C                if MINSMP<=0, nsampl=nmul
+C
+CC      implicit none
+C
+C     .. Scalar Arguments ..
+      INTEGER MINSMP,NMUL,NSAMPL
+      REAL SAMPLE
+C     ..
+C     .. Local Scalars ..
+      REAL R1MAX,R1MIN,R2MAX,R2MIN
+      INTEGER N
+C     ..
+C     .. External Functions ..
+      LOGICAL FACTRZ
+      EXTERNAL FACTRZ
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC NINT,REAL
+C     ..
+C     .. Save statement ..
+      SAVE
+C     ..
+C     .. Data statements ..
+C
+C---- This routine makes 2 attempts at finding a suitable factor:-
+C     1) searching downwards from r1max*MINSMP to r1min*MINSMP
+C     2) searching upwards from r2min*MINSMP to r2max*MINSMP
+C
+      DATA R1MIN,R1MAX/1.0, 1.6/
+      DATA R2MIN,R2MAX/1.4, 4.0/
+C     ..
+C
+C----  Check MINSMP <= 0, if so set NSAMPL = NMUL
+      IF (MINSMP .LE. 0) THEN
+         NSAMPL = NMUL
+         RETURN
+      ENDIF
+C
+C---- Set search limits
+      IF (SAMPLE .GE. 1.0) THEN
+         R1MAX = SAMPLE
+         R2MIN = MAX(1.0, SAMPLE*0.95)
+      ENDIF
+C----  Start with multiple of nmul
+C
+      N = NINT(REAL(MINSMP)*R1MAX/REAL(NMUL))*NMUL
+C
+C---- Function factrz returns .true.
+C     if number has all prime factors .le. 19
+C
+   10 IF (FACTRZ(N)) THEN
+C
+C---- OK suitable sample interval found, accept it
+C
+        NSAMPL = N
+        RETURN
+      END IF
+C
+C---- decrement trial value & continue if still in range
+C
+      N = N - NMUL
+      IF (REAL(N)/REAL(MINSMP).GT.R1MIN) GO TO 10
+C
+C---- Now try 2nd search if 1st unsuccesfull
+C
+      N = NINT(REAL(MINSMP)*R2MIN/REAL(NMUL))*NMUL
+   20 IF (FACTRZ(N)) THEN
+C
+C---- OK suitable sample interval found, accept it
+C
+        NSAMPL = N
+        RETURN
+      END IF
+C
+C---- increment trial value & continue if still in range
+C
+      N = N + NMUL
+      IF (REAL(N)/REAL(MINSMP).LT.R2MAX) GO TO 20
+C
+C---- Failed
+C
+      NSAMPL = -1
+      RETURN
+C
+      END
+C
+C
+C
+C     ==========================
+      LOGICAL FUNCTION FACTRZ(N)
+C     ==========================
+C
+C---- Returns true if N has all prime factors .le. 19
+C
+C     .. Parameters ..
+      INTEGER NFACT
+      PARAMETER (NFACT=8)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER N
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,NN
+C     ..
+C     .. Local Arrays ..
+      INTEGER IFACT(NFACT)
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL CCPERR
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC MOD
+C     ..
+C     .. Save statement ..
+      SAVE
+C     ..
+C     .. Data statements ..
+      DATA IFACT/2,3,5,7,11,13,17,19/
+C     ..
+C
+C
+      NN = N
+C
+C
+      DO 20 I = 1,NFACT
+   10   IF (MOD(NN,IFACT(I)).EQ.0) THEN
+C
+C---- factor found, divide & continue if required
+C
+          IF (IFACT(I).EQ.0) THEN
+C
+C                *******************************************
+            CALL CCPERR(1,' Error divide by Zero in FACTRZ')
+C                *******************************************
+C
+          END IF
+C
+C
+          NN = NN/IFACT(I)
+          IF (NN.EQ.1) THEN
+C
+C----  success
+C
+            FACTRZ = .TRUE.
+            RETURN
+          END IF
+          GO TO 10
+        END IF
+   20 CONTINUE
+C
+C---- Failure
+C
+      FACTRZ = .FALSE.
       RETURN
       END
