@@ -626,16 +626,14 @@ C
 C_END_MATMUL
 C     ..
 C     .. Local Scalars ..
-      REAL              S
       INTEGER           I,J,K
 C     ..
       DO 30 I = 1,3
           DO 20 J = 1,3
-              S = 0
+            A(I,J) = 0.0
               DO 10 K = 1,3
-                  S = B(I,K)*C(K,J) + S
+                  A(I,J) = B(I,K)*C(K,J) + A(I,J)
    10             CONTINUE
-              A(I,J) = S
    20         CONTINUE
    30     CONTINUE
       END
