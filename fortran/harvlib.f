@@ -5425,3 +5425,69 @@ C
       Harvest = .false.
       RETURN
       END
+C
+C
+C     =========================================================
+      SUBROUTINE Hpdbx_phasing_DM_shell(Hrres,Hrefls,Hsfomn,
+     +     Hsphicn,Hnres,Hmaxbin)
+C     =========================================================
+C
+C
+      include 'harvest.inc'
+      INTEGER Hmaxbin
+      REAL Hrres(Hmaxbin+1),Hrefls(Hmaxbin),Hsfomn(Hmaxbin)
+      REAL Hsphicn(Hmaxbin)
+      INTEGER Hnres
+C
+      IF ( .not. Harvest) RETURN
+c
+      if (Hnres .gt. Hmaxbin) then
+        call ccperr(2,
+     +    'Hpdbx_phasing_DM_shell: maximum number of bins exceeded!')
+        Hnres = Hmaxbin
+      endif
+
+      do 10 i=1,Hnres
+         
+         call ccif_setup_context('_pdbx_phasing_dm_shell.d_res_high',
+     +        CurrCategory,ccifBlockID,ccifContext,ccifStatus,'loop')
+         ccifStatus = AppendRow
+         
+c     set output format here
+         call ccif_output_fmt(
+     +        '_pdbx_phasing_dm_shell.d_res_high','-',
+     +        7,2,'f',ccifStatus)
+         call ccif_output_fmt('_pdbx_phasing_dm_shell.d_res_low','-',
+     +        7,2,'f',ccifStatus)
+         call ccif_output_fmt('_pdbx_phasing_dm_shell.reflns','-',
+     +        7,1,'f',ccifStatus)
+         call ccif_output_fmt('_pdbx_phasing_dm_shell.fom','-',
+     +        7,2,'f',ccifStatus)
+         call ccif_output_fmt(
+     +        '_pdbx_phasing_dm_shell.delta_phi_final','-',
+     +        7,2,'f',ccifStatus)
+         
+c     call file writing functions here
+         call ccif_put_real('_pdbx_phasing_dm_shell.d_res_high',
+     +        Hrres(i),
+     +        ccifContext,ccifStatus)
+         ccifStatus = KeepContext
+         call ccif_put_real('_pdbx_phasing_dm_shell.d_res_low',
+     +        Hrres(i+1),
+     +        ccifContext,ccifStatus)
+         ccifStatus = KeepContext
+         call ccif_put_real('_pdbx_phasing_dm_shell.reflns',
+     +        Hrefls(i),
+     +        ccifContext,ccifStatus)
+         call ccif_put_real('_pdbx_phasing_dm_shell.fom',Hsfomn(i),
+     +        ccifContext,ccifStatus)
+         ccifStatus = KeepContext
+         call ccif_put_real('_pdbx_phasing_dm_shell.delta_phi_final',
+     +        Hsphicn(i),
+     +        ccifContext,ccifStatus)
+         
+         call ccif_release_context(ccifContext)
+         
+ 10   continue
+      RETURN
+      END
