@@ -2088,14 +2088,14 @@ C
             IF (RSM(JDO20,JDO10,JDO40).NE.0) THEN
 C
               IF (RSM(JDO20,JDO10,JDO40).GT.0.0 .AND. IST.GT.0) THEN
-                IF (ICH.GT.LEN(SYMCHS))
+                IF (ICH.GT.LEN(SYMCHS(1)))
      +               CALL CCPERR(1, 'SYMTR3: character array too short')
                 SYMCHS(JDO40) (ICH:ICH) = '+'
                 ICH = ICH + 1
               END IF
 C
               IF (RSM(JDO20,JDO10,JDO40).LT.0) THEN
-                IF (ICH.GT.LEN(SYMCHS))
+                IF (ICH.GT.LEN(SYMCHS(1)))
      +               CALL CCPERR(1, 'SYMTR3: character array too short')
                 SYMCHS(JDO40) (ICH:ICH) = '-'
                 IST = 1
@@ -2103,7 +2103,7 @@ C
               END IF
 C
               IF (JDO10.NE.4) THEN
-                IF (ICH.GT.LEN(SYMCHS))
+                IF (ICH.GT.LEN(SYMCHS(1)))
      +               CALL CCPERR(1, 'SYMTR3: character array too short')
                 SYMCHS(JDO40) (ICH:ICH) = AXISCR(JDO10)
                 IST = 1
@@ -2114,7 +2114,7 @@ C
                 ITR = NINT(ABS(RSM(JDO20,4,JDO40)*12.0))
                 I1 = NPNTR1(ITR)
                 I2 = NPNTR2(ITR)
-                IF (ICH+2.GT.LEN(SYMCHS))
+                IF (ICH+2.GT.LEN(SYMCHS(1)))
      +               CALL CCPERR(1, 'SYMTR3: character array too short')
                 SYMCHS(JDO40) (ICH:ICH+2) = NUMB(I1)//'/'//NUMB(I2)
                 ICH = ICH + 3
@@ -2125,7 +2125,7 @@ C
 C---- ADD COMMA  space
 C
           IF (JDO20.NE.3) THEN
-            IF (ICH+2.GT.LEN(SYMCHS))
+            IF (ICH+2.GT.LEN(SYMCHS(1)))
      +           CALL CCPERR(1, 'SYMTR3: character array too short')
             SYMCHS(JDO40) (ICH:ICH+2) = ',  '
             ICH = ICH + 3
@@ -2211,19 +2211,19 @@ C
           DO 30 I = 1,3
             IF (RSMT(I,J,NS).NE.0) THEN
               IF (RSMT(I,J,NS).GT.0 .AND. IST.GT.0) THEN
-                IF (ICH.GT.LEN(SYMCHS))
+                IF (ICH.GT.LEN(SYMCHS(1)))
      +               CALL CCPERR(1, 'SYMTR: character array too short')
                 SYMCHS(NS) (ICH:ICH) = '+'
                 ICH = ICH + 1
               END IF
               IF (RSMT(I,J,NS).LT.0) THEN
-                IF (ICH.GT.LEN(SYMCHS))
+                IF (ICH.GT.LEN(SYMCHS(1)))
      +               CALL CCPERR(1, 'SYMTR: character array too short')
                 SYMCHS(NS) (ICH:ICH) = '-'
                 IST = 1
                 ICH = ICH + 1
               END IF
-              IF (ICH.GT.LEN(SYMCHS))
+              IF (ICH.GT.LEN(SYMCHS(1)))
      +             CALL CCPERR(1, 'SYMTR: character array too short')
               SYMCHS(NS) (ICH:ICH) = HKLCR(I)
               ICH = ICH + 1
@@ -2234,7 +2234,7 @@ C
 C---- ADD COMMA space
 C
           IF (J.NE.3) THEN
-            IF (ICH+2.GT.LEN(SYMCHS))
+            IF (ICH+2.GT.LEN(SYMCHS(1)))
      +           CALL CCPERR(1, 'SYMTR: character array too short')
             SYMCHS(NS) (ICH:ICH+2) = ',  '
             ICH = ICH + 3
