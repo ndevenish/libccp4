@@ -1138,6 +1138,9 @@ C     ..
 C     .. Data Statement ..
       DATA INITED /.FALSE./
 C
+C---- If initialised, fill RVEC and RETURN. If not, do initialisation
+C     and return here later.
+C
  1    IF (INITED) THEN
         DO 100 IVEC=1,LEN
           UNI=U(I97)-U(J97)
@@ -1160,14 +1163,18 @@ C
       K=MOD(9373/169,178)+1
       L=MOD(9373,169)
 C     
+      GOTO 10
+C
+C---- Initialise and return without filling RVEC
 C
       ENTRY RMARIN(IJ,KL)
-      IF (INITED) THEN
-        I=MOD(IJ/177,177)+2
-        J=MOD(IJ,177)+2
-        K=MOD(KL/169,178)+1
-        L=MOD(KL,169)
-      ENDIF
+      I=MOD(IJ/177,177)+2
+      J=MOD(IJ,177)+2
+      K=MOD(KL/169,178)+1
+      L=MOD(KL,169)
+      INITED=.TRUE.
+
+ 10   CONTINUE
       DO 2 II=1,97
         S=0.
         T=.5
@@ -1191,7 +1198,7 @@ C
         INITED=.TRUE.
         GOTO 1
       ENDIF
-      INITED=.TRUE.
+
       END
 C
 C
