@@ -1763,7 +1763,7 @@ int ccp4_lwsymm(MTZ *mtz, int *nsymx, int *nsympx, float rsymx[192][4][4],
       }
     }
   }
-  strcpy(&mtz->mtzsymm.symtyp,ltypex);
+  mtz->mtzsymm.symtyp = ltypex[0];
   mtz->mtzsymm.spcgrp = *nspgrx;
   ccp4spg_to_shortname(mtz->mtzsymm.spcgrpname,spgrnx);
   strcpy(mtz->mtzsymm.pgname,pgnamx);
@@ -1885,7 +1885,7 @@ int ccp4_lwbat(MTZ *mtz, MTZBAT *batch, const int batno, const float *buf, const
   strncpy(batch->gonlab[0],cbatch+70,8); 
   strncpy(batch->gonlab[1],cbatch+78,8); 
   strncpy(batch->gonlab[2],cbatch+86,8); 
-  batch->gonlab[0][9] = batch->gonlab[1][9] = batch->gonlab[2][9] = '\0';
+  batch->gonlab[0][8] = batch->gonlab[1][8] = batch->gonlab[2][8] = '\0';
 
   return 1;
 }
