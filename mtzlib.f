@@ -3,6 +3,10 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
+C     July 98  MDW
+C     Added routines LRID, LRCLID, LWID, LWIDAS for reading/writing
+C     dataset info, for use with data harvesting.
+C
 C     6/5/95  EJD
 C      Add subroutines to recognise and use Missing nos - 
 C      LRREFM   SET_MAGIC  IS_MAGIC  RESET_MAGIC EQUAL_MAGIC
@@ -115,6 +119,7 @@ C    wbathd.f     lrbscl.f      lrbtit.f      lwbscl.f      lwbtit.f
 C    lrhdrl.f     lwhdrl.f      lphist.f      sortup.f      addlin.f
 C    nextln.f     lrncol.f      lkyset.f      lstrsl.f      lstlsq.f
 C    lkyasn.f     equal_magic.f is_magic.f    reset_magic.f set_magic.f
+C    lrid.f       lrclid.f      lwid.f        lwidas.f
 C
 C   The development of the MTZ files and associated software mark 1
 C   is part of the masterplan of the ESF/EACBM Working Group 2.1 for
@@ -397,6 +402,9 @@ C     fatal error, but this subroutine uses LERROR to report
 C     this as a warning, so that all the program label assignments
 C     can be checked before stopping.
 C
+C     First program label which is assigned and is not an index
+C     defines default dataset for new MTZ columns
+C
 C---- Arguments :
 C
 C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
@@ -422,6 +430,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH,MFILEX
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000,MFILEX=9)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER NHISLM
@@ -444,14 +454,15 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT,NDATMSS
+     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80
+     +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80,
+     +          ENTRY_ID*20,DIFFRN_ID*20
 C     ..
 C     .. Local Scalars ..
       INTEGER IEND,IERR,IFAIL,II,IST,ISTAT,JDO10,JDO20,JDO30,
-     +        JDO50,JDO60,JDO90,JDO100,JLENG
+     +        JDO50,JDO60,JDO90,JDO100,JDO110,JLENG
       CHARACTER CWORK*30,LINE*400,STROUT*400
 C     ..
 C     .. External Functions .. 
@@ -481,6 +492,9 @@ C     .. Common blocks ..
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
+      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
+     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
+     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE
@@ -671,6 +685,18 @@ C
               END IF 
             END IF
   100     CONTINUE
+C
+C---- First program label which is assigned and is not an index
+C     defines default dataset
+C
+          DO 110 JDO110 = 1,NLPRGI
+            IF (LOOKUP(JDO110).NE.0 .AND. CTPRGI(JDO110).NE.'H') THEN
+              IDEFSET(MINDX) = CSET_ID(LOOKUP(JDO110),MINDX)
+              GOTO 120
+            ENDIF
+  110     CONTINUE
+C
+  120     CONTINUE
 C
         ELSE
 C
@@ -1262,6 +1288,93 @@ C
 C
       END
 C
+C
+C     =========================================
+      SUBROUTINE LRCLID(MINDX,CSETID,NCOL)
+C     =========================================
+C
+C
+C---- Subroutine to return the ID of the related dataset for each 
+C     column of the input MTZ file, as obtained from the header.
+C
+C---- Arguments :
+C
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
+C
+C     CSETID    (O)	INTEGER         array of dimension at least NCOL
+C                               	containing the dataset IDs on exit
+C
+C     NCOL      (O)	INTEGER         number of columns in the MTZ file
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS,MBATCH
+      PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
+      INTEGER MBLENG,CBLENG
+      PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER MINDX,NCOL
+C     ..
+C     .. Array Arguments ..
+      INTEGER CSETID(*)
+C     ..
+C     .. Arrays in Common ..
+      REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP,
+     +          NSETW,SET_ID,CSET_ID,IDEFSET
+      CHARACTER ENTRY_ID*20,DIFFRN_ID*20
+      LOGICAL VAL_SET
+C     ..
+C     .. Local Scalars ..
+      INTEGER IFAIL,ISTAT,JDO10
+      CHARACTER LINE*400
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL LERROR
+C     ..
+C     .. Common blocks ..
+      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
+     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
+      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
+     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
+     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
+C
+C---- First check that the MINDX is valid
+C
+      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
+        WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
+     +    'From LRCLID : Index',MINDX,
+     +    ' is out of range (allowed 1..',MFILES,')'
+        ISTAT = 2
+        IFAIL = -1
+C
+C            ************************
+        CALL LERROR(ISTAT,IFAIL,LINE)
+C            ************************
+C
+      ELSE
+C
+C---- Then return column information
+C
+        NCOL = NCOLS(MINDX)
+C
+        DO 10 JDO10 = 1,NCOL
+          CSETID(JDO10) = CSET_ID(JDO10,MINDX)
+   10   CONTINUE
+C
+      END IF
+C
+      END
+C
 C
 C
 C     ========================
@@ -1724,6 +1837,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
       INTEGER MINCOL
       PARAMETER (MINCOL=3)
       INTEGER NTYP,LTYP
@@ -1747,16 +1862,17 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT,NDATMSS
+     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80,ENTRY_ID*20,
+     +          DIFFRN_ID*20
 C     ..
 C     .. Local Scalars ..
-      INTEGER BATFLG,EFLAG,ENDLOP,IER,ISTAT,ITEND,IUNIN,JDO10,
+      INTEGER BATFLG,EFLAG,ENDLOP,IER,ISTAT,ITEND,IUNIN,JDO10,JDO55,
      +        JDO100,JDO110,JDO120,JDO130,JDO140,JDO150,JDO190,JDO20,
      +        JDO200,JDO30,JDO40,JDO50,JDO60,JDO80,JDO90,NBATRF,NCOLR,
-     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT
+     +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT,NSETR
       LOGICAL LEND
       CHARACTER KEY*4,MKEY*4,LINE*80,LINE2*400,STROUT*400
 C     ..
@@ -1793,6 +1909,9 @@ C     .. Common blocks ..
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
+      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
+     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
+     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
@@ -1911,6 +2030,8 @@ C                   VAL_MISS(2,..) ( File for writing) is Nan
         VAL_SET(2,MINDX) = .FALSE.
         NHISTL(MINDX) = 0
         HDRST(MINDX) = 0
+        NSETW(MINDX) = 0
+        IDEFSET(MINDX) = 0
         TITLE(MINDX) = '   '
         NSPGRP(MINDX) = 0
         SPGNAM(MINDX) = '?'
@@ -1921,9 +2042,16 @@ C
           ISORT(JDO50,MINDX) = 0
    50   CONTINUE
 C
+        DO 55 JDO55 = 1,MSETS
+          SET_ID(JDO55,MINDX) = 0
+          ENTRY_ID(JDO55,MINDX) = ' '
+          DIFFRN_ID(JDO55,MINDX) = ' '
+   55   CONTINUE
+
         DO 60 JDO60 = 1,MCOLS
           CRANGE(1,JDO60,MINDX) = 0.0
           CRANGE(2,JDO60,MINDX) = 0.0
+          CSET_ID(JDO60,MINDX) = 0
           CLABEL(JDO60,MINDX) = '   '
           CTYPE(JDO60,MINDX) = ' '
           RPOINT(JDO60,MINDX) = 0
@@ -1932,6 +2060,7 @@ C
 C
         NBATRF = 0
         NCOLR = 0
+        NSETR = 0
         NSYMIN = 0
         SYFLAG = 1
         BATFLG = 1
@@ -2195,6 +2324,8 @@ C
 C                  ************************************************
               CALL GTPREA(4,CRANGE(1,NCOLR,MINDX),NTOK,ITYP,FVALUE)
               CALL GTPREA(5,CRANGE(2,NCOLR,MINDX),NTOK,ITYP,FVALUE)
+              IF (NTOK.GE.6) 
+     +         CALL GTPINT(6,CSET_ID(NCOLR,MINDX),NTOK,ITYP,FVALUE)
 C                  ************************************************
 C
               DO 140 JDO140 = 1,NTYP
@@ -2211,6 +2342,20 @@ C                  *************************
 C                  *************************
 C
               CTYPE(NCOLR,MINDX) = 'R'
+              GO TO 70
+
+C---- Information on datasets used in harvesting
+
+            ELSEIF (KEY.EQ.'NDIF') THEN
+
+              CALL GTPINT(2,NSETW(MINDX),NTOK,ITYP,FVALUE)
+              GO TO 70
+
+            ELSEIF (KEY.EQ.'DIFF') THEN
+              NSETR = NSETR + 1
+              CALL GTPINT(2,SET_ID(NSETR,MINDX),NTOK,ITYP,FVALUE)
+              ENTRY_ID(NSETR,MINDX) = LINE(IBEG(3) :IEND(3))
+              DIFFRN_ID(NSETR,MINDX) = LINE(IBEG(4) :IEND(4))
               GO TO 70
 C
 C---- BATCH - serial numbers of the batches in the file 
@@ -2295,6 +2440,26 @@ C                  *************************
               CALL LERROR(1,1,LINE2)
 C                  *************************
 C
+            END IF
+C
+C---- Check no. of datasets input equals NSETW from NDIFFRN line
+C
+            IF (NSETR.NE.NSETW(MINDX)) THEN
+              WRITE (LINE2,FMT='(A,I4,A,A,I4,A)')
+     +          'From LROPEN : Header indicates',NSETW(MINDX),
+     +          ' datasets, but ',' there were',NSETR,
+     +          ' dataset records in header'
+C
+C                  *************************
+              CALL LERROR(1,1,LINE2)
+C                  *************************
+C
+            END IF
+C
+C----Default dataset is that of 1st column (H)
+C
+            IF (NSETW(MINDX).GT.0) THEN
+              IDEFSET(MINDX) = CSET_ID(1,MINDX)
             END IF
 C
 C---- Check correct number of symmetry cards
@@ -3678,6 +3843,8 @@ C     the values in the header common block, so all information about
 C     the input files labels and types should already have been
 C     extracted.
 C
+C     If datasets are defined, check all columns have an associated dataset
+C
 C---- Arguments :
 C
 C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
@@ -3698,6 +3865,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH,MFILEX
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000,MFILEX=9)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
       INTEGER MINCOL
       PARAMETER (MINCOL=3)
       INTEGER NTYP,LTYP
@@ -3723,14 +3892,15 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT,NDATMSS
+     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80
+     +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80,
+     +          ENTRY_ID*20,DIFFRN_ID*20
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ILEN,IOUT,ISTAT,JDO10,JDO30,JDO40,JDO50,JDO60,JDO70,
-     +        JDO80,LSTART
+     +        JDO80,JDO90,LSTART,IREFSET
       CHARACTER LINE*400,CWORK*30
 C     ..
 C     .. Local Arrays ..
@@ -3763,6 +3933,9 @@ C     .. Common blocks ..
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
+      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
+     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
+     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE
@@ -3920,7 +4093,7 @@ C
 C
               IF (ISTAT.EQ.1) THEN
                 WRITE (LINE,FMT='(A,I4,A)')
-     +          'From LWCLAB : Unrecognised output column type, column',
+     +          'From LWASSN : Unrecognised output column type, column',
      +          JDO80,', set to R'
 C
 C                    ************************
@@ -3934,6 +4107,19 @@ C
               CTYPE(JDO80,MINDX) = 'R'
             END IF
    80     CONTINUE
+C
+C---- If datasets are defined, check all columns have an associated dataset
+C     If not, set to that of first column dealt with here.
+C
+          IF (NSETW(MINDX).GT.0) THEN
+            IREFSET = IDEFSET(MINDX)
+            IF (IREFSET.EQ.0) IREFSET = CSET_ID(1,MINDX)
+            IF (IREFSET.EQ.0) IREFSET = SET_ID(1,MINDX)
+            DO 90 JDO90 = LSTART,NCOLW(MINDX)
+              IF (CSET_ID(JDO90,MINDX).EQ.0) 
+     +            CSET_ID(JDO90,MINDX) = IREFSET
+ 90         CONTINUE
+          ENDIF
 C
 C---- Print out program labels and column labels
 C
@@ -3955,6 +4141,174 @@ C              ****************
           CALL LABPRT(CTYPE(1,MINDX),NCOLW(MINDX))
           CALL BLANK('CURWIN',1)
 C              *****************
+C
+        END IF
+      END IF
+C
+      END
+C
+C
+C     ====================================================
+      SUBROUTINE LWIDAS(MINDX,NLPRGO,PNAME,DNAME,IAPPND)
+C     ====================================================
+C
+C
+C---- Subroutine to associate dataset entry with each column for
+C     the output MTZ file. Note that this subroutine changes
+C     the values in the header common block, so all information about
+C     the input files datasets should already have been
+C     extracted.
+C
+C---- Arguments :
+C
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
+C
+C     NLPRGO    (I)	INTEGER         number of output program labels
+C
+C     PNAME     (I)	CHARACTER*20    array of dimension at least NLPRGO
+C                               	containing the output project name
+C
+C     DNAME     (I)	CHARACTER*20    array of dimension at least NLPRGO
+C                               	containing the output dataset name
+C
+C     IAPPND    (I)	INTEGER         =0 replace all existing column info
+C                               	=1 append to the existing column info
+C
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS,MBATCH,MFILEX
+      PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000,MFILEX=9)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
+      INTEGER MINCOL
+      PARAMETER (MINCOL=3)
+      INTEGER MBLENG,CBLENG
+      PARAMETER (MBLENG=185,CBLENG=70+3*8)
+      INTEGER NHISLM
+      PARAMETER (NHISLM=30)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER IAPPND,MINDX,NLPRGO
+C     ..
+C     .. Array Arguments ..
+      character*20 PNAME(*),DNAME(*)
+C     ..
+C     .. Arrays in Common ..
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
+      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
+     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
+     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
+      LOGICAL SORTB,DATMSS,VAL_SET
+      CHARACTER ENTRY_ID*20,DIFFRN_ID*20
+C     ..
+C     .. Local Scalars ..
+      INTEGER IFAIL,ISTAT,JDO40,JDO50,IREFSET
+      CHARACTER LINE*400,PNAMEL*20,DNAMEL*20
+C     ..
+C     .. External Functions ..
+      INTEGER LENSTR
+      EXTERNAL LENSTR
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL LERROR
+C     ..
+C     .. Common blocks ..
+      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
+     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
+      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
+     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
+     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
+     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
+     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS),NDATMSS(MFILES)
+      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
+     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
+     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
+
+C     ..
+C     .. Save statement ..
+      SAVE
+C     ..
+C
+C---- First check that the MINDX is valid
+C
+      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
+        WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
+     +    'From LWIDAS : Index',MINDX,
+     +    ' is out of range (allowed 1..',MFILES,')'
+        ISTAT = 2
+        IFAIL = -1
+C
+C            ************************
+        CALL LERROR(ISTAT,IFAIL,LINE)
+C            ************************
+C
+      ELSE
+C
+C---- Work out starting column
+C
+        IF (IAPPND.EQ.0) THEN
+          LSTART = 1
+        ELSE
+          LSTART = NCOLS(MINDX) + 1
+        END IF
+C
+C---- Work out total number of columns to be written to output file
+C
+        NCOLW(MINDX) = LSTART + NLPRGO - 1
+        IF (NCOLW(MINDX).LT.MINCOL) THEN
+          WRITE (LINE,FMT='(A,A,I4)')
+     +      'From LWIDAS : Not enough output columns -',
+     +      ' minimum allowed is',MINCOL
+          ISTAT = 2
+          IFAIL = -1
+C
+C              ************************
+          CALL LERROR(ISTAT,IFAIL,LINE)
+C              ************************
+C
+        ELSE IF (NCOLW(MINDX).GT.MCOLS) THEN
+          WRITE (LINE,FMT='(A,I4)')
+     +      'From LWIDAS : Too many output columns - maximum allowed is'
+     +      ,MCOLS
+          ISTAT = 2
+          IFAIL = -1
+C
+C              ************************
+          CALL LERROR(ISTAT,IFAIL,LINE)
+C              ************************
+C
+        ELSE
+C
+C---- Find dataset ID for each column and store in common block
+C
+          DO 40 JDO40 = LSTART,NCOLW(MINDX)
+            PNAMEL = PNAME(JDO40 - LSTART + 1)
+            DNAMEL = DNAME(JDO40 - LSTART + 1)
+            
+            DO 50 JDO50 = 1,NSETW(MINDX)
+              IF (PNAMEL.EQ.ENTRY_ID(JDO50,MINDX) .AND.
+     +            DNAMEL.EQ.DIFFRN_ID(JDO50,MINDX)) THEN
+                CSET_ID(JDO40,MINDX) = SET_ID(JDO50,MINDX)
+                GOTO 40
+              ENDIF
+ 50         CONTINUE
+
+C---- Dataset not found in header common blocks
+C     CSET_ID might be set by LWASSN/LWCLAB but do here as well.
+            IREFSET = IDEFSET(MINDX)
+            IF (IREFSET.EQ.0) IREFSET = CSET_ID(1,MINDX)
+            IF (IREFSET.EQ.0) IREFSET = SET_ID(1,MINDX)
+            CSET_ID(JDO40,MINDX) = IREFSET
+
+ 40       CONTINUE
 C
         END IF
       END IF
@@ -4231,6 +4585,156 @@ C
 C
 C
 C     ====================================================
+      SUBROUTINE LRID(MINDX,PNAME,DNAME,ISETS,NDATASETS)
+C     ====================================================
+C
+C---- Subroutine to return information for all datasets from the MTZ file
+C     header.
+C
+C---- Arguments :
+C
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
+C
+C     PNAME     (O)     CHARACTER*20    array of dimension at least NDATASETS
+C                               	containing the protein name on exit
+C
+C     DNAME     (O)     CHARACTER*20    array of dimension at least NDATASETS
+C                               	containing the dataset name on exit
+C
+C     ISETS     (O)     INTEGER         array of dimension at least NDATASETS
+C                               	containing the dataset id on exit
+C
+C     NDATASETS (O)     INTEGER         number of datasets in MTZ header
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS
+      PARAMETER (MFILES=4,MCOLS=200)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER NDATASETS,MINDX,ISETS(*)
+      CHARACTER*20 PNAME(*),DNAME(*)
+C     ..
+C     .. Local Scalars ..
+      INTEGER ISET,ISTAT,IFAIL
+      CHARACTER LINE*400
+C     ..
+C     .. Arrays in Common ..
+      INTEGER NSETW,SET_ID,CSET_ID,IDEFSET
+      CHARACTER ENTRY_ID*20,DIFFRN_ID*20
+
+      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
+     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
+     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
+C
+C---- First check that the MINDX is valid
+C
+      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
+        WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
+     +    'From LRID : Index',MINDX,
+     +    ' is out of range (allowed 1..',MFILES,')'
+        ISTAT = 2
+        IFAIL = -1
+C
+C            ************************
+        CALL LERROR(ISTAT,IFAIL,LINE)
+C            ************************
+C
+      ENDIF
+
+C     New dataset to be added to header
+      NDATASETS = NSETW(MINDX)
+      DO 10 ISET = 1,NDATASETS
+        PNAME(ISET) = ENTRY_ID(ISET,MINDX)
+        DNAME(ISET) = DIFFRN_ID(ISET,MINDX)
+        ISETS(ISET) = SET_ID(ISET,MINDX)
+ 10   CONTINUE
+
+      END
+C
+C
+C     ====================================================
+      SUBROUTINE LWID(MINDX,PROTEIN_NAME,DATASET_NAME)
+C     ====================================================
+C
+C---- Subroutine to add dataset information to the output MTZ file header.
+C     Datasets identified by the PROTEIN_NAME/DATASET_NAME pair are 
+C     appended to the MTZ header one at a time.
+C     Checks to see if the PROTEIN_NAME/DATASET_NAME pair is already
+C     included; if so, the dataset is not appended.
+C     Redundant datasets are removed in LWCLOS.
+C
+C---- Arguments :
+C
+C     MINDX         (I)	    INTEGER        indicates which MTZ file - 1 index
+C                                          points to both input and output files
+C
+C     PROTEIN_NAME  (I)     CHARACTER*20   protein name of dataset to be added
+C
+C     DATASET_NAME  (I)     CHARACTER*20   dataset name of dataset to be added
+C
+C     .. Parameters ..
+      INTEGER MFILES,MCOLS
+      PARAMETER (MFILES=4,MCOLS=200)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER MINDX
+      CHARACTER*20 PROTEIN_NAME,DATASET_NAME
+C     ..
+C     .. Local Scalars ..
+      INTEGER ISET,ISTAT,IFAIL,JDO50,MAXSETID
+      CHARACTER LINE*400
+C     ..
+C     .. Arrays in Common ..
+      INTEGER NSETW,SET_ID,CSET_ID,IDEFSET
+      CHARACTER ENTRY_ID*20,DIFFRN_ID*20
+
+      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
+     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
+     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
+C
+C---- First check that the MINDX is valid
+C
+      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
+        WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
+     +    'From LWID : Index',MINDX,
+     +    ' is out of range (allowed 1..',MFILES,')'
+        ISTAT = 2
+        IFAIL = -1
+C
+C            ************************
+        CALL LERROR(ISTAT,IFAIL,LINE)
+C            ************************
+C
+      ENDIF
+
+      MAXSETID = 0
+C     Check whether this protein/dataset already exists.
+      DO 50 JDO50 = 1,NSETW(MINDX)
+        IF (PROTEIN_NAME(1:LENSTR(PROTEIN_NAME)).EQ.
+     +    ENTRY_ID(JDO50,MINDX) .AND. 
+     +    DATASET_NAME(1:LENSTR(DATASET_NAME)).EQ.
+     +    DIFFRN_ID(JDO50,MINDX)) RETURN
+        IF (SET_ID(JDO50,MINDX).GT.MAXSETID)
+     +    MAXSETID = SET_ID(JDO50,MINDX)
+ 50   CONTINUE
+
+C     New dataset to be added to header
+      NSETW(MINDX) = NSETW(MINDX) + 1
+      ISET = NSETW(MINDX)
+      SET_ID(ISET,MINDX) = MAXSETID + 1
+      ENTRY_ID(ISET,MINDX) = PROTEIN_NAME(1:LENSTR(PROTEIN_NAME))
+      DIFFRN_ID(ISET,MINDX) = DATASET_NAME(1:LENSTR(DATASET_NAME))
+
+      END
+C
+C
+C
+C     ====================================================
       SUBROUTINE LWCLAB(MINDX,LSPRGO,NLPRGO,CTPRGO,IAPPND)
 C     ====================================================
 C
@@ -4261,6 +4765,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
       INTEGER MINCOL
       PARAMETER (MINCOL=3)
       INTEGER NTYP,LTYP
@@ -4281,13 +4787,14 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT,NDATMSS
+     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,TITLE*70
+     +          CLABEL*30,TITLE*70,ENTRY_ID*20,DIFFRN_ID*20
 C     ..
 C     .. Local Scalars ..
-      INTEGER IFAIL,IOUT,ISTAT,JDO10,JDO20,JDO30,JDO40,JDO50,LSTART
+      INTEGER IFAIL,IOUT,ISTAT,JDO10,JDO20,JDO30,JDO40,JDO50,JDO60,
+     +        LSTART,IREFSET
       CHARACTER LINE*400,CWORK*30
 C     ..
 C     .. Local Arrays ..
@@ -4316,6 +4823,9 @@ C     .. Common blocks ..
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
+      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
+     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
+     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
@@ -4352,7 +4862,7 @@ C
         NCOLW(MINDX) = LSTART + NLPRGO - 1
         IF (NCOLW(MINDX).LT.MINCOL) THEN
           WRITE (LINE,FMT='(A,A,I4)')
-     +      'From LWASSN : Not enough output columns -',
+     +      'From LWCLAB : Not enough output columns -',
      +      ' minimum allowed is',MINCOL
           ISTAT = 2
           IFAIL = -1
@@ -4432,6 +4942,19 @@ C
 C
    50     CONTINUE
 C
+C---- If datasets are defined, check all columns have an associated dataset
+C     If not, set to that of first column dealt with here.
+C
+          IF (NSETW(MINDX).GT.0) THEN
+            IREFSET = IDEFSET(MINDX)
+            IF (IREFSET.EQ.0) IREFSET = CSET_ID(1,MINDX)
+            IF (IREFSET.EQ.0) IREFSET = SET_ID(1,MINDX)
+            DO 60 JDO60 = LSTART,NCOLW(MINDX)
+              IF (CSET_ID(JDO60,MINDX).EQ.0) 
+     +            CSET_ID(JDO60,MINDX) = IREFSET
+ 60         CONTINUE
+          ENDIF
+
         END IF
       END IF
 C
@@ -4608,6 +5131,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
       CHARACTER*10 VERSN
       PARAMETER (VERSN='MTZ:V1.1')
       INTEGER SIZE1
@@ -4626,14 +5151,16 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT,NDATMSS
+     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80,ENTRY_ID*20,
+     +          DIFFRN_ID*20
 C     ..
 C     .. Local Scalars ..
       INTEGER ENDLOP,I,IFAIL,ISTAT,JDO10,JDO100,JDO20,JDO30,JDO40,
-     +        JDO50,JDO60,JDO65,JDO80,NITEM
+     +        JDO50,JDO60,JDO65,JDO80,JDO22,JDO23,NITEM,JDO25,
+     +        ISET,IDSET,NREDUND
       CHARACTER LINE*400, STROUT*80
       LOGICAL VS
 C     ..
@@ -4669,6 +5196,9 @@ C     .. Common blocks ..
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
+      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
+     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
+     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
@@ -4810,10 +5340,18 @@ C
         DO 20 JDO20 = 1,NCOLW(MINDX)
          IF (QISNAN(WRANGE(1,JDO20,MINDX))) WRANGE(1,JDO20,MINDX)=0
          IF( QISNAN(WRANGE(2,JDO20,MINDX))) WRANGE(2,JDO20,MINDX)=999
-          WRITE (LINE,FMT='(A6,1X,A,1X,A,1X,2F19.4)') 
+         IF (CSET_ID(JDO20,MINDX).GT.0) THEN
+           WRITE (LINE,FMT='(A6,1X,A,1X,A,1X,2F17.4,1X,I4)') 
+     +      'COLUMN',
+     +      CLABEL(JDO20,MINDX),CTYPE(JDO20,MINDX),
+     +      WRANGE(1,JDO20,MINDX),WRANGE(2,JDO20,MINDX),
+     +      CSET_ID(JDO20,MINDX)
+         ELSE
+           WRITE (LINE,FMT='(A6,1X,A,1X,A,1X,2F17.4)') 
      +      'COLUMN',
      +      CLABEL(JDO20,MINDX),CTYPE(JDO20,MINDX),
      +      WRANGE(1,JDO20,MINDX),WRANGE(2,JDO20,MINDX)
+         ENDIF
 C
 C              ******************************
           CALL QWRITC(WLUN(MINDX),LINE(1:80))
@@ -4822,6 +5360,49 @@ C
           CRANGE(1,JDO20,MINDX) = WRANGE(1,JDO20,MINDX)
           CRANGE(2,JDO20,MINDX) = WRANGE(2,JDO20,MINDX)
    20   CONTINUE
+
+C---- Information on datasets used in harvesting
+
+        IF (NSETW(MINDX).GT.0) THEN
+
+C---- Check to see if we have any redundant datasets.
+     
+          NREDUND = 0
+          ISET = 0
+          DO 22 JDO22 = 1,NSETW(MINDX)
+            IDSET = SET_ID(JDO22,MINDX)
+            DO 23 JDO23 = 1,NCOLW(MINDX)
+              IF (CSET_ID(JDO23,MINDX).EQ.IDSET) THEN
+                ISET = ISET + 1
+                SET_ID(ISET,MINDX) = SET_ID(JDO22,MINDX)
+                ENTRY_ID(ISET,MINDX) = ENTRY_ID(JDO22,MINDX)
+                DIFFRN_ID(ISET,MINDX) = DIFFRN_ID(JDO22,MINDX)
+                GOTO 22
+              ENDIF
+ 23         CONTINUE
+C     Dataset not used for any column. Delete.
+            NREDUND = NREDUND + 1
+ 22       CONTINUE
+          NSETW(MINDX) = NSETW(MINDX) - NREDUND
+
+          WRITE (LINE,FMT='(A4,1X,I8)') 
+     +      'NDIFFRN',NSETW(MINDX)
+C
+C            ******************************
+          CALL QWRITC(WLUN(MINDX),LINE(1:80))
+C            ******************************
+
+          DO 25 JDO25 = 1,NSETW(MINDX)
+            WRITE (LINE,FMT='(A7,1X,I8,1X,A,1X,A)') 
+     +        'DIFFSET',SET_ID(JDO25,MINDX),
+     +        ENTRY_ID(JDO25,MINDX),DIFFRN_ID(JDO25,MINDX)
+C
+C              ******************************
+            CALL QWRITC(WLUN(MINDX),LINE(1:80))
+C              ******************************
+ 25       CONTINUE
+
+        END IF
 C
 C---- Write out the batch serial numbers, if a multi-record file
 C
@@ -5177,6 +5758,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
       INTEGER SIZE1
       PARAMETER (SIZE1=20)
       INTEGER MBLENG,CBLENG
@@ -5194,10 +5777,11 @@ C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
       INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
      +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
-     +        WLUN,WOMBAT,NDATMSS
+     +        WLUN,WOMBAT,NDATMSS,NSETW,SET_ID,CSET_ID,IDEFSET
       LOGICAL SORTB,DATMSS,VAL_SET
       CHARACTER CBATR*1,CBATW*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,
-     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
+     +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80,ENTRY_ID*20,
+     +          DIFFRN_ID*20
 C     ..
 C     .. Local Scalars ..
       INTEGER IFAIL,ISTAT,IUNIN,JDO10,JDO20,JDO30,JDO40,JDO50,JDO55,
@@ -5228,6 +5812,9 @@ C     .. Common blocks ..
      +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
      +       ,DATMSS(MCOLS),NDATMSS(MFILES)
+      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
+     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
+     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/,/MTZWRC/
@@ -5277,6 +5864,8 @@ C
    40     CONTINUE
 C
           NCOLS(MINDX) = 0
+          NSETW(MINDX) = 0
+          IDEFSET(MINDX) = 0
           NREFS(MINDX) = 0
           NREFR(MINDX) = 0
           NPLABS(MINDX) = 0
@@ -5294,6 +5883,12 @@ C
             ISORT(JDO50,MINDX) = 0
    50     CONTINUE
 C
+          DO 55 JDO55 = 1,MSETS
+            SET_ID(JDO55,MINDX) = 0
+            ENTRY_ID(JDO55,MINDX) = ' '
+            DIFFRN_ID(JDO55,MINDX) = ' '
+   55     CONTINUE
+
           DO 60 JDO55 = 1,MBATCH
             BATNUM(JDO55,MINDX) = 0
    60     CONTINUE
@@ -5305,6 +5900,7 @@ C
             CTYPE(JDO60,MINDX) = ' '
             RPOINT(JDO60,MINDX) = 0
             PLABS(JDO60,MINDX) = ' '
+            CSET_ID(JDO60,MINDX) = 0
    70     CONTINUE
           CALL QNAN (VAL_MISS(2,MINDX))
             VAL_SET(2,MINDX) = .TRUE.
@@ -7398,6 +7994,8 @@ C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
       INTEGER MBLENG,CBLENG
       PARAMETER (MBLENG=185,CBLENG=70+3*8)
       INTEGER MAXSYM
@@ -7408,12 +8006,14 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RSYM,VAL_MISS
-      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP
+      INTEGER BATNUM,ISORT,NBATCH,NCOLS,NREFS,NSPGRP,NSYM,NSYMP,
+     +          NSETW,SET_ID,CSET_ID,IDEFSET
       CHARACTER CBATR*1,CTYPE*1,LTYPE*1,PGNAM*10,SPGNAM*10,CLABEL*30,
-     +          TITLE*70
+     +          TITLE*70,ENTRY_ID*20,DIFFRN_ID*20
+
 C     ..
 C     .. Local Scalars ..
-      INTEGER IFAIL,IMAX,IMIN,IPR,ISTAT,JDO10,JDO20,JJ
+      INTEGER IFAIL,IMAX,IMIN,IPR,ISTAT,JDO10,JDO20,JDO30,JJ
       LOGICAL SORTED,VAL_SET
       CHARACTER CTEMP*1,LINE*400,STROUT*400
       REAL RESMIN,RESMAX
@@ -7442,6 +8042,9 @@ C     .. Common blocks ..
      +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
      +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
      +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
+      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
+     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
+     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
 C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/
@@ -7469,13 +8072,34 @@ C              ************************
 C
         ELSE
 C
-C---- Print title, no. of cols, no of refls
+C---- Print title, harvesting dataset info, no. of cols, no of refls
 C
 C              ***********************
           CALL PUTLIN('* Title:','CURWIN')
           CALL BLANK('CURWIN',1)
           CALL PUTLIN(TITLE(MINDX) (1:LENSTR(TITLE(MINDX))),'CURWIN')
           CALL BLANK('CURWIN',1)
+
+          IF (NSETW(MINDX).GT.0) THEN
+            WRITE (STROUT,FMT='(A,I4)') '* Number of Datasets =',
+     +        NSETW(MINDX)
+            CALL PUTLIN(STROUT,'CURWIN')
+            CALL BLANK('CURWIN',1)
+            CALL PUTLIN('* Dataset ID, protein name, dataset name:',
+     +        'CURWIN')
+            CALL BLANK('CURWIN',1)
+            DO 30 JDO30 = 1,NSETW(MINDX)
+              WRITE (STROUT,FMT='(I8,1X,A,1X,A)') 
+     +          SET_ID(JDO30,MINDX),
+     +          ENTRY_ID(JDO30,MINDX),DIFFRN_ID(JDO30,MINDX)
+C                  ***********************
+              CALL PUTLIN(STROUT,'CURWIN')
+C                  ***********************
+C
+   30       CONTINUE
+            CALL BLANK('CURWIN',1)
+          ENDIF
+
           WRITE (STROUT,FMT='(A,I4)') '* Number of Columns =',
      +      NCOLS(MINDX)
           CALL PUTLIN(STROUT,'CURWIN')
@@ -7543,6 +8167,14 @@ C                ************************************
             CALL PUTLIN( '* Column Types :','CURWIN')
             CALL BLANK('CURWIN',1)
             CALL LABPRT(CTYPE(1,MINDX),NCOLS(MINDX))
+            IF (NSETW(MINDX).GT.0) THEN
+             CALL BLANK('CURWIN',1)
+             CALL PUTLIN( '* Associated datasets :','CURWIN')
+             CALL BLANK('CURWIN',1)
+             WRITE (STROUT,FMT='(200I4)')
+     +         (CSET_ID(JDO10,MINDX),JDO10 = 1,NCOLS(MINDX))
+             CALL PUTLIN(STROUT,'CURWIN')
+            ENDIF
 C                ************************************
 C
           ELSE IF (IPRINT.EQ.3) THEN
@@ -7558,14 +8190,27 @@ C
      +            (CTEMP.EQ.'Y')) THEN
                 IMIN = NINT(CRANGE(1,JDO10,MINDX))
                 IMAX = NINT(CRANGE(2,JDO10,MINDX))
-                WRITE (STROUT,FMT='(A,1X,A,2X,2I19)') 
+                IF (CSET_ID(JDO10,MINDX).GT.0) THEN
+                 WRITE (STROUT,FMT='(A,1X,A,2X,2I19,1X,I8)') 
+     +            CLABEL(JDO10,
+     +            MINDX),CTEMP,IMIN,IMAX,CSET_ID(JDO10,MINDX)
+                ELSE
+                 WRITE (STROUT,FMT='(A,1X,A,2X,2I19)') 
      +            CLABEL(JDO10,
      +            MINDX),CTEMP,IMIN,IMAX
+                ENDIF
               ELSE
-                WRITE (STROUT,FMT='(A,1X,A,2X,2F19.4)') 
+                IF (CSET_ID(JDO10,MINDX).GT.0) THEN
+                 WRITE (STROUT,FMT='(A,1X,A,2X,2F19.4,1X,I8)') 
+     +            CLABEL(JDO10,
+     +            MINDX),CTEMP,CRANGE(1,JDO10,MINDX),
+     +            CRANGE(2,JDO10,MINDX),CSET_ID(JDO10,MINDX)
+                ELSE
+                 WRITE (STROUT,FMT='(A,1X,A,2X,2F19.4)') 
      +            CLABEL(JDO10,
      +            MINDX),CTEMP,CRANGE(1,JDO10,MINDX),
      +            CRANGE(2,JDO10,MINDX)
+                ENDIF
               END IF
 C
 C                  ***********************
