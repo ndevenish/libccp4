@@ -425,10 +425,14 @@ C     .. Scalar Arguments ..
       CHARACTER NAMENV* (*),VALENV* (*)
 C     ..
 C     .. External Subroutines ..
-ifdef(_hpux,
+ifelse(
+_hpux,1,
 [      EXTERNAL GETENV_
       CALL GETENV_ (NAMENV(1:LENSTR(NAMENV))//CHAR(0),VALENV)],
-[      EXTERNAL GETENV
+_AIX,1,
+[      INTRINSIC GETENV
+      CALL GETENV(NAMENV,VALENV)],
+[     EXTERNAL GETENV 
       CALL GETENV(NAMENV,VALENV)])
 C
       END
@@ -452,10 +456,15 @@ C     .. Scalar Arguments ..
       CHARACTER USRNAM* (*)
 C     ..
 C     .. External Subroutines ..
-ifdef(_hpux,
+ifelse(
+_hpux,1,
 [      EXTERNAL GETENV_
       CALL GETENV_ ('USER'//CHAR(0),USRNAM)
       IF (USRNAM.EQ.' ') CALL GETENV_ ('LOGNAME'//CHAR(0),USRNAM)],
+_AIX,1,
+[      INTINSIC GETENV
+      CALL GETENV('USER',USRNAM)
+      IF (USRNAM.EQ.' ') CALL GETENV('LOGNAME',USRNAM)],
 [      EXTERNAL GETENV
       CALL GETENV('USER',USRNAM)
       IF (USRNAM.EQ.' ') CALL GETENV('LOGNAME',USRNAM)])
@@ -515,12 +524,15 @@ C     .. Scalar Arguments ..
       INTEGER ANSWER,FLUN
 C     ..
 C     .. External Functions ..
-      ifdef(_hpux,[INTEGER],[LOGICAL]) ISATTY
+      ifelse(ifdef(_hpux,1)ifdef(_AIX,1),1,[INTEGER],[LOGICAL]) ISATTY
       EXTERNAL ISATTY
 C     ..
       ANSWER = 0
-ifdef(_hpux,
-[      IF (ISATTY(FNUM(FLUN)).EQ.1) ANSWER = 1],
+ifelse(
+_hpux,1,
+[      IF (ISATTY(FNUM(FLUN)).EQ.1) ANSWER = 1],dnl
+_AIX,1,dnl
+[      IF (ISATTY(%VAL(FLUN)).EQ.1) ANSWER = 1],dnl
 [      IF (ISATTY(FLUN)) ANSWER = 1])
 C
       END

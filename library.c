@@ -44,7 +44,7 @@
 				/* (surmised from GNU configures -- needs
 				   confirmation) */
 #  define KNOWN_MACHINE
-#  define CALL_LIKE_AIX 1
+#  define CALL_LIKE_HPUX 1
 #endif
 #if defined (alliant)                          /* alliant model FX28xx */
 #  define KNOWN_MACHINE
@@ -260,12 +260,6 @@ int len;
 
 #if ! defined (vax)
 
-#if CALL_LIKE_AIX
-  void ustenv (str, Lstr, result)
-  char *str;
-  int  Lstr;
-#endif
-
 #if CALL_LIKE_HPUX
   void ustenv (str, result, Lstr)
   char *str;
@@ -305,7 +299,7 @@ int *result;
 #endif
   name[Length] = '\0'; 
 
-#if defined (sgi) || defined (sun) || defined (__hpux)
+#if defined (sgi) || defined (sun) || defined (__hpux) || defined(_AIX)
   temp = (char *) malloc (MAXFLEN);
   (void) strcpy (temp, name);
   *result = putenv (temp);
@@ -327,7 +321,7 @@ int *result;
  * Routine: cunlink                                                         *
  ****************************************************************************/
 
-#if CALL_LIKE_AIX || CALL_LIKE_HPUX
+#if CALL_LIKE_HPUX
   void cunlink (filename, Lfilename)
   char *filename;
   int  Lfilename;
@@ -399,7 +393,7 @@ long elapsed;                                   /* used to get elapsed time */
 #  endif
 #endif
 
-#if CALL_LIKE_AIX || CALL_LIKE_HPUX
+#if CALL_LIKE_HPUX
   void getelapsed ()
 #endif
 
@@ -452,7 +446,7 @@ long elapsed;                                   /* used to get elapsed time */
  * Routine: initfyp (Unix only - vms version in vms.for)                    *
  ****************************************************************************/
 
-#if CALL_LIKE_AIX || CALL_LIKE_HPUX
+#if CALL_LIKE_HPUX
   void initfyp ()
 #endif
 
@@ -495,12 +489,6 @@ int num;
 /****************************************************************************
  * Routine: copen                                                           *
  ****************************************************************************/
-
-#if CALL_LIKE_AIX
-  void copen (iunit, filename, Lfilename, istat)
-  char *filename;
-  int  Lfilename;
-#endif
 
 #if CALL_LIKE_HPUX
   void copen (iunit, filename, istat, Lfilename)
@@ -644,7 +632,7 @@ int  *iunit, *istat;
  * Routine: cclose                                                          *
  ****************************************************************************/
 
-#if CALL_LIKE_AIX || CALL_LIKE_HPUX
+#if CALL_LIKE_HPUX
   void cclose (iunit)
 #endif
 
@@ -678,7 +666,7 @@ int *iunit;
  * Routine: cmode                                                           *
  ****************************************************************************/
 
-#if CALL_LIKE_AIX || CALL_LIKE_HPUX
+#if CALL_LIKE_HPUX
   void cmode (iunit, mode, size)
 #endif
 
@@ -717,7 +705,7 @@ int *iunit, *mode, *size;
  * Routine: cread                                                           *
  ****************************************************************************/
 
-#if CALL_LIKE_AIX || CALL_LIKE_AIX
+#if CALL_LIKE_HPUX
   void cread (iunit, buffer, nitems, result)
 #endif
 
@@ -802,7 +790,7 @@ int *iunit, *nitems, *result;
  * Routine: cwrite                                                          *
  ****************************************************************************/
 
-#if CALL_LIKE_AIX || CALL_LIKE_HPUX
+#if CALL_LIKE_HPUX
   void cwrite (iunit, buffer, nitems, result)
 #endif
 
@@ -840,7 +828,7 @@ int *iunit, *nitems, *result;
  * Routine: cseek                                                           *
  ****************************************************************************/
 
-#if CALL_LIKE_AIX || CALL_LIKE_HPUX
+#if CALL_LIKE_HPUX
   void cseek (iunit, irecl, iel, lrecl)
 #endif
 
@@ -873,7 +861,7 @@ int *iunit, *irecl, *iel, *lrecl;
  * Routine: cback                                                           *
  ****************************************************************************/
 
-#if CALL_LIKE_AIX || CALL_LIKE_HPUX
+#if CALL_LIKE_HPUX
   void cback (iunit, lrecl)
 #endif
 
@@ -905,7 +893,7 @@ int *iunit, *lrecl;
  * Routine: cskip                                                           *
  ****************************************************************************/
 
-#if CALL_LIKE_AIX || CALL_LIKE_HPUX
+#if CALL_LIKE_HPUX
   void cskip (iunit, lrecl)
 #endif
 
@@ -936,12 +924,6 @@ int *iunit, *lrecl;
 /****************************************************************************
  * Routine: cqinq                                                           *
  ****************************************************************************/
-
-#if CALL_LIKE_AIX
-  void cqinq (iunit, filnam, len_filnam, length)
-  char *filnam; 
-  int len_filnam;
-#endif
 
 #if CALL_LIKE_HPUX
   void cqinq (iunit, filnam, length, len_filnam)
@@ -1021,7 +1003,7 @@ int *iunit, *length;
  * Routine: clocate                                                         *
  ****************************************************************************/
 
-#if CALL_LIKE_AIX || CALL_LIKE_HPUX
+#if CALL_LIKE_HPUX
   void clocate (iunit, locate)
 #endif
 
@@ -1051,7 +1033,7 @@ int *iunit, *locate;
  * Routine: cprint                                                          *
  ****************************************************************************/
 
-#if CALL_LIKE_AIX || CALL_LIKE_HPUX
+#if CALL_LIKE_HPUX
   void cprint (istat, line, Lline)
   char *line;
   int  Lline;
@@ -1115,7 +1097,7 @@ int *istat;
 #define DF_MT 0
 #endif
 
-#if CALL_LIKE_AIX || CALL_LIKE_HPUX
+#if CALL_LIKE_HPUX
   void cmtype (istamp)
   int *istamp;
 #endif
@@ -1284,28 +1266,28 @@ int  Lstr;
  * Routine: itime                                                           *
  ****************************************************************************/
 
-void itime (h, m, s)
-     int h, m, s;
+void itime (array)
+     int array[3];
 {
      struct tm *lt;
      time_t tim;
      tim = time(NULL);
      lt = localtime(&tim);
-     h = lt->tm_hour; m = lt->tm_min; h = lt->tm_sec;
+     array[0] = lt->tm_hour; array[1] = lt->tm_min; array[2] = lt->tm_sec;
 }
 
 /****************************************************************************
  * Routine: idate                                                           *
  ****************************************************************************/
 
-void idate (y, m, d)
-     int y, m, d;
+void idate (d, m, y)
+     int *y, *m, *d;
 {
      struct tm *lt;
      time_t tim;
      tim = time(NULL);
      lt = localtime(&tim);
-     y = lt->tm_year; m = lt->tm_mon; d = lt->tm_wday;
+     *y = lt->tm_year + 1000; *m = lt->tm_mon; *d = lt->tm_mday;
 }
 
 /****************************************************************************
@@ -1319,8 +1301,8 @@ float dtime (tarray)
   time_t utime, stime, old_utime = 0, old_stime = 0;
   (void) times(buffer);
   utime = buffer->tms_utime; stime = buffer->tms_stime;
-  tarray[0] = ((float)(utime - old_utime)) / (float)CLOCKS_PER_SEC;
-  tarray[1] = ((float)(stime - old_stime)) / (float)CLOCKS_PER_SEC;
+  tarray[0] = ((float)(utime - old_utime)) / (float)CLK_TCK;
+  tarray[1] = ((float)(stime - old_stime)) / (float)CLK_TCK;
   old_utime = utime; old_stime = stime; 
 }
 #endif
