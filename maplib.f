@@ -690,12 +690,9 @@ C     .. Intrinsic Functions ..
       INTRINSIC SQRT
 C     ..
 C     .. Common blocks ..
-Cdw      COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
-Cdw     +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
-Cdw     +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
-     +       JUNK(15),MAPST,MACHST,ARMS,NLAB,LABELS(20,10),NCHITM,
+     +       JUNK(15),MAPST,MACHST(1),ARMS,NLAB,LABELS(20,10),NCHITM,
      +       ITMHDR,ITMSC1
 
       COMMON /MSTRM/LSTRM(12)
@@ -730,7 +727,7 @@ C
 C
 C---- Get machine type stamp (word 54)
 C
-      CALL QTYPE(MACHST)
+      CALL QTYPE(MACHST(1))
 C
 C---- write map stamp to word 53
 C
@@ -797,12 +794,11 @@ C     .. Scalars in Common ..
       REAL AMAX,AMEAN,AMIN,ARMS
       INTEGER ISPG,ITMHDR,ITMSC1,LSKFLG,MODE,NC,NC1,NCHITM,NLAB,NR,NR1,
      +        NS,NS1,NSYMBT
-      INTEGER   MACHST
       CHARACTER*4 MAPST
 C     ..
 C     .. Arrays in Common ..
       REAL CEL,SKWMAT,SKWTRN
-      INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ
+      INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ,MACHST
 C     ..
 C     .. Local Scalars ..
       REAL T
@@ -818,12 +814,9 @@ C     .. Intrinsic Functions ..
       INTRINSIC SQRT
 C     ..
 C     .. Common blocks ..
-Cdw      COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
-Cdw     +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
-Cdw     +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
-     +       JUNK(15),MAPST,MACHST,ARMS,NLAB,LABELS(20,10),NCHITM,
+     +       JUNK(15),MAPST,MACHST(1),ARMS,NLAB,LABELS(20,10),NCHITM,
      +       ITMHDR,ITMSC1
 
       COMMON /MSTRM/LSTRM(12)
@@ -856,7 +849,7 @@ C
 C
 C---- Get machine type stamp (word 54)
 C
-      CALL QTYPE(MACHST)
+      CALL QTYPE(MACHST(1))
 C
 C---- write map stamp to word 53 
 C
@@ -930,12 +923,11 @@ C     .. Scalars in Common ..
       REAL AMAX,AMEAN,AMIN,ARMS
       INTEGER ISPG,ITMHDR,ITMSC1,LSKFLG,MODE,NC,NC1,NCHITM,NLAB,NR,NR1,
      +        NS,NS1,NSYMBT
-       INTEGER   MACHST
       CHARACTER*4 MAPST
 C     ..
 C     .. Arrays in Common ..
       REAL CEL,SKWMAT,SKWTRN
-      INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ
+      INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ,MACHST
 C     ..
 C     .. Local Scalars ..
       REAL T
@@ -951,12 +943,9 @@ C     .. Intrinsic Functions ..
       INTRINSIC SQRT
 C     ..
 C     .. Common blocks ..
-Cdw      COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
-Cdw     +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
-Cdw     +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
-     +       JUNK(15),MAPST,MACHST,ARMS,NLAB,LABELS(20,10),NCHITM,
+     +       JUNK(15),MAPST,MACHST(1),ARMS,NLAB,LABELS(20,10),NCHITM,
      +       ITMHDR,ITMSC1
 
       COMMON /MSTRM/LSTRM(12)
@@ -985,7 +974,7 @@ C
 C
 C---- Get machine type stamp (word 54)
 C
-      CALL QTYPE(MACHST)
+      CALL QTYPE(MACHST(1))
 C
 C---- write map stamp to word 53 
 C
@@ -1227,7 +1216,6 @@ C     .. Arrays in Common ..
      +        NCHITM,NCS,NR1S,NRS,NS1S,NSS,NXYZ
 C     ..
 C     .. Local Scalars ..
-Cdw      INTEGER I,IER,J,KMODE,NBHDR,NCHHDR,NFILSZ,NW2
       INTEGER I,IER,J,KMODE,NBHDR,NITHDR,NCHHDR,NFILSZ,NW2
       CHARACTER FILE*255
 
@@ -1260,7 +1248,6 @@ C     .. Common blocks ..
       COMMON /MSTRM/LSTRM(12)
 C     ..
 C     .. Equivalences ..
-Cdw      EQUIVALENCE (NC,HEADER(1))
       EQUIVALENCE (NC,IHDR1(1)),
      *            (CEL(1),RHDR1(1)),
      *            (MAPCRS(1),IHDR2(1)),
@@ -1320,11 +1307,6 @@ C
           IF (NFILSZ.LT.0) WRITE (LUNOUT,FMT=6002) IUNIT,
      +                          FILE(1:LENSTR(FILE)),MAPNAM
         ENDIF
-C
-Cdw---- NO -  Read header, mode 2
-C
-Cdw        CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-Cdw        CALL QREAD(LSTRM(IUNIT),HEADER,NBHDR,IER)
 C
 Cdw---- Read header, modes 2 & 6 in real and integer blocks
 Cdw---- Mode 0 for characters
@@ -1475,7 +1457,6 @@ C
 C
 C---- Get length of header in items (1024 bytes)
 C
-Cdw          ITMHDR(IUNIT) = NBHDR*NCHHDR/NCHITM(IUNIT)
           ITMHDR(IUNIT) = NBHDR*4/NCHITM(IUNIT)
 C
 C---- and position of first section
@@ -2034,7 +2015,6 @@ C     .. Arrays in Common ..
      +        NCHITM,NCS,NR1S,NRS,NS1S,NSS,NXYZ
 C     ..
 C     .. Local Scalars ..
-Cdw      INTEGER I,IER,ISYMC,J,L,M,N,NBLIN,NILINE,NLIN
       INTEGER I,IER,ISYMC,J,KMODE,L,M,N,NBLIN,NCHINT,NILINE,NLIN
       CHARACTER LINE*80
 C     ..
@@ -2082,7 +2062,6 @@ C
 C
 Cdw---- Number of items / line (BYTES)
 C
-Cdw        NILINE = (NCHITM(IUNIT)+NBLIN-1)/NCHITM(IUNIT)
 	NILINE = NBLIN
 C
 C---- Number of 'lines' of symmetry data, taken in groups of NBLIN
@@ -2180,13 +2159,10 @@ C     .. Scalars in Common ..
       INTEGER ISGI,ISGO,ITMHDO,ITMS1O,NBTI,NBTO,NCHITO
 C     ..
 C     .. Arrays in Common ..
-Cdw      INTEGER ITMHDI,ITMS1I,JUNKI,JUNKI2,JUNKI3,JUNKO,JUNKO2,LSTRM,
-Cdw     +        NCHITI
       INTEGER ITMHDI,ITMS1I,JUNKI,JUNKI2,JUNKI3,JUNKI4,JUNKO,
      +        JUNKO2,LSTRM,NCHITI,MODEI
 C     ..
 C     .. Local Scalars ..
-Cdw      INTEGER I,IER,NBLIN,NIN,NLIN,NOUT
       INTEGER I,IER,KMODE,NBLIN,NIN,NLIN,NOUT,JUNK
 C     ..
 C     .. Local Arrays ..
@@ -2200,8 +2176,6 @@ C     .. External Subroutines ..
       EXTERNAL QREAD,QSEEK,QWRITE
 C     ..
 C     .. Common blocks ..
-Cdw      COMMON /MIHDR/JUNKI(22),ISGI,NBTI,JUNKI2(232),JUNKI3(12,8),
-Cdw     +       NCHITI(12),ITMHDI(12),ITMS1I(12)
       COMMON /MIHDR/JUNKI(22),ISGI,NBTI,JUNKI2(232),JUNKI3(12,3),
      +       MODEI(12),JUNKI4(12,4),NCHITI(12),ITMHDI(12),ITMS1I(12)
       COMMON /MOHDR/JUNKO(22),ISGO,NBTO,JUNKO2(232),NCHITO,ITMHDO,ITMS1O
