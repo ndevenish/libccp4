@@ -18,7 +18,15 @@ C [CALL QQOPEN  (IUNIT,FILNAM,ISTAT)         - Open file: use QOPEN]
 C  CALL QCLOSE  (IUNIT)                      - Close file
 C  CALL QMODE   (IUNIT,MODE,NMCITM)          - Change mode
 C  CALL QREAD   (IUNIT,ARRAY,NITEMS,IER)     - Read nitems
+C  CALL QREADI  (IUNIT,ARRAY,NITEMS,IER)     - Read nitems into integer array
+C  CALL QREADR  (IUNIT,ARRAY,NITEMS,IER)     - Read nitems into real array
+C  CALL QREADQ  (IUNIT,ARRAY,NITEMS,IER)     - Read nitems into complex array
+C  CALL QREADC  (IUNIT,CHAR,IER)             - Read bytes into character var.
 C  CALL QWRITE  (IUNIT,ARRAY,NITEMS)         - Write nitems
+C  CALL QWRITI  (IUNIT,ARRAY,NITEMS)         - Write nitems from integer array
+C  CALL QWRITR  (IUNIT,ARRAY,NITEMS)         - Write nitems from real array
+C  CALL QWRITQ  (IUNIT,ARRAY,NITEMS)         - Write nitems from complex array
+C  CALL QWRITC  (IUNIT,CHAR)                 - Write bytes from character var.
 C  CALL QSEEK   (IUNIT,IREC,IEL,LRECL)       - Move to irec,iel
 C  CALL QBACK   (IUNIT,LRECL)                - Backspace 1 record
 C  CALL QSKIP   (IUNIT,LRECL)                - Skip 1 record
@@ -72,6 +80,7 @@ C     want to transfer complex numbers (mode 4).  If necessary, unpack
 C     bytes using the routines provided in the library (or new ones).
 C     In particular, DON'T try to use BYTE or INTEGER*2 arrays, as these
 C     will likely cause alignment errors on RISC architectures.
+C  CHAR   = CHARACTER*n buffer for transfer
 C  NITEMS = Number of elements to transfer
 C  IER    = Error flag (0 = no error) else number of words transferred
 C  IREC   = Desired record number (starts at 1)
@@ -79,6 +88,9 @@ C  IEL    = Desired element number within record (word) (starts at 1)
 C  LRECL  = Record length in elements
 C
 C  No. of channels and buffer length in words set in #DEFINE statements
+C
+C NOTE: use of QREAD/QWRITE is deprecated -- use QREAD<a>/QWRITE<a>
+C with a buffer of the correct type.
 C
 C
 C     Author: David Agard (Phil Evans and John Campbell)
@@ -246,6 +258,62 @@ C Output: RESULT      0 (no error), -1 (EOF) or number of items read
 C         BUFFER      holds the items read
 C_END_QREAD
 C See library.c
+C_BEGIN_QREADI
+C
+C QREADI - Read from IUNIT into BUFFER, NITEMS items
+C
+C Usage:  CALL QREADI (IUNIT,BUFFER,NITEMS,RESULT)
+C         INTEGER     IUNIT, NITEMS, RESULT
+C         INTEGER     BUFFER
+C
+C Input:  IUNIT       unit number assigned to file
+C         NITEMS      number of items (item size set by QMODE)
+C
+C Output: RESULT      0 (no error), -1 (EOF) or number of items read
+C         BUFFER      holds the items read
+C_END_QREADI
+C_BEGIN_QREADR
+C
+C QREADR - Read from IUNIT into BUFFER, NITEMS items
+C
+C Usage:  CALL QREADR (IUNIT,BUFFER,NITEMS,RESULT)
+C         INTEGER     IUNIT, NITEMS, RESULT
+C         REAL        BUFFER
+C
+C Input:  IUNIT       unit number assigned to file
+C         NITEMS      number of items (item size set by QMODE)
+C
+C Output: RESULT      0 (no error), -1 (EOF) or number of items read
+C         BUFFER      holds the items read
+C_END_QREADR
+C_BEGIN_QREADQ
+C
+C QREADQ - Read from IUNIT into BUFFER, NITEMS items
+C
+C Usage:  CALL QREADQ (IUNIT,BUFFER,NITEMS,RESULT)
+C         INTEGER     IUNIT, NITEMS, RESULT
+C         COMPLEX     BUFFER
+C
+C Input:  IUNIT       unit number assigned to file
+C         NITEMS      number of items (item size set by QMODE)
+C
+C Output: RESULT      0 (no error), -1 (EOF) or number of items read
+C         BUFFER      holds the items read
+C_END_QREADQ
+C_BEGIN_QREADC
+C
+C QREADC - Read bytes from IUNIT to fill BUFFER
+C
+C Usage:  CALL QREADC (IUNIT,BUFFER,RESULT)
+C         INTEGER     IUNIT, RESULT
+C         CHARACTER*(*) BUFFER
+C
+C Input:  IUNIT       unit number assigned to file
+C
+C Output: RESULT      0 (no error), -1 (EOF) or number of items read
+C         BUFFER      holds the items read.  If necessary, use a substring
+C                     of the CHARACTER variable
+C_END_QREADC
 C======================================================================
 C_BEGIN_QWRITE
 C
@@ -261,6 +329,62 @@ C         BUFFER       holds the items to write
 C
 C Output: None.
 C_END_QWRITE
+C_BEGIN_QWRITI
+C
+C QWRITI - Write to IUNIT from BUFFER, NITEMS items
+C
+C Usage:  CALL QWRITI (IUNIT,BUFFER,NITEMS)
+C         INTEGER      IUNIT, NITEMS
+C         INTEGER      BUFFER
+C
+C Input:  IUNIT        unit number assigned to file
+C         NITEMS       number of items (item size set by QMODE)
+C         BUFFER       holds the items to write
+C
+C Output: None.
+C_END_QWRITI
+C_BEGIN_QWRITR
+C
+C QWRITR - Write to IUNIT from BUFFER, NITEMS items
+C
+C Usage:  CALL QWRITR (IUNIT,BUFFER,NITEMS)
+C         INTEGER      IUNIT, NITEMS
+C         REAL         BUFFER
+C
+C Input:  IUNIT        unit number assigned to file
+C         NITEMS       number of items (item size set by QMODE)
+C         BUFFER       holds the items to write
+C
+C Output: None.
+C_END_QWRITR
+C_BEGIN_QWRITQ
+C
+C QWRITQ - Write to IUNIT from BUFFER, NITEMS items
+C
+C Usage:  CALL QWRITQ (IUNIT,BUFFER,NITEMS)
+C         INTEGER      IUNIT, NITEMS
+C         COMPLEX      BUFFER
+C
+C Input:  IUNIT        unit number assigned to file
+C         NITEMS       number of items (item size set by QMODE)
+C         BUFFER       holds the items to write
+C
+C Output: None.
+C_END_QWRITQ
+C_BEGIN_QWRITEC
+C
+C QWRITEC - Write BUFFER to IUNIT
+C
+C Usage:  CALL QWRITEC (IUNIT,BUFFER)
+C         INTEGER      IUNIT, NITEMS
+C         CHARACTER*(*) BUFFER
+C
+C Input:  IUNIT        unit number assigned to file
+C         BUFFER       holds the items to write.  If necessary, use a
+C                      substring of the CHARACTER variable
+C
+C Output: None.
+C_END_QWRITEC
 C See library.c
 C======================================================================
 C_BEGIN_QSEEK
@@ -468,3 +592,39 @@ C
 C_END_QWARCH
 C======================================================================
 
+C     for correct typing of qread/write calls
+      SUBROUTINE QREADI (IUNIT,BUFFER,NITEMS,RESULT)
+      INTEGER IUNIT, NITEMS, RESULT
+      INTEGER BUFFER(*)
+      CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
+      END
+
+      SUBROUTINE QREADQ (IUNIT,BUFFER,NITEMS,RESULT)
+      INTEGER IUNIT, NITEMS, RESULT
+      COMPLEX BUFFER(*)
+      CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
+      END
+
+      SUBROUTINE QREADR (IUNIT,BUFFER,NITEMS,RESULT)
+      INTEGER IUNIT, NITEMS, RESULT
+      REAL BUFFER(*)
+      CALL QREAD (IUNIT,BUFFER,NITEMS,RESULT)
+      END
+
+      SUBROUTINE QWRITR (IUNIT,BUFFER,NITEMS)
+      INTEGER      IUNIT, NITEMS
+      REAL         BUFFER(*)
+      CALL QWRITE (IUNIT,BUFFER,NITEMS)
+      END
+
+      SUBROUTINE QWRITI (IUNIT,BUFFER,NITEMS)
+      INTEGER      IUNIT, NITEMS
+      INTEGER      BUFFER(*)
+      CALL QWRITE (IUNIT,BUFFER,NITEMS)
+      END
+
+      SUBROUTINE QWRITQ (IUNIT,BUFFER,NITEMS)
+      INTEGER      IUNIT, NITEMS
+      COMPLEX      BUFFER(*)
+      CALL QWRITE (IUNIT,BUFFER,NITEMS)
+      END
