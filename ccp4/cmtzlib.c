@@ -1650,7 +1650,7 @@ int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint)
   return 1;
 }
 
-int MtzPrintBatchHeader(MTZBAT *batch) {
+int MtzPrintBatchHeader(const MTZBAT *batch) {
 
   int i;
   char labtype[20],axes[5],string1[40],string2[40];

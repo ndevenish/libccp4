@@ -830,7 +830,7 @@ int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint);
  * @param batch Pointer to requested batch.
  * @return 1 on success 
  */
-int MtzPrintBatchHeader(MTZBAT *batch);
+int MtzPrintBatchHeader(const MTZBAT *batch);
 
 /** Write header title for later output to file.
  * @param mtz Pointer to MTZ struct.
