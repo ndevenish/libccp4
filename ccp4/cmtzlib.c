@@ -79,6 +79,7 @@ static char rcsid[] = "$Id$";
 #define  CMTZERR_NotMTZ              15
 #define  CMTZERR_DatasetIncomplete   16
 #define  CMTZERR_NoArch              17
+#define  CMTZERR_NullDataset         18
 
 MTZ *MtzGet(const char *logname, int read_refs)
 
@@ -110,6 +111,10 @@ MTZ *MtzGet(const char *logname, int read_refs)
   int *intbuf = (int *) buf;
   float *fltbuf = buf + NBATCHINTEGERS;
   MTZBAT *batch;
+
+  /* For backwards compatibility with MTZ files
+     written by intermediate versions of 5.0 */
+  int extra_hkl_base=0;
 
   if (debug) 
     printf(" Entering MtzGet \n");
@@ -272,8 +277,18 @@ MTZ *MtzGet(const char *logname, int read_refs)
        increment dataset count. However, if this is the base dataset,
        don't increment as we already have it. */
     else if (ccp4_keymatch(key, "DATA")) {
-      if ( token[1].value || (ntok > 2 && strcmp(token[2].fullstring,"HKL_base")) )
+      if ( token[1].value || (ntok > 2 && strcmp(token[2].fullstring,"HKL_base")) ) {
         ++nset[nxtal-1];
+	/* Special case: if HKL_base in the file is not dataset zero
+	   then also set the extra_hkl_base flag */
+	if ( token[1].value &&
+	     (ntok > 2 && (strcmp(token[2].fullstring,"HKL_base") == 0)) ) {
+	  /* Set extra_hkl_base to point to the setid for the non-zero
+	     HKL_base dataset found in the file
+	     This will be used later to reassign columns to setid zero */
+	  extra_hkl_base = (int) token[1].value;
+	}
+      }
     }
 
     /* DCELL line. */
@@ -361,20 +376,40 @@ MTZ *MtzGet(const char *logname, int read_refs)
   while (strncmp((strncpy(mkey,hdrrec,4)),"END",3) != 0) {
 
     if (strncmp (mkey, "PROJ",4) == 0) {
-      ++iiset;
-      strcpy(mtz->xtal[jxtalin[iiset]]->pname,projin[jxtalin[iiset]]);
-      strcpy(mtz->xtal[jxtalin[iiset]]->xname,crysin[jxtalin[iiset]]);
-      mtz->xtal[jxtalin[iiset]]->xtalid = jxtalin[iiset] + 1;
+      /* Test whether this is an "extra" instance of HKL_Base
+	 i.e. HKL_base with non-zero setid
+	 Remember: strcmp returns zero for matching strings */
+      if ( !(token[1].value &&
+	     (ntok > 2 && (strcmp(token[2].fullstring,"HKL_base") == 0))) ) {
+	++iiset;
+	strcpy(mtz->xtal[jxtalin[iiset]]->pname,projin[jxtalin[iiset]]);
+	strcpy(mtz->xtal[jxtalin[iiset]]->xname,crysin[jxtalin[iiset]]);
+	mtz->xtal[jxtalin[iiset]]->xtalid = jxtalin[iiset] + 1;
+      }
+
     }
 
     else if (strncmp (mkey, "DATA",4) == 0) {
       if ( token[1].value || (ntok > 2 && strcmp(token[2].fullstring,"HKL_base")) ) {
-        iset = (int) token[1].value;
-        ++nset[jxtalin[iiset]];
-        mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]]->setid = iset;
-        strcpy(mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]]->dname,"dummy");
-        if (ntok > 2) strcpy(mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]]->dname,
-                              token[2].fullstring);
+	/* Test whether this is an "extra" instance of HKL_Base
+	   i.e. HKL_base with non-zero setid
+	   Remember: strcmp returns zero for matching strings */
+	if ( !(token[1].value &&
+	     (ntok > 2 && (strcmp(token[2].fullstring,"HKL_base") == 0))) ) {
+	  iset = (int) token[1].value;
+	  ++nset[jxtalin[iiset]];
+	  /* Test that column exists (i.e. pointer is non-NULL) */
+	  if (mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]] == NULL) {
+	    puts("mtz->xtal->set is NULL");
+	    ccp4_signal(CCP4_ERRLEVEL(1) | 
+			CMTZ_ERRNO(CMTZERR_NullDataset),"MtzGet",NULL);
+	  }
+	  mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]]->setid = iset;
+	  strcpy(mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]]->dname,"dummy");
+	  if (ntok > 2)
+	    strcpy(mtz->xtal[jxtalin[iiset]]->set[nset[jxtalin[iiset]]]->dname,
+		   token[2].fullstring);
+	}
       }
     }
 
@@ -490,6 +525,11 @@ MTZ *MtzGet(const char *logname, int read_refs)
 	icset = 0;
       } else {
 	icset = (int) token[5].value;
+      }
+      /* Special trap for files with HKL_base set to non-zero setid */
+      if (icset == extra_hkl_base) {
+	/* Reset setid to HKL_base, which is setid zero */
+	icset = 0;
       }
       /* Special trap for M/ISYM */
       if (type[0] == 'Y' && strncmp (label,"M/ISYM",6) == 0)
