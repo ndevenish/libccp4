@@ -177,6 +177,12 @@ C     pgm3bar
 C  15 pg432   m3m        hkl:h>=0, k>=0, l>=0  with  k>=l
 C     pg4bar3m pgm3barm
 C
+C---- SUBROUTINE HKLRANGE(IHRNG0,IKRNG1,IKRNG0,IKRNG1,ILRNG0,ILRNG1)
+C     
+C     Return HKL ranges chosen in PGNLAUE
+C     
+C       INTEGER HRNG0,HRNG1,KRNG0,KRNG1,LRNG0,LRNG1
+C
 C Part 2:
 C======================================================================
 C
