@@ -455,9 +455,6 @@ FORTRAN_SUBR ( LRSYMI, lrsymi,
   ccp4_CtoFString(FTN_STR(ltypex),FTN_LEN(ltypex),ltypex_temp);
   ccp4_CtoFString(FTN_STR(spgrnx),FTN_LEN(spgrnx),spgrnx_temp);
   ccp4_CtoFString(FTN_STR(pgnamx),FTN_LEN(pgnamx),pgnamx_temp);
-
-  /* register this spacegroup with csymlib_f */
-  ccp4spg_register_by_ccp4_num(*nspgrx);
 }
 
 /* Fortran wrapper for ccp4_lrsymm */
@@ -473,6 +470,9 @@ FORTRAN_SUBR ( LRSYMM, lrsymm,
   if (MtzCheckSubInput(*mindx,"LRSYMM",1)) return;
 
   ccp4_lrsymm(mtzdata[*mindx-1], nsymx, rsymx);
+
+  /* register this spacegroup with csymlib_f */
+  ccp4spg_register_by_symops(mtzdata[*mindx-1]->mtzsymm.nsym,mtzdata[*mindx-1]->mtzsymm.sym);
 
 }
 
