@@ -22,7 +22,6 @@ int number_sections(CMMFile *mfile)
 }
 
 /*! seek among the map sections.  The units are of size block_size.
- Only allow seeking when the file is opened in read mode.
  \param mfile (CMMFile *)
  \param sec (int) section number
  \param whence (unsigned int) SEEK_SET, SEEK_CUR or SEEK_END
@@ -38,15 +37,10 @@ int ccp4_cmap_seek_section(CMMFile *mfile, int sec, unsigned int whence)
 		 "ccp4_cmap_seekdata",NULL);
     return EOF; }
 
-  if (!ccp4_file_is_read(mfile->stream)) {
-    ccp4_signal( CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_ReadFail),
-		 "ccp4_cmap_seek_section",NULL);
-    return EOF; }
-
-  
   switch (whence) {
   case SEEK_SET:
-    if ( sec < 0 || sec > mfile->data.number) 
+    if ( ccp4_file_is_read(mfile->stream) && 
+         ( sec < 0 || sec > mfile->data.number) )
       ccp4_signal( CCP4_ERRLEVEL(2) | CMAP_ERRNO(CMERR_ParamError),
 		 "ccp4_cmap_seek_section",NULL);
     else 
@@ -54,7 +48,8 @@ int ccp4_cmap_seek_section(CMMFile *mfile, int sec, unsigned int whence)
                               sec * mfile->data.block_size, SEEK_SET);
     break;
   case SEEK_END:
-    if ( sec > 0 || abs(sec) > mfile->data.number) 
+    if ( ccp4_file_is_read(mfile->stream) &&
+         ( sec > 0 || abs(sec) > mfile->data.number) )
       ccp4_signal( CCP4_ERRLEVEL(2) | CMAP_ERRNO(CMERR_ParamError),
 		 "ccp4_cmap_seek_section",NULL);
     else 
@@ -64,7 +59,8 @@ int ccp4_cmap_seek_section(CMMFile *mfile, int sec, unsigned int whence)
   case SEEK_CUR:
     curr_posn = ccp4_file_tell(mfile->stream);
     secs = div(curr_posn - mfile->data.offset,mfile->data.block_size);
-    if ( (secs.quot + sec) < 0 || (secs.quot + sec) >= mfile->data.number)
+    if ( ccp4_file_is_read(mfile->stream) &&
+       ( (secs.quot + sec) < 0 || (secs.quot + sec) >= mfile->data.number) )
       ccp4_signal( CCP4_ERRLEVEL(2) | CMAP_ERRNO(CMERR_ParamError),
 		 "ccp4_cmap_seek_section",NULL);
     else 
@@ -266,11 +262,6 @@ int ccp4_cmap_seek_row(CMMFile *mfile, int row, unsigned int whence)
 		 "ccp4_cmap_seek_row",NULL);
     return EOF; }
 
-  if (!ccp4_file_is_read(mfile->stream)) {
-    ccp4_signal( CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_NoChannel),
-		 "ccp4_cmap_seek_row",NULL);
-    return EOF; }
-
   item_size = ccp4_file_itemsize(mfile->stream);
   curr_posn = ccp4_file_tell(mfile->stream);
   secs = div(curr_posn - mfile->data.offset,mfile->data.block_size);
@@ -409,12 +400,6 @@ int ccp4_cmap_seek_data(CMMFile *mfile, int offset, unsigned int whence)
 		 "ccp4_cmap_seekdata",NULL);
     return (result); }
 
-  if ( !ccp4_file_is_read(mfile->stream) ) {
-    ccp4_signal( CCP4_ERRLEVEL(2) | CMAP_ERRNO(CMERR_NoChannel),
-		 "ccp4_cmap_seekdata",NULL);
-    return (result); }
-    
-  
   if ((result = ccp4_file_seek( mfile->stream, offset, whence)) == -1) 
     ccp4_signal(ccp4_errno, "ccp4_cmap_seek_data",NULL);
 
