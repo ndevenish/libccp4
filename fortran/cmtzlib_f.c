@@ -2071,12 +2071,19 @@ FORTRAN_SUBR ( LWASSN, lwassn,
             } /* strcmp if */
         }   /* MCOLUMNS loop */ 
 /* use invariance of j */
-    if (j == MCOLUMNS) {
-        if (strcmp(user_label_out[*mindx-1][i][1],"") != 0) {
+        if (j == MCOLUMNS) {
+          if (strcmp(user_label_out[*mindx-1][i][1],"") != 0) {
             strcpy(label+i*31,user_label_out[*mindx-1][i][1]);
+          }
         }
+	/* check for duplicated labels */
+        for (j = 0; j < i; ++j)
+          if ( ! strncmp(label+i*31,label+j*31,31) ) {
+            printf("LWASSN: duplicate column labels in output file, columns %d and %d both have the label %s \n",j,i,label+i*31);
+            ccperror(1,"Duplicate column labels in output file");
+	  }
+
     } /* nlprgo for */
-    }
   /* types loop */
   for (i = 0; i < *nlprgo; ++i) {
       for (j = 0; j < 2; ++j) {
@@ -2146,6 +2153,13 @@ FORTRAN_SUBR ( LWCLAB, lwclab,
       }
     }
     label[i*31+j] = '\0';
+
+    /* check for duplicated labels */
+    for (j = 0; j < i; ++j)
+      if ( ! strncmp(label+i*31,label+j*31,31) ) {
+        printf("LWCLAB: duplicate column labels in output file, columns %d and %d both have the label %s \n",j,i,label+i*31);
+        ccperror(1,"Duplicate column labels in output file");
+      }
   }
 
   for (i = 0; i < *nlprgo; ++i) {
