@@ -18,7 +18,7 @@ C UGERR  - Get error explanation
 C UGTIUD - Get user id - it's name
 C UIDATE - Get date in 3 integer format
 C UTIME  - Get current time
-C USTIME - Get absolute time in seconds (unused in VMS)
+C USTIME - Get absolute time in seconds
 C UCPUTM - Get CPU time
 C UISATT - Is file a terminal?
 C URENAM - Rename file
@@ -330,84 +330,6 @@ C---- Rename file
 C
       STATUS = LIB$RENAME_FILE (NAME1,NAME2)
       IF (STATUS .EQ. SS$_NORMAL) STATUS = 0
-C
-      END
-C
-C
-C
-C     ==================
-      SUBROUTINE INITFYP
-C     ==================
-C
-C---- Initialise the CRTL routines and parse CLI argument.
-C
-C     .. Parameters ..
-      INTEGER MAXLEN,MAXPAR
-      PARAMETER (MAXLEN=70,MAXPAR=41)
-C     ..
-C     .. Scalars in Common ..
-      INTEGER IARG
-C     ..
-C     .. Arrays in Common ..
-      CHARACTER ARGNAM* (MAXLEN)
-C     ..
-C     .. Local Scalars ..
-      INTEGER I,J,K,L,LENARG,ISTAT
-      CHARACTER CLIARG*700,NAME*200
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL LIB$GET_FOREIGN
-C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC INDEX
-C     ..
-C     .. Common blocks ..
-      COMMON /ARGCOUNT/IARG
-      COMMON /ARGS/ARGNAM(MAXPAR)
-C     ..
-C     .. Save statement ..
-      SAVE
-C     ..
-C     .. Data statements ..
-      DATA IARG/-1/
-C     ..
-      INCLUDE '($SSDEF)'
-      INCLUDE '($JPIDEF)'
-C
-      INCLUDE 'CRTLINIT'
-C
-C---- Get command line
-C
-      IARG = 0
-      DO 5 J = 1, MAXPAR
-        ARGNAM(J) = ' '
-5     CONTINUE
-C
-C---- get process name and use for argv[0]
-C
-C      CALL LIB$GETJPI(JPI$_PRCNAM,,,,ARGNAM(1))
-      CALL UGTUID(ARGNAM(1))
-C
-      CALL LIB$GET_FOREIGN(CLIARG,,LENARG)
-C
-C---- Split command line into arguments.
-C
-      IF (LENARG.GT.0) THEN
-        J = 1
-   10   CONTINUE
-        K = INDEX(CLIARG(J:LENARG),' ')
-        IF (K.EQ.0) THEN
-          K = LENARG
-        ELSE
-          K = J + K - 2
-        END IF
-        IARG = IARG + 1
-        IF (IARG.EQ.MAXPAR) RETURN
-        ARGNAM(IARG + 1) = CLIARG(J:K)
-        DO 20 J = K + 2,LENARG
-          IF (CLIARG(J:J).NE.' ') GO TO 10
-   20   CONTINUE
-      END IF
 C
       END
 C
@@ -1037,27 +959,120 @@ C
 C GETELAPSED - print CPU and ELAPSED times since job started.
 C
 C**** NOTE - Code is not VAX/VMS specific but will only work correctly on VAX,
-c**** because on other systems USTIME returns system time relative to arbitrary
-c**** zero, whereas in VMS.FOR USTIME has been set up to return time relative
-c**** to start of job.
+C**** because on other systems USTIME returns system time relative to arbitrary
+C**** zero, whereas in VMS.FOR USTIME has been set up to return time relative
+C**** to start of job.
+C==== 8-NOV-93 Made s/r INITFYP entry in GETELAPSED to initialise elapsed time
+C     to bring into line with unix.for.
 C
-      INTEGER    CPUMIN, CPUSEC, CPUTIC, JOBMIN, JOBSEC
+C     .. Local Scalars .. (GETELAPSED)
       REAL       CPUTIM
+      INTEGER    CPUMIN, CPUSEC, CPUTIC, JOBMIN, JOBSEC, JOBSAV
+      LOGICAL    INITED
+C     ..
+C     .. Parameters .. (INITFYP)
+      INTEGER MAXLEN,MAXPAR
+      PARAMETER (MAXLEN=70,MAXPAR=41)
+C     ..
+C     .. Scalars in Common ..
+      INTEGER IARG
+C     ..
+C     .. Arrays in Common ..
+      CHARACTER ARGNAM* (MAXLEN)
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,J,K,L,LENARG,ISTAT
+      CHARACTER CLIARG*700,NAME*200
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL LIB$GET_FOREIGN
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC INDEX
+C     ..
+C     .. Common blocks ..
+      COMMON /ARGCOUNT/IARG
+      COMMON /ARGS/ARGNAM(MAXPAR)
+C     ..
+C     .. Save statement ..
+      SAVE CPUTIM, INITED, JOBSAV
+C     ..
+C     .. Data statements ..
+      DATA INITED /.FALSE./
+      DATA CPUTIM /0./
+      DATA IARG/-1/
+C     ..
+      INCLUDE '($SSDEF)'
+      INCLUDE '($JPIDEF)'
+C
+      INCLUDE 'CRTLINIT'
+C     
+C     Don't print anything if it hasn't been initialised (by CCPFYP/INITFYP).
+C
+      CALL UCPUTM(CPUTIM)
+      IF (INITED) THEN
+        CPUTIC = NINT(100.*CPUTIM)
+        CPUMIN = CPUTIC/6000
+        CPUSEC = MOD(CPUTIC/100,60)
+        CPUTIC = MOD(CPUTIC,100)
+C
+        CALL USTIME(JOBSEC)
+        JOBSEC = JOBSEC - JOBSAV
+        JOBMIN = JOBSEC/60
+        JOBSEC = MOD(JOBSEC,60)
+C
+        WRITE (6,'(/,A,I6,2(A,I2.2),8X,A,I6,A,I2.2)')
+     &  ' CPU time used:',CPUMIN,':',CPUSEC,'.',CPUTIC,
+     &  'Elapsed time:',JOBMIN,':',JOBSEC
+      ENDIF
+C
+      CALL USTIME(JOBSAV)
+      INITED = .TRUE.
+C
+      RETURN
+C
+C
+C     =============
+      ENTRY INITFYP
+C     =============
 C
       CPUTIM = 0.
       CALL UCPUTM(CPUTIM)
-      CPUTIC = NINT(100.*CPUTIM)
-      CPUMIN = CPUTIC/6000
-      CPUSEC = MOD(CPUTIC/100,60)
-      CPUTIC = MOD(CPUTIC,100)
+      CALL USTIME(JOBSAV)
+      INITED = .TRUE.
 C
-      CALL USTIME(JOBSEC)
-      JOBMIN = JOBSEC/60
-      JOBSEC = MOD(JOBSEC,60)
+C---- Parse CLI argument: get command line
 C
-      WRITE (6,'(/,A,I6,2(A,I2.2),8X,A,I6,A,I2.2)')
-     &' CPU time used:',CPUMIN,':',CPUSEC,'.',CPUTIC,
-     &'Elapsed time:',JOBMIN,':',JOBSEC
+      IARG = 0
+      DO 5 J = 1, MAXPAR
+        ARGNAM(J) = ' '
+5     CONTINUE
+C
+C---- get user id and use for argv[0]
+C
+      CALL UGTUID(ARGNAM(1))
+C
+      CALL LIB$GET_FOREIGN(CLIARG,,LENARG)
+C
+C---- Split command line into arguments.
+C
+      IF (LENARG.GT.0) THEN
+        J = 1
+   10   CONTINUE
+        K = INDEX(CLIARG(J:LENARG),' ')
+        IF (K.EQ.0) THEN
+          K = LENARG
+        ELSE
+          K = J + K - 2
+        END IF
+        IARG = IARG + 1
+        IF (IARG.EQ.MAXPAR) RETURN
+        ARGNAM(IARG + 1) = CLIARG(J:K)
+        DO 20 J = K + 2,LENARG
+          IF (CLIARG(J:J).NE.' ') GO TO 10
+   20   CONTINUE
+      END IF
+C
       END
 
       SUBROUTINE UCPUTM(CPUTIM)
