@@ -1325,7 +1325,7 @@ C     MTZ file.)
       EXTERNAL QISNAN
       DO I=1,N
         IF (.NOT.QISNAN (A(I))) THEN
-          IF (A(I).GT.-0.99E10) A(I) = 0.0
+          IF (A(I).LE.-0.99E10) A(I) = 0.0
         ENDIF
       ENDDO
       END
