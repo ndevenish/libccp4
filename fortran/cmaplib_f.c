@@ -1295,7 +1295,7 @@ FORTRAN_SUBR( MSYPUT, msyput,
   for (i=0, buffer=symops ; i != nsymop ; ++i, buffer += n_byt_symop) {
     ccp4_cmap_set_symop(ioArray[ii]->mapfile,buffer);
   }
-
+  free(symops);
   /* record for FORTRAN API */
   last_Write = ii;
 }
