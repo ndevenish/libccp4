@@ -2583,6 +2583,7 @@ C
         MINDEX  = MINDX-1000
       ELSE
         BIOMOL = .FALSE.
+        MINDEX  = MINDX
       ENDIF
 C
 C---- First check that the MINDEX is valid
@@ -2807,6 +2808,7 @@ C
         BIOMOL = .TRUE.
         MINDEX  = MINDX-1000
       ELSE
+        MINDEX  = MINDX
         BIOMOL = .FALSE.
       ENDIF
 C
