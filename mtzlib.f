@@ -29,6 +29,16 @@ C          Removed 'S' column type from CTYPES array
 C          Changed LWASSN and LWCLAB to check for duplicate column labels
 C          Some general tidying
 C
+C    From: David Wild                 12-MAY-1992
+C          Changed method of reading orientation block
+C        in RBATHD to read NINTGR integers (QMODE=6)
+C        followed by NREALS reals (QMODE=2)- this is 
+C          needed for CONVERT stuff to work
+C
+C    REVISED on
+C    From: David Wild                 8-MAY-1992
+C          Changed QMODE call in LROPEN to read header
+C          offset with mode 6 for CONVERT stuff to work
 C
 C    REVISED:                          Thu Jan 16 11:58:07 GMT 1992
 C
@@ -1944,7 +1954,8 @@ C
             END IF
 C
 C                *************************************
-            CALL QMODE(RLUN(MINDX),2,NITEM)
+Cdw            CALL QMODE(RLUN(MINDX),2,NITEM)
+            CALL QMODE(RLUN(MINDX),6,NITEM)
             CALL QREAD(RLUN(MINDX),HDRST(MINDX),1,IER)
             CALL QSEEK(RLUN(MINDX),1,HDRST(MINDX),1)
             CALL QMODE(RLUN(MINDX),0,NITEM)
@@ -6148,14 +6159,23 @@ C          READ (LINE,FMT='(2X,I2,18A4)') K, (RBATCH(I),I=J,IEND)
 C          IF (K.NE.L) GO TO 50
 C   20   CONTINUE
 C------------------------------------------------------------------
-C---- Read the orientation block in with a single QREAD, QMODE 2
+Cdw-DO NOT--- Read the orientation block in with a single QREAD, QMODE 2
 C
-C            ********************************
-        CALL QMODE(ILUN,2,NITEM)
-        CALL QREAD(ILUN,RBATCH(1),NWORDS,IER)
-        IF (IER.GT.0) GOTO 50
-        CALL QMODE(ILUN,0,NITEM)
-C            ********************************
+C             ********************************
+C         CALL QMODE(ILUN,2,NITEM)
+C         CALL QREAD(ILUN,RBATCH(1),NWORDS,IER)
+C         IF (IER.GT.0) GOTO 50
+C         CALL QMODE(ILUN,0,NITEM)
+C             ********************************
+Cdw---- Read NINTGR integers followed by NREALS reals as BINARY
+         CALL QMODE(ILUN,6,NITEM)
+         CALL QREAD(ILUN,RBATCH(1),NINTGR,IER)
+         IF (IER.GT.0) GO TO 50
+         CALL QMODE(ILUN,2,NITEM)
+         CALL QREAD(ILUN,RBATCH(NINTGR+1),NREALS,IER)
+         IF (IER.GT.0) GO TO 50
+         CALL QMODE(ILUN,0,NITEM)
+C             ********************************
 C
 C---- Read rest of CBATCH (we need to know here how much to read!)
 C     Using 2 loops means that CBATCH can expand 
