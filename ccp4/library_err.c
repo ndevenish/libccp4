@@ -111,6 +111,7 @@ static const char *const csym_errlist[] =
     "Failed to initialise parser",               /* 1 = CSYMERR_ParserFail */
     "Cannot find SYMINFO file - no symmetry information", /* 2 = CSYMERR_NoSyminfoFile */
     "Pointer to spacegroup structure is NULL",   /* 3 = CSYMERR_NullSpacegroup */
+    "ASU definition not found for this spacegroup", /* 4 = CSYMERR_NoAsuDefined */
   };
 
 static const char *const cgen_errlist[] =
