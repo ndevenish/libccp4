@@ -277,8 +277,10 @@ FORTRAN_SUBR ( LRTITL, lrtitl,
 
 /** Get history lines from MTZ file opened for read.
  * @param mindx (I) MTZ file index
- * @param hstrng (O) History lines.
- * @param nlines (O) Number of history lines returned.
+ * @param hstrng (O) Array of history lines.
+ * @param nlines (I/O) On input, dimension of hstrng, i.e. the maximum
+ *   number of history lines to be returned. On output, actual number of 
+ *   history lines returned.
  */
 FORTRAN_SUBR ( LRHIST, lrhist,
 	       (int *mindx, fpstr hstrng, int *nlines, int hstrng_len),
