@@ -54,7 +54,8 @@ RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
 
 # define the final library files
 
-L           = $(LIB_DIR)/libccp4.a
+LC          = $(LIB_DIR)/libccp4c.a
+LF          = $(LIB_DIR)/libccp4f.a
 LCMTZ       = $(LIB_DIR)/libcmtz.a
 LCMAP       = $(LIB_DIR)/libcmap.a
 LCSYM       = $(LIB_DIR)/libcsym.a
@@ -94,10 +95,11 @@ CSYMOBJS = csymlib.o
 CUCOBJS = ccp4_unitcell.o
 FINTERFACEOBJS = cmtzlib_f.o csymlib_f.o ccp4_parser_f.o library_f.o \
                 ccp4_diskio_f.o ccp4_general_f.o ccp4_unitcell_f.o cmaplib_f.o
-FORTRANOBJS =  $L(parser.o) $L(fftlib.o) $L(lgglib.o) $L(libhtml.o) $L(modlib.o) \
-               $L(plotsubs.o) $L(plot84lib.o) $L(pxxml.o) $L(ccplib.o) $L(unix.o) \
-               $L(sorting_main.o) $L(rwbrook.o) $(CIFLIBOBJS) $L(harvlib.o) \
-               $L(keyparse.o) $L(pack_f.o) $L(pack_c.o)
+FORTRANOBJS =  $(LF)(parser.o) $(LF)(fftlib.o) $(LF)(lgglib.o) $(LF)(libhtml.o) \
+               $(LF)(modlib.o) $(LF)(plotsubs.o) $(LF)(plot84lib.o) \
+               $(LF)(pxxml.o) $(LF)(ccplib.o) $(LF)(unix.o) $(LF)(sorting_main.o) \
+               $(LF)(rwbrook.o) $(CIFLIBOBJS) $(LF)(harvlib.o) \
+               $(LF)(keyparse.o) $(LF)(pack_f.o) $(LF)(pack_c.o)
 CMTZPYOBJS = cmtzlib_python_wrap.o
 CMAPPYOBJS = cmaplib_python_wrap.o
 CSYMPYOBJS = csymlib_python_wrap.o
@@ -112,17 +114,23 @@ CSYMPLOBJS = csymlib_pl_wrap.o
 
 ##### Makefile targets ######
 
-all:  fsplit $L
-
-$L : cobjs $(FORTRANOBJS)
-# we could presumably avoid the next two steps if we haven't changed anything
-	$(RANLIB) $@
+all:  fsplit $(LMMDB) $(LC) $(LF)
 # maybe create shared library
 	$(SHARE_LIB)
 
-cobjs: $(MMDBOBJS) $(CORELIBOBJS) $(CGENERALOBJS) $(CUCOBJS) \
-     $(CMTZOBJS) $(CMAPOBJS) $(CSYMOBJS) $(FINTERFACEOBJS)
-	$(AR) $L $?
+$(LC) : cobjs 
+# we could presumably avoid the next two steps if we haven't changed anything
+	$(RANLIB) $@
+
+$(LF) : $(FORTRANOBJS) fintobjs
+# we could presumably avoid the next two steps if we haven't changed anything
+	$(RANLIB) $@
+
+fintobjs : $(FINTERFACEOBJS)
+	$(AR) $(LF) $?
+
+cobjs: $(CORELIBOBJS) $(CGENERALOBJS) $(CUCOBJS) $(CMTZOBJS) $(CMAPOBJS) $(CSYMOBJS)
+	$(AR) $(LC) $?
 
 # cmtz library only
 
@@ -264,7 +272,7 @@ $(CMTZPLOBJS) $(CMAPPLOBJS) $(CSYMPLOBJS):
 fsplit : $(srcdir)/fsplit.c
 	test ! -x $(fsplit_dir)/fsplit && $(CC) $(CFLAGS) -o $(fsplit_dir)/fsplit fsplit.c || true 
 
-$L(parser.o) : $(srcdir)/parser.f
+$(LF)(parser.o) : $(srcdir)/parser.f
 	-rm -rf parser.dir; mkdir parser.dir
 	cd parser.dir && $(fsplit_dir)/fsplit $(srcdir)/parser.f && $(RMEMPTY);
 # `-' for convex, sigh
@@ -275,183 +283,183 @@ $L(parser.o) : $(srcdir)/parser.f
 	cd parser.dir && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f parser.dir/*.o
 parser : parser.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
-$L(ccplib.o) : $(srcdir)/ccplib.f
+$(LF)(ccplib.o) : $(srcdir)/ccplib.f
 	-rm -rf ccplib.dir; mkdir ccplib.dir
 	echo '      SUBROUTINE CCPLIB' > ccplib.dir/ccplib.$F
 	echo '      END' >> ccplib.dir/ccplib.$F
 	cd ccplib.dir && $(fsplit_dir)/fsplit $(srcdir)/ccplib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f ccplib.dir/*.o
 ccplib : ccplib.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
-$L(lgglib.o) : $(srcdir)/lgglib.f
+$(LF)(lgglib.o) : $(srcdir)/lgglib.f
 	-rm -rf lgglib.dir; mkdir lgglib.dir
 	echo '      SUBROUTINE LGGLIB' > lgglib.dir/lgglib.$F
 	echo '      END' >> lgglib.dir/lgglib.$F
 	cd lgglib.dir && $(fsplit_dir)/fsplit $(srcdir)/lgglib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f lgglib.dir/*.o
 lgglib : lgglib.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
-$L(plot84lib.o) : $(srcdir)/plot84lib.f
+$(LF)(plot84lib.o) : $(srcdir)/plot84lib.f
 	-rm -rf plot84lib.dir; mkdir plot84lib.dir
 	echo '      SUBROUTINE PLOT84LIB' > plot84lib.dir/plot84lib.$F
 	echo '      END' >> plot84lib.dir/plot84lib.$F
 	cd plot84lib.dir && $(fsplit_dir)/fsplit $(srcdir)/plot84lib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f plot84lib.dir/*.o
 plot84lib : plot84lib.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
-$L(libhtml.o) : $(srcdir)/libhtml.f
+$(LF)(libhtml.o) : $(srcdir)/libhtml.f
 	-rm -rf libhtml.dir; mkdir libhtml.dir
 	echo '      SUBROUTINE LIBHTML' > libhtml.dir/libhtml.$F
 	echo '      END' >> libhtml.dir/libhtml.$F
 	cd libhtml.dir && $(fsplit_dir)/fsplit $(srcdir)/libhtml.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f libhtml.dir/*.o
 libhtml : libhtml.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
-$L(pxxml.o) : $(srcdir)/pxxml.f
+$(LF)(pxxml.o) : $(srcdir)/pxxml.f
 	-rm -rf pxxml.dir; mkdir pxxml.dir
 	echo '      SUBROUTINE PXXML' > pxxml.dir/pxxml.$F
 	echo '      END' >> pxxml.dir/pxxml.$F
 	cd pxxml.dir && $(fsplit_dir)/fsplit $(srcdir)/pxxml.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f pxxml.dir/*.o
 pxxml : pxxml.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
-$L(rwbrook.o) : $(srcdir)/rwbrook.f
+$(LF)(rwbrook.o) : $(srcdir)/rwbrook.f
 	-rm -rf rwbrook.dir; mkdir rwbrook.dir
 	echo '      SUBROUTINE RWBROOK' > rwbrook.dir/rwbrook.$F
 	echo '      END' >> rwbrook.dir/rwbrook.$F
 	cd rwbrook.dir && $(fsplit_dir)/fsplit $(srcdir)/rwbrook.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f rwbrook.dir/*.o
 rwbrook : rwbrook.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
-$L(cciflib.o) : $(srcdir)/cciflib.f
+$(LF)(cciflib.o) : $(srcdir)/cciflib.f
 	-rm -rf cciflib.dir; mkdir cciflib.dir
 	echo '      SUBROUTINE CCIFLIB' > cciflib.dir/cciflib.$F
 	echo '      END' >> cciflib.dir/cciflib.$F
 	cd cciflib.dir && $(fsplit_dir)/fsplit $(srcdir)/cciflib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f cciflib.dir/*.o
 cciflib : cciflib.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
-$L(harvlib.o) : $(srcdir)/harvlib.f
+$(LF)(harvlib.o) : $(srcdir)/harvlib.f
 	-rm -rf harvlib.dir; mkdir harvlib.dir
 	echo '      SUBROUTINE HARVLIB' > harvlib.dir/harvlib.$F
 	echo '      END' >> harvlib.dir/harvlib.$F
 	cd harvlib.dir && $(fsplit_dir)/fsplit $(srcdir)/harvlib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) -I$(srcdir) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f harvlib.dir/*.o
 harvlib : harvlib.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
-$L(keyparse.o) : $(srcdir)/keyparse.f
+$(LF)(keyparse.o) : $(srcdir)/keyparse.f
 	-rm -rf keyparse.dir; mkdir keyparse.dir
 	echo '      SUBROUTINE KEYPARSE' > keyparse.dir/keyparse.$F
 	echo '      END' >> keyparse.dir/keyparse.$F
 	cd keyparse.dir && $(fsplit_dir)/fsplit $(srcdir)/keyparse.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f keyparse.dir/*.o
 keyparse : keyparse.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
 #  The image (un)packing routines which were needed for mosflm and are needed
 #  for ipdisp. May be useful but could be moved. 
-$L(pack_c.o):   $(srcdir)/pack_c.c $(srcdir)/pack_c.h
+$(LF)(pack_c.o):   $(srcdir)/pack_c.c $(srcdir)/pack_c.h
 	$(CC) $(CFLAGS) -I$(srcdir) -c $(srcdir)/pack_c.c
-	$(AR) $L pack_c.o && rm pack_c.o
-$L(pack_f.o):   $(srcdir)/pack_f.f
-	$(FC) -c $(FFLAGS) $(srcdir)/pack_f.$(F) && $(AR) $(L) pack_f.o \
+	$(AR) $(LF) pack_c.o && rm pack_c.o
+$(LF)(pack_f.o):   $(srcdir)/pack_f.f
+	$(FC) -c $(FFLAGS) $(srcdir)/pack_f.$(F) && $(AR) $(LF) pack_f.o \
           && rm pack_f.o
-pack:   $L(pack_c.o) $L(pack_f.o)
-	$(RANLIB) $(L) 
+pack:   $(LF)(pack_c.o) $(LF)(pack_f.o)
+	$(RANLIB) $(LF) 
 
-$L(sorting_main.o) : $(srcdir)/sorting_main.f
+$(LF)(sorting_main.o) : $(srcdir)/sorting_main.f
 	-rm -rf sorting_main.dir; mkdir sorting_main.dir
 	echo '      SUBROUTINE SORTING_MAIN' > sorting_main.dir/sorting_main.$F
 	echo '      END' >> sorting_main.dir/sorting_main.$F
 	cd sorting_main.dir && $(fsplit_dir)/fsplit $(srcdir)/sorting_main.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f sorting_main.dir/*.o
 sorting_main : sorting_main.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
-$L(plotsubs.o) : $(srcdir)/plotsubs.f
+$(LF)(plotsubs.o) : $(srcdir)/plotsubs.f
 	-rm -rf plotsubs.dir; mkdir plotsubs.dir
 	echo '      SUBROUTINE PLOTSUBS' > plotsubs.dir/plotsubs.$F
 	echo '      END' >> plotsubs.dir/plotsubs.$F
 	cd plotsubs.dir && $(fsplit_dir)/fsplit $(srcdir)/plotsubs.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f plotsubs.dir/*.o
 plotsubs : plotsubs.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
-$L(modlib.o) : $(srcdir)/modlib.f
+$(LF)(modlib.o) : $(srcdir)/modlib.f
 	-rm -rf modlib.dir; mkdir modlib.dir
 	echo '      SUBROUTINE MODLIB' > modlib.dir/modlib.$F
 	echo '      END' >> modlib.dir/modlib.$F
 	cd modlib.dir && $(fsplit_dir)/fsplit $(srcdir)/modlib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f modlib.dir/*.o
 modlib : modlib.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
-$L(fftlib.o) : $(srcdir)/fftlib.f
+$(LF)(fftlib.o) : $(srcdir)/fftlib.f
 	-rm -rf fftlib.dir; mkdir fftlib.dir
 	echo '      SUBROUTINE FFTLIB' > fftlib.dir/fftlib.$F
 	echo '      END' >> fftlib.dir/fftlib.$F
 	cd fftlib.dir && $(fsplit_dir)/fsplit $(srcdir)/fftlib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done \
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f fftlib.dir/*.o
 fftlib : fftlib.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
 # the unix-specific bits need preprocessing for different unix variants
 unix.f : $(srcdir)/unix.m4
 	$(M4) $(srcdir)/unix.m4 >unix.f
 # this shouldn't depend on unix.f since we zap that each time
-$L(unix.o) : $(srcdir)/unix.m4
+$(LF)(unix.o) : $(srcdir)/unix.m4
 	$(M4) $(srcdir)/unix.m4 >unix.f
 	-rm -rf unix.dir; mkdir unix.dir
 	echo '      SUBROUTINE UNIX' > unix.dir/unix.f
@@ -459,10 +467,10 @@ $L(unix.o) : $(srcdir)/unix.m4
 	cd unix.dir && $(fsplit_dir)/fsplit ../unix.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $$i; done\
-	  && $(AR) ../$L *.o
+	  && $(AR) ../$(LF) *.o
 	rm -f unix.dir/*.o 
 unix : unix.o
-	$(RANLIB) $L
+	$(RANLIB) $(LF)
 
 ### SWIG stuff ###
 
@@ -603,20 +611,24 @@ csymlib_pl_wrap.o: $(srcdir)/csymlib_pl_wrap.c
 # test program for libraries
 #
 
-testlib : $(srcdir)/testlib.c  $L
-	$(CC) -o testlib $(CFLAGS) $(srcdir)/testlib.c -all $(LDFLAGS)
+testlib : $(srcdir)/testlib.c  $(LF)
+	$(CC) -o testlib $(CFLAGS) $(srcdir)/testlib.c -all $(LDCFLAGS)
 
 #
 # standard targets
 #
 
 install : all
-	$(INSTALL_DATA) `pwd`/$L $(libdir)/$L
-	$(RANLIB) $(libdir)/$L
+	$(INSTALL_DATA) `pwd`/$(LF) $(libdir)/$(LMMDB)
+	$(INSTALL_DATA) `pwd`/$(LF) $(libdir)/$(LC)
+	$(INSTALL_DATA) `pwd`/$(LF) $(libdir)/$(LF)
+	$(RANLIB) $(libdir)/$(LMMDB)
+	$(RANLIB) $(libdir)/$(LC)
+	$(RANLIB) $(libdir)/$(LF)
 	$(SHARE_INST)
 
 uninstall :
-	-rm -f $(libdir)/$L
+	-rm -f $(libdir)/$(LMMDB) $(libdir)/$(LC) $(libdir)/$(LF)
 	test -f $(libdir)/libccp4.so && rm -f $(libdir)/libccp4.so
 
 clean :
@@ -624,7 +636,7 @@ clean :
 	-rm -rf tagdir
 
 realclean : clean
-	-rm -rf $L *.dir TAGS unix.f libccp4.so fsplit
+	-rm -rf $(LF) *.dir TAGS unix.f libccp4.so fsplit
 
 distclean : realclean
 	-rm -f Makefile
