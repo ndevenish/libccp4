@@ -2138,6 +2138,8 @@ external routines as arguments aren't clear---assume the obvious way.
 		leng[9], pointer[9]);
     break;
   }
+  for (i=0; i<*n; i++)
+    free (pointer[i+1]);
 }
 @ %def ccpal1
 @ \section{Chunk list} 
