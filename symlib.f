@@ -1613,7 +1613,7 @@ C
 C
 C
 C     .. Scalar Arguments ..
-      INTEGER I1,NS
+      INTEGER I1,NS,I11
       CHARACTER ICOL*80
 C     ..
 C     .. Array Arguments ..
@@ -1649,15 +1649,16 @@ C
 C---- Search for first blank to skip flag sym symtr symmetry
 C     or whatever
 C
-      IF (I1.NE.1) THEN
-        I1 = 1
-        IF (ICOL(I1:I1).EQ.'s' .OR. ICOL(I1:I1).EQ.'S') THEN
+      I11 = I1
+      IF (I11.NE.1) THEN
+        I11 = 1
+        IF (ICOL(I11:I11).EQ.'s' .OR. ICOL(I11:I11).EQ.'S') THEN
    10     CONTINUE
-          IF (ICOL(I1:I1).EQ.' ') THEN
+          IF (ICOL(I11:I11).EQ.' ') THEN
             GO TO 20
           ELSE
-            I1 = I1 + 1
-            IF (I1.LE.80) GO TO 10
+            I11 = I11 + 1
+            IF (I11.LE.80) GO TO 10
           END IF
 C
                     CALL CCPERR(1,
@@ -1666,7 +1667,7 @@ C
       END IF
 C
 C
-   20 I = I1 - 1
+   20 I = I11 - 1
       NS = NS - 1
    30 CONTINUE
       NS = NS + 1
