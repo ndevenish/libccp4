@@ -851,7 +851,7 @@ C
 C     
 C     
 C     
-      SUBROUTINE CCPOPN14(IIUN,LOGNAM,KSTAT,ITYPE,LREC,IFAIL)
+      SUBROUTINE CCPOPN(IIUN,LOGNAM,KSTAT,ITYPE,LREC,IFAIL)
 C     ====================================================
 C     
 C---- This subroutine is used to open a file
