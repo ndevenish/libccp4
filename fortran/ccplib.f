@@ -16,12 +16,15 @@ C     ccplib.for,v 1.7 1992/09/14 18:47:13 fx Exp
 C
 C      CCFILL    Set specified number of elements of byte array
 C      CCPASZ    set array size suitable for current working set
+C      CCPALC    Call subroutine with allocated memory
+C      CCPALE    Call subroutine with allocated memory set from environment
 C      CCPBYI    Copy array of unsigned (or signed) bytes into integer array
 C      CCPBYT    Indicate whether byte handling is available
 C      CCPCPI    Copy array of BYTE or INTEGER*2 elements into integer array
 C      CCPDAT    Get calendar date
 C      CCPDEX    Periodicity reduction of 1024 (for PROLSQ)
 C      CCPDPN    more friendly CCPOPN
+C      CCPE2I    read integer from logical name value
 C      CCPERR    Report error or normal termination and stop
 C      CCPEXS    test if file exists
 C      CCPFYP    Set up environment & parse command line arguments
@@ -77,6 +80,8 @@ C_BEGIN_CCFILL
       SUBROUTINE CCFILL(ARR1,SCAL,NTIMES)
 C     ===================================
 C
+C      CCFILL    Set NTIMES bytes array ARR1 to value SCAL
+C
 C Arguments:
 C ==========
 C
@@ -99,6 +104,107 @@ C     ..
         ARR1(N) = SCAL
    10 CONTINUE
 C
+      END
+C
+C
+C_BEGIN_CCPALC
+      SUBROUTINE CCPALC(ROUTNE, N, TYPE, LENGTH)
+C     ==========================================
+C
+C     Arrange to call subroutine ROUTNE with N array arguments each of
+C     length LENGTH (i) and type indicated by TYPE (i): 'i' == integer,
+C     'r' == real, 'd' == double precision, 'c'==complex.  TYPE elements
+C     may have either case.
+C     Consider `call ccpalc (fred, 3, types, lens)' with types = ['i',
+C     'r', 'c']  and lens = [1000, 2000, 3000].  This effectively does
+C        call fred (1000, arr1, 2000, arr2, 3000, arr3)
+C     with
+C        subroutine fred (n1, foo, n2, bar, n3, baz)
+C        integer n1, n2, n3, foo (n1)
+C        real bar (n2)
+C        complex baz (n3)
+C        ...
+
+C
+C Arguments:
+C ==========
+C
+C      ROUTNE (I)   EXTERNAL: routine to call
+C           N (I)   INTEGER: number of arguments to ROUTNE (<=9)
+C        TYPE (I)   CHARACTER*1 (*): type of arguments to ROUTNE:
+C                      'I': INTEGER; 'R': REAL; 'D': DOUBLE PRECISION;
+C                      'C': COMPLEX
+C      LENGTH (I)   INTEGER*(*): number of elements in each (array)
+C                       argument of ROUTNE
+C_END_CCPALC
+C
+C     .. Scalar Arguments ..
+      INTEGER N
+C     ..
+C     .. Array Arguments ..
+      CHARACTER TYPE (*)
+      INTEGER LENGTH (*)
+C     ..
+      EXTERNAL ROUTNE, CCPAL1, CCPUPC
+      INTEGER I, ITYPE (9)
+      CHARACTER TTYPE (9)
+C     ..
+      IF (N.LT.1 .OR. N.GT.9)
+     +     CALL CCPERR (1, 'CCPALC: bad number of arguments')
+      DO 10 I=1,N
+        TTYPE (I) = TYPE (I)
+        CALL CCPUPC (TTYPE (I))
+        ITYPE (I) = INDEX ('IRDC', TTYPE (I))
+        IF (ITYPE (I) .EQ. 0) CALL CCPERR (1, 'CCPALC: bad TYPE: '//
+     +       TYPE (I))
+        IF (LENGTH (I).LE.0) CALL CCPERR (1, 'CCPALC: length <=0')
+ 10   CONTINUE
+      CALL CCPAL1 (ROUTNE, N, ITYPE, LENGTH)
+      END
+C
+C
+C_BEGIN_CCPALE
+      SUBROUTINE CCPALE(ROUTNE, N, TYPE, LENGTH, LENDEF)
+C     =================================================
+C
+C     Arrange to call subroutine ROUTNE with N array arguments each of
+C     length LENGTH (i) and type indicated by TYPE (i): 'i' == integer,
+C     'r' == real, 'd' == double precision, 'c'==complex.  TYPE elements
+C     may have either case.  LENGTH points to an array of environment
+C     variable (logical) names from which integer values are read.  The
+C     lengths default to values from LENDEF.
+C     This is a convenient interface to CCPALC to allow configuring of
+C     the memory requirements on the command line where appropriate.
+C
+C Arguments:
+C ==========
+C
+C      ROUTNE (I)   EXTERNAL: routine to call
+C           N (I)   INTEGER: number of arguments to ROUTNE (<=9)
+C        TYPE (I)   CHARACTER*1 (*): type of arguments to ROUTNE:
+C                      'I': INTEGER; 'R': REAL; 'D': DOUBLE PRECISION;
+C                      'C': COMPLEX
+C     LENGTH (I)   CHARACTER *(*): logical names representing the number
+C                       of elements in each (array) argument of ROUTNE
+C     LENDEF (I)   INTEGER (*): default lengths for the argument arrays
+C     used if the appropriate LENGTH argument doesn't represent a
+C     defined logical
+C_END_CCPALE
+C
+C     .. Scalar Arguments ..
+      INTEGER N
+C     ..
+C     .. Array Arguments ..
+      CHARACTER TYPE (*),  LENGTH (*)*(*)
+      INTEGER LENDEF (*)
+C     ..
+      EXTERNAL ROUTNE, CCPE2I, CCPALC
+      INTEGER I, LENG (9), CCPE2I
+C     ..
+      DO 10 I=1,N
+        LENG (I) = CCPE2I (LENGTH (I), LENDEF (I))
+ 10   CONTINUE
+      CALL CCPALC (ROUTNE, N, TYPE, LENG)
       END
 C
 C
@@ -493,6 +599,37 @@ C
  6002 FORMAT ('CCPDPN: illegal type: ',A)
       END
 C
+C
+C_BEGIN_CCPE2I
+      INTEGER FUNCTION CCPE2I (NAME, DEFVAL)
+C     ======================================
+C
+C     Return an integer extracted from enviroment variable NAME.  If
+C     NAME isn't defined, use DEFVAL as the default.  If the value of
+C     NAME isn't a representation of an integer, abort.
+C
+C     Arguments
+C     =========
+C
+C     NAME (I)    CHARACTER *(*)
+C     DEFVAL (I)  INTEGER
+C_END_CCPE2I
+      CHARACTER *(*) NAME
+      CHARACTER BUFFER*80, EMESS*80
+      INTEGER DEFVAL, LENSTR
+      EXTERNAL UGTENV, LENSTR
+      CALL UGTENV (NAME, BUFFER)
+      IF (BUFFER.EQ.' ') THEN
+        CCPE2I = DEFVAL
+        RETURN
+      ENDIF
+      READ (BUFFER, '(BN,I80)', ERR=99) CCPE2I
+      RETURN 
+ 99   WRITE (EMESS, 10) NAME (:LENSTR (NAME)), BUFFER (:LENSTR (BUFFER))
+ 10   FORMAT ('Logical name ', A, 'should represent an integer and is: '
+     +     , A)
+      CALL CCPERR (1, EMESS)
+      END
 C
 C
 C     ===============================
