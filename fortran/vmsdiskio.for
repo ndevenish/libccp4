@@ -1339,10 +1339,11 @@ C     This a an Rop-safe routine to update the column ranges needed by
 C     mtzlib
       INTEGER I, N
       REAL A (*), WRANGE (2,N,*)
+      LOGICAL QISNAN
+      EXTERNAL QISNAN
       DO I=1,N
         IF (.NOT.QISNAN (A(I))) THEN
           IF (A(I).NE.-1E-10) THEN
-          IF (A(I).NE.MDFBIG) THEN
             IF (A(I).LT.WRANGE(1,I,1)) WRANGE(1,I,1) = A(I)
             IF (A(I).GT.WRANGE(2,I,1)) WRANGE(2,I,1) = A(I)            
           ENDIF
