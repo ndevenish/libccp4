@@ -138,6 +138,12 @@
 #  define KNOWN_MACHINE
 #endif
 
+#if defined (_CALL_SYSV) && ! defined (__APPLE__)
+#  undef CALL_LIKE_HPUX
+#  define CALL_LIKE_HPUX 1
+#  define KNOWN_MACHINE
+#endif
+
 #if ! defined (KNOWN_MACHINE)
 #  error System type is not known -- see the Installation Guide
 #else
