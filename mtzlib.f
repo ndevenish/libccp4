@@ -123,7 +123,6 @@ C  First release (sort of)                                  June 1991
 C
 C
 C
-C
 C A complete list of subroutines in the MTZ package follows :
 C
 C The initialisation routine for the file handling system :
@@ -273,7 +272,6 @@ C   LSTLSQ      Function to calculate (sin(theta)/lambda)**2 from h,k,l
 C               coef's set by call to LSTRSL, for the file open on index MINDX
 C
 C
-C
 C COMMON blocks for MTZ subroutines
 C
 C     Common MTZHDR contains INTEGER and REAL variables
@@ -289,7 +287,6 @@ C     Since they are not in the main program, we must SAVE them
 C
 C
 C
-C
 C     =================
       SUBROUTINE MTZINI
 C     =================
@@ -300,7 +297,6 @@ C     THIS SUBROUTINE MUST BE CALLED BEFORE ANY OTHER MTZLIB SUBROUTINE.
 C     Failure to do so may result in unpredictable behaviour (!?)
 C
 C     This subroutine replaces (6/91) the BLOCK DATA MTZINI.
-C
 C
 C
 C     .. Parameters ..
@@ -331,8 +327,7 @@ C     .. Common blocks ..
      +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
 C     ..
 C     .. Save statement ..
-      SAVE
-C
+      SAVE /MTZLAB/, /MTZLBC/, /MTZWRK/
 C
 C---- Initialize those variables which MUST be 0 or ' ' at the very start
 C
@@ -342,7 +337,6 @@ C     NLUSRO - no. of user output labels (changed by LKYOUT)
 C     LSUSRO - the labels
 C     RLUN   - unit numbers for files open for read (>0 means file open)
 C     WLUN   - unit numbers for files open for write (>0 means file open)
-C
 C
 C
       DO 20 JDO20  = 1,MFILEX
@@ -356,14 +350,10 @@ C
 C
    20 CONTINUE
 C
-C
       DO 30 JDO30 = 1,MFILES
         RLUN(JDO30) = 0
         WLUN(JDO30) = 0
  30   CONTINUE
-C
-      RETURN
-C
       END
 C
 C
@@ -371,7 +361,6 @@ C
 C     ====================================================
       SUBROUTINE LRASSN(MINDX,LSPRGI,NLPRGI,LOOKUP,CTPRGI)
 C     ====================================================
-C
 C
 C---- Subroutine to apply the input column label assignments to the
 C     MTZ file which is open for read and setup the Lookup pointer array
@@ -403,7 +392,6 @@ C     CTPRGI    (I)	CHARACTER*1	array of dimension at least NLPRGI
 C                               	containing the program label types
 C
 C
-C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH,MFILEX
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=1000,MFILEX=9)
@@ -433,7 +421,7 @@ C     .. Arrays in Common ..
      +          CLABEL*30,LSUSRI*30,LSUSRO*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
-      INTEGER IEND,IERR,IFAIL,II,IST,ISTAT,JDO10,JDO110,JDO20,JDO30,
+      INTEGER IEND,IERR,IFAIL,II,IST,ISTAT,JDO10,JDO20,JDO30,
      +        JDO50,JDO60,JDO90,JDO100,JLENG
       CHARACTER CWORK*30,LINE*400,STROUT*400
 C     ..
@@ -442,7 +430,7 @@ C     .. External Functions ..
       EXTERNAL LENSTR
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL BLANK,LABPRT,LERROR,PUTLIN
+      EXTERNAL BLANK,LABPRT,LERROR,PUTLIN, CCPERR
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -491,9 +479,7 @@ C
           RPOINT(JDO10,MINDX) = 0
    10   CONTINUE
 C
-C
         NPLABS(MINDX) = NLPRGI
-C
 C
         DO 20 JDO20 = 1,NLPRGI
           PLABS(JDO20,MINDX) = LSPRGI(JDO20)
@@ -506,11 +492,9 @@ C
           CWORK = LSUSRI(MINDX,JDO50)
           IF ((NLUSRI(MINDX).GT.0) .AND. (CWORK.NE.' ')) THEN
 C
-C
             DO 30 JDO30 = 1,NCOLS(MINDX)
               IF (CWORK.EQ.CLABEL(JDO30,MINDX)) GO TO 40
    30       CONTINUE
-C
 C
             JLENG = LENSTR(CWORK)
             ISTAT = 1
@@ -530,11 +514,9 @@ C---- No input assignment given for this program label
 C
             CWORK = LSPRGI(JDO50)
 C
-C
             DO 50 JDO60 = 1,NCOLS(MINDX)
               IF (CWORK.EQ.CLABEL(JDO60,MINDX)) GO TO 60
    50       CONTINUE
-C
 C
             IF (LOOKUP(JDO50).NE.0) THEN
               JLENG = LENSTR(CWORK)
@@ -637,7 +619,6 @@ C
             END IF
   100     CONTINUE
 C
-C
         ELSE
 C
 C              ********************************
@@ -646,7 +627,6 @@ C              ********************************
 C
         END IF
       END IF
-C
 C
       END
 C
@@ -670,7 +650,6 @@ C
 C     BATCHX    (O)	INTEGER         array of dimension at least NBATX
 C                               	containing the serial numbers of the
 C                               	batches in the file
-C
 C
 C
 C     .. Parameters ..
@@ -731,11 +710,9 @@ C     if a multi-record file
 C
       IF (NBATCH(MINDX).GT.0) THEN
 C
-C
         DO 10 JDO10 = 1,NBATCH(MINDX)
           BATCHX(JDO10) = BATNUM(JDO10,MINDX)
    10   CONTINUE
-C
 C
       END IF
 C
@@ -759,8 +736,6 @@ C
 C     BATNO     (I)	INTEGER         batch number to reset pointer to
 C                               	If BATNO = 0, reset to beginning of
 C                               	batch headers
-C
-C
 C
 C
 C     .. Parameters ..
@@ -800,7 +775,6 @@ C     .. Save statement ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL LERROR
-C
 C
 C---- First check that the MINDX is valid
 C
@@ -867,9 +841,7 @@ C            *************************
 C            *************************
       END IF
 C
-C
       RETURN
-C
 C
       END
 C
@@ -900,7 +872,6 @@ C					on output
 C
 C     NBATSC    (O)	INTEGER         number of batch scales found
 C
-C
 C     .. Arguments ..
       INTEGER MINDX, BATNO, NBATSC
       REAL BATSCL(NBATSC)
@@ -909,12 +880,12 @@ C     .. Common blocks ..
       INTEGER NWORDS,NINTGR,NREALS,IORTYP,LBCELL,MISFLG,
      .     JUMPAX,NCRYST,LCRFLG,JSCAXS,NBSCAL,NGONAX,LBMFLG,NDET,
      $     INTPAD
-      REAL   CELL,UMAT,PHIXYZ,CRYDAT,ETAD,DATUM,
+      REAL   CELL,UMAT,PHIXYZ,CRYDAT,DATUM,
      $     PHISTT,PHIEND,SCANAX,TIME1,TIME2,
      $     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD,E1,E2,E3,GONPAD,
-     $     SOURCE,S0,BEMDAT,ALAMBD,DELAMB,DELCOR,DIVHD,DIVVD,
-     $     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD,ETADH,ETADV
-      CHARACTER BTITLE*70, GONLAB*8
+     $     SOURCE,S0,BEMDAT,
+     $     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD
+      CHARACTER BTITLE*70, GONLAB*8, BTITL*70
 C     
       COMMON /CBTHDR/BTITLE,GONLAB(3)
 C     
@@ -927,10 +898,13 @@ C
      $     GONPAD(12),SOURCE(3),S0(3),BEMDAT(25),
      $     DX1,THETA1,DETLM1(2,2),DX2,THETA2,DETLM2(2,2),DETPAD(33)
       SAVE /MBTHDR/, /CBTHDR/
+      EXTERNAL LRBRES, LRBAT
 C     
 C*** Equivalence undetermined number of scale factors to BSCALE
       REAL SCALES(16)
       EQUIVALENCE (SCALES(1),BSCALE)
+      REAL RNWRDS (1)
+      EQUIVALENCE (NWORDS,RNWRDS)
 C
       INTEGER ISTAT,IFAIL,I
       CHARACTER*100 LINE2
@@ -939,7 +913,11 @@ C
 C--- Set read pointer to this batch
       CALL LRBRES(MINDX,BATNO)
 C--- Read Orientation block
-      CALL LRBAT(MINDX,BATNO,NWORDS,BTITLE,0)
+C     NB the original of this had BTITLE in the call, but it's in common
+C     and updated during the call, so illegal
+      BTITL = BTITLE
+      CALL LRBAT(MINDX,BATNO,RNWRDS,BTITL,0)
+      BTITLE = BTITL
 C
 C NBSCAL is number of scales etc found in orientation block
       IF (NBSCAL .GT. NBATSC) THEN
@@ -965,7 +943,6 @@ C--- Copy scales
       ENDIF
 C
       RETURN
-C
 C
       END
 C
@@ -1001,12 +978,12 @@ C     .. Common blocks ..
       INTEGER NWORDS,NINTGR,NREALS,IORTYP,LBCELL,MISFLG,
      .     JUMPAX,NCRYST,LCRFLG,JSCAXS,NBSCAL,NGONAX,LBMFLG,NDET,
      $     INTPAD
-      REAL   CELL,UMAT,PHIXYZ,CRYDAT,ETAD,DATUM,
+      REAL   CELL,UMAT,PHIXYZ,CRYDAT,DATUM,
      $     PHISTT,PHIEND,SCANAX,TIME1,TIME2,
      $     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD,E1,E2,E3,GONPAD,
-     $     SOURCE,S0,BEMDAT,ALAMBD,DELAMB,DELCOR,DIVHD,DIVVD,
-     $     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD,ETADH,ETADV
-      CHARACTER BTITLE*70, GONLAB*8
+     $     SOURCE,S0,BEMDAT,DIVVD,
+     $     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD
+      CHARACTER BTITLE*70, GONLAB*8, BTITL*70
 C     
       COMMON /CBTHDR/BTITLE,GONLAB(3)
 C     
@@ -1019,21 +996,23 @@ C
      $     GONPAD(12),SOURCE(3),S0(3),BEMDAT(25),
      $     DX1,THETA1,DETLM1(2,2),DX2,THETA2,DETLM2(2,2),DETPAD(33)
       SAVE /CBTHDR/, /MBTHDR/
+      REAL RNWRDS (1)
+      EXTERNAL LRBRES, LRBAT
+      EQUIVALENCE (NWORDS,RNWRDS)
 C     
-C
-      INTEGER ISTAT,IFAIL,I
-      CHARACTER*100 LINE2
-C
 C--- Set read pointer to this batch
       CALL LRBRES(MINDX,BATNO)
 C--- Read Orientation block
-      CALL LRBAT(MINDX,BATNO,NWORDS,BTITLE,IPRINT)
+C     NB the original of this had BTITLE in the call, but it's in common
+C     and updated during the call, so illegal
+      BTITL = BTITLE
+      CALL LRBAT(MINDX,BATNO,RNWRDS,BTITL,IPRINT)
+      BTITLE = BTITL
 C
 C Copy title
       TBATCH = BTITLE
 C
       RETURN
-C
 C
       END
 C
@@ -1042,7 +1021,6 @@ C
 C     ==============================
       SUBROUTINE LRCELL(MINDX,CELLP)
 C     ==============================
-C
 C
 C
 C---- Subroutine to return Cell Parameters from header of MTZ file open for read
@@ -1055,7 +1033,6 @@ C                               	points to both input and output files
 C
 C     CELLP     (O)	REAL            array of dimension (6) containing cell
 C                               	parameters from header on exit
-C
 C
 C
 C     .. Parameters ..
@@ -1113,9 +1090,7 @@ C
           CELLP(JDO10) = CELL(JDO10,MINDX)
    10   CONTINUE
 C
-C
       END IF
-C
 C
       END
 C
@@ -1124,7 +1099,6 @@ C
 C     =========================================
       SUBROUTINE LRCLAB(MINDX,CLABS,CTYPS,NCOL)
 C     =========================================
-C
 C
 C
 C---- Subroutine to return the column labels, column types and number
@@ -1142,7 +1116,6 @@ C     CTYPS     (O)	CHARACTER*1     array of dimension at least NCOL
 C                               	containing the column types on exit
 C
 C     NCOL      (O)	INTEGER         number of columns in MTZ file
-C
 C
 C
 C     .. Parameters ..
@@ -1210,16 +1183,13 @@ C---- Then return column information
 C
         NCOL = NCOLS(MINDX)
 C
-C
         DO 10 JDO10 = 1,NCOL
           ISTAT = LENSTR(CLABEL(JDO10,MINDX))
           CLABS(JDO10) = CLABEL(JDO10,MINDX) (1:ISTAT)
           CTYPS(JDO10) = CTYPE(JDO10,MINDX)
    10   CONTINUE
 C
-C
       END IF
-C
 C
       END
 C
@@ -1235,8 +1205,6 @@ C---- Arguments :
 C
 C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
 C                               	points to both input and output files
-C
-C
 C
 C
 C     .. Parameters ..
@@ -1301,7 +1269,6 @@ C
 C
       END IF
 C
-C
       END
 C
 C
@@ -1309,7 +1276,6 @@ C
 C     =====================================
       SUBROUTINE LRHIST(MINDX,HSTRNG,NLINES)
 C     =====================================
-C
 C
 C
 C---- Subroutine to return the history information from the MTZ
@@ -1324,7 +1290,6 @@ C
 C     HSTRNG    (O)	CHARACTER       array of (NLINES) with the history lines
 C
 C     NLINES    (O)	INTEGER         number of history lines being returned
-C
 C
 C
 C     .. Parameters ..
@@ -1398,20 +1363,16 @@ C
    10     CONTINUE
           NLINES = NHISTL(MINDX)
 C
-C
         END IF
       END IF
-C
 C
       END
 C
 C
 C
-C
 C     ===================================================
       SUBROUTINE LRINFO(MINDX,VERSNX,NCOLX,NREFLX,RANGES)
 C     ===================================================
-C
 C
 C
 C---- Subroutine to return information about the MTZ file open for
@@ -1431,8 +1392,6 @@ C     NREFLX    (O)	INTEGER         number of reflection records in the file
 C
 C     RANGES    (O)	REAL            array(2,ncolx) containing the minimum
 C                               	and maximum values in each column
-C
-C
 C
 C
 C     .. Parameters ..
@@ -1495,15 +1454,12 @@ C
         NCOLX = NCOLS(MINDX)
         NREFLX = NREFS(MINDX)
 C
-C
         DO 10 JDO10 = 1,NCOLS(MINDX)
           RANGES(1,JDO10) = CRANGE(1,JDO10,MINDX)
           RANGES(2,JDO10) = CRANGE(2,JDO10,MINDX)
    10   CONTINUE
 C
-C
       END IF
-C
 C
       END
 C
@@ -1522,7 +1478,6 @@ C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
 C                               	points to both input and output files
 C
 C     NCOLX     (O)	INTEGER         number of columns in MTZ file
-C
 C
 C
 C     .. Parameters ..
@@ -1584,14 +1539,12 @@ C     ===============================
 C     ===============================
 C
 C
-C
 C---- Subroutine to return the current reflection number from an
 C     MTZ file opened for read. Files are normally read sequentially,
 C     the number returned is the number of the *NEXT* reflection
 C     record to be read. If you are going to jump about the file
 C     with LRSEEK then use this to record the current position before
 C     you start, so that it can be restored afterwards, if required.
-C
 C
 C
 C---- Arguments:
@@ -1601,7 +1554,6 @@ C                               	possible open at once)
 C
 C     REFNUM    (O)	INTEGER         the reflection record number of the
 C                               	next reflection to be read
-C
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
@@ -1667,7 +1619,6 @@ C     =============================================
       SUBROUTINE LROPEN(MINDX,FILNAM,IPRINT,IFAIL)
 C     =============================================
 C
-C
 C---- Subroutine to open an MTZ file for read.
 C     This should be the first MTZ subroutine called in a set of
 C     operations on a pair of files (ie one input and one output).
@@ -1693,7 +1644,6 @@ C                               	on output
 C                               	=0 OK
 C                               	=-1 no such file
 C                               	all other errors cause stop
-C
 C
 C
 C     .. Parameters ..
@@ -1726,7 +1676,7 @@ C     .. Arrays in Common ..
      +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
-      INTEGER BATFLG,EFLAG,ENDLOP,IER,ISTAT,ITEND,IUNIN,IWORD,JDO10,
+      INTEGER BATFLG,EFLAG,ENDLOP,IER,ISTAT,ITEND,IUNIN,JDO10,
      +        JDO100,JDO110,JDO120,JDO130,JDO140,JDO150,JDO190,JDO20,
      +        JDO200,JDO30,JDO40,JDO50,JDO60,JDO80,JDO90,NBATRF,NCOLR,
      +        NITEM,NJUNK,NSYMIN,NTOK,SYFLAG,IRESLT
@@ -1735,9 +1685,9 @@ C     .. Local Scalars ..
 C     ..
 C     .. Local Arrays ..
       REAL FVALUE(NPARSE)
-      INTEGER IBEG(NPARSE),IDEC(NPARSE),IEND(NPARSE),ITYP(NPARSE)
-      CHARACTER CTYPES(NTYP)*1,LTYPES(LTYP)*1,CVALUE(NPARSE)*4,
-     +          SYMCHS(96)*80
+      INTEGER IBEG(NPARSE),IDEC(NPARSE),IEND(NPARSE),ITYP(NPARSE),
+     +     IWORD(1)
+      CHARACTER CTYPES(NTYP)*1,LTYPES(LTYP)*1,CVALUE(NPARSE)*4
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -1745,7 +1695,8 @@ C     .. External Functions ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL BLANK,GTPINT,GTPREA,LERROR,LHPRT,LRCLOS,LRHDRL,PARSER,
-     +     PUTLIN,QMODE,QOPEN,QREAD,QSEEK,RBATHD,LSTRSL,SYMFR3, QRARCH
+     +     PUTLIN,QMODE,QOPEN,QSEEK,RBATHD,LSTRSL,SYMFR3, QRARCH,
+     +     QREADI, QPRINT
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -1825,7 +1776,6 @@ C
           END IF
         END IF
 C
-C
         IF (WLUN(MINDX).NE.0) THEN
           WRITE (LINE2,FMT='(A,A,I3,A)')
      +      'From LROPEN : Wrong index in call, file already open for',
@@ -1861,10 +1811,8 @@ C
           CELL(JDO10,MINDX) = 0.0
    10   CONTINUE
 C
-C
         NSYM(MINDX) = 0
         NSYMP(MINDX) = 0
-C
 C
         DO 40 JDO40 = 1,96
           DO 30 JDO30 = 1,4
@@ -1873,7 +1821,6 @@ C
    20       CONTINUE
    30     CONTINUE
    40   CONTINUE
-C
 C
         NCOLS(MINDX) = 0
         NREFS(MINDX) = 0
@@ -1890,11 +1837,9 @@ C
         LTYPE(MINDX) = '?'
         PGNAM(MINDX) = '?'
 C
-C
         DO 50 JDO50 = 1,5
           ISORT(JDO50,MINDX) = 0
    50   CONTINUE
-C
 C
         DO 60 JDO60 = 1,MCOLS
           CRANGE(1,JDO60,MINDX) = 0.0
@@ -1904,7 +1849,6 @@ C
           RPOINT(JDO60,MINDX) = 0
           PLABS(JDO60,MINDX) = ' '
    60   CONTINUE
-C
 C
         NBATRF = 0
         NCOLR = 0
@@ -1918,7 +1862,7 @@ C     Read in header records with mode=0 (bytes), except offset
 C
 C            ******************************
         CALL QSEEK(RLUN(MINDX),1,1,1)
-        CALL QREAD(RLUN(MINDX),IWORD,4,IER)
+        CALL QREADI(RLUN(MINDX),IWORD,4,IER)
 C            ******************************
 C
         IF (IER.NE.0) THEN
@@ -1933,8 +1877,7 @@ C              *************************
 C              *************************
 C
         ELSE
-          WRITE (MKEY,FMT='(A4)') IWORD
-C
+          WRITE (MKEY,FMT='(A4)') IWORD(1)
 C
           IF (MKEY(1:3).NE.'MTZ') THEN
             ISTAT = 2
@@ -1961,7 +1904,7 @@ C
 C
 C                *************************************
             CALL QMODE(RLUN(MINDX),6,NITEM)
-            CALL QREAD(RLUN(MINDX),HDRST(MINDX),1,IER)
+            CALL QREADI(RLUN(MINDX),HDRST(MINDX),1,IER)
             CALL QSEEK(RLUN(MINDX),1,HDRST(MINDX),1)
             CALL QMODE(RLUN(MINDX),0,NITEM)
 C                *************************************
@@ -1973,14 +1916,13 @@ C
 C---- Start of loop over header lines
 C     -------------------------------
 C
-C
 C                ************************
             CALL LRHDRL(RLUN(MINDX),LINE)
 C                ************************
 C
             NTOK = NPARSE
 C
-C---- Pass header line to MRC parser (later Compose parser)
+C---- Pass header line to parser
 C
 C                *******************************************************
             CALL PARSER(KEY,LINE,IBEG,IEND,ITYP,FVALUE,CVALUE,IDEC,NTOK,
@@ -2042,7 +1984,6 @@ C---- CELL - read in the Cell parameters
 C
             ELSE IF (KEY.EQ.'CELL') THEN
 C
-C
               DO 80 JDO80 = 1,6
 C
 C                    *************************************************
@@ -2064,7 +2005,6 @@ C
 C---- SORT - read in sort order
 C
             ELSE IF (KEY.EQ.'SORT') THEN
-C
 C
               DO 90 JDO90 = 1,5
 C
@@ -2093,11 +2033,9 @@ C
               SPGNAM(MINDX) = LINE(IBEG(6) :IEND(6))
               PGNAM(MINDX) = LINE(IBEG(7) :IEND(7))
 C
-C
               DO 100 JDO100 = 1,LTYP
                 IF (LTYPE(MINDX).EQ.LTYPES(JDO100)) GO TO 70
   100         CONTINUE
-C
 C
               WRITE (LINE2,FMT='(A)')
      +     'From LROPEN : Unrecognised Lattice type in header, set to P'
@@ -2135,7 +2073,6 @@ C
                   NSYM(MINDX) = 0
                   NSYMP(MINDX) = 0
 C
-C
                   DO 130 JDO130 = 1,96
                     DO 120 JDO120 = 1,4
                       DO 110 JDO110 = 1,4
@@ -2144,10 +2081,7 @@ C
   120               CONTINUE
   130             CONTINUE
 C
-C
                   SYFLAG = -1
-                ELSE IF (IPRINT.EQ.3) THEN
-                  SYMCHS(NJUNK) = LINE(IBEG(2) :IEND(2))
                 END IF
               END IF
               GO TO 70
@@ -2179,7 +2113,6 @@ C
                 IF (CTYPE(NCOLR,MINDX).EQ.CTYPES(JDO140)) GO TO 70
   140         CONTINUE
 C
-C
               WRITE (LINE2,FMT='(A,I4,A,A,A,A,A)')
      +          'From LROPEN : Column',NCOLR,' Label ',
      +          CLABEL(NCOLR,MINDX),'has unrecognised type (',
@@ -2205,7 +2138,6 @@ C
                   ENDLOP = NBATRF + 12
                 END IF
 C
-C
                 DO 150 JDO150 = NBATRF + 1,ENDLOP
 C
 C                      ************************************************
@@ -2214,7 +2146,6 @@ C                      ************************************************
 C                      ************************************************
 C
   150           CONTINUE
-C
 C
                 NBATRF = ENDLOP
               ELSE IF (BATFLG.GT.0) THEN
@@ -2334,7 +2265,6 @@ C
             IF (LINE(1:7).EQ.'MTZHIST') THEN
               READ (LINE(9:),FMT='(I3)') NHISTL(MINDX)
 C
-C
               DO 170 JDO190 = 1,NHISTL(MINDX)
 C
 C                    **************************************
@@ -2351,7 +2281,6 @@ C
                 GO TO 190
               ELSE
 C
-C
                 DO 180 JDO200 = 1,NBATCH(MINDX)
 C
 C                      **********************************************
@@ -2360,7 +2289,6 @@ C                      **********************************************
 C                      **********************************************
 C
   180           CONTINUE
-C
 C
                 GO TO 160
               END IF
@@ -2439,7 +2367,6 @@ C
 C     LINE	(O)	CHARACTER*(*)	80 Character header line
 C
 C
-C
 C     .. Scalar Arguments ..
       INTEGER ILUN
       CHARACTER LINE* (*)
@@ -2452,11 +2379,11 @@ C     .. Local Arrays ..
       INTEGER ILINE(20)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QREAD
+      EXTERNAL LERROR,QREADI
 C     ..
 C
 C          ************************
-      CALL QREAD(ILUN,ILINE,80,IER)
+      CALL QREADI(ILUN,ILINE,80,IER)
 C          ************************
 C
       IF (IER.GT.0) THEN
@@ -2490,10 +2417,8 @@ C     absent data). If MINDX is in the normal range of 1 to 3, then the
 C     subroutine will convert values of -1.0E+10 to zero to allow normal
 C     processing by the CCP4 programs.
 C
-C
 C---- Subroutine to read a reflection record from an MTZ file which
 C     has been opened for read. This returns the record in Lookup order
-C
 C
 C---- Arguments :
 C
@@ -2509,7 +2434,6 @@ C     					containing the reflection record on exit
 C     					in lookup order
 C
 C     EOF       (O)	LOGICAL		End-of-File indicator
-C
 C
 C
 C     .. Parameters ..
@@ -2553,7 +2477,7 @@ C     .. External Functions ..
       REAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QREAD
+      EXTERNAL LERROR, LSTLSQ, CCPERR
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -2599,7 +2523,6 @@ C            ************************
         CALL LERROR(ISTAT,IFAIL,LINE)
 C            ************************
 C
-C
 C---- Then check that there is a file open
 C
       ELSE IF (RLUN(MINDEX).EQ.0) THEN
@@ -2626,7 +2549,7 @@ C
         ELSE
 C
 C              ******************************************
-          CALL QREAD(RLUN(MINDEX),BDATA,NCOLS(MINDEX),IERR)
+          CALL QREADR(RLUN(MINDEX),BDATA,NCOLS(MINDEX),IERR)
 C              ******************************************
 C
           IF (IERR.GT.0) THEN
@@ -2702,13 +2625,11 @@ C
 C
       END IF
 C
-C
       END
 C
 C     ========================================
       SUBROUTINE LRREFL(MINDX,RESOL,ADATA,EOF)
 C     ========================================
-C
 C
 C---- BIOMOL-compatible version of the CCP4-subroutine. If the index MINDX
 C     is larger then 1000, then it is assumed that the subroutine is
@@ -2718,10 +2639,8 @@ C     absent data). If MINDX is in the normal range of 1 to 3, then the
 C     subroutine will convert values of -1.0E+10 to zero to allow normal
 C     processing by the CCP4 programs.
 C
-C
 C---- Subroutine to read a reflection record from an MTZ file which
 C     has been opened for read. This returns the record in file order.
-C
 C
 C---- Arguments :
 C
@@ -2737,7 +2656,6 @@ C                               	containing the reflection record on exit
 C                               	in file order
 C
 C     EOF       (O)	LOGICAL         End-of-File indicator
-C
 C
 C
 C     .. Parameters ..
@@ -2780,7 +2698,7 @@ C     .. External Functions ..
       REAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QREAD
+      EXTERNAL LERROR,QREADR, LSTLSQ, CCPERR
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -2826,7 +2744,6 @@ C            ************************
         CALL LERROR(ISTAT,IFAIL,LINE)
 C            ************************
 C
-C
 C---- Then check that there is a file open
 C
       ELSE IF (RLUN(MINDEX).EQ.0) THEN
@@ -2853,7 +2770,7 @@ C
         ELSE
 C
 C              ******************************************
-          CALL QREAD(RLUN(MINDEX),ADATA,NCOLS(MINDEX),IERR)
+          CALL QREADR(RLUN(MINDEX),ADATA,NCOLS(MINDEX),IERR)
 C              ******************************************
 C
           IF (IERR.GT.0) THEN
@@ -2917,7 +2834,6 @@ C
 C
       END IF
 C
-C
       END
 C
 C
@@ -2934,7 +2850,6 @@ C --- Arguments :
 C
 C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
 C                               	points to both input and output files
-C
 C
 C
 C     .. Parameters ..
@@ -2960,7 +2875,7 @@ C     .. Local Scalars ..
       CHARACTER LINE*400
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QSEEK
+      EXTERNAL LERROR,QSEEK, LRBRES
 C     ..
 C     .. Common blocks ..
       COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
@@ -3026,7 +2941,6 @@ C          ******************************
 C
       NREFR(MINDX) = 0
 C
-C
       END
 C
 C
@@ -3035,7 +2949,6 @@ C     ======================================
       SUBROUTINE LRRSOL(MINDX,MINRES,MAXRES)
 C     ======================================
 C
-C
 C---- Subroutine to return the resolution range for the reflections in the
 C     MTZ file open for read on index MINDX.  (Resolution is 1/d-squared).
 C     The resolution limits are calculated when the file is written. No 'S'
@@ -3043,7 +2956,6 @@ C     column is required in MTZ files (see also subroutines LRREFF, LRREFL).
 C     If MINRES and MAXRES return as 0.0 there is no resolution limits
 C     present in the header. This will happend if H,K,L are not in the
 C     first 3 columns.
-C
 C
 C---- Arguments :
 C
@@ -3055,8 +2967,6 @@ C                               	in file (smallest number)
 C
 C     MAXRES    (O)	REAL            maximum resolution for reflections
 C                               	in file (largest number)
-C
-C
 C
 C
 C     .. Parameters ..
@@ -3124,13 +3034,11 @@ C     ===============================
 C     ===============================
 C
 C
-C
 C---- Subroutine to move to a specific reflection record in an
 C     MTZ file opened for read. Files are normally read sequentially,
 C     so this should be viewed as a special case. The file read
 C     pointer is positioned so that the next record read with a call
 C     to LRREFF or LRREFL will be the one requested.
-C
 C
 C---- Arguments:
 C
@@ -3139,7 +3047,6 @@ C                               	possible open at once)
 C
 C     REFNUM    (I)	INTEGER         the reflection record number to which
 C                               	to move in the file
-C
 C
 C
 C     .. Parameters ..
@@ -3238,7 +3145,6 @@ C     ==============================
 C     ==============================
 C
 C
-C
 C---- Subroutine to return sort order from header of MTZ file
 C
 C---- Arguments :
@@ -3250,7 +3156,6 @@ C     SORTX     (O)	INTEGER         array of dimension (5) containing sort
 C                               	order of 1st 5 columns in MTZ file
 C                               	negative numbers for descending order
 C                               	0 for not sorted
-C
 C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
@@ -3309,9 +3214,7 @@ C
           SORTX(JDO10) = ISORT(JDO10,MINDX)
    10   CONTINUE
 C
-C
       END IF
-C
 C
       END
 C
@@ -3320,7 +3223,6 @@ C
 C     ===========================================================
       SUBROUTINE LRSYMI(MINDX,NSYMPX,LTYPEX,NSPGRX,SPGRNX,PGNAMX)
 C     ===========================================================
-C
 C
 C
 C---- Subroutine to return symmetry information (other than symmetry
@@ -3342,7 +3244,6 @@ C
 C     SPGRNX    (O)	CHARACTER*10    space group name, blank if not present
 C
 C     PGNAMX    (O)	CHARACTER*10    point group name, blank if not present
-C
 C
 C
 C     .. Parameters ..
@@ -3386,7 +3287,6 @@ C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/
 C     ..
 C
-C
 C---- First check that the MINDX is valid
 C
       IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
@@ -3418,7 +3318,6 @@ C
 C
       END IF
 C
-C
       END
 C
 C
@@ -3426,7 +3325,6 @@ C
 C     ====================================
       SUBROUTINE LRSYMM(MINDX,NSYMX,RSYMX)
 C     ====================================
-C
 C
 C
 C---- Subroutine to return Symmetry operations from header of MTZ file
@@ -3441,8 +3339,6 @@ C                               	if =0 on exit then no symm info present
 C
 C     RSYMX     (O)	REAL            array of dimensions (4,4,NSYM) of
 C                               	symmetry ops on exit (max. NSYM is 96)
-C
-C
 C
 C
 C
@@ -3509,9 +3405,7 @@ C
    20     CONTINUE
    30   CONTINUE
 C
-C
       END IF
-C
 C
       END
 C
@@ -3520,7 +3414,6 @@ C
 C     ===================================
       SUBROUTINE LRTITL(MINDX,FTITLE,LEN)
 C     ===================================
-C
 C
 C
 C---- Subroutine to return the title and it's length from the
@@ -3536,8 +3429,6 @@ C                               	on output - maximum possible length 70
 C
 C     LEN       (O)	INTEGER         Length of the title string - ie no. of
 C                               	chars from start to last non-blank char
-C
-C
 C
 C
 C     .. Parameters ..
@@ -3598,7 +3489,6 @@ C
 C
       END IF
 C
-C
       END
 C
 C
@@ -3606,7 +3496,6 @@ C
 C     ====================================================
       SUBROUTINE LWASSN(MINDX,LSPRGO,NLPRGO,CTPRGO,IAPPND)
 C     ====================================================
-C
 C
 C
 C---- Subroutine to setup the column labels and column types for
@@ -3631,8 +3520,6 @@ C                               	containing the output column types
 C
 C     IAPPND    (I)	INTEGER         =0 replace all existing labels and types
 C                               	=1 append to the existing lbls & types
-C
-C
 C
 C
 C     .. Parameters ..
@@ -3672,8 +3559,7 @@ C     .. Local Scalars ..
       CHARACTER LINE*400,STROUT*400,CWORK*30
 C     ..
 C     .. Local Arrays ..
-      CHARACTER CTYPES(NTYP)*1,LTYPES(LTYP)*1,CLABTM(MCOLS)*30,
-     +          CTYPTM(MCOLS)*1
+      CHARACTER CTYPES(NTYP)*1,CLABTM(MCOLS)*30, CTYPTM(MCOLS)*1
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -3706,7 +3592,6 @@ C     .. Save statement ..
 C     ..
 C     .. Data statements ..
       DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R'/
-      DATA LTYPES/'P','A','B','C','I','F','R','?'/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -3875,7 +3760,6 @@ C
 C
 C---- Print out program labels and column labels
 C
-C
 C              ****************
           STROUT = '* Output Program Labels :'
           CALL PUTLIN(STROUT,'CURWIN')
@@ -3901,7 +3785,6 @@ C              *****************
 C
         END IF
       END IF
-C
 C
       END
 C
@@ -3939,12 +3822,12 @@ C     .. Common blocks ..
       INTEGER NWORDS,NINTGR,NREALS,IORTYP,LBCELL,MISFLG,
      +     JUMPAX,NCRYST,LCRFLG,JSCAXS,NBSCAL,NGONAX,LBMFLG,NDET,
      +     INTPAD
-      REAL   CELL,UMAT,PHIXYZ,CRYDAT,ETAD,DATUM,
+      REAL   CELL,UMAT,PHIXYZ,CRYDAT,DATUM,
      +     PHISTT,PHIEND,SCANAX,TIME1,TIME2,
      +     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD,E1,E2,E3,GONPAD,
-     +     SOURCE,S0,BEMDAT,ALAMBD,DELAMB,DELCOR,DIVHD,DIVVD,
-     +     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD,ETADH,ETADV
-      CHARACTER BTITLE*70, GONLAB*8
+     +     SOURCE,S0,BEMDAT
+     +     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD
+      CHARACTER BTITLE*70, GONLAB*8, BTITL*70
 C     
       COMMON /CBTHDR/BTITLE,GONLAB(3)
 C     
@@ -3957,10 +3840,13 @@ C
      +     GONPAD(12),SOURCE(3),S0(3),BEMDAT(25),
      +     DX1,THETA1,DETLM1(2,2),DX2,THETA2,DETLM2(2,2),DETPAD(33)
       SAVE /CBTHDR/, /MBTHDR/
+      EXTERNAL LRBRES, LRBAT, LWBAT
 C     
 C*** Equivalence undetermined number of scale factors to BSCALE
       REAL SCALES(16)
       EQUIVALENCE (SCALES(1),BSCALE)
+      REAL RNWRDS(1)
+      EQUIVALENCE (NWORDS, RNWRDS)
 C     ..
 C     .. Local Scalars ..
       INTEGER JDO10
@@ -3969,7 +3855,11 @@ C--- Set read pointer to this batch and read orientation block
 C
 C          ****************************************
       CALL LRBRES(MINDX,BATNO)
-      CALL LRBAT(MINDX,BATNO,NWORDS,BTITLE,0)
+C     NB the original of this had BTITLE in the call, but it's in common
+C     and updated during the call, so illegal
+      BTITL = BTITLE
+      CALL LRBAT(MINDX,BATNO,RNWRDS,BTITL,0)
+      BTITLE = BTITL
 C          ****************************************
 C
       IF (NBATSC .EQ. 0) THEN
@@ -3987,10 +3877,9 @@ C
 C
 C--- Write Orientation block
 C
-      CALL LWBAT(MINDX,BATNO,NWORDS,BTITLE)
+      CALL LWBAT(MINDX,BATNO,RNWRDS,BTITLE)
 C
       RETURN
-C
 C
       END
 C
@@ -4013,7 +3902,6 @@ C     BATNO     (I)	INTEGER         batch number
 C
 C     TBATCH    (I)	CHARACTER       batch title
 C
-C
 C ... Arguments
       INTEGER MINDX, BATNO
       CHARACTER*(*) TBATCH
@@ -4025,24 +3913,20 @@ C          of integers & reals
       PARAMETER (MBLENG=185,MBLINT=29,MBLREA=156)
       INTEGER RBATCH(MBLENG)
       CHARACTER*94 BTITLE
-C     
+      REAL BATCH(1)
+      EXTERNAL LWBAT
+      EQUIVALENCE (BATCH,RBATCH)
 C
-      INTEGER ISTAT,IFAIL,I
-      CHARACTER*100 LINE2
       DATA RBATCH/MBLENG*0/
-C
 C
 C Copy title
       BTITLE = TBATCH
 C
-C Set dummy lengths
+C Set dummy lengths (strictly illegal, setting BATCH)
       RBATCH(1) = MBLENG
 C
 C Write batch header
-      CALL LWBAT(MINDX,BATNO,RBATCH,BTITLE)
-C
-      RETURN
-C
+      CALL LWBAT(MINDX,BATNO,BATCH,BTITLE)
 C
       END
 C
@@ -4051,7 +3935,6 @@ C
 C     ==============================
       SUBROUTINE LWCELL(MINDX,CELLP)
 C     ==============================
-C
 C
 C
 C---- Subroutine to write Cell Parameters into the header common block
@@ -4063,8 +3946,6 @@ C                               	points to both input and output files
 C
 C     CELLP     (I)	REAL            array of dimension (6) containing cell
 C                               	parameters to write to header
-C
-C
 C
 C
 C     .. Parameters ..
@@ -4168,7 +4049,6 @@ C            ******************************************************
 
       END IF
 C
-C
       END
 C
 C
@@ -4176,7 +4056,6 @@ C
 C     ====================================================
       SUBROUTINE LWCLAB(MINDX,LSPRGO,NLPRGO,CTPRGO,IAPPND)
 C     ====================================================
-C
 C
 C
 C---- Subroutine to write the column labels and column types
@@ -4200,8 +4079,6 @@ C                               	containing the column types on entry
 C
 C     IAPPND    (I)	INTEGER         =0 replace all existing labels and types
 C                               	=1 append to the existing lbls & types
-C
-C
 C
 C
 C     .. Parameters ..
@@ -4237,7 +4114,7 @@ C     .. Local Scalars ..
       CHARACTER LINE*400,CWORK*30
 C     ..
 C     .. Local Arrays ..
-      CHARACTER CTYPES(NTYP)*1,LTYPES(LTYP)*1
+      CHARACTER CTYPES(NTYP)*1
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -4266,7 +4143,6 @@ C     .. Save statement ..
 C     ..
 C     .. Data statements ..
       DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R'/
-      DATA LTYPES/'P','A','B','C','I','F','R','?'/
 C     ..
 C
 C---- First check that the MINDX is valid
@@ -4318,7 +4194,6 @@ C              ************************
 C              ************************
 C
         ELSE
-C
 C
 C---- Then copy column information
 C
@@ -4381,7 +4256,6 @@ C
         END IF
       END IF
 C
-C
       END
 C
 C
@@ -4391,7 +4265,6 @@ C     ===============================
 C     ===============================
 C
 C
-C
 C---- Subroutine to close an MTZ file which has been opened for write.
 C     The new header information should already have been supplied by
 C     calls to other LW* routines. This subroutine writes the MTZ
@@ -4399,7 +4272,6 @@ C     header and its associated history header to the output file,
 C     writes a pointer to the headers in the first record of the file,
 C     and a machine stamp and closes the file. The headers are actually 
 C     written at the end of the file.
-C
 C
 C---- Arguments:
 C
@@ -4411,9 +4283,6 @@ C                               	=0 No MTZ info printed at all
 C                               	=1 Brief header info printed (default)
 C                               	=2 Brief header plus history
 C                               	=3 Full header dump
-C
-C
-C
 C
 C
 C
@@ -4442,12 +4311,12 @@ C     .. Arrays in Common ..
      +          CLABEL*30,PLABS*30,TITLE*70,HSCR*80
 C     ..
 C     .. Local Scalars ..
-      INTEGER ENDLOP,I,IFAIL,ISTAT,IWORD,JDO10,JDO100,JDO20,JDO30,JDO40,
+      INTEGER ENDLOP,I,IFAIL,ISTAT,JDO10,JDO100,JDO20,JDO30,JDO40,
      +        JDO50,JDO60,JDO65,JDO80,NITEM
       CHARACTER LINE*400,STROUT*400
 C     ..
 C     .. Local Arrays ..
-      INTEGER WINDEX(MBATCH),MSTAMP(1)
+      INTEGER WINDEX(MBATCH),IWORD(1)
       CHARACTER SYMCHS(96)*80
 C     ..
 C     .. External Functions ..
@@ -4455,8 +4324,8 @@ C     .. External Functions ..
       EXTERNAL LENSTR
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL BLANK,LERROR,LHPRT,LWHDRL,PUTLIN,QCLOSE,QSEEK,QWRITE,
-     +         QMODE,QWARCH,SORTUP,SYMTR3,WBATHD
+      EXTERNAL BLANK,LERROR,LHPRT,LWHDRL,PUTLIN,QCLOSE,QSEEK,
+     +         QMODE,QWARCH,SORTUP,SYMTR3,WBATHD, QWRITI
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -4499,18 +4368,11 @@ C---- - no.refls*no.cols+size of 1st record + 1
 C
         HDRST(MINDX) = NREFW(MINDX)*NCOLW(MINDX) + SIZE1 + 1
 C
-C Is QSEEK necessary ? we must be at the end of the file anyway ? or ?
-C and if we are at the end of the file, then won't we get an error ?
-C            ***********************************
-C        CALL QSEEK(WLUN(MINDX),1,HDRST(MINDX),1)
-C            ***********************************
-C
 C---- Change mode to bytes for the header record
 C
 C            **************************
         CALL QMODE(WLUN(MINDX),0,NITEM)
 C            **************************
-C
 C
 C---- MTZ Version stamp
 C
@@ -4587,7 +4449,6 @@ C                ******************************
 C
    10     CONTINUE
 C
-C
         END IF
 C
 C---- Resolution range
@@ -4633,12 +4494,10 @@ C                  **********************************************
 C
             ELSE
 C
-C
               DO 30 JDO30 = 1,NBATW(MINDX)
                 WINDEX(JDO30) = JDO30
    30         CONTINUE
             END IF
-C
 C
             DO 40 JDO40 = 1,NBATW(MINDX),12
               IF ((JDO40+11).GT.NBATW(MINDX)) THEN
@@ -4656,7 +4515,6 @@ C
    40       CONTINUE
           ELSE
 C
-C
             DO 50 JDO60 = 1,NBATCH(MINDX),12
               IF ((JDO60+11).GT.NBATCH(MINDX)) THEN
                 ENDLOP = NBATCH(MINDX)
@@ -4672,7 +4530,6 @@ C                  ******************************
 C
    50       CONTINUE
 C
-C
           END IF
         END IF
 C
@@ -4683,7 +4540,6 @@ C
 C            ******************************
         CALL LWHDRL(WLUN(MINDX),LINE(1:80))
 C            ******************************
-C
 C
 C---- And now History header (which has been filled in LWHIST)
 C
@@ -4701,7 +4557,6 @@ C                *************************************
 C                *************************************
 C
    60     CONTINUE
-C
 C
         END IF
 C
@@ -4728,7 +4583,6 @@ C                  ***********************************************
 C
    70       CONTINUE
 C
-C
           ELSE
 C
 C---- Copy input batch headers to output, use BATNUM array
@@ -4741,7 +4595,6 @@ C                  ***************************************************
 C                  ***************************************************
 C
    80       CONTINUE
-C
 C
           END IF
         END IF
@@ -4764,9 +4617,9 @@ C
         READ (LINE,FMT='(A4)') IWORD
 C
 C            **********************************
-        CALL QWRITE(WLUN(MINDX),IWORD,4)
+        CALL QWRITI(WLUN(MINDX),IWORD,4)
         CALL QMODE (WLUN(MINDX),2,NITEM)
-        CALL QWRITE(WLUN(MINDX),HDRST(MINDX),1)
+        CALL QWRITI(WLUN(MINDX),HDRST(MINDX),1)
 C       architecture info:
         CALL QWARCH(WLUN(MINDX),2)
 C            **********************************
@@ -4798,7 +4651,6 @@ C
 C
       END IF
 C
-C
       END
 C
 C
@@ -4820,7 +4672,6 @@ C
 C     LINE	(I)	CHARACTER*(*)	Character string containing header record
 C					to be written to file
 C
-C
 C     .. Scalar Arguments ..
       INTEGER ILUN
       CHARACTER LINE* (*)
@@ -4832,14 +4683,13 @@ C     .. Local Arrays ..
       INTEGER ILINE(20)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QWRITE
+      EXTERNAL QWRITI
 C     ..
-C
 C
       READ (LINE,FMT='(20A4)') (ILINE(I),I=1,20)
 C
 C          **********************
-      CALL QWRITE(ILUN,ILINE,80)
+      CALL QWRITI(ILUN,ILINE,80)
 C          **********************
 C
       END
@@ -4849,7 +4699,6 @@ C
 C     =====================================
       SUBROUTINE LWHIST(MINDX,HSTRNG,NLINES)
 C     =====================================
-C
 C
 C
 C---- Subroutine to write new history lines to history header.
@@ -4865,8 +4714,6 @@ C
 C     HSTRNG    (I)	CHARACTER       array of (NLINES) with the history lines
 C
 C     NLINES    (I)	INTEGER         number of history lines to be written
-C
-C
 C
 C
 C     .. Parameters ..
@@ -4891,7 +4738,7 @@ C     .. Arrays in Common ..
       CHARACTER CBATW*1,PLABS*30,HSCR*80
 C     ..
 C     .. Local Scalars ..
-      INTEGER ENDLOP,IFAIL,ISTAT,JDO10,JDO20,JDO5
+      INTEGER ENDLOP,IFAIL,ISTAT,JDO10,JDO20,JDO5,NLINS
       CHARACTER LINE*400
 C     ..
 C     .. Local Arrays ..
@@ -4912,6 +4759,8 @@ C     ..
 C     .. Save statement ..
       SAVE /MTZWRK/,/MTZWRC/
 C     ..
+C     NLINS is updated, NLINESshouldn't be
+      NLINS = NLINES
 C
 C---- First check that the MINDX is valid
 C
@@ -4930,9 +4779,9 @@ C
 C
 C---- Check not too many lines - if so take first NHISTL lines
 C
-        IF (NLINES.GT.NHISLM) THEN
+        IF (NLINS.GT.NHISLM) THEN
           WRITE (LINE,FMT='(A,I2,A,I2,A)')
-     +      'From LWHIST : too many history lines (',NLINES,')',NHISLM,
+     +      'From LWHIST : too many history lines (',NLINS,')',NHISLM,
      +      ' lines written'
           ISTAT = 1
 C
@@ -4940,7 +4789,7 @@ C              ************************
           CALL LERROR(ISTAT,IFAIL,LINE)
 C              ************************
 C
-          NLINES = NHISLM
+          NLINS = NHISLM
         END IF
 C
 C---- Copy existing history lines to scratch array
@@ -4949,25 +4798,24 @@ C
           HISTX(JDO5) = HSCR(JDO5,MINDX)
    10   CONTINUE
 C
-        DO 20 JDO10 = 1,NLINES
+        DO 20 JDO10 = 1,NLINS
           HSCR(JDO10,MINDX) = HSTRNG(JDO10)
    20   CONTINUE
 C
 C---- Fill up any space left with lines already in history header
 C
         IF (NHISTL(MINDX).GT.0) THEN
-          ENDLOP = NHISTL(MINDX) + NLINES
+          ENDLOP = NHISTL(MINDX) + NLINS
           IF (ENDLOP.GT.NHISLM) ENDLOP = NHISLM
-          DO 30 JDO20 = NLINES + 1,ENDLOP
-            HSCR(JDO20,MINDX) = HISTX(JDO20-NLINES)
+          DO 30 JDO20 = NLINS + 1,ENDLOP
+            HSCR(JDO20,MINDX) = HISTX(JDO20-NLINS)
    30     CONTINUE
           NHISTL(MINDX) = ENDLOP
         ELSE
-          NHISTL(MINDX) = NLINES
+          NHISTL(MINDX) = NLINS
         END IF
 
       END IF
-C
 C
       END
 C
@@ -4978,7 +4826,6 @@ C     ===============================
 C     ===============================
 C
 C
-C
 C---- Subroutine to open an MTZ file for write.
 C
 C     Arguments :
@@ -4987,8 +4834,6 @@ C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
 C                               	points to both input and output files
 C
 C     FILNAM    (I)	CHARACTER       name of file to be opened
-C
-C
 C
 C
 C
@@ -5024,7 +4869,7 @@ C     .. Local Arrays ..
       INTEGER IDUMMY(SIZE1)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QMODE,QOPEN,QWRITE
+      EXTERNAL LERROR,QMODE,QOPEN,QWRITI
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -5068,15 +4913,12 @@ C     Some of these not necc. if no read file, but do it for consistency
 C
         IF (RLUN(MINDX).EQ.0) THEN
 C
-C
           DO 10 JDO10 = 1,6
             CELL(JDO10,MINDX) = 0.0
    10     CONTINUE
 C
-C
           NSYM(MINDX) = 0
           NSYMP(MINDX) = 0
-C
 C
           DO 40 JDO40 = 1,96
             DO 30 JDO30 = 1,4
@@ -5085,7 +4927,6 @@ C
    20         CONTINUE
    30       CONTINUE
    40     CONTINUE
-C
 C
           NCOLS(MINDX) = 0
           NREFS(MINDX) = 0
@@ -5101,16 +4942,13 @@ C
           LTYPE(MINDX) = '?'
           PGNAM(MINDX) = '?'
 C
-C
           DO 50 JDO50 = 1,5
             ISORT(JDO50,MINDX) = 0
    50     CONTINUE
 C
-C
           DO 60 JDO55 = 1,MBATCH
             BATNUM(JDO55,MINDX) = 0
    60     CONTINUE
-C
 C
           DO 70 JDO60 = 1,MCOLS
             CRANGE(1,JDO60,MINDX) = 0.0
@@ -5120,7 +4958,6 @@ C
             RPOINT(JDO60,MINDX) = 0
             PLABS(JDO60,MINDX) = ' '
    70     CONTINUE
-C
 C
         END IF
 C
@@ -5151,7 +4988,7 @@ C
 C---- Write a dummy first record to the file, to be filled in LWCLOS
 C
 C              **************************
-          CALL QWRITE(IUNIN,IDUMMY,SIZE1)
+          CALL QWRITI(IUNIN,IDUMMY,SIZE1)
 C              **************************
 C
 C---- Zero a few variables
@@ -5161,14 +4998,12 @@ C
             WRANGE(2,JDO70,MINDX) = -1.0E6
    80     CONTINUE
 C
-C
           NREFW(MINDX) = 0
           NCOLW(MINDX) = 0
           NBATW(MINDX) = 0
           WSRNGE(1,MINDX) = 10.0
           WSRNGE(2,MINDX) = 0.0
           SORTB(MINDX) = .FALSE.
-C
 C
           DO 90 JDO80 = 1,MBATCH
             WOMBAT(JDO80,MINDX) = 0
@@ -5177,7 +5012,6 @@ C
         END IF
       END IF
 C
-C
       END
 C
 C
@@ -5185,7 +5019,6 @@ C
 C     =============================
       SUBROUTINE LWREFL(MINDX,ADATA)
 C     =============================
-C
 C
 C
 C---- Subroutine to write a reflection record to an MTZ file which
@@ -5204,8 +5037,6 @@ C                               	points to both input and output files
 C
 C     ADATA     (I)	REAL            array of dimension at least NCOLW(MINDX)
 C                               	containing the reflection record
-C
-C
 C
 C
 C     .. Parameters ..
@@ -5243,7 +5074,7 @@ C     .. External Functions ..
       EXTERNAL LSTLSQ
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,QWRITE
+      EXTERNAL LERROR,QWRITR
 C     ..
 C     .. Common blocks ..
       COMMON /MTZCHR/TITLE(MFILES),CLABEL(MCOLS,MFILES),
@@ -5276,7 +5107,6 @@ C
 C            ************************
         CALL LERROR(ISTAT,IFAIL,LINE)
 C            ************************
-C
 C
 C---- Then check that there is a file open
 C
@@ -5331,12 +5161,11 @@ C
 C---- Write the reflection record to file
 C
 C            **************************************
-        CALL QWRITE(WLUN(MINDX),ADATA,NCOLW(MINDX))
+        CALL QWRITR(WLUN(MINDX),ADATA,NCOLW(MINDX))
 C            **************************************
 C
 
       END IF
-C
 C
       END
 C
@@ -5345,7 +5174,6 @@ C
 C     ==============================
       SUBROUTINE LWSORT(MINDX,SORTX)
 C     ==============================
-C
 C
 C
 C---- Subroutine to write the sort order of the output file to the
@@ -5360,8 +5188,6 @@ C     SORTX     (I)	INTEGER         array of dimension (5) containing sort
 C                               	order of 1st 5 columns in MTZ file
 C                               	negative numbers for descending order
 C                               	0 for not sorted
-C
-C
 C
 C
 C     .. Parameters ..
@@ -5421,9 +5247,7 @@ C
           ISORT(JDO10,MINDX) = SORTX(JDO10)
    10   CONTINUE
 C
-C
       END IF
-C
 C
       END
 C
@@ -5433,7 +5257,6 @@ C     ================================================================
       SUBROUTINE LWSYMM(MINDX,NSYMX,NSYMPX,RSYMX,LTYPEX,NSPGRX,SPGRNX,
      +                  PGNAMX)
 C     ================================================================
-C
 C
 C
 C---- Subroutine to update the symmetry operations and information
@@ -5464,8 +5287,6 @@ C
 C     PGNAMX    (I)	CHARACTER*10    point group name, if blank not changed
 C
 C
-C
-C
 C     .. Parameters ..
       INTEGER MFILES,MCOLS,MBATCH
       PARAMETER (MFILES=3,MCOLS=200,MBATCH=1000)
@@ -5494,7 +5315,7 @@ C     .. Local Scalars ..
       CHARACTER LINE*400,STROUT*400
 C     ..
 C     .. Local Arrays ..
-      CHARACTER CTYPES(NTYP)*1,LTYPES(LTYP)*1,SYMCHS(96)*80
+      CHARACTER LTYPES(LTYP)*1,SYMCHS(96)*80
 C     ..
 C     .. External Subroutines ..
       EXTERNAL LERROR,PUTLIN,SYMTR3
@@ -5513,7 +5334,6 @@ C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/
 C     ..
 C     .. Data statements ..
-      DATA CTYPES/'H','J','F','D','Q','P','W','A','B','Y','I','R'/
       DATA LTYPES/'P','A','B','C','I','F','R','?'/
 C     ..
 C
@@ -5566,7 +5386,6 @@ C
           NSYM(MINDX) = NSYMX
           NSYMP(MINDX) = NSYMPX
 C
-C
           DO 30 JDO30 = 1,NSYMX
             DO 20 JDO20 = 1,4
               DO 10 JDO10 = 1,4
@@ -5575,7 +5394,6 @@ C
    20       CONTINUE
    30     CONTINUE
 C
-C
         END IF
 C
 C---- Then deal with the other arguments
@@ -5583,11 +5401,9 @@ C
         IF (LTYPEX.NE.' ') THEN
           ISTAT = 1
 C
-C
           DO 40 JDO40 = 1,LTYP
             IF (LTYPEX.EQ.LTYPES(JDO40)) ISTAT = 0
    40     CONTINUE
-C
 C
           IF (ISTAT.EQ.1) THEN
             WRITE (LINE,FMT='(A)')
@@ -5607,7 +5423,6 @@ C
 C
       END IF
 C
-C
       END
 C
 C
@@ -5615,7 +5430,6 @@ C
 C     ====================================
       SUBROUTINE LWTITL(MINDX,NTITLE,FLAG)
 C     ====================================
-C
 C
 C
 C---- Subroutine to update the title of an MTZ file in the header
@@ -5631,8 +5445,6 @@ C                               	 - maximum possible length 70
 C
 C     FLAG      (I)	INTEGER         =0 replace old title with new one
 C                               	=1 append new one to old, with one space
-C
-C
 C
 C
 C     .. Parameters ..
@@ -5719,7 +5531,6 @@ C
           JLEN = LENSTR(NTITLE)
           KLEN = LEN(TITLE(MINDX))
 C
-C
           IF ((ILEN+JLEN).GT.KLEN) THEN
             ISTAT = 1
             WRITE (LINE,FMT='(A,I3,A)')
@@ -5733,7 +5544,6 @@ C
             JLEN = KLEN - (ILEN+1)
           END IF
 C
-C
           IF (JLEN .GT. 0) THEN
              TITLE(MINDX) (ILEN+1:ILEN+1) = ' '
              TITLE(MINDX) (ILEN+2:ILEN+JLEN+1) = NTITLE(1:JLEN)
@@ -5742,7 +5552,6 @@ C
         END IF
 C
       END IF
-C
 C
       END
 C
@@ -5778,7 +5587,7 @@ C                               	many items in the array:-
 C                               	Nwords = 0 if no orientation
 C                               	data is present in the batch header
 C
-C     CBATCH    (O)	CHARACTER(*)*1  as RBATCH, but for character items - no
+C     CBATCH    (O)	CHARACTER*(*)   as RBATCH, but for character items - no
 C                               	nwords however
 C
 C     IPRINT    (I)	INTEGER         print indicator
@@ -5787,8 +5596,6 @@ C                                 	= 1 print batch title only
 C                                 	= 2 print orientation block as well
 C                                 	.GT. 30 print orientation block as well
 C                                    	BUT TO IPRINT unit number
-C
-C
 C
 C
 C     .. Parameters ..
@@ -5804,7 +5611,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       REAL RBATCH(MBLENG)
-      CHARACTER CBATCH(CBLENG)*1
+      CHARACTER CBATCH*(*)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
@@ -5881,22 +5688,20 @@ C---- Copy the batch info from the header arrays to the arguments
 C
       NBATR(MINDX) = NBATR(MINDX) + 1
 C
-C
       IF (NBATR(MINDX).GT.NBATCH(MINDX)) THEN
         BATNO = -1
         NBATR(MINDX) = NBATR(MINDX) - 1
       ELSE
         BATNO = BATNUM(NBATR(MINDX),MINDX)
+C       following is strictly illegal, setting NWORDS
         RBATCX = RBATR(1,NBATR(MINDX),MINDX)
-C
 C
         DO 10 JDO10 = 1,NWORDS
           RBATCH(JDO10) = RBATR(JDO10,NBATR(MINDX),MINDX)
    10   CONTINUE
 C
-C
         DO 20 JDO20 = 1,CBLENG
-          CBATCH(JDO20) = CBATR(JDO20,NBATR(MINDX),MINDX)
+          CBATCH(JDO20:JDO20) = CBATR(JDO20,NBATR(MINDX),MINDX)
    20   CONTINUE
 C
 C---- print if we want to
@@ -5904,7 +5709,6 @@ C
 C                        **************************************
         IF (IPRINT.GT.0) CALL LBPRT(BATNO,IPRINT,RBATCH,CBATCH)
 C                        **************************************
-C
 C
       END IF
 C
@@ -5930,7 +5734,6 @@ C     output MTZ file will be a standard file, and not a multi-record
 C     one, ie no batches. After this call no batch information is
 C     available to the calling program, so don't call it too soon !
 C
-C
 C---- Arguments :
 C
 C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
@@ -5947,10 +5750,9 @@ C                               	program. The first item is nwords,ie how
 C                               	many items in the array, if nword is 0
 C                               	then only the title is written to header
 C
-C     CBATCH    (I)	CHARACTER(*)*1  as RBATCH, but for character items - no
+C     CBATCH    (I)	CHARACTER(*)    as RBATCH, but for character items - no
 C                               	nwords however; title is 1st 70 chars of
 C                               	CBATCH.
-C
 C
 C
 C     .. Parameters ..
@@ -5966,7 +5768,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       REAL RBATCH(MBLENG)
-      CHARACTER CBATCH(CBLENG)*1
+      CHARACTER CBATCH*(*)
 C     ..
 C     .. Arrays in Common ..
       REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE
@@ -6051,7 +5853,6 @@ C
         IF (NBATW(MINDX).GT.0) THEN
           IF (WOMBAT(NBATW(MINDX),MINDX).GE.BATNO) THEN
 C
-C
             DO 10 JDO10 = 1,NBATW(MINDX)
               IF (WOMBAT(JDO10,MINDX).EQ.BATNO) THEN
                 WRITE (LINE2,FMT='(A,A,A,I5)') 'From LWBAT : Attempt ',
@@ -6111,14 +5912,11 @@ C
           RBATW(JDO20,NBATW(MINDX),MINDX) = RBATCH(JDO20)
    20   CONTINUE
 C
-C
         DO 30 JDO30 = 1,CBLENG
-          CBATW(JDO30,NBATW(MINDX),MINDX) = CBATCH(JDO30)
+          CBATW(JDO30,NBATW(MINDX),MINDX) = CBATCH(JDO30:JDO30)
    30   CONTINUE
 C
-C
       END IF
-C
 C
       END
 C
@@ -6131,7 +5929,6 @@ C
 C     Read next batch header from multi-record MTZ file open on
 C     unit ILUN, and return it's batch number, plus real and
 C     character arrays.
-C
 C
 C---- Arguments :
 C
@@ -6165,13 +5962,12 @@ C     .. Array Arguments ..
       CHARACTER CBATCH(CBLENG)*1
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IEND,IFGERR,ISTERR,J,K,L,NWORDS,NINTGR,NREALS,NITEM,IER
+      INTEGER I,IEND,IFGERR,ISTERR,J,L,NWORDS,NINTGR,NREALS,NITEM,IER
       CHARACTER LINE*80,LINERR*100
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LERROR,LRHDRL,QMODE,QREAD
+      EXTERNAL LERROR,LRHDRL,QMODE,QREADR
 C     ..
-C
 C
 C---- Read first header line to get NWORDS etc., and Batch number
 C
@@ -6195,33 +5991,12 @@ C
 C---- If NWORDS = 0, don't read anything else
 C
       IF (NWORDS.GT.0) THEN
-C
-C-------------------------------------------------------------------
-C---- Comment this out for now, replaced by QREAD below
-C---- Read NWORDS of RBATCH from file as BINARY (by using A format)
-C
-C        L = 0
-C
-C
-C        DO 20 J = 1,NWORDS,18
-C
-C              *******************
-C          CALL LRHDRL(ILUN,LINE)
-C              *******************
-C
-C          L = L + 1
-C          IEND = J + 17
-C          IF (IEND.GT.NWORDS) IEND = NWORDS
-C          READ (LINE,FMT='(2X,I2,18A4)') K, (RBATCH(I),I=J,IEND)
-C          IF (K.NE.L) GO TO 50
-C   20   CONTINUE
-C------------------------------------------------------------------
 Cdw---- Read NINTGR integers followed by NREALS reals as BINARY
          CALL QMODE(ILUN,6,NITEM)
-         CALL QREAD(ILUN,RBATCH(1),NINTGR,IER)
+         CALL QREADR(ILUN,RBATCH(1),NINTGR,IER)
          IF (IER.GT.0) GO TO 50
          CALL QMODE(ILUN,2,NITEM)
-         CALL QREAD(ILUN,RBATCH(NINTGR+1),NREALS,IER)
+         CALL QREADR(ILUN,RBATCH(NINTGR+1),NREALS,IER)
          IF (IER.GT.0) GO TO 50
          CALL QMODE(ILUN,0,NITEM)
 C             ********************************
@@ -6265,7 +6040,6 @@ C
 C
    60 CONTINUE
 C
-C
       END
 C
 C
@@ -6276,7 +6050,6 @@ C     ==========================================
 C
 C     Write batch header to Multi-record MTZ file open for write
 C     on ILUN, with batch number BATCH, and data in RBATCH and CBATCH
-C
 C
 C---- Arguments :
 C
@@ -6296,7 +6069,6 @@ C     CBATCH    (I)	CHARACTER(*)*1  as RBATCH, but for character items - no
 C                               	nwords however; title is 1st 70 chars of
 C                               	CBATCH.
 C
-C
 C     The lengths of the RBATCH & CBATCH arrays are parameters here!
 C
 C     .. Parameters ..
@@ -6312,11 +6084,11 @@ C     .. Array Arguments ..
 C     ..
 C     .. Local Scalars ..
       REAL RBATCX,RBATCY,RBATCZ
-      INTEGER I,IEND,J,K,L,NWORDS,NINTGR,NREALS,NITEM
+      INTEGER I,IEND,J,L,NWORDS,NINTGR,NREALS,NITEM
       CHARACTER LINE*80
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL LWHDRL,QMODE,QWRITE
+      EXTERNAL LWHDRL,QMODE,QWRITR
 C     ..
 C
 C---- Here are the important EQUIVALENCE statements
@@ -6341,11 +6113,9 @@ C     ============================
       CALL LWHDRL(ILUN,LINE(1:80))
 C     ============================
 C
-C
 C---- Write out batch title == 1st 70 characters of CBATCH
 C
       LINE = 'TITLE '
-C
 C
       DO 10 I = 1,70
         J = I + 6
@@ -6359,34 +6129,12 @@ C
 C---- If NWORDS = 0, only write out batch title
 C
       IF (NWORDS.GT.0) THEN
-C
-C----------------------------------------------------------------------
-C---- Write out NWORDS of RBATCH to file as BINARY 
-C     (by using A format)
-C     Replaced by QWRITE bit below, don't delete this yet just in case
-C
-C        K = 0
-C
-C
-C        DO 20 J = 1,NWORDS,18
-C          K = K + 1
-C          IEND = J + 17
-C          IF (IEND.GT.NWORDS) IEND = NWORDS
-C          WRITE (LINE,FMT='(''BH'',I2,18A4)') K, (RBATCH(I),I=J,IEND)
-C
-C         ============================
-C          CALL LWHDRL(ILUN,LINE(1:80))
-C         ============================
-C
-C   20   CONTINUE
-C
-C---------------------------------------------------------------------
 C---- Write out the orientation block as REALs with one QWRITE call -
 C     have to change the mode to 2 and change back to 0 after
 C
 C            *****************************
         CALL QMODE(ILUN,2,NITEM)
-        CALL QWRITE(ILUN,RBATCH(1),NWORDS)
+        CALL QWRITR(ILUN,RBATCH(1),NWORDS)
         CALL QMODE(ILUN,0,NITEM)
 C            *****************************
 C
@@ -6395,12 +6143,10 @@ C     (we need to know here how much to write!)
 C
         LINE = 'BHCH '
 C
-C
         DO 40 L = 71,CBLENG,75
           IEND = L + 74
           IF (IEND.GT.CBLENG) IEND = CBLENG
           J = 5
-C
 C
           DO 30 I = L,IEND
             J = J + 1
@@ -6413,9 +6159,7 @@ C         ============================
 C
    40   CONTINUE
 C
-C
       END IF
-C
 C
       END
 C
@@ -6447,8 +6191,6 @@ C                               	for each token
 C
 C
 C
-C            
-C
 C     .. Parameters ..
       INTEGER MCOLS,MFILES,MFILEX
       PARAMETER (MCOLS=200,MFILES=3,MFILEX=9)
@@ -6466,7 +6208,7 @@ C     .. Arrays in Common ..
       INTEGER NLUSRI,NLUSRO
 C     ..
 C     .. Local Scalars ..
-      INTEGER JDO,JLENG,JLOOP,JSTART,JTOK
+      INTEGER JDO,JLOOP,JSTART,JTOK
       CHARACTER CWORK*30,CWORK2*30,LC1*30,LC2*30,STROUT*400
 C     ..
 C     .. External Functions ..
@@ -6483,7 +6225,6 @@ C     ..
 C     .. Save statement ..
       SAVE
 C     ..
-C
 C
       JTOK = NTOK
       JSTART = 2
@@ -6513,7 +6254,6 @@ C---- Find input label assignments
 C
         DO 40 JLOOP = JSTART,NTOK,2
 C
-C
           IF ((JLOOP+1).GT.JTOK) THEN
             GO TO 50
           ELSE
@@ -6532,18 +6272,13 @@ C                **************
 C                **************
 C
             DO 10 JDO = 1,NLPRGI
-              JLENG = LENSTR(LSPRGI(JDO))
-C
-C
               IF (CWORK.EQ.LSPRGI(JDO)) THEN
                 GO TO 30
               ELSE IF (CWORK2.EQ.LSPRGI(JDO)) THEN
                 GO TO 20
               END IF
 C
-C
    10       CONTINUE
-C
 C
             STROUT = ' **** Error input assignment does not match'//
      +               ' program labels'
@@ -6581,7 +6316,6 @@ C            ***********************
 C
       END IF
 C
-C
       END
 C
 C
@@ -6610,7 +6344,6 @@ C
 C     IBEG,IEND (I)	INTEGER         arrays from the parser, delimiters
 C                               	for each token
 C
-C
 C--- Local or Common variables of interest
 C
 C    LSUSRO    user supplied label strings
@@ -6618,8 +6351,6 @@ C              L(abel) S(tring) USR() O(utput)
 C
 C    NLUSRO    number of user output "assignment labels"
 C              N(umber of) L(abels) USR() O(utput)
-C
-C
 C
 C
 C     .. Parameters ..
@@ -6639,7 +6370,7 @@ C     .. Arrays in Common ..
       CHARACTER LSUSRI*30,LSUSRO*30
 C     ..
 C     .. Local Scalars ..
-      INTEGER JDO,JLENG,JLOOP,JSTART,JTOK
+      INTEGER JDO,JLOOP,JSTART,JTOK
       CHARACTER CWORK*30,CWORK2*30,LC1*30,LC2*30,STROUT*400
 C     ..
 C     .. External Functions ..
@@ -6657,10 +6388,8 @@ C     .. Save statement ..
       SAVE
 C     ..
 C
-C
       JTOK = NTOK
       JSTART = 2
-C
 C
 C---- Keyword 
 C             LabelFC=userFC   LabelPHCAL=userPHCAL ...
@@ -6691,9 +6420,7 @@ C
 C
 C---- Find output label assignments
 C
-C
         DO 40 JLOOP = JSTART,NTOK,2
-C
 C
           IF ((JLOOP+1).GT.JTOK) THEN
             GO TO 50
@@ -6713,14 +6440,12 @@ C                **************
 C                **************
 C
             DO 10 JDO = 1,NLPRGO
-              JLENG = LENSTR(LSPRGO(JDO))
               IF (CWORK.EQ.LSPRGO(JDO)) THEN
                 GO TO 30
               ELSE IF (CWORK2.EQ.LSPRGO(JDO)) THEN
                 GO TO 20
               END IF
    10       CONTINUE
-C
 C
             STROUT = ' **** Error output assignment does not match'//
      +               ' program labels'
@@ -6743,7 +6468,6 @@ C
    40   CONTINUE
         RETURN
 C
-C
    50   STROUT = ' **** Error !!!! for LABOUT ****'
 C
         CALL PUTLIN(STROUT,'ERRWIN')
@@ -6754,7 +6478,6 @@ C            ***********************
 C
       END IF
 C
-C
       END
 C
 C
@@ -6763,7 +6486,6 @@ C     ==================================================================
       SUBROUTINE LKYSET(LSPRGI,NLPRGI,LSUSRJ,KPOINT,ITOK,NTOK,LINE,IBEG,
      +                  IEND)
 C     ==================================================================
-C
 C
 C
 C-----Subroutine to parse standard input lines of the form
@@ -6805,7 +6527,6 @@ C
 C     IBEG,IEND (I)	INTEGER         arrays from the parser, delimiters
 C                               	for each token
 C
-C
 C     .. Parameters ..
       INTEGER           MCOLS,MFILES
       PARAMETER         (MCOLS=200,MFILES=3)
@@ -6819,7 +6540,7 @@ C     .. Array Arguments ..
       CHARACTER*30      LSPRGI(*),LSUSRJ(*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER           JDO,JLENG,JLOOP,JSTART,JTOK,JDO5
+      INTEGER           JDO,JLOOP,JSTART,JTOK,JDO5
       CHARACTER         CWORK*30,CWORK2*30,LC1*30,LC2*30,STROUT*400
 C     ..
 C     .. External Functions ..
@@ -6829,7 +6550,6 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL          CCPUPC,PUTLIN
 C     ..
-C
 C
       JSTART = ITOK
       JTOK = NTOK
@@ -6865,7 +6585,6 @@ C---- Find input label assignments
 C
         DO 40 JLOOP = JSTART,NTOK,2
 C
-C
           IF ((JLOOP+1).GT.JTOK) THEN
             GO TO 50
           ELSE
@@ -6884,18 +6603,13 @@ C                **************
 C                **************
 C
             DO 10 JDO = 1,NLPRGI
-              JLENG = LENSTR(LSPRGI(JDO))
-C
-C
               IF (CWORK.EQ.LSPRGI(JDO)) THEN
                 GO TO 30
               ELSE IF (CWORK2.EQ.LSPRGI(JDO)) THEN
                 GO TO 20
               END IF
 C
-C
    10       CONTINUE
-C
 C
             STROUT = ' **** Error input assignment does not match'//
      +               ' program labels'
@@ -6935,7 +6649,6 @@ C            ***********************
 C
       END IF
 C
-C
       END
 C
 C
@@ -6944,11 +6657,9 @@ C     ====================================================
       SUBROUTINE LKYASN(MINDX,NLPRGI,LSPRGI,CTPRGI,LOOKUP)
 C     ====================================================
 C
-C
 C---- There follows a jiffy subroutine to do column assignments, bypassing
 C     the need for keyworded input. This is useful in writing little mtz
 C     programs, without using Parser in the main program.          PRE
-C
 C
 C     Read column assignments and make them, for input MTZ file 
 C     open for read on index MINDX
@@ -6958,7 +6669,6 @@ C       LABIN  program_label=file_label program_label=file_label . . .
 C
 C     This routine is useful for simple jiffy programs that don't want 
 C     full keyworded input
-C
 C
 C     MINDX	(I)	INTEGER		file index number for opened MTZ input file
 C
@@ -6978,7 +6688,6 @@ C     LOOKUP	(O)	INTEGER		array of dimension at least NLPRGI
 C					contining column numbers for each 
 C					assigned label
 C
-C
 C     .. Parameters ..
       INTEGER MFILES
       PARAMETER (MFILES=3)
@@ -6994,7 +6703,7 @@ C     .. Array Arguments ..
       CHARACTER*30 LSPRGI(*)
 C     ..
 C     .. Local Scalars ..
-      CHARACTER KEY*4,LINE*80,SUBKEY*4,LINE2*400
+      CHARACTER KEY*4,LINE*80,LINE2*400
       INTEGER NTOK,ISTAT,IFAIL
       LOGICAL LEND
 C     ..
@@ -7005,7 +6714,6 @@ C     .. Local Arrays ..
 C     ..
 C     .. External Subroutines ..
       EXTERNAL PARSER,LKYIN,LRASSN,LERROR
-C
 C
 C---- First check that the MINDX is valid
 C
@@ -7084,7 +6792,6 @@ C     ================================
 C     ================================
 C
 C
-C
 C---- Utility subroutine for MTZ routines - to output an
 C     array of character strings across the page nicely
 C     eg labels or types
@@ -7096,7 +6803,6 @@ C     LABELS    (I)	CHARACTER*(*)   Array of dimension (NLABS) containing
 C                               	the character strings to be output
 C
 C     NLABS     (I)	INTEGER         number of labels to be output
-C
 C
 C
 C     .. Scalar Arguments ..
@@ -7130,7 +6836,6 @@ C
       ICOL1 = 0
       ILEN = LEN(LABELS(1))
 C
-C
       IF (ILEN.LE.MAXLEN) THEN
 C
 C---- Loop over the strings
@@ -7140,7 +6845,6 @@ C
         DO 10 JDO10 = 1,NLABS
           ILEN = MAX(LENSTR(LABELS(JDO10)),1)
           ICOL2 = ICOL1 + ILEN
-C
 C
           IF (ICOL2.LE.MAXLEN) THEN
             STROUT(ICOL1+1:ICOL2) = LABELS(JDO10) (1:ILEN)
@@ -7164,7 +6868,6 @@ C            ***********************
 C
       END IF
 C
-C
       END
 C
 C
@@ -7172,7 +6875,6 @@ C
 C     ========================
       SUBROUTINE LPHIST(MINDX)
 C     ========================
-C
 C
 C
 C---- Subroutine to output the history information from the MTZ
@@ -7183,8 +6885,6 @@ C---- Arguments :
 C
 C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
 C                               	points to both input and output files
-C
-C
 C
 C
 C     .. Parameters ..
@@ -7284,7 +6984,6 @@ C
         END IF
       END IF
 C
-C
       END
 
 C
@@ -7293,7 +6992,6 @@ C
 C     ==============================
       SUBROUTINE LHPRT(MINDX,IPRINT)
 C     ==============================
-C
 C
 C
 C---- Subroutine to print out the header information from the MTZ
@@ -7310,8 +7008,6 @@ C                               	=2 As above plus history info
 C                               	=3 Full header dump, symmetry, alles !
 C                               	=4 As 1 plus full symmetry 
 C                               	any other value, nothing happens
-C
-C
 C
 C
 C     .. Parameters ..
@@ -7452,7 +7148,6 @@ C
             DO 10 JDO10 = 1,NCOLS(MINDX)
               CTEMP = CTYPE(JDO10,MINDX)
 C
-C
               IF ((CTEMP.EQ.'H') .OR. (CTEMP.EQ.'B') .OR.
      +            (CTEMP.EQ.'Y')) THEN
                 IMIN = NINT(CRANGE(1,JDO10,MINDX))
@@ -7472,7 +7167,6 @@ C                  ***********************
 C                  ***********************
 C
    10       CONTINUE
-C
 C
           END IF
 C
@@ -7523,11 +7217,9 @@ C---- Sort order if it is there
 C
           SORTED = .FALSE.
 C
-C
           DO 20 JDO20 = 1,5
             IF (ISORT(JDO20,MINDX).NE.0) SORTED = .TRUE.
    20     CONTINUE
-C
 C
           IF (SORTED) THEN
             STROUT = '* Sort Order :'
@@ -7555,7 +7247,6 @@ C---- Symmetry: everything for =3 or =4, else just name & number
 C
           IF ((IPRINT.EQ.3) .OR. (IPRINT.EQ.4)) THEN
 C
-C
             IF (NSYM(MINDX).GT.0) THEN
               WRITE (STROUT,FMT='(A,I3)')
      +          '* Number of Symmetry Operations  =',NSYM(MINDX)
@@ -7574,7 +7265,6 @@ C                    ***********************
 C
               END IF
 C
-C
               IF (NSPGRP(MINDX).GT.0) THEN
                 WRITE (STROUT,FMT='(A,I4,6X,A)') '* Space Group =',
      +            NSPGRP(MINDX),SPGNAM(MINDX)
@@ -7585,7 +7275,6 @@ C                    ***********************
 C
               END IF
 C
-C
               IF (LTYPE(MINDX).NE.'?') THEN
                 WRITE (STROUT,FMT='(A,A)') '* Lattice Type = ',
      +            LTYPE(MINDX)
@@ -7595,7 +7284,6 @@ C                    ***********************
 C                    ***********************
 C
               END IF
-C
 C
               IF (PGNAM(MINDX).NE.'?') THEN
                 WRITE (STROUT,FMT='(A,A)') '* Point Group Name = ',
@@ -7632,7 +7320,6 @@ C
         END IF
       END IF
 C
-C
       END
 C
 C
@@ -7665,13 +7352,11 @@ C                               	program. The first item is nwords,ie how
 C                               	many items in the array, if nword is 0
 C                               	then only the title is written to header
 C
-C     CBATCH    (I)	CHARACTER(*)*1  as RBATCH, but for character items - no
+C     CBATCH    (I)	CHARACTER*(*)   as RBATCH, but for character items - no
 C                               	nwords however; title is 1st 70 chars of
 C                               	CBATCH.
 C
-C
 C     The lengths of the RBATCH & CBATCH arrays are parameters here!
-C
 C
 C
 C     .. Parameters ..
@@ -7683,7 +7368,7 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Array Arguments ..
       REAL RBATCH(MBLENG)
-      CHARACTER CBATCH(CBLENG)*1
+      CHARACTER CBATCH*(*)
 C     ..
 C     .. Arrays in Common ..
       REAL RARRAY
@@ -7711,14 +7396,12 @@ C     first we have to get NWORDS out
 C
       RARRAY(1) = RBATCH(1)
 C
-C
       DO 10 JDO20 = 1,NWORDS
         RARRAY(JDO20) = RBATCH(JDO20)
    10 CONTINUE
 C
-C
       DO 20 JDO30 = 1,CBLENG
-        CARRAY(JDO30) = CBATCH(JDO30)
+        CARRAY(JDO30) = CBATCH(JDO30:JDO30)
    20 CONTINUE
 C
 C          *********************
@@ -7924,7 +7607,6 @@ C
 C Save it
       SAVE /CBTHDR/,/MBTHDR/
 C
-C     
 C     .. Parameters ..
       INTEGER MXLLEN,MXLLIN
       PARAMETER (MXLLEN=80,MXLLIN=50)
@@ -7967,7 +7649,6 @@ C---- Print batch number and title for all
 C     
       WRITE (STROUT,FMT='(A)') ' Batch number: '
 C
-C
       IF (IPRINT.GT.30) THEN
         WRITE (IPRINT,FMT='(A)') ' Batch number: '
 C
@@ -7979,9 +7660,7 @@ C            ***********************
 C
       END IF
 C
-C     
       WRITE (STROUT,FMT='(1X,I6,4X,A)') IBATCH,BTITLE
-C
 C
       IF (IPRINT.GT.30) THEN
         WRITE (IPRINT,FMT='(1X,I6,4X,A)') IBATCH,BTITLE
@@ -7994,7 +7673,6 @@ C            ***********************
 C
       END IF
 C
-C     
       IF (IPRINT.EQ.1) RETURN
 C                      ======
 C     
@@ -8013,23 +7691,17 @@ C
       J = LDTYPE
       IF (J .LT. 1 .OR. J .GT. 3) J=0
 C
-C
       WRITE (SOMELN, FMT=6000) IBATCH,LABTYP(J),NCRYST,CELL,LBCELL
-C
 C
       IF (IPRINT.GT.30) 
      +    WRITE (IPRINT,FMT=6000) IBATCH,LABTYP(J),NCRYST,CELL,LBCELL
 C
-C
       CALL ADDLIN(SOMELN,LINES,MXLLIN)
-C
 C
       IF (MISFLG .EQ. 0) THEN
         WRITE (SOMELN, FMT=6005) UMAT
 C
-C
         IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6005) UMAT
-C
 C
         CALL ADDLIN(SOMELN,LINES,MXLLIN)
 C
@@ -8039,28 +7711,21 @@ C
 C
         IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6006) UMAT
 C
-C
         CALL ADDLIN(SOMELN,LINES,MXLLIN)
         WRITE (SOMELN, FMT=6010) ((PHIXYZ(I,J),I=1,3),J=1,MISFLG)
-C
 C
         IF (IPRINT.GT.30) 
      +     WRITE (IPRINT, FMT=6010) ((PHIXYZ(I,J),I=1,3),J=1,MISFLG)
 C
-C
          CALL ADDLIN(SOMELN,LINES,MXLLIN)
       ENDIF
 C
-C
       WRITE (SOMELN, FMT=6020) GONLAB(1),BAXIS
-C
 C
       IF (IPRINT.GT.30) 
      +  WRITE (IPRINT, FMT=6020) GONLAB(1),BAXIS
 C
-C
       CALL ADDLIN(SOMELN,LINES,MXLLIN)
-C
 C
       IF (LCRFLG .EQ. 0) THEN
 C
@@ -8068,9 +7733,7 @@ C---- Isotropic mosaicity
 C
         WRITE (SOMELN, FMT=6030) ETAD
 C
-C
         IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6030) ETAD
-C
 C
         CALL ADDLIN(SOMELN,LINES,MXLLIN)
 C
@@ -8080,39 +7743,29 @@ C---- Anisotropic mosaicity
 C
         WRITE (SOMELN, FMT=6035) ETADH,ETADV
 C
-C
         IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6035) ETADH,ETADV
-C
 C
         CALL ADDLIN(SOMELN,LINES,MXLLIN)
       END IF
       WRITE (SOMELN, FMT=6040) (DATUM(I),I=1,NGONAX)
 C
-C
       IF (IPRINT.GT.30) 
      +    WRITE (IPRINT, FMT=6040) (DATUM(I),I=1,NGONAX)
 C
-C
       CALL ADDLIN(SOMELN,LINES,MXLLIN)
-C
 C
       IF (JSCAXS .GT. 0 .AND. JSCAXS .LE. NGONAX) THEN
         WRITE (SOMELN, FMT=6050) GONLAB(JSCAXS)
 C
-C
         IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6050) GONLAB(JSCAXS)
-C
 C
         CALL ADDLIN(SOMELN,LINES,MXLLIN)
       ENDIF
 C
-C
       WRITE (SOMELN, FMT=6060) PHISTT,PHIEND,TIME1,TIME2
-C
 C
       IF (IPRINT.GT.30) 
      +    WRITE (IPRINT, FMT=6060) PHISTT,PHIEND,TIME1,TIME2
-C
 C
       CALL ADDLIN(SOMELN,LINES,MXLLIN)
 C
@@ -8127,14 +7780,11 @@ C
         ENDIF
       ENDIF
 C
-C
       WRITE (SOMELN, FMT=6070) NGONAX,
      +     (GONLAB(J),(E123(I,J),I=1,3),J=1,3)
 C
-C
       IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6070) NGONAX,
      +     (GONLAB(J),(E123(I,J),I=1,3),J=1,3)
-C
 C
       CALL ADDLIN(SOMELN,LINES,MXLLIN)
       WRITE (SOMELN, FMT=6080) SOURCE,S0
@@ -8147,9 +7797,7 @@ C---- Monochromatic (laboratory) beam
 C
         WRITE (SOMELN, FMT=6090) ALAMBD,DELAMB
 C
-C
         IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6090)  ALAMBD,DELAMB
-C
 C
         CALL ADDLIN(SOMELN,LINES,MXLLIN)
 C
@@ -8163,7 +7811,6 @@ C
         CALL ADDLIN(SOMELN,LINES,MXLLIN)
       END IF
 C
-C
       WRITE (SOMELN, FMT=6100) NDET
       IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6100) NDET
       CALL ADDLIN(SOMELN,LINES,MXLLIN)
@@ -8175,7 +7822,6 @@ C
       IF (IPRINT.GT.30) WRITE (IPRINT, FMT=6120)
       CALL ADDLIN(SOMELN,LINES,MXLLIN)
 C
-C     
  6000 FORMAT(/1X,19('++++')//
      * ' Orientation data for batch',I8,5X,A//
      . '   Crystal number ...................',I7/
@@ -8230,7 +7876,6 @@ C
      . '   Pixel limits on detector..........',4F7.1/)
  6120 FORMAT(1X,19('++++')/)
 C
-C
 C---- Return if IPRINT.gt. 30
 C
       IF (IPRINT.GT.30) RETURN
@@ -8265,7 +7910,6 @@ C     =======================================
 C     =======================================
 C
 C
-C
 C---- Read and interpret symmetry operations
 C
 C---- Arguments :
@@ -8294,7 +7938,6 @@ C                                  	if 0 then OK,
 C                                  	gt 0, an error occurred.
 C
 C
-C
 C     .. Scalar Arguments ..
       INTEGER EFLAG,I1,NS
       CHARACTER ICOL*80
@@ -8305,10 +7948,8 @@ C     ..
 C     .. Local Scalars ..
       REAL A,S,T
       INTEGER I,ICOMST,IERR,IFOUND,IMAX,IP,ISL,J,JDO40,JDO50,JDO80,NOP,
-     +        NP,NS1,NSYM
-      CHARACTER IBLANK*1,ICH*1,ICOMMA*1,IMINUS*1,IPLUS*1,IPOINT*1,IS*1,
-     +          ISLASH*1,ISTAR*1,IX*1,IY*1,IZ*1,JS*1,JX*1,JY*1,JZ*1,
-     +          STROUT*400
+     +        NP
+      CHARACTER ICH*1, STROUT*400
 C     ..
 C     .. Local Arrays ..
       INTEGER NUM(10)
@@ -8325,18 +7966,13 @@ C     .. Save statement ..
       SAVE
 C     ..
 C     .. Data statements ..
-      DATA IS,IX,IY,IZ,IPLUS,IMINUS,ISLASH,IPOINT,ICOMMA,ISTAR,
-     +     IBLANK/'S','X','Y','Z','+','-','/','.',',','*',' '/
-      DATA JS,JX,JY,JZ/'s','x','y','z'/
       DATA NUM/1,2,3,4,5,6,7,8,9,0/
       DATA INUM/'1','2','3','4','5','6','7','8','9','0'/
 C     ..
 C
-C
       IMAX = 80
       IERR = 0
       EFLAG = 0
-      NS1 = NS
 C
 C---- Search for first blank to skip flag sym symtr symmetry
 C     or whatever
@@ -8346,14 +7982,12 @@ C
         IF (ICOL(I1:I1).EQ.'s' .OR. ICOL(I1:I1).EQ.'S') THEN
    10     CONTINUE
 C
-C
           IF (ICOL(I1:I1).EQ.' ') THEN
             GO TO 20
           ELSE
             I1 = I1 + 1
             IF (I1.LE.80) GO TO 10
           END IF
-C
 C
           WRITE (STROUT,FMT='(A)')
      +     ' Error - no space between codeword sym.. and first operator'
@@ -8367,20 +8001,17 @@ C
         END IF
       END IF
 C
-C
    20 I = I1 - 1
       NS = NS - 1
    30 CONTINUE
       NS = NS + 1
       NOP = 1
 C
-C
       DO 50 JDO50 = 1,4
         DO 40 JDO40 = 1,4
           ROT(JDO50,JDO40,NS) = 0.0
    40   CONTINUE
    50 CONTINUE
-C
 C
       ROT(4,4,NS) = 1.0
    60 CONTINUE
@@ -8398,59 +8029,51 @@ C
    70 CONTINUE
       I = I + 1
 C
-C
       IF (I.LE.IMAX) THEN
         ICH = ICOL(I:I)
 C
-C
-        IF (ICH.EQ.IBLANK) THEN
+        IF (ICH.EQ.' ') THEN
           GO TO 70
-        ELSE IF (ICH.NE.ICOMMA .AND. ICH.NE.ISTAR) THEN
+        ELSE IF (ICH.NE.',' .AND. ICH.NE.'*') THEN
           IFOUND = 1
 C
-C
-          IF (ICH.EQ.IX .OR. ICH.EQ.JX) THEN
+          IF (ICH.EQ.'X' .OR. ICH.EQ.'x') THEN
             J = 1
             IF (T.EQ.0.0) T = S
             GO TO 70
-          ELSE IF (ICH.EQ.IY .OR. ICH.EQ.JY) THEN
+          ELSE IF (ICH.EQ.'Y' .OR. ICH.EQ.'y') THEN
             J = 2
             IF (T.EQ.0.0) T = S
             GO TO 70
-          ELSE IF (ICH.EQ.IZ .OR. ICH.EQ.JZ) THEN
+          ELSE IF (ICH.EQ.'Z' .OR. ICH.EQ.'z') THEN
             J = 3
             IF (T.EQ.0.0) T = S
             GO TO 70
-          ELSE IF (ICH.EQ.IPLUS) THEN
+          ELSE IF (ICH.EQ.'+') THEN
             S = 1.0
 C
-C
             IF (T.EQ.0.0 .AND. J.EQ.4) THEN
               GO TO 70
             ELSE
               GO TO 100
             END IF
 C
-C
-          ELSE IF (ICH.EQ.IMINUS) THEN
+          ELSE IF (ICH.EQ.'-') THEN
             S = -1.0
 C
-C
             IF (T.EQ.0.0 .AND. J.EQ.4) THEN
               GO TO 70
             ELSE
               GO TO 100
             END IF
 C
-C
-          ELSE IF (ICH.EQ.ISLASH) THEN
+          ELSE IF (ICH.EQ.'/') THEN
             ISL = 1
             GO TO 70
-          ELSE IF (ICH.EQ.IPOINT) THEN
+          ELSE IF (ICH.EQ.'.') THEN
             IP = 1
             GO TO 70
           ELSE
-C
 C
             DO 80 JDO80 = 1,10
               IF (ICH.EQ.INUM(JDO80)) GO TO 90
@@ -8472,7 +8095,6 @@ C
             GO TO 70
    90       A = NUM(JDO80)
 C
-C
             IF (ISL.EQ.1) THEN
               T = T/A
             ELSE IF (IP.EQ.1) THEN
@@ -8482,19 +8104,16 @@ C
               T = 10.0*T + A*S
             END IF
 C
-C
             GO TO 70
           END IF
         END IF
       END IF
-C
 C
       IF (T.EQ.0.0 .AND. J.EQ.4) THEN
         GO TO 110
       ELSE
         ICOMST = 1
       END IF
-C
 C
   100 ROT(NOP,J,NS) = T
       J = 4
@@ -8503,7 +8122,6 @@ C
       NP = 0
       ISL = 0
       IF (ICOMST.EQ.0) GO TO 70
-C
 C
       IF (IFOUND.EQ.0 .AND. I.LE.IMAX) THEN
 C
@@ -8519,17 +8137,14 @@ C            ***********************************
 C
       END IF
 C
-C
       IF (I.LE.IMAX) THEN
         NOP = NOP + 1
-C
 C
         IF (NOP.LE.3) THEN
           GO TO 60
         ELSE
           GO TO 30
         END IF
-C
 C
       ELSE
         GO TO 120
@@ -8546,7 +8161,6 @@ C          ***********************************
 C          ***********************************
 C
       GO TO 140
-C
 C
   120 IF (NOP.NE.1 .OR. IFOUND.NE.0) THEN
         IF (NOP.EQ.3 .AND. IFOUND.EQ.1) THEN
@@ -8567,16 +8181,12 @@ C
         END IF
       END IF
       NS = NS - 1
-  130 NSYM = NS
-      IF (IERR.NE.1) RETURN
-C
+ 130  IF (IERR.NE.1) RETURN
 C
   140 STROUT = ' **SYMMETRY OPERATOR ERROR**'
       CALL PUTLIN(STROUT,'ERRWIN')
 C
-C
       EFLAG = EFLAG + 1
-C
 C
       END
 C
@@ -8585,7 +8195,6 @@ C
 C     ========================================
       SUBROUTINE SYMTR3(NSM,RSM,SYMCHS,IPRINT)
 C     ========================================
-C
 C
 C
 C---- SYMTR3(NSM,RSM)
@@ -8598,7 +8207,6 @@ C           It gives the real space operations.
 C                eg     X,Y,Z
 C                eg     -Y,X-Y, Z
 C           That is more complicated than you might think!!
-C
 C
 C---- Arguments :
 C
@@ -8614,7 +8222,6 @@ C     IPRINT    (I)	INTEGER         Print flag
 C                               	=0 No printing
 C                               	=1 Print the int tab strings
 C
-C
 C     .. Scalar Arguments ..
       INTEGER IPRINT,NSM
 C     ..
@@ -8628,7 +8235,7 @@ C     .. Local Scalars ..
 C     ..
 C     .. Local Arrays ..
       INTEGER NPNTR1(10),NPNTR2(10)
-      CHARACTER AXISCR(3)*1,HKLCR(3)*1,NUMB(9)*1
+      CHARACTER AXISCR(3)*1,NUMB(9)*1
 C     ..
 C     .. External Functions ..
       INTEGER LENSTR
@@ -8646,12 +8253,10 @@ C     ..
 C     .. Data statements ..
 C
       DATA AXISCR/'X','Y','Z'/
-      DATA HKLCR/'H','K','L'/
       DATA NUMB/'1','2','3','4','5','6','7','8','9'/
       DATA NPNTR1/0,1,1,1,0,1,0,2,3,5/
       DATA NPNTR2/0,6,4,3,0,2,0,3,4,6/
 C     ..
-C
 C
       DO 40 JDO40 = 1,NSM
 C
@@ -8660,25 +8265,20 @@ C
         SYMCHS(JDO40) = ' '
         ICH = 1
 C
-C
         DO 20 JDO20 = 1,3
 C
 C---- Ist is flag for first character of operator
 C
           IST = 0
 C
-C
           DO 10 JDO10 = 1,4
 C
-C
             IF (RSM(JDO20,JDO10,JDO40).NE.0) THEN
-C
 C
               IF (RSM(JDO20,JDO10,JDO40).GT.0.0 .AND. IST.GT.0) THEN
                 SYMCHS(JDO40) (ICH:ICH) = '+'
                 ICH = ICH + 1
               END IF
-C
 C
               IF (RSM(JDO20,JDO10,JDO40).LT.0) THEN
                 SYMCHS(JDO40) (ICH:ICH) = '-'
@@ -8686,13 +8286,11 @@ C
                 ICH = ICH + 1
               END IF
 C
-C
               IF (JDO10.NE.4) THEN
                 SYMCHS(JDO40) (ICH:ICH) = AXISCR(JDO10)
                 IST = 1
                 ICH = ICH + 1
               END IF
-C
 C
               IF (JDO10.EQ.4 .AND. RSM(JDO20,4,JDO40).NE.0) THEN
                 ITR = NINT(ABS(RSM(JDO20,4,JDO40)*12.0))
@@ -8732,10 +8330,8 @@ C                ***********************
 C
    30     CONTINUE
 C
-C
         END IF
    40 CONTINUE
-C
 C
       END
 C
@@ -8745,14 +8341,10 @@ C     =========================
       SUBROUTINE SORTUP(N,A,IN)
 C     =========================
 C
-C
 C---- Ref:  Comm. ACM VOL.12 #3 MARCH 1969, R.C.SINGLETON
 C
 C---- Routine returns order of A in IN - Index Sort, for integer array
 C     Lifted from STILLS program.
-C
-C
-C
 C
 C     .. Scalar Arguments ..
       INTEGER N
@@ -8767,16 +8359,13 @@ C     .. Local Arrays ..
       INTEGER IL(16),IU(16)
 C     ..
 C
-C
       DO 10 I = 1,N
         IN(I) = I
    10 CONTINUE
 C
-C
       M = 1
       I = 1
       J = N
-C
 C
    20 IF (I.GE.J) GO TO 100
    30 K = I
@@ -8787,7 +8376,6 @@ C
       IN(I) = T
       T = IN(IJ)
 C
-C
    40 L = J
       IF (A(IN(J)).GE.A(T)) GO TO 70
       IF (A(IN(J)).LT.A(IN(I))) GO TO 50
@@ -8796,13 +8384,11 @@ C
       T = IN(IJ)
       GO TO 70
 C
-C
    50 IN(IJ) = IN(I)
       IN(I) = IN(J)
       IN(J) = T
       T = IN(IJ)
       GO TO 70
-C
 C
    60 IN(L) = IN(K)
       IN(K) = TT
@@ -8824,7 +8410,6 @@ C
       M = M + 1
       GO TO 110
 C
-C
   100 M = M - 1
       IF (M.EQ.0) GO TO 140
       I = IL(M)
@@ -8842,10 +8427,7 @@ C
       IF (A(T).LT.A(IN(K))) GO TO 130
       IN(K+1) = T
       GO TO 120
-  140 RETURN
-C
-C
-      END
+ 140  END
 C
 C
 C
@@ -8859,7 +8441,6 @@ C     Input:  NEWLIN(MAXLIN) character array
 C
 C     Output: LINES(MAXLIN)  character array
 C             NEWLIN   cleared on output
-C
 C
       INTEGER MAXLIN
       CHARACTER*(*) NEWLIN(MAXLIN),LINES(MAXLIN)
@@ -8880,8 +8461,6 @@ C
          M = M+1
          NEWLIN(I) = ' '
  10   CONTINUE
-C
-      RETURN
       END
 C
 C
@@ -8909,7 +8488,6 @@ C
  10   CONTINUE 
 C Array full
       NEXTLN = -1
-      RETURN
       END
 C
 C
@@ -9018,7 +8596,6 @@ C
       IF (ABS(CX/TMAX).LT.QMIN) CX = ZERO
       IF (ABS(CY/TMAX).LT.QMIN) CY = ZERO
 C
-C
 C     WRITE (6,FMT=6000) AX,BX,BY,CX,CY,CZ
 C
 C---- Now for reciprocal vectors
@@ -9060,17 +8637,6 @@ C
 C---- coef of l*l
 C
       COEFLL(MINDX) = CZST*CZST
-C
-C---- Format statements
-C
-CCC 6000 FORMAT (' Direct Matrix     :',T25,1P,E15.6,2 (12X,'0.0'),/,
-CCC     +                               T25,2E15.6,12X,'0.0',/,
-CCC     +                               T25,3E15.6,/)
-CCC 6002 FORMAT (' Reciprocal Matrix :',T25,1P,E15.6,2 (12X,'0.0'),/,
-CCC     +                               T25,2E15.6,12X,'0.0',/,
-CCC     +                               T25,3E15.6,/)
-C
-C
       END
 C
 C
@@ -9090,7 +8656,6 @@ C
 C     MINDX	(I)	INTEGER		indicates which MTZ file
 C
 C     IH,IK,IL	(I)	INTEGER 	Miller indices for the reflection
-C
 C
 C
 C     .. Parameters ..
@@ -9113,10 +8678,8 @@ C     .. Save Statements ..
       SAVE /MRCPLT/
 C     ..
 C
-C
       LSTLSQ = IH*IH*COEFHH(MINDX) + IH*IK*COEFHK(MINDX) + 
      +         IH*IL*COEFHL(MINDX) + IK*IK*COEFKK(MINDX) + 
      +         IK*IL*COEFKL(MINDX) + IL*IL*COEFLL(MINDX)
-C
 C
       END

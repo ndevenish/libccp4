@@ -70,7 +70,6 @@ C     The title and symmetry information into the file header
 C
 C************ This file contains the following routines ***********
 C
-C
 C      SUBROUTINE MWRHDR(IUNIT,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,NV1,NV2,
 C      SUBROUTINE MWRHDL(IUNIT,MAPNAM,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
 C      SUBROUTINE MWRSEC(IUNIT,X,MU,MV,IU1,IU2,IV1,IV2)
@@ -94,11 +93,8 @@ C      SUBROUTINE MTTREP(TITLE,NT)
 C      SUBROUTINE MSKPUT(ASKWMT,ASKWTN)
 C      SUBROUTINE MODECV(X,BLINE,N,MODE,JB)
 C
-C
 C      INTEGER FUNCTION MSKGET(ASKWMT,ASKWTN)
 C      INTEGER FUNCTION NBYTXX(NWORD)
-C
-C
 C
 C
 C_BEGIN_MWRHDR
@@ -166,7 +162,6 @@ C                             =5, Treated as mode 0
 C                             =10, Bricked byte map
 C 
 C_END_MWRHDR
-C 
 C
 C
 C      IMPLICIT NONE
@@ -183,10 +178,8 @@ C     .. External Subroutines ..
       EXTERNAL MWRHDL
 C     ..
 C
-C
       CALL MWRHDL(IUNIT,'MAPOUT',TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,NV1,
      +            NV2,CELL,LSPGRP,LMODE)
-C
 C
       END
 C
@@ -297,27 +290,25 @@ C     .. External Functions ..
       EXTERNAL LENSTR
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QMODE,QQINQ,QOPEN,QWRITE
+      EXTERNAL QMODE,QQINQ,QOPEN, CCPERR, QWRITR
 C     ..
 C     .. Common blocks ..
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
      +       JUNK(17),ARMS,NLAB,LABELS(20,10),NCHITM,ITMHDR,ITMSC1
-      COMMON /MOHSUM/  SUMRHO, SUMRH2, OFFSTR
-      DOUBLE PRECISION SUMRHO, SUMRH2, OFFSTR
       COMMON /MSTRM/LSTRM(12)
 C     ..
 C     .. Equivalences ..
       EQUIVALENCE (NC,HEADER(1))
 C     ..
 C     .. Save statement ..
-      SAVE /MSTRM/,/MOHDR/,/MOHSUM/,FILE
+      SAVE /MSTRM/,/MOHDR/,FILE
 C     ..
 C     .. Data statements ..
 C
 C---- Number of items in header
 C
-      DATA NBHDR/256/,BLANK/'    '/
+      DATA NBHDR/256/,BLANK/'    '/, FILE/' '/
 C     ..
 C---- Check valid IUNIT
 C
@@ -340,9 +331,6 @@ C
         AMAX = -99999999.0
         AMEAN = 0.0
         ARMS  = 0.0
-        SUMRHO = 0.0
-        SUMRH2 = 0.0
-        OFFSTR = QOFFST * 1.1
         DO 30 I = 1,20
           DO 20 J = 1,10
             READ (BLANK,FMT=6002) LABELS(I,J)
@@ -411,7 +399,7 @@ C     (header really written in MCLOSE)
 C      First set mode to 2 for header
 C
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-        CALL QWRITE(LSTRM(IUNIT),HEADER,NBHDR)
+        CALL QWRITR(LSTRM(IUNIT),HEADER,NBHDR)
 C
 C---- Then reset mode to real mode,
 C     changing modes 10 & 11(12) to 0 & 2
@@ -442,7 +430,6 @@ C
       ENTRY MWFNAM(FNAME)
 C     ===================
 C
-C
 C---- Returns filename from last file open,
 C     must be called after MWRHDR
 C 
@@ -461,7 +448,6 @@ C
  6004 FORMAT (/' **MAP FILE HANDLING ERROR**')
  6006 FORMAT (/' **MWRHDL: UNIT NO. MUST BE 1 TO 12, =',I3,' **')
  6008 FORMAT (/' **PROGRAM TERMINATED**')
-C
 C
       END
 C
@@ -501,7 +487,6 @@ C_END_MWRSEC
 C
 C      IMPLICIT NONE
 C
-C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
@@ -527,7 +512,7 @@ C     .. Local Scalars ..
       INTEGER I,J,NCOLS
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QWRITE
+      EXTERNAL QWRITR, CCPERR
 C     ..
 C     .. Common blocks ..
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
@@ -541,7 +526,6 @@ C     .. Save statement ..
       SAVE /MSTRM/,/MOHDR/,/MOHSUM/
 C     ..
 C
-C
       NCOLS = IU2 - IU1 + 1
       IF (MODE.NE.2) THEN
 C
@@ -552,7 +536,7 @@ C
       ELSE
 C
         DO 10 J = IV1,IV2
-          CALL QWRITE(LSTRM(IUNIT),X(IU1,J),NCOLS)
+          CALL QWRITR(LSTRM(IUNIT),X(IU1,J),NCOLS)
    10   CONTINUE
 C
         IF(MODE.EQ.2) THEN
@@ -575,9 +559,7 @@ C    Calculate AMEAN ARMS
 C
 C---- Format statements
 C
- 6000 FORMAT (/' **MAP FILE HANDLING ERROR**',//' **MWRSEC: MODE MUST ',
-     +       'BE 2, =',I2,' **',//' **PROGRAM TERMINATED**')
-C
+ 6000 FORMAT (/' **MWRSEC: MODE MUST BE 2, =',I2)
 C
       END
 C
@@ -627,7 +609,7 @@ C     .. Local Scalars ..
       INTEGER N,J
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QWRITE
+      EXTERNAL QWRITR
 C     ..
 C     .. Common blocks ..
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
@@ -641,12 +623,11 @@ C     .. Save statement ..
       SAVE /MSTRM/,/MOHDR/,/MOHSUM/
 C     ..
 C
-C
 C---- Number of items
 C
       N = NC*NR
 C
-      CALL QWRITE(LSTRM(IUNIT),X,N)
+      CALL QWRITR(LSTRM(IUNIT),X,N)
 C
 C    Calculate AMEAN ARMS - ONLY IF MAP IS REAL*4
 C
@@ -687,7 +668,6 @@ C_BEGIN_MCLOSE
 C
       SUBROUTINE MCLOSE(IUNIT,RHMIN,RHMAX,RHMEAN,RHRMS)
 C     =================================================
-C
 C
 C---- Write out header to map file on stream IUNIT, and close it
 C  You should normally use MWCLOSE rather than this routine
@@ -743,7 +723,7 @@ C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITE, QWARCH          
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITR, QWARCH,  MSTMST        
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
@@ -799,7 +779,7 @@ C---- Write to header, reset mode to 2 first
 C
       CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
       CALL QSEEK(LSTRM(IUNIT),1,1,1)
-      CALL QWRITE(LSTRM(IUNIT),HEADER,NBHDR)
+      CALL QWRITR(LSTRM(IUNIT),HEADER,NBHDR)
 C     architecture stamp at the right position:
       CALL QWARCH (LSTRM (IUNIT), 53)
 C
@@ -813,7 +793,6 @@ C
      +       'y         =',F15.5,'   Mean density            =',F15.5,
      +       /'   Rms deviation from mean =',F15.5,/)
 C
-C
       END
 C
 C
@@ -821,7 +800,6 @@ C_BEGIN_MWCLOSE
 C
       SUBROUTINE MWCLOSE(IUNIT)
 C     =========================
-C
 C
 C---- Write out header to map file on stream IUNIT, and close it
 C  This is the recommended routine for closing a map file
@@ -844,7 +822,6 @@ C     .. Parameters ..
       PARAMETER (LUNOUT=6)
 C     ..
 C     .. Scalar Arguments ..
-      REAL RHMAX,RHMEAN,RHMIN,RHRMS
       INTEGER IUNIT
 C     ..
 C     .. Scalars in Common ..
@@ -865,7 +842,7 @@ C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITE           
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITR, MSTMST, QWARCH
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
@@ -920,7 +897,7 @@ C---- Write to header, reset mode to 2 first
 C
       CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
       CALL QSEEK(LSTRM(IUNIT),1,1,1)
-      CALL QWRITE(LSTRM(IUNIT),HEADER,NBHDR)
+      CALL QWRITR(LSTRM(IUNIT),HEADER,NBHDR)
 C     architecture stamp at the right position:
       CALL QWARCH (LSTRM (IUNIT), 53)
 C
@@ -934,7 +911,6 @@ C
      +       'y         =',F15.5,'   Mean density            =',F15.5,
      +       /'   Rms deviation from mean =',F15.5,/)
 C
-C
       END
 C
 C
@@ -942,7 +918,6 @@ C_BEGIN_MCLOSC
 C
       SUBROUTINE MCLOSC(IUNIT,RHMIN,RHMAX,RHMEAN,RHRMS)
 C     =================================================
-C
 C
 C---- Write out header to map file on stream IUNIT, and close it
 C     This routine is identical to MCLOSE except for arguments
@@ -989,14 +964,13 @@ C     .. Arrays in Common ..
       INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ,MACHST
 C     ..
 C     .. Local Scalars ..
-      REAL T
       INTEGER NBHDR,NCHHDR
 C     ..
 C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QWARCH,QWRITE           
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWARCH,QWRITR, MSTMST         
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
@@ -1006,16 +980,13 @@ C     .. Common blocks ..
      +       AMIN,AMAX,AMEAN,ISPG,NSYMBT,LSKFLG,SKWMAT(3,3),SKWTRN(3),
      +       JUNK(15),MAPST,MACHST(1),ARMS,NLAB,LABELS(20,10),NCHITM,
      +       ITMHDR,ITMSC1
-      COMMON /MOHSUM/  SUMRHO, SUMRH2, OFFSTR
-      DOUBLE PRECISION SUMRHO, SUMRH2, OFFSTR
-
       COMMON /MSTRM/LSTRM(12)
 C     ..
 C     .. Equivalences ..
       EQUIVALENCE (NC,HEADER(1))
 C     ..
 C     .. Save statement ..
-      SAVE /MSTRM/,/MOHDR/,/MOHSUM/
+      SAVE /MSTRM/,/MOHDR/
 C     ..
 C     .. Data statements ..
 C
@@ -1023,7 +994,6 @@ C---- Number of items in header
 C
       DATA NBHDR/256/
 C     ..
-C
 C
       AMEAN = RHMEAN
       ARMS = RHRMS
@@ -1045,7 +1015,7 @@ C---- Write to header, reset mode to 2 first
 C
       CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
       CALL QSEEK(LSTRM(IUNIT),1,1,1)
-      CALL QWRITE(LSTRM(IUNIT),HEADER,NBHDR)
+      CALL QWRITR(LSTRM(IUNIT),HEADER,NBHDR)
 C     architecture stamp at the right position:
       CALL QWARCH (LSTRM (IUNIT), 53)
 C
@@ -1059,7 +1029,6 @@ C
      +       'y         =',F15.5,'   Mean density            =',F15.5,
      +       /'   Rms deviation from mean =',F15.5,/)
 C
-C
       END
 C
 C
@@ -1070,7 +1039,6 @@ C     ============================
 C
 C---- Position output map before section JSEC
 C
-C 
 C  Call:  CALL MPOSNW(IUNIT,JSEC)
 C 
 C---- Parameters:
@@ -1122,7 +1090,6 @@ C
 C
       CALL QSEEK(LSTRM(IUNIT),NREC,ITMSC1,LSEC)
 C
-C
       END
 C
 C
@@ -1161,7 +1128,6 @@ C  RHRMS       (O)  rms deviation from mean density
 C
 C_END_MRDHDR
 C
-C
 C      IMPLICIT NONE
 C
 C     .. Parameters ..
@@ -1177,21 +1143,12 @@ C     .. Array Arguments ..
       REAL CELL(6)
       INTEGER IUVW(3),MXYZ(3)
 C     ..
-C     .. Local Scalars ..
-      INTEGER I,IER,J,KMODE,NBHDR,NCHHDR,NFILSZ,NW2
-
-C     ..
 C     .. Error and print control ..
       INTEGER IFAIL
       INTEGER IPRINT
-
-C     ..
-C     .. Local Arrays ..
-      REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
       EXTERNAL MRDHDS
-      INTEGER LENSTR
 C     ..
 
       IFAIL  = 0
@@ -1282,10 +1239,7 @@ C     ..
 C     .. Error and print control ..
       INTEGER IFAIL
       INTEGER IPRINT
-
 C     ..
-C     .. Local Arrays ..
-      REAL HEADER(256)
 C
 Cdw----added to seperate real and integer parts of header
 C
@@ -1294,7 +1248,8 @@ C
       CHARACTER LXYZ(3)*1
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QMODE,QQINQ,QOPEN,QREAD,QSEEK,LENSTR,QRARCH
+      EXTERNAL QMODE,QQINQ,QOPEN,QSEEK,LENSTR,QRARCH, CCPEXS,
+     +     CCPERR, QPRINT, QREADI, QREADR
       INTEGER LENSTR
       LOGICAL CCPEXS
 C     ..
@@ -1326,14 +1281,12 @@ C     .. Data statements ..
       DATA LXYZ/'X','Y','Z'/
 C     ..
 C
-C
       TITLE = ' '
 
 C     Check file exists
       IF ( .NOT. CCPEXS ( MAPNAM ) ) THEN
         IF ( IFAIL .EQ. 0 ) THEN
           WRITE(LUNOUT,FMT=6100)MAPNAM( :LENSTR(MAPNAM))
-          WRITE(LUNOUT,FMT=6014)
           CALL CCPERR(1, '**MAP FILE HANDLING ERROR**')
         ELSE
           IFAIL = -1
@@ -1349,8 +1302,8 @@ C
 C
 C---- Error conditions
 C
-        WRITE (LUNOUT,FMT=6008)
         WRITE (LUNOUT,FMT=6010) IUNIT
+        CALL CCPERR(1, '**MAP FILE HANDLING ERROR**')
       ELSE
 C
 C---- Open file
@@ -1379,131 +1332,100 @@ Cdw---- Unfortunately need to call QMODE each time we change
 C
         NITHDR = 10
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),IHDR1,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
+        CALL QREADI(LSTRM(IUNIT),IHDR1,NITHDR,IER)
+        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
 C
         NITHDR = 6
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),RHDR1,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
+        CALL QREADR(LSTRM(IUNIT),RHDR1,NITHDR,IER)
+        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
 C
         NITHDR = 3
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),IHDR2,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
+        CALL QREADI(LSTRM(IUNIT),IHDR2,NITHDR,IER)
+        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
 C
         NITHDR = 3
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),RHDR2,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
+        CALL QREADR(LSTRM(IUNIT),RHDR2,NITHDR,IER)
+        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
 C
         NITHDR = 3
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),IHDR3,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
+        CALL QREADI(LSTRM(IUNIT),IHDR3,NITHDR,IER)
+        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
 C
         NITHDR = 12
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),RHDR3,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
+        CALL QREADR(LSTRM(IUNIT),RHDR3,NITHDR,IER)
+        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
 C
         NITHDR = 17
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),IHDR4,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
+        CALL QREADI(LSTRM(IUNIT),IHDR4,NITHDR,IER)
+        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
 C
         NITHDR = 1
         CALL QMODE(LSTRM(IUNIT),2,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),RHDR4,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
+        CALL QREADR(LSTRM(IUNIT),RHDR4,NITHDR,IER)
+        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
 C
         NITHDR = 1
         CALL QMODE(LSTRM(IUNIT),6,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),IHDR5,NITHDR,IER)
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ENDIF
+        CALL QREADI(LSTRM(IUNIT),IHDR5,NITHDR,IER)
+        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
 C
 Cdw---- Read labels as bytes
 C
         NITHDR = 800
         CALL QMODE(LSTRM(IUNIT),0,NCHHDR)
-        CALL QREAD(LSTRM(IUNIT),IHDR6,NITHDR,IER)
+        CALL QREADI(LSTRM(IUNIT),IHDR6,NITHDR,IER)
 C
-        IF (IER.NE.0) THEN
-          WRITE (LUNOUT,FMT=6008)
-          WRITE (LUNOUT,FMT=6012)
-        ELSE
+        IF (IER.NE.0) CALL CCPERR(1, 'MRDHDR: Read error on map header')
 C
 C---- Change mode 5 to mode 0
 C
-          IF (MODE.EQ.5) MODE = 0
-C
-C---- Set correct mode, changing 10 & 11(12) to 0 & 2
-C
-          KMODE = MODE
-          IF (MODE.EQ.10) KMODE = 0
-          IF (MODE.EQ.11 .OR. MODE.EQ.12) KMODE = 2
-          CALL QMODE(LSTRM(IUNIT),KMODE,NCHITM(IUNIT))
-C
-          NU1 = NC1
-          NV1 = NR1
-          NW1 = NS1
-          NSEC = NS
-          NU2 = NU1 + NC - 1
-          NV2 = NV1 + NR - 1
-          NW2 = NW1 + NSEC - 1
-C
-C---- Write out header information
-C
-          IF ( IPRINT .NE. 0 ) THEN
-            WRITE (LUNOUT,FMT=6003) NC,NR,NS,MODE,NU1,NU2,NV1,NV2,NW1,
-     +      NW2,NXYZ,CEL, (LXYZ(MAPCRS(I)),I=1,3)
-            IF(MODE.NE.0) WRITE (LUNOUT,FMT=6004) AMIN,AMAX,AMEAN,ARMS
-            WRITE (LUNOUT,FMT=6005) ISPG,NLAB,
-     +            ((LABELS(I,J),I=1,20),J=1,NLAB)
-          ENDIF
+        IF (MODE.EQ.5) MODE = 0
+C       
+C----   Set correct mode, changing 10 & 11(12) to 0 & 2
+C       
+        KMODE = MODE
+        IF (MODE.EQ.10) KMODE = 0
+        IF (MODE.EQ.11 .OR. MODE.EQ.12) KMODE = 2
+        CALL QMODE(LSTRM(IUNIT),KMODE,NCHITM(IUNIT))
+C       
+        NU1 = NC1
+        NV1 = NR1
+        NW1 = NS1
+        NSEC = NS
+        NU2 = NU1 + NC - 1
+        NV2 = NV1 + NR - 1
+        NW2 = NW1 + NSEC - 1
+C       
+C----   Write out header information
+C       
+        IF ( IPRINT .NE. 0 ) THEN
+          WRITE (LUNOUT,FMT=6003) NC,NR,NS,MODE,NU1,NU2,NV1,NV2,NW1,
+     +         NW2,NXYZ,CEL, (LXYZ(MAPCRS(I)),I=1,3)
+          IF(MODE.NE.0) WRITE (LUNOUT,FMT=6004) AMIN,AMAX,AMEAN,ARMS
+          WRITE (LUNOUT,FMT=6005) ISPG,NLAB,
+     +         ((LABELS(I,J),I=1,20),J=1,NLAB)
 
-C---- Copy header information for return to calling routine
-C
-C---- Convert integer title to characters
-C
+C----     Copy header information for return to calling routine
+C         
+C----     Convert integer title to characters
+C         
           WRITE (TITLE,FMT=6006) (LABELS(I,1),I=1,20)
-C
+C         
           DO 10 I = 1,3
             IUVW(I) = MAPCRS(I)
-   10     CONTINUE
+ 10       CONTINUE
           DO 20 I = 1,3
             MXYZ(I) = NXYZ(I)
-   20     CONTINUE
+ 20       CONTINUE
           DO 30 I = 1,6
             CELL(I) = CEL(I)
-   30     CONTINUE
+ 30       CONTINUE
           LSPGRP = ISPG
           LMODE = MODE
           MODES(IUNIT) = MODE
@@ -1519,24 +1441,23 @@ C
           RHMAX = AMAX
           RHMEAN = AMEAN
           RHRMS = ARMS
-C
-C---- Get length of header in items (1024 bytes)
-C
+C         
+C----     Get length of header in items (1024 bytes)
+C         
           ITMHDR(IUNIT) = NBHDR*4/NCHITM(IUNIT)
-C
-C---- and position of first section
-C
+C         
+C----     and position of first section
+C         
           ITMSC1(IUNIT) = NSYMBT/NCHITM(IUNIT) + ITMHDR(IUNIT) + 1
-C
-C---- Position to 1st section
-C
+C         
+C----     Position to 1st section
+C         
           CALL QSEEK(LSTRM(IUNIT),1,ITMSC1(IUNIT),1)
-C
+C         
           RETURN
         END IF
       END IF
 
-      WRITE (LUNOUT,FMT=6014)
       IF ( IFAIL .EQ. 0 ) THEN
         CALL CCPERR(1, '**MAP FILE HANDLING ERROR**')
       ELSE
@@ -1544,7 +1465,6 @@ C
         RETURN
       ENDIF
 
-C
 C
 C_BEGIN_MRFNAM
 C
@@ -1577,12 +1497,8 @@ C
  6005 FORMAT (11X,'Space-group ',37 ('.'),I5,/11X,'Number of titles ',
      +       32 ('.'),I5,//' Titles :',/10 (11X,20A4,/))
  6006 FORMAT (20A4)
- 6008 FORMAT (/' **MAP FILE HANDLING ERROR**')
  6010 FORMAT (/' **MRDHDR: UNIT NO. MUST BE 1 TO 12, =',I3,' **')
- 6012 FORMAT (/' **MRDHDR: READ ERROR ON MAP HEADER**')
- 6014 FORMAT (/' **PROGRAM TERMINATED**')
  6100 FORMAT (/' **FILE DOES NOT EXIST > ' , A )
-C
 C
       END
 C
@@ -1646,7 +1562,6 @@ C
 C
       CALL QSEEK(LSTRM(IUNIT),NREC,ITMSC1(IUNIT),LSEC)
 C
-C
       END
 C
 C
@@ -1659,7 +1574,6 @@ C---- Read next line of map from stream IUNIT to array X.
 C     Map is returned in same mode as on file, ie no data conversion
 C     is done (but should be REAL)
 C
-C 
 C---- Parameters:
 C     ==========
 C 
@@ -1670,7 +1584,6 @@ C
 C   IER (O)   Error flag =0, OK   non-zero, error or end of file
 C 
 C_END_MRDLIN
-C
 C
 C     .. Scalar Arguments ..
       INTEGER IER,IUNIT
@@ -1691,7 +1604,7 @@ C     .. Local Scalars ..
       INTEGER MB
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QREAD
+      EXTERNAL QREADR
 C     ..
 C     .. Common blocks ..
       COMMON /MIHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
@@ -1705,12 +1618,10 @@ C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/
 C     ..
 C
-C
 C---- Size of section (elements)
 C
       MB = NCS(IUNIT)
-      CALL QREAD(LSTRM(IUNIT),X,MB,IER)
-C
+      CALL QREADR(LSTRM(IUNIT),X,MB,IER)
 C
       END
 C
@@ -1752,7 +1663,7 @@ C     .. Local Scalars ..
       INTEGER MB
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QREAD
+      EXTERNAL QREADR
 C     ..
 C     .. Common blocks ..
       COMMON /MIHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
@@ -1769,8 +1680,7 @@ C
 C---- Size of section (elements)
 C
       MB = NCS(IUNIT)*NRS(IUNIT)
-      CALL QREAD(LSTRM(IUNIT),X,MB,IER)
-C
+      CALL QREADR(LSTRM(IUNIT),X,MB,IER)
 C
       END
 C
@@ -1821,7 +1731,7 @@ C     .. External Functions ..
       EXTERNAL NBYTXX
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL MODECV,QREAD
+      EXTERNAL MODECV,QREADR
 C     ..
 C     .. Common blocks ..
       COMMON /MIHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
@@ -1834,7 +1744,6 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/
 C     ..
-C
 C
       NRL = NBYTXX(500)
 C
@@ -1855,7 +1764,7 @@ C
         N = NRL/NCHITM(IUNIT)
         IF (J+N-1.GT.M) N = M - J + 1
 C
-        CALL QREAD(LSTRM(IUNIT),RLINE,N,IER)
+        CALL QREADR(LSTRM(IUNIT),RLINE,N,IER)
         IF (IER.NE.0) THEN
           RETURN
         ELSE
@@ -1873,9 +1782,8 @@ C
 C
 C---- Mode real, just read
 C
-        CALL QREAD(LSTRM(IUNIT),X,M,IER)
+        CALL QREADR(LSTRM(IUNIT),X,M,IER)
       END IF
-C
 C
       END
 C
@@ -1909,9 +1817,7 @@ C     .. Save statement ..
       SAVE /MSTRM/
 C     ..
 C
-C
       CALL QCLOSE(LSTRM(IUNIT))
-C
 C
       END
 C
@@ -1962,7 +1868,7 @@ C     .. External Functions ..
       EXTERNAL NBYTXX
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPOPN,QSEEK,QWRITE
+      EXTERNAL CCPOPN,QSEEK,QWRITR, CCPERR
 C     ..
 C     .. Common blocks ..
       COMMON /MOHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
@@ -1978,79 +1884,59 @@ C
 C
 C---- Open symmetry file
 C
-      IFAIL = 1
+      IFAIL = 0
       CALL CCPOPN(IST,'SYMOP',5,1,LDUM,IFAIL)
-      IF (IFAIL.LT.0) THEN
-C
-C---- Error conditions
-C
-        WRITE (LUNOUT,FMT=6002)
-        WRITE (LUNOUT,FMT=6004)
-      ELSE
-C
+C     
 C---- Position map file to before symmetry operators
-C
-        CALL QSEEK(LSTRM(IUNIT),2,1,ITMHDR)
-C
+C     
+      CALL QSEEK(LSTRM(IUNIT),2,1,ITMHDR)
+C     
 C---- Calculate number of items
 C     / line (allowing for number of characters /
-C
-        NBLIN = (NCLIN+NCHITM-1)/NCHITM
-   10   CONTINUE
-C
+C     
+      NBLIN = (NCLIN+NCHITM-1)/NCHITM
+ 10   CONTINUE
+C     
 C---- Find correct space-group in file.
 C     Each space-group has header line of space-group number,
 C     number of line of symmetry operations
-C
-        READ (IST,FMT=*,END=30) ISG,NLIN
-        IF (ISG.EQ.LSPGRP) THEN
-          GO TO 40
-        ELSE
-C
-C---- Skip NLIN lines
-C
-          DO 20 I = 1,NLIN
-            READ (IST,FMT=*)
-   20     CONTINUE
-          GO TO 10
-        END IF
-   30   WRITE (LUNOUT,FMT=6002)
-        WRITE (LUNOUT,FMT=6006) LSPGRP
-        GO TO 60
-C
+C     
+      READ (IST,FMT=*,END=30) ISG,NLIN
+      IF (ISG.EQ.LSPGRP) THEN
+        GO TO 40
+      ELSE
+C       
+C----   Skip NLIN lines
+C       
+        DO 20 I = 1,NLIN
+          READ (IST,FMT=*)
+ 20     CONTINUE
+        GO TO 10
+      END IF
+ 30   WRITE (LUNOUT,FMT=6006) LSPGRP
+ 6006 FORMAT (/
+     +     ' **MSYPUT: NO SYMMETRY INFORMATION FOR SPACE GROUP NUMBER',
+     +     I4,' IN SYMOP FILE**')
+      CALL CCPERR(1, '**SYMMETRY FILE ERROR**')
+C     
 C---- Space-group found, copy NLIN lines of symmetry
 C     operators (NCLIN characters / line) to output file
-C
-   40   CONTINUE
-        DO 50 I = 1,NLIN
-          READ (IST,FMT=6000) JLINE
-          CALL QWRITE(LSTRM(IUNIT),JLINE,NBLIN)
-   50   CONTINUE
-C
+C     
+ 40   CONTINUE
+      DO 50 I = 1,NLIN
+        READ (IST,FMT='(20A4)') JLINE
+        CALL QWRITR(LSTRM(IUNIT),JLINE,NBLIN)
+ 50   CONTINUE
+C     
 C---- Number of characters of symmetry information
-C
-        NSYMBT = NLIN*NCLIN
-C
+C     
+      NSYMBT = NLIN*NCLIN
+C     
 C---- Position of first section
-C
-        ITMSC1 = NSYMBT/NCHITM + ITMHDR + 1
-C
-        REWIND IST
-        RETURN
-      END IF
-   60 WRITE (LUNOUT,FMT=6008)
-      CALL CCPERR(1, '**SYMMETRY FILE ERROR** in maplib.for')
-C
-C---- Format statements
-C
- 6000 FORMAT (20A4)
- 6002 FORMAT (/' **SYMMETRY FILE ERROR**')
- 6004 FORMAT (/' **MSYPUT: ERROR IN OPENING SYMOP FILE**')
- 6006 FORMAT (/' **MSYPUT: NO SYMMETRY INFORMATION FOR SPACE GROUP NUM',
-     +       'BER',I4,' IN SYMOP FILE**')
- 6008 FORMAT (/' **PROGRAM TERMINATED**')
-C
-C
+C     
+      ITMSC1 = NSYMBT/NCHITM + ITMHDR + 1
+C     
+      REWIND IST
       END
 C
 C
@@ -2072,7 +1958,6 @@ C_END_MSYMOP
 C
 C      IMPLICIT NONE
 C
-C
 C     .. Parameters ..
       INTEGER LUNOUT
       PARAMETER (LUNOUT=6)
@@ -2093,7 +1978,7 @@ C     .. Arrays in Common ..
      +        NCHITM,NCS,NR1S,NRS,NS1S,NSS,NXYZ
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,IER,ISYMC,J,KMODE,L,M,N,NBLIN,NCHINT,NILINE,NLIN
+      INTEGER I,IER,ISYMC,KMODE,N,NBLIN,NCHINT,NILINE,NLIN
       CHARACTER LINE*80
 C     ..
 C     .. Local Arrays ..
@@ -2104,7 +1989,7 @@ C     .. External Functions ..
       EXTERNAL NBYTXX
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QREAD,QSEEK,SYMFR2
+      EXTERNAL QSEEK,SYMFR2, QMODE, QREADR, CCPERR
 C     ..
 C     .. Common blocks ..
       COMMON /MIHDR/NC,NR,NS,MODE,NC1,NR1,NS1,NXYZ(3),CEL(6),MAPCRS(3),
@@ -2117,7 +2002,6 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/
 C     ..
-C
 C
       NBLIN = NBYTXX(20)
       NSYM = 0
@@ -2158,7 +2042,7 @@ C
 C
 C---- Read line from file
 C
-          CALL QREAD(LSTRM(IUNIT),JLINE,NILINE,IER)
+          CALL QREADR(LSTRM(IUNIT),JLINE,NILINE,IER)
           IF (IER.NE.0) THEN
             GO TO 30
           ELSE
@@ -2197,8 +2081,8 @@ C
 C
 C---- Error condition
 C
-   30   WRITE (LUNOUT,FMT=6006)
-        CALL CCPERR(1,'**MAP FILE HANDLING ERROR**')
+ 30     CALL CCPERR(1,
+     +   '**MSYMOP: ERROR READING SYMMETRY OPERATIONS FROM MAP FILE**')
       END IF
 C
 C---- Format statements
@@ -2207,11 +2091,6 @@ C
 C 6002 FORMAT (/21X,'Symmetry matrix',I5,5X,3F10.5,5X,F10.5,
 C     +       /2 (46X,3F10.5,5X,F10.5,/))
  6004 FORMAT (20A4)
- 6006 FORMAT (/' **MAP FILE HANDLING ERROR**',//' **MSYMOP: ERROR ON R',
-     +       'EADING SYMMETRY OPERATIONS FROM MAP FILE**',//' **PROGRA',
-     +       'M TERMINATED**')
-C
-C
       END
 C
 C
@@ -2248,14 +2127,14 @@ C     .. Local Scalars ..
       INTEGER I,IER,KMODE,NBLIN,NIN,NLIN,NOUT,JUNK
 C     ..
 C     .. Local Arrays ..
-      REAL LINE(20)
+      INTEGER LINE(20)
 C     ..
 C     .. External Functions ..
       INTEGER NBYTXX
       EXTERNAL NBYTXX
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QREAD,QSEEK,QWRITE
+      EXTERNAL QSEEK,QWRITI, QMODE, CCPERR, QREADI
 C     ..
 C     .. Common blocks ..
       COMMON /MIHDR/JUNKI(22),ISGI,NBTI,JUNKI2(232),JUNKI3(12,3),
@@ -2266,7 +2145,6 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/,/MOHDR/
 C     ..
-C
 C
       NBLIN = NBYTXX(20)
 C
@@ -2292,11 +2170,11 @@ Cdw---- Set Mode = 6 (Integer*4) for input file
 C
         CALL QMODE(LSTRM(IN),6,JUNK)
         DO 10 I = 1,NLIN
-          CALL QREAD(LSTRM(IN),LINE,NIN,IER)
+          CALL QREADI(LSTRM(IN),LINE,NIN,IER)
           IF (IER.NE.0) THEN
             GO TO 20
           ELSE
-            CALL QWRITE(LSTRM(IOUT),LINE,NOUT)
+            CALL QWRITI(LSTRM(IOUT),LINE,NOUT)
           END IF
    10   CONTINUE
 C
@@ -2310,9 +2188,7 @@ C
 C
         GO TO 30
 C
-C
-   20   WRITE (LUNOUT,FMT=6000)
-        CALL CCPERR(1,' stop in maplib 191')
+ 20     CALL CCPERR(1, '!!!! Read error on symmetry !!!!')
       END IF
 C
 C---- Item count
@@ -2322,12 +2198,6 @@ C
 C---- Position of first section
 C
       ITMS1O = NBTO/NCHITO + ITMHDO + 1
-C
-C---- Format statements
-C
- 6000 FORMAT (/' !!!! Read error on symmetry !!!!',/)
-C
-C
       END
 C
 C
@@ -2368,7 +2238,6 @@ C     .. Common blocks ..
 C     ..
       SAVE /MIHDR/, /MOHDR/
 C
-C
       DO 20 J = 1,NLABI
         DO 10 I = 1,20
           LABELO(I,J) = LABELI(I,J)
@@ -2383,7 +2252,6 @@ C
 C---- Format statements
 C
  6000 FORMAT (20A4)
-C
 C
       END
 C
@@ -2422,14 +2290,12 @@ C     .. Common blocks ..
 C     ..
       SAVE /MOHDR/
 C
-C
       NLABO = MAX(NLABO,NT)
       READ (TITLE,FMT=6000) (LABELO(I,NT),I=1,20)
 C
 C---- Format statements
 C
  6000 FORMAT (20A4)
-C
 C
       END
 C
@@ -2474,7 +2340,6 @@ C     .. Save statement ..
       SAVE /MOHDR/
 C     ..
 C
-C
       LSKFLG = 1
       DO 20 I = 1,3
         DO 10 J = 1,3
@@ -2484,7 +2349,6 @@ C
       DO 30 I = 1,3
         SKWTRN(I) = ASKWTN(I)
    30 CONTINUE
-C
 C
       END
 C
@@ -2532,7 +2396,6 @@ C     .. Save statement ..
       SAVE /MIHDR/
 C     ..
 C
-C
       MSKGET = LSKFLG
       IF (LSKFLG.NE.0) THEN
         DO 20 I = 1,3
@@ -2545,7 +2408,6 @@ C
    30   CONTINUE
       END IF
 C
-C
       END
 C
 C
@@ -2556,9 +2418,7 @@ C
 C---- Convert N items from BLINE in mode MODE to reals in X
 C     JB = number of bytes/item
 C
-C
 C      IMPLICIT NONE
-C
 C
 C     .. Parameters ..
       INTEGER LUNOUT
@@ -2575,12 +2435,11 @@ C     .. Local Scalars ..
       INTEGER I,IFAIL,II,J,K
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL CCPTOI
+      EXTERNAL CCPTOI, CCPERR
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
 C     ..
-C
 C
       J = 1
       IFAIL = 1
@@ -2645,16 +2504,8 @@ C
 C
 C---- Error
 C
-   20 WRITE (LUNOUT,FMT=6000)
-      CALL CCPERR(1,'**MAP FILE HANDLING ERROR**')
-C
-C---- Format statements
-C
- 6000 FORMAT (/' **MAP FILE HANDLING ERROR**',//' **MODECV: CONVERSION',
-     +       ' OF BYTE OR INTEGER*2 TO INTEGER UNAVAILABLE**',//' **PR',
-     +       'OGRAM TERMINATED**')
-C
-C
+ 20   CALL CCPERR(1, '**MODECV: CONVERSION'//
+     +       ' OF BYTE OR INTEGER*2 TO INTEGER UNAVAILABLE**')
       END
 C
 C
@@ -2678,9 +2529,7 @@ C     .. External Functions ..
       EXTERNAL CCPBYT
 C     ..
 C
-C
       BYT = CCPBYT(NITM)
       NBYTXX = NWORD*NITM
-C
 C
       END
