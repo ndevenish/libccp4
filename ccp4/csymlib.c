@@ -64,7 +64,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   float sg_chb[4][4],limits[2],rot1[4][4],rot2[4][4];
   FILE *filein;
   char *symopfile, *ccp4dir, filerec[80];
-  ccp4_symop *op2,opinv;
+  ccp4_symop *op2,*op3,opinv;
 
   /* spacegroup variables */
   int sg_num, sg_ccp4_num, sg_nsymp, sg_num_cent;
@@ -99,6 +99,20 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
       printf(" %f %f %f \n",op1[i].rot[1][0],op1[i].rot[1][1],op1[i].rot[1][2]);
       printf(" %f %f %f \n",op1[i].rot[2][0],op1[i].rot[2][1],op1[i].rot[2][2]);
       printf(" %f %f %f \n",op1[i].trn[0],op1[i].trn[1],op1[i].trn[2]);
+    }
+  }
+
+  /* if we are searching with symops, make sure translations are modulo 1 */
+  if (symops_provided) {
+    op3 = (ccp4_symop *) ccp4_utils_malloc(nsym1*sizeof(ccp4_symop));
+    for (i = 0; i < nsym1; ++i) {
+     for (k = 0; k < 3; ++k) {
+      for (l = 0; l < 3; ++l) {
+        op3[i].rot[k][l]=op1[i].rot[k][l];
+      }
+      op3[i].trn[k] = op1[i].trn[k];
+     }
+     ccp4spg_norm_trans(&op3[i]);
     }
   }
 
@@ -223,8 +237,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
               ccp4spg_norm_trans(&op2[i*sg_nsymp+j]);
 	     }
             }
-	    /* op1 are requested operators and op2 are from SYMINFO file */
-            if (ccp4_spgrp_equal(nsym1,op1,nsym2,op2)) {
+	    /* op3 are requested operators and op2 are from SYMINFO file */
+            if (ccp4_spgrp_equal(nsym1,op3,nsym2,op2)) {
               if (debug) printf(" ops match for sg %d ! \n",sg_num);
               free(op2);
               break;
@@ -239,6 +253,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
       }
     }
   }
+  if (symops_provided) free(op3);
 
   if (debug) 
     printf(" parser finished \n");
@@ -311,6 +326,9 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
       spacegroup->symop[i*sg_nsymp+j].trn[k] = rot1[k][3];
       spacegroup->invsymop[i*sg_nsymp+j].trn[k] = rot2[k][3];
      }
+     /* unless symops have been provided, store normalised operators */
+     ccp4spg_norm_trans(&spacegroup->symop[i*sg_nsymp+j]);
+     ccp4spg_norm_trans(&spacegroup->invsymop[i*sg_nsymp+j]);
     }
    }
   }
