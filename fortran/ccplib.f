@@ -2393,7 +2393,7 @@ C
 C     .. Scalar Arguments ..
       CHARACTER*(*) VERSION
 
-      VERSION = '3.4'
+      VERSION = '3.5'
 
       END
 C
