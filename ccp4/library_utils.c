@@ -34,6 +34,13 @@ are just generally useful (platform independent date).
 #include "ccp4_utils.h"
 #include "ccp4_errno.h"
 
+#if defined (_MVS)
+#include <tchar.h>
+#include <wchar.h>
+#include <direct.h>
+#include <io.h>
+#endif
+
 #if !defined (_MVS)
 #include <pwd.h>
 #endif
@@ -164,12 +171,16 @@ int ccp4_utils_outbuf(void)
     defined (__FreeBSD__)
   return setlinebuf(stdout);
 #else
+#if defined (_MVS)
+  return setvbuf(stdout, NULL, _IONBF, 80);
+#else
 #  if defined (_AIX)
   return -1;
 #  else
   /* Windows requires size argument, though 0 works on unix */
   return setvbuf(stdout, NULL, _IOLBF, 80);
 #  endif
+#endif
 #endif
 }
 
@@ -315,8 +326,17 @@ int ccp4_utils_mkdir (const char *path, const char *cmode)
 }
 #else
    {
-     printf("No harvesting on NT.");
-     return (-1);
+     /*printf("No harvesting on NT.");
+       return (-1);*/
+     int result;
+     result = mkdir(path);
+     
+     if (result == -1) {
+       if (errno == EEXIST) {
+	 result = 1;
+       }
+     }
+     return (result);
    }
 #endif
 
@@ -362,8 +382,9 @@ int ccp4_utils_chmod (const char *path, const char *cmode)
 }
 #else
    {
-     printf("No harvesting on NT.");
-     return (-1);
+     /*printf("No harvesting on NT.");
+       return (-1);*/
+     return (chmod(path,0x0fff));
    }
 #endif
 
