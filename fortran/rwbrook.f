@@ -43,7 +43,7 @@ C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL
       INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
-      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1
+      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*11
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Scalars ..
@@ -57,6 +57,7 @@ C     .. Common Blocks ..
       COMMON /RBRKZZ/ CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /ORTHOG/ RO(4,4),RF(4,4),NCODE
       COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
+      COMMON /RBRKSPGRP/BRKSPGRP
 C     ..
 C     .. Save ..
       SAVE /RBRKAA/,/RBRKXX/,/RBRKYY/,/RBRKZZ/,/ORTHOG/,/ORTHOGU/
@@ -111,6 +112,8 @@ C
         WBROOK(I) = ' '
         WBROOK1(I) = ' '
 50    CONTINUE
+      BRKSPGRP = ' '
+
       RETURN
       END
 C
@@ -677,7 +680,7 @@ C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL
       INTEGER FILESOPEN,NCODE,TYPE,UNIT
-      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1
+      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*11
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Variables ..
@@ -696,6 +699,7 @@ C     .. Common Blocks ..
       COMMON /RBRKZZ/ CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /ORTHOG/ RO(4,4),RF(4,4),NCODE
       COMMON /ORTHOGU/ ROU(4,4),RFU(4,4)
+      COMMON /RBRKSPGRP/BRKSPGRP
 C     ..
 C     .. Equivalences ..
       EQUIVALENCE (BROOKA,BROOK(1)),(BROOKB,WBROOK1(1)),
@@ -764,7 +768,7 @@ C==== If output PDB
 C
       ELSE IF (TYPE(II) .EQ. -1) THEN
         IF (.NOT.IFHDOUT .AND. IFCRYS) THEN
-          WRITE (UNIT(II),1000) CELL
+          WRITE (UNIT(II),1000) CELL,BRKSPGRP
           WRITE (UNIT(II),2000) (I,(RF(I,J),J=1,3),I=1,3)
           IFHDOUT = .TRUE.
         ENDIF
@@ -806,7 +810,7 @@ C
   100 CONTINUE
       ITYP = 0
       RETURN 2
- 1000 FORMAT('CRYST1',3F9.3,3F7.2)
+ 1000 FORMAT('CRYST1',3F9.3,3F7.2,1x,a11)
  2000 FORMAT( 2('SCALE',I1,4X,3F10.5,5X,'   0.00000',/),
      $          'SCALE',I1,4X,3F10.5,5X,'   0.00000')
       END
@@ -2523,6 +2527,32 @@ C
 C
 C
 C
+      SUBROUTINE WBSPGRP(SPGRP)
+C     =============================
+C
+C_BEGIN_WBSPGRP
+C
+C      SUBROUTINE WBSPGRP(SPGRP)
+C
+C Sets the internal spacegroup of a pdb file
+C
+C PARAMETERS
+C     SPGRP (I) (CHARACTER*11)
+C
+C Common Blocks
+C
+C      COMMON /RBRKSPGRP/BRKSPGRP
+C
+C_END_WBSPGRP
+C
+      CHARACTER SPGRP*(*)
+      CHARACTER BRKSPGRP*11
+      COMMON /RBRKSPGRP/BRKSPGRP
+      BRKSPGRP = SPGRP
+      END
+C
+C
+C
       SUBROUTINE RES3TO1(RESNM3,RESNM1)
 C     ================================
 C
@@ -2783,6 +2813,7 @@ C     .. Variables in Common ..
       REAL CELL, RO, RF, RR
       INTEGER FILESOPEN, NCODE, TYPE, UNIT
       CHARACTER*80 LOGUNIT
+      CHARACTER BRKSPGRP*11
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
 C     ..
 C     .. Local Scalars ..
@@ -2798,6 +2829,7 @@ C     .. Common Blocks ..
       COMMON /ORTHOG/RO(4,4),RF(4,4),NCODE
       COMMON /RBRKZZ/CELL(6),RR(3,3,6),VOL,CELLAS(6)
       COMMON /RBRKXX/ IFCRYS,IFSCAL,ITYP,MATRIX,IFHDOUT
+      COMMON /RBRKSPGRP/BRKSPGRP
 C     ..
       SAVE /ORTHOG/,/RBRKAA/,/RBRKXX/,/RBRKZZ/
 
@@ -2817,9 +2849,9 @@ C     ..
         CALL CCPERR(1,ERRLIN)
       ENDIF
       IF (ARGCELL(1) .EQ. 0.0) THEN
-        IF (IFCRYS) WRITE (UNIT(II),100) CELL
+        IF (IFCRYS) WRITE (UNIT(II),100) CELL,BRKSPGRP
       ELSE
-        WRITE(UNIT(II),100) ARGCELL
+        WRITE(UNIT(II),100) ARGCELL,BRKSPGRP
       ENDIF
 
       IF (ARGNCODE .EQ. 0) THEN
@@ -2849,7 +2881,7 @@ C     ..
 C
 C---- Format Statements
 C
- 100  FORMAT('CRYST1',3F9.3,3F7.2)
+ 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a11)
  200  FORMAT( 2('SCALE',I1,4X,3F10.5,5X,'   0.00000',/),
      $          'SCALE',I1,4X,3F10.5,5X,'   0.00000')
       END
