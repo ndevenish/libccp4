@@ -892,7 +892,7 @@ C
       SETUP = .TRUE.
       NCENT = 0
 C
-      DO 30 NC = 1,10
+      DO 30 NC = 1,12
         IN(1) = IHKL(1,NC)
         IN(2) = IHKL(2,NC)
         IN(3) = IHKL(3,NC)
