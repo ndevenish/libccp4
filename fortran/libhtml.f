@@ -396,7 +396,7 @@ C     dest= the link destination
  20     format('<a href="',a,'/',a,'">',a,'</a> ',a)
        else
         write(lpt,30)key,rest(1:lenstr(rest))
- 30     format(a,a)
+ 30     format(' Data line--- ',a,a)
        endif
       endif
       return
