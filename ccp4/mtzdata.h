@@ -135,8 +135,6 @@ typedef union { char amnf[4];
                 float fmnf;
               } MNF;
 
-/* Allow up to 50 crystals. Replace by linked list? */
-
 /** Top level of MTZ struct. */
 typedef struct { CCP4File *filein;     /**< file for reading */
                  CCP4File *fileout;    /**< file for writing */
@@ -145,7 +143,8 @@ typedef struct { CCP4File *filein;     /**< file for reading */
 		 int histlines;        /**< number of lines in hist */
 		 int nxtal;            /**< number of crystals */
                  int ncol_read;        /**< number of columns from file */
-		 int nref;             /**< number of reflections */
+		 int nref;             /**< total number of reflections */
+		 int nref_filein;      /**< number of reflections from input file */
                  int refs_in_memory;   /**< whether reflections are held in memory */
 		 int n_orig_bat;       /**< original number of batches */
                  float resmax_out;     /**< output file max res */

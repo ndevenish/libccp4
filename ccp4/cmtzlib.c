@@ -277,6 +277,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   if (debug) 
     printf(" MtzGet: created mtz \n");
   mtz->filein = filein;
+  mtz->nref_filein = nref;
   mtz->nref = nref;
   mtz->ncol_read = ntotcol;
   mtz->n_orig_bat = nbat;
@@ -585,7 +586,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
   if (read_refs) {
 
     /* Read all reflections into memory - make this optional? */
-    for (i = 0; i < mtz->nref; ++i) {
+    for (i = 0; i < mtz->nref_filein; ++i) {
       MtzRrefl(filein, ntotcol, refldata);
       for (j = 0; j < ntotcol; ++j)
         colin[j]->ref[i] = refldata[j];
@@ -692,6 +693,8 @@ int MtzRrefl(CCP4File *filein, int ncol, float *refldata) {
   ccp4_file_setmode(filein,2);
   istat = ccp4_file_read(filein, (uint8 *) refldata, ncol);
 
+  /* This will return EOF if end-of-file is reached. But by then
+     you will have read the MTZ file header, so not so useful. */
   return istat;
 }
 
@@ -1186,12 +1189,12 @@ int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int i
   double coefhkl[6];
 
   /* If we are past the last reflection, indicate this with return value. */
-  if (iref > mtz->nref) 
+  if (iref > mtz->nref_filein) 
     return 1;
 
   /* If reflections not in memory, read next record from file. */
   if (!mtz->refs_in_memory) {
-    MtzRrefl( mtz->filein, mtz->ncol_read, refldata);
+    if (MtzRrefl( mtz->filein, mtz->ncol_read, refldata) == EOF) return 1;
   }
 
  /* Loop over all columns in the MTZ struct, and select those which
@@ -1245,12 +1248,12 @@ int ccp4_lrreff(const MTZ *mtz, float *resol, float adata[], int logmss[],
   union float_uint_uchar uf;
 
   /* If we are past the last reflection, indicate this with return value. */
-  if (iref > mtz->nref) 
+  if (iref > mtz->nref_filein) 
     return 1;
 
   /* If reflections not in memory, read next record from file. */
   if (!mtz->refs_in_memory) {
-    MtzRrefl( mtz->filein, mtz->ncol_read, refldata);
+    if (MtzRrefl( mtz->filein, mtz->ncol_read, refldata) == EOF) return 1;
   }
 
   if (strncmp (mtz->mnf.amnf,"NAN",3) == 0) {
