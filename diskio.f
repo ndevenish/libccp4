@@ -628,3 +628,42 @@ C     for correct typing of qread/write calls
       COMPLEX      BUFFER(*)
       CALL QWRITE (IUNIT,BUFFER,NITEMS)
       END
+C======================================================================
+C_BEGIN_QISNAN
+C
+C QISNAN - check for `magic number'
+C
+C Usage:  LOGICAL FUNCTION QISNAN (VALUE)
+C
+C Input:  VALUE         REAL value to test
+C
+C     Returns .true. if VALUE is a `magic number' indicating the
+C     absence of data.  In the current implementation, this is a NaN in
+C     IEEE or Rop on a VAX or Convex native.  Any NaN (or Infinity)
+C     will return .true.
+C
+C_END_QISNAN
+C======================================================================
+      LOGICAL FUNCTION QISNAN (VALUE)
+      REAL VALUE
+      INTEGER CISNAN
+      EXTERNAL CISNAN
+      QISNAN = CISNAN (VALUE) .NE. 0
+      END
+C======================================================================
+C_BEGIN_QNAN
+C
+C QNAN - return canonical `magic number'
+C
+C Usage:  REAL FUNCTION QNAN ()
+C
+C     Returns a `magic number' which can be used to indicate the absence
+C     of data in an MTZ file.  In the current implementation, this is a
+C     NaN in IEEE or Rop on a VAX or Convex native.
+C
+C_END_QNAN
+C======================================================================
+      REAL FUNCTION QNAN()
+      EXTERNAL CNAN
+      CALL CNAN(QNAN)
+      END
