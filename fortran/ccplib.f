@@ -2551,7 +2551,7 @@ C_BEGIN_LITEND
 C        =============================
 C
 C---- Check endedness, Returns TRUE if little endian (VAX, FX2800,
-C                                                   Ultrix, Convex)
+C                                                   Ultrix)
 C                              FALSE if big endian (IBM,IRIS,ESV)
 C
 C Arguments:
@@ -2724,13 +2724,33 @@ C
       INTEGER IFLAG
       CHARACTER MSG* (*)
       EXTERNAL LUNSTO, LENSTR
-      INTEGER PFLAG, LUNSTO, LENSTR
+      INTEGER PFLAG, LUNSTO, LENSTR, LL, LX, LS
       SAVE PFLAG
       DATA PFLAG /-1/
 C
       IF (PFLAG.EQ.-1) PFLAG = IFLAG
-      IF (IFLAG.LE.PFLAG) WRITE (LUNSTO(1),'(1x, A)')
-     +     MSG(1:LENSTR(MSG))
+      IF (IFLAG.LE.PFLAG) THEN
+        LL = LENSTR (MSG)
+        IF (LL.GE.132) THEN
+C         break lines longer than 132 characters for VMS
+          LX = 1
+          LS = 131
+ 10       CONTINUE
+          WRITE (LUNSTO(1),'(1X, A)') MSG(LX:LS)
+          IF (LS.EQ.LL) GOTO 20
+          LX = LS  + 1
+          LS = LS + 130
+          IF (LS.GT.LL) LS = LL
+          GO TO 10
+        ELSE
+          IF (LL.EQ.0) THEN
+            WRITE(LUNSTO(1),'()')
+          ELSE
+            WRITE (LUNSTO(1),'(1X, A)') MSG(1:LL)
+          END IF
+        END IF
+ 20     CONTINUE
+      END IF
       END
 C
 C
