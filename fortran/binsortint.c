@@ -394,10 +394,10 @@ char            *record;
       fclose(filin);
       return(-1);		/* normal EOF */
     }
+    reterr=ferror(filin);
     fclose(filin);
     if (status != 0)
       return (status);		/* sub-process abended */
-    reterr=ferror(filin);
     if (reterr != 0) {
       return (reterr);
     } else			/* e.g. premature EOF */
