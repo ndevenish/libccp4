@@ -430,6 +430,7 @@ C---- Scale cards - extract and calculate rotation and trans matrices
 C
           ELSE IF (IRTYPE.EQ.'SCAL') THEN
             ITYP=2
+            IFSCAL = .TRUE.
             MATRIX=.FALSE.
             DO 80 I=1,3
               IF(IE.NE.IEC(I))GO TO 80
@@ -453,18 +454,24 @@ C
      +             + RO(1,2)*(RO(2,3)*RO(3,1) - RO(2,1)*RO(3,3))
      +             + RO(1,3)*(RO(2,1)*RO(3,2) - RO(2,2)*RO(3,1))
 
-            ERROR = ABS(VOLCHK - VOL) /VOL
-            IF (ERROR .GT. 0.02) then
-              WRITE (ERRLIN,'(A,F15.4)')
-     +        ' Unit cell volume generated from SCALEi cards', VOLCHK
-              CALL CCPERR(2,ERRLIN)
-              WRITE (ERRLIN,'(A,F15.4)')
-     +        ' Percentage error is                        ', ERROR
+            IF (VOL.GT.0.0) THEN
+              ERROR = ABS(VOLCHK - VOL) /VOL
+              IF (ERROR .GT. 0.02) then
+                WRITE (ERRLIN,'(A,F15.4)')
+     +          ' Unit cell volume generated from SCALEi cards', VOLCHK
+                CALL CCPERR(2,ERRLIN)
+                WRITE (ERRLIN,'(A,F15.4)')
+     +          ' Percentage error is                        ', ERROR
+                CALL CCPERR(2,ERRLIN)
+              END IF
+
+              IF (ERROR .GT. 0.1.AND.IFAIL.EQ.0) call ccperr(1,
+     +    'Error in rwbrook.f - disagreement between cell and PDB file')
+            ELSE
+              WRITE (ERRLIN,'(A)')
+     +        ' No unit cell volume currently stored'
               CALL CCPERR(2,ERRLIN)
             END IF
-
-            IF (ERROR .GT. 0.1.AND.IFAIL.EQ.0) call ccperr(1,
-     +  'Error in rwbrook.f - disagreement between cell and PDB file')
 
             DO 110 IORTH=1,6
               DO 120 I=1,3
@@ -579,6 +586,17 @@ C     Generate ROU and RFU for AnisoU stuff
          END DO 
          CALL RBRINV(RFU,ROU)
        END IF 
+C     If reading in: check SCAL and CRYST1 cards
+      IF (IFILTYP.EQ.1 .AND. LRWSTAT(1:5).EQ.'INPUT') THEN
+        IF (.NOT.IFCRYS) THEN
+          WRITE(ERRLIN,FMT='(A,A)') ' NO CRYST CARDS READ FROM ',LOGNAM
+          CALL CCPERR (2,ERRLIN)
+        END IF
+        IF (.NOT.IFSCAL) THEN
+          WRITE(ERRLIN,FMT='(A,A)') ' NO SCALE CARDS READ FROM ',LOGNAM
+          CALL CCPERR (2,ERRLIN)
+        END IF
+      END IF
       RETURN
       END
 C
