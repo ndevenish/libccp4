@@ -4794,10 +4794,8 @@ C
         END IF
         IF( QISNAN(VAL_MISS(2,MINDX)))  THEN
           WRITE (LINE,FMT='(A4,1X,A4)') 'VALM',' NAN'
-          WRITE (6,FMT='(1X,A4,1X,A4)') 'VALM',' NAN'
         ELSE
           WRITE (LINE,FMT='(A4,1X,F18.5)') 'VALM',VAL_MISS(2,MINDX)
-          WRITE (6,FMT='(1X,A4,1X,F18.5)') 'VALM',VAL_MISS(2,MINDX)
         END IF
 C
 C            ******************************
@@ -4808,19 +4806,9 @@ C
 C---- Column info - labels, types, ranges
 C
         DO 20 JDO20 = 1,NCOLW(MINDX)
-         IF( QISNAN(WRANGE(1,JDO20,MINDX)))
-     +   WRITE (6,FMT='(1X,A,1X,A4,2I3)') 'WRANGE(1,JDO20,MINDX)',
-     +   ' NAN',JDO20,MINDX
          IF (QISNAN(WRANGE(1,JDO20,MINDX))) WRANGE(1,JDO20,MINDX)=0
-         IF (QISNAN(WRANGE(2,JDO20,MINDX)))
-     +   WRITE (6,FMT='(1X,A,1X,A4,2I3)') 'WRANGE(2,JDO20,MINDX)',
-     +   ' NAN',JDO20,MINDX
          IF( QISNAN(WRANGE(2,JDO20,MINDX))) WRANGE(2,JDO20,MINDX)=999
           WRITE (LINE,FMT='(A6,1X,A,1X,A,1X,2F19.4)') 
-     +      'COLUMN',
-     +      CLABEL(JDO20,MINDX),CTYPE(JDO20,MINDX),
-     +      WRANGE(1,JDO20,MINDX),WRANGE(2,JDO20,MINDX)
-          WRITE (6,FMT='(1X,A6,1X,A,1X,A,1X,2F19.4)') 
      +      'COLUMN',
      +      CLABEL(JDO20,MINDX),CTYPE(JDO20,MINDX),
      +      WRANGE(1,JDO20,MINDX),WRANGE(2,JDO20,MINDX)
@@ -6613,9 +6601,9 @@ C     ..
 C
       JTOK = NTOK
       JSTART = 2
-      DO 5 JDO = 1,NLPRGI
+      DO 10 JDO = 1,NLPRGI
         SetPrgLab(JDO) = .FALSE.
-    5 CONTINUE
+   10 CONTINUE
 C
 C---- Keyword  LABIN  item1=name1 item2=name2 ...
 C
@@ -6640,10 +6628,10 @@ C
 C
 C---- Find input label assignments
 C
-        DO 40 JLOOP = JSTART,NTOK,2
+        DO 70 JLOOP = JSTART,NTOK,2
 C
           IF ((JLOOP+1).GT.JTOK) THEN
-            GO TO 50
+            GO TO 80
           ELSE
             CWORK = LINE(IBEG(JLOOP) :IEND(JLOOP))
             LC1 = CWORK
@@ -6661,35 +6649,29 @@ C                **************
 C
 C           first try to match file label to left of assignment
 C           (canonical order) after capitalisation
-            DO 10 JDO = 1,NLPRGI
+            DO 20 JDO = 1,NLPRGI
               IF (CWORK.EQ.LSPRGI(JDO)) THEN
-                IF (SetPrgLab(JDO)) THEN
-C
-C                      ************************************************
-                  CALL PUTLIN(' Maybe MTZ column label clashing with'//
-     .                  ' program label','ERRWIN')
-                  CALL CCPERR(1,' ERROR Program label assigned twice')
-C                      ************************************************
-C
-                ENDIF
-                GO TO 30
+                IF (SetPrgLab(JDO)) GOTO 30
+                GO TO 60
               ENDIF
-   10       CONTINUE
+   20       CONTINUE
 C           else, try to match file label on rhs as an option
-            DO 11 JDO = 1,NLPRGI
+   30       DO 40 JDO = 1,NLPRGI
               IF (CWORK2.EQ.LSPRGI(JDO)) THEN
                 IF (SetPrgLab(JDO)) THEN
+                 WRITE (STROUT,FMT=
+     +            '('' ERROR with label assignments '',A,'' and '',A)') 
+     +            CWORK(1:LENSTR(CWORK)),CWORK2(1:LENSTR(CWORK2))
 C
-C                      ************************************************
-                  CALL PUTLIN(' Maybe MTZ column label clashing with'//
-     .                  ' program label','ERRWIN')
+C                      ***********************************************
+                  CALL PUTLIN(STROUT,'ERRWIN')
                   CALL CCPERR(1,' ERROR Program label assigned twice')
-C                      ************************************************
+C                      ***********************************************
 C
                 ENDIF
-                GO TO 20
+                GO TO 50
               ENDIF
-   11       CONTINUE
+   40       CONTINUE
 C
 C                ***********************
             CALL PUTLIN(' **** Error input assignment does not match'//
@@ -6697,25 +6679,33 @@ C                ***********************
 C                ***********************
 C
             WRITE (STROUT,FMT=
-     +        '(''  Neither '',A,'' nor '',A,'' recognised'')') CWORK(1:
-     +        LENSTR(CWORK)),CWORK2(1:LENSTR(CWORK2))
+     +        '(''  Neither '',A,'' nor '',A,'' recognised'')')
+     +         CWORK(1:LENSTR(CWORK)),CWORK2(1:LENSTR(CWORK2))
 C
 C                ***********************
             CALL PUTLIN(STROUT,'ERRWIN')
 C                ***********************
 C
-            GO TO 40
-   20       NLUSRI(MINDX) = NLUSRI(MINDX) + 1
+            WRITE (STROUT,FMT=
+     +        '(''  OR maybe '',A,'' has been assigned twice '')')
+     +        CWORK(1:LENSTR(CWORK))
+C
+C                ***********************
+            CALL PUTLIN(STROUT,'ERRWIN')
+C                ***********************
+C
+            GO TO 70
+   50       NLUSRI(MINDX) = NLUSRI(MINDX) + 1
             LSUSRI(MINDX,JDO) = LC1
             SetPrgLab(JDO) = .TRUE.
-            GO TO 40
-   30       NLUSRI(MINDX) = NLUSRI(MINDX) + 1
+            GO TO 70
+   60       NLUSRI(MINDX) = NLUSRI(MINDX) + 1
             LSUSRI(MINDX,JDO) = LC2
             SetPrgLab(JDO) = .TRUE.
           END IF
-   40   CONTINUE
+   70   CONTINUE
         RETURN
-   50   CONTINUE
+   80   CONTINUE
 C
 C            ***********************
         CALL PUTLIN(' **** Error !!!! for LABIN ****','ERRWIN')
@@ -7003,28 +6993,22 @@ C                **************
 C
             DO 20 JDO = 1,NLPRGI
               IF (CWORK.EQ.LSPRGI(JDO)) THEN
-                IF (SetPrgLab(JDO)) THEN
-C
-C                      ************************************************
-                  CALL PUTLIN(' Maybe MTZ column label clashing with'//
-     .                  ' program label','ERRWIN')
-                  CALL CCPERR(1,' ERROR Program label assigned twice')
-C                      ************************************************
-C
-                ENDIF
+                IF (SetPrgLab(JDO)) GOTO 25
                 GO TO 50
               ENDIF
    20       CONTINUE
 
-            DO 30 JDO = 1,NLPRGI
+   25       DO 30 JDO = 1,NLPRGI
               IF (CWORK2.EQ.LSPRGI(JDO)) THEN
                 IF (SetPrgLab(JDO)) THEN
+                 WRITE (STROUT,FMT=
+     +            '('' ERROR with label assignments '',A,'' and '',A)') 
+     +            CWORK(1:LENSTR(CWORK)),CWORK2(1:LENSTR(CWORK2))
 C
-C                      ************************************************
-                  CALL PUTLIN(' Maybe MTZ column label clashing with'//
-     .                  ' program label','ERRWIN')
+C                      ***********************************************
+                  CALL PUTLIN(STROUT,'ERRWIN')
                   CALL CCPERR(1,' ERROR Program label assigned twice')
-C                      ************************************************
+C                      ***********************************************
 C
                 ENDIF
                 GO TO 40
@@ -7037,8 +7021,16 @@ C                ***********************
 C                ***********************
 C
             WRITE (STROUT,FMT=
-     +        '(''  Neither '',A,'' nor '',A,'' recognised'')') CWORK(1:
-     +        LENSTR(CWORK)),CWORK2(1:LENSTR(CWORK2))
+     +        '(''  Neither '',A,'' nor '',A,'' recognised'')')
+     +        CWORK(1:LENSTR(CWORK)),CWORK2(1:LENSTR(CWORK2))
+C
+C                ***********************
+            CALL PUTLIN(STROUT,'ERRWIN')
+C                ***********************
+C
+            WRITE (STROUT,FMT=
+     +        '(''  OR maybe '',A,'' has been assigned twice'')') 
+     +        CWORK(1:LENSTR(CWORK))
 C
 C                ***********************
             CALL PUTLIN(STROUT,'ERRWIN')
