@@ -1131,55 +1131,6 @@ c file -- name of the input file
 	goto 5
 10	continue
 	end
-	subroutine getword(keyw)
-c this subroutien try to find if key word exist in the text
-c if yes, retrun a true, otherwise return a false
-c   txt is the text to be searched
-c   npar is how many line of words
-c   keyw is the search words with npar lines
-c the program will search if there are word in keyw is in txt too.
-c
-	logical*1 fw
-	character*(*) keyw,txt
-	character*80 word(5000)
-	integer nkey/0/,nword(100),lw(1000),ntotal/0/,nst(100)
-	save nkey,ntotal
-	save nword,lw
-c
-	nkey = nkey + 1
-	nst(nkey) = ntotal+1
-c
-	ln = lnblnk(keyw)
-c	print*,'word: ',keyw(1:ln)
-	call redstrin(13,ln,keyw(1:ln),nword(nkey))
-	do iw = 1, nword(nkey)
-	 ntotal = ntotal + 1
-	 read(13,'(a)') word(ntotal)
-	 lw(ntotal) = lnblnk(word(ntotal))
-	end do
-c	print*, nkey,' lines ', nword(nkey),' words in this line',nst(nkey),
-c	1 ' start ',ntotal,
-c	2 ' words in total'
-	return
-c
-	entry findword(txt,fw)
-	itotal = 0
-	do ikey = 1, nkey
-	 do iword = nst(ikey), nst(ikey)+nword(ikey)+1
-	  itotal = itotal + 1
-	  if (index(txt,word(iword)(1:lw(iword))).le.0) goto 10
-20	 end do
-	 fw = .true.
-c	 print*, itotal-nword(ikey)+1,itotal
-	 print*, (' ',word(it)(1:lw(it)),it=nst(ikey),
-     +        nst(ikey)+nword(ikey)+1),' ---  found'
-	 return
-10	end do
-	fw = .false.
-c	print*, 'Words not found in total',itotal,' words'
-	return
-	end
-	
 
 	SUBROUTINE fitca( NATM, XYZ1, XYZ2, A, T )
 C This subroutine is used in package TOP which only to refine 
