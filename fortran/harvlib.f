@@ -404,8 +404,7 @@ C
 C
       IF ( .not. Harvest) RETURN
       IF (Package(1:4) .eq. 'CCP4') THEN
-        Itest = Cell(1)
-        IF (Itest .eq. IvalueNotDet ) RETURN
+        IF (cell(1) .eq. valueNotDet ) RETURN
       END IF
 C
 C---- do _Cell
@@ -906,6 +905,7 @@ C mode for mkdir call
 C mode for chmod call
       CHMODMODE = '755'
 
+      ciftime= ' '
       CALL Hciftime(ciftime)
 C
 C
@@ -3246,7 +3246,7 @@ C
       ELSE IF (Nmiss .lt. IvalueNotDet -1 .and.
      +         Nwork .lt. IvalueNotDet -1) THEN
         IF (Nmiss + Nwork .gt. 0) THEN
-        PP = 100.0 * (Nwork / (Nmiss + Nwork ))
+        PP = 100.0 * (Float(Nwork) / Float(Nmiss + Nwork ))
         CALL ccif_put_real('_refine.ls_percent_reflns_obs',
      +                      PP,ccifContext,ccifStatus)
         END IF
@@ -3260,7 +3260,7 @@ C
       ELSE IF (NfreeMiss .lt. IvalueNotDet -1 .and.
      +         Nfree     .lt. IvalueNotDet -1) THEN
         IF (Nfree + NfreeMiss .gt. 0) THEN
-        PP = 100.0 * (Nfree / (Nfree + NfreeMiss))
+        PP = 100.0 * (Float(Nfree) / Float(Nfree + NfreeMiss))
         CALL ccif_put_real('_refine.ls_percent_reflns_R_free',
      +                      PP,ccifContext,ccifStatus)
         END IF
@@ -3608,7 +3608,7 @@ C
      +                       NPP,ccifContext,ccifStatus)
         ELSE IF (Nmiss .lt. IvalueNotDet -1 .and. 
      +           NrefWork .lt. IvalueNotDet -1) THEN
-          PP = 100.0 * REAL( NrefWork/(Nmiss + NrefWork) )
+          PP = 100.0 * ( Float(NrefWork)/Float(Nmiss + NrefWork) )
           ccifStatus = KeepContext
           CALL ccif_put_real('_refine_ls_shell.percent_reflns_obs',
      +                       PP,ccifContext,ccifStatus)
