@@ -2252,12 +2252,14 @@ systems with the capability and insufficient VM\@.
                 leng[5], pointer[5], leng[6], pointer[6],
                 leng[7], pointer[7], leng[8], pointer[8],
                 leng[9], pointer[9]);
+    break;
   case 10:
     (* routne) (leng[1], pointer[1], leng[2], pointer[2],
                 leng[3], pointer[3], leng[4], pointer[4],
                 leng[5], pointer[5], leng[6], pointer[6],
                 leng[7], pointer[7], leng[8], pointer[8],
                 leng[9], pointer[9], leng[10], pointer[10]);
+    break;
   case 11:
     (* routne) (leng[1], pointer[1], leng[2], pointer[2],
                 leng[3], pointer[3], leng[4], pointer[4],
@@ -2265,6 +2267,7 @@ systems with the capability and insufficient VM\@.
                 leng[7], pointer[7], leng[8], pointer[8],
                 leng[9], pointer[9], leng[10], pointer[10],
 		leng[11], pointer[11]);
+    break;
   case 12:
     (* routne) (leng[1], pointer[1], leng[2], pointer[2],
                 leng[3], pointer[3], leng[4], pointer[4],
