@@ -117,12 +117,14 @@ FORTRAN_SUBR ( CCPLWC, ccplwc,
   free((char *) string3);
 }
 
+#define TMP_LENGTH 128 /* this is defined outside the subroutine 
+                          as some complers didn't like it insde. */
+
 FORTRAN_SUBR ( CCPERR, ccperr,
                (const int *istat, const fpstr errstr, int errstr_len),
                (const int *istat, const fpstr errstr),
                (const int *istat, const fpstr errstr, int errstr_len))
 { 
-  static const int TMP_LENGTH = 128;
   int length;
   char tmp_errstr[TMP_LENGTH];
 
