@@ -154,7 +154,7 @@ C
 C
 C --- QNAN/QISNAN (`magic numbers')
 C
-      IF ((.NOT.QISNAN (QNAN ())) .OR. QISNAN (1)) THEN
+      IF ((.NOT.QISNAN (QNAN ())) .OR. QISNAN (1.0)) THEN
         WRITE (LUNOUT,'(/'' *** QNAN/QISNAN test failed''/)')
       ELSE
         WRITE (LUNOUT,'('' QNAN/QISNAN test OK'')') 
@@ -199,7 +199,7 @@ C
       ISTAT = LDUM*LBUF*LBUF
       WRITE (6,'(A,2(I8,A)//)')
      &' DISKIO should be',ISTAT,' bytes; is',ILENGTH,' bytes.'
-      IF (ILENGTH.NE.ISTAT) CALL CCPERR('*** FILE SIZE ERROR ***')
+      IF (ILENGTH.NE.ISTAT) CALL CCPERR(1, '*** FILE SIZE ERROR ***')
 C
 C---- Seed random Number Generator
 C
