@@ -528,8 +528,13 @@ int MtzHklcoeffs(const float cell[6], double coefhkl[6]);
  */
 int MtzArrayToBatch(const int *intbuf, const float *fltbuf, MTZBAT *batch);
 
+/** Writes data structure to batch arrays.
+ * @param batch pointer to batch structure
+ * @param intbuf pointer to integer batch array
+ * @param fltbuf pointer to float batch array
+ * @return 1 on success
+ */
 int MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf);
-/* Writes batch info into the structure `batch`. */
 
 /**** pseudo-mtzlib routines ****/
 

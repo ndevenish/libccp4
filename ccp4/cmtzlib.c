@@ -2504,9 +2504,12 @@ CCP4File *MtzOpenForWrite(const char *logname)
 
 int MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf)
 
-/* Writes batch info into the structure `batch`. */
-
 {  int i;
+
+  for (i = 0; i < NBATCHINTEGERS; ++i)
+    intbuf[i] = 0;
+  for (i = 0; i < NBATCHREALS; ++i)
+    fltbuf[i] = 0.0;
 
   intbuf[3] = batch->iortyp;
   for (i = 0; i < 6; ++i)
