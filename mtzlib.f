@@ -2482,6 +2482,13 @@ C     ========================================
       SUBROUTINE LRREFF(MINDX,RESOL,ADATA,EOF)
 C     ========================================
 C
+C---- BIOMOL-compatible version of the CCP4-subroutine. If the index MINDX
+C     is larger then 1000, then it is assumed that the subroutine is
+C     called by a BIOMOL program or another program that is capable to
+C     interpret the BIOMOL absence flags (e.g. a value of -1.0E+10 indicates
+C     absent data). If MINDX is in the normal range of 1 to 3, then the
+C     subroutine will convert values of -1.0E+10 to zero to allow normal
+C     processing by the CCP4 programs.
 C
 C
 C---- Subroutine to read a reflection record from an MTZ file which
@@ -2531,9 +2538,10 @@ C     .. Arrays in Common ..
      +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
-      INTEGER IERR,IFAIL,ISTAT,JDO10,IH,IK,IL
+      INTEGER IERR,IFAIL,ISTAT,JDO10,JDO20,IH,IK,IL
       CHARACTER LINE*400
       REAL RSOL
+      LOGICAL BIOMOL
 C     ..
 C     .. Local Arrays ..
       REAL BDATA(MCOLS)
@@ -2565,6 +2573,15 @@ C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
 C     ..
+C
+C---- Check if the calling program can interpret BIOMOL absence flags
+C
+      IF(MINDX.GT.1000)THEN
+        BIOMOL = .TRUE.
+        MINDX  = MINDX-1000
+      ELSE
+        BIOMOL = .FALSE.
+      ENDIF
 C
 C---- First check that the MINDX is valid
 C
@@ -2666,6 +2683,14 @@ C
               END IF
    10       CONTINUE
 C
+C---- Set BIOMOL absence flags to zero if the calling program can not
+C     interpret them
+C
+            IF(.NOT. BIOMOL)THEN
+              DO 20 JDO20 = 1,NCOLS(MINDX)
+                IF(ADATA(JDO20).LT.-0.99E+10) ADATA(JDO20) = 0.0
+   20         CONTINUE
+            ENDIF
 C
             EOF = .FALSE.
           END IF
@@ -2676,12 +2701,18 @@ C
 C
       END
 C
-C
-C
 C     ========================================
       SUBROUTINE LRREFL(MINDX,RESOL,ADATA,EOF)
 C     ========================================
 C
+C
+C---- BIOMOL-compatible version of the CCP4-subroutine. If the index MINDX
+C     is larger then 1000, then it is assumed that the subroutine is
+C     called by a BIOMOL program or another program that is able to
+C     interpret the BIOMOL absence flags (e.g. a value of -1.0E+10 indicates
+C     absent data). If MINDX is in the normal range of 1 to 3, then the
+C     subroutine will convert values of -1.0E+10 to zero to allow normal
+C     processing by the CCP4 programs.
 C
 C
 C---- Subroutine to read a reflection record from an MTZ file which
@@ -2733,12 +2764,13 @@ C     .. Arrays in Common ..
      +          CLABEL*30,TITLE*70
 C     ..
 C     .. Local Scalars ..
-      INTEGER IERR,IFAIL,ISTAT,IH,IK,IL
+      INTEGER IERR,IFAIL,ISTAT,JDO10,IH,IK,IL
       CHARACTER LINE*400
       REAL RSOL
 C     .. 
 C     .. Intrinsic Functions
       INTRINSIC ABS
+      LOGICAL BIOMOL
 C     ..
 C     .. External Functions ..
       REAL LSTLSQ
@@ -2764,6 +2796,15 @@ C     ..
 C     .. Save statement ..
       SAVE /MTZHDR/,/MTZCHR/,/MTZWRK/
 C     ..
+C
+C---- Check if the calling program can interpret BIOMOL absence flags
+C
+      IF(MINDX.GT.1000)THEN
+        BIOMOL = .TRUE.
+        MINDX  = MINDX-1000
+      ELSE
+        BIOMOL = .FALSE.
+      ENDIF
 C
 C---- First check that the MINDX is valid
 C
@@ -2852,6 +2893,15 @@ C
               RESOL = -1.0
 C
             END IF
+C
+C---- Set BIOMOL absence flags to zero if the calling program can not
+C     interpret them
+C
+            IF(.NOT. BIOMOL)THEN
+              DO 10 JDO10 = 1,NCOLS(MINDX)
+                IF(ADATA(JDO10).LT.-0.99E+10) ADATA(JDO10) = 0.0
+   10         CONTINUE
+            ENDIF
 
             EOF = .FALSE.
           END IF
@@ -8884,11 +8934,6 @@ C     .. Scalar Arguments ..
       REAL A,ALPHA,B,BETA,C,GAMMA
 C     ..
 C     .. Arrays in Common ..
-      REAL RBATW,WRANGE,WSRNGE
-      INTEGER HDRST,NBATR,NBATW,NCOLW,NHISTL,
-     +        NPLABS,NREFR,NREFW,RLUN,RPOINT,
-     +        WLUN,WOMBAT
-      LOGICAL SORTB
       REAL COEFHH,COEFHK,COEFHL,COEFKK,COEFKL,COEFLL
 C     ..
 C     .. Local Scalars ..
@@ -8900,15 +8945,10 @@ C     .. Intrinsic Functions ..
       INTRINSIC ABS,COS,MAX,SIN,SQRT
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
       COMMON /MRCPLT/COEFHH(MFILES),COEFHK(MFILES),COEFHL(MFILES),
      +       COEFKK(MFILES),COEFKL(MFILES),COEFLL(MFILES)
 C     ..
-      SAVE /MTZWRK/, /MRCPLT/
+      SAVE /MRCPLT/
 C     ..
 C     .. Data statements ..
       DATA QMIN,ZERO/5.0E-7,0.0/
@@ -8916,7 +8956,6 @@ C     .. Data statements ..
       DATA TWO/2.0/
       DATA HALF/0.5/
 C     ..
-C
 C
 C---- dtorad = 3.1415927/180.0
 C
@@ -9012,12 +9051,12 @@ C
 C
 C---- Format statements
 C
- 6000 FORMAT (' Direct Matrix     :',T25,1P,E15.6,2 (12X,'0.0'),/,
-     +                               T25,2E15.6,12X,'0.0',/,
-     +                               T25,3E15.6,/)
- 6002 FORMAT (' Reciprocal Matrix :',T25,1P,E15.6,2 (12X,'0.0'),/,
-     +                               T25,2E15.6,12X,'0.0',/,
-     +                               T25,3E15.6,/)
+CCC 6000 FORMAT (' Direct Matrix     :',T25,1P,E15.6,2 (12X,'0.0'),/,
+CCC     +                               T25,2E15.6,12X,'0.0',/,
+CCC     +                               T25,3E15.6,/)
+CCC 6002 FORMAT (' Reciprocal Matrix :',T25,1P,E15.6,2 (12X,'0.0'),/,
+CCC     +                               T25,2E15.6,12X,'0.0',/,
+CCC     +                               T25,3E15.6,/)
 C
 C
       END
@@ -9053,22 +9092,13 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Arrays in Common ..
       REAL COEFHH,COEFHK,COEFHL,COEFKK,COEFKL,COEFLL
-      REAL WRANGE,RBATW,WSRNGE
-      INTEGER NCOLW,RLUN,WLUN,RPOINT,NREFW,NREFR,NPLABS,NBATW,NBATR,
-     +        WOMBAT,HDRST,NHISTL
-      LOGICAL SORTB
 C     ..
 C     .. Common blocks ..
-      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
-     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
-     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
-     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
-     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
       COMMON /MRCPLT/COEFHH(MFILES),COEFHK(MFILES),COEFHL(MFILES),
      +       COEFKK(MFILES),COEFKL(MFILES),COEFLL(MFILES)
 C     ..
 C     .. Save Statements ..
-      SAVE /MTZWRK/,/MRCPLT/
+      SAVE /MRCPLT/
 C     ..
 C
 C
