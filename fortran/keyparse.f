@@ -37,7 +37,7 @@ C     Dave Love $Date$
 C     Additions by Kevin Cowtan
 C     
       subroutine memoparse (echo)
-
+C
 C     Call PARSER and stash the returned values away for later testing
 C     when the other entrypoints are called. (OK, so it's not really
 C     memoisation...).
@@ -121,8 +121,7 @@ C       matched key
 C     KEY + integer -- returned in IVAL
       if (memokey.eq.key) then
 C       matched key
-        if (ntok.eq.2 .and. ityp (2).eq.2
-     +       .and. idec (2).eq. (iend(2)-ibeg(2)+1)) then
+        if (ntok.eq.2 .and. ityp (2).eq.2) then
           ival = nint (fvalue(2))
           do i=1,2
            success(i) = .true.
@@ -224,8 +223,7 @@ C  ... matched key
        if (k.le.ntok) then
 C  .... matched subkey (if set)
         success(k) = .true.
-        if (ntok.ge.nth+k .and. ityp(nth+k).eq.2
-     +    .and. idec(nth+k) .eq. (iend(nth+k)-ibeg(nth+k)+1)) then
+        if (ntok.ge.nth+k .and. ityp(nth+k).eq.2) then
          ival = nint (fvalue(nth+k))
          success(nth+k) = .true.
         else if (flag) then
@@ -377,5 +375,5 @@ C     if (cont).
        success(i) = .false.
       enddo
       return
-
+C
       end
