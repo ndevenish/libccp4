@@ -2240,6 +2240,9 @@ does work fine in VMS\@.
 
 NB: there's a possibility of a hook here to use memory-mapped files on
 systems with the capability and insufficient VM\@.
+
+Under protest, this now allocates zeroed storage for where programs
+make bad assumptions.
 <<miscellaneous routines>>=
 #ifndef VMS                     /* we'll use the Fortran version in VMS*/
 #if CALL_LIKE_HPUX
@@ -2270,7 +2273,7 @@ systems with the capability and insufficient VM\@.
     case 5:
       size = item_sizes[1]; break; /* bytes (logical or integer *1) */
     }
-    pointer[i+1] = malloc (size*length[i]);
+    pointer[i+1] = calloc ((size_t) length[i], (size_t) size);
     if (pointer[i+1] == NULL) fatal ("CCPALC: can't allocate memory");
     leng[i+1] = &(length[i]);   /* convenience */
   }

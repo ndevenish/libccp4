@@ -1393,6 +1393,7 @@ C     are in range
         ISTAT = LIB$GET_VM (SIZES(TYPE (I))*LENGTH(I), POINTER(I))
         IF (.NOT.ISTAT)
      +       CALL CCPERR (-1, 'CCPALC: can''t allocate memory')
+        CALL CCPZBI (%VAL(POINTER(I)), SIZES(TYPE (I))*LENGTH(I))
       ENDDO
       IF (N.EQ.1) THEN
         CALL ROUTNE (LENGTH (1), %VAL(POINTER(1)))
