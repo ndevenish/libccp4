@@ -479,7 +479,7 @@ int ccp4_outbuf(void)
 {
 #if defined (sgi) || defined (sun) || \
     defined(ultrix) || defined (__OSF1__) || \
-    defined (__osf__) || defined (__FreeBSD__) || defined (linux)
+    defined (__osf__) || defined (__FreeBSD__) 
   setlinebuf(stdout);
 #else
 #  if defined (_AIX)
