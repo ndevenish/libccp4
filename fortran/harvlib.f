@@ -1963,10 +1963,12 @@ C
 C
       DerPointer = DerPointer + 1
       ccifStatus = AppendRow
-      IF (lenstr(SS(DerPointer)).gt.0)
-     + CALL ccif_put_char('_phasing_MIR_der.id',
+      IF (lenstr(SS(DerPointer)).gt.0) THEN
+        CALL ccif_put_char('_phasing_MIR_der.id',
      +      SS(DerPointer) (1:Lenstr(SS(DerPointer))),
      +      ccifContext,ccifStatus)
+        ccifStatus = KeepContext
+      END IF
 C
 C
       IF (R1(1,DerPointer) .gt. R1(2,DerPointer)) THEN
@@ -1978,7 +1980,6 @@ C
       END IF
 C
 C
-      ccifStatus = KeepContext
       CALL ccif_put_real('_phasing_MIR_der.d_res_low',Res1,
      +                   ccifContext,ccifStatus)
       ccifStatus = KeepContext
@@ -2139,11 +2140,12 @@ C
 C
       DO 10 Jdo = 1,NumDerSites
         ccifStatus = AppendRow
-        IF (lenstr(DerID).gt.0)
-     +   CALL ccif_put_char('_phasing_MIR_der_site.der_id',
+        IF (lenstr(DerID).gt.0) THEN
+          CALL ccif_put_char('_phasing_MIR_der_site.der_id',
      +                     DerID(1:Lenstr(DerID)),ccifContext,
      +                     ccifStatus)
-        ccifStatus = KeepContext
+          ccifStatus = KeepContext
+        ENDIF
         MirDerSiteID = MirDerSiteID + 1
         WRITE (IDwork,FMT=6000) MirDerSiteID
  6000   FORMAT (i6)
@@ -2820,11 +2822,12 @@ c Hrefine_fnmin(Nval,Nterms,Vterms,Cterms,Wterms)
       DO 90 Jdo = 1,Nval
         IF (Nterms(Jdo) .gt. 0 ) THEN
         ccifStatus = AppendRow
-        IF (lenstr(Cterms(Jdo)).gt.0)
-     +   CALL ccif_put_char('_refine_funct_minimized.type',
+        IF (lenstr(Cterms(Jdo)).gt.0) THEN
+          CALL ccif_put_char('_refine_funct_minimized.type',
      +                     Cterms(Jdo)(1:Lenstr(Cterms(Jdo))),
      +                     ccifContext,ccifStatus)
-        ccifStatus = KeepContext
+          ccifStatus = KeepContext
+        ENDIF
           CALL ccif_put_int('_refine_funct_minimized.number_terms',
      +                        Nterms(Jdo),
      +                        ccifContext,ccifStatus)
@@ -3139,36 +3142,37 @@ C
 C
 C
         ccifStatus = AppendRow
-        IF (lenstr(RType).gt.0)
-     +   CALL ccif_put_char('_refine_ls_restr.type',
+        IF (lenstr(RType).gt.0) THEN
+          CALL ccif_put_char('_refine_ls_restr.type',
      +                     RType(1:Lenstr(RType)),
      +                     ccifContext,ccifStatus)
-        ccifStatus = KeepContext
-        IF (Num .lt. IvalueNotDet -1 .and. Num .gt. 0)
-     +  CALL ccif_put_int('_refine_ls_restr.number',
+          ccifStatus = KeepContext
+        ENDIF
+        IF (Num .lt. IvalueNotDet -1 .and. Num .gt. 0) THEN
+          CALL ccif_put_int('_refine_ls_restr.number',
      +                     Num,ccifContext,ccifStatus)
-        ccifStatus = KeepContext
-        IF (rmsd .lt. valueNotDet -1.0)
-     +  CALL ccif_put_real('_refine_ls_restr.dev_ideal',
+          ccifStatus = KeepContext
+        ENDIF
+        IF (rmsd .lt. valueNotDet -1.0) THEN
+          CALL ccif_put_real('_refine_ls_restr.dev_ideal',
      +                     rmsd,ccifContext,ccifStatus)
-        ccifStatus = KeepContext
-        IF (sigd .lt. valueNotDet -1.0)
-     +  CALL ccif_put_real('_refine_ls_restr.dev_ideal_target',
+          ccifStatus = KeepContext
+        ENDIF
+        IF (sigd .lt. valueNotDet -1.0) THEN
+          CALL ccif_put_real('_refine_ls_restr.dev_ideal_target',
      +                     sigd,ccifContext,ccifStatus)
-C
-C
-        IF (Nreject .lt. IvalueNotDet -1 .and. 
-     +      Nreject .gt. 0) THEN
-        ccifStatus = KeepContext
+          ccifStatus = KeepContext
+        ENDIF
+        IF (Nreject .lt. IvalueNotDet -1 .and. Nreject .gt. 0) THEN
           CALL ccif_put_int('_refine_ls_restr.rejects',
      +                     Nreject,ccifContext,ccifStatus)
-        ccifStatus = KeepContext
-        IF (lenstr(criteria).gt.1) 
-     +   CALL ccif_put_char('_refine_ls_restr.criterion',
+          ccifStatus = KeepContext
+        ENDIF
+        IF (lenstr(criteria).gt.1) THEN
+          CALL ccif_put_char('_refine_ls_restr.criterion',
      +                     criteria(1:Lenstr(criteria)),
      +                     ccifContext,ccifStatus)
-         END IF
-C
+        ENDIF
 C
       CALL ccif_release_context(ccifContext)
 C
@@ -3519,25 +3523,29 @@ C
 C
 C
         ccifStatus = AppendRow
-        IF (lenstr(RType).gt.0)
-     +   CALL ccif_put_char('_refine_ls_restr_type.type',
+        IF (lenstr(RType).gt.0) THEN
+          CALL ccif_put_char('_refine_ls_restr_type.type',
      +                     RType(1:Lenstr(RType)),
      +                     ccifContext,ccifStatus)
-        ccifStatus = KeepContext
-        IF (Clow .lt. valueNotDet -1.0 .and. Clow .gt. 0.0)
-     +  CALL ccif_put_real(
+          ccifStatus = KeepContext
+        ENDIF
+        IF (Clow .lt. valueNotDet -1.0 .and. Clow .gt. 0.0) THEN
+          CALL ccif_put_real(
      +       '_refine_ls_restr_type.distance_cutoff_low',
      +                     Clow,ccifContext,ccifStatus)
-        ccifStatus = KeepContext
-        IF (Chigh .lt. valueNotDet -1.0 .and. Chigh .gt.0.0)
-     +  CALL ccif_put_real(
+          ccifStatus = KeepContext
+        ENDIF
+        IF (Chigh .lt. valueNotDet -1.0 .and. Chigh .gt.0.0) THEN
+          CALL ccif_put_real(
      +       '_refine_ls_restr_type.distance_cutoff_high',
      +                     Chigh,ccifContext,ccifStatus)
-        ccifStatus = KeepContext
-        IF (Usigma .lt. valueNotDet -1.0)
-     +  CALL ccif_put_real(
+          ccifStatus = KeepContext
+        ENDIF
+        IF (Usigma .lt. valueNotDet -1.0) THEN
+          CALL ccif_put_real(
      +       '_refine_ls_restr_type.U_sigma_weights',
      +                     Usigma,ccifContext,ccifStatus)
+        ENDIF
         CALL ccif_release_context(ccifContext)
 C
 C
