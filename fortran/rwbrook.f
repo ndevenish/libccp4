@@ -47,7 +47,7 @@ C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL
       INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
-      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*11
+      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*15
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Scalars ..
@@ -315,7 +315,7 @@ C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL,ROU,RFU
       INTEGER FILESOPEN,ITYP,NCODE,TYPE,UNIT
-      CHARACTER*80 LOGUNIT,BROOK*1,WBROOK*1,WBROOK1*1, BRKSPGRP*11
+      CHARACTER*80 LOGUNIT,BROOK*1,WBROOK*1,WBROOK1*1, BRKSPGRP*15
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 c  Check symmetry stuff
 C
@@ -512,7 +512,7 @@ C
             ITYP=1
             IFCRYS=.TRUE.
             BRKSPGRP = ' '
-            READ(BROOKA,FMT='(6X,3F9.3,3F7.2,1x,a11)')CELL,BRKSPGRP
+            READ(BROOKA,FMT='(6X,3F9.3,3F7.2,1x,a15)')CELL,BRKSPGRP
 C
 C Make sure that BRKSPGRP, the Space group name is left-justified
 C
@@ -522,7 +522,6 @@ C
                CALL CCPERR(2,' No Space group given on PDB CRYST1 line')
              ELSE
                KLEN = ILEN
-C
                DO J = 1,ILEN-1
                  IF (SPGCHK(1:1) .EQ. ' ') THEN
                    SPGCHK = SPGCHK(2:KLEN)
@@ -531,6 +530,13 @@ C
                END DO
                BRKSPGRP = SPGCHK
              END IF 
+
+C If BRKSPGRP contains "/" it is probably a Patterson group and may
+C occupy the full 15 characters. Else it may be from the PDB and
+C may contain Z value which must be removed.
+
+             IF (INDEX(BRKSPGRP,'/').EQ.0) BRKSPGRP(12:15) = ' '
+
 C  Read symmetry operators.
              IF (BRKSPGRP.NE.' ') THEN
 C  Consistency check for R and H space groups.
@@ -862,7 +868,7 @@ C     ..
 C     .. Variables in Common ..
       REAL CELL,CELLAS,RF,RO,RR,VOL
       INTEGER FILESOPEN,NCODE,TYPE,UNIT
-      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*11
+      CHARACTER LOGUNIT*80,BROOK*1,WBROOK*1,WBROOK1*1,BRKSPGRP*15
       LOGICAL IFCRYS,IFHDOUT,IFSCAL,MATRIX
 C     ..
 C     .. Local Variables ..
@@ -993,7 +999,7 @@ C
   100 CONTINUE
       ITYP = 0
       RETURN 2
- 1000 FORMAT('CRYST1',3F9.3,3F7.2,1x,a11)
+ 1000 FORMAT('CRYST1',3F9.3,3F7.2,1x,a15)
  2000 FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
      $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
       END
@@ -2785,7 +2791,7 @@ C
 C Returns spacegrpup from pdb
 C
 C PARAMETERS
-C     SPGRP (O) (CHARACTER*11) 
+C     SPGRP (O) (CHARACTER*15) 
 C
 C Common blocks
 C
@@ -2794,7 +2800,7 @@ C
 C_END_RBSPGRP
 C
       CHARACTER SPGRP*(*)
-      CHARACTER BRKSPGRP*11
+      CHARACTER BRKSPGRP*15
       INTEGER ILEN,KLEN,J
       COMMON /RBRKSPGRP/BRKSPGRP
       SPGRP = BRKSPGRP
@@ -2825,7 +2831,7 @@ C
 C Sets the internal spacegroup of a pdb file
 C
 C PARAMETERS
-C     SPGRP (I) (CHARACTER*11)
+C     SPGRP (I) (CHARACTER*15)
 C
 C Common Blocks
 C
@@ -2834,7 +2840,7 @@ C
 C_END_WBSPGRP
 C
       CHARACTER SPGRP*(*)
-      CHARACTER BRKSPGRP*11
+      CHARACTER BRKSPGRP*15
       COMMON /RBRKSPGRP/BRKSPGRP
       BRKSPGRP = SPGRP
       END
@@ -3117,7 +3123,7 @@ C     .. Variables in Common ..
       REAL CELL, RO, RF, RR
       INTEGER FILESOPEN, NCODE, TYPE, UNIT
       CHARACTER*80 LOGUNIT
-      CHARACTER BRKSPGRP*11
+      CHARACTER BRKSPGRP*15
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
 C     ..
 C     .. Local Scalars ..
@@ -3185,7 +3191,7 @@ C     ..
 C
 C---- Format Statements
 C
- 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a11)
+ 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a15)
  200  FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
      $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
       END
@@ -3382,7 +3388,7 @@ C     .. Variables in Common ..
       REAL CELL, RO, RF, RR
       INTEGER FILESOPEN, NCODE, TYPE, UNIT
       CHARACTER*80 LOGUNIT
-      CHARACTER BRKSPGRP*11,NAMSPG_CIF*(*)
+      CHARACTER BRKSPGRP*15,NAMSPG_CIF*(*)
       LOGICAL IFCRYS,IFSCAL,MATRIX,IFHDOUT
 C     ..
 C     .. Local Scalars ..
@@ -3463,7 +3469,7 @@ C
 C
 C---- Format Statements
 C
- 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a11)
+ 100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a15)
  200  FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
      $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
       END
