@@ -808,12 +808,16 @@ C
       DATA EPZNE/0.0,500.0,1.0, 1.0,0.0,500.0, 1.0,500.0,0.0,
      +           1.0,-1.0,500.0, 1.0,500.0,-1.0, 500.0,1.0,-1.0,
      +           1.0,1.0,500.0,  1.0,500.0, 1.0, 500.0,1.0, 1.0,
-     +           2.0,1.0,500.0,  1.0,2.0, 500.0, 500.0,500.0,500.0, 
+     +           2.0,1.0,500.0,  1.0,2.0, 500.0, 1.0,500.0,-501.0, 
      +           0.0,0.0,0.0/
 C     ..
 C
-C---- I dont think this test will work for cubic symmetry - no way to
-C      uniquely specify hhh  - ejd feb 1988
+C---- Now works for all symms. Theory: specify 2 vectors perpendicular
+C---- to a specific epsilon zone. If the dot product with both of these
+C---- vectors is 0 then we are in that epsilon zone.
+C---- To save time we combine both vectors into 1 with a+500b.
+C---- e.g. for h00 a=(0 0 1) b=(0 1 0), for hhh a=(1 0 -1) b=(0 1 -1)
+C---- KDC 29/6/94
 C
 C
       LATMUL = NSM/NSMP
