@@ -87,7 +87,7 @@ are just generally useful (platform independent date).
                                        
 static char rcsid[] = "$Id$";
 
-static uint16 nativeIT = NATIVEIT; /* machine integer type */
+/* static uint16 nativeIT = NATIVEIT; */ /* machine integer type - currently unused here */
 static uint16 nativeFT = NATIVEFT; /* machine float type */
 
 /** .
