@@ -324,7 +324,7 @@ binsort : $(srcdir)/binsort.c $(srcdir)/binsort.h
 unix.f : $(srcdir)/unix.m4 gdummy.f
 	$(M4) $(srcdir)/unix.m4 >unix.f
 gdummy.f : $(srcdir)/gdummy.f
-	$(LNS)	$(srcdir)/gdummy.f .
+	-$(LNS)	$(srcdir)/gdummy.f .
 $L(unix.o) : unix.f
 	-rm -rf unix.dir; mkdir unix.dir
 	echo '      SUBROUTINE UNIX' > unix.dir/unix.f
@@ -370,7 +370,7 @@ clean :
 	-rm -rf tagdir
 
 realclean : clean
-	-rm -rf $L *.$(F) ../../src/binsort binsort *.dir TAGS
+	-rm -rf $L ../../src/binsort binsort *.dir TAGS
 
 dist : realclean
 	-rm -f Makefile
