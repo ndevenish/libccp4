@@ -357,6 +357,43 @@ FORTRAN_SUBR ( ASUSET, asuset,
   ccp4spg_print_recip_ops(spacegroup);
 }
 
+FORTRAN_SUBR ( ASUSYM, asusym,
+	       (float rassym[384][4][4], float rinsym[384][4][4], int *nisym),
+	       (float rassym[384][4][4], float rinsym[384][4][4], int *nisym),
+	       (float rassym[384][4][4], float rinsym[384][4][4], int *nisym))
+{
+  int i,j,k,l;
+  float sgn;
+
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: ASUSYM");)
+
+  if (spacegroup) {
+    *nisym = 0;
+    for (i = 0; i < spacegroup->nsymop_prim; ++i) {
+      sgn = +1.0;
+      for (j = 0; j < 2; ++j) {
+        for (k = 0; k < 3; ++k) {
+          for (l = 0; l < 3; ++l) {
+            rassym[*nisym][l][k] = sgn * spacegroup->symop[i].rot[k][l];
+            rinsym[*nisym][l][k] = sgn * spacegroup->invsymop[i].rot[k][l];
+          }
+          rassym[*nisym][3][k] = sgn * spacegroup->symop[i].trn[k];
+          rinsym[*nisym][3][k] = sgn * spacegroup->invsymop[i].trn[k];
+          rassym[*nisym][k][3] = 0.0;
+          rinsym[*nisym][k][3] = 0.0;
+        }
+        rassym[*nisym][3][3] = 1.0;
+        rinsym[*nisym][3][3] = 1.0;
+        ++(*nisym);
+        sgn = -1.0;
+      }
+    }
+  } else {
+    printf("ASUSYM: No spacegroup loaded yet! \n");
+  }
+
+}
+
 FORTRAN_SUBR ( ASUPUT, asuput,
                (const int ihkl[3], int jhkl[3], int *isym),
                (const int ihkl[3], int jhkl[3], int *isym),
@@ -820,6 +857,10 @@ FORTRAN_SUBR ( SETGRD, setgrd,
 	       (const int *nlaue, const float *sample, const int *nxmin,
                 const int *nymin, const int *nzmin, int *nx, int *ny, int *nz))
 {
+  if (spacegroup->nlaue != *nlaue) {
+    printf("SETGRD: requested nlaue ...! \n");
+    return;
+  }
 
   set_fft_grid(spacegroup, *nxmin, *nymin, *nzmin, *sample, nx, ny, nz);
 
