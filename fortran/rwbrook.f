@@ -1057,12 +1057,6 @@ C     .. Save ..
 C     ..
 C     .. Data Statement ..
       DATA EIGHTPI2 /78.956835/
-C     ..
-      CALL CCPUPC(XFLAG)
-      CALL CCPUPC(BFLAG)
-Cejd - a fudge
-       IF ( BFLAG.EQ.'B') BFLAG = 'O'
-C
 
       II = 0
       DO 10 I=1,FILESOPEN
@@ -1083,7 +1077,7 @@ C
 C
 C---- Convert x,y,z to fractional if necessary
 C
-        IF (XFLAG .EQ. 'F') THEN
+        IF (XFLAG .EQ. 'F' .OR. XFLAG .EQ. 'f') THEN
           IF (MATRIX) THEN
             CALL CVFRAC2(X,Y,Z,XX,YY,ZZ,1)
             X = XX
@@ -1098,7 +1092,7 @@ C---- Calulate isotropic Uf from Uo, if necessary convert.
 C
         IF (U(2).NE.0.0 .AND. U(3).NE.0.0) THEN
           BISO = EIGHTPI2 * (U(1)+U(2)+U(3))/3.0
-          IF (BFLAG.EQ.'F') CALL CVANISOU(U,1)
+          IF (BFLAG.EQ.'F' .OR. BFLAG.EQ.'f') CALL CVANISOU(U,1)
 C
 C---- Go here if no anisotropic B
 C
@@ -1109,7 +1103,7 @@ C
 C==== Output PDB file
 C
       ELSE IF (TYPE(II) .EQ. -1) THEN
-        IF (XFLAG .EQ. 'F') THEN
+        IF (XFLAG .EQ. 'F' .OR. XFLAG .EQ. 'f') THEN
           IF (MATRIX) THEN
             CALL CVFRAC2(X,Y,Z,XX,YY,ZZ,0)
           ELSE
@@ -1125,7 +1119,7 @@ C
 C---- Check for anisotropic temperature factors
 C
         IF (U(2).NE.0.0 .OR. U(3).NE.0.0) THEN
-          IF (BFLAG .EQ. 'F') CALL CVANISOU(U,0)
+          IF (BFLAG .EQ. 'F' .OR. BFLAG .EQ. 'f') CALL CVANISOU(U,0)
           BISO = EIGHTPI2 * (U(1)+U(2)+U(3))/3.0
 
           BROOKB(1:6) = 'ANISOU'
