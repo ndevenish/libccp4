@@ -1108,6 +1108,24 @@ FORTRAN_SUBR ( LRREFM, lrrefm,
 
 }
 
+/* Check for MNFs in array of ndata reals. Results returned in logmiss. */
+FORTRAN_SUBR ( MTZ_CHECK_FOR_MNF, mtz_check_for_mnf,
+	       (const int *mindx, const int *ndata, float adata[], ftn_logical logmiss[]),
+	       (const int *mindx, const int *ndata, float adata[], ftn_logical logmiss[]),
+	       (const int *mindx, const int *ndata, float adata[], ftn_logical logmiss[]))
+{
+ int i;
+
+ if (MtzCheckSubInput(*mindx,"MTZ_CHECK_FOR_MNF",1)) return;
+
+ for (i = 0; i < *ndata; ++i) {
+   if (ccp4_ismnf(mtzdata[*mindx-1], adata[i])) {
+     logmiss[i] = FORTRAN_LOGICAL_TRUE;
+   } else {
+     logmiss[i] = FORTRAN_LOGICAL_FALSE;
+   }
+ }
+}
 /* print out header information */
 FORTRAN_SUBR ( LHPRT, lhprt,
 	       (const int *mindx, const int *iprint), 
