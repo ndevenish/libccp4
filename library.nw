@@ -992,6 +992,59 @@ int *iunit, *nitems, *result;
   default:
     fatal ("QREAD: Bad mode");
   }
+@ \subsection{{\tt subroutine qreadc(\meta{iunit}, \meta{buffer},
+    \meta{result})}}
+
+Fills [[CHARACTER]] buffer in byte mode from diskio stream
+\meta{iunit} previously opened by [[qopen]](/[[copen]]) and returns
+\meta{result} which is the number of items read or [[0]] on failure.
+Call it with a character substring if necessary to control the number
+of bytes read.
+<<diskio routines>>=
+#if CALL_LIKE_HPUX
+  void qreadc (iunit, buffer, result, Lbuffer)
+  int Lbuffer;
+#endif
+#if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
+  void QREADC (iunit, buffer, result)
+  struct dsc$descriptor_s *buffer;
+#endif
+#if CALL_LIKE_SUN
+  void qreadc_ (iunit, buffer, result, Lbuffer)
+  int Lbuffer;
+#endif
+#if CALL_LIKE_IRIS
+  fortran qreadc_ (Lbuffer, iunit, buffer, result)
+  int Lbuffer;
+#endif
+
+char * buffer;
+int *iunit, *result;
+{
+  int i, n;
+
+  if (! initialised) 
+    fatal ("QREAD: qopen/qqopen not yet called");
+  if (file_last_op[*iunit] == WRITE_OP) {
+<<OpenVMS seek fudge>>
+    if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0) {
+      *result = -1;
+      return; } }
+  file_last_op[*iunit] = READ_OP;
+#if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
+  n = buffer->Str_length;
+#else
+  n = Lbuffer;
+#endif
+  i = fread (buffer, (size_t) item_sizes[BYTE], 
+                (size_t) n, file_stream[*iunit]);
+  if (i != n) {
+    if (feof (file_stream[*iunit])) *result = -1;
+    else *result = i;
+    return;
+  }
+  *result = 0;
+}
 @ \subsection{{\tt subroutine qwrite (\meta{iunit}, \meta{buffer},
     \meta{nitems})}}
 This write \meta{nitems} items from \meta{buffer} to [[qopen]]ed
@@ -1024,6 +1077,48 @@ int *iunit, *nitems;
   i = (int) fwrite (buffer, (size_t) file_bytes_per_item[*iunit],
                     (size_t) *nitems, file_stream[*iunit]);
   if (i != *nitems) fatal ("QWRITE: i/o error");
+}
+@ \subsection{{\tt subroutine qwritc (\meta{iunit}, \meta{buffer})}}
+
+Writes [[CHARACTER*(*)]] \meta{buffer} to [[qopen]]ed
+stream \meta{iunit} in byte mode.
+<<diskio routines>>=
+#if CALL_LIKE_HPUX
+  void qwritec (iunit, buffer, Lbuffer)
+  int Lbuffer;
+#endif
+#if defined (VMS) || CALL_LIKE_STARDENT
+  void QWRITEC (iunit, buffer)
+  struct dsc$descriptor_s *buffer;
+#endif
+#if CALL_LIKE_SUN
+  void qwritec_ (iunit, buffer, Lbuffer)
+  int Lbuffer;
+#endif
+#if CALL_LIKE_IRIS
+  fortran qwritec_ (Lbuffer, iunit, nitems)
+  int Lbuffer;
+#endif
+char * buffer;
+int *iunit;
+{
+  int i, n;
+
+  if (! initialised) 
+    fatal ("QWRITE: qopen/qqopen not yet called");
+  if (file_last_op[*iunit] == READ_OP) {
+<<OpenVMS seek fudge>>
+    if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0)
+      fatal ("QWRITE: i/o error"); }
+  file_last_op[*iunit] = WRITE_OP;
+#if defined (VMS) || defined (ardent) || defined (titan) || defined (stardent)
+  n = buffer->Str_length;
+#else
+  n = Lbuffer;
+#endif
+  i = (int) fwrite (buffer, (size_t) item_sizes[BYTE],
+                    (size_t) n, file_stream[*iunit]);
+  if (i != n) fatal ("QWRITE: i/o error");
 }
 @ \subsection{{\tt subroutine qseek (\meta{iunit}, \meta{irec},
     \meta{iel}, \meta{lrecl})}}
