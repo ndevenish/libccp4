@@ -46,7 +46,7 @@
 
 # The following variables are expected to be set by configure:
 # top_srcdir libdir bindir FC FFLAGS CC CFLAGS RANLIB LNS M4 F
-# INSTALL_PROGRAM INSTALL_DATA MAYBEMOSFLM
+# INSTALL_PROGRAM INSTALL_DATA MAYBEMOSFLM SHARE_LIB SHARE_INST
 
 SHELL       = /bin/sh
 srcdir	    = $(top_srcdir)/lib/src
@@ -98,7 +98,10 @@ $L : $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	  $L(plot84lib.o) $L(plotsubs.o)
 # titan special:
 	-(test -f /usr/lib/fortran/time.o && make '$L(time.o)') || true
+# we could presumably avoid the next two steps if we haven't changed anything
 	$(RANLIB) $@
+# maybe create shared library
+	$(SHARE_LIB)
 
 test-lib : $(srcdir)/testlib.f $L(library.o) $L(unix.o) $L(ccplib.o) \
           $L(diskio.o)
@@ -109,6 +112,10 @@ test-lib : $(srcdir)/testlib.f $L(library.o) $L(unix.o) $L(ccplib.o) \
 # mosflm stuff, some of which we'd like to disown:
 mosflm-stuff : $L(graflib.o) $L(chelp.o) $L(pack_c.o) $L(pack_f.o)
 	$(RANLIB) $L
+# chelp.o drags in curses stuff and we get unresolved stuff at load time
+# unless we have curses around, sigh.  chelp will go when the next mosflm
+# includes it
+	$(SHARE_LIB) -lcurses
 
 # explicit building of the real targets, sigh...
 # include the pwd info for ease of symbolic debugging
@@ -356,16 +363,18 @@ testlib : test-lib $(srcdir)/testlib.f
 install : all
 	$(INSTALL_DATA) $L $(libdir)/$L
 	$(RANLIB) $(libdir)/$L
+	$(SHARE_INST)
 
 unintstall :
 	-rm -f $(libdir)/$L
+	test -f $(libdir)/libccp4.so && rm -f $(libdir)/libccp4.so
 
 clean :
 	-rm -f core *.o *~ *.dir/*.o testlib disc.dft a.out *.orig *.rej defs.m4
 	-rm -rf tagdir
 
 realclean : clean
-	-rm -rf $L *.dir TAGS unix.f Makefile
+	-rm -rf $L *.dir TAGS unix.f Makefile libccp4.so
 
 dist : realclean
 	-rm -f Makefile
