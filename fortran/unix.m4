@@ -1162,7 +1162,13 @@ dnl * len is quoted since also m4 macro
 c
       stime = time()
       call gmtime(stime,gmtarray)
-      call ltime(stime,tarray)
+dnl * for AIX - ltime is not resolved on linking - only ltime_ exists
+dnl   in the Fortran library.
+ifelse(_AIX,1,
+[      call ltime_(stime,tarray)
+],
+[      call ltime(stime,tarray)
+])dnl
 c
       nminutes = gmtarray(2)
       nhours = gmtarray(3)
