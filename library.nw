@@ -67,7 +67,9 @@ Routine and  arguments &                      Purpose \\
 We aim for compatibility with K\&R\index{K&R@K\&R C} and 
 \index{ANSI C@\ac{ansi} C} \ac{ansi}~C\@ as well as \idx{VAX
   C}\index{C!VAX}.  One particularly annoying
-consequence is that we can't rely on [[#elif]] preprocessor directives.
+consequence is that we can't rely on [[#elif]] preprocessor
+directives.  I don't know whether anything needs to be changed for the
+new \idx{DEC C}, which is apparently \ac{ansi}\dots{}
 
 @ \section{Code}
 
@@ -677,11 +679,15 @@ int  *iunit, *istat;
   you can't do arbitrary seeks in such a file format.  Fortunately, in
   VAX C the file can be opened as StreamLF\index{StreamLF files} (as
   we want for C i/o) regardless of what the file header says.  Thanks
-  to Peter Keller for suggesting this.  This should also work for
-  files ftp'd from a Unix box;
+  to Peter Keller for suggesting this.  (This should also work for
+  files ftp'd from a Unix box.);
 \item We can't [[unlink]] the open file from the directory a
-  posteriori.  Instead it's opened with the `tmd' RMS option as the
+  posteriori.  Instead it's opened with the [[tmd]] RMS option as the
   assembler routines did;
+\item Following the suggestion in the VMS 6.0 release notes about
+  faster stream i/o, we use open option [["mbc=16"]] to increase the
+  block size.  (This is supposed to be the default value with
+  \idx{DEC C}.)
 \item However, the VAX C syntax for this ([[fopen]] with varargs)
   might not be supported by non-DEC compilers (although {\tt
   gcc}\index{GCC} does seem to have it).
@@ -690,9 +696,11 @@ int  *iunit, *istat;
 #ifdef VMS
   if (file_is_scratch[i])
     file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1],
+                            "mbc=16", /* bigger blocksize */
                             "fop=tmd"); /* temporary, delete on close */
   else
     file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1],
+                            "mbc=16", /* bigger blocksize */
                             "ctx=stm", "mrs=0", "rat=cr", "rfm=stmlf");
 #else
   file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1]);
@@ -757,6 +765,7 @@ N.B.: leaves the stream positioned just after the machine stamp.
   if ((fseek (file_stream[*iunit], (size_t) ((*ipos)*item_sizes[2]),
               SEEK_SET) != 0))
     fatal ("QRARCH: seek failed");
+  file_last_op[*iunit] = READ_OP;
   if (fread (mtstring, (size_t) sizeof(char), (size_t) 4,
              file_stream[*iunit]) != 4)
     fatal ("QRARCH: can't read machine stamp");
@@ -810,6 +819,7 @@ N.B.: leaves the stream positioned just after the machine stamp.
   mtstring[0] = nativeFT | (nativeFT << 4);
   mtstring[1] = 1 | (nativeIT << 4);
   mtstring[2] = mtstring[3] = 0;
+  file_last_op[*iunit] = WRITE_OP;
   if (fwrite (mtstring, (size_t) sizeof(char), (size_t) 4,
              file_stream[*iunit]) != 4)
     fatal ("QWARCH: can't write machine stamp");
