@@ -113,7 +113,13 @@ static char rcsidhe[] = "$Id$";
  *    3  Error
  *    4  Fatal
  */ 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern int ccp4_errno;
+#ifdef __cplusplus
+}
+#endif
 
 #ifdef __cplusplus
 namespace CCP4 {
