@@ -1863,18 +1863,37 @@ C      dictionary file - this is built from NAMSPG_CIF.
 C
 C  Remove *all* spaces from the full SG name
 C
+C  First remove " 1"s from the full name (but only if there are 2
+C  occurances)
+C  e.g. "C 1 21 1" -> "C2"
+C  but  "P 31 2 1" -> "P3121"
+C
       ILEN = LENSTR(NAMSPG_CIF)
 C
          NAMSPG_CIFS = NAMSPG_CIF(1:1)
+         NAMSAV = NAMSPG_CIF(1:ILEN)
 C
          IF(ILEN.GE.2) THEN
-          J = 1
+C
+C  First scan to find the number of " 1"s
+          J = 0
           DO I = 2,ILEN
-           IF( NAMSPG_CIF(I:I).NE.' ') THEN
-            NAMSPG_CIFS = NAMSPG_CIFS(1:J)//NAMSPG_CIF(I:I)
-            J = J + 1
+             IF (NAMSPG_CIF(I-1:I).EQ.' 1') J = J + 1
+           END DO
+           IF (J.EQ.2) THEN
+             DO I = 2,ILEN
+               IF (NAMSPG_CIF(I-1:I).EQ.' 1') NAMSAV(I:I) = ' '
+             END DO
            END IF
-          END DO 
+C
+C  Now remove all the spaces
+           J = 1
+           DO I = 2,ILEN
+             IF (NAMSAV(I:I).NE.' ') THEN
+               NAMSPG_CIFS = NAMSPG_CIFS(1:J)//NAMSPG_CIF(I:I)
+               J = J + 1
+             END IF
+           END DO
          END IF
 C
 C  It is possible that the spacegroup "name" in NAMSPG_CIFS
@@ -1986,18 +2005,37 @@ C----- Reset space group name to longest on offer
 C
 C  Repeat the removal of all spaces from SG name
 C
+C  First remove " 1"s from the full name (but only if there are 2
+C  occurances)
+C  e.g. "C 1 21 1" -> "C2"
+C  but  "P 31 2 1" -> "P3121"
+C
       ILEN = LENSTR(NAMSPG_CIF)
 C
          NAMSPG_CIFS = NAMSPG_CIF(1:1)
-
+         NAMSAV = NAMSPG_CIF(1:ILEN)
+C
          IF(ILEN.GE.2) THEN
-          J = 1
-          DO I = 2,ILEN
-           IF( NAMSPG_CIF(I:I).NE.' ') THEN
-            NAMSPG_CIFS = NAMSPG_CIFS(1:J)//NAMSPG_CIF(I:I)
-            J = J + 1
+C
+C  First scan to find number of " 1"s
+           J = 0
+           DO I = 2,ILEN
+             IF (NAMSPG_CIF(I-1:I).EQ.' 1') J = J + 1
+           END DO
+           IF (J.EQ.2) THEN
+             DO I = 2,ILEN
+               IF (NAMSPG_CIF(I-1:I).EQ.' 1') NAMSAV(I:I) = ' '
+             END DO
            END IF
-          END DO 
+C
+C  Now remove all the spaces
+           J = 1
+           DO I = 2,ILEN
+             IF (NAMSAV(I:I).NE.' ') THEN
+               NAMSPG_CIFS = NAMSPG_CIFS(1:J)//NAMSPG_CIF(I:I)
+               J = J + 1
+             END IF
+           END DO 
          END IF
 C
 C
