@@ -1964,7 +1964,7 @@ C
       CALL UGTUID(UID)
       CALL UTIME(CTIME)
       WRITE (ILP,FMT=6000) PR,DT,UID(1:LENSTR(UID)),DT2,CTIME
- 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.1: ',
+ 6000 FORMAT ('1### CCP PROGRAM SUITE: ',A10,2X,'VERSION 2.2alpha: ',
      +       A8,'###',/' User: ',A,'  Run date: ',A8,'  Run time:',A,
      +       /)
 C
@@ -2119,9 +2119,6 @@ C
 C
          LOGICAL FUNCTION LITEND(IDUM)
 C        =======================
-C
-C *** NB this isn't used except for the LAUE routines and assumes
-C        integer*4 as the default.  Maybe it should go.
 C
 C---- Check endedness, Returns TRUE if little endian (VAX, FX2800,
 C                                                   Ultrix, Convex)
