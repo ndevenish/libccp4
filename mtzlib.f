@@ -7212,15 +7212,15 @@ C
 C
             IF (NSYM(MINDX).GT.0) THEN
               WRITE (STROUT,FMT='(A,I3)')
-     +          '* Number of Symmetry Operations  =',NSYM(MINDX)
+     +          '* Number of Symmetry Operations = ',NSYM(MINDX)
 C
 C                  ***********************
               CALL PUTLIN(STROUT,'CURWIN')
 C                  ***********************
 C
               IF (NSYMP(MINDX).GT.0) THEN
-                WRITE (STROUT,FMT='(A,I4)')
-     +            '* Number of Primitive Operations =',NSYMP(MINDX)
+                WRITE (STROUT,FMT='(A,I3)')
+     +            '* Number of Primitive Operations = ',NSYMP(MINDX)
 C
 C                    ***********************
                 CALL PUTLIN(STROUT,'CURWIN')
