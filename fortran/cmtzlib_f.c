@@ -824,11 +824,11 @@ FORTRAN_SUBR ( LRIDX, lridx,
 
 }
 
-/* Return cell parameters associated with the specified dataset id
- * @param mindx MTZ file index
+/* Return cell parameters associated with the specified dataset
+ * @param mindx On input: MTZ file index
  * @param iset On input: integer specifying the setid for which the
  * cell parameters are required.
- * @param mtzcell array of 6 reals. On output: populated with the 
+ * @param mtzcell Array of 6 reals. On output: populated with the 
  * required cell parameters.
  */
 FORTRAN_SUBR ( LRCELX, lrcelx,
@@ -838,7 +838,8 @@ FORTRAN_SUBR ( LRCELX, lrcelx,
 {
   MTZ *mtz;
   MTZXTAL *xtal;
-  int iiset,i,j,k;
+  MTZSET *set;
+  int i,j,k;
 
   /* NB This function interacts directly with the mtz data structure stored
      in memory */
@@ -846,16 +847,14 @@ FORTRAN_SUBR ( LRCELX, lrcelx,
 
   if (MtzCheckSubInput(*mindx,"LRCELX",1)) return;
 
-  /* Datasets are numbered in order of xtals, then sets within xtals */
-  iiset = -1;
   mtz = mtzdata[*mindx-1];
   for (i = 0; i < mtz->nxtal; ++i) {
     xtal = mtz->xtal[i];
     for (j = 0; j < xtal->nset; ++j) {
-      ++iiset;
+      set = xtal->set[j];
       /* Check if we have found the set in question */
-      if (iiset == *iset) {
-	/* Copy the cell for this crystal */
+      if (set->setid == *iset) {
+	/* Copy the cell for the crystal that the dataset belongs to */
 	for (k = 0; k < 6; ++k) {
 	  mtzcell[k] = xtal->cell[k];
 	}
