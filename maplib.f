@@ -275,7 +275,7 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       INTEGER I,J,KMODE,NBHDR,NCHHDR,NFILSZ
-      CHARACTER BLANK*4,FILE*255
+      CHARACTER BLANK*4,FILE*255,BUFF*512
 C     ..
 C     .. Local Arrays ..
       REAL HEADER(256)
@@ -415,7 +415,10 @@ C
 C---- Get and print filename
 C
         CALL QQINQ(LSTRM(IUNIT),MAPNAM,FILE,NFILSZ)
-        WRITE (LUNOUT,FMT=6000) IUNIT,FILE(1:LENSTR(FILE)),MAPNAM
+        WRITE (BUFF,FMT=6000) IUNIT,FILE
+        CALL QPRINT (1, BUFF)
+        BUFF = '    logical name ' // MAPNAM
+        CALL QPRINT (1, BUFF)
 C
       END IF
       RETURN
@@ -437,8 +440,7 @@ C
 C
 C---- Format statements
 C
- 6000 FORMAT (/'  File name for output map file on unit',I4,' : ',A,
-     +       /'     logical name ',A,/)
+ 6000 FORMAT (' File name for output map file on unit',I4,' : ',A)
  6002 FORMAT (20A4)
  6004 FORMAT (/' **MAP FILE HANDLING ERROR**')
  6006 FORMAT (/' **MWRHDL: UNIT NO. MUST BE 1 TO 12, =',I3,' **')
@@ -712,13 +714,13 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       DOUBLE PRECISION T
-      INTEGER NBHDR,NCHHDR
+      INTEGER NBHDR,NCHHDR, PLEVEL
 C     ..
 C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITR, QWARCH,  MSTMST        
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITR, QWARCH,  MSTMST, QPRLVL
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
@@ -762,7 +764,8 @@ C---- Minimum & maximum
 C
       AMIN = RHMIN
       AMAX = RHMAX
-      IF(MODE.EQ.2) THEN
+      CALL QPRLVL (PLEVEL)
+      IF(MODE.EQ.2 .AND. PLEVEL.GE.1) THEN
         WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
       ENDIF
 C
@@ -832,13 +835,13 @@ C     .. Arrays in Common ..
 C     ..
 C     .. Local Scalars ..
       DOUBLE PRECISION T
-      INTEGER NBHDR,NCHHDR
+      INTEGER NBHDR,NCHHDR,PLEVEL
 C     ..
 C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITR, MSTMST, QWARCH
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWRITR, MSTMST, QWARCH, QPRLVL
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
@@ -879,8 +882,9 @@ C
       ENDIF
 C
 C---- Minimum & maximum
-C
-      IF(MODE.EQ.2) THEN
+C     
+      CALL QPRLVL (PLEVEL)
+      IF(MODE.EQ.2 .AND. PLEVEL.GE.1) THEN
         WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
       ENDIF
 C
@@ -961,13 +965,13 @@ C     .. Arrays in Common ..
       INTEGER JUNK,LABELS,LSTRM,MAPCRS,NXYZ,MACHST
 C     ..
 C     .. Local Scalars ..
-      INTEGER NBHDR,NCHHDR
+      INTEGER NBHDR,NCHHDR, PLEVEL
 C     ..
 C     .. Local Arrays ..
       REAL HEADER(256)
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QMODE,QSEEK,QWARCH,QWRITR, MSTMST         
+      EXTERNAL QCLOSE,QMODE,QSEEK,QWARCH,QWRITR, MSTMST, QPRLVL
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC SQRT
@@ -1004,7 +1008,8 @@ C---- write map stamp to word 53
 C
 C set MAPST = 'MAP'
       CALL MSTMST(MAPST)
-      IF(MODE.EQ.2) THEN
+      CALL QPRLVL (PLEVEL)
+      IF(MODE.EQ.2 .AND.PLEVEL.GE.1) THEN
         WRITE (LUNOUT,FMT=6000) AMIN,AMAX,AMEAN,ARMS
       ENDIF
 C
@@ -2043,8 +2048,8 @@ C
             IF (NSYM.GE.N) THEN
 C
 C---- Print
-C
-              WRITE (LUNOUT,FMT=6000) LINE
+C             
+              CALL QPRINT (1, 'Symmetry operations: ' // LINE)
             END IF
    20   CONTINUE
 C
@@ -2055,11 +2060,7 @@ C
         IF (MODES(IUNIT).EQ.11 .OR. MODES(IUNIT).EQ.12) 
      +      KMODE = 2
         CALL QMODE(LSTRM(IUNIT),KMODE,NCHITM(IUNIT))
-C
-C---- Format statements
-C
- 6000 FORMAT (/' Symmetry operations : ',A)
-      END
+        END
 C
 C
 C_BEGIN_MSYCPY
