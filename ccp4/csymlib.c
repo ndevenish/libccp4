@@ -1635,6 +1635,14 @@ int ccp4spg_load_laue(CCP4SPG *spacegroup, const int nlaue)
      spacegroup->laue_sampling[2] = 2;
      ierr = 0;
   }
+  if ( nlaue == 5 ) {
+     spacegroup->nlaue = 5;
+     strcpy(spacegroup->laue_name,"2/m");
+     spacegroup->laue_sampling[0] = 2;
+     spacegroup->laue_sampling[1] = 8;
+     spacegroup->laue_sampling[2] = 4;
+     ierr = 0;
+  }
   if ( nlaue == 6 ) {
      spacegroup->nlaue = 6;
      strcpy(spacegroup->laue_name,"mmm");
