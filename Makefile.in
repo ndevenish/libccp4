@@ -75,7 +75,8 @@ RMEMPTY = rm -f ZZZ*.$(F) zzz*.$(F)
 # modules to go in libccp4.a:
 LIBTARGETS = cciflib ccplib fftlib maplib parser rwbrook modlib \
            symlib lgglib harvlib mtzlib diskio unix plot84lib libhtml \
-           binsortint library library_f plotsubs keyparse pack_f pack_c
+           binsortint library library_f plotsubs keyparse pack_f pack_c \
+           pxxml
 
 .PRECIOUS : $L # don't zap the library if a component fails
 
@@ -96,7 +97,7 @@ $L : $L(cciflib.o) $L(ccplib.o) $L(fftlib.o) $L(maplib.o) $L(parser.o) \
 	  $L(mtzlib.o) $L(lgglib.o) $L(harvlib.o) $L(diskio.o) $L(unix.o) \
 	  $L(binsortint.o) $L(library.o) $L(library_f.o) $L(plot84lib.o) \
 	  $L(libhtml.o) $L(plotsubs.o) $L(keyparse.o) \
-	  $L(pack_c.o) $L(pack_f.o)
+	  $L(pack_c.o) $L(pack_f.o) $L(pxxml.o)
 # titan special:
 	-(test -f /usr/lib/fortran/time.o && make '$L(time.o)') || true
 # we could presumably avoid the next two steps if we haven't changed anything
@@ -283,6 +284,18 @@ $L(libhtml.o) : $(srcdir)/libhtml.f
 	  && $(AR) ../$L *.o
 	rm -f libhtml.dir/*.o
 libhtml : $L(libhtml.o)
+	$(RANLIB) $L
+
+$L(pxxml.o) : $(srcdir)/pxxml.f
+	-rm -rf pxxml.dir; mkdir pxxml.dir
+	echo '      SUBROUTINE PXXML' > pxxml.dir/pxxml.$F
+	echo '      END' >> pxxml.dir/pxxml.$F
+	cd pxxml.dir && $(bindir)/fsplit $(srcdir)/pxxml.f >/dev/null && $(RMEMPTY) && \
+	  for i in `pwd`/*.$F; do \
+	    $(FC) -c $(FFLAGS) $$i; done\
+	  && $(AR) ../$L *.o
+	rm -f pxxml.dir/*.o
+pxxml : $L(pxxml.o)
 	$(RANLIB) $L
 
 $L(plotsubs.o) : $(srcdir)/plotsubs.f
