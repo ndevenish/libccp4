@@ -211,7 +211,7 @@ FORTRAN_SUBR ( LRHIST, lrhist,
 
  if (MtzCheckSubInput(*mindx,"LRHIST",1)) return;
 
- *nlines = ccp4_lrhist(mtzdata[*mindx-1], hstrng);
+ *nlines = ccp4_lrhist(mtzdata[*mindx-1], hstrng, *nlines);
 
 }
 
