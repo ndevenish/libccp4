@@ -28,10 +28,10 @@ are just generally useful (platform independent date).
  *  @author  Charles Ballard
  */
 
+#include "ccp4_sysdep.h"
 #include <time.h>
 #include <math.h>
 #include "ccp4_utils.h"
-#include "ccp4_sysdep.h"
 #include "ccp4_errno.h"
 
 #define CCP4_ERRNO(y) (CCP4_ERR_UTILS | (y))          
