@@ -2364,6 +2364,7 @@ FORTRAN_SUBR ( LWASSN, lwassn,
     
     /* assign new columns for output */
     colarray = ccp4_lwassn(mtzdata[*mindx-1],label,*nlprgo,type,*iappnd); 
+
     for (j = 0; j < 5; ++j)
         colsort[j] = NULL;
     for (i = 0; i < *nlprgo; ++i) {
@@ -2373,7 +2374,12 @@ FORTRAN_SUBR ( LWASSN, lwassn,
             if (sortorder[*mindx-1][j] == (i + 1))
                 colsort[j] = colarray[i];
     }
-    MtzSetSortOrder(mtzdata[*mindx-1],colsort);
+
+    /* If LWSORT has been called, then sortorder[][] should be set, and we make
+       sure sort order is up-to-date with output columns. If sortorder[][] not
+       set, we retain sort order of input file. */
+    if (sortorder[*mindx-1][0]) 
+      MtzSetSortOrder(mtzdata[*mindx-1],colsort);
     
     /* now must update col data for write */
     for (i = 0; i < *nlprgo; ++i)
@@ -2441,6 +2447,7 @@ FORTRAN_SUBR ( LWCLAB, lwclab,
 
   /* assign new columns for output */
   colarray = ccp4_lwassn(mtzdata[*mindx-1],label,*nlprgo,type,*iappnd); 
+
   for (j = 0; j < 5; ++j)
     colsort[j] = NULL;
   for (i = 0; i < *nlprgo; ++i) {
@@ -2450,7 +2457,12 @@ FORTRAN_SUBR ( LWCLAB, lwclab,
       if (sortorder[*mindx-1][j] == (i + 1)) 
         colsort[j] = colarray[i];
   }
-  MtzSetSortOrder(mtzdata[*mindx-1],colsort);
+
+  /* If LWSORT has been called, then sortorder[][] should be set, and we make
+     sure sort order is up-to-date with output columns. If sortorder[][] not
+     set, we retain sort order of input file. */
+  if (sortorder[*mindx-1][0]) 
+    MtzSetSortOrder(mtzdata[*mindx-1],colsort);
 
   free(colarray);
   free(label);
