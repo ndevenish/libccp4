@@ -365,11 +365,11 @@ int ccp4_file_raw_write(CCP4File *cfile, const char *buffer, size_t n_items)
  * or lseek (@cfile->fd).  %SEEK_SET is relative
  * to start of file, %SEEK_CUR to current, %SEEK_END to
  * end.
- * Return: offset in bytes on success, EOF on failure.
+ * Return: offset in bytes on success, -1 on failure.
  */
 int ccp4_file_raw_seek(CCP4File *cfile, long offset, int whence)
 {
-  int result = EOF;
+  int result = -1;
       
   if (!cfile->direct)  {
     ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_BadMode),
@@ -392,7 +392,7 @@ int ccp4_file_raw_seek(CCP4File *cfile, long offset, int whence)
   
   cfile->last_op = IRRELEVANT_OP;
   
-  if (result ==  EOF) {
+  if (result ==  -1) {
     ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_SeekFail),
 		"ccp4_file_raw_seek", NULL);
     cfile->iostat = CIO_SeekFail;
@@ -1967,7 +1967,7 @@ int ccp4_file_writechar (CCP4File *cfile, const uint8 *buffer, size_t nitems)
  * to start of file, SEEK_CUR to current, SEEK_END to
  * end.
  *
- * Return: 0 on success, EOF on failure
+ * Return: 0 on success, -1 on failure
  */
 int ccp4_file_seek (CCP4File *cfile, long offset, int whence)
 {
@@ -1976,7 +1976,7 @@ int ccp4_file_seek (CCP4File *cfile, long offset, int whence)
   if (!cfile) {
     ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_NullPtr), 
 		"ccp4_file_seek", NULL);
-    return EOF; }
+    return -1; }
         
   result = ccp4_file_raw_seek(cfile, offset*cfile->itemsize, whence);
 
