@@ -2041,13 +2041,13 @@ C
      +       '_phasing_MIR_der_site.Occupancy_iso',' ',
      +                       8,3,'f',ccifStatus)
         CALL ccif_output_fmt(
-     +       '_phasing_MIR_der_site.Occupancy_iso_esd',
+     +       '_phasing_MIR_der_site.Occupancy_iso_su',
      +                       ' ',8,3,'f',ccifStatus)
         CALL ccif_output_fmt(
      +       '_phasing_MIR_der_site.Occupancy_anom',' ',
      +                       8,3,'f',ccifStatus)
         CALL ccif_output_fmt(
-     +       '_phasing_MIR_der_site.Occupancy_anom_esd',
+     +       '_phasing_MIR_der_site.Occupancy_anom_su',
      +                       ' ',8,3,'f',ccifStatus)
       END IF
 C
@@ -2175,13 +2175,13 @@ C
      +           '_phasing_MIR.d_res_low',
      +           ' ',6,2,'f',ccifStatus)
         CALL ccif_output_fmt(
-     +           '_phasing_MIR.fom',
+     +           '_phasing_MIR.FOM',
      +           ' ',8,3,'f',ccifStatus)
         CALL ccif_output_fmt(
-     +           '_phasing_MIR.fom_centric',
+     +           '_phasing_MIR.FOM_centric',
      +           ' ',8,3,'f',ccifStatus)
         CALL ccif_output_fmt(
-     +           '_phasing_MIR.fom_acentric',
+     +           '_phasing_MIR.FOM_acentric',
      +           ' ',8,3,'f',ccifStatus)
         CALL ccif_output_fmt(
      +           '_phasing_MIR.reflns',
@@ -2224,7 +2224,7 @@ C
       IF (Mt .ne. 0 .and. Mt .lt. IvalueNotDet -1) THEN
          CALL ccif_put_int('_phasing_MIR.reflns',
      +                     Mt,ccifContext,ccifStatus)
-         CALL ccif_put_real('_phasing_MIR.fom',
+         CALL ccif_put_real('_phasing_MIR.FOM',
      +                     fomT,ccifContext,ccifStatus)
       END IF
 C
@@ -2232,7 +2232,7 @@ C
       IF (Mc .ne. 0 .and. Mc .lt. IvalueNotDet -1) THEN
           CALL ccif_put_int('_phasing_MIR.reflns_centric',
      +                      Mc,ccifContext,ccifStatus)
-          CALL ccif_put_real('_phasing_MIR.fom_centric',
+          CALL ccif_put_real('_phasing_MIR.FOM_centric',
      +                      fomC,ccifContext,ccifStatus)
       END IF
 C
@@ -2240,7 +2240,7 @@ C
       IF (Ma .ne. 0 .and. Ma .lt. IvalueNotDet -1) THEN
           CALL ccif_put_int('_phasing_MIR.reflns_acentric',
      +                       Ma,ccifContext,ccifStatus)
-          CALL ccif_put_real('_phasing_MIR.fom_acentric',
+          CALL ccif_put_real('_phasing_MIR.FOM_acentric',
      +                       fomA,ccifContext,ccifStatus)
       END IF
 C
@@ -2260,9 +2260,9 @@ C
 C    _PHASING_MIR_NATIVE_SHELL
 C            _phasing_MIR_shell.d_res_high
 C            _phasing_MIR_shell.d_res_low
-C            _phasing_MIR_shell.fom
-C            _phasing_MIR_shell.fom_centric
-C            _phasing_MIR_shell.fom_acentric
+C            _phasing_MIR_shell.FOM
+C            _phasing_MIR_shell.FOM_centric
+C            _phasing_MIR_shell.FOM_acentric
 C            _phasing_MIR_shell.reflns
 C            _phasing_MIR_shell.reflns_centric
 C            _phasing_MIR_shell.reflns_acentric
@@ -2315,11 +2315,11 @@ C
      +                       ' ',6,2,'f',ccifStatus)
         CALL ccif_output_fmt('_phasing_MIR_shell.d_res_low',
      +                       ' ',6,2,'f',ccifStatus)
-        CALL ccif_output_fmt('_phasing_MIR_shell.fom',
+        CALL ccif_output_fmt('_phasing_MIR_shell.FOM',
      +                       ' ',8,3,'f',ccifStatus)
-        CALL ccif_output_fmt('_phasing_MIR_shell.fom_centric',
+        CALL ccif_output_fmt('_phasing_MIR_shell.FOM_centric',
      +                       ' ',8,3,'f',ccifStatus)
-        CALL ccif_output_fmt('_phasing_MIR_shell.fom_acentric',
+        CALL ccif_output_fmt('_phasing_MIR_shell.FOM_acentric',
      +                       ' ',8,3,'f',ccifStatus)
         CALL ccif_output_fmt('_phasing_MIR_shell.reflns',
      +                       ' ',8,0,'d',ccifStatus)
@@ -2354,7 +2354,7 @@ C
         ccifStatus = KeepContext
       IF (Package(1:4) .eq. 'CCP4') THEN
       IF (fomO .lt. valueNotDet -1.0) CALL ccif_put_real(
-     +     '_phasing_MIR_shell.fom',fomO,
+     +     '_phasing_MIR_shell.FOM',fomO,
      +     ccifContext,ccifStatus)
       END IF
       END IF
@@ -2368,7 +2368,7 @@ C
         ccifStatus = KeepContext
       IF (Package(1:4) .eq. 'CCP4') THEN
       IF (fomC .lt. valueNotDet -1.0) CALL ccif_put_real(
-     +        '_phasing_MIR_shell.fom_centric',
+     +        '_phasing_MIR_shell.FOM_centric',
      +        fomC,ccifContext,ccifStatus)
       END IF
       END IF
@@ -2382,7 +2382,7 @@ C
         ccifStatus = KeepContext
       IF (Package(1:4) .eq. 'CCP4') THEN
       IF (fomA .lt. valueNotDet -1.0) CALL ccif_put_real(
-     +     '_phasing_MIR_shell.fom_acentric',
+     +     '_phasing_MIR_shell.FOM_acentric',
      +     fomA,ccifContext,ccifStatus)
       END IF
       END IF
@@ -2461,10 +2461,10 @@ C         _refine.Correlation_coeff_Fo_to_Fc
 C         _refine.Correlation_coeff_Fo_to_Fc_Free 
 C         _refine.goodness_of_fit_work
 C         _refine.goodness_of_fit_FreeR
-C         _refine.Overall_ESU_ML
-C         _refine.Overall_ESU_B
-C         _refine.Overall_ESU_R_Cruickshanks_DPI  
-C         _refine.Overall_ESU_Rfree
+C         _refine.Overall_SU_ML
+C         _refine.Overall_SU_B
+C         _refine.Overall_SU_R_Cruickshanks_DPI  
+C         _refine.Overall_SU_Rfree
 C
 C
 C
@@ -2522,28 +2522,28 @@ C
       ccifStatus = 1
       IF (ESUml .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
-     +       '_refine.Overall_ESU_ML',
+     +       '_refine.Overall_SU_ML',
      +                   ESUml,ccifContext,ccifStatus)
 C
 C
       ccifStatus = 1
       IF (bESU .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
-     +       '_refine.Overall_ESU_B',
+     +       '_refine.Overall_SU_B',
      +                   bESU,ccifContext,ccifStatus)
 C
 C
       ccifStatus = 1
       IF (DPI .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
-     +      '_refine.Overall_ESU_R_Cruickshank_DPI',
+     +      '_refine.Overall_SU_R_Cruickshank_DPI',
      +                   DPI,ccifContext,ccifStatus)
 C
 C
       ccifStatus = 1
       IF (FreeESU .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
-     +      '_refine.Overall_ESU_R_free',
+     +      '_refine.Overall_SU_R_free',
      +                   FreeESU,ccifContext,ccifStatus)
 C
 C
