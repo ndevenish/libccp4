@@ -42,6 +42,7 @@ static char rcsidhe[] = "$Id$";
 #define CCP4_ERR_UTILS CCP4_ERRSYSTEM(0x5)
 #define CCP4_ERR_PARS CCP4_ERRSYSTEM(0x6)
 #define CCP4_ERR_SYM CCP4_ERRSYSTEM(0x7)
+#define CCP4_ERR_GEN CCP4_ERRSYSTEM(0x8)
 
 #define CCP4_COUNT(x) sizeof(x)/sizeof(x[0])
 

@@ -109,6 +109,26 @@ static const char *const csym_errlist[] =
     "Failed to initialise parser",               /* 1 = CSYMERR_ParserFail */
   };
 
+static const char *const cgen_errlist[] =
+  {
+    "Error 0",                                   /* 0 = CGENERR_Ok */
+    "Cannot allocate memory",                    /* 1 = CGENERR_AllocFail */
+    "Cannot set environment variable",           /* 2 = CGENERR_CantSetEnvironment */
+    "Maximum number of logical names exceeded",  /* 3 = CGENERR_MaxNamesExceeded */
+    "Use: -e filename",                          /* 4 = CGENERR_EOptionUseError */
+    "Use: -d filename",                          /* 5 = CGENERR_DOptionUseError */
+    "Use: <logical name> <file name>",           /* 6 = CGENERR_LogicalNameUseError */
+    "Cannot open environ.def",                   /* 7 = CGENERR_CantOpenEnvFile */
+    "Cannot open default.def",                   /* 8 = CGENERR_CantOpenDefFile */
+    "Cannot parse environ.def file",             /* 9 = CGENERR_ParseEnvFail */
+    "Cannot parse default.def file",             /* 10= CGENERR_ParseDefFail */
+    "Cannot find input file",                    /* 11= CGENERR_CantFindInFile */
+    "Failed to set path for environ.def file",   /* 12= CGENERR_EnvPathFail */
+    "Failed to set path for default.def file",   /* 13= CGENERR_DefPathFail */
+    "Cannot get CLIBD from environment",         /* 14= CGENERR_CantGetClibd */
+    "Cannot get CCP4_SCR from environment",      /* 15= CGENERR_CantGetCcp4Scr */
+  };
+
 struct error_system {
   char system[32];
   int system_nerr;
@@ -124,7 +144,8 @@ static const struct error_system ccp4_errlist[] = {
     {"ccp4_map", CCP4_COUNT(cmap_errlist), cmap_errlist,},
     {"utils", 0, 0},
     {"ccp4_parser", CCP4_COUNT(cpars_errlist), cpars_errlist,},
-    {"csym", CCP4_COUNT(csym_errlist), csym_errlist,}
+    {"csym", CCP4_COUNT(csym_errlist), csym_errlist,},
+    {"ccp4_general", CCP4_COUNT(cgen_errlist), cgen_errlist,}
 };
 
 static const int ccp4_system_nerr = CCP4_COUNT(ccp4_errlist);
