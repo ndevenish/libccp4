@@ -871,7 +871,7 @@ C     .. Local Scalars ..
       INTEGER I,II
       CHARACTER*100 ERRLIN
       CHARACTER BROOKA*80,PDBATN*4,PDBRESN*4,PDBCHN*1,PDBID*4,
-     +          PDBRESNO*5,PDBSEGID*4
+     +          PDBRESNO*5,PDBSEGID*4,Cnums(10)*1
 
 C     ..
 C     .. External Routines/Functions ..
@@ -886,6 +886,7 @@ C     ..
 C     .. Data Statements ..
       DATA ITYPE/'CRYST1','SCALE','TER   ','ATOM  ','HETATM',
      +           'ANISOU','END   '/
+      DATA Cnums /'0','1','2','3','4','5','6','7','8','9'/
 C
 C     .. Equivalences ..
       EQUIVALENCE (BROOKA,WBROOK(1))
@@ -938,13 +939,35 @@ C
         ENDIF
         IF(BROOKA(1:6) .EQ. '      ')BROOKA(1:6) = 'ATOM  '
         BROOKA(17:17) = ALTCOD(1:1)
+c
+c----- PDB rule is that if it is a Hydrogen or Deuterium
+c      then BROOKA(13:13) can be a digit 0-9
+c      all other single char element symbols
+c      must have BROOKA(13:13) = ' '
+c
+c---- BROOKA(12:12) is ALWAYS ' '
+c
+        BROOKA(12:12) = ' '
+c
+c
         IF (ID(1:1) .EQ. ' ') THEN
-          BROOKA(12:13) = '  '
-          BROOKA(14:17) = ATNAM(1:4)
+          IF (ATNAM(2:2).eq.'H' .or. 
+     +          (ATNAM(2:2).eq.'D' .and. ID(1:2).eq.' D') ) then
+             DO 21 LLx=1,10
+               IF (ATNAM(1:1).eq.Cnums(LLx))then
+                 BROOKA(13:16) = ATNAM(1:4)
+                 GO TO 22
+               END IF
+ 21          CONTINUE
+           END IF
+          BROOKA(13:13) = ' '
+          BROOKA(14:16) = ATNAM(1:3)
         ELSE
-          BROOKA(12:12) = ' '
           BROOKA(13:16) = ATNAM(1:4)
         ENDIF
+ 22     CONTINUE
+c
+c
         WRITE(PDBRESNO,FMT='(I5)') ISER
         BROOKA(7:11) = PDBRESNO
         BROOKA(18:20) = RESNAM
@@ -1524,11 +1547,19 @@ C
           IFTER=.TRUE.
           GO TO 450
         ENDIF
-
-        IF(BROOK(13).EQ.ISP)GO TO 410
-        ATNAM=BROOK(13)//BROOK(14)//BROOK(15)//BROOK(16)
-        GO TO 450
-410     ATNAM=BROOK(14)//BROOK(15)//BROOK(16)//BROOK(17)
+        IF(BROOK(13).EQ.ISP) then
+c
+C----   ATNAM (O) Atom name  (character*4 left justified)
+c
+          ATNAM=BROOK(14)//BROOK(15)//BROOK(16)//' '
+c
+c---- atnam should never had ALTCODE added to it 
+c
+         else
+          ATNAM=BROOK(13)//BROOK(14)//BROOK(15)//BROOK(16)
+         end if
+c
+c
 450     READ(BROOKA,1006)ISER,IRESN
         RESNAM=BROOK(18)//BROOK(19)//BROOK(20)//ISP
         RESNO=BROOK(23)//BROOK(24)//BROOK(25)//BROOK(26)
