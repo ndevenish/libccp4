@@ -47,7 +47,7 @@ c
 c
 c     ..
 c     .. External C-routine
-      external pack_wordimage_f
+      external v2pack_wordimage_f
 
       do 10, j = 1, len(filn)
          if (filn(j:j) .ne. ' ') then
@@ -79,7 +79,7 @@ c
 c
 c     ..
 c     .. External C-routine
-      external pack_longimage_f
+      external pack_wordimage_f
 c
       do 10, j = 1, len(filn)
          if (filn(j:j) .ne. ' ') then
@@ -111,7 +111,7 @@ c
 c
 c     ..
 c     .. External C-routine
-      external pack_longimage_f
+      external v2pack_wordimage_f
 c
       do 10, j = 1, len(filn)
          if (filn(j:j) .ne. ' ') then
