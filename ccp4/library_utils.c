@@ -534,7 +534,7 @@ char *ccp4_utils_time(char *time)
  * @return Sum of User and System times.
  */
 float ccp4_utils_etime (float tarray[2])
-#if ! defined (_MVS) && ! defined (_WIN32)
+#if ! defined (_MVS) 
 {
   static long clk_tck = 0;
 
