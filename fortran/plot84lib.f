@@ -3451,7 +3451,6 @@ C---- check for vanishing window less than 1.0 mm across
 C
           IF ((UBXMIN.GT. (UBXMAX-1.0)) .OR.
      +        (UBYMIN.GT. (UBYMAX-1.0))) THEN
-            WRITE (LUNOUT,FMT=6008)
             call ccperr(1, 'plotlib: GSEWSC: NULL WINDOW ')
           END IF
 C
