@@ -6080,10 +6080,13 @@ C            ******************************
      +        'PROJECT',SET_ID(JDO25,MINDX),
      +        ENTRY_ID(JDO25,MINDX)
             CALL QWRITC(WLUN(MINDX),LINE(1:80))
-            WRITE (LINE,FMT='(A7,1X,I7,1X,A)') 
-     +        'CRYSTAL',SET_ID(JDO25,MINDX),
-     +        CRYSTAL_ID(JDO25,MINDX)
-            CALL QWRITC(WLUN(MINDX),LINE(1:80))
+C---- only write out CRYSTAL line if it has been set
+            IF (CRYSTAL_ID(JDO25,MINDX).NE.' ') THEN
+              WRITE (LINE,FMT='(A7,1X,I7,1X,A)') 
+     +          'CRYSTAL',SET_ID(JDO25,MINDX),
+     +          CRYSTAL_ID(JDO25,MINDX)
+              CALL QWRITC(WLUN(MINDX),LINE(1:80))
+            ENDIF
             WRITE (LINE,FMT='(A7,1X,I7,1X,A)') 
      +        'DATASET',SET_ID(JDO25,MINDX),
      +        DIFFRN_ID(JDO25,MINDX)
