@@ -327,7 +327,9 @@ configuration makes the appropriate [[#define]] of [[NOUNISTD]].
 #    include <sys/file.h>       /* ESV, old Concentrix */ /* non-POSIX */
 #  endif
 #endif
-#include <stdlib.h> 
+#ifndef NOSTDLIB		/* for TitanOS 4.2, at least? */
+#  include <stdlib.h>
+#endif
 
 #include <errno.h>
 #include <ctype.h>
@@ -551,6 +553,23 @@ char *message;
 #endif
  }
 @ %def cqprint
+@ This reports a fatal error with a given file.
+<<internal routines>>=
+static void file_fatal (message, file)
+char *message, *file;
+{
+  char *buff;
+  size_t l;
+  l = strlen (message) + strlen (file) + 1;
+  buff = malloc (l);
+  if (buff == NULL)
+    fatal ("Memory allocation failed");
+  buff[0] = '\0';
+  strcat (buff, message);
+  strcat (buff, file);
+  fatal (buff);
+}
+@ %def file_fatal
 @ \section{Miscellaneous routines}
 \subsection{{\tt subroutine ustenv(\meta{string}, \meta{result})}}
 
@@ -770,13 +789,13 @@ int  *iunit, *istat;
                             "mbc=16", /* bigger blocksize */
                             "ctx=stm", "mrs=0", "rat=cr", "rfm=stmlf");
   if (file_stream[i] == NULL)
-    fatal ("(Q)QOPEN: can't open file");
+    file_fatal ("(Q)QOPEN: can't open ", file_name[i]);
 #else
   file_stream[i] = fopen (file_name[i], file_attribute[jstat - 1]);
   if (file_stream[i] == NULL)
-    fatal ("(Q)QOPEN: can't open file");
+    file_fatal ("(Q)QOPEN: can't open ", file_name[i]);
   if (file_is_scratch[i] && unlink (file_name[i])!=0)
-    fatal ("(Q)QOPEN: error unlinking scratch file");
+    file_fatal ("(Q)QOPEN: error unlinking ", file_name[i]);
 #endif
   if (file_stream[i] == NULL) {
     *iunit = -2;                /* return open failure flag */
@@ -784,7 +803,7 @@ int  *iunit, *istat;
   Iconvert[i] = Fconvert[i] = 0;
 <<OpenVMS seek fudge>>
   if (fseek (file_stream[*iunit], 0L, SEEK_SET) != 0)
-    fatal("(Q)QOPEN: fseek failed");
+    file_fatal("(Q)QOPEN: fseek failed on", file_name[i]);
   *iunit = i;
 }
 @ %def copen
@@ -860,11 +879,11 @@ N.B.: leaves the stream positioned just after the machine stamp.
 <<OpenVMS seek fudge>>
     if ((fseek (file_stream[*iunit], (size_t) ((*ipos)*item_sizes[2]),
                 SEEK_SET) != 0))
-      fatal ("QRARCH: seek failed");
+      file_fatal ("QRARCH: seek failed on ", file_name[*iunit]);
     file_last_op[*iunit] = READ_OP;
     if (fread (mtstring, (size_t) sizeof(char), (size_t) 4,
                file_stream[*iunit]) != 4)
-      fatal ("QRARCH: can't read machine stamp");
+      file_fatal ("QRARCH: can't read machine stamp in ", file_name[*iunit]);
   }
   fileIT = (mtstring[1]>>4) & 0x0f;
   fileFT = (mtstring[0]>>4) & 0x0f;
@@ -907,7 +926,7 @@ N.B.: leaves the stream positioned just after the machine stamp.
 <<OpenVMS seek fudge>>
   if (fseek (file_stream[*iunit], (size_t) ((*ipos)*item_sizes[2]),
              SEEK_SET) != 0)
-    fatal ("QWARCH: seek failed");
+    file_fatal ("QWARCH: seek failed on ", file_name[*iunit]);
   /* nibbles packed by masking and ORing: */
   mtstring[0] = nativeFT | (nativeFT << 4);
   mtstring[1] = 1 | (nativeIT << 4);
@@ -915,7 +934,7 @@ N.B.: leaves the stream positioned just after the machine stamp.
   file_last_op[*iunit] = WRITE_OP;
   if (fwrite (mtstring, (size_t) sizeof(char), (size_t) 4,
              file_stream[*iunit]) != 4)
-    fatal ("QWARCH: can't write machine stamp");
+    file_fatal ("QWARCH: can't write machine stamp to ", file_name[*iunit]);
 }
 @ %def qwarch
 @ \subsection{{\tt subroutine qclose (\meta{iunit})}}
@@ -938,7 +957,7 @@ int *iunit;
     fatal ("QCLOSE: qopen/qqopen not yet called");
   if (file_stream[*iunit] != NULL) {
     if (fclose (file_stream[*iunit]) == EOF) 
-      fatal ("QCLOSE: failed"); /* fixme: add file name to message */
+      file_fatal ("QCLOSE: failed on ", file_name[*iunit]);
     file_stream[*iunit] = NULL;
   }
   file_name[*iunit][0] = '\0';
@@ -1004,7 +1023,7 @@ int *iunit, *nitems, *result;
 <<OpenVMS seek fudge>>
     if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0) {
       /**result = -1;*/
-      fatal ("QREAD: seek error");
+      file_fatal ("QREAD: seek error on file ", file_name[*iunit]);
       return; } }
   file_last_op[*iunit] = READ_OP;
   errno = 0;
@@ -1014,7 +1033,7 @@ int *iunit, *nitems, *result;
     if (feof (file_stream[*iunit])) *result = -1;
     else {
       /**result = i;*/
-      fatal ("QREAD: i/o error");
+      file_fatal ("QREAD: i/o error on ", file_name[*iunit]);
       return;
     }
   }
@@ -1141,7 +1160,7 @@ int *iunit, *nitems;
   if (file_last_op[*iunit] == READ_OP) {
 <<OpenVMS seek fudge>>
     if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0)
-      fatal ("QWRITE: seek failed"); }
+      file_fatal ("QWRITE: seek failed on ", file_name[*iunit]); }
   file_last_op[*iunit] = WRITE_OP;
   i = (int) fwrite (buffer, (size_t) file_bytes_per_item[*iunit],
                     (size_t) *nitems, file_stream[*iunit]);
@@ -1149,7 +1168,9 @@ int *iunit, *nitems;
 [[fatal]] if the write fails (e.g.\ in \idx{Irix}), hance the hint
 about disc space.
 <<diskio routines>>=
-  if (i != *nitems) fatal ("QWRITE: i/o error (may be out of disc space)");
+  if (i != *nitems)
+    file_fatal ("QWRITE: i/o error (may be out of disc space): ",
+           file_name[*iunit]);
 }
 @ %def qwrite
 @ \subsection{{\tt subroutine qwritc (\meta{iunit}, \meta{buffer})}}
@@ -1184,7 +1205,7 @@ int *iunit;
   if (file_last_op[*iunit] == READ_OP) {
 <<OpenVMS seek fudge>>
     if (fseek (file_stream[*iunit], 0L, SEEK_CUR) != 0)
-      fatal ("QWRITC: seek failed"); }
+      file_fatal ("QWRITC: seek failed on", file_name[*iunit]); }
   file_last_op[*iunit] = WRITE_OP;
 #if defined (VMS)
   n = buffer->dsc$w_length;
@@ -1201,7 +1222,8 @@ int *iunit;
 #endif
   i = (int) fwrite (buffer, (size_t) item_sizes[BYTE],
                     (size_t) n, file_stream[*iunit]);
-  if (i != n) fatal ("QWRITC: i/o error (may be out of disc space)");
+  if (i != n) file_fatal ("QWRITC: i/o error (may be out of disc space): ",
+                           file_name[*iunit]);
 }
 @ %def qwritc
 @ \subsection{{\tt subroutine qseek (\meta{iunit}, \meta{irec},
@@ -1230,7 +1252,7 @@ int *iunit, *irec, *iel, *lrecl;
   file_last_op[*iunit] = IRRELEVANT_OP;
 <<OpenVMS seek fudge>>
   if (fseek (file_stream[*iunit],position,SEEK_SET) != 0)
-    fatal ("QSEEK failed -- maybe corrupt file."); /* fixme: add file info */
+    file_fatal ("QSEEK failed -- maybe corrupt file: , file_name[*iunit]");
 }
 @ %def qseek
 @ \subsection{{\tt subroutine qback (\meta{iunit}, \meta{lrecl})}}
@@ -1256,12 +1278,12 @@ int *iunit, *lrecl;
   file_last_op[*iunit] = IRRELEVANT_OP;
 <<OpenVMS seek fudge>>
   if (fseek (file_stream[*iunit], position, SEEK_SET) != 0)
-    fatal ("QBACK failed");     /* fixme: add file info */
+    file_fatal ("QBACK failed on ", file_name[*iunit]);
 }
 @ %def qback
 @ It seems the \idx{OpenVMS} (don't know which version) can easily lose its
 place in files.  Try flushing the output buffer before messing around
-with [[fseek]].  (Thanks to Martin Bryan.)  N.B.: assumes [[*iunit]]!
+with [[fseek]].  (Thanks to Richard Bryan.)  N.B.: assumes [[*iunit]]!
 <<OpenVMS seek fudge>>=
 #if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
@@ -1290,7 +1312,7 @@ int *iunit, *lrecl;
   file_last_op[*iunit] = IRRELEVANT_OP;
 <<OpenVMS seek fudge>>
   if (fseek (file_stream[*iunit],position,SEEK_SET) != 0)
-    fatal ("QSKIP failed");     /* fixme: add file info */
+    file_fatal ("QSKIP failed on ", file_name[*iunit]);
 }
 @ %def qskip
 @ \subsection{{\tt subroutine cqinq (\meta{istrm}, \meta{filnam},
@@ -1324,7 +1346,7 @@ int *istrm, *length;
   long position;
 
   if (! initialised) 
-    fatal ("QQINQ:,qopen/qqopen not yet called");
+    fatal ("QQINQ: qopen/qqopen not yet called");
   *length = -1;                                    /* default return value */
   iunit = istrm;
   if (file_stream[*iunit] == NULL) { 
@@ -1355,14 +1377,15 @@ int *istrm, *length;
 #if 0
     /* checking the return value reportedly causes problems in ultrix
        under unknown circumstances... */
-    if (fflush (file_stream[*iunit]) != 0) fatal ("QQINQ: flush failed");
+    if (fflush (file_stream[*iunit]) != 0)
+      file_fatal ("QQINQ: flush failed on ", file_name[*iunit]);
 #endif
     position = ftell (file_stream[*iunit]);   /* remember current position */
 <<OpenVMS seek fudge>>
     (void) fseek (file_stream[*iunit],0L,SEEK_END); /* seek EOF */
     *length = (int) ftell (file_stream[*iunit]); /* get file size */
     if (fseek (file_stream[*iunit],position,SEEK_SET) != 0) /* seek position */
-      fatal ("QQINQ: seek failed"); /* fixme: add file info */
+      file_fatal ("QQINQ: seek failed on ", file_name[*iunit]);
   }
 }
 @ %def cqinq
