@@ -1503,13 +1503,14 @@ FORTRAN_SUBR ( LWHIST, lwhist,
 /* Fortran wrapper for MtzAddHistory */
 /* Also includes progname and date */
 FORTRAN_SUBR ( LWHSTL, lwhstl,
-	       (int *mindx, fpstr hstrng, int hstrng_len),
-	       (int *mindx, fpstr hstrng),
-	       (int *mindx, fpstr hstrng, int hstrng_len))
+	       (int *mindx, const fpstr hstrng, int hstrng_len),
+	       (int *mindx, const fpstr hstrng),
+	       (int *mindx, const fpstr hstrng, int hstrng_len))
 
 {
- char hline[MTZRECORDLENGTH],date[11],time[9];
+ char hline[MTZRECORDLENGTH],date[11],time[9],*temp_hstrng;
  size_t len=0, Length;
+ int i;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWHSTL");)
 
@@ -1536,13 +1537,16 @@ FORTRAN_SUBR ( LWHSTL, lwhstl,
    len = len + strlen(strcpy(hline+len,time));
    hline[len++] = ' ';
  }
- Length = ccp4_utils_flength (FTN_STR(hstrng), FTN_LEN(hstrng));
+
+/* append hstrng to hline - hline is not necessarily null-terminated */
+ temp_hstrng = ccp4_FtoCString(FTN_STR(hstrng), FTN_LEN(hstrng));
+ Length = strlen(temp_hstrng);
  if (Length > MTZRECORDLENGTH-len) Length = MTZRECORDLENGTH-len;
- strncpy(hline+len,FTN_STR(hstrng),Length);
- hline[len+Length] = '\0';
+ strncpy(hline+len,temp_hstrng,Length);
 
  MtzAddHistory(mtzdata[*mindx-1], hline, 1);
 
+ free(temp_hstrng);
 }
 
 /* Fortran wrapper for ccp4_lwidx */
