@@ -65,6 +65,11 @@ _titan,1,
   [define(_cant_unlink,1)],dnl
 _irix51,1,
   [define(_cant_unlink,1)],dnl  necessary in irix 5.1 up
+dnl I thought _cant_unlink wasn't necessary for libf2c, but it certainly
+dnl seems to be now (Irix5).  I wonder if this is somehow to do
+dnl with stdio rather than the fortran library itself...
+_f2c,1,
+  [define(_cant_unlink,1)],dnl
 _esv,1,
   [define(_cant_unlink,1)])dnl
 dnl * In the case above, we then want to open STATUS='DELETE', if 
