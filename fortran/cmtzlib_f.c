@@ -629,7 +629,7 @@ FORTRAN_SUBR ( LKYSET, lkyset,
 
  temp_name = ccp4_FtoCString(FTN_STR(labin_line), FTN_LEN(labin_line));
   label = (char *) ccp4_utils_malloc((*nlprgi)*31*sizeof(char));
-  user_lab = (char *) ccp4_utils_malloc((*nlprgi)*31*sizeof(char));
+  user_lab = (char *) ccp4_utils_malloc((*nlprgi)*62*sizeof(char));
 
   for (i = 0; i < *nlprgi; ++i) {
     for (j = 0; j < 30; ++j) {
@@ -646,16 +646,16 @@ FORTRAN_SUBR ( LKYSET, lkyset,
 
   for (i = 0; i < *nlprgi; ++i) {
     /* leave kpoint unchanged unless user label exists */
-    if (strcmp(user_lab+i*31,"") != 0)
+    if (strcmp(user_lab+31+i*62,"") != 0)
       kpoint[i] = -1;
     for (j = 0; j < lsprgi_len; ++j) {
-      if (user_lab[i*31+j] == '\0') {
+      if (user_lab[31+i*62+j] == '\0') {
         for (k = j; k < lsprgi_len; ++k) {
           lsusrj[lsprgi_len*i+k] = ' ';
         }
         break;
       } else {
-        lsusrj[lsprgi_len*i+j] = user_lab[i*31+j];
+        lsusrj[lsprgi_len*i+j] = user_lab[31+i*62+j];
       }
     }
   }
