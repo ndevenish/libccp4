@@ -468,57 +468,80 @@ C +++++++++++++++++++++++++
 C_END_OUTLINE
 C_BEGIN_CENTR
 C     =======================
-      SUBROUTINE CENTR(IH,IC)
+      SUBROUTINE CENTR(HKL,IC)
 C     =======================
 C
 C---- Determine whether a reflection is centric (return ic=1)
-C     or not (ic=0).  if none of the zone tests is satisfied,
-C     the reflection is non-centric.
+C     or not (ic=0).  If none of the zone tests is satisfied,
+C     the reflection is non-centric.  CENTRIC must be called before this
+C     to set up the symmetry elements.
+C
+C     Arguments:
+C     IC (O) INTEGER
+C       Centricity flag
+C     HKL(3) (I) INTEGER
+C       Miller indices
+C       
 C_END_CENTR
 C
 C     .. Scalar Arguments ..
-      INTEGER IC
+      INTEGER IC, NSM, IPRINT
 C     ..
 C     .. Array Arguments ..
-      INTEGER IH(3)
-C     ..
-C     .. Scalars in Common ..
-      INTEGER NCENT
-C     ..
-C     .. Arrays in Common ..
-      REAL CPROJ
+      INTEGER HKL(3)
+      REAL RSM(4,4,*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER I
+      INTEGER I, NCENT, IH, IK, IL, J, NC
+      LOGICAL SETUP
+      CHARACTER STROUT*400
 C     ..
-C     .. Common blocks ..
-      COMMON /CP/CPROJ(3,20),NCENT
+C     .. Local Arrays ..
+      REAL CPROJ(3,20),CPRJ(3,12)
+      INTEGER IHKL(3,12),IN(3)
+      CHARACTER REFTYP(12)*7
 C     ..
 C     .. Save statement ..
-      SAVE /CP/
+      SAVE CPROJ, NCENT, SETUP
+C     ..
+C     .. External Subroutines ..
+      EXTERNAL PUTLIN
+C     ..
+C     .. Data statements ..
+C---- set up tests for 0kl h0l hk0 hhl hkh hkk h,-hl hk-h hk-k
+C      -h 2h l   2h -h l  hkl
+C
+      DATA REFTYP/'0kl','h0l','hk0','hhl','hkh','hkk','h -hl',' hk-h',
+     +     ' hk-k','-h 2h l','2h -h l','hkl'/
+      DATA IHKL/0,1,2, 1,0,2, 1,2,0, 1,1,10, 1,10,1, 10,1,1, 1,-1,10,
+     +          1,10,-1, 10,1,-1, -1,2,10, 2,-1,10, 1,4,8/
+      DATA CPRJ/1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,-1.0,0.0,
+     +     1.0,0.0,-1.0, 0.0,1.0,-1.0, 1.0,1.0,0.0, 1.0,0.0,1.0, 
+     +     0.0,1.0,1.0, 2.0,1.0,0.0, 1.0,2.0,0.0, 0.0,0.0,0.0/
+      DATA SETUP /.FALSE./
 C     ..
 C
+      IF (.NOT.SETUP) CALL CCPERR (1, 'CENTR: CENTRIC not called first')
       IC = 0
       IF (NCENT.NE.0) THEN
-C
         DO 10 I = 1,NCENT
-          IF ((CPROJ(1,I)*IH(1)+CPROJ(2,I)*IH(2)+CPROJ(3,I)*IH(3)).EQ.
-     +        0.0) GO TO 20
+          IF ((CPROJ(1,I)*HKL(1)+CPROJ(2,I)*HKL(2)+CPROJ(3,I)*HKL(3))
+     +        .EQ. 0.0) GO TO 20
    10   CONTINUE
-C
         RETURN
    20   IC = 1
       END IF
-C
-C
-      END
+      RETURN
 C
 C
+C     ============================
+      ENTRY CENTRIC(NSM,RSM,IPRINT)
+C     ============================
 C_BEGIN_CENTRIC
-C     ============================
-      SUBROUTINE CENTRIC(NSM,RSM,IPRINT)
-C     ============================
 C
+C     ==================================
+C     SUBROUTINE CENTRIC(NSM,RSM,IPRINT)
+C     ==================================
 C
 C---- This is Randy Read's method of defining centric reflections.
 C       It uses NSM and the symmetry operators stored in RSMT(4,4,NSM)
@@ -539,62 +562,8 @@ C     other reflections in the data set could spuriously satisfy
 C     the test.
 C_END_CENTRIC
 C
-C---- SIGMAA commons
-C
-C      COMMON /CP/ CPROJ(3,20),NCENT
-C      COMMON /EPS/ EPZONE(4,20),NEZONE
-C
-C
-C
-C     .. Scalar Arguments ..
-      INTEGER NSM,IPRINT
-C     ..
-C     .. Array Arguments ..
-      REAL RSM(4,4,*)
-C     ..
-C     .. Scalars in Common ..
-      INTEGER NCENT
-C     ..
-C     .. Arrays in Common ..
-      REAL CPROJ
-C     ..
-C     .. Local Scalars ..
-      INTEGER IH,IK,IL,J,NC
-      CHARACTER STROUT*400
-C     ..
-C     .. Local Arrays ..
-      REAL CPRJ(3,12)
-      INTEGER IHKL(3,12),IN(3)
-      CHARACTER REFTYP(12)*7
-C     ..
-C     .. External Subroutines ..
-      EXTERNAL PUTLIN
-C     ..
-C     .. Common blocks ..
-      COMMON /CP/CPROJ(3,20),NCENT
-C     ..
-C     .. Save statement ..
-      SAVE
-C     ..
-C     .. Data statements ..
-C
-C
-C
-C---- set up tests for 0kl h0l hk0 hhl hkh hkk h,-hl hk-h hk-k
-C      -h 2h l   2h -h l  hkl
-C
-      DATA REFTYP/'0kl','h0l','hk0','hhl','hkh','hkk','h -hl',' hk-h',
-     +     ' hk-k','-h 2h l','2h -h l','hkl'/
-      DATA IHKL/0,1,2, 1,0,2, 1,2,0, 1,1,10, 1,10,1, 10,1,1, 1,-1,10,
-     +          1,10,-1, 10,1,-1, -1,2,10, 2,-1,10, 1,4,8/
-      DATA CPRJ/1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,-1.0,0.0,
-     +     1.0,0.0,-1.0, 0.0,1.0,-1.0, 1.0,1.0,0.0, 1.0,0.0,1.0, 
-     +     0.0,1.0,1.0, 2.0,1.0,0.0, 1.0,2.0,0.0, 0.0,0.0,0.0/
-C     ..
-C
-C
+      SETUP = .TRUE.
       NCENT = 0
-C
 C
       DO 30 NC = 1,10
         IN(1) = IHKL(1,NC)
@@ -605,7 +574,7 @@ C---- Generate symm equivs
 C
 C---- test whether h' k' l' equals -h -k -l
 C
-        DO 10 J = 1,NSM
+        DO 40 J = 1,NSM
           IH = IN(1)*RSM(1,1,J) + IN(2)*RSM(2,1,J) + IN(3)*RSM(3,1,J)
           IF (IH.EQ.-IN(1)) THEN
             IK = IN(1)*RSM(1,2,J) + IN(2)*RSM(2,2,J) +
@@ -613,15 +582,15 @@ C
             IF (IK.EQ.-IN(2)) THEN
               IL = IN(1)*RSM(1,3,J) + IN(2)*RSM(2,3,J) +
      +             IN(3)*RSM(3,3,J)
-              IF (IL.EQ.-IN(3)) GO TO 20
+              IF (IL.EQ.-IN(3)) GO TO 50
             END IF
           END IF
-   10   CONTINUE
+   40   CONTINUE
 C
 C---- next symm opn
 C
         GO TO 30
-   20   NCENT = NCENT + 1
+   50   NCENT = NCENT + 1
         CPROJ(1,NCENT) = CPRJ(1,NC)
         CPROJ(2,NCENT) = CPRJ(2,NC)
         CPROJ(3,NCENT) = CPRJ(3,NC)
@@ -629,33 +598,23 @@ C
         IF(IPRINT.GE.1) THEN
         WRITE (STROUT,FMT=6000) NCENT,REFTYP(NC)
  6000 FORMAT ('  Centric Zone ',I3,' Reflections of Type  ',A7)
-C
-C            **************
         CALL PUTLIN(STROUT,'CURWIN')
-C            **************
         END IF
-C
    30 CONTINUE
 C
-C
        END
-C
 C
 C     ========================
 C_BEGIN_DETERM
       SUBROUTINE DETERM(DET,A)
 C     ========================
 C
-C
 C---- Parameters
 C     ==========
-C
 C
 C          A (I)     4*4 matrix to be inverted
 C          DET       Determinant of A
 C_END_DETERM
-C
-C
 C
 C---- Get cofactors of 'a' in array 'c'
 C
@@ -673,18 +632,15 @@ C     .. Local Arrays ..
       REAL C(4,4),X(3,3)
 C     ..
 C
-C
       DO 40 II = 1,4
         DO 30 JJ = 1,4
           I = 0
-C
 C
           DO 20 I1 = 1,4
             IF (I1.NE.II) THEN
               I = I + 1
               J = 0
               DO 10 J1 = 1,4
-C
 C
                 IF (J1.NE.JJ) THEN
                   J = J + 1
@@ -693,7 +649,6 @@ C
    10         CONTINUE
             END IF
    20     CONTINUE
-C
 C
           AM = X(1,1)*X(2,2)*X(3,3) - X(1,1)*X(2,3)*X(3,2) +
      +         X(1,2)*X(2,3)*X(3,1) - X(1,2)*X(2,1)*X(3,3) +
@@ -705,7 +660,6 @@ C
 C---- Calculate determinant
 C
       D = 0
-C
 C
       DO 50 I = 1,4
         D = A(I,1)*C(I,1) + D
@@ -719,16 +673,13 @@ CCC          AI(I,J) = C(J,I)/D
 CCC   60   CONTINUE
 CCC   70 CONTINUE
 C
-C
       DET = D
-C
 C
       END
 C
 C     ====================================
       SUBROUTINE EPSLN(NSM,NSMP,RSM,IPRINT)
 C     =====================================
-C
 C
 C---- It works out the epsilon cards from consideration of the Symmetry
 C      and a set of standard reflections.
@@ -746,7 +697,6 @@ C     for reciprocal lattice rows should be given before those for
 C     planes, because the first test that is satisfied defines
 C     the zone.
 C
-C
 C    set up tests for
 C     h00 0k0 00l hh0 h0h 0kk h,-h0 h0-h 0k-k -h2h0 2h-h0 hhh hkl
 C
@@ -761,7 +711,6 @@ C     .. Common blocks ..
       INTEGER NSMT
       REAL RSMM,RSMTT
       COMMON /SYSABS/NSMT,RSMM(4,4,96),RSMTT(4,4,96)
-C
 C
 C     .. Scalar Arguments ..
       INTEGER NSM,NSMP,IPRINT
@@ -796,8 +745,6 @@ C     .. Save statement ..
 C     ..
 C     .. Data statements ..
 C
-C
-C
 C---- Example h k l for testing possible epsln zones
 C
       DATA REFTYP/'h00','0k0','00l','hh0','h0h','0kk','h -h0',' h0-h',
@@ -818,7 +765,6 @@ C---- To save time we combine both vectors into 1 with a+500b.
 C---- e.g. for h00 a=(0 0 1) b=(0 1 0), for hhh a=(1 0 -1) b=(0 1 -1)
 C---- KDC 29/6/94
 C
-C
       LATMUL = NSM/NSMP
 C
       IF(IPRINT.GT.0)THEN
@@ -832,7 +778,6 @@ C
       NEZONE = 0
       NEPS = 1
       IF (NSM.NE.1) THEN
-C
 C
         DO 20 NC = 1,12
           IN(1) = IHKL(1,NC)
@@ -892,7 +837,6 @@ C
       EPZONE(2,NEZONE) = EPZNE(2,13)
       EPZONE(3,NEZONE) = EPZNE(3,13)
 C
-C
             IF(IPRINT.GT.0)THEN
             WRITE (STROUT,FMT=6000) NEZONE
             CALL PUTLIN(STROUT,'CURWIN')
@@ -902,9 +846,7 @@ C
             CALL PUTLIN(STROUT,'CURWIN')
             END IF
 C
-C
       IF ((NEZONE.GT.20) .OR. (NEZONE.LT.1)) THEN
-C
 C
         IF (NEZONE.LT.1) THEN
 C
@@ -916,11 +858,9 @@ C
       END IF
       END IF
 C
-C
 C---- Fill common /sysabs/
 C
       NSMT = NSM
-C
 C
       DO 80 N = 1,NSM
            CALL INVSYM(RSM(1,1,N),RSMT(1,1,N) )
@@ -932,14 +872,11 @@ C
    70   CONTINUE
    80 CONTINUE
 C
-C
-C
 C---- Format statements
 C
  6000 FORMAT (' EPSILON Zone ',I3)
  6010 FORMAT (' Reflections of type ',A7)
  6020 FORMAT (' Multiplicity ',I3)
-C
 C
       END
 C
@@ -952,9 +889,6 @@ C---- Find the zone a reflection falls into, and return the
 C     appropriate value for the reflection multiplicity factor.
 C     each reflection must have a zone.
 C     Systematic absences flagged with ISYSAB = 1
-C
-C
-C
 C
 C     .. Scalar Arguments ..
       REAL EPSI
@@ -984,19 +918,15 @@ C     .. Save statement ..
       SAVE
 C     ..
 C
-C
       DO 20 I = 1,NEZONE
         TEST = 0.0
-C
 C
         DO 10 J = 1,3
           TEST = EPZONE(J,I)*IH(J) + TEST
    10   CONTINUE
 C
-C
         IF (TEST.EQ.0.0) GO TO 30
    20 CONTINUE
-C
 C
           WRITE (LINERR,FMT='(A,3I5)')
      +     ' NO EPSILON ZONE found for reflection ',IH
@@ -1012,7 +942,6 @@ C                    *********************
       IF (EPSI.GT.1) CALL SYSAB(IH,ISYSAB)
 C                    *********************
 C
-C
       END
 C
 C
@@ -1023,17 +952,13 @@ C
 C---- subroutine to invert 4*4 matrices for conversion between
 C     real space and reciprocal space symmetry operators.
 C
-C
 C---- Parameters
 C     ==========
 C
 C           A (I)   4*4 matrix to be inverted
 C          AI (O)   inverse matrix
 C
-C
-C
 C---- get cofactors of 'a' in array 'c'
-C
 C
 C     .. Array Arguments ..
       REAL A(4,4),AI(4,4)
@@ -1045,7 +970,6 @@ C     ..
 C     .. Local Arrays ..
       REAL C(4,4),X(3,3)
 C     ..
-C
 C
       DO 40 II = 1,4
         DO 30 JJ = 1,4
@@ -1063,7 +987,6 @@ C
             END IF
    20     CONTINUE
 C
-C
           AM = X(1,1)*X(2,2)*X(3,3) - X(1,1)*X(2,3)*X(3,2) +
      +         X(1,2)*X(2,3)*X(3,1) - X(1,2)*X(2,1)*X(3,3) +
      +         X(1,3)*X(2,1)*X(3,2) - X(1,3)*X(2,2)*X(3,1)
@@ -1074,7 +997,6 @@ C
 C---- Calculate determinant
 C
       D = 0
-C
 C
       DO 50 I = 1,4
         D = A(I,1)*C(I,1) + D
@@ -1088,7 +1010,6 @@ C
    60   CONTINUE
    70 CONTINUE
 C
-C
       END
 C
 C
@@ -1100,8 +1021,6 @@ C----  Get symmetry operations for space-group LSPGRP from library
 C      file  on stream IST, logical name SYMOP.
 C         Returns NSYM = number of symmetry operations
 C                 ROT(4,4,NSYM)  rotation/translation  matrices
-C
-C
 C
 C     .. Scalar Arguments ..
       INTEGER IST,LSPGRP,NSYM
@@ -1162,7 +1081,6 @@ C
             READ (IST,FMT=*)
    20     CONTINUE
 C
-C
           GO TO 10
         END IF
    30   CONTINUE
@@ -1193,7 +1111,6 @@ C     convert NLIN lines of symmetry operators to matrices
 C
    40   CONTINUE
 C
-C
         DO 50 I = 1,NLIN
           READ (IST,FMT=6000) LINE
 C
@@ -1207,11 +1124,9 @@ C              ***********************
 C
    50   CONTINUE
 C
-C
         REWIND IST
         RETURN
       END IF
-C
 C
    60 CONTINUE
 C
@@ -1222,7 +1137,6 @@ C
 C---- Format statements
 C
  6000 FORMAT (A)
-C
 C
       END
 C
@@ -1250,7 +1164,6 @@ C   LSPGRP      spacegroup number
 C   NAMSPG      spacegroup name: this will be used to find the
 C                       spacegroup only if LSPGRP = 0
 C
-C
 C Returns
 C   LSPGRP      spacegroup number
 C   NAMSPG      spacegroup name
@@ -1259,7 +1172,6 @@ C   NSYMP       number of primitive symmetry operations - only different
 C               from NSYM in non-primitive spacegroups
 C   NSYM        total number of symmetry operations
 C   ROT(4,4,NSYM)  rotation/translation  matrices
-C
 C
 C     .. Parameters ..
       INTEGER NPARSE
@@ -1367,7 +1279,6 @@ C
             READ (IST,FMT=*)
    20     CONTINUE
 C
-C
           GO TO 10
         END IF
    30   CONTINUE
@@ -1404,11 +1315,9 @@ C              ***********************
 C
    50   CONTINUE
 C
-C
         NSYMP = NSYM
 C
         IF (NLIN.GT.NLINS) THEN
-C
 C
           DO 60 I = NLINS + 1,NLIN
             READ (IST,FMT='(A)') LINE
@@ -1427,7 +1336,6 @@ C
         CLOSE (IST)
         RETURN
 C
-C
    70   CONTINUE
 C
 C              ****************************
@@ -1435,7 +1343,6 @@ C              ****************************
 C              ****************************
 C
       END IF
-C
 C
    80 CONTINUE
 C
@@ -1453,8 +1360,6 @@ C
 C---- Use this subroutine to transfer information
 C  If JLASS eq 0   then fill JLASS JCENTR JSCREW from common block.
 C  If JLASS gt 0   then fill KLASS ICENTR ISCREW in common block.
-C
-C
 C
 C     .. Scalar Arguments ..
       INTEGER JCENTR,JLASS
@@ -1478,7 +1383,6 @@ C     .. Common blocks ..
      +     ISCREW(3),IVERSN
       SAVE /MDFPAR/
 C     ..
-C
 C
       IF (JLASS.EQ.0) THEN
        CALL PUTLIN(' Filling  JLASS JCENTR JSCREW from common block.',
@@ -1528,7 +1432,6 @@ C
      +      ' have ICENTR = 0!)'
          END IF
           CALL PUTLIN(STROUT,'CURWIN')
-C
 C
         ISCR = ISCREW(1) + ISCREW(2) + ISCREW(3)
 C
@@ -1582,7 +1485,6 @@ C
 C
       END IF
 C
-C
       END
 C
 C
@@ -1592,8 +1494,6 @@ C     ===============================
 C
 C---- Permute vector JV(N,3) by permutation matrix PERM
 C      N1 is first dimension of JV
-C
-C
 C
 C     .. Scalar Arguments ..
       INTEGER N,N1
@@ -1625,7 +1525,6 @@ C
         JV(N,I) = NINT(BV(I))
    20 CONTINUE
 C
-C
       END
 C
 C
@@ -1635,8 +1534,6 @@ C     ===============================
 C
 C---- Permute vector AV(N,3) by permutation vector KP
 C           N1 is first dimension of AV
-C
-C
 C
 C     .. Scalar Arguments ..
       INTEGER N,N1
@@ -1663,7 +1560,6 @@ C
       DO 20 I = 1,3
         AV(N,I) = BV(I)
    20 CONTINUE
-C
 C
       END
 C
@@ -1696,23 +1592,18 @@ C     .. Data statements ..
       DATA NAME/'X','Y','Z'/
 C     ..
 C
-C
-C
       DO 10 I = 1,3
         IF (PERM(1,I).EQ.1.0) JX = I
         IF (PERM(2,I).EQ.1.0) JY = I
         IF (PERM(3,I).EQ.1.0) JZ = I
    10 CONTINUE
 C
-C
       WRITE (6,FMT=6000) NAME(JX),NAME(JY),NAME(JZ)
-C
 C
       DO 60 ISYM = 1,NSYM
         WRITE (6,FMT=6002) ISYM, ((ROT(I,J,ISYM),J=1,3),I=1,3),
      +    (ROT(J,4,ISYM),J=1,3)
         IF (JX.NE.1 .OR. JY.NE.2) THEN
-C
 C
           DO 30 I = 1,4
             DO 20 J = 1,4
@@ -1727,14 +1618,12 @@ C
    20       CONTINUE
    30     CONTINUE
 C
-C
           DO 50 J = 1,4
             DO 40 I = 1,4
               ROT(J,I,ISYM) = R1(J,I)
               ROTT(J,I,ISYM) = R2(J,I)
    40       CONTINUE
    50     CONTINUE
-C
 C
           WRITE (6,FMT=6004) ISYM, ((ROT(I,J,ISYM),J=1,3),I=1,3),
      +      (ROT(J,4,ISYM),J=1,3)
@@ -1747,7 +1636,6 @@ C
      +       'nput IZ used as ',A2)
  6002 FORMAT (' Int Tab Symmetry ',I3,4 (5X,3F6.2))
  6004 FORMAT (' Transformed Symmetry ',I3,4 (5X,3F6.2))
-C
 C
       END
 C
@@ -1815,7 +1703,7 @@ CCC     +         'No space between keyword SYM... and first operator')
 CCC        END IF
 CCC      END IF
 C
-   20 I = I11 - 1
+      I = I11 - 1
       NS = NS - 1
    30 CONTINUE
       NS = NS + 1
@@ -1974,14 +1862,12 @@ C
  6006 FORMAT (' **BLANK OPERATOR FIELD**',/' ',A)
  6008 FORMAT (' **LAST GENERAL POSITION IS INCOMPLETE**',/' ',A)
 C
-C
       END
 C
 C
 C     ========================================
       SUBROUTINE SYMTR3(NSM,RSM,SYMCHS,IPRINT)
 C     ========================================
-C
 C
 C---- SYMTR3(NSM,RSM)
 C           symmetry translation from matrix back to characters
@@ -2225,7 +2111,6 @@ C     ===========================
       SUBROUTINE SYSAB(IN,ISYSAB)
 C     ===========================
 C
-C
 C---- Test reflections for Systematic absences
 C     Only reflns with EPSI gt 1 need be considered
 C     Systematic absences flagged with ISYSAB = 1
@@ -2233,9 +2118,6 @@ C
 C---- Inverse symmetry needed to test systematic absences
 C     - copy into this common block.
 C      COMMON /SYSABS/ NSM,RSM(4,4,96),RSMT(4,4,96)
-C
-C
-C
 C
 C     .. Scalar Arguments ..
       INTEGER ISYSAB
@@ -2270,7 +2152,6 @@ C
       ISYSAB = 0
       IF (NSM.NE.1) THEN
 C
-C
         DO 10 J = 2,NSM
           IH = IN(1)*RSMT(1,1,J) + IN(2)*RSMT(2,1,J) + IN(3)*RSMT(3,1,J)
           IF (IH.EQ.IN(1)) THEN
@@ -2294,14 +2175,12 @@ C
           END IF
    10   CONTINUE
 C
-C
 CC        IF (ISYSAB.EQ.1) WRITE (6,FMT=6000) IN
       END IF
 C
 C---- Format statements
 C
 CCC 6000 FORMAT (/'  REFLECTION',3I4,' SYSTEMATIC ABSENCE')
-C
 C
       END
 C
@@ -2310,11 +2189,9 @@ C     ============================================
       SUBROUTINE XSPECIALS(NSM,RSM,XF,YF,ZF,NSPEC)
 C     ============================================
 C
-C
 C---- This subroutine finds what coordinates occupy special positions
 C     ie have occupancies less than 1.0
 C     from consideration of the Symmetry Operations.
-C
 C
 C     .. Array Arguments ..
       REAL RSM(4,4,96)
@@ -2330,7 +2207,6 @@ C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC ABS,MOD
 C     ..
-C
 C
       NSPEC = 1
 C
@@ -2375,11 +2251,9 @@ C
 C
 C---- next symm opn
 C
-C
 C---- next reflection class
 C
       END IF
-C
 C
       END
 C     ============================
@@ -2388,18 +2262,14 @@ C     =============================
 C
 C---- Returns true if indices ih = kh
 C
-C
 C     .. Array Arguments ..
       INTEGER IH(3),KH(3)
 C     ..
 C
-C
       HKLEQ = .FALSE.
-C
 C
       IF (IH(1).EQ.KH(1) .AND. IH(2).EQ.KH(2) .AND.
      +    IH(3).EQ.KH(3)) HKLEQ = .TRUE.
-C
 C
       END
 C
@@ -2432,12 +2302,9 @@ C     .. Common blocks ..
       SAVE /LOOK/
 C     ..
 C
-C
       NSER4 = NSER
 C
-C
    10 CONTINUE
-C
 C
       NDX = MOD(NSER4,KPRI) + 1
       IF (NSER.NE.IT(1,NDX)) THEN
@@ -2447,9 +2314,7 @@ C
         END IF
       END IF
 C
-C
       LOOKUP = IT(2,NDX)
-C
 C
       END
 C
@@ -2466,7 +2331,6 @@ C     of the function lookup(nser) are stored in the array it(2, kpri)
 C     where kpri is the prime number used to generate the function
 C     the array it  lives in the common look which is shared by setup
 C     and the function lookup
-C
 C
 C     IT(1, NDX) = NSER,  IT(2, NDX) = NFIND
 C
@@ -2490,7 +2354,6 @@ C     .. Common blocks ..
       COMMON /LOOK/IT(2,KPRI)
       SAVE /LOOK/
 C     ..
-C
 C
       NSER4 = NSER
    10 CONTINUE
@@ -2534,8 +2397,6 @@ C
         IT(2,I) = 0
    20 CONTINUE
 C
-C
-C
       END
 C
 C
@@ -2577,7 +2438,6 @@ C     .. Data statements ..
       DATA HALF/0.5/
 C     ..
 C
-C
 C---- dtorad = 3.1415927/180.0
 C
 C     set up formulae for monoclinic or orthorhombic crystals
@@ -2617,8 +2477,7 @@ C
       CX = COS(BR)*C
       CY = (B*C*COS(AR)-BX*CX)/BY
 C
-C---- CZ determined by length of c
-C
+C---- CZ determined by length of C
       XX = C*C - CX*CX - CY*CY
       CZ = SQRT(XX)
       TMAX = MAX(AX,BY)
@@ -2626,7 +2485,6 @@ C
       IF (ABS(BX/TMAX).LT.QMIN) BX = ZERO
       IF (ABS(CX/TMAX).LT.QMIN) CX = ZERO
       IF (ABS(CY/TMAX).LT.QMIN) CY = ZERO
-C
 C
 c      WRITE (6,FMT=6000) AX,BX,BY,CX,CY,CZ
 C
@@ -2679,7 +2537,6 @@ CCC 6002 FORMAT (' Reciprocal Matrix :',T25,1P,E15.6,2 (12X,'0.0'),/,
 CCC     +                               T25,2E15.6,12X,'0.0',/,
 CCC     +                               T25,3E15.6,/)
 C
-C
       END
 C
 C
@@ -2689,10 +2546,6 @@ C     ============================
 C
 C---- Calculate (sin(theta)/lambda)**2 from h,k,l; coef's set by call to
 C        SETRSL : good for any kind of axes
-C
-C
-C
-C
 C
 C
 C     .. Scalar Arguments ..
@@ -2706,10 +2559,8 @@ C     .. Common blocks ..
       SAVE /RECPLT/
 C     ..
 C
-C
       STHLSQ = IH*IH*COEFHH + IH*IK*COEFHK + IH*IL*COEFHL +
      +         IK*IK*COEFKK + IK*IL*COEFKL + IL*IL*COEFLL
-C
 C
       END
 C
@@ -2717,7 +2568,6 @@ C
 C     ==================================
       LOGICAL FUNCTION CENTRC(KHKL,ICENT)
 C     ==================================
-C
 C
 C---- returns value true if reflection khkl is centric, false otherwise.
 C     general for all point groups - but only for the unique set of
@@ -2732,15 +2582,12 @@ C
 C  0KL  H0L  HK0  HKK  HKH  HHL  H,-2H,L
 C     (the last is needed in pg312)
 C
-C
-C
 C     .. Array Arguments ..
       INTEGER ICENT(7),KHKL(3)
 C     ..
 C     .. Local Scalars ..
       INTEGER JJ
 C     ..
-C
 C
       CENTRC = .FALSE.
       IF (ICENT(1).NE.0) THEN
@@ -2770,7 +2617,6 @@ C
    10 CENTRC = .TRUE.
    20 RETURN
 C
-C
       END
 C
 C
@@ -2783,8 +2629,6 @@ C     check if lies in asymmetric unit given by nau
 C
 C      Returns KROT=0  correct operation
 C                  =1  if not
-C
-C
 C
 C     .. Scalar Arguments ..
       INTEGER NS
@@ -2849,14 +2693,7 @@ C
 C---- Successful
 C
       KROT = 0
-   30 RETURN
-C
-C---- Format statements
-C
-6000  FORMAT('   NS in Function KROT is le 0 with a value of ',I6)
-C
-C
-      END
+   30 END
 C
       SUBROUTINE PSTOPH (PSIX,PSIY,PSIZ,PHIX,PHIY,PHIZ,AVPHI)
 C     =======================================================
@@ -2901,11 +2738,8 @@ C     ==============================
       REAL FUNCTION STS3R4(IH,IK,IL)
 C     ==============================
 C
-C
-C
 C---- calculate (sin(theta)/lambda)**2 from h,k,l; coef's set by call to
 C        setrsl : good for any kind of axes
-C
 C
 C     .. Scalar Arguments ..
       REAL IH,IK,IL
@@ -2920,10 +2754,8 @@ C     .. Save statement ..
       SAVE /RECPLT/
 C     ..
 C
-C
       STS3R4 = IH*IH*COEFHH + IH*IK*COEFHK + IH*IL*COEFHL +
      +         IK*IK*COEFKK + IK*IL*COEFKL + IL*IL*COEFLL
-C
 C
       END
 C----------------------------------------------------------------
@@ -2977,7 +2809,6 @@ C      14    CUBIC       II  M3_BARM (PG432)              207 - 214
 C      15    MONOCLINIC  II  2/M (??)  A UNIQUE           3 -   5
 C      16    MONOCLINIC III  2/M (??)  C UNIQUE           3 -   5
 C
-C
 C---- In this table only the enantiomorphic spacegroups are
 C     included. For the other spacgroups (which contain (glide)
 C     mirrors or an inversion center) this routine can still be
@@ -3009,7 +2840,6 @@ C  14 pg23    m3         hkl:h>=0, k>=0, l>=0 with l>=h,  k>=h
 C     pgm3bar 
 C  15 pg432   m3m        hkl:h>=0, k>=0, l>=0  with  k>=l
 C     pg4bar3m pgm3barm
-C
 C
 C---- Find unique set of rsmt - these are the reciprocal space symmetry
 C                               operators and there will be duplicate
@@ -3061,13 +2891,11 @@ C     .. Save statement ..
       SAVE
 C     ..
 C
-C
       IF (LPRINT) THEN
         WRITE (STROUT,FMT=6020) NSYM
  6020   FORMAT(' In PGDEFN: Nsym = ',I6)
         CALL PUTLIN(STROUT,'CURWIN')
       ENDIF
-C
 C
       DO 30 N = 1,NSYM
 C---- Clear all repeat counts
@@ -3078,7 +2906,6 @@ C---- Clear all repeat counts
    10     CONTINUE
    20   CONTINUE
    30 CONTINUE
-C
 C
       NSYMP = 0
 C
@@ -3152,7 +2979,6 @@ C     symmetry axes after reordering.
 C
         ISYM = 0
 C
-C
         DO 100 N = 1,NSYM
           ISYM = NREPP(N)*NSYMP + NORIG(N)
 C
@@ -3225,7 +3051,6 @@ C
       ISCREW(3) = 0
       JSM = 0
 C
-C
       DO 130 J = 1,NSYMP
 C
 C---- Is it a rotation at all?
@@ -3250,8 +3075,7 @@ C---- b
 C
           IF (RSMT(2,2,J).EQ.1.0) IRAXIS = 2
 C
-C---- c
-C
+C---- C
           IF (RSMT(3,3,J).EQ.1.0) IRAXIS = 1
 C
 C---- 1 1 0
@@ -3282,7 +3106,6 @@ C
             JSM = JSM + 1
             NROT(JSM) = 0
 C
-C
             DO 110 IROT = 1,6
               IH = RSMT(1,1,J)*IHR + RSMT(2,1,J)*IKR + RSMT(3,1,J)*ILR
               IK = RSMT(1,2,J)*IHR + RSMT(2,2,J)*IKR + RSMT(3,2,J)*ILR
@@ -3301,7 +3124,6 @@ C
                 ILR = IL
               END IF
   110       CONTINUE
-C
 C
             GO TO 130
   120       NROT(JSM) = 10*IRAXIS + IROT
@@ -3335,7 +3157,6 @@ C
       DO 150 I = 1,JSM
         IRMIN = 1000000
         JMIN = 0
-C
 C
         DO 140 J = 1,JSM
           IF (IRMIN.GT.NROT(J)) THEN
@@ -3493,7 +3314,6 @@ C
 C     
         CALL BLANK('CURWIN',2)
         CALL PUTLIN(STROUT,'CURWIN')
-C
 C
  9876   ISCR = ISCREW(1) + ISCREW(2) + ISCREW(3)
         IF (ISCR.GT.0) THEN
@@ -3732,7 +3552,6 @@ C    PGNAME  point-group name
 C    MSYMP   number of primitive symmetry operations
 C    MLAUE   Laue group number
 C
-C
 C Arguments:
       INTEGER NUMSGP, MSYM, MSYMP, MLAUE
       REAL    RRSYM(4,4,192) 
@@ -3840,8 +3659,6 @@ C
 C
       END
 C
-C
-C
       SUBROUTINE ASUPUT(IHKL,JHKL,ISYM)
 C     =================================
 C
@@ -3859,7 +3676,6 @@ C               real-space symmetry operation number L = (ISYM-1)/2 + 1
 C
 C  The real-space symmetry matrices are applied by premultiplying them
 C  by a row vector hkl,  ie  (h'k'l') = (hkl)R
-C
 C
 C  Arguments
       INTEGER IHKL(3), JHKL(3), ISYM
@@ -3884,7 +3700,6 @@ C Routines
 C Locals
       INTEGER I,L,ISGN
       CHARACTER*100 LINERR
-C
 C
       DO 10, L=1,NSYMP
 C  h' = h R   ie row vector h premultiplies symmetry matrix
@@ -3923,8 +3738,6 @@ C
       RETURN
       END
 C
-C
-C
       SUBROUTINE ASUGET(IHKL,JHKL,ISYM)
 C     =================================
 C
@@ -3945,7 +3758,6 @@ C
 C  The real-space symmetry matrices are applied in ASUPUT by 
 C premultiplying them by a row vector hkl,  ie  (h'k'l') = (hkl)R
 C  So here we calculate (hkl) = (h'k'l') R**-1
-C
 C
 C  Arguments
       INTEGER IHKL(3), JHKL(3), ISYM
@@ -4020,9 +3832,7 @@ C   INASU = +1  if  h k l chosen
 C   INASU = -1  if -h-k-l chosen
 C   INASU =  0   if reflection is out-of-bounds
 C
-C
 C  Reciprocal space zones: please check spacegroup numbers.
-C
 C
 Code:3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0
 C           Space group numbers :   1,2
@@ -4055,10 +3865,8 @@ C           Space group numbers :   195-206
 Code:15 pg432  m3m        hkl:h>=0, k>=0, l>=0 with k>=l, and l>=h.
 C           Space group numbers :   207-232
 C
-C
 C -- TEST FOR HKL IN ASYMMETRIC UNIT
 C     INCORPORATED INTO DATCO5 JUNE 70
-C
 C
 C Arguments
       INTEGER IH(3), NLAUE
@@ -4090,7 +3898,6 @@ C     H00 --    H.GE.0
       IF (K) 7,155,5
  155  IF (L) 7,160,5
  160  IF (J) 7,5,5
-C
 C
 C  Corresponds to Data reduction unique set for  pg1
 C   3 pg1     1bar      hkl:l>=0  hk0:h>=0  0k0:k>=0   1,2
@@ -4181,8 +3988,6 @@ C  H=0 K=0 L.GT.0
 556   IF(K)7,7,5
 557   IF(L)7,7,5
 C
-C
-C
 C  Corresponds to Data reduction unique set for  pg312 
 C  10 pg312        hkl:h>=0, k>=0 with k<=h for all l.
 C                           if k = 0  l>=0
@@ -4194,7 +3999,6 @@ C  H=K  L.GE.0
 575   IF(K)7,577,576
 576   IF(J-K)7,5,5
 577   IF(L)7,5,5
-C
 C
 C  Corresponds to Data reduction unique set for  pg321
 C  11 pg321        hkl:h>=0, k>=0 with k<=h for all l.
@@ -4278,8 +4082,6 @@ C     ======
 C
       END
 C
-C
-C
       SUBROUTINE PRTRSM(PGNAME, NSYMP, RSYMIV)
 C     ========================================
 C
@@ -4292,13 +4094,11 @@ C
 C  The real-space symmetry matrices are applied by premultiplying them
 C  by a row vector hkl,  ie  (h'k'l') = (hkl)R
 C
-C
 C  Arguments
       INTEGER NSYMP
       REAL RSYMIV(4,4,*)
 C
       CHARACTER*(*) PGNAME
-C
 C
 C Locals
       INTEGER I,J,K,L,M,ISYM,ISGN,LP,NLINC,NLMAX
@@ -4373,7 +4173,6 @@ C     ================================================
       SUBROUTINE ASUPHP(JHKL,LSYM,ISIGN,PHASIN,PHSOUT)
 C     ================================================
 C
-C
 C---- Generate phase of symmetry equivalent JHKL from that of IHKL
 C
 C     On input:
@@ -4397,8 +4196,6 @@ C   RSYMIV   their inverse
 C   NSYM     number of symmetry operations
 C   NSYMP    number of primitive symmetry operations
 C   NLAUE    number of Laue group
-C
-C
 C
 C     .. Parameters ..
       INTEGER           MAXSYM
@@ -4452,8 +4249,6 @@ C
       RETURN
       END
 C
-C
-C
       SUBROUTINE PATSGP(SPGNAM, PGNAME, PATNAM, LPATSG)
 C     =================================================
 C
@@ -4471,7 +4266,6 @@ C
       INTEGER LPATSG
 C
       CHARACTER NMPG*8
-C
 C
 C Strip off 'PG' is present
       IF (PGNAME(1:2) .EQ. 'PG') THEN
@@ -4806,7 +4600,6 @@ C      210: F4132      211: I432       212: P4332        213: P4132
 C      214: I4132      221: Pm-3m      225: Fm-3m        229: Im-3m
      $ HALF,ONEL,EIGH, HALF,HALF,HALF, HALF,QUAR,QUAR, HALF,HALF,QUAR/
 C
-C
       DO 10, J=1,NUMSGP
          IF (LSPGRP .EQ. NSPGRP(J)) GO TO 20
  10   CONTINUE
@@ -4957,9 +4750,7 @@ C     .. Data statements ..
       DATA IFACT/2,3,5,7,11,13,17,19/
 C     ..
 C
-C
       NN = N
-C
 C
       DO 20 I = 1,NFACT
    10   IF (MOD(NN,IFACT(I)).EQ.0) THEN
@@ -4973,7 +4764,6 @@ C                *******************************************
 C                *******************************************
 C
           END IF
-C
 C
           NN = NN/IFACT(I)
           IF (NN.EQ.1) THEN
@@ -4990,5 +4780,4 @@ C
 C---- Failure
 C
       FACTRZ = .FALSE.
-      RETURN
       END
