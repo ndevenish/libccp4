@@ -731,6 +731,39 @@ FORTRAN_SUBR ( SETLIM, setlim,
   xyzlim[2][0] = 0.0;
 }
 
+/* Returns map limits of a.s.u. in fractional units.
+   These are rounded up or down to mimic <= or < respectively.
+   In fact, these limits may be larger than 1 a.s.u. but always
+   have one corner at the origin.
+   This version uses mapasu_zero limits from sgtbx */
+FORTRAN_SUBR ( SETLIM_ZERO, setlim_zero,
+	       (const int *lspgrp, float xyzlim[3][2]),
+	       (const int *lspgrp, float xyzlim[3][2]),
+	       (const int *lspgrp, float xyzlim[3][2]))
+{ 
+  CCP4SPG *tmp_spacegroup;      
+
+  CSYMLIB_DEBUG(puts("CSYMLIB_F: SETLIM_ZERO");)
+
+  if (!spacegroup || spacegroup->spg_ccp4_num != *lspgrp) {
+    /* load spacegroup if necessary */
+    /* spacegroup only temporary, as setlim is not expected to
+       interact with other calls */
+    tmp_spacegroup = ccp4spg_load_by_ccp4_num(*lspgrp);
+    xyzlim[0][1] = tmp_spacegroup->mapasu_zero[0];
+    xyzlim[1][1] = tmp_spacegroup->mapasu_zero[1];
+    xyzlim[2][1] = tmp_spacegroup->mapasu_zero[2];
+    free(tmp_spacegroup); 
+  } else {
+    xyzlim[0][1] = spacegroup->mapasu_zero[0];
+    xyzlim[1][1] = spacegroup->mapasu_zero[1];
+    xyzlim[2][1] = spacegroup->mapasu_zero[2];
+  }
+  xyzlim[0][0] = 0.0;
+  xyzlim[1][0] = 0.0;
+  xyzlim[2][0] = 0.0;
+}
+
 FORTRAN_SUBR ( SETGRD, setgrd,
 	       (const int *nlaue, const float *sample, const int *nxmin,
                 const int *nymin, const int *nzmin, int *nx, int *ny, int *nz),
