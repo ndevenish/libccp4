@@ -1831,17 +1831,16 @@ C
          Do ISYM = 1,192
           irchk(isym) = 0
          END DO
-      ILEN = LENSTR(NAMSPG_CIF)
-
 C  Remove all spaces from SG name
+      ILEN = LENSTR(NAMSPG_CIF)
          NAMSPG_CIFS = NAMSPG_CIF(1:1)
 
          IF(ILEN.GE.2) THEN
           J = 1
           DO I = 2,ILEN
            IF( NAMSPG_CIF(I:I).NE.' ') THEN
+            NAMSPG_CIFS = NAMSPG_CIFS(1:J)//NAMSPG_CIF(J:J)
             J = J + 1
-            NAMSPG_CIFS = NAMSPG_CIFS//NAMSPG_CIF(J:J)
            END IF
           END DO 
          END IF
@@ -1896,7 +1895,9 @@ C
          NAMLGTH = LGTHCHK
          IF (NAMSPG_CIF.NE.LINE(IBEG(ITOK):IEND(ITOK)) .AND.
      +       NAMSPG_CIFS.NE.LINE(IBEG(ITOK):IEND(ITOK))) GO TO 15
+C   Found a suitable match to space group name
              NAMFIT = .true.
+             GO TO 40
   15    CONTINUE
 C
 C
