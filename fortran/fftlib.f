@@ -1290,7 +1290,7 @@ C     .. Scalar Arguments ..
       INTEGER           N
 C     ..
 C     .. Array Arguments ..
-      REAL              EVEN(1),ODD(1)
+      REAL              EVEN(*),ODD(*)
       INTEGER           DIM(5)
 C     ..
 C     .. Local Scalars ..
