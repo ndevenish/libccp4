@@ -310,10 +310,10 @@ static void ieeeF2convexF(union float_uint_uchar *buffer, const unsigned int siz
  * @param buffer * (char *) input array
  * @param n_items (size_t) number of items
  *
- * reads block of @n_items bytes from @cfile to @buffer via
- * FILE struct @cfile->stream(fread) or file desc @cfile->fd
- * read/_read).  Increments location value @cfile->loc. The
- * @cfile->iostat flag is set on failure.
+ * reads block of n_items bytes from cfile to buffer via
+ * FILE struct cfile->stream(fread) or file desc cfile->fd
+ * read/_read).  Increments location value cfile->loc. The
+ * cfile->iostat flag is set on failure.
  * @return number of bytes read.
  */
 int ccp4_file_raw_read(CCP4File *cfile, char *buffer, size_t n_items)
@@ -658,13 +658,13 @@ int ccp4_file_setstamp(CCP4File *cfile, const size_t offset)
  * @param cfile  (CCP4File *)
  * @param mode (int) io_mode
  *
- * set the data mode of @cfile to @mode
- * (BYTE    =0, 8 bit
- *  INT16   =1, 16 bit
- *  INT32   =6, 32 bit
- *  FLOAT32 =2, 32 bit
- *  COMP32  =3, 2*16 bit
- *  COMP64  =4, 2*32 bit).  
+ * set the data mode of cfile to mode
+ * (BYTE (8 bit) = 0, 
+ *  INT16  (16 bit) = 1, 
+ *  INT32  (32 bit) = 6, 
+ *  FLOAT32 (32 bit) = 2, 
+ *  COMP32 (2*16 bit) = 3, 
+ *  COMP64 (2*32 bit) = 4).  
  * @return 0 on success, EOF on failure.
  */
 int ccp4_file_setmode (CCP4File *cfile, const int mode)
@@ -1548,7 +1548,7 @@ int ccp4_file_readchar (CCP4File *cfile, uint8 *buffer, size_t nitems)
       ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_readchar", NULL);
       return EOF; }   
 
-  if ( (result = ccp4_file_raw_read (cfile, buffer, nitems)) != nitems) {
+  if ( (result = ccp4_file_raw_read (cfile, (char *) buffer, nitems)) != nitems) {
     ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_readchar", NULL);
     if (cfile->stream && !feof(cfile->stream))
       return EOF; } 
@@ -1613,7 +1613,7 @@ int ccp4_file_writecomp (CCP4File *cfile, const uint8 *buffer, size_t nitems)
   
   if (cfile->fconvert != nativeFT) {
     char out_buffer[8];
-    const char *out_ptr = buffer;
+    const char *out_ptr = (char *) buffer;
     size_t i;
     for (i = 0; i != nitems; i++) {
       switch (nativeFT) {
@@ -1679,7 +1679,7 @@ int ccp4_file_writecomp (CCP4File *cfile, const uint8 *buffer, size_t nitems)
     result += ccp4_file_raw_write (cfile, out_buffer, _item_sizes[COMP64]);
     }
   } else {
-    result = ccp4_file_raw_write (cfile, buffer, n);
+    result = ccp4_file_raw_write (cfile, (char *) buffer, n);
   }
 
   if (result != n)
@@ -1722,7 +1722,7 @@ int ccp4_file_writeshortcomp (CCP4File *cfile, const uint8 *buffer, size_t nitem
 
   if (cfile->iconvert != nativeIT) {
     char out_buffer[4];
-    const char *out_ptr = buffer;
+    const char *out_ptr = (char *) buffer;
     size_t i;
     for (i = 0; i != nitems; i++) {
       if ((cfile->iconvert==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
@@ -1738,7 +1738,7 @@ int ccp4_file_writeshortcomp (CCP4File *cfile, const uint8 *buffer, size_t nitem
     result += ccp4_file_raw_write (cfile, out_buffer, _item_sizes[COMP32]);
     }
    } else {
-    result = ccp4_file_raw_write (cfile, buffer, n);
+    result = ccp4_file_raw_write (cfile, (char *) buffer, n);
   }
   
   if ( result != n) 
@@ -1781,7 +1781,7 @@ int ccp4_file_writefloat (CCP4File *cfile, const uint8 *buffer, size_t nitems)
 
   if (cfile->fconvert != nativeFT) {
     char out_buffer[4];
-    const char *out_ptr = buffer;
+    const char *out_ptr = (char *) buffer;
     size_t i;
     for (i = 0; i != nitems; i++) {
       switch (nativeFT) {
@@ -1837,7 +1837,7 @@ int ccp4_file_writefloat (CCP4File *cfile, const uint8 *buffer, size_t nitems)
     result += ccp4_file_raw_write (cfile, out_buffer, _item_sizes[FLOAT32]);
     }
   } else {
-    result = ccp4_file_raw_write (cfile, buffer, n);
+    result = ccp4_file_raw_write (cfile, (char *) buffer, n);
   }
 
   if (result != n)
@@ -1880,7 +1880,7 @@ int ccp4_file_writeint (CCP4File *cfile, const uint8 *buffer, size_t nitems)
 
   if (cfile->iconvert != nativeIT) {
     char out_buffer[4];
-    const char *out_ptr = buffer;
+    const char *out_ptr = (char *) buffer;
     size_t i;
     for (i = 0; i != nitems; i++) {
       if ((cfile->iconvert==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
@@ -1896,7 +1896,7 @@ int ccp4_file_writeint (CCP4File *cfile, const uint8 *buffer, size_t nitems)
     result += ccp4_file_raw_write (cfile, out_buffer, _item_sizes[INT32]);
     }
    } else {
-    result = ccp4_file_raw_write (cfile, buffer, n);
+    result = ccp4_file_raw_write (cfile, (char *) buffer, n);
   }
 
   if ( result != n) 
@@ -1939,7 +1939,7 @@ int ccp4_file_writeshort (CCP4File *cfile, const uint8 *buffer, size_t nitems)
   
   if (cfile->iconvert != nativeIT) {
     char out_buffer[2];
-    const char *out_ptr = buffer;
+    const char *out_ptr = (char *) buffer;
     size_t i;
     for (i = 0; i != nitems; i++) {
       if ((cfile->iconvert==DFNTI_MBO && nativeIT==DFNTI_IBO) ||
@@ -1953,7 +1953,7 @@ int ccp4_file_writeshort (CCP4File *cfile, const uint8 *buffer, size_t nitems)
     result += ccp4_file_raw_write (cfile, out_buffer, _item_sizes[INT16]);
     }
    } else {
-    result = ccp4_file_raw_write (cfile, buffer, n);
+    result = ccp4_file_raw_write (cfile, (char *) buffer, n);
   }
   
   if ( result != n) 
@@ -1992,7 +1992,7 @@ int ccp4_file_writechar (CCP4File *cfile, const uint8 *buffer, size_t nitems)
       ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_writechar", NULL);
       return EOF; }   
   
-  if ( (result = ccp4_file_raw_write (cfile, buffer, nitems)) != nitems) 
+  if ( (result = ccp4_file_raw_write (cfile, (char *) buffer, nitems)) != nitems) 
     ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_writechar", NULL);
 
   return (result);

@@ -92,7 +92,7 @@ int is_cmap(CCP4File *file)
     return 0;
   if ( ccp4_file_raw_seek(file,map_offset,SEEK_SET) == EOF)
     return 0;
-  if (ccp4_file_readchar(file,buffer,4U) != 4U)
+  if (ccp4_file_readchar(file,(uint8 *) buffer,4U) != 4U)
     return 0;
   ccp4_file_rewind(file);
   return !strncmp(buffer,"MAP ",4);

@@ -127,7 +127,7 @@ int ccp4_cmap_get_symop(CMMFile *mfile, char *buffer)
 		 "cmap_get_symop",NULL);
     return (EOF);}
 
-  if (ccp4_file_readchar(mfile->stream, buffer, n_byt_symop) != n_byt_symop) {
+  if (ccp4_file_readchar(mfile->stream, (uint8 *) buffer, n_byt_symop) != n_byt_symop) {
     ccp4_signal( CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_ReadFail),
 		 "cmap_get_symop",NULL);
     return (EOF);
@@ -153,7 +153,7 @@ int ccp4_cmap_set_symop(CMMFile *mfile, const char *symop)
   memcpy(buffer, symop, (strlen(symop) > n_byt_symop) ?
          n_byt_symop : strlen(symop) );   
   if (ccp4_file_is_write(mfile->stream) && mfile->data.number == 0) {
-    if (ccp4_file_writechar(mfile->stream, buffer, n_byt_symop) != n_byt_symop) {
+    if (ccp4_file_writechar(mfile->stream, (uint8 *) buffer, n_byt_symop) != n_byt_symop) {
       ccp4_signal( CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_WriteFail),
 		   "cmap_set_symop",NULL);
       return (EOF);

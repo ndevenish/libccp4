@@ -278,7 +278,7 @@ int ccp4_cmap_write_section_header(CMMFile *mfile, const char *header)
   memset(output,' ', mfile->data.header_size);
   if (header) memcpy(output, header,mfile->data.header_size);
 
-  if ( (result = ccp4_file_writechar( mfile->stream, output, 
+  if ( (result = ccp4_file_writechar( mfile->stream, (uint8 *) output, 
                                      mfile->data.header_size)) 
 	 != mfile->data.header_size) 
     ccp4_signal(ccp4_errno,

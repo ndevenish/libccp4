@@ -59,7 +59,7 @@ int parse_maplabels(CMMFile *mfile)
   
 /*  ccp4_file_seek(mfile->stream,labels_offset,SEEK_SET); */
   for (i=0 ; i!=mfile->labels.number ; i++) {
-    ccp4_file_readchar(mfile->stream,buffer,n_byt_label);
+    ccp4_file_readchar(mfile->stream,(uint8 *) buffer,n_byt_label);
     cptr = buffer+n_byt_label;
     while (*--cptr == ' ');
     *(++cptr) = '\0';
@@ -86,11 +86,11 @@ int write_maplabels(const CMMFile *mfile)
   for (i=0 ; i != mfile->labels.number ; i++) {
     memset(buffer,' ',80U);
     strncpy(buffer,mfile->labels.labels[i],strlen(mfile->labels.labels[i]));
-    result += ccp4_file_writechar(mfile->stream,buffer,80U);
+    result += ccp4_file_writechar(mfile->stream,(uint8 *) buffer,80U);
   }
   memset(buffer,' ',80U);
   while(i != 10) {
-    result += ccp4_file_writechar(mfile->stream,buffer,80U);
+    result += ccp4_file_writechar(mfile->stream,(uint8 *) buffer,80U);
     i++;
   }
   return (result == 800) ? 1 : 0 ;

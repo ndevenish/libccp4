@@ -217,6 +217,7 @@ MTZ *MtzGet(const char *logname, int read_refs)
     /* read total number of datasets over all projects/crystals */
     else if (ccp4_keymatch(key, "NDIF")) {
       ntotset = (int) token[1].value;
+      if (debug) printf(" MtzGet: NDIF is \n",ntotset);
     }
 
     /* PROJECT line. Projects are not part of data structure, but
@@ -1812,7 +1813,7 @@ int MtzSetSortOrder(MTZ *mtz, MTZCOL *colsort[5]) {
 int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nlines) {
 
   int i,j,numlines=0;
-  char *newhist,*ich;
+  char *newhist;
 
   newhist = MtzCallocHist(mtz->histlines + nlines);
   /* write new history lines */
@@ -2249,7 +2250,7 @@ int MtzPut(MTZ *mtz, const char *logname)
  int i, j, k, l, hdrst, icol, numbat, isort[5], debug=0;
  int ind[3],ind_xtal,ind_set,ind_col[3],length;
  double coefhkl[6];
- float maxres=0.0,minres=100.0,res,refldata[200];
+ float res,refldata[200];
  int nwords=NBATCHWORDS,nintegers=NBATCHINTEGERS,nreals=NBATCHREALS;
  float buf[NBATCHWORDS];
  int *intbuf = (int *) buf;
