@@ -7,6 +7,23 @@ C  matvec.f       mc04b.f        minvn.f      minv3.f     ranmar.f
 C  scalev.f       transp.f       unit.f       vdif.f      vset.f
 C  vsum.f         zipin.f        zipout.f
 C
+C Routines added by pjx (June 2000):
+C
+C     GMPRD multiply two matrices (general)
+C     MATMUL4 multiply two 4x4 matrices
+C     MATMLN multiply two nxn matrices
+C     DETMAT calculate the determinant of 3x3 matrix
+C     MATVC4 matrix times vector (matrix is 4x4 array, treated as 3x3,
+C            vector is length 3)
+C     ML3MAT multiplies three matrices of any size
+C     INV44 invert 4x4 matrix
+C     MATMLI integer version of 3x3 matrix product MATMUL
+C     MATMULTRANS multiply 3x3 matrix by transpose of another 3x3 matrix
+C     IMATVEC integer version of MATVEC (post-multiply 3x3 matrix with a
+C             vector)
+C     TRANSFRM variant of MATVC4, same except that the input vector is
+C              overwritten by the output vector
+C
 C
 C     The routines ea06c, ea08c, ea09c, fa01as, fa01bs, fa01cs, fa01ds,
 C     fm02ad, mc04b, (and possibly others) are from the
@@ -22,6 +39,396 @@ C     become the property of the external user.
 C       The liaison officer for the library's external affairs is listed
 C     as: Mr. S. Marlow, Building 8.9, Harwell Laboratory, Didcot, 
 C     Oxon OX11 0RA, UK.
+C
+C
+C_BEGIN_GMPRD
+C
+      SUBROUTINE GMPRD(A,B,R,N,M,L)
+C     =============================
+C
+C
+C---- Ssp general matrix product
+C
+C   R(N,L) = A(N,M) * B(M,L)
+C
+C     .. Scalar Arguments ..
+      INTEGER L,M,N
+C     ..
+C     .. Array Arguments ..
+      REAL A(N*M),B(M*L),R(N*L)
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,IB,IK,IR,J,JI,K
+C     ..
+C
+C_END_GMPRD
+C
+      IR = 0
+      IK = -M
+      DO 30 K = 1,L
+        IK = IK + M
+        DO 20 J = 1,N
+          IR = IR + 1
+          JI = J - N
+          IB = IK
+          R(IR) = 0.0
+          DO 10 I = 1,M
+            JI = JI + N
+            IB = IB + 1
+            R(IR) = A(JI)*B(IB) + R(IR)
+   10     CONTINUE
+   20   CONTINUE
+   30 CONTINUE
+      END
+C
+C_BEGIN_MATMUL4
+C
+C     =========================
+      SUBROUTINE MATMUL4(A,B,C)
+C     =========================
+C
+C     Multiply two 4x4 matrices, A=B*C
+C
+C
+      IMPLICIT NONE
+C
+C     .. Array Arguments ..
+      REAL A(4,4),B(4,4),C(4,4)
+C     ..
+C     .. Local Scalars ..
+      REAL S
+      INTEGER I,J,K
+C     ..
+C_END_MATMUL4
+C
+      DO 30 I = 1,4
+        DO 20 J = 1,4
+          S = 0
+          DO 10 K = 1,4
+            S = B(I,K)*C(K,J) + S
+   10     CONTINUE
+          A(I,J) = S
+   20   CONTINUE
+   30 CONTINUE
+      RETURN
+      END
+C
+C_BEGIN_MATMLN
+C
+      subroutine matmln(n,a,b,c)
+C     =========================
+C
+C Multiply two nxn matrices
+C  a = b . c
+C
+      integer n
+      real a(n,n),b(n,n),c(n,n)
+      integer i,j,k
+C
+C_END_MATMLN
+C
+      do 1 i=1,n
+         do 2 j=1,n
+            a(j,i)=0.
+            do 3 k=1,n
+               a(j,i)= b(j,k)*c(k,i)+a(j,i)
+ 3          continue
+ 2       continue
+ 1    continue
+      return
+      end
+C
+C_BEGIN_DETMAT
+C
+C     ===========================
+      SUBROUTINE DETMAT(RMAT,DET)
+C     ============================
+C
+C---- Calculate determinant DET of 3x3 matrix RMAT
+C
+C
+C     .. Scalar Arguments ..
+      REAL DET
+C     ..
+C     .. Array Arguments ..
+      REAL RMAT(3,3)
+C     ..
+C_END_DETMAT
+C
+      DET = RMAT(1,1)*RMAT(2,2)*RMAT(3,3) +
+     +      RMAT(1,2)*RMAT(2,3)*RMAT(3,1) +
+     +      RMAT(1,3)*RMAT(2,1)*RMAT(3,2) -
+     +      RMAT(1,3)*RMAT(2,2)*RMAT(3,1) -
+     +      RMAT(1,2)*RMAT(2,1)*RMAT(3,3) -
+     +      RMAT(1,1)*RMAT(2,3)*RMAT(3,2)
+C
+      END
+C
+C
+C_BEGIN_MATVC4
+C
+      SUBROUTINE MATVC4(A,R,B)
+C     ========================
+C
+C Matrix x Vector
+C       A(3)  =  R(4x4) . B(3)
+C
+      REAL A(3), R(4,4), B(3)
+C
+      REAL AA(4), BB(4)
+C
+      EXTERNAL GMPRD,VSET
+C
+C_END_MATVC4
+C
+      CALL VSET(BB,B)
+      BB(4) = 1.0
+      CALL GMPRD(R,BB,AA,4,4,1)
+      CALL VSET(A,AA)
+      RETURN
+      END
+C
+C
+C_BEGIN_ML3MAT
+C
+C 26-Nov-1988       J. W. Pflugrath           Cold Spring Harbor Laboratory
+C    Edited to conform to Fortran 77.  Renamed from Multiply_3_matrices to
+C    ML3MAT
+C
+C ==============================================================================
+C
+C! to multiply three matrices
+C
+      SUBROUTINE ML3MAT
+C          ! input: 1st side of 1st matrix
+     1   (P
+C          ! input: first matrix
+     2   ,A
+C          ! input: 2nd side of 1st matrix & 1st side of 2nd matrix
+     3   ,Q
+C          ! input: second matrix
+     4   ,B
+C          ! input: 2nd side of 2nd matrix & 1st side of 3rd matrix
+     5   ,R
+C          ! input: third matrix
+     6   ,C
+C          ! input: 2nd side of 3rd matrix
+     7   ,S
+C          ! output: product matrix
+     8   ,D)
+C
+CEE Multiplies three real matrices of any dimensions.  It is not optimised
+C   for very large matrices.
+C Multiply_3_matrices
+C*** this routine is inefficient!
+C Multiply_3_matrices
+Created: 15-NOV-1985 D.J.Thomas,   MRC Laboratory of Molecular Biology,
+C                                  Hills Road, Cambridge, CB2 2QH, England
+C
+C            ! loop counters
+      INTEGER   I,J,K,L
+C            ! loop limits
+      INTEGER   P,Q,R,S
+C           ! first input matrix
+      REAL   A  (1:P,1:Q)
+C           ! second input matrix
+      REAL   B  (1:Q,1:R)
+C           ! third input matrix
+      REAL   C  (1:R,1:S)
+C           ! output matrix
+      REAL   D  (1:P,1:S)
+C
+C_END_ML3MAT
+C
+      DO 100 L = 1, S
+         DO 100 I = 1, P
+            D(I,L) = 0.0
+            DO 100 K = 1, R
+               DO 100 J = 1, Q
+C
+C                 ! accumulate product matrix D=ABC
+C
+100               D(I,L) = D(I,L)  +  A(I,J) * B(J,K) * C(K,L)
+               CONTINUE
+            CONTINUE
+         CONTINUE
+      CONTINUE
+C Multiply_3_matrices
+      RETURN
+      END
+C
+C
+C_BEGIN_INV44
+C
+C     ======================
+      SUBROUTINE INV44(A,AI)
+C     ======================
+C
+C SUBROUTINE TO INVERT 4*4 MATRICES FOR CONVERSION BETWEEN
+C FRACTIONAL AND ORTHOGONAL AXES
+C PARAMETERS
+C
+C           A (I)   4*4 MATRIX TO BE INVERTED
+C          AI (O)   INVERSE MATRIX
+C
+C SPECIFICATION STATEMENTS
+C ------------------------
+C
+C
+C GET COFACTORS OF 'A' IN ARRAY 'C'
+C ---------------------------------
+C
+      IMPLICIT NONE
+C
+C     .. Array Arguments ..
+      REAL A(4,4),AI(4,4)
+C     ..
+C     .. Local Scalars ..
+      REAL AM,D
+      INTEGER I,I1,II,J,J1,JJ
+C     ..
+C     .. Local Arrays ..
+      REAL C(4,4),X(3,3)
+C     ..
+C
+C_END_INV44
+C
+      DO 40 II = 1,4
+        DO 30 JJ = 1,4
+          I = 0
+          DO 20 I1 = 1,4
+            IF (I1.EQ.II) GO TO 20
+            I = I + 1
+            J = 0
+            DO 10 J1 = 1,4
+              IF (J1.EQ.JJ) GO TO 10
+              J = J + 1
+              X(I,J) = A(I1,J1)
+   10       CONTINUE
+   20     CONTINUE
+          AM = X(1,1)*X(2,2)*X(3,3) - X(1,1)*X(2,3)*X(3,2) +
+     +         X(1,2)*X(2,3)*X(3,1) - X(1,2)*X(2,1)*X(3,3) +
+     +         X(1,3)*X(2,1)*X(3,2) - X(1,3)*X(2,2)*X(3,1)
+          C(II,JJ) = (-1)** (II+JJ)*AM
+   30   CONTINUE
+   40 CONTINUE
+C
+C---- calculate determinant
+C
+      D = 0
+      DO 50 I = 1,4
+        D = A(I,1)*C(I,1) + D
+   50 CONTINUE
+C
+C---- get inverse matrix
+C
+      DO 70 I = 1,4
+        DO 60 J = 1,4
+          AI(I,J) = C(J,I)/D
+   60   CONTINUE
+   70 CONTINUE
+      RETURN
+      END
+C
+C
+C_BEGIN_MATMLI
+C
+      SUBROUTINE MATMLI(A,B,C)
+C     ========================
+C Integer matrix multiply
+      INTEGER A(3,3),B(3,3),C(3,3)
+C
+C_END_MATMULI
+C
+      DO 1 I=1,3
+      DO 2 J=1,3
+      A(I,J)=0
+      DO 3 K=1,3
+      A(I,J)=A(I,J)+B(I,K)*C(K,J)
+3     CONTINUE
+  2     CONTINUE
+ 1      CONTINUE
+      RETURN
+      END
+C
+C
+C_BEGIN_MATMULTRANS
+C
+      SUBROUTINE MATMULTrans(A,B,C)
+C     =============================
+C
+C  A=B*C(transpose) for 3x3 matrices
+C
+      IMPLICIT NONE
+C
+C     ..Array arguments
+      REAL A(3,3),B(3,3),C(3,3)
+C     ..Local arrays
+      REAL CT(3,3)
+C
+C_END_MATMULTRANS
+C
+      CALL TRANSP(CT,C)
+      CALL MATMUL(A,B,CT)
+      RETURN
+      END
+C
+C
+C_BEGIN_IMATVEC
+C
+      SUBROUTINE IMATVEC(V,A,B)
+C     ========================
+C
+C---- Post-multiply a 3x3 matrix by a vector
+C
+C       V=AB
+C
+C     .. Array Arguments ..
+      INTEGER A(3,3),B(3),V(3)
+C     ..
+C     .. Local Scalars ..
+      INTEGER I,J,S
+C
+C_END_IMATVEC
+C
+      DO 20 I = 1,3
+        S = 0
+C
+C
+        DO 10 J = 1,3
+          S = A(I,J)*B(J) + S
+   10   CONTINUE
+C
+C
+        V(I) = S
+   20 CONTINUE
+C
+C
+      END
+C
+C
+C_BEGIN_TRANSFRM
+C
+      SUBROUTINE TRANSFRM(X,MAT)
+C     ==========================
+C
+C  Transform vector X(3) by quine matrix MAT(4,4)
+C  Return transformed vector in X.
+C
+      IMPLICIT NONE
+C
+C     ..Array arguments..
+      REAL X(3),MAT(4,4)
+C     ..Local arrays..
+      REAL TMP(3)
+C
+C_END_TRANSFRM
+C
+      CALL MATVC4(TMP,MAT,X)
+      CALL VSET(X,TMP)
+      RETURN
+      END
+C
 C
 C
 C_BEGIN_CROSS
