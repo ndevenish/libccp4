@@ -1,4 +1,9 @@
 C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part i)' software.  See the conditions
+C     in the CCP4 manual for a copyright statement.
+C
+C
 C  2)    EJD now checks if the cell dimensions have already been read 
 C      from some other source ( eg Input stream - LCF file) and if there 
 C      is inconsistency between the coordinate file header and this.

@@ -1,3 +1,8 @@
+C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part i)' software.  See the conditions
+C     in the CCP4 manual for a copyright statement.
+C
 C          CCP4 PARSER Routines       ( 19-Feb-1990)
 C          ====================
 C

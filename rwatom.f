@@ -1,4 +1,7 @@
 C
+C     This code is distributed under the terms and conditions of the
+C     CCP4 licence agreement as `Part i)' software.  See the conditions
+C     in the CCP4 manual for a copyright statement.
 C
 C Routines for reading and writing atoms in Brookhaven or Diamond
 C format. Uses CCP RBROOK, WBROOK etc for Brookhaven file, and
