@@ -703,6 +703,29 @@ C     these formats are mostly non-standard, of course...
  1007 FORMAT ('+',A)
       END
 C
+      SUBROUTINE UGTARG(I, ARG)
+      INTEGER I
+      CHARACTER *(*) ARG
+ifelse(_hpux,1,
+[C Maybe HPUX doesn't need to be different here.  The Fortran/9000
+C Reference says:
+C   4.  GETARG can be accessed only with the
+C 
+C       $HP9000_800 INTRINSICS  ON
+C 
+C       compiler directive.  GETARG is similar to IGETARG except that
+C       GETARG is called as a subroutine instead of as a function.  It
+C       accepts two arguments:  n and str.  n is an integer specifying
+C       which command-line argument is requested.  When n=1, it returns
+C       the program name (unlike IGETARG which returns the program name
+C       when n equals zero).  str is a character variable that will
+C       contain the requested command-line argument, padded with blanks on
+C       the end.
+      INTEGER J
+       J = IGETARG(I, ARG, LEN(ARG))],
+[      CALL GETARG(I, ARG)])
+      END
+C     
 c     ============================
       subroutine hciftime(ciftime)
 c     ============================
