@@ -345,13 +345,16 @@ C     ..
       ELSE
         SEC = ETIME (TARRAY) - TLAST
       ENDIF
+      
       END
 C
 C
 C     ===============================
       SUBROUTINE UGERR(STATUS,ERRSTR)
 C     ===============================
-C
+cDEC$ IF DEFINED (__INTEL_COMPILER) 
+      USE IFCORE 
+cDEC$ ENDIF
 C UGERR - Get error message string for error number in STATUS
 C     (supposedly).  Actually it ignores STATUS and always uses the
 C     *last* error that occurred.
