@@ -188,7 +188,7 @@
 #  define KNOWN_MACHINE
 #endif
 /* Generic linux, may not have the G77 compilers */
-#if defined (linux)
+#if defined (linux) || defined (__linux) || defined (__linux__)
 #  undef CALL_LIKE_SUN
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_SUN 1
