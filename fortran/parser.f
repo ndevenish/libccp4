@@ -5,7 +5,7 @@ C  Original Author: Based on Mike Levitt's routine of the same name.
 C  Modified By: Peter Brick, Phil Evans, Eleanor Dodson
 C
 C
-C
+C $Date$
 C
 C
 C  Routine PARSER.FOR  contains the following subroutines and functions
@@ -237,17 +237,16 @@ C
       IF (LINEX(LX:LX).EQ.'-' .OR. LINEX(LX:LX).EQ.'&') THEN
 C      
       LINEX(LX:LX) = ' '
-      LL = LENSTR(LINE)
+      LL = LENSTR(LINE) + 1
 C
 C
       IF (FIRST) THEN
          LINE = LINEX   // ' '
          FIRST = .FALSE.
-         GO TO 20
       ELSE
-      LINE = LINE(1:LL) // ' ' // LINEX(1:LX) // ' '
-        GO TO 20
+        LINE(:LL) = ' ' // LINEX(1:LX) // ' '
       END IF
+      GO TO 20
 C
 C
        END IF
@@ -260,8 +259,8 @@ C
          GO TO 30
       ELSE
       LX = LENSTR(LINEX)
-      LL = LENSTR(LINE)
-      LINE = LINE(1:LL) // ' ' // LINEX(1:LX) // ' '
+      LL = LENSTR(LINE) + 1
+      LINE(1:LL) = ' ' // LINEX(1:LX) // ' '
       END IF
 C
 C
@@ -500,6 +499,7 @@ C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC LEN
 C     ..
+      SAVE DELIM,NDELM,NSPDLM,DDELIM,NDDELM,NDSDLM
 C     .. Data statements ..
 C
       DATA LETQT,DBLQT/'''','"'/,BLANK/' '/,ICOMM1,ICOMM2/'#','!'/
@@ -518,7 +518,6 @@ C-- Note that delimiters may be changed by a call to PARSDL (entry point)
 C
       DATA DDELIM/' ', ' ', '=',',',16*' '/
       DATA NDDELM/4/,NDSDLM/3/,NDELM/-1/
-      SAVE DELIM,NDELM,NSPDLM,DDELIM,NDDELM,NDSDLM
 C     ..
 C Setup delimiters if not done
       IF (NDELM .LT. 0) THEN
@@ -1884,11 +1883,10 @@ C     ..
       SAVE
 C
 C
-      IF (NLINES.LT.1) NLINES = 1
       STROUT = ' '
 C
 C
-      DO 10 JDO10 = 1,NLINES
+      DO 10 JDO10 = 1,MAX(NLINES,1)
 C
 C            **************
         CALL PUTLIN(STROUT,OUTWIN)
@@ -2022,7 +2020,7 @@ C     NSYM    Number of symmetry operations (including non-primitive)
 C     NSYMP   Number of primitive symmetry operations
 C     RSYM    Symmetry matrices (4x4)
 C     
-      IMPLICIT NONE
+C      IMPLICIT NONE
 C     
       INTEGER JTOK,NTOK
       INTEGER IBEG(NTOK),IEND(NTOK),ITYP(NTOK)
@@ -2043,13 +2041,14 @@ C---- for cases (a) & (b), this is a single field:
 C     case (c) is more than 1 field
 C     
       IF (JTOK.GT.NTOK) THEN
-         WRITE (STROUT,FMT=*) ' No symmetry data !!!'
+         WRITE (STROUT,FMT='(A)') ' No symmetry data !!!'
          CALL  PUTLIN(STROUT,'CURWIN')
       ELSE
          IF (JTOK.EQ.NTOK) THEN
             SPGNAM = ' '
             IF (NSYM.GT.0) THEN
-               WRITE (STROUT,FMT=*) 'Warning: symmetry already given'
+               WRITE (STROUT,FMT='(A)')
+     +             'Warning: symmetry already given'
                CALL  PUTLIN(STROUT,'CURWIN')
             ENDIF
 C     
@@ -2127,7 +2126,7 @@ C     batch titles o/p
 C     ORIENTATION sets MTZBPR = 2
 C     batch orientation also
 C     
-      IMPLICIT NONE
+C      IMPLICIT NONE
 C     
       INTEGER JTOK,NTOK
       INTEGER IBEG(NTOK),IEND(NTOK),ITYP(NTOK)
@@ -2137,15 +2136,15 @@ C
 C     
       CHARACTER*100 STROUT
 C     
+C     Locals
+      INTEGER I,IKEY
+      CHARACTER KEY*12
+C     
       INTEGER NKEYS
       PARAMETER (NKEYS=7)
       CHARACTER*12 KEYS(NKEYS)
       DATA KEYS/'NONE','BRIEF','HISTORY','ALL',
      $     'NOBATCH','BATCH','ORIENTATION'/
-C     
-C     Locals
-      INTEGER I,IKEY
-      CHARACTER KEY*12
 C     
 C     Set defaults
       MTZPRT = 1
@@ -2195,7 +2194,7 @@ C
 C     CELL(1-6)  Cell dimensions.
 C     
 C     
-      IMPLICIT NONE
+C      IMPLICIT NONE
 C     
 C     
 C     .. Scalar Arguments ..
@@ -2254,7 +2253,7 @@ C     RESMAX  Maximum resolution (in As)
 C     SMIN    Minimum resolution ( 4sin**2/lambda**2)
 C     SMAX    Maximum resolution ( 4sin**2/lambda**2)
 C     
-      IMPLICIT NONE
+C      IMPLICIT NONE
 C     
 C     
 C     .. Scalar Arguments ..
@@ -2350,7 +2349,7 @@ C     On exit
 C     ILPRGI - number in array of LSPRGI whose scale has been reset
 C     SCAL - scale factor.
 C     BB   - temperature factor.
-      IMPLICIT NONE
+C      IMPLICIT NONE
 C     
       INTEGER MCOLS
       PARAMETER (MCOLS=200)
