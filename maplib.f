@@ -3,7 +3,7 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
-C WARNING!! symbol names need to be unique in first 31 characters
+C WARNING!! symbol names need to be less than or equal to 31 characters
 C
 CMWCLOSE    ENTRY ccp4_map_write_close_auto
 CMRCLOS     ENTRY ccp4_map_read_close
@@ -11,16 +11,16 @@ CMCLOSC     ENTRY ccp4_map_write_close_user_mean
 CMCLOSE     ENTRY ccp4_map_write_close_user_sum
 CMSYCPY     ENTRY ccp4_map_copy_symmetry
 CMRFNAM     ENTRY ccp4_map_get_last_read_filename
-CMWFNAM     ENTRY ccp4_map_get_last_write_filename
+CMWFNAM     ENTRY ccp4_map_get_last_writ_filename
 CMRDLIN     ENTRY ccp4_map_read_line_as_mode
 CMSYMOP     ENTRY ccp4_map_read_symm_matrix
-CMGULP      ENTRY ccp4_map_read_whole_sect_as_mode
-CMGULPR     ENTRY ccp4_map_read_whole_sect_as_real
+CMGULP      ENTRY ccp4_map_read_whole_sec_as_mode
+CMGULPR     ENTRY ccp4_map_read_whole_sec_as_real
 CMODECV     ENTRY ccp4_map_mode_to_real
 CMRDHDR     ENTRY ccp4_map_read_open_header
 CMRDHDS     ENTRY ccp4_map_read_open_header_check
-CMWRHDR     ENTRY ccp4_map_write_open_header_by_id
-CMWRHDL     ENTRY ccp4_map_write_open_header_by_name
+CMWRHDR     ENTRY ccp4_map_write_open_header_id
+CMWRHDL     ENTRY ccp4_map_write_open_header_name
 CMSKPUT     ENTRY ccp4_map_write_skew_info
 CMSYPUT     ENTRY ccp4_map_write_spgname
 CMSYWRT     ENTRY ccp4_map_write_symm_matrix
@@ -211,7 +211,7 @@ C     ..
 C     .. External Subroutines ..
       EXTERNAL MWRHDL
 C     ..
-      ENTRY ccp4_map_write_open_header_by_id(
+      ENTRY ccp4_map_write_open_header_id(
      +          IUNIT,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,NV1,NV2,
      +                  CELL,LSPGRP,LMODE)
 C
@@ -348,7 +348,7 @@ C
       DATA NBHDR/256/,BLANK/'    '/, FILE/' '/
 C     ..
 C
-      ENTRY ccp4_map_write_open_header_by_name
+      ENTRY ccp4_map_write_open_header_name
      +       (IUNIT,MAPNAM,TITLE,NSEC,IUVW,MXYZ,NW1,NU1,NU2,
      +                  NV1,NV2,CELL,LSPGRP,LMODE)
 C---- Check valid IUNIT
@@ -479,7 +479,7 @@ C
 C_BEGIN_MWFNAM
 C
       ENTRY MWFNAM(FNAME)
-      ENTRY ccp4_map_get_last_write_filename(FNAME)
+      ENTRY ccp4_map_get_last_writ_filename(FNAME)
 C     ===================
 C
 C---- Returns filename from last file open,
@@ -1766,7 +1766,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/
 C     ..
-      ENTRY ccp4_map_read_whole_sect_as_mode(IUNIT,X,IER)
+      ENTRY ccp4_map_read_whole_sec_as_mode(IUNIT,X,IER)
 C
 C---- Size of section (elements)
 C
@@ -1835,7 +1835,7 @@ C     ..
 C     .. Save statement ..
       SAVE /MSTRM/,/MIHDR/
 C     ..
-      ENTRY ccp4_map_read_whole_sect_as_real(IUNIT,X,IER)
+      ENTRY ccp4_map_read_whole_sec_as_real(IUNIT,X,IER)
 C
       NRL = NBYTXX(500)
 C
@@ -2796,7 +2796,7 @@ c  Call: CALL ccp4mapin (iunit,name,title,map,nu1,nv1,nw1,nu2,nv2,nw2)
 c
 c---- ccp4mapin is a "wrapper" subroutine which utilises calls to the
 c     following maplib routines: ccp4_map_read_open_header_check [MRDHDS],
-c                                ccp4_map_read_whole_sect_as_real [MGULPR],
+c                                ccp4_map_read_whole_sec_as_real [MGULPR],
 c                                ccp4_map_read_close [MRCLOS].
 c
 c
@@ -2868,7 +2868,7 @@ c now read the map in the order it is on file
       do 200 islow=0,lslow-1 
 c get a section 
        ierr=0 
-       call ccp4_map_read_whole_sect_as_real(iunit,lsec,ierr) 
+       call ccp4_map_read_whole_sec_as_real(iunit,lsec,ierr) 
        if (ierr.ne.0) call ccperr(1,' ccp4mapin - ccp4 read error') 
 c now sort into uvw map 
        ifms(3)=islow+m1(3) 
@@ -2907,7 +2907,7 @@ c       +                nv1,nw1,nu2,nv2,nw2)
 c
 c---- ccpmap4out is a "wrapper" routine which utilises calls to the
 c     following maplib subroutines:
-c                ccp4_map_write_open_header_by_name [MWRHDL],
+c                ccp4_map_write_open_header_name [MWRHDL],
 c                ccp4_map_write_symm_matrix [MSYWRT],
 c                ccp4_map_write_all_section [MSPEW],
 c                ccp4_map_write_close_auto [MWCLOSE].
@@ -2995,7 +2995,7 @@ c
 c 
       call msymlb(iunit,nspgrp,namspg,nampg,nsym,nsymp,rsym) 
 c 
-      call ccp4_map_write_open_header_by_name(iunit,name,title,nsec,
+      call ccp4_map_write_open_header_name(iunit,name,title,nsec,
      +  jfms,mxyz,m1(3),m1(1),m2(1),m1(2),m2(2),cell,nspgrp,mode) 
       call ccp4_map_write_symm_matrix(iunit,nsym,rsym) 
 c 
