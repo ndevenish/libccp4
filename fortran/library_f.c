@@ -655,7 +655,7 @@ int ierrno () {
 
 #endif             /*  HPUX and AIX support */    
 
-#if ( defined (__APPLE__) && !defined (__GNUC__)
+#if defined (__APPLE__) && !defined (__GNUC__)
 /* apple xlf support */
 void gerror_ (str, Lstr)
 char *str;
