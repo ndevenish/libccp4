@@ -1127,7 +1127,7 @@ FORTRAN_SUBR ( LRSEEK, lrseek,
  /* lrrefl / lrreff will increment this */
  irref[*mindx-1] = *nrefl - 1;
  if (!cmtz_in_memory) {
-   respos = *nrefl * MtzNumSourceCol(mtzdata[*mindx-1]) + SIZE1 + 1;
+   respos = (*nrefl - 1) * MtzNumSourceCol(mtzdata[*mindx-1]) + SIZE1;
    ccp4_file_seek(mtzdata[*mindx-1]->filein, respos, SEEK_SET); 
  }
 }
