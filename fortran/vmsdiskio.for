@@ -448,7 +448,7 @@ C     ===================================
 C
 C==== Maybe this should be a soft fail: IUNIT = -1 ?
 C
- 45   IF (IUNIT.GT.MCMAX .OR. IUNIT.LT.1)
+ 45   IF (IUNIT.GT.NCMAX .OR. IUNIT.LT.1)
      +     CALL CCPERR (1,'QREAD: bad stream number')
       IF (LUNIT(IUNIT)) THEN
         CALL CCPERR(1,'QREAD error: File not open.')
@@ -657,7 +657,7 @@ C     ================================
 C
 C==== Maybe this should be a soft fail: IUNIT = -1 ?
 C
-      IF (IUNIT.GT.MCMAX .OR. IUNIT.LT.1)
+      IF (IUNIT.GT.NCMAX .OR. IUNIT.LT.1)
      +     CALL CCPERR (1,'QREAD: bad stream number')
       IF (LUNIT(IUNIT)) THEN
         CALL CCPERR(1,'QWRITE error: File not open.')
