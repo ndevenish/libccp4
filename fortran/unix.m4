@@ -598,7 +598,7 @@ _xlf,1,
        INTRINSIC GETFD
       EXTERNAL ISATTY
       ANSWER = 0
-      IF (ISATTY(%VAL(GETFD(FLUN))) .EQ. 1) ANSWER = 1],
+      IF (ISATTY(GETFD(FLUN)) .EQ. 1) ANSWER = 1],
 dnl (else)
 [      LOGICAL ISATTY
       EXTERNAL ISATTY
