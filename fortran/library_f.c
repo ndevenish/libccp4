@@ -80,7 +80,7 @@
 /*                                                                          */
 /* <*>=                                                                     */
 
-#include "ccp4_lib.h"
+#include "ccp4_utils.h"
 #include "ccp4_errno.h"
 #include "ccp4_fortran.h"
 static char rcsid[] = "$Id$";

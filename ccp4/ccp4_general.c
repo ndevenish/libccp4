@@ -49,7 +49,7 @@
 
 /* Library header files */
 #include "ccp4_fortran.h"
-#include "ccp4_lib.h"
+#include "ccp4_utils.h"
 #include "ccp4_parser.h"
 #include "ccplib.h"
 #include "ccp4_program.h"

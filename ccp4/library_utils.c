@@ -11,7 +11,7 @@
 
 #include <time.h>
 #include <math.h>
-#include "ccp4_lib.h"
+#include "ccp4_utils.h"
 #include "ccp4_sysdep.h"
 #include "ccp4_errno.h"
 

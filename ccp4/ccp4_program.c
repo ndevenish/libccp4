@@ -14,7 +14,7 @@
 #include <string.h>
 #include "ccp4_program.h"
 #include "ccp4_parser.h"
-#include "ccp4_lib.h"
+#include "ccp4_utils.h"
 #include "ccplib.h"
 static char rcsid[] = "$Id$";
 

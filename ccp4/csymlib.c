@@ -17,7 +17,7 @@
 #include "ccp4_parser.h"
 #include "ccp4_types.h"
 #include "ccp4_spg.h"
-#include "ccp4_lib.h"
+#include "ccp4_utils.h"
 #include "csymlib.h"
 #include "cvecmat.h"
 #include "ccp4_errno.h"

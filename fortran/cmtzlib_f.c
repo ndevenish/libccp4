@@ -22,7 +22,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "ccp4_fortran.h"
-#include "ccp4_lib.h"
+#include "ccp4_utils.h"
 #include "cmtzlib.h"
 #include "ccp4_spg.h"
 #include "csymlib.h"
