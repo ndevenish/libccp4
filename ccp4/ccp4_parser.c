@@ -4,9 +4,13 @@
      in the CCP4 manual for a copyright statement.
 */
 
+
 /** @file ccp4_parser.c
- *  Functions to read in and "parse" CCP4-style keyworded input.
- *  Peter Briggs
+ *
+ *  @brief Functions to read in and "parse" CCP4-style keyworded input.
+ *
+ *  @author Peter Briggs
+ *  @date April 2001
  */
 
 /*   ccp4_parser.c
@@ -1074,11 +1078,6 @@ int ccp4_keymatch(const char *keyin1, const char *keyin2)
   return strmatch(keyup1,keyup2);
 }
 
-/** Convert string to uppercase.
- * @param str1 On exit str1 will contain uppercased copy of str2
- * @param str2 Input string
- * @return str1
- */
 char *strtoupper (char *str1, const char *str2)
 {
   int len2,i;
@@ -1091,11 +1090,6 @@ char *strtoupper (char *str1, const char *str2)
   return str1;
 }
 
-/** Convert string to lowercase.
- * @param str1 On exit str1 will contain lowercased copy of str2
- * @param str2 Input string
- * @return str1
- */
 char *strtolower (char *str1, const char *str2)
 {
   int len2,i;
@@ -1363,12 +1357,6 @@ int doublefromstr(const char *str, const double max_exp, const double min_exp,
   return 1;
 }
 
-/** Convert symmetry operator as string to ccp4_symop struct.
- * @param symchs_begin pointer to beginning of string
- * @param symchs_end pointer to end of string (i.e. last character
- *   is *(symchs_end-1) )
- * @return pointer to ccp4_symop struct
- */
 ccp4_symop symop_to_rotandtrn(const char *symchs_begin, const char *symchs_end) {
 
   float rsm[4][4];
@@ -1378,15 +1366,6 @@ ccp4_symop symop_to_rotandtrn(const char *symchs_begin, const char *symchs_end) 
 
 }
 
-/** Convert symmetry operator as string to matrix.
- * This is Charles' version of symfr. Note that translations
- * are held in elements [*][3] and [3][3] is set to 1.0
- * @param symchs_begin pointer to beginning of string
- * @param symchs_end pointer to end of string (i.e. last character
- *   is *(symchs_end-1) )
- * @param rot 4 x 4 matrix operator
- * @return number of operators converted 
- */
 int symop_to_mat4(const char *symchs_begin, const char *symchs_end, float *rot)
 {
   int no_real =0, no_recip = 0, no_axis = 0;          /* counters */
@@ -1563,15 +1542,6 @@ void rotandtrn_to_mat4(float rsm[4][4], const ccp4_symop symop) {
   rsm[3][3]=1.0;
 }
 
-/** Convert symmetry operator as matrix to string.
- * This is Charles' version of symtr. Note that translations
- * are held in elements [*][3] and [3][3] is set to 1.0
- * @param symchs_begin pointer to beginning of string
- * @param symchs_end pointer to end of string (i.e. last character
- *   is *(symchs_end-1) )
- * @param rsm 4 x 4 matrix operator
- * @return pointer to beginning of string
- */
 char *mat4_to_symop(char *symchs_begin, char *symchs_end, const float rsm[4][4])
 {
   static char axiscr[] = {'X','Y','Z'};
@@ -1663,15 +1633,6 @@ char *mat4_to_symop(char *symchs_begin, char *symchs_end, const float rsm[4][4])
   return symchs_begin;
 }
 
-/** Convert symmetry operator as matrix to string in reciprocal space notation.
- * This is Charles' version of symtr. Note that translations
- * are held in elements [*][3] and [3][3] is set to 1.0
- * @param symchs_begin pointer to beginning of string
- * @param symchs_end pointer to end of string (i.e. last character
- *   is *(symchs_end-1) )
- * @param rsm 4 x 4 matrix operator
- * @return pointer to beginning of string
- */
 char *mat4_to_recip_symop(char *symchs_begin, char *symchs_end, const float rsm[4][4])
 {
   char *symop;

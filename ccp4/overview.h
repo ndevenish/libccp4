@@ -3,6 +3,12 @@
  * @note I'm fed up of the uninspiring "new library" and here's
  *       my first attempt at a funky name. Alternatives welcome!
  *
+ * @verbatim
+
+<!-- ::INDEX_INFO::C libraries::Library::::CCP4 C/C++ Software Library:::::::: -->
+
+   @endverbatim
+ *
  * @section aims Aims
 
 The CCP4 software suite is based around a library of routines which

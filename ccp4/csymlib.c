@@ -1132,8 +1132,6 @@ int ccp4spg_get_multiplicity(const CCP4SPG* sp, const int h, const int k, const 
   return 0;
 }
 
-/* check indices against epsilon zones - return 0 if in zone "nzone" */
-
 int ccp4spg_check_epsilon_zone(const int nzone, const int h, const int k, const int l) {
 
   int bigfac=1000;  /* this needs to be big enough to prevent accidental zeros */
@@ -1258,7 +1256,6 @@ int ccp4spg_is_sysabs(const CCP4SPG* sp, const int h, const int k, const int l)
 
 }
 
-/* ccp4spg_generate_origins translated from Alexei Vagin's CALC_ORIG_PS */
 int ccp4spg_generate_origins(const char *namspg, const int nsym, const float rsym[][4][4],
 			     float origins[][3], int *polarx, int *polary, int *polarz,
 			     const int iprint)
@@ -1488,8 +1485,6 @@ void ccp4spg_print_recip_ops(const CCP4SPG* sp)
   printf("\n");
 }
 
-/* convert string of type 0<=y<=1/4 to 0.0-delta, 0.25+delta
-   makes many assumptions about string */
 int range_to_limits(const char *range, float limits[2])
 {
   int i,in_value=1,neg=0,frac=0,equal=0;
@@ -1579,8 +1574,6 @@ int all_factors_le_19(const int n)
   return 0;
 }
 
-/* sets a grid sample greater than minsmp, which has no prime
-   factors greater than 19, and contains the factor nmul */
 int get_grid_sample(const int minsmp, const int nmul, const float sample)
 {
   int n;

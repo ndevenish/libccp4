@@ -6,24 +6,45 @@
 
 /** @page csym_page CSYM library
  *
+ * @verbatim
+
+<!-- ::INDEX_INFO::CSYM library::Library::::C/C++ Software Library for symmetry information:::::::: -->
+
+   @endverbatim
+ *
  *  @section csym_file_list File list
 
 <ul>
-<li>csymlib.h
-<li>ccp4_spg.h
+<li>csymlib.h - contains details of the C/C++ API
+<li>ccp4_spg.h - contains details of the spacegroup data structure
 </ul>
  *
  *  @section csym_overview Overview
  
-The CSYM library is centred around a data file syminfo.lib which is
-auto-generated from sgtbx. A particular spacegroup in a particular setting
+The CSYM library is centred around a data file <tt>syminfo.lib</tt> which is
+auto-generated from sgtbx (the Space Group Toolbox of 
+<a href="http://cctbx.sourceforge.net/">cctbx</a>). A description of
+the contents of this file is given in the <a href="../symlib.html">
+documentation</a> of the Fortran API.
+
+<p>A particular spacegroup in a particular setting
 is loaded into an in-memory data structure by requesting a particular
 spacegroup name, number, or set of operators. See the functions
 <tt>ccp4spg_load_by_standard_num</tt>, <tt>ccp4spg_load_by_ccp4_num</tt>, 
 <tt>ccp4spg_load_by_spgname</tt>,  <tt>ccp4spg_load_by_ccp4_spgname</tt>
-and <tt>ccp4_spgrp_reverse_lookup</tt>.
-<p>
-Information on the data structure is given in ccp4_spg.h
+and <tt>ccp4_spgrp_reverse_lookup</tt>. Information on the in-memory 
+data structure is given in ccp4_spg.h The memory can be freed by the
+function <tt>ccp4spg_free</tt>.
+
+<p>Functions are provided to:
+<ul>
+<li>Query the data structure, e.g. <tt>ccp4spg_symbol_Hall</tt>, etc. (members
+of the structure can of course be obtained directly)
+<li>Check reciprocal space indices for a particular spacegroup, 
+e.g. <tt>ccp4spg_is_in_asu</tt>, <tt>ccp4spg_is_centric</tt>, 
+<tt>ccp4spg_get_multiplicity</tt>, <tt>ccp4spg_is_sysabs</tt>, etc.
+<li>Set appropriate grids for FFT, e.g. <tt>set_fft_grid</tt>
+</ul>
 
 */
 
@@ -198,6 +219,11 @@ int ASU_m3bm  (const int h, const int k, const int l);
  */
 char *ccp4spg_symbol_Hall(CCP4SPG* sp);
 
+/** inverts a symmetry operator. The input operator is
+ * converted to a 4 x 4 matrix, inverted, and converted back.
+ * @param ccp4_symop input symmetry operator
+ * @return inverted symmetry operator
+ */
 ccp4_symop ccp4_symop_invert( const ccp4_symop op1 );
 
 /** Compare two spacegroup names. Blanks are removed when
@@ -247,8 +273,11 @@ int ccp4_spgrp_equal( int nsym1, const ccp4_symop *op1, int nsym2, const ccp4_sy
  */
 int ccp4_symop_code(ccp4_symop op);
 
-/* Comparison of symmetry operators encoded as integers.
+/** Comparison of symmetry operators encoded as integers.
  * In ccp4_spgrp_equal, this is passed to the stdlib qsort.
+ * @param p1 pointer to first integer
+ * @param p1 pointer to second integer
+ * @return difference between integers
 */
 int ccp4_int_compare( const void *p1, const void *p2 );
 
@@ -303,11 +332,31 @@ void ccp4spg_generate_indices(const CCP4SPG* sp, const int isym,
                   const int hin, const int kin, const int lin,
 			      int *hout, int *kout, int *lout );
 
-/* shift phase value associated with hin,kin,lin according to translation 
-and optional sign change. Return in range 0,360 */
+/** Shift phase value associated with hin,kin,lin according to translation 
+and optional sign change. Return in range 0,360.
+ * @param hin reflection index
+ * @param kin reflection index
+ * @param lin reflection index
+ * @param phasin Input phase.
+ * @param trans Requested translation
+ * @param isign If -1, change sign of phase
+ * @return shifted phase
+ */
 float ccp4spg_phase_shift(const int hin, const int kin, const int lin,
 			  const float phasin, const float trans[3], const int isign);
+
+/** Check whether change of basis is necessary, i.e. whether the
+ * change of basis matrix is not the identity.
+ * @param chb change of basis matrix
+ * @return 1 if change of basis is necessary, 0 otherwise
+ */
 int ccp4spg_do_chb(const float chb[3][3]);
+
+/** Set up centric zones for a given spacegroup. This is called
+ * upon loading a spacegroup.
+ * @param sp pointer to spacegroup
+ * @return void
+ */
 void ccp4spg_set_centric_zones(CCP4SPG* sp);
 
 /** Function to determine whether or not h,k,l is a centric reflection
@@ -321,28 +370,139 @@ void ccp4spg_set_centric_zones(CCP4SPG* sp);
  */
 int ccp4spg_is_centric(const CCP4SPG* sp, const int h, const int k, const int l);
 
+/** Check indices against a centric zone for a given spacegroup.
+ * @param  nzone index of centric zone
+ * @param h reflection index
+ * @param k reflection index
+ * @param l reflection index
+ * @return 0 if in zone "nzone", non-zero otherwise
+ */
 int ccp4spg_check_centric_zone(const int nzone, const int h, const int k, const int l);
+
+/** Return phase of a centric reflection in the range 0.0 <= phase < 180.0.
+ * You should first check that reflection really is centric.
+ * @param sp pointer to spacegroup
+ * @param h reflection index
+ * @param k reflection index
+ * @param l reflection index
+ * @return phase of a centric reflection
+ */
 float ccp4spg_centric_phase(const CCP4SPG* sp, const int h, const int k, const int l);
+
+/** Print a summary of the centric zones of a spacegroup.
+ * @param sp pointer to spacegroup
+ * @return void
+ */
 void ccp4spg_print_centric_zones(const CCP4SPG* sp);
+
+/** Obtain string description of centric zone.
+ * @param nzone index of centric zone
+ * @param centric_zone string description of centric zone
+ * @return string description of centric zone
+ */
 char *ccp4spg_describe_centric_zone(const int nzone, char *centric_zone);
+
+/** Set up epsilon zones for a given spacegroup. This is called
+ * upon loading a spacegroup.
+ * @param sp pointer to spacegroup
+ * @return void
+ */
 void ccp4spg_set_epsilon_zones(CCP4SPG* sp);
+
+/** Return reflection multiplicity factor for a given hkl in a given
+ * spacegroup.
+ * @param sp pointer to spacegroup
+ * @param h reflection index
+ * @param k reflection index
+ * @param l reflection index
+ * @return reflection multiplicity factor
+ */
 int ccp4spg_get_multiplicity(const CCP4SPG* sp, const int h, const int k, const int l);
+
+/** Check indices against an epsilon zone for a given spacegroup.
+ * @param nzone index of epsilon zone (runs from 1 to 13)
+ * @param h reflection index
+ * @param k reflection index
+ * @param l reflection index
+ * @return 0 if in zone "nzone", non-zero otherwise
+ */
 int ccp4spg_check_epsilon_zone(const int nzone, const int h, const int k, const int l);
+
+/** Print a summary of the epsilon zones of a spacegroup.
+ * @param sp pointer to spacegroup
+ * @return void
+ */
 void ccp4spg_print_epsilon_zones(const CCP4SPG* sp);
+
+/** Obtain string description of epsilon zone.
+ * @param nzone index of epsilon zone
+ * @param epsilon_zone string description of epsilon zone
+ * @return string description of epsilon zone
+ */
 char *ccp4spg_describe_epsilon_zone(const int nzone, char *epsilon_zone);
 
+
+/** Check if reflection is a systematic absence.
+ * @param sp pointer to spacegroup
+ * @param h reflection index
+ * @param k reflection index
+ * @param l reflection index
+ * @return 1 if reflection is a systematic absence, 0 otherwise.
+ */
 int ccp4spg_is_sysabs(const CCP4SPG* sp, const int h, const int k, const int l);
 
-/* ccp4spg_generate_origins translated from Alexei Vagin's CALC_ORIG_PS */
+/** Translated from Alexei Vagin's CALC_ORIG_PS.
+ * @param namspg Spacegroup name for printing only.
+ * @param nsym Input number of symmetry operators.
+ * @param rsym Input symmetry operators.
+ * @param origins Array containing alternative origins on output.
+ * @param polarx Return whether polar along x axis.
+ * @param polary Return whether polar along y axis.
+ * @param polarz Return whether polar along z axis.
+ * @param iprint If true, print out list of alternative origins.
+ * @return Number of alternate origins for spacegroup.
+ */
 int ccp4spg_generate_origins(const char *namspg, const int nsym, const float rsym[][4][4],
 			     float origins[][3], int *polarx, int *polary, int *polarz,
 			     const int iprint);
 
+
+/** Convert string of type 0<=y<=1/4 to 0.0-delta, 0.25+delta, where
+ * delta is set to 0.00001 Makes many assumptions about string.
+ * @param range input string.
+ * @param limits output range limits.
+ * @return 0 on success
+ */
 int range_to_limits(const char *range, float limits[2]);
 
+/** Sets an FFT grid for a spacegroup.
+ * @param sp pointer to spacegroup
+ * @param nxmin minimum sampling on x
+ * @param nymin minimum sampling on y
+ * @param nzmin minimum sampling on z
+ * @param sample default fineness of sample
+ * @param nx returns sampling intervals along x
+ * @param ny returns sampling intervals along y
+ * @param nz returns sampling intervals along z
+ * @return void
+ */
 void set_fft_grid(CCP4SPG* sp, const int nxmin, const int nymin, const int nzmin, 
 		  const float sample, int *nx, int *ny, int *nz);
+
+/** Checks whether all factors of a number n are less than or
+ * equal to 19.
+ * @param n Number to be tested.
+ * @return 1 on success, O on failure.
+ */
 int all_factors_le_19(const int n);
+
+/** Sets a grid sample greater than minsmp, which has no prime
+ * factors greater than 19, and contains the factor nmul.
+ * @param minsmp
+ * @param nmul
+ * @param sample
+ * @return Grid sample or -1 on failure.
+ */
 int get_grid_sample(const int minsmp, const int nmul, const float sample);
 
 #ifdef __cplusplus

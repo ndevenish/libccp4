@@ -6,11 +6,17 @@
 
 /** @page cmtz_page CMTZ library
  *
+ * @verbatim
+
+<!-- ::INDEX_INFO::CMTZ library::Library::::C/C++ Software Library for MTZ files:::::::: -->
+
+   @endverbatim
+ *
  *  @section cmtz_file_list File list
 
 <ul>
-<li>cmtzlib.h
-<li>mtzdata.h
+<li>cmtzlib.h - contains details of the C/C++ API
+<li>mtzdata.h - contains details of the MTZ data structure
 </ul>
 
  *  @section cmtz_overview Overview

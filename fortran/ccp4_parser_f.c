@@ -4,9 +4,26 @@
      in the CCP4 manual for a copyright statement.
 */
 
+/** @page cparser_f_page Fortran API to CParser
+ *
+ *  @section cparser_f_file_list File list
+
+<ul>
+<li>ccp4_parser_f.c
+</ul>
+ *
+ *  @section cparser_f_overview Overview
+
+This library consists of a set of wrappers to the CParser library
+giving the same API as the original parser.f
+
+ */
+
 /** @file ccp4_parser_f.c
- *  Fortran API to ccp4_parser.c.
- *  Peter Briggs
+ *
+ *  @brief Fortran API to ccp4_parser.c.
+ *
+ *  @author Peter Briggs
  */
 
 /*   ccp4_parser_f.c
