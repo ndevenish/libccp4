@@ -249,13 +249,15 @@ C
      +         + RO(1,3)*(RO(2,1)*RO(3,2) - RO(2,2)*RO(3,1))
 C
         ERROR = ABS(VOLCHK - VOL) /VOL
+         IF(error.gt.0.02) then
         WRITE (6,'(//,A,F15.4)')
      +     ' Unit cell volume generated from SCALEi cards', VOLCHK
         WRITE (6,'(//,A,F15.4)')
      +     ' Percentage error is                        ', ERROR
+         END IF
 C
         IF (ERROR.GT.0.1) call ccperr(1,
-     +  ' stop in rwbrook.for - cell bad')
+     +  ' stop in rwbrook.for - disagreement between cell and PDB file')
 C
         DO 250 IORTH=1,6
           DO 245 I=1,3
@@ -654,8 +656,8 @@ C
       CELLAS(5)=BETAS
       CELLAS(6)=GAMMAS
 C
-       WRITE (6,'(//,A,F15.4)')
-     1 '  Unit cell volume from input cell dimensions ', VOL
+C       WRITE (6,'(//,A,F15.4)')
+C     1 '  Unit cell volume from input cell dimensions ', VOL
 C
 C---- Set useful things for calculating dstar
 C
