@@ -4,6 +4,8 @@
 
 #include "chelp.h"
 
+
+
 #if CALL_LIKE_HPUX
   void chelp ()
 #endif
@@ -27,7 +29,7 @@
 
 {
   char *filename ;
-  int len, i = 1, opt = DEF_OPTION;
+  int opt = DEF_OPTION;
 #if defined (sgi) || defined (__OSF1__) || defined (__osf__)
   int setlinebuf(FILE *);
 #endif

@@ -65,50 +65,6 @@ int SCREEN_DEPTH ;
 #  define ] %
 #endif
 
-/****************************************************************************
- * Global Initialised Variables                                             *
- ****************************************************************************/
-
-static char rcsid[] = "$Header$";
-static int flushf      =  0;              /* counter to flush output buffer */
-static int initialised =  0;    /* flag to initialise data and file streams */
-static char *file_attribute[] = {"w+", "w+", "r+", "w+", "r"};/* file modes */
-
-/* Note machine dependencies in here.  The assumption is that we have
-   a 32-bit machine and that int == INTEGER (*4), short == INTEGER*2, float
-   == REAL */
-
-static int item_sizes[] = {                     /* table of bytes per item */
-  (int) sizeof (char),                                          /* 0: bytes */
-#if defined (sgi)
-  (int) sizeof (short),		/* silicon graphics bodge (This is fixed in
-				   IRIX4, at least) */
-#else
-  (int) sizeof (short int),                                /* 1: half words */
-#endif
-  (int) sizeof (float),                                   /* 2: reals/words */
-  (int) sizeof (int),           /* 3: `short complex' (pairs of half words).
-				   NB int rather than 2*short since must fit
-				   into fortran integer */
-  (int) 2*sizeof (float),                    /* 4: complex (pairs of words) */
-#if 0				/* fixme: diskio.for says mode 5 is integer --
-				   mode 6 isn't mentioned there and not used
-				   (?) */
-  (int) sizeof (char),                                             /* bytes */
-  (int) sizeof (int)};                              /* pairs of small words */
-#endif
-  (int) sizeof (int),
-  (int) sizeof (int)};
-
-/****************************************************************************
- * Global Uninitialised Variables                                           *
- ****************************************************************************/
-
-static FILE *file_stream[MAXFILES];                 /* Pointer to disk file */
-static char file_name[MAXFILES][MAXFLEN];      /* Pointer to disk file name */
-static int  file_bytes_per_item[MAXFILES];/* Pointer to disk file item size */
-static int  file_is_scratch[MAXFILES];    /* Indicates if file is 'SCRATCH' */
-static int  file_last_op [MAXFILES];    /* see man fopen rd/wr combinations */
 
 #define MAX_LINE_LEN 512
 #define DEF_OPTION     0
@@ -136,10 +92,9 @@ struct treenode {                       /* definition of a tree node .... */
 };
 
 
-
-/**************************************************************************
- * Prototype subroutines                                                  *
- **************************************************************************/
+/*************************************************************************
+ * Prototype Internal Routines                                           *
+ *************************************************************************/
 
 void read_input_file(FILE *in);
 
@@ -159,23 +114,15 @@ void insert_into_tree (int level, struct block *line);
 
 int show_children (struct list *node);
 
-struct treenode *create_node (struct block *line);
-
-struct list *join_node (struct treenode *ptr);
-
 void manipulate_tree (struct treenode *ptr);
 
 void list_topics (struct list *ptr);
 
 int get_response (struct list *ptr);
 
+struct treenode *create_node (struct block *line);
 
- 
-
-
-
-
-
+struct list *join_node (struct treenode *ptr);
 
 
 
