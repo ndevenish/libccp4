@@ -637,7 +637,7 @@ int ccp4_parse(char *line, CCP4PARSERARRAY *parser)
 	  tokenarray[ntok].fullstring = NULL;
 	  tokenarray[ntok].value    = 0.0;
 	  tokenarray[ntok].isstring = 0;
-	  tokenarray[ntok].strlen   = 0;
+	  tokenarray[ntok].strlength = 0;
 	  tokenarray[ntok].isnumber = 0;
 	  tokenarray[ntok].intdigits= 0;
 	  tokenarray[ntok].frcdigits= 0;
@@ -703,7 +703,7 @@ int ccp4_parse(char *line, CCP4PARSERARRAY *parser)
 	} else {
 	  if (diag) printf("CCP4_PARSE: There is no numerical value for this token\n");
 	  tokenarray[ntok].isstring = 1;
-	  tokenarray[ntok].strlen   = strlen(tokenarray[ntok].fullstring);
+	  tokenarray[ntok].strlength   = strlen(tokenarray[ntok].fullstring);
 	}
 	/* Reset flags etc ready for next token*/
 	token  = 0;

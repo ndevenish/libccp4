@@ -129,7 +129,7 @@ typedef struct {
   char   word[5];       /* First four characters of token */
   double value;         /* Equivalent numerical value */
   int    isstring;      /* Flag: true if token is character string */
-  int    strlen;        /* Number of characters in whole token (strings only) */
+  int    strlength;     /* Number of characters in whole token (strings only) */
   int    isnumber;      /* Flag: true if token is number */
   int    intdigits;     /* Number of 'digits' preceeding the decimal point
 			   (numbers only) */

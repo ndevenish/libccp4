@@ -152,10 +152,10 @@ int fparse_populate_arrays(CCP4PARSERARRAY *parser, int *ibeg, int *iend,
 	PARSER_DEBUG(printf("fparse_populate_arrays: string token\n");)
 	ityp[i] = 1;
 	PARSER_DEBUG(printf("fparse_populate_arrays: 4-letter version is \"%s\"\n",token[i].word);)
-	if (token[i].strlen > 4) {
+	if (token[i].strlength > 4) {
 	  idec[i] = 4;
 	} else {
-	  idec[i] = token[i].strlen;
+	  idec[i] = token[i].strlength;
 	}
 	PARSER_DEBUG(printf(" ityp = %d\n",ityp[i]);)
 	
