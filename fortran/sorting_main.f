@@ -123,6 +123,16 @@ C---part should be written. In that case available records
 C---should be sorted and written to file with distribution
 c---which is going to be used. (polyphase distribution is one possibility)
 C
+Cmdw  binsort uses 4 scratch files (T=4)
+Cmdw  Reads from stdin (see fillworka).
+Cmdw  Each time buffer is full, do sort (see top of readrun; later
+Cmdw  fwrite is only if all data fits into first buffer and disk not needed).
+Cmdw  Write sorted buffer to scratch file (see writerun).
+Cmdw  Read more, and write to next scratch file - see D2-D4 in merge().
+Cmdw  When finished, rewind scratch files and go to merge step D5.
+
+Cmdw  Open scratch files here (with QOPEN) iff necessary.
+Cmdw  When finished, need to rewind with QSEEK.
 
       ENDIF
 
