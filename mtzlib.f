@@ -3341,7 +3341,7 @@ C     NSPGRX    (O)	INTEGER         space group number, 0 if not present
 C
 C     SPGRNX    (O)	CHARACTER*10    space group name, blank if not present
 C
-C     PGNAMX    (O)	CHARACTER*6     point group name, blank if not present
+C     PGNAMX    (O)	CHARACTER*10    point group name, blank if not present
 C
 C
 C
@@ -5461,7 +5461,7 @@ C     NSPGRX    (I)	INTEGER         space group number, if 0 not changed
 C
 C     SPGRNX    (I)	CHARACTER*10    space group name, if blank not changed
 C
-C     PGNAMX    (I)	CHARACTER*6     point group name, if blank not changed
+C     PGNAMX    (I)	CHARACTER*10    point group name, if blank not changed
 C
 C
 C
