@@ -215,7 +215,7 @@ c     check that we are in a list
       if (dnainlist) then
          if(dnaout) write(dnafd, 1)
       end if
-      dnalist = .false.
+      dnainlist = .false.
       return
       end
 
