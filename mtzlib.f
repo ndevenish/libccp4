@@ -962,10 +962,10 @@ C     .. Arguments ..
 C
 C     .. Common blocks ..
       INTEGER NWORDS,NINTGR,NREALS,IORTYP,LBCELL,MISFLG,
-     .     JUMPAX,NCRYST,LCRFLG,JSCAXS,NBSCAL,NGONAX,LBMFLG,NDET,
-     $     INTPAD
+     .     JUMPAX,NCRYST,LCRFLG,LDTYPE,JSCAXS,NBSCAL,NGONAX,LBMFLG,
+     $     NDET,LBSETID,INTPAD
       REAL   CELL,UMAT,PHIXYZ,CRYDAT,DATUM,
-     $     PHISTT,PHIEND,SCANAX,TIME1,TIME2,
+     $     PHISTT,PHIEND,PHIRANGE,SCANAX,TIME1,TIME2,
      $     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD,E1,E2,E3,GONPAD,
      $     SOURCE,S0,BEMDAT,
      $     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD
@@ -974,11 +974,12 @@ C
       COMMON /CBTHDR/BTITLE,GONLAB(3)
 C     
       COMMON /MBTHDR/ NWORDS,NINTGR,NREALS,IORTYP,LBCELL(6),MISFLG,
-     .     JUMPAX,NCRYST,LCRFLG,JSCAXS,NBSCAL,NGONAX,LBMFLG,NDET,
-     $     INTPAD(10),
+     .     JUMPAX,NCRYST,LCRFLG,LDTYPE,JSCAXS,NBSCAL,NGONAX,LBMFLG,
+     +     NDET,LBSETID,INTPAD(8),
      +     CELL(6),UMAT(3,3),PHIXYZ(3,2),CRYDAT(12),DATUM(3),
      $     PHISTT,PHIEND,SCANAX(3),TIME1,TIME2,
-     $     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD(12),E1(3),E2(3),E3(3),
+     $     BSCALE,BBFAC,SDBSCL,SDBFAC,PHIRANGE,BATPAD(11),
+     $     E1(3),E2(3),E3(3),
      $     GONPAD(12),SOURCE(3),S0(3),BEMDAT(25),
      $     DX1,THETA1,DETLM1(2,2),DX2,THETA2,DETLM2(2,2),DETPAD(33)
       SAVE /MBTHDR/, /CBTHDR/
@@ -1060,10 +1061,10 @@ C ... Arguments
 C
 C     .. Common blocks ..
       INTEGER NWORDS,NINTGR,NREALS,IORTYP,LBCELL,MISFLG,
-     .     JUMPAX,NCRYST,LCRFLG,JSCAXS,NBSCAL,NGONAX,LBMFLG,NDET,
-     $     INTPAD
+     .     JUMPAX,NCRYST,LCRFLG,LDTYPE,JSCAXS,NBSCAL,NGONAX,LBMFLG,NDET,
+     $     LBSETID,INTPAD
       REAL   CELL,UMAT,PHIXYZ,CRYDAT,DATUM,
-     $     PHISTT,PHIEND,SCANAX,TIME1,TIME2,
+     $     PHISTT,PHIEND,PHIRANGE,SCANAX,TIME1,TIME2,
      $     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD,E1,E2,E3,GONPAD,
      $     SOURCE,S0,BEMDAT,
      $     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD
@@ -1072,11 +1073,12 @@ C
       COMMON /CBTHDR/BTITLE,GONLAB(3)
 C     
       COMMON /MBTHDR/ NWORDS,NINTGR,NREALS,IORTYP,LBCELL(6),MISFLG,
-     .     JUMPAX,NCRYST,LCRFLG,JSCAXS,NBSCAL,NGONAX,LBMFLG,NDET,
-     $     INTPAD(10),
+     .     JUMPAX,NCRYST,LCRFLG,LDTYPE,JSCAXS,NBSCAL,NGONAX,LBMFLG,
+     +     NDET,LBSETID,INTPAD(8),
      +     CELL(6),UMAT(3,3),PHIXYZ(3,2),CRYDAT(12),DATUM(3),
      $     PHISTT,PHIEND,SCANAX(3),TIME1,TIME2,
-     $     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD(12),E1(3),E2(3),E3(3),
+     $     BSCALE,BBFAC,SDBSCL,SDBFAC,PHIRANGE,BATPAD(11),
+     $     E1(3),E2(3),E3(3),
      $     GONPAD(12),SOURCE(3),S0(3),BEMDAT(25),
      $     DX1,THETA1,DETLM1(2,2),DX2,THETA2,DETLM2(2,2),DETPAD(33)
       SAVE /CBTHDR/, /MBTHDR/
@@ -4348,10 +4350,10 @@ C     .. Array Arguments ..
 C     ..
 C     .. Common blocks ..
       INTEGER NWORDS,NINTGR,NREALS,IORTYP,LBCELL,MISFLG,
-     +     JUMPAX,NCRYST,LCRFLG,JSCAXS,NBSCAL,NGONAX,LBMFLG,NDET,
-     +     INTPAD
+     +     JUMPAX,NCRYST,LCRFLG,LDTYPE,JSCAXS,NBSCAL,NGONAX,LBMFLG,NDET,
+     +     LBSETID,INTPAD
       REAL   CELL,UMAT,PHIXYZ,CRYDAT,DATUM,
-     +     PHISTT,PHIEND,SCANAX,TIME1,TIME2,
+     +     PHISTT,PHIEND,PHIRANGE,SCANAX,TIME1,TIME2,
      +     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD,E1,E2,E3,GONPAD,
      +     SOURCE,S0,BEMDAT,
      +     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD
@@ -4360,11 +4362,12 @@ C
       COMMON /CBTHDR/BTITLE,GONLAB(3)
 C     
       COMMON /MBTHDR/ NWORDS,NINTGR,NREALS,IORTYP,LBCELL(6),MISFLG,
-     .     JUMPAX,NCRYST,LCRFLG,JSCAXS,NBSCAL,NGONAX,LBMFLG,NDET,
-     +     INTPAD(10),
+     .     JUMPAX,NCRYST,LCRFLG,LDTYPE,JSCAXS,NBSCAL,NGONAX,LBMFLG,
+     +     NDET,LBSETID,INTPAD(8),
      +     CELL(6),UMAT(3,3),PHIXYZ(3,2),CRYDAT(12),DATUM(3),
      +     PHISTT,PHIEND,SCANAX(3),TIME1,TIME2,
-     +     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD(12),E1(3),E2(3),E3(3),
+     +     BSCALE,BBFAC,SDBSCL,SDBFAC,PHIRANGE,BATPAD(11),
+     +     E1(3),E2(3),E3(3),
      +     GONPAD(12),SOURCE(3),S0(3),BEMDAT(25),
      +     DX1,THETA1,DETLM1(2,2),DX2,THETA2,DETLM2(2,2),DETPAD(33)
       SAVE /CBTHDR/, /MBTHDR/
@@ -4407,6 +4410,335 @@ C--- Write Orientation block
 C
       CALL LWBAT(MINDX,BATNO,RNWRDS,BTITLE)
 C
+      RETURN
+C
+      END
+C
+C
+C     ===========================================================
+      SUBROUTINE LWBSETID (MINDX,BATNO,PNAME,DNAME)
+C     ===========================================================
+C
+C---- Subroutine to write dataset ID for batch BATNO to
+C     batch headers for multi-record file open on index MINDX
+C     If LWBAT has been used, the batch headers in RBATW are used,
+C     else those in RBATR are used.
+C
+C---- Arguments :
+C
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
+C
+C     BATNO     (I)	INTEGER         batch number 
+C
+C     PNAME     (I)	CHARACTER*20    project name of dataset
+C
+C     DNAME     (I)	CHARACTER*20    dataset name of dataset
+C
+C     ..
+      INTEGER MFILES,MCOLS,MBATCH
+      PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
+      INTEGER MBLENG, MBLINT, MBLREA
+      PARAMETER (MBLENG=185, MBLINT=29, MBLREA=156)
+
+C     .. Scalar Arguments ..
+      INTEGER MINDX, BATNO
+      CHARACTER*20 PNAME,DNAME
+C     ..
+C     .. Common blocks ..
+      INTEGER NWORDS,NINTGR,NREALS,IORTYP,LBCELL,MISFLG,
+     +     JUMPAX,NCRYST,LCRFLG,LDTYPE,JSCAXS,NBSCAL,NGONAX,LBMFLG,NDET,
+     +     LBSETID,INTPAD
+      REAL  BCELL,UMAT,PHIXYZ,CRYDAT,DATUM,
+     +     PHISTT,PHIEND,PHIRANGE,SCANAX,TIME1,TIME2,
+     +     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD,E1,E2,E3,GONPAD,
+     +     SOURCE,S0,BEMDAT,
+     +     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD
+      CHARACTER BTITLE*70, GONLAB*8
+C     
+      COMMON /CBTHDR/BTITLE,GONLAB(3)
+C     
+      COMMON /MBTHDR/ NWORDS,NINTGR,NREALS,IORTYP,LBCELL(6),MISFLG,
+     .     JUMPAX,NCRYST,LCRFLG,LDTYPE,JSCAXS,NBSCAL,NGONAX,LBMFLG,
+     +     NDET,LBSETID,INTPAD(8),
+     +     BCELL(6),UMAT(3,3),PHIXYZ(3,2),CRYDAT(12),DATUM(3),
+     +     PHISTT,PHIEND,SCANAX(3),TIME1,TIME2,
+     +     BSCALE,BBFAC,SDBSCL,SDBFAC,PHIRANGE,BATPAD(11),
+     +     E1(3),E2(3),E3(3),
+     +     GONPAD(12),SOURCE(3),S0(3),BEMDAT(25),
+     +     DX1,THETA1,DETLM1(2,2),DX2,THETA2,DETLM2(2,2),DETPAD(33)
+      SAVE /CBTHDR/, /MBTHDR/
+      EXTERNAL LRBRES, LRBAT, LWBAT
+C
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
+      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
+     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
+     +        WLUN,WOMBAT,NDATMSS
+      LOGICAL SORTB,DATMSS,VAL_SET
+      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
+     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
+      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
+     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
+     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
+     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
+     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS),NDATMSS(MFILES)
+
+      INTEGER NSETW,SET_ID,CSET_ID,IDEFSET
+      CHARACTER ENTRY_ID*20,DIFFRN_ID*20
+      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
+     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
+     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
+C
+C.. Local variables
+      INTEGER BSETID
+      CHARACTER LINE*400
+
+      REAL RNWRDS(MBLENG)
+      EQUIVALENCE (NWORDS, RNWRDS)
+C
+C---- First check that the MINDX is valid
+C
+      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
+        WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
+     +    'From LWBSETID : Index',MINDX,
+     +    ' is out of range (allowed 1..',MFILES,')'
+        ISTAT = 2
+        IFAIL = -1
+C
+C            ************************
+        CALL LERROR(ISTAT,IFAIL,LINE)
+C            ************************
+C
+      ENDIF
+C
+C---- Find dataset ID corresponding to PNAME/DNAME
+C     These datasets should have been read in from input MTZ
+C     file or appended using LWID.
+C
+      DO 50 JDO50 = 1,NSETW(MINDX)
+        IF (PNAME.EQ.ENTRY_ID(JDO50,MINDX) .AND.
+     +      DNAME.EQ.DIFFRN_ID(JDO50,MINDX)) THEN
+          BSETID = SET_ID(JDO50,MINDX)
+          GOTO 40
+        ENDIF
+ 50   CONTINUE
+
+      CALL CCPERR(2,' Failed to set dataset ID in batch header.')
+      RETURN
+
+ 40   CONTINUE
+
+C--- Batches written with LWBAT
+      IF (NBATW(MINDX).GT.0) THEN
+
+        DO 10 I = 1,NBATW(MINDX)
+         IF (BATNO.EQ.WOMBAT(I,MINDX)) THEN
+
+          DO 15 J = 1,MBLENG
+            RNWRDS(J) = RBATW(J,I,MINDX)
+ 15       CONTINUE
+          LBSETID = BSETID
+          DO 18 J = 1,MBLENG
+            RBATW(J,I,MINDX) = RNWRDS(J) 
+ 18       CONTINUE
+          GOTO 100
+
+         ENDIF
+ 10     CONTINUE
+
+C--- Batches from input file
+      ELSEIF (NBATCH(MINDX).GT.0) THEN
+
+        DO 20 I = 1,NBATCH(MINDX)
+         IF (BATNO.EQ.BATNUM(I,MINDX)) THEN
+
+          DO 25 J = 1,MBLENG
+            RNWRDS(J) = RBATR(J,I,MINDX)
+ 25       CONTINUE
+          LBSETID = BSETID
+          DO 28 J = 1,MBLENG
+            RBATR(J,I,MINDX) = RNWRDS(J) 
+ 28       CONTINUE
+          GOTO 100
+
+         ENDIF
+ 20     CONTINUE
+
+      ELSE
+        WRITE (LINE,FMT='(A)') 
+     +    'From LWBSETID : no batches present to write to!'
+        ISTAT = 2
+        IFAIL = -1
+C
+C            ************************
+        CALL LERROR(ISTAT,IFAIL,LINE)
+C            ************************
+C
+      ENDIF
+
+ 100  CONTINUE
+
+      RETURN
+      END
+C
+C     ============================================
+      SUBROUTINE LRBSETID (MINDX,BATNO,BSETID)
+C     ============================================
+C
+C---- Subroutine to read dataset ID for batch BATNO from
+C     batch headers for multi-record file open on index MINDX
+C     If LWBAT has been used, the batch headers in RBATW are used,
+C     else those in RBATR are used.
+C
+C---- Arguments :
+C
+C     MINDX     (I)	INTEGER         indicates which MTZ file - 1 index
+C                               	points to both input and output files
+C
+C     BATNO     (I)	INTEGER         batch number 
+C
+C     BSETID    (O)	INTEGER         dataset ID for batch
+C
+C     ..
+      INTEGER MFILES,MCOLS,MBATCH
+      PARAMETER (MFILES=4,MCOLS=200,MBATCH=1000)
+      INTEGER MAXSYM
+      PARAMETER (MAXSYM=192)
+      INTEGER MSETS
+      PARAMETER (MSETS=MCOLS)
+      INTEGER MBLENG, MBLINT, MBLREA
+      PARAMETER (MBLENG=185, MBLINT=29, MBLREA=156)
+
+C     .. Scalar Arguments ..
+      INTEGER MINDX, BATNO, BSETID
+C     ..
+C     .. Common blocks ..
+      INTEGER NWORDS,NINTGR,NREALS,IORTYP,LBCELL,MISFLG,
+     +     JUMPAX,NCRYST,LCRFLG,LDTYPE,JSCAXS,NBSCAL,NGONAX,LBMFLG,NDET,
+     +     LBSETID,INTPAD
+      REAL  BCELL,UMAT,PHIXYZ,CRYDAT,DATUM,
+     +     PHISTT,PHIEND,PHIRANGE,SCANAX,TIME1,TIME2,
+     +     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD,E1,E2,E3,GONPAD,
+     +     SOURCE,S0,BEMDAT,
+     +     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD
+      CHARACTER BTITLE*70, GONLAB*8
+C     
+      COMMON /CBTHDR/BTITLE,GONLAB(3)
+C     
+      COMMON /MBTHDR/ NWORDS,NINTGR,NREALS,IORTYP,LBCELL(6),MISFLG,
+     .     JUMPAX,NCRYST,LCRFLG,LDTYPE,JSCAXS,NBSCAL,NGONAX,LBMFLG,
+     +     NDET,LBSETID,INTPAD(8),
+     +     BCELL(6),UMAT(3,3),PHIXYZ(3,2),CRYDAT(12),DATUM(3),
+     +     PHISTT,PHIEND,SCANAX(3),TIME1,TIME2,
+     +     BSCALE,BBFAC,SDBSCL,SDBFAC,PHIRANGE,BATPAD(11),
+     +     E1(3),E2(3),E3(3),
+     +     GONPAD(12),SOURCE(3),S0(3),BEMDAT(25),
+     +     DX1,THETA1,DETLM1(2,2),DX2,THETA2,DETLM2(2,2),DETPAD(33)
+      SAVE /CBTHDR/, /MBTHDR/
+      EXTERNAL LRBRES, LRBAT, LWBAT
+C
+      REAL CELL,CRANGE,SRANGE,RBATR,RBATW,RSYM,WRANGE,WSRNGE,VAL_MISS
+      INTEGER BATNUM,HDRST,ISORT,NBATCH,NBATR,NBATW,NCOLS,NCOLW,NHISTL,
+     +        NPLABS,NREFR,NREFS,NREFW,NSPGRP,NSYM,NSYMP,RLUN,RPOINT,
+     +        WLUN,WOMBAT,NDATMSS
+      LOGICAL SORTB,DATMSS,VAL_SET
+      COMMON /MTZHDR/CELL(6,MFILES),NSYM(MFILES),NSYMP(MFILES),
+     +       RSYM(4,4,MAXSYM,MFILES),NCOLS(MFILES),NREFS(MFILES),
+     +       NBATCH(MFILES),BATNUM(MBATCH,MFILES),ISORT(5,MFILES),
+     +       CRANGE(2,MCOLS,MFILES),NSPGRP(MFILES),
+     +       RBATR(MBLENG,MBATCH,MFILES),SRANGE(2,MFILES),
+     +       VAL_MISS(2,MFILES),VAL_SET(2,MFILES)
+      COMMON /MTZWRK/NCOLW(MFILES),RLUN(MFILES),WLUN(MFILES),
+     +       RPOINT(MCOLS,MFILES),WRANGE(2,MCOLS,MFILES),NREFW(MFILES),
+     +       NREFR(MFILES),NPLABS(MFILES),NBATW(MFILES),NBATR(MFILES),
+     +       WOMBAT(MBATCH,MFILES),HDRST(MFILES),SORTB(MFILES),
+     +       NHISTL(MFILES),RBATW(MBLENG,MBATCH,MFILES),WSRNGE(2,MFILES)
+     +       ,DATMSS(MCOLS),NDATMSS(MFILES)
+      SAVE /MTZHDR/, /MTZWRK/
+
+      INTEGER NSETW,SET_ID,CSET_ID,IDEFSET
+      CHARACTER ENTRY_ID*20,DIFFRN_ID*20
+      COMMON /MTZHAR/NSETW(MFILES),SET_ID(MSETS,MFILES),
+     +       ENTRY_ID(MSETS,MFILES),DIFFRN_ID(MSETS,MFILES),
+     +       CSET_ID(MCOLS,MFILES),IDEFSET(MFILES)
+C
+C.. Local variables
+      CHARACTER LINE*400
+
+      REAL RNWRDS(MBLENG)
+      EQUIVALENCE (NWORDS, RNWRDS)
+
+C
+C---- First check that the MINDX is valid
+C
+      IF ((MINDX.LE.0) .OR. (MINDX.GT.MFILES)) THEN
+        WRITE (LINE,FMT='(A,I3,A,1X,I1,1X,A)') 
+     +    'From LRBSETID : Index',MINDX,
+     +    ' is out of range (allowed 1..',MFILES,')'
+        ISTAT = 2
+        IFAIL = -1
+C
+C            ************************
+        CALL LERROR(ISTAT,IFAIL,LINE)
+C            ************************
+C
+      ENDIF
+
+      LBSETID = 0
+
+C--- Batches written with LWBAT
+      IF (NBATW(MINDX).GT.0) THEN
+
+        DO 10 I = 1,NBATW(MINDX)
+         IF (BATNO.EQ.WOMBAT(I,MINDX)) THEN
+
+          DO 15 J = 1,MBLENG
+            RNWRDS(J) = RBATW(J,I,MINDX)
+ 15       CONTINUE
+          GOTO 100
+
+         ENDIF
+ 10     CONTINUE
+
+C--- Batches from input file
+      ELSEIF (NBATCH(MINDX).GT.0) THEN
+
+        DO 20 I = 1,NBATCH(MINDX)
+         IF (BATNO.EQ.BATNUM(I,MINDX)) THEN
+
+          DO 25 J = 1,MBLENG
+            RNWRDS(J) = RBATR(J,I,MINDX)
+ 25       CONTINUE
+          GOTO 100
+
+         ENDIF
+ 20     CONTINUE
+
+      ELSE
+        WRITE (LINE,FMT='(A)') 
+     +    'From LRBSETID : no batches present to read!'
+        ISTAT = 2
+        IFAIL = -1
+C
+C            ************************
+        CALL LERROR(ISTAT,IFAIL,LINE)
+C            ************************
+C
+      ENDIF
+
+ 100  CONTINUE
+      
+      BSETID = LBSETID
+
       RETURN
 C
       END
@@ -5162,7 +5494,7 @@ C     ..
 C     .. Local Scalars ..
       INTEGER ENDLOP,I,IFAIL,ISTAT,JDO10,JDO100,JDO20,JDO30,JDO40,
      +        JDO50,JDO60,JDO65,JDO80,JDO22,JDO23,NITEM,JDO25,
-     +        ISET,IDSET,NREDUND
+     +        ISET,IDSET,NREDUND,IBAT,BSETID
       CHARACTER LINE*400, STROUT*80
       LOGICAL VS
 C     ..
@@ -5363,15 +5695,21 @@ C
           CRANGE(2,JDO20,MINDX) = WRANGE(2,JDO20,MINDX)
    20   CONTINUE
 
-C---- Information on datasets used in harvesting
+C---- Write out NDIF and DIFFSET header lines containing
+C     primary list of datasets included in file.
 
         IF (NSETW(MINDX).GT.0) THEN
 
-C---- Check to see if we have any redundant datasets.
+C---- Check to see if we have any redundant datasets,
+C     e.g. if subset of columns are output, not all datasets
+C     in header will be relevant.
      
-          NREDUND = 0
-          ISET = 0
-          DO 22 JDO22 = 1,NSETW(MINDX)
+C---- No batches, i.e. merged file, so check columns
+          IF (NBATCH(MINDX).LE.0) THEN
+
+           NREDUND = 0
+           ISET = 0
+           DO 22 JDO22 = 1,NSETW(MINDX)
             IDSET = SET_ID(JDO22,MINDX)
             DO 23 JDO23 = 1,NCOLW(MINDX)
               IF (CSET_ID(JDO23,MINDX).EQ.IDSET) THEN
@@ -5384,8 +5722,38 @@ C---- Check to see if we have any redundant datasets.
  23         CONTINUE
 C     Dataset not used for any column. Delete.
             NREDUND = NREDUND + 1
- 22       CONTINUE
-          NSETW(MINDX) = NSETW(MINDX) - NREDUND
+ 22        CONTINUE
+           NSETW(MINDX) = NSETW(MINDX) - NREDUND
+
+C---- Batches present so check them instead (column dataset pointers
+C     should not have been set yet).
+          ELSE
+
+           NREDUND = 0
+           ISET = 0
+           DO 24 JDO22 = 1,NSETW(MINDX)
+            IDSET = SET_ID(JDO22,MINDX)
+            DO 25 JDO23 = 1,NBATCH(MINDX)
+              IF (NBATW(MINDX).GT.0) THEN
+                IBAT = WOMBAT(JDO23,MINDX)
+              ELSE
+                IBAT = BATNUM(JDO23,MINDX)
+              ENDIF
+              CALL LRBSETID(MINDX,IBAT,BSETID)
+              IF (BSETID.EQ.IDSET) THEN
+                ISET = ISET + 1
+                SET_ID(ISET,MINDX) = SET_ID(JDO22,MINDX)
+                ENTRY_ID(ISET,MINDX) = ENTRY_ID(JDO22,MINDX)
+                DIFFRN_ID(ISET,MINDX) = DIFFRN_ID(JDO22,MINDX)
+                GOTO 24
+              ENDIF
+ 25         CONTINUE
+C     Dataset not used for any batch. Delete.
+            NREDUND = NREDUND + 1
+ 24        CONTINUE
+           NSETW(MINDX) = NSETW(MINDX) - NREDUND
+ 
+          ENDIF
 
           WRITE (LINE,FMT='(A4,1X,I8)') 
      +      'NDIFFRN',NSETW(MINDX)
@@ -5394,7 +5762,7 @@ C            ******************************
           CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C            ******************************
 
-          DO 25 JDO25 = 1,NSETW(MINDX)
+          DO 26 JDO25 = 1,NSETW(MINDX)
             WRITE (LINE,FMT='(A7,1X,I8,1X,A,1X,A)') 
      +        'DIFFSET',SET_ID(JDO25,MINDX),
      +        ENTRY_ID(JDO25,MINDX),DIFFRN_ID(JDO25,MINDX)
@@ -5402,8 +5770,9 @@ C
 C              ******************************
             CALL QWRITC(WLUN(MINDX),LINE(1:80))
 C              ******************************
- 25       CONTINUE
+ 26       CONTINUE
 
+C---- End of dataset info
         END IF
 C
 C---- Write out the batch serial numbers, if a multi-record file
@@ -8169,7 +8538,7 @@ C                ************************************
             CALL PUTLIN( '* Column Types :','CURWIN')
             CALL BLANK('CURWIN',1)
             CALL LABPRT(CTYPE(1,MINDX),NCOLS(MINDX))
-            IF (NSETW(MINDX).GT.0) THEN
+            IF (NSETW(MINDX).GT.0.AND.NBATCH(MINDX).EQ.0) THEN
              CALL BLANK('CURWIN',1)
              CALL PUTLIN( '* Associated datasets :','CURWIN')
              CALL BLANK('CURWIN',1)
@@ -8512,7 +8881,7 @@ CI    NINTGR       number of integers (first part of block,
 C                        includes these counts)
 CI    NREALS       number of reals
 CI    IORTYP       type of orientation block (for possible future use, now = 0)
-CI    INTPAD(9)    padding for future use (integers)
+CI    INTPAD(8)    padding for future use (integers)
 C     
 C---  Information for this crystal
 C     
@@ -8528,6 +8897,8 @@ CR    PHIXYZ(3,2)  missetting angles at beginning & end of rotation
 CI    JUMPAX       reciprocal axis closest to principle goniostat axis E1
 C                       (only used for printing)
 CI    NCRYST       crystal number: a crystal may contain several batches
+CI    LBSETID      dataset number (this indexes a list of datasets in the
+C                  file header)
 CI    LCRFLG       type of crystal mosaicity information
 C                  (=0 for isotropic, =1 anisotropic)
 C     *** CRYDAT(12) equivalenced to following ***
@@ -8547,6 +8918,10 @@ C                   = 3    Laue data
 CR    DATUM(3)     datum values of goniostat axes, from which Phi is measured
 C                      (degrees)
 CR    PHISTT,PHIEND start & stop values of Phi (degrees) relative to datum
+CR    PHIRANGE     range of Phi values: typically this will be PHIEND-PHISTT,
+C                    but storing this explicitly allows a distinction 
+C                    eg between a rotation of +160 degrees from a rotation
+C                    of -200 degrees
 CI    JSCAXS       goniostat scan axis number (=1,2,3, or =0 for
 C                        multiple axis scan
 CR    SCANAX(3)    rotation axis in laboratory frame (not yet implemented:
@@ -8560,7 +8935,7 @@ CR    BBFAC        batch temperature factor
 C                   corresponding scale is exp(-2 B (sin theta/lambda)**2)
 CR    SDBSCL       sd (Bscale)
 CR    SDBFAC       sd (BBfac)
-CR    BATPAD(12)   padding for batch information
+CR    BATPAD(11)   padding for batch information
 C     
 C---  Crystal goniostat information
 C     
@@ -8608,9 +8983,9 @@ C     ..
 C     .. Common blocks ..
       INTEGER NWORDS,NINTGR,NREALS,IORTYP,LBCELL,MISFLG,
      .     JUMPAX,NCRYST,LCRFLG,LDTYPE,JSCAXS,NBSCAL,NGONAX,LBMFLG,
-     +     NDET,INTPAD
+     +     NDET,LBSETID,INTPAD
       REAL   CELL,UMAT,PHIXYZ,CRYDAT,ETAD,DATUM,
-     +     PHISTT,PHIEND,SCANAX,TIME1,TIME2,
+     +     PHISTT,PHIEND,PHIRANGE,SCANAX,TIME1,TIME2,
      +     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD,E1,E2,E3,GONPAD,
      +     SOURCE,S0,BEMDAT,ALAMBD,DELAMB,DELCOR,DIVHD,DIVVD,
      +     DX1,THETA1,DETLM1,DX2,THETA2,DETLM2,DETPAD,ETADH,ETADV
@@ -8620,10 +8995,11 @@ C
 C     
       COMMON /MBTHDR/ NWORDS,NINTGR,NREALS,IORTYP,LBCELL(6),MISFLG,
      .     JUMPAX,NCRYST,LCRFLG,LDTYPE,JSCAXS,NBSCAL,NGONAX,LBMFLG,
-     +     NDET,INTPAD(9),
+     +     NDET,LBSETID,INTPAD(8),
      +     CELL(6),UMAT(3,3),PHIXYZ(3,2),CRYDAT(12),DATUM(3),
      +     PHISTT,PHIEND,SCANAX(3),TIME1,TIME2,
-     +     BSCALE,BBFAC,SDBSCL,SDBFAC,BATPAD(12),E1(3),E2(3),E3(3),
+     +     BSCALE,BBFAC,SDBSCL,SDBFAC,PHIRANGE,BATPAD(11),
+     +     E1(3),E2(3),E3(3),
      +     GONPAD(12),SOURCE(3),S0(3),BEMDAT(25),
      +     DX1,THETA1,DETLM1(2,2),DX2,THETA2,DETLM2(2,2),DETPAD(33)
 C     
@@ -8732,10 +9108,11 @@ C
       J = LDTYPE
       IF (J .LT. 1 .OR. J .GT. 3) J=0
 C
-      WRITE (SOMELN, FMT=6000) IBATCH,LABTYP(J),NCRYST,CELL,LBCELL
+      WRITE (SOMELN, FMT=6000) 
+     +    IBATCH,LABTYP(J),NCRYST,LBSETID,CELL,LBCELL
 C
-      IF (IPRINT.GT.30) 
-     +    WRITE (IPRINT,FMT=6000) IBATCH,LABTYP(J),NCRYST,CELL,LBCELL
+      IF (IPRINT.GT.30) WRITE (IPRINT,FMT=6000) 
+     +    IBATCH,LABTYP(J),NCRYST,LBSETID,CELL,LBCELL
 C
       CALL ADDLIN(SOMELN,LINES,MXLLIN)
 C
@@ -8803,10 +9180,10 @@ C
         CALL ADDLIN(SOMELN,LINES,MXLLIN)
       ENDIF
 C
-      WRITE (SOMELN, FMT=6060) PHISTT,PHIEND,TIME1,TIME2
+      WRITE (SOMELN, FMT=6060) PHISTT,PHIEND,PHIRANGE,TIME1,TIME2
 C
       IF (IPRINT.GT.30) 
-     +    WRITE (IPRINT, FMT=6060) PHISTT,PHIEND,TIME1,TIME2
+     +    WRITE (IPRINT, FMT=6060) PHISTT,PHIEND,PHIRANGE,TIME1,TIME2
 C
       CALL ADDLIN(SOMELN,LINES,MXLLIN)
 C
@@ -8866,6 +9243,7 @@ C
  6000 FORMAT(/1X,19('++++')//
      * ' Orientation data for batch',I8,5X,A//
      . '   Crystal number ...................',I7/
+     . '   Associated dataset ID ............',I7/
      . '   Cell dimensions ..................',6F7.2/
      . '   Cell fix flags ...................',6I7)
  6005 FORMAT(
@@ -8889,6 +9267,7 @@ C
      . '   Scan axis ........................',2X,A8)
  6060 FORMAT(
      . '   Start & stop Phi angles (degrees).',2F9.3/
+     . '   Range of Phi angles (degrees).....',F9.3/
      . '   Start & stop time (minutes).......',2F9.0)
  6065 FORMAT(
      + '   Batch scale & SD .................',2F9.4/
