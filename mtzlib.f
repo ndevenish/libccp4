@@ -6187,7 +6187,7 @@ C                               	N(umber of) L(abels) PRG(ramme) I(nput)
 C
 C     NTOK      (I)	INTEGER         from Parser, number of tokens on line
 C
-C     LINE      (I)	CHARACTER*400   the input line
+C     LINE      (I)	CHARACTER*(*)   the input line
 C
 C     IBEG,IEND (I)	INTEGER         arrays from the parser, delimiters
 C                               	for each token
@@ -6339,7 +6339,7 @@ C                               	N(umber of) L(abels) PRG(ramme) O(utput)
 C
 C     NTOK      (I)	INTEGER         from Parser, number of tokens on line
 C
-C     LINE      (I)	CHARACTER*400   the input line
+C     LINE      (I)	CHARACTER*(*)   the input line
 C
 C     IBEG,IEND (I)	INTEGER         arrays from the parser, delimiters
 C                               	for each token
@@ -6512,7 +6512,7 @@ C     					(allows you to skip the LABIN token)
 C
 C     NTOK      (I)	INTEGER         from Parser, number of tokens on line
 C
-C     LINE      (I)	CHARACTER*400   the input line
+C     LINE      (I)	CHARACTER*(*)   the input line
 C
 C     IBEG,IEND (I)	INTEGER         arrays from the parser, delimiters
 C                               	for each token
