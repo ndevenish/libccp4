@@ -1,7 +1,7 @@
 C
 C   SYMLIB
 C
-C
+C $Date$
 C
 C
 C    centr.f       centric.f     determ.f     epsln.f
@@ -1315,7 +1315,8 @@ C     .. Local Scalars ..
 C     ..
 C     .. Common blocks ..
       COMMON /MDFPAR/MAXR,MAXB,CELL(6),ISLOW,INTER,IFAST,KLASS,ICENTR,
-     +       ISCREW(3),IVERSN
+     +     ISCREW(3),IVERSN
+      SAVE /MDFPAR/
 C     ..
 C
 C
@@ -2503,6 +2504,7 @@ C     ..
 C     .. Common blocks ..
       COMMON /DSTAR/AXST,AYST,AZST,BYST,BZST,CZST
       COMMON /RECPLT/COEFHH,COEFHK,COEFHL,COEFKK,COEFKL,COEFLL
+      SAVE /DSTAR/, /RECPLT/
 C     ..
 C     .. Data statements ..
       DATA QMIN,ZERO/5.0E-7,0.0/
@@ -2637,6 +2639,7 @@ C     .. Scalars in Common ..
 C     ..
 C     .. Common blocks ..
       COMMON /RECPLT/COEFHH,COEFHK,COEFHL,COEFKK,COEFKL,COEFLL
+      SAVE /RECPLT/
 C     ..
 C
 C
@@ -4009,6 +4012,7 @@ C   NLAUE    number of Laue group
      .    NSYM,NSYMP,NLAUE
       INTEGER NSYM,NSYMP,NLAUE
       REAL RSYM,RSYMIV
+      SAVE /RECSYM/
 C
 C Functions
       INTEGER LENSTR
@@ -4133,6 +4137,7 @@ C   NLAUE    number of Laue group
      .    NSYM,NSYMP,NLAUE
       INTEGER NSYM,NSYMP,NLAUE
       REAL RSYM,RSYMIV
+      SAVE /RECSYM/
 C
 C Routines
       INTEGER INASU
@@ -4216,6 +4221,7 @@ C   NLAUE    number of Laue group
       PARAMETER (MAXSYM=96)
       COMMON /RECSYM/RSYM(4,4,MAXSYM),RSYMIV(4,4,MAXSYM),
      .    NSYM,NSYMP,NLAUE
+      SAVE /RECSYM/
       INTEGER NSYM,NSYMP,NLAUE
       REAL RSYM,RSYMIV
 C
@@ -4585,9 +4591,9 @@ C
 C
         LINE = ' '
         NLMAX = MIN(NSYMP,1+NLINC*3)
-        L = 6
+        L = 7
         DO 105, K=1,NLMAX,NLINC
-          LINE = LINE(1:L)//'ISYM'
+          LINE(L:) = 'ISYM'
           L = L+18
  105    CONTINUE
         CALL PUTLIN(LINE,'CURWIN')
