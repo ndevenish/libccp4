@@ -5449,40 +5449,40 @@ c
 
       do 10 i=1,Hnres
          
-         call ccif_setup_context('_pdbx_phasing_dm_shell.d_res_high',
+         call ccif_setup_context('_pdbx_phasing_DM_shell.d_res_high',
      +        CurrCategory,ccifBlockID,ccifContext,ccifStatus,'loop')
          ccifStatus = AppendRow
          
 c     set output format here
          call ccif_output_fmt(
-     +        '_pdbx_phasing_dm_shell.d_res_high','-',
+     +        '_pdbx_phasing_DM_shell.d_res_high','-',
      +        7,2,'f',ccifStatus)
-         call ccif_output_fmt('_pdbx_phasing_dm_shell.d_res_low','-',
+         call ccif_output_fmt('_pdbx_phasing_DM_shell.d_res_low','-',
      +        7,2,'f',ccifStatus)
-         call ccif_output_fmt('_pdbx_phasing_dm_shell.reflns','-',
+         call ccif_output_fmt('_pdbx_phasing_DM_shell.reflns','-',
      +        7,1,'f',ccifStatus)
-         call ccif_output_fmt('_pdbx_phasing_dm_shell.fom','-',
+         call ccif_output_fmt('_pdbx_phasing_DM_shell.fom','-',
      +        7,2,'f',ccifStatus)
          call ccif_output_fmt(
-     +        '_pdbx_phasing_dm_shell.delta_phi_final','-',
+     +        '_pdbx_phasing_DM_shell.delta_phi_final','-',
      +        7,2,'f',ccifStatus)
          
 c     call file writing functions here
-         call ccif_put_real('_pdbx_phasing_dm_shell.d_res_high',
+         call ccif_put_real('_pdbx_phasing_DM_shell.d_res_high',
      +        Hrres(i),
      +        ccifContext,ccifStatus)
          ccifStatus = KeepContext
-         call ccif_put_real('_pdbx_phasing_dm_shell.d_res_low',
+         call ccif_put_real('_pdbx_phasing_DM_shell.d_res_low',
      +        Hrres(i+1),
      +        ccifContext,ccifStatus)
          ccifStatus = KeepContext
-         call ccif_put_real('_pdbx_phasing_dm_shell.reflns',
+         call ccif_put_real('_pdbx_phasing_DM_shell.reflns',
      +        Hrefls(i),
      +        ccifContext,ccifStatus)
-         call ccif_put_real('_pdbx_phasing_dm_shell.fom',Hsfomn(i),
+         call ccif_put_real('_pdbx_phasing_DM_shell.fom',Hsfomn(i),
      +        ccifContext,ccifStatus)
          ccifStatus = KeepContext
-         call ccif_put_real('_pdbx_phasing_dm_shell.delta_phi_final',
+         call ccif_put_real('_pdbx_phasing_DM_shell.delta_phi_final',
      +        Hsphicn(i),
      +        ccifContext,ccifStatus)
          
