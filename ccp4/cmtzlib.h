@@ -542,6 +542,16 @@ int MtzArrayToBatch(const int *intbuf, const float *fltbuf, MTZBAT *batch);
  */
 int MtzBatchToArray(MTZBAT *batch, int *intbuf, float *fltbuf);
 
+/** Sort a linked list of batches on batch number. The function
+ * first checks whether batches are already in order, as they
+ * will usually be.
+ * @param batch pointer to beginning of batch list
+ * @param numbat number of batches to be sorted
+ * @return Sorted list if batches sorted, original list if batches 
+ *  already in order
+ */
+MTZBAT *sort_batches(MTZBAT *batch, int numbat);
+
 /**** pseudo-mtzlib routines ****/
 
 /** Returns title of MTZ structure 'mtz'

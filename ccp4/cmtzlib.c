@@ -2185,7 +2185,7 @@ int MtzPut(MTZ *mtz, const char *logname)
  float buf[NBATCHWORDS];
  int *intbuf = (int *) buf;
  float *fltbuf = buf + NBATCHINTEGERS;
- MTZBAT *batch;
+ MTZBAT *batch, *lastoldbatch;
 
  if (debug) 
    printf(" MtzPut: entering \n");
@@ -2388,9 +2388,17 @@ int MtzPut(MTZ *mtz, const char *logname)
    batch = mtz->batch;
    /* if new batch headers have been written, lose the old ones */
    if (MtzNbat(mtz) > mtz->n_orig_bat) {
-     for (i=0; i < mtz->n_orig_bat; ++i)
+     for (i=0; i < mtz->n_orig_bat; ++i) {
+       lastoldbatch = batch;
        batch = batch->next;
+     }
      numbat = MtzNbat(mtz) - mtz->n_orig_bat;
+     batch = sort_batches(batch,numbat);
+     if (mtz->n_orig_bat > 0) {
+       lastoldbatch->next = batch;
+     } else {
+       mtz->batch = batch;
+     }
    } else {
      numbat = mtz->n_orig_bat;
    }
@@ -2479,6 +2487,112 @@ int MtzPut(MTZ *mtz, const char *logname)
    printf(" MtzPut: bye bye \n");
 
  return 1;
+}
+
+MTZBAT *sort_batches(MTZBAT *batch, int numbat)
+
+{ int debug=0; 
+ int i,max_num_bat,isort=0,nmerges,sublistsize=1,sublist1,sublist2;
+ MTZBAT *cur_batch1, *cur_batch2, *sorted_batch, *tail;
+ MTZBAT *tmp;
+
+ /* first check if already in order */
+ cur_batch1 = batch;
+ max_num_bat = cur_batch1->num;
+ for (i=0; i < numbat; ++i) {
+   cur_batch1 = cur_batch1->next;
+   /* reached end of list */
+   if (!cur_batch1) return batch;
+   if (cur_batch1->num < max_num_bat) {
+     isort=1;
+     break;
+   }
+ }
+ if (!isort) return batch;
+
+ printf("\n Note: Sorting batch headers prior to writing to file... \n\n");
+
+ /* Sort */
+ /* This is Simon Tatham's algorithm, implemented for batches. */
+
+ if (debug) {
+   tmp = batch;
+   for (i=0; i < numbat; ++i) {
+     printf(" %d",tmp->num);
+     tmp = tmp->next;
+   }
+   printf(" \n");
+ }
+
+ while (1) {
+
+   if (debug) printf(" sort_batches: pass with sublist size %d \n",sublistsize);
+   cur_batch1 = batch;
+   tail = NULL;
+   batch = NULL;
+   nmerges = 0; 
+   while (cur_batch1) {
+
+     ++nmerges;
+     cur_batch2 = cur_batch1;
+     sublist1 = 0;
+     while (cur_batch2 && sublist1 < sublistsize) {
+       ++sublist1;
+       cur_batch2 = cur_batch2->next;
+     } 
+     sublist2 = sublistsize;
+
+     while (sublist1 > 0 || (sublist2 > 0 && cur_batch2)) {
+
+       /* decide whether next batch comes from cur_batch1 or cur_batch2 */
+       if (sublist1 == 0) {
+	 /* cur_batch1 is empty; batch must come from cur_batch2. */
+	 sorted_batch = cur_batch2; cur_batch2 = cur_batch2->next; sublist2--;
+       } else if (sublist2 == 0 || !cur_batch2) {
+	 /* cur_batch2 is empty; batch must come from cur_batch1. */
+	 sorted_batch = cur_batch1; cur_batch1 = cur_batch1->next; sublist1--;
+       } else if (cur_batch1->num <= cur_batch2->num ) {
+	 /* cur_batch1 number is lower (or same); batch must come from cur_batch1. */
+	 sorted_batch = cur_batch1; cur_batch1 = cur_batch1->next; sublist1--;
+       } else {
+	 /* cur_batch2 number is lower; batch must come from cur_batch2. */
+	 sorted_batch = cur_batch2; cur_batch2 = cur_batch2->next; sublist2--;
+       }
+
+       /* add the next element to the merged list */
+       if (tail) { 
+         tail->next = sorted_batch;
+       } else {
+         batch = sorted_batch;
+       }
+       tail = sorted_batch;
+
+     }
+
+     /* sorted this sub-list - move to next */
+     cur_batch1 = cur_batch2;
+
+   }
+
+   tail->next = NULL;
+
+   if (debug) {
+     tmp = batch;
+     for (i=0; i < numbat; ++i) {
+       printf(" %d",tmp->num);
+       tmp = tmp->next;
+     }
+     printf(" \n");
+   }
+
+   /* If we have done only one merge, we're finished. */
+   if (nmerges <= 1)   /* allow for nmerges==0, the empty list case */
+     return batch;
+
+    /* Otherwise repeat, merging lists twice the size */
+    sublistsize *= 2;
+ }
+
 }
 
 CCP4File *MtzOpenForWrite(const char *logname)
