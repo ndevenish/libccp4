@@ -2090,7 +2090,7 @@ systems with the capability and insufficient VM\@.
   for (i=0; i<*n; i++) {
     switch (type[i]) {
     case 1:
-      size = item_sizes[1]; break; /* integer */
+      size = item_sizes[6]; break; /* integer */
     case 2:
       size = item_sizes[2]; break; /* real */
     case 3:
