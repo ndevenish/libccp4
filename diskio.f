@@ -168,11 +168,12 @@ C
       IF (IUNIT.EQ.-1) THEN
         CALL CCPERR(1,' (Q)QOPEN failed - no streams left')
       ELSE IF (IUNIT.EQ.-2) THEN
-        WRITE (ERRSTR,FMT=6001) '(Q)QOPEN failed - File name:',LOGNAM
+        WRITE (ERRSTR,FMT=6001) '(Q)QOPEN failed - File name:',
+     +       LOGNAM (:100)
         CALL CCPERR(1,ERRSTR)
       ELSE IF (JSTAT.EQ.4 .AND. CCPEXS(FNAME)) THEN
         WRITE (ERRSTR,FMT=6001)
-     +       '(Q)QOPEN NEW file already exists:', FNAME(:200)
+     +       '(Q)QOPEN NEW file already exists:', FNAME(:100)
         CALL CCPERR(1,ERRSTR)
       END IF
 
