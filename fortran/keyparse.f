@@ -265,7 +265,7 @@ C  .... matched subkey (if set)
         if (ntok.ge.nth+k .and. (ityp(nth+k).eq.1 .or. .not.flag) ) then
          rest = line(ibeg(nth+k):iend(nth+k))
          success = .true.
-        else if (flag.eq..true.) then
+        else if (flag) then
          argerr = .true.
          call lerror (1, 0, 'Character sub-argument expected')
         endif
@@ -301,12 +301,18 @@ C     RESOlution -- usual values returned
       
       entry parselabin(mtznum,prglab,nprglab)
 C     LABIn -- requires mtz file number, program labels, and number of.
-      call lkyin(mtznum,prglab,nprglab,ntok,line,ibeg,iend)
+      if (memokey.eq.'LABI') then
+        call lkyin(mtznum,prglab,nprglab,ntok,line,ibeg,iend)
+        success = .true.
+      end if
       return
       
       entry parselabout(mtznum,prglab,nprglab)
 C     LABOut -- requires mtz file number, program labels, and number of.
-      call lkyout(mtznum,prglab,nprglab,ntok,line,ibeg,iend)
+      if (memokey.eq.'LABO') then
+        call lkyout(mtznum,prglab,nprglab,ntok,line,ibeg,iend)
+        success = .true.
+      end if
       return
       
       entry parsediagnose (cont)
