@@ -1520,14 +1520,14 @@ FORTRAN_SUBR ( LWIDAS, lwidas,
 	       (const int *mindx, int *nlprgo, fpstr pname, fpstr dname, int *iappnd),
 	       (const int *mindx, int *nlprgo, fpstr pname, int pname_len, 
                       fpstr dname, int dname_len, int *iappnd))
-{int i,j,istart;
+{int i,j,k,istart;
   char *project_name;
   char *crystal_name;
   char *dataset_name;
 
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWIDAS");)
 
- if (MtzCheckSubInput(*mindx,"LWIDAS",2)) return;
+  if (MtzCheckSubInput(*mindx,"LWIDAS",2)) return;
 
   project_name = (char *) ccp4_utils_malloc((*nlprgo)*(pname_len+1)*sizeof(char));
   crystal_name = (char *) ccp4_utils_malloc((*nlprgo)*(pname_len+1)*sizeof(char));
@@ -1556,6 +1556,22 @@ FORTRAN_SUBR ( LWIDAS, lwidas,
     }
     dataset_name[i*(dname_len+1)+j] = '\0';
   }
+
+  /* assignment request is in terms of pname/dname but data structure
+     is in terms of xname/dname. We need to find appropriate xname.
+     Use first crystal of correct pname/dname. If none found, above
+     default is used. */
+  for (i = 0; i < *nlprgo; ++i) 
+   for (j = 0; j < mtzdata[*mindx-1]->nxtal; ++j) 
+    if (!strcmp(mtzdata[*mindx-1]->xtal[j]->pname,
+                project_name+i*(pname_len+1))) 
+     for (k = 0; k < mtzdata[*mindx-1]->xtal[j]->nset; ++k) 
+      if (!strcmp(mtzdata[*mindx-1]->xtal[j]->set[k]->dname,
+                  dataset_name+i*(dname_len+1))) {
+        strncpy(crystal_name+i*(pname_len+1),
+                mtzdata[*mindx-1]->xtal[j]->xname,pname_len);
+        *(crystal_name+i*(pname_len+1)+pname_len) = '\0';
+      }
 
   /* if we are appending columns, shift collookup_out */
   istart = 0;
