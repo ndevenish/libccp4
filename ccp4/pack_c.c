@@ -99,6 +99,7 @@
 #define min(x, y) (((x) < (y)) ? (x) : (y)) 
 /* Returns minimum of x and y. */
 
+#undef abs			/* avoid complaint from DEC C, at least */
 #define abs(x) (((x) < 0) ? (-(x)) : (x))
 /* Returns the absolute value of x. */
 
@@ -137,13 +138,24 @@ static const LONG setbits[33] =
 #if defined(_AIX) || defined(__hpux)
 /* no underscore by default */
 #else
-#define pack_wordimage_f pack_wordimage_f_
-#define pack_longimage_f pack_longimage_f_
-#define readpack_word_f readpack_word_f_
-#define readpack_long_f readpack_long_f_
-#define mirror_wordimage mirror_wordimage_
-#define mirror_longimage mirror_longimage_
-#define imsiz_f imsiz_f_
+#  if defined (VMS) || defined (vms) || defined (__vms) || defined (__VMS)\
+      || defined (ardent) || defined (titan) || defined (stardent)
+#    define pack_wordimage_f PACK_WORDIMAGE_F
+#    define pack_longimage_f PACK_LONGIMAGE_F
+#    define readpack_word_f READPACK_WORD_F
+#    define readpack_long_f READPACK_LONG_F
+#    define mirror_wordimage MIRROR_WORDIMAGE
+#    define mirror_longimage MIRROR_LONGIMAGE
+#    define imsiz_f IMSIZ_F
+#  else
+#    define pack_wordimage_f pack_wordimage_f_
+#    define pack_longimage_f pack_longimage_f_
+#    define readpack_word_f readpack_word_f_
+#    define readpack_long_f readpack_long_f_
+#    define mirror_wordimage mirror_wordimage_
+#    define mirror_longimage mirror_longimage_
+#    define imsiz_f imsiz_f_
+#  endif
 #endif
 
 /******************************************************************************/
