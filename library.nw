@@ -197,7 +197,7 @@ may vary.
 #    define sgi
 #  endif
 #endif
-#if defined (sgi)                     /* Silicon graphics with R3000's */
+#if defined (sgi)
 #  define KNOWN_MACHINE
 #  define CALL_LIKE_SUN 1
 #endif
@@ -275,9 +275,15 @@ are the components we have to put together.
 <<internal routines>>
 <<miscellaneous routines>>
 <<diskio routines>>
+#ifdef _AIX
 <<AIX support>>
+#endif
+#if defined (__hpux) || defined (_AIX)
 <<AIX and HPUX support>>
+#endif
+#if defined(F2C) || defined(G77)
 <<f2c support>>
+#endif
 <<magic numbers>>
 @ \section{Header files}
 
@@ -325,6 +331,14 @@ configuration makes the appropriate [[#define]] of [[NOUNISTD]].
 #if defined(_AIX) || defined (__hpux) || defined(F2C) ||\
     defined(G77) /* would do no harm on others, though */
 #  include <time.h>
+#endif
+@ For f2c we need this for typedefs.  We assume it's on an include
+path where (g)cc will find it.  The [[#define]] is to avoid the
+undefinition of macros like [[sgi]].
+<<header files>>=
+#if defined (F2C) || defined (G77)
+#  define Skip_f2c_Undefs
+#  include "f2c.h"
 #endif
 @ \section{[[#define]]s}
 \subsection{Defaults and customisable items}
@@ -548,6 +562,7 @@ necessary to twiddle the environment strings explicitly.
 #if ! defined (VMS)
 <<ustenv code>>
 #endif
+@ 
 <<ustenv code>>=
 #if CALL_LIKE_HPUX
   void ustenv (str, result, Lstr)
@@ -1374,7 +1389,6 @@ int *iunit, *locate;
 Routines often found in {\tt \idx{libU77}.a} or somesuch are missing
 on some systems.\index{HPUX}\index{AIX}
 <<AIX support>>=
-#ifdef _AIX
 void idate (iarray)
      int iarray[3];
 {
@@ -1386,9 +1400,7 @@ void idate (iarray)
      iarray[1] = lt->tm_mon+1;	/* need range 1-12 */
      iarray[2] = lt->tm_year + 1900;
 }
-#endif
 <<AIX and HPUX support>>=
-#if defined (__hpux) || defined (_AIX)
 void gerror (str, Lstr)
 char *str;
 int  Lstr;
@@ -1449,9 +1461,8 @@ float etime (tarray)
   return (tarray[0]+tarray[1]);
 }
 
-#endif  /* AIX || HPUX */
+@ 
 <<f2c support>>=
-#if defined(F2C) || defined(G77)
 int exit_ (status)
      int *status;
 {
@@ -1473,7 +1484,6 @@ int getpid_ ()
 
 /* following are from libI77/fio.h */
 #define MXUNIT 100
-typedef int flag;
 typedef struct
 {       FILE *ufd;      /*0=unconnected*/
         char *ufnm;
@@ -1549,7 +1559,7 @@ int itime_ (array)
 
 static long clk_tck = 0;
 
-doublefloat etime_ (tarray)	/* NB `doublefloat' return for f2c. */
+doublereal etime_ (tarray)	/* NB `doublereal' return for f2c. */
      float tarray[2];
 {
   struct tms buffer;
@@ -1582,7 +1592,6 @@ int /* logical */ btest_ (a, b)
 {
   return ((((unsigned long) *a)>>(*b)))&1 ? TRUE_ : FALSE_;
 }
-#endif  /* F2C || g77 */
 @ %def ibset btest ibclr
 @ \section{Converting foreign binary number formats}
 
@@ -2084,15 +2093,15 @@ the value in [[cnan]] called as a \ft{} subroutine and have a [[REAL
 FUNCTION]] version of [[QNAN]] done in \ft{}.
 <<magic numbers>>=
 #if CALL_LIKE_HPUX
-  void cnan (real)
+  void cnan (realnum)
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  void CNAN (real)
+  void CNAN (realnum)
 #endif
 #if CALL_LIKE_SUN
-  void cnan_ (real)
+  void cnan_ (realnum)
 #endif
-  union float_uint_uchar *real;
+  union float_uint_uchar *realnum;
 @ %def cnan
 @ We have a choice of \idx{NaN} values in
 \ac{ieee}\index{IEEE@\ac{ieee}} arithmetic.
@@ -2115,7 +2124,7 @@ undefined value.  Note the hex constant is the same for both byte sexes!
   #error "NAN isn't defined (needs NATIVEFT)"
 #endif
 {
-  real->i = NAN;
+  realnum->i = NAN;
 }
 @ \subsection{Testing a value: {\tt int cisnan(\meta{real})}}
 
@@ -2127,15 +2136,15 @@ so that we don't have to assume how it represents logical values.  The
 trivial interface [[QISNAN]].
 <<magic numbers>>=
 #if CALL_LIKE_HPUX
-  int cisnan (real)
+  int cisnan (realnum)
 #endif
 #if defined (VMS) || CALL_LIKE_STARDENT
-  int CISNAN (real)
+  int CISNAN (realnum)
 #endif
 #if CALL_LIKE_SUN
-  int cisnan_ (real)
+  int cisnan_ (realnum)
 #endif
-  union float_uint_uchar *real;
+  union float_uint_uchar *realnum;
 {
     <<test for magic number>>
 }
@@ -2149,15 +2158,15 @@ don't want to rely on the compiler avoiding a bogus optimisation anyhow.
 switch (nativeFT) {
  case DFNTF_BEIEEE :
  case DFNTF_LEIEEE :
-   return ((real->i & 0x7f800000) == 0x7f800000); /* exponent all 1s */
+   return ((realnum->i & 0x7f800000) == 0x7f800000); /* exponent all 1s */
 @ \idx{VAX} and \idx{Convex} \idx{Rop} has sign $=1$ and zero exponent
 with the appropriate byte sex---bit 15 and bits 7--14 respectively in
 the appropriate half-word (counting from 0).
 <<test for magic number>>=
   case DFNTF_CONVEXNATIVE :
-    return ((real->i & 0xff800000) == 0x80000000);      
+    return ((realnum->i & 0xff800000) == 0x80000000);      
   case DFNTF_VAX :
-    return ((real->i & 0x0000ff80) == 0x00008000);
+    return ((realnum->i & 0x0000ff80) == 0x00008000);
   default :
     fatal("CISNAN: bad nativeFT");
     return 0;			/* avoid compiler warning */
