@@ -110,6 +110,12 @@
 #  define CALL_LIKE_SUN 1
 #endif
 
+#if defined (__FreeBSD__)
+#  undef CALL_LIKE_SUN
+#  define KNOWN_MACHINE
+#  define CALL_LIKE_SUN 1
+#endif
+
 #if defined(F2C) || defined(G77)
 #  undef CALL_LIKE_SUN
 #  define CALL_LIKE_SUN 1
