@@ -1,97 +1,30 @@
-C
 C     This code is distributed under the terms and conditions of the
 C     CCP4 licence agreement as `Part i)' software.  See the conditions
 C     in the CCP4 manual for a copyright statement.
 C
-C
-C  2)    EJD now checks if the cell dimensions have already been read 
-C      from some other source ( eg Input stream - LCF file) and if there 
-C      is inconsistency between the coordinate file header and this.
-C      See  array CELCHK(6)
-C
-C  3)  RWBRED6 has extended the common block 
-C      RBRKZZ/cell(6),rr(3,3,5)         to
-C      RBRKZZ/cell(6),rr(3,3,6),vol,cellas(6).
-C         There are reasons:
-C
-C      SKEW planes uses a 6th orthogonalisation convention for P1.
-C      
-C  4)  The s/r RBFROR is called from many other programs which need
-C      to orthogonalise things and they each have to include the 
-C      common block RBRKZZ to pass the cell dimensions over and
-C      return the unit cell volume and standard orthogonalising matrices.
-C      I have included an identical s/r RBFRO1(cell,vol,rr)  to do this.
-C      If we could be bothered it could replace RBFROR.
-C      If the cell has been read in RBROOK and RBFRO1 is called with 
-C      cell(..) = 0 it will be returned to the main program by this call.
-C
-C      If the cell has been read in the main program and RBFRO1 is called 
-C      with this cell the unit cell volume and the orthogonalising matrices 
-C      rr(3,3,6) will be returned to the main program by this call.
-C
-C  4a)  Vol ( the unit cell volume) and rcell(6) the reciprocal cell
-C      dimensions are both calculated in s/r RBFROR and are often useful
-C      in other programs.  Call subroutine rbrcel(rcell,rvol) to
-C      transfer the reciprocal cell and reciprocal volume  back. 
-C       ( Remember real vol = 1/recip vol.)
-C
-C  4b) There is a utility subroutine rbrecip which calculates s 
-C      for a reflection.  This should be part of a general library.
-C
-C  5)  There is a subroutine to find the 1 character  standard residue
-C      name from the 3 character one ( or vice versa).  (" " ")
-C      Call subroutine res3to1(resnm3,resnm1). 
-C
-C  6)   An EJD modification to standard Brookhaven is to check whether 
-C       the formfactor number is written as an integer in columns 67-70.
-C       Keeping the formfactor as an integer saves an appreciable amount 
-C       of time when reading this clumsy file...
-C
-C  7)   Call RBRORF(RO,RF) to return the orthogonalising and fractionalising
-C       matrices RO(4,4) and RF(4,4).
-C
 C_BEGIN_RWBROOK
-C
 C Title: STANDARD COORDINATE FILES AND THEIR USE (FORTRAN 77 IMPLEMENTATION)
-C $Date$
 C Author: John W. Campbell
 C                         
 C CONTENTS
 C          
-C          
 C PART I  - THE STANDARD COORDINATE DATA FILE STRUCTURE
-C                                                      
 C           1.   INTRODUCTION
-C                            
 C           2.   FORMAT OF THE 'ATOM/HETATM'CARDS
-C                                                
 C           3.   FORMAT OF THE 'TER' CARDS
-C                                         
 C           4.   FORMAT OF THE 'CRYST1' CARD
-C                                           
 C           5.   FORMAT OF THE 'SCALE' CARDS
-C                                           
 C           6.   STANDARD RESIDUE NAMES
-C                                      
 C           7.   ATOM IDENTIFIERS FOR AMINO ACIDS
-C                                                
 C           8.   REFERENCES
 C                          
-C                          
 C PART II - SUBROUTINES FOR HANDLING BROOKHAVEN FORMAT COORDINATE FILES
-C                                                                      
 C           1.  INTRODUCTION
-C                           
 C           2.  THE SUBROUTINES
-C                                                                    
 C           3.  EXAMPLE OF READING A FILE
-C                                        
 C           4.  EXAMPLE OF READING A FILE AND WRITING A MODIFIED FILE
-C                                                                    
 C           5.  COMMON BLOCKS USED BY THE SUBROUTINES
-C                                                    
 C           6.  AVAILABILITY OF THE SUBROUTINES
-C 
 C           7.  DESCRIPTION OF INDIVIDUAL SUBROUTINES:
 C    
 C  RBROOK     Read a coordinate record
@@ -107,10 +40,8 @@ C  CVFRAC     Convert between orthogonal and fractional coordinates
 C  RBRCEL     Returns Reciprocal cell dimensions, and reciprocal unit cell  volume
 C  RES3TO1    Find 3 character residue name from 1 character code and vice versa 
 C  RBRECIP    calculates 4SIN**2/L**2
-C                          
 C
 C PART I  -  THE STANDARD COORDINATE DATA FILE STRUCTURE
-C                                                       
 C                                                       
 C 1.   INTRODUCTION 
 C                   
@@ -128,9 +59,7 @@ C CCP. The standard set of orthogonal axes  XO,  YO  and  ZO  is  defined  as
 C follows:
 C         
 C                                 XO // a
-C                                         
 C                                 YO // c* * a
-C                                               
 C                                 ZO // c*
 C                                          
 C Within a Brookhaven format file, however,  coordinates  may  be  held  with
@@ -143,42 +72,32 @@ C features, relevant to the handling of the  coordinate  data  are  described
 C below. In general terms it may be noted that the format is basically a card
 C image format with fixed length 80 byte records.
 C                                                
+C [An EJD modification to standard Brookhaven is to check whether the
+C formfactor number is written as an integer in columns 67-70.
+C Keeping the formfactor as an integer saves an appreciable amount of
+C time when reading this clumsy file...]
+C
 C 2.   FORMAT OF THE 'ATOM/HETATM' CARDS
 C                                       
 C      The format of an 'ATOM' card or 'HETATM' card is as follows:
 C
 C Cols.  1-4    ATOM (or cols. 1-6 HETATM)
-C                                         
 C        7-11   Atom serial number (see note i)
-C                                              
 C Cols. 13-14   Chemical symbol (right justified)  )
-C                                                  )
 C       15      Remoteness indicator                 Atom name (see note ii)
-C                                                  )
 C       16      Branch designator                  )
-C                                                   
 C       17      Alternate location indicator (see note iii)
-C                                                          
 C       18-20   Residue name (see note iv)
-C                                         
 C       21      Reserved                   )
-C                                          )
 C       22      Chain identifier           )
 C                                           Sequence identifier (see note v)
 C       23-26   Residue sequence number    )
-C                                          )
 C       27      Code for inserting residue )
-C                                           
 C       31-38   X   )
-C                   )
 C       39-46   Y    Orthogonal Angstrom coordinates
-C                   )
 C       47-54   Z   )
-C                    
 C       55-60   Occupancy
-C                        
 C       61-66   Temperature factor
-C                                 
 C       68-70   Footnote number
 C
 C Typical format:  (6A1,I5,1X,A4,A1,A3,1X,A1,I4,A1,3X,3F8.3,2F6.2,1X,I3)
@@ -199,15 +118,11 @@ C
 C          (iv)  The standard residue names are given in paragraph 6 below.
 C                                                                          
 C           (v)  The sequence identifier is a  composite  field  made  up  as
-C                follows:-
-C                         
+C                follows:
 C                Cols. 21      Reserved for future expansion
-C                                                           
 C                      22      Chain identifier, e.g. A for Haemoglobin alpha
 C                              chain
-C                                   
 C                      23-26   Residue sequence number
-C                                                     
 C                      27      Code for insertions of residues, e.g. 66A, 66B
 C                              etc.
 C                                  
@@ -218,11 +133,8 @@ C at the appropriate positions within the atom cards. The format of  a  'TER'
 C card is as follows:
 C                    
 C Cols.  1-3    TER
-C                  
 C        7-11   Serial number
-C                            
 C       18-20   Residue name
-C                           
 C       21-27   Sequence identifier (see description of 'ATOM' cards above)
 C                                                                          
 C Typical format:  (6A1,I5,6X,A3,1X,A1,I4,A1)
@@ -232,21 +144,13 @@ C
 C      This card holds the cell parameters and has the following format
 C                                                                      
 C              Cols.  1-6    CRYST1
-C                                  
 C                     7-15   a (Angstroms)
-C                                         
 C                    16-24   b (Angstroms)
-C                                         
 C                    25-33   c (Angstroms)
-C                                         
 C                    34-40   alpha (degrees)
-C                                           
 C                    41-47   beta (degrees)
-C                                          
 C                    48-54   gamma (degrees)
-C                                           
 C                    56-66   Space group symbol (left justified)
-C                                                               
 C                    67-70   Z
 C                             
 C Typical Format:  (6A1,3F9.3,3F7.2,1X,11A1,I4)
@@ -259,13 +163,9 @@ C cards are required. 'S' is the rotation matrix and 'U' is  the  translation
 C matrix. The format of the cards is as follows.
 C                                               
 C                 Cols.  1-6      SCALE1     SCALE2     SCALE3
-C                                                             
 C                       11-20      S11        S21        S31
-C                                                           
 C                       21-30      S12        S22        S32
-C                                                           
 C                       31-40      S13        S23        S33
-C                                                           
 C                       46-55      U1         U2         U3
 C                                                          
 C                  Typical Format:  (6A1,4X,3F10.5,5X,F10.5)
@@ -308,15 +208,12 @@ C      The atom names used follow the IUPAC-IUB rules (ref.  3)  except  that
 C the Greek letter remoteness codes are transliterated as follows:-
 C                                                                  
 C        alpha - A       beta - B       gamma - G       delta - D
-C                                                                
 C        epsilon - E     zeta - Z       eta - H
 C                                              
 C Four characters are reserved for the atom names as follows:-
 C                                                             
 C                   1-2   Chemical symbol - right justified
-C                                                          
 C                   3     Remoteness indicator (alphabetic)
-C                                                          
 C                   4     Branch designator (numeric)
 C                                                    
 C Within each  residue  the  atoms  occur  in  the  order  specified  by  the
@@ -348,9 +245,7 @@ C within the CCP protein crystallography program suite. The standard  set  of
 C orthogonal axes XO, YO, ZO is defined as follows:
 C                                                  
 C                                XO  //  a
-C                                          
 C                                YO  //  c* * a
-C                                                
 C                                ZO  //  c*
 C                                           
 C      Coordinates may be held in orthogonal Angstroms with respect to  other
@@ -376,13 +271,11 @@ C
 C    Reading files
 C                 
 C        . RBINIT    Initialisation call.
-C                                        
 C        . RBROOK    Read a coordinate record.
 C                                             
 C    Writing files
 C                 
 C        . WBROOK    Write a coordinate record.
-C                                              
 C        . RWBFIN    Complete copy of input to output file.
 C                                                          
 C    Converting coordinates
@@ -406,23 +299,17 @@ C      The example below outlines the way in which the subroutines RBINIT and
 C RBROOK are used to read coordinates from Brookhaven format coordinate  file
 C (on unit 1)
 C
-C C
 C C PROGRAM TO READ BROOKHAVEN FILE
 C C ===============================
-C C
-C C SPECIFICATION STATEMENTS
-C C ------------------------
 C C
 C       CHARACTER*4 ATNAM,RESNAM,RESNO
 C       CHARACTER*1 CHNNAM
 C C
 C C INITIALISATION CALL
-C C -------------------
 C C
 C       CALL  RBINIT(1)
 C C
 C C READ COORDINATE RECORDS
-C C -----------------------
 C C
 C 10    CALL RBROOK(1,ISER,ATNAM,RESNAM,CHNNAM,IRS,RESNO,IS,X,Y,Z,
 C      *OCC,B,IZ,0,0,6,0,*10,*100)
@@ -434,11 +321,8 @@ C       .
 C       GO TO 10
 C C
 C C END OF FILE REACHED
-C C -------------------
 C C
-C 100   STOP
-C       END
-C
+C 100   END
 C  
 C 4.   EXAMPLE OF READING A FILE AND WRITING A MODIFIED FILE
 C                                                           
@@ -446,20 +330,16 @@ C      The following example reads in a set of coordinates and processes them
 C (e.g. in a refinement). The input file is then re-read and an  output  file
 C is created with the updated coordinate data.
 C                                             
-C
-C C
 C C PROGRAM TO READ AND UPDATE A BROOKHAVEN COORDINATE FILE
 C C =======================================================
 C C
 C C SPECIFICATION STATEMENTS
-C C ------------------------
 C C
 C       CHARACTER*4 ATNAM(1000),RESNAM(1000),RESNO
 C       CHARACTER*1 CHNNAM
 C       DIMENSION X(1000),Y(1000),Z(1000)
 C C
 C C READ COORDINATES FROM UNIT 1 AND STORE THEM
-C C -------------------------------------------
 C C
 C       N=0
 C       CALL RBINIT(1)
@@ -469,7 +349,6 @@ C      *X(N),Y(N),Z(N),OCC,B,IZ,0,0,6,0,*10,*100)
 C       GO TO 10
 C C
 C C REFINE COORDINATES
-C C ------------------
 C C
 C 100   NMAX=N-1
 C       .
@@ -479,7 +358,6 @@ C       .
 C       .
 C C
 C C WRITE UPDATED COORDINATE FILE (UNIT 2)
-C C --------------------------------------
 C C
 C       CALL RBINIT(1)
 C       DO 150 N=1, NMAX
@@ -490,10 +368,8 @@ C      *OCC,B,IZ)
 C 150   CONTINUE
 C C
 C C COPY ANY REMAINING RECORDS TO OUTPUT FILE
-C C -----------------------------------------
 C C
 C 200   CALL RWBFIN(1,2)
-C       STOP
 C       END
 C
 C  
@@ -508,30 +384,19 @@ C   COMMON /RBRKXX/ IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
 C
 C   Arguments:    IFCRYS  Flag set to .TRUE. if CRYST1 card read, otherwise
 C                           .FALSE.
-C                                  
 C                   IFSCAL  Flag set to .TRUE. if SCALE cards read, otherwise
 C                           .FALSE.
-C                                  
 C                    IFEND  Flag set  to  .TRUE.  if  end  of  file  reached,
 C                           otherwise .FALSE.
-C                                            
 C                     ITYP  Type of last card read.
-C                                                  
 C                           =0, No card read.
-C                                            
 C                           =1, 'CRYST1'
-C                                       
 C                           =2, 'SCALE'
-C                                      
 C                           =3, 'TER'
-C                                    
 C                           =4, 'ATOM'
-C                                     
 C                           =5, 'HETATM'
-C                                       
 C                   MATRIX  Flag  set  to  .TRUE.  if   orthogonalising   and
 C                           fractionalising matrices set, otherwise .FALSE.
-C                                                                          
 C
 C   CHARACTER*1 BROOK
 C   COMMON /RBRKYY/ BROOK(72)
@@ -539,54 +404,33 @@ C
 C   Arguments:     BROOK  Character array  holding  the  last  record  read
 C                           (columns 1-72)
 C                                         
-C                                         
 C   COMMON /RBRKZZ/ CELL(6),RR(3,3,5)
 C                                    
 C   Arguments:      CELL  Array holding cell dimensions  read  from  CRYST1
 C                           card if read (check IFCRYS)
-C                                                      
 C                       RR  Array  holding  some   common   orthogonalisation
 C                           matrices calculated if  CRYST1  cards  was  read.
 C                           (See description of NCODE in common ORTHOG)
-C                                                                      
 C                                                                      
 C   COMMON /ORTHOG/ RO(4,4),RF(4,4),NCODE,IBRKFL
 C                                               
 C   Arguments:        RO  Orthogonalising matrix (only  set  if  CRYST1  or
 C                           SCALE cards read (check the flag MATRIX)
-C                                                                   
 C                       RF  Fractionalising matrix (only  set  if  CRYST1  or
 C                           SCALE cards read (check the flag MATRIX)
-C                                                                   
 C                    NCODE  Flag  indicating  setting  found,   =0   if   not
 C                           recognised.
-C                                      
 C                           =1, a // XO,  c* // ZO (Standard Brookhaven)
-C                                                                         
 C                           =2, b // XO,  a* // ZO
-C                                                   
 C                           =3, c // XO,  b* // ZO
-C                                                   
 C                           =4, Hexagonal a + b // XO, c* // ZO
-C                                                                 
 C                           =5, a* // XO, c // ZO (Rollett)
-C                                                            
 C                   IBRKFL  Flag = 0, Brookhaven file, non-zero reserved  for
 C                           some other type.
-C                                           
-C                                           
-C 6.   AVAILABILITY OF THE SUBROUTINES
-C                                      
-C      The subroutines are in the library $CLIB/libccp4.a (unix) or
-C      $CLIB:LIBCCP4.OLB  (vms). The source code is to be found in the
-C      files rwbrook.for and rwatom.for.
 C
 C 7. Subroutines in RWBROOK:
 C
-C
 C_END_RWBROOK
-C
-
 C_BEGIN_RBROOK
 C
       SUBROUTINE RBROOK(IUN,ISER,ATNAM,RESNAM,CHNNAM,IRESN,RESNO,IS,
@@ -1055,8 +899,8 @@ C_BEGIN_RBRORF
 C
 C      SUBROUTINE RBRORF(ROO,RFF)
 C
-C Subroutine to  fill or return RF and Ro matrices. This subroutine is
-C called by RBROOK.
+C     Subroutine to  fill or return RF (fractionalising) and Ro
+C     (orthogonalising) matrices. This subroutine is called by RBROOK.
 C
 C PARAMETERS
 C
