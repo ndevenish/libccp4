@@ -1009,15 +1009,17 @@ void ccp4spg_print_centric_zones(const CCP4SPG* sp) {
     ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_print_centric_zones",NULL); 
     return;
   }
-  printf("\n  ******   CENTRIC ZONES  ****** \n");
+  printf("\n  ******   CENTRIC ZONES  ****** \n\n");
 
   /* loop over all possible centric zones */
   for (i = 0; i < 12; ++i) 
     if (sp->centrics[i]) {
-      printf("\n  CENTRIC Zone   %d\n",++j);
-      printf("  Reflections of type  %s \n",
+      printf("  CENTRIC Zone   %d\n",++j);
+      printf("  Reflections of type  %s \n\n",
                 ccp4spg_describe_centric_zone(i+1,centric_zone));
     }
+
+  if (!j) printf("  (no centric zones for this spacegroup) \n\n");
 }
 
 char *ccp4spg_describe_centric_zone(const int nzone, char *centric_zone) {
@@ -1277,13 +1279,13 @@ int ccp4spg_generate_origins(const char *namspg, const int nsym, const float rsy
   for (k1 = 0; k1 < 6; ++k1) {
     for (k2 = 0; k2 < 6; ++k2) {
       for (k3 = 0; k3 < 6; ++k3) {
-        if (k1==1 && k2 == 1 && k3 ==1) break;
+        if (k1==0 && k2 == 0 && k3 ==0) continue;
 	is[0]=id[k1];
 	is[1]=id[k2];
 	is[2]=id[k3];
-        if ( *polarx && is[0] )  break;
-        if ( *polary && is[1] )  break;
-        if ( *polarz && is[2] )  break;
+        if ( *polarx && is[0] )  continue;
+        if ( *polary && is[1] )  continue;
+        if ( *polarz && is[2] )  continue;
 
 /*  Let [Si] =[RSYMi] be (3x4) symmetry operator.
  Need to Check if the symmetry operator shifts of each alternate origin 
@@ -1326,48 +1328,66 @@ int ccp4spg_generate_origins(const char *namspg, const int nsym, const float rsy
   }
 
   if (iprint) {
-    printf(" %s %d %d %d\n","lpaxisx y z",*polarx,*polary,*polarz);
     if( *polarx && *polary && *polarz) {
       printf(" this is p1: origin anywhere");
       printf("\n %s %s %s \n",
-	     " number of alternate origins for spacegroup:  ",namspg," is infinite.");
+	     "Number of alternate origins for spacegroup:  ",namspg," is infinite.");
     } else if( *polarx && *polary) {
       printf(" this is a polar+ spacegroup: origin anywhere in a b plane");
       printf("\n %s %s %s %d \n",
-     " number of alternate origin containing planes for spacegroup:",
+     "Number of alternate origin containing planes for spacegroup:",
        namspg, " is:",norigins);
     } else if( *polarx && *polarz) {
       printf(" this is a polar+ spacegroup: origin anywhere in a c plane");
       printf("\n %s %s %s %d \n", 
-     " number of alternate origin containing planes for spacegroup:",
+     "Number of alternate origin containing planes for spacegroup:",
        namspg, " is:",norigins);
     } else if( *polary && *polarz) {
       printf(" this is a polar+ spacegroup: origin anywhere in b c plane");
       printf("\n %s %s %s %d \n", 
-     " number of alternate origin containing planes for spacegroup:",
+     "Number of alternate origin containing planes for spacegroup:",
        namspg, " is:",norigins);
     } else if( *polarx) {
       printf(" this is a polar spacegroup: origin is not fixed along a axis");
       printf("\n %s %s %s %d \n", 
-     " number of alternate origin containing lines for spacegroup: ",
+     "Number of alternate origin containing lines for spacegroup: ",
        namspg, " is:",norigins);
     } else if( *polary) {
       printf(" this is a polar spacegroup: origin is not fixed along b axis");
       printf("\n %s %s %s %d \n", 
-     " number of alternate origin containing lines for spacegroup: ",
+     "Number of alternate origin containing lines for spacegroup: ",
        namspg, " is:",norigins);
     } else if( *polarz) {
       printf(" this is a polar spacegroup: origin is not fixed along c axis");
       printf("\n %s %s %s %d \n", 
-     " number of alternate origin containing lines for spacegroup: ",
+     "Number of alternate origin containing lines for spacegroup: ",
        namspg, " is:",norigins);
     } else {
       printf("\n %s %s %s %d \n",
-     " number of alternate origins for spacegroup:  ",namspg,
+     "Number of alternate origins for spacegroup:  ",namspg,
      " is:",norigins);
     } 
 
-  /* sorry, bored now ... */
+    printf("\n Norigin     Ox      Oy      Oz\n\n");
+    for (i = 0; i < norigins; ++i) {
+      if (*polary && *polarz && *polarx) {
+        printf("%8d     ??      ??      ?? \n", i+1);
+      } else if(*polarx && *polary) {
+        printf("%8d     ??      ?? %8.4f\n", i+1,origins[i][2]);
+      } else if(*polarx && *polarz) {
+        printf("%8d     ?? %8.4f     ?? \n", i+1,origins[i][1]);
+      } else if(*polary && *polarz) {
+        printf("%8d%8.4f     ??      ?? \n", i+1,origins[i][0]);
+      } else if( *polarx) {
+        printf("%8d     ?? %8.4f%8.4f\n", i+1,origins[i][1],origins[i][2]);
+      } else if(*polary) {
+        printf("%8d%8.4f     ?? %8.4f\n", i+1,origins[i][0],origins[i][2]);
+      } else if(*polarz) {
+        printf("%8d%8.4f%8.4f     ?? \n", i+1,origins[i][0],origins[i][1]);
+      } else  {
+        printf("%8d%8.4f%8.4f%8.4f\n", i+1,origins[i][0],origins[i][1],origins[i][2]);
+      }
+    }
   }
   return norigins;
 }
