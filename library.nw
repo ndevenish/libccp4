@@ -1062,7 +1062,7 @@ int *iunit, *lrecl;
 place in files.  Try flushing the output buffer before messing around
 with [[fseek]].  (Thanks to Martin Bryan.)  N.B.: assumes [[*iunit]]!
 <<OpenVMS seek fudge>>=
-#if defined (__ALPHA) && defined (vms)
+#if defined (__alpha) && defined (vms)
 (void) fflush (file_stream[*iunit]);
 #endif
 @ \subsection{{\tt subroutine qskip (\meta{iunit}, \meta{lrecl})}}
@@ -1367,9 +1367,10 @@ First an obvious one:
 \idx{MIPS} compilers define [[MIPSEL]] or [[MIPSEB]] depending on the
 mode in which the the chip operates.)  The architectures covered here
 include some R\meta{nnnn} (e.g., \idx{DECstations}), \idx{i860} and
-other \idx{Intel} chips like \idx{PCs} and \idx{Alpha}.
+other \idx{Intel} chips like \idx{PCs} and \idx{Alpha}.  [OSF and
+OpenVMS define [[__alpha]], OpenVMS, only [[__ALPHA]].\index{Alpha}
 <<[[#define]]s>>=
-#if defined(MIPSEL) || defined(alliant) || defined(__ALPHA) || defined(i386) || defined(i860)
+#if defined(MIPSEL) || defined(alliant) || defined(__alpha) || defined(i386) || defined(i860)
 #  define NATIVEIT DFNTI_IBO
 #  define NATIVEFT DFNTF_LEIEEE
 #endif
