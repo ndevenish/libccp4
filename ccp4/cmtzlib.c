@@ -2086,6 +2086,10 @@ int MtzPut(MTZ *mtz, const char *logname)
  }
 
  if (mtz->refs_in_memory) {
+/* reset resolution ranges for write */
+   for (i = 0; i < mtz->nxtal; ++i) {
+     mtz->xtal[i]->resmax = 0.0f;
+     mtz->xtal[i]->resmin = 999.f; }
 
    /* Write all reflections from memory - make this optional? */
    for (l = 0; l < mtz->nref; ++l) {
