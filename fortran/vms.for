@@ -1377,9 +1377,9 @@ C     LENGTH (see CCPALC)
 C
       EXTERNAL ROUTNE
       INTEGER N, TYPE (*), LENGTH (*)
-      INTEGER I, SIZES (4), POINTER (9), ISTAT
+      INTEGER I, SIZES (5), POINTER (12), ISTAT
 C     bytes per word (assuming 32 bit words...)
-      DATA SIZES /4,4,8,8/
+      DATA SIZES /4,4,8,8,1/
 
 C     The calling routine, CCPALC, will have checked that the arguments
 C     are in range
@@ -1430,6 +1430,33 @@ C     are in range
      +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)),
      +       LENGTH (7), %VAL(POINTER(7)), LENGTH (8), %VAL(POINTER(8)),
      +       LENGTH (9), %VAL(POINTER(9)))
+      ELSE IF (N.EQ.10) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)),
+     +       LENGTH (7), %VAL(POINTER(7)), LENGTH (8), %VAL(POINTER(8)),
+     +       LENGTH (9), %VAL(POINTER(9)),
+     +       LENGTH (10), %VAL(POINTER(10)))
+      ELSE IF (N.EQ.11) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)),
+     +       LENGTH (7), %VAL(POINTER(7)), LENGTH (8), %VAL(POINTER(8)),
+     +       LENGTH (9), %VAL(POINTER(9)),
+     +       LENGTH (10), %VAL(POINTER(10)),
+     +       LENGTH (11), %VAL(POINTER(11)))
+      ELSE IF (N.EQ.12) THEN
+        CALL ROUTNE (
+     +       LENGTH (1), %VAL(POINTER(1)), LENGTH (2), %VAL(POINTER(2)),
+     +       LENGTH (3), %VAL(POINTER(3)), LENGTH (4), %VAL(POINTER(4)),
+     +       LENGTH (5), %VAL(POINTER(5)), LENGTH (6), %VAL(POINTER(6)),
+     +       LENGTH (7), %VAL(POINTER(7)), LENGTH (8), %VAL(POINTER(8)),
+     +       LENGTH (9), %VAL(POINTER(9)),
+     +       LENGTH (10), %VAL(POINTER(10)),
+     +       LENGTH (11), %VAL(POINTER(11)),
+     +       LENGTH (12), %VAL(POINTER(12)))
       ENDIF
       DO I=1,N
         ISTAT = LIB$FREE_VM (SIZES(TYPE (I))*LENGTH(I), POINTER(I))
