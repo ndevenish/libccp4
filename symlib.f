@@ -972,6 +972,7 @@ C     ..
 C     .. Local Scalars ..
       REAL TEST
       INTEGER I,J
+      CHARACTER LINERR*200
 C     ..
 C     .. External Subroutines ..
       EXTERNAL SYSAB,LERROR
