@@ -2695,7 +2695,7 @@ c_END_CCP4MAPHEAD
 c
       implicit none
 c
-      character name*8
+      character name*(*)
       integer iunit,nspgrp,nu,nv,nw,nu1,nv1,nw1,nu2,nv2,nw2
       real cell(6)
 c
