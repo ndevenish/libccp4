@@ -4805,8 +4805,8 @@ C
       CALL CCPDAT (DATE)
       CALL UTIME (TIME)
 C     Use a largeish buffer and truncate it later if necessary
-      WRITE (BUFFER, 10, ERR=20) PROG(:LENSTR(PROG)), DATE, TIME,
-     +     EXTRA(:LENSTR(EXTRA))
+      WRITE (BUFFER, 10, ERR=20) PROG(:MAX(LENSTR(PROG),1)), DATE, TIME,
+     +     EXTRA(:MAX(LENSTR(EXTRA),1))
       HIST (1) = BUFFER
  10   FORMAT ('From ',A,', ',A,' ',A,' ',A)
       CALL LWHIST (MINDX, HIST, 1)
