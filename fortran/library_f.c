@@ -1114,4 +1114,12 @@ float __stdcall ERFC(float *value)
   return (float) ccp4_erfc( (double) *value);
 }
 #endif
+
+/* erfc isn't available for Intel compiler ? */
+#ifdef IFC
+float erfc_(float *value)
+{
+  return (float) ccp4_erfc( (double) *value);
+}
+#endif
  
