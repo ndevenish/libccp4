@@ -934,7 +934,6 @@ C     .. Scalar Arguments ..
 C     ..
 C     .. Local Scalars ..
       INTEGER chmodRet,Jdo,mkdirPT
-      LOGICAL Lexists
       CHARACTER ciftime*50,Buffer*256,EnvWork*256,
      +          FileName*256,mkdirMode*3,chmodMode*3
 C     ..
@@ -1036,24 +1035,19 @@ C
           FileName = Buffer(1:Lenstr(Buffer))//'/DepositFiles'
         END IF
 C
-C
-        INQUIRE (FILE=FileName,EXIST=Lexists)
-C
-C
-        IF ( .not. Lexists) THEN
-          CALL cmkdir(FileName(1:Lenstr(FileName)),mkdirMode,mkdirPT)
-          IF (mkdirPT .ne. 0) THEN
+        CALL cmkdir(FileName(1:Lenstr(FileName)),mkdirMode,mkdirPT)
+        IF (mkdirPT .lt. 0) THEN
             WRITE (6,FMT=6006)
  6006       FORMAT (
      +' Harvest: Cant mkdir HARVESTHOME/DepositFiles - ',
      +           'no deposit file created')
             Harvest = .false.
             RETURN
-          END IF
+        END IF
 C
 C--- world read for directory?
 C
-          IF (.NOT. Private) THEN
+        IF (.NOT. Private) THEN
             CALL cchmod(FileName(1:Lenstr(FileName)),chmodMode,chmodRet)
             IF (chmodRet .ne. 0) THEN
               WRITE (6,FMT=6008)
@@ -1063,7 +1057,6 @@ C
               Harvest = .false.
               RETURN
             END IF
-          END IF
         END IF
 C
 C---- now look for ProjectName sub-directory
@@ -1076,25 +1069,19 @@ C
      +               ProjectName(1:Lenstr(ProjectName))
         END IF
 C
-C---- may test   [a]b.dir   as a file for inquire
-C
-        INQUIRE (FILE=FileName(1:Lenstr(FileName)),EXIST=Lexists)
-C
-C
-        IF ( .not. Lexists) THEN
-          CALL cmkdir(FileName(1:Lenstr(FileName)),mkdirMode,mkdirPT)
-          IF (mkdirPT .ne. 0) THEN
+        CALL cmkdir(FileName(1:Lenstr(FileName)),mkdirMode,mkdirPT)
+        IF (mkdirPT .lt. 0) THEN
             WRITE (6,FMT=6010) ProjectName(1:Lenstr(ProjectName))
  6010       FORMAT (
      +' Harvest: Cant mkdir HARVESTHOME/DepositFiles/',a,
      +           ' - no deposit file created')
             Harvest = .false.
             RETURN
-          END IF
+        END IF
 C
 C--- world read for directory?
 C
-          IF (.NOT. Private) THEN
+        IF (.NOT. Private) THEN
             CALL cchmod(FileName(1:Lenstr(FileName)),chmodMode,chmodRet)
             IF (chmodRet .ne. 0) THEN
               WRITE (6,FMT=6012) FileName(1:Lenstr(FileName))
@@ -1104,7 +1091,6 @@ C
               Harvest = .false.
               RETURN
             END IF
-          END IF
         END IF
 C
 C---- now create FileName for deposit information
