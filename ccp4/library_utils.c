@@ -456,7 +456,7 @@ char *ccp4_utils_basename(char *filename)
   length = strlen(filename) - indx1;
   /* Search for extension separators must be performed backwards
      in case filename has multiple extension separators */
-  for ( i = strlen(filename)-1; i >=indx1; i-- ) {
+  for ( i = strlen(filename)-1; i >= (indx1 < 0 ? 0 : indx1) ; i-- ) {
     if (filename[i] == EXT_SEPARATOR) {
       length = i - indx1; 
       break;
