@@ -31,6 +31,8 @@ char *ccp4_prog_vers(char *progvers)
     }
     if (i == MAXLEN_PROGVERSION) {
       programversion[MAXLEN_PROGVERSION-1] = '\0';
+    } else {
+      programversion[i] = '\0';
     }
   }
   return programversion;
@@ -62,6 +64,8 @@ char *ccp4ProgramName(char *progname)
     }
     if (i == MAXLEN_PROGNAME) {
       programname[MAXLEN_PROGNAME-1] = '\0';
+    } else {
+      programname[i] = '\0';
     }
   }
   return programname;
