@@ -3006,8 +3006,8 @@ C
 C---- Format Statements
 C
  100  FORMAT('CRYST1',3F9.3,3F7.2,1x,a11)
- 200  FORMAT( 2('SCALE',I1,4X,3F10.5,5X,'   0.00000',/),
-     $          'SCALE',I1,4X,3F10.5,5X,'   0.00000')
+ 200  FORMAT( 2('SCALE',I1,4X,3F10.6,5X,'   0.00000',/),
+     $          'SCALE',I1,4X,3F10.6,5X,'   0.00000')
       END
 C
 C
