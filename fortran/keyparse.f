@@ -46,10 +46,12 @@ C     ECHO is set to echo the parser i/p.
       implicit none
 C     Args
       character*(*) key, subkey, spgnam, pgname, rest
+      character*30 prglab(*)
       logical echo, flag, cont
-      integer ival, nsym, numsgp, nsymp, n, ivals (n), nth
+      integer ival, nsym, numsgp, nsymp, n, ivals (n), nth, mtznum,
+     +  nprglab
       real rval, cell (6), rsym (4,4,*), resmin, resmax, smin, smax,
-     +     rvals(n)
+     +  rvals(n)
 
 C     Stores for parser stuff
       integer maxtoks, maxline
@@ -173,90 +175,102 @@ C     KEY + upto N reals -- N reset to number found, returned in RVALS
       end if
       return
       
-      entry parsenthint (key, nth, ival)
-C     KEY + n'th integer after keyword -- returned in IVAL
-      if (memokey.eq.key) then
-C       matched key
-        if (ntok.ge.nth+1 .and. ityp (nth+1).eq.2
-     +       .and. idec (nth+1).eq. (iend(nth+1)-ibeg(nth+1)+1)) then
-          ival = nint (fvalue(nth+1))
-          success = .true.
-        else 
-          argerr = .true.
-          call lerror (1, 0, 'Integer argument expected')
-        end if
-      end if
-      return
-      
-      entry parsenthreal (key, nth, rval)
-C     KEY + n'th real after keyword -- returned in RVAL
-      if (memokey.eq.key) then
-C       matched key
-        if (ntok.ge.nth+1 .and. ityp (nth+1).eq.2) then
-          rval = fvalue(nth+1)
-          success = .true.
-        else 
-          argerr = .true.
-          call lerror (1, 0, 'Real argument expected')
-        end if
-      end if
-      return
-      
       entry parsesubkey (key, subkey, flag)
 C     KEY + subkeyword SUB -- set FLAG if found
-C     as always subkey must be <= 4 chars
       if (memokey.eq.key) then
 C       matched key
        success = .true.
-       do k=2,ntok
-        memosubkey=cvalue(k)
-        call ccpupc(memosubkey)
-        if (memosubkey.eq.subkey) flag=.true.
-       enddo
+       if (subkey.ne.' ') then
+        do k=2,ntok
+         memosubkey=cvalue(k)
+         call ccpupc(memosubkey)
+         if (memosubkey.eq.subkey) flag=.true.
+        enddo
+       else
+        flag=.true.
+       end if
       end if
       return
       
-      entry parsesubnthint (key, subkey, nth, ival)
+      entry parsesubint (key, subkey, nth, flag, ival)
+C     KEY + n'th integer after subkey -- returned in IVAL
+C     ERROR only if flag=true
+      if (memokey.eq.key) then
+C  ... matched key
+       k=1
+       if (subkey.ne.' ') then
+        k=9999
+        do i=2,ntok
+         memosubkey=cvalue(i)
+         call ccpupc(memosubkey)
+         if (memosubkey.eq.subkey) k=i
+        end do
+       endif
+       if (k.le.ntok) then
+C  .... matched subkey (if set)
+        if (ntok.ge.nth+k .and. ityp(nth+k).eq.2
+     +    .and. idec(nth+k) .eq. (iend(nth+k)-ibeg(nth+k)+1)) then
+         ival = nint (fvalue(nth+k))
+         success = .true.
+        else if (flag) then
+         argerr = .true.
+         call lerror (1, 0, 'Integer sub-argument expected')
+        endif
+       endif
+      endif
+      return
+      
+      entry parsesubreal (key, subkey, nth, flag, rval)
+C     KEY + n'th integer after subkey -- returned in IVAL
+C     ERROR only if flag=true
+      if (memokey.eq.key) then
+C  ... matched key
+       k=1
+       if (subkey.ne.' ') then
+        k=9999
+        do i=2,ntok
+         memosubkey=cvalue(i)
+         call ccpupc(memosubkey)
+         if (memosubkey.eq.subkey) k=i
+        end do
+       endif
+       if (k.le.ntok) then
+C  .... matched subkey (if set)
+        if (ntok.ge.nth+k .and. ityp(nth+k).eq.2) then
+         rval = fvalue(nth+k)
+         success = .true.
+        else if (flag) then
+         argerr = .true.
+         call lerror (1, 0, 'Real sub-argument expected')
+        endif
+       endif
+      endif
+      return
+      
+      entry parsesubchar (key, subkey, nth, flag, rest)
 C     KEY + n'th integer after subkey -- returned in IVAL
       if (memokey.eq.key) then
-C       matched key
-       do k=2,ntok
-        memosubkey=cvalue(k)
-        call ccpupc(memosubkey)
-        if (memosubkey.eq.subkey) then
-C         matched subkey
-         if (ntok.ge.nth+k .and. ityp(nth+k).eq.2
-     +     .and. idec(nth+k) .eq. (iend(nth+k)-ibeg(nth+k)+1)) then
-          ival = nint (fvalue(nth+k))
-          success = .true.
-         else
-          argerr = .true.
-          call lerror (1, 0, 'Integer sub-argument expected')
-         endif
+C  ... matched key
+       k=1
+       if (subkey.ne.' ') then
+        k=9999
+        do i=2,ntok
+         memosubkey=cvalue(i)
+         call ccpupc(memosubkey)
+         if (memosubkey.eq.subkey) k=i
+        end do
+       endif
+       if (k.le.ntok) then
+C  .... matched subkey (if set)
+        if (ntok.ge.nth+k .and. (ityp(nth+k).eq.1 .or. .not.flag) ) then
+         rest = line(ibeg(nth+k):iend(nth+k))
+         success = .true.
+        else if (flag.eq..true.) then
+         argerr = .true.
+         call lerror (1, 0, 'Character sub-argument expected')
         endif
-       enddo
-      end if
-      return
-      
-      entry parsesubnthreal (key, subkey, nth, rval)
-C     KEY + n'th real after subkey -- returned in RVAL
-      if (memokey.eq.key) then
-C       matched key
-       do k=2,ntok
-        memosubkey=cvalue(k)
-        call ccpupc(memosubkey)
-        if (memosubkey.eq.subkey) then
-C         matched subkey
-         if (ntok.ge.nth+k .and. ityp(nth+k).eq.2) then
-          rval = fvalue(nth+k)
-          success = .true.
-         else 
-          argerr = .true.
-          call lerror (1, 0, 'Real sub-argument expected')
-         endif
-        endif
-       enddo
-      end if
+       endif
+      endif
       return
       
       entry parsecell (cell)
@@ -283,6 +297,16 @@ C     RESOlution -- usual values returned
         call rdreso (2, ityp, fvalue, ntok, resmin, resmax, smin, smax)
         success = .true.
       end if
+      return
+      
+      entry parselabin(mtznum,prglab,nprglab)
+C     LABIn -- requires mtz file number, program labels, and number of.
+      call lkyin(mtznum,prglab,nprglab,ntok,line,ibeg,iend)
+      return
+      
+      entry parselabout(mtznum,prglab,nprglab)
+C     LABOut -- requires mtz file number, program labels, and number of.
+      call lkyout(mtznum,prglab,nprglab,ntok,line,ibeg,iend)
       return
       
       entry parsediagnose (cont)
