@@ -525,7 +525,7 @@ C
       CHARACTER*40 ORTH(5)
       CHARACTER*4 ATNAM,RESNAM,ITYPE(5),IRTYPE
       CHARACTER*(*) RESNO
-      CHARACTER*2 IATM(100),IEC(3),IE,IAA,IAT,IHATM(10)
+      CHARACTER*2 IATM(101),IEC(3),IE,IAA,IAT,IHATM(10)
       CHARACTER*1 ISP,CHNNAM
       DIMENSION P(4,4),celchk(6)
       COMMON /RBRKXX/IFCRYS,IFSCAL,IFEND,ITYP,MATRIX
@@ -545,6 +545,7 @@ C
      *          'LU','HF','TA',' W','RE','OS','IR','PT','AU','HG',
      *          'TL','PB','BI','PO','AT','RN','FR','RA','AC','TH',
      *          'PA',' U','NP','PU','AM','CM','BK','CF','ES','FM'/
+     *          ' D'/
       DATA IHATM/'0H','1H','2H','3H','4H','5H','6H','7H','8H','9H'/
       DATA ITYPE/'CRYS','SCAL','TER ','ATOM','HETA'/
       DATA IEC/'E1','E2','E3'/
@@ -724,7 +725,7 @@ C
           IF(IAT.EQ.IHATM(J))GO TO 480
 454     CONTINUE
 C
-        DO 456 I=1,100
+        DO 456 I=1,101
           IF(IAT.EQ.IATM(I))GO TO 480
 456     CONTINUE
 C
