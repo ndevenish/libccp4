@@ -375,7 +375,7 @@ C
       CALL USTIME(START)
       INITED = .TRUE.
 C     Machine-dependent startup, e.g. set FPE on SunOS
-ifelse (_sun,1,[
+ifelse(_sun,1,[
 C     common FPEs get sigfpe_abort
       i=ieee_handler('set','common',%val(2))
       ])
