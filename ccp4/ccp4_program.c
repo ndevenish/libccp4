@@ -43,10 +43,13 @@ char *ccp4_prog_vers(char *progvers)
    Always returns a pointer to the program name
    If progname is not NULL then set the program name to
    progname.
+
+   NB Default program name will be returned as "CCP4",
+   until reset by the calling subprogram.
 */
 char *ccp4ProgramName(char *progname)
 {
-  static char programname[MAXLEN_PROGNAME]="";
+  static char programname[MAXLEN_PROGNAME]="CCP4";
   int         i;
 
   if (progname) {
