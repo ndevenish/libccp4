@@ -1961,6 +1961,7 @@ C
       IF (ICOMST.EQ.0) GO TO 70
 C
       IF (IFOUND.EQ.0 .AND. I.LE.IMAX) THEN
+        IERR = 1
         WRITE (6,FMT=6000)
         WRITE (6,FMT=6006) ICOL
       END IF
@@ -1977,6 +1978,7 @@ C
       END IF
   110 WRITE (6,FMT=6000)
       WRITE (6,FMT=6004) ICOL
+      IERR = 1
       GO TO 140
   120 IF (NOP.NE.1 .OR. IFOUND.NE.0) THEN
         IF (NOP.EQ.3 .AND. IFOUND.EQ.1) THEN
@@ -3638,11 +3640,9 @@ C     ..
 C     ..
 C     
       NLAUE = 0
-      LAUNAM = ' '
-      LOCNAM = ' '
       LOCNAM = NAMPG
 C     Strip off 'PG' if present
-      IF (LOCNAM(1:2) .EQ. 'PG') LOCNAM = LOCNAM(3:)
+      IF (NAMPG(1:2) .EQ. 'PG') LOCNAM = NAMPG(3:)
       LPG = LENSTR(LOCNAM)
 C     
 C     Rarest first
@@ -3710,6 +3710,7 @@ C
 C---- 4 pg2 pgm pg2/m - Laue   2/m
 C     
       ELSE IF (LOCNAM(1:LPG).EQ.'2'
+     +.OR.LOCNAM(1:LPG).EQ.'2A'
      +.OR.LOCNAM(1:LPG).EQ.'m'
      +.OR.LOCNAM(1:LPG).EQ.'2/m') THEN
         NLAUE = 4
