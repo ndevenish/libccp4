@@ -455,9 +455,6 @@ C     .. External Functions ..
       INTEGER LENSTR
       EXTERNAL LENSTR
 C     ..
-C     .. Intrinsic Functions ..
-      INTRINSIC LEN
-C     ..
       SAVE DELIM,NDELM,NSPDLM,DDELIM,NDDELM,NDSDLM
 C     .. Data statements ..
       DATA LETQT,DBLQT/'''','"'/,BLANK/' '/,ICOMM1,ICOMM2/'#','!'/
