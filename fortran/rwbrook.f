@@ -73,11 +73,6 @@ C features, relevant to the handling of the  coordinate  data  are  described
 C below. In general terms it may be noted that the format is basically a card
 C image format with fixed length 80 byte records.
 C                                                
-C [An EJD modification to standard Brookhaven is to check whether the
-C formfactor number is written as an integer in columns 67-70.
-C Keeping the formfactor as an integer saves an appreciable amount of
-C time when reading this clumsy file...]
-C
 C 2.   FORMAT OF THE 'ATOM/HETATM' CARDS
 C                                       
 C      The format of an 'ATOM' card or 'HETATM' card is as follows:
@@ -710,7 +705,13 @@ C
         IF(LEN(RESNO).GT.4)RESNO(5:5)=BROOK(27)
         CHNNAM=BROOK(22)
         IF(IFTER)GO TO 500
-        IF(I.GT.0)GO TO 480
+C       The commented-out test used to implement this, which caused
+C       confusion with footnotes...
+C [An EJD modification to standard Brookhaven is to check whether the
+C formfactor number is written as an integer in columns 67-70.
+C Keeping the formfactor as an integer saves an appreciable amount of
+C time when reading this clumsy file...]
+C        IF(I.GT.0)GO TO 480
         IAT=BROOK(13)//BROOK(14)
 C
         DO 452 I=6,8
