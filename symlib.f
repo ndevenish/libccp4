@@ -3184,7 +3184,7 @@ C
         CALL PUTLIN(STROUT,'CURWIN')
         WRITE (STROUT,FMT='(A,4X)')
      +       '  The point group for these symmetry operators is '
-        STROUT(LENSTR(STROUT)+1:) = NAMPG
+        STROUT(LENSTR(STROUT)+2:) = NAMPG
         CALL PUTLIN(STROUT,'CURWIN')
 C     
 C     
