@@ -109,6 +109,13 @@ void ccp4spg_register_by_ccp4_num(int numspg);
  */
 int ccp4_spg_get_centering(const char *symbol_Hall, float cent_ops[4][3]);
 
+/** Load Laue data into spacegroup structure.
+ * @param nlaue CCP4 code for Laue group
+ * @param spacegroup Pointer to CCP4 spacegroup structure
+ * @return 0 on success, 1 on failure to load Laue data
+ */
+int ccp4spg_load_laue(CCP4SPG* spacegroup, const int nlaue);
+
 /** Test if reflection is in asu of Laue group 1bar.
  * @return 1 if in asu else 0
  */
