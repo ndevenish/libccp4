@@ -35,6 +35,26 @@ static int _item_sizes[] = {
   (int) sizeof (int)            /* 6: integers */
 };
 
+static int (*_read_mode[])(CCP4File *, uint8 *, size_t) = {
+  ccp4_file_readchar,
+  ccp4_file_readshort,
+  ccp4_file_readfloat,
+  ccp4_file_readshortcomp,
+  ccp4_file_readcomp,
+  NULL,
+  ccp4_file_readint
+};
+
+static int (*_write_mode[])(CCP4File *, const uint8 *, size_t) = {
+  ccp4_file_writechar,
+  ccp4_file_writeshort,
+  ccp4_file_writefloat,
+  ccp4_file_writeshortcomp,
+  ccp4_file_writecomp,
+  NULL,
+  ccp4_file_writeint    
+};
+
 /**
  * vaxF2ieeeF:
  * @param buffer (float_uint_uchar *) vax order float array
@@ -433,7 +453,8 @@ static CCP4File *_file_init()
     cfile->fconvert = nativeFT;
     cfile->iconvert = nativeIT;
   }
-  
+  cfile->_read=_read_mode[DEFMODE];
+  cfile->_write=_write_mode[DEFMODE]; 
   return (cfile);
 }
 
@@ -617,6 +638,8 @@ int ccp4_file_setmode (CCP4File *cfile, const int mode)
   if (mode >= 0 && mode <= 6 && mode != 5) {
     cfile->mode = mode;
     cfile->itemsize = _item_sizes[mode];
+    cfile->_read=_read_mode[mode];
+    cfile->_write=_write_mode[mode];
   } else {
     ccp4_signal(CCP4_ERRLEVEL(3)| CCP4_ERRNO(CIO_BadMode),
 		"ccp4_file_mode", NULL);
@@ -1077,61 +1100,8 @@ int ccp4_file_warch (CCP4File *cfile)
 int ccp4_file_read (CCP4File *cfile, uint8 *buffer, size_t nitems)
 {
   int result;
-  
-  if (!cfile)  {
-    ccp4_signal(CCP4_ERRLEVEL(3)| CCP4_ERRNO(CIO_NullPtr),
-		"ccp4_file_read", NULL);
-    return EOF; }
-  
-  if ( !cfile->read || cfile->iostat) {
-    ccp4_signal(CCP4_ERRLEVEL(3)| CCP4_ERRNO(CIO_BadMode),
-		"ccp4_file_read", NULL);
-    return EOF; }
-
-/*
-     man fopen()
  
-     BUGS:
-     When operating on a file opened for update on which the last operation
-     was output, an input operation may be performed if there is an
-     intervening call to a file positioning function.  An input operation
-     should also be possible under these circumstances if an intervening call
-     is made to fflush.  If this sequence of operations (i.e., output, fflush,
-     input) is performed, however, the input operation fails with the
-     misleading error EBADF.
-
-     This is placed in type-specific read routines:
-
-  if (cfile->last_op == WRITE_OP)  
-    if (ccp4_file_raw_seek(cfile,0L,SEEK_CUR) == -1) {
-      ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_read", NULL);
-      return EOF; }
-  */
-  
-  switch (cfile->mode) {
-  case BYTE:
-    result = ccp4_file_readchar(cfile, (char *) buffer, nitems);
-    break;
-  case INT16:
-    result = ccp4_file_readshort(cfile, buffer, nitems);
-    break;
-  case INT32:
-    result = ccp4_file_readint(cfile, buffer, nitems);
-    break;
-  case FLOAT32:
-    result = ccp4_file_readfloat(cfile, buffer, nitems);
-    break;
-  case COMP32:
-    result = ccp4_file_readshortcomp(cfile, buffer, nitems);
-    break;
-  case COMP64:
-    result = ccp4_file_readcomp(cfile, buffer, nitems);
-    break;
-  default:
-    ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_BadMode), 
-	       "ccp4_file_read", NULL);
-   result = EOF; 
-  }
+  result = cfile->_read(cfile,(uint8 *) buffer,nitems);
   
   if (result != nitems) 
     ccp4_signal(CCP4_ERRLEVEL(3), 
@@ -1518,7 +1488,7 @@ int ccp4_file_readshort (CCP4File *cfile, uint8 *buffer, size_t nitems)
  *
  * Return: number of characters read on success, EOF on failure
  */
-int ccp4_file_readchar (CCP4File *cfile, char *buffer, size_t nitems)
+int ccp4_file_readchar (CCP4File *cfile, uint8 *buffer, size_t nitems)
 {
   size_t result;
 
@@ -1560,45 +1530,7 @@ int ccp4_file_write (CCP4File *cfile, const uint8 *buffer, size_t nitems)
 {
   size_t result;
 
-  if (!cfile) {
-    ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_NullPtr), 
-		"ccp4_file_write", NULL);
-    return EOF; }
-
-  if (!cfile->write || cfile->iostat) {
-    ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_BadMode), 
-		"ccp4_file_write", NULL);
-    return EOF; }
-
-  if (cfile->last_op == READ_OP) 
-    if (ccp4_file_raw_seek(cfile,0L,SEEK_CUR) == -1) {
-      ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_write", NULL);
-      return EOF; }   
-
-  switch (cfile->mode) {
-  case BYTE:
-    result = ccp4_file_writechar(cfile, (const char *) buffer, nitems);
-    break;
-  case INT16:
-    result = ccp4_file_writeshort(cfile, (const char *) buffer, nitems);
-    break;
-  case INT32:
-    result = ccp4_file_writeint(cfile, (const char *) buffer, nitems);
-    break;
-  case FLOAT32:
-    result = ccp4_file_writefloat(cfile, (const char *) buffer, nitems);
-    break;
-  case COMP32:
-    result = ccp4_file_writeshortcomp(cfile, (const char *) buffer, nitems);
-    break;
-  case COMP64:
-    result = ccp4_file_writecomp(cfile, (const char *) buffer, nitems);
-    break;
-  default:
-    ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_BadMode), 
-	       "ccp4_file_write", NULL);
-   result = EOF; 
-  }
+  result = cfile->_write(cfile, buffer, nitems);
 
   if ( result != nitems) 
     ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_write", NULL);
@@ -1617,7 +1549,7 @@ int ccp4_file_write (CCP4File *cfile, const uint8 *buffer, size_t nitems)
  *
  * Return: number of complex items written on success, EOF on failure
  */
-int ccp4_file_writecomp (CCP4File *cfile, const char *buffer, size_t nitems)
+int ccp4_file_writecomp (CCP4File *cfile, const uint8 *buffer, size_t nitems)
 {
   size_t result = 0, n;
 
@@ -1726,7 +1658,7 @@ int ccp4_file_writecomp (CCP4File *cfile, const char *buffer, size_t nitems)
  *
  * Return: number of complex items written on success, EOF on failure
  */
-int ccp4_file_writeshortcomp (CCP4File *cfile, const char *buffer, size_t nitems)
+int ccp4_file_writeshortcomp (CCP4File *cfile, const uint8 *buffer, size_t nitems)
 {
   size_t result = 0, n;
 
@@ -1785,7 +1717,7 @@ int ccp4_file_writeshortcomp (CCP4File *cfile, const char *buffer, size_t nitems
  *
  * Returns number of floats written on success, EOF on failure
  */
-int ccp4_file_writefloat (CCP4File *cfile, const char *buffer, size_t nitems)
+int ccp4_file_writefloat (CCP4File *cfile, const uint8 *buffer, size_t nitems)
 {
   size_t result = 0, n;
 
@@ -1884,7 +1816,7 @@ int ccp4_file_writefloat (CCP4File *cfile, const char *buffer, size_t nitems)
  *
  * Return: number of int written on success, EOF on failure
  */
-int ccp4_file_writeint (CCP4File *cfile, const char *buffer, size_t nitems)
+int ccp4_file_writeint (CCP4File *cfile, const uint8 *buffer, size_t nitems)
 {
   size_t result = 0, n;
 
@@ -1943,7 +1875,7 @@ int ccp4_file_writeint (CCP4File *cfile, const char *buffer, size_t nitems)
  *
  * Return: number of short written on success, EOF on failure
  */
-int ccp4_file_writeshort (CCP4File *cfile, const char *buffer, size_t nitems)
+int ccp4_file_writeshort (CCP4File *cfile, const uint8 *buffer, size_t nitems)
 {
   size_t result = 0, n;
 
@@ -2000,7 +1932,7 @@ int ccp4_file_writeshort (CCP4File *cfile, const char *buffer, size_t nitems)
  *
  * Return: number of bytes written on success, EOF on failure
  */
-int ccp4_file_writechar (CCP4File *cfile, const char *buffer, size_t nitems)
+int ccp4_file_writechar (CCP4File *cfile, const uint8 *buffer, size_t nitems)
 {
   size_t result;
 

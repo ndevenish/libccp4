@@ -35,6 +35,8 @@ struct _CFileStruct {
   off_t length;
   off_t loc;
   size_t stamp_loc;
+  int (*_read) (CCP4File *, uint8 *, size_t);
+  int (*_write) (CCP4File *, const uint8 *, size_t);
   char buff[8];
   void *priv;
 };
@@ -90,21 +92,21 @@ int ccp4_file_readint ( CCP4File*, uint8 *, size_t);
 
 int ccp4_file_readshort ( CCP4File*, uint8 *, size_t);
 
-int ccp4_file_readchar ( CCP4File*, char *, size_t);
+int ccp4_file_readchar ( CCP4File*, uint8 *, size_t);
 
 int ccp4_file_write ( CCP4File*, const uint8 *, size_t);
 
-int ccp4_file_writecomp ( CCP4File*, const char *, size_t);
+int ccp4_file_writecomp ( CCP4File*, const uint8 *, size_t);
 
-int ccp4_file_writeshortcomp ( CCP4File*, const char *, size_t);
+int ccp4_file_writeshortcomp ( CCP4File*, const uint8 *, size_t);
 
-int ccp4_file_writefloat ( CCP4File*, const char *, size_t);
+int ccp4_file_writefloat ( CCP4File*, const uint8 *, size_t);
 
-int ccp4_file_writeint ( CCP4File*, const char *, size_t);
+int ccp4_file_writeint ( CCP4File*, const uint8 *, size_t);
 
-int ccp4_file_writeshort ( CCP4File*, const char *, size_t);
+int ccp4_file_writeshort ( CCP4File*, const uint8 *, size_t);
 
-int ccp4_file_writechar ( CCP4File*, const char *, size_t);
+int ccp4_file_writechar ( CCP4File*, const uint8 *, size_t);
 
 int ccp4_file_seek ( CCP4File*, long, int);
 
