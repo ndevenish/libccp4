@@ -152,8 +152,8 @@ C     .. Scalar Arguments ..
       CHARACTER LOGNAM* (*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER LLREC,IUN,IBYTES,ISTAT
-      CHARACTER CCNTRL*7,ST*7,FRM*12,ERRSTR*131,
+      INTEGER LLREC,IUN,IBYTES,ISTAT,L
+      CHARACTER CCNTRL*7,ST*7,FRM*12,ERRSTR*500,
      +     NAMFIL*255,HANDLE*5,OPNVAR*20, access*10
       INTEGER UNKNWN, SCRTCH, OLD, NEW, RDONLY, PRINTR
       PARAMETER (UNKNWN=1, SCRTCH=2, OLD=3, NEW=4, RDONLY=5, PRINTR=6)
@@ -332,12 +332,13 @@ C         soft failure
         WRITE (ERRSTR,FMT=6000) FRM,ST,IUN
         CALL QPRINT (1, ' ')
         CALL QPRINT (1, ERRSTR)
-        WRITE (ERRSTR,FMT=6001) LOGNAM(1:LENSTR(LOGNAM)),
-     +       NAMFIL(1:LENSTR(NAMFIL))
+        ERRSTR = 'Logical name: '
+        ERRSTR (15:) = LOGNAM
+        L = MIN(LENSTR (ERRSTR) + 1, LEN (ERRSTR))
+        ERRSTR (L:) = ', Full name: ' // NAMFIL
         CALL QPRINT (1, ERRSTR)
         CALL QPRINT (1, ' ')
  6000 FORMAT (A,3X,A,' file opened on unit ',I3)
- 6001 FORMAT ('Logical name: ',A,', Full name: ',A)
       ENDIF 
       END
 C
