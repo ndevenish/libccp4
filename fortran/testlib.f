@@ -65,7 +65,8 @@ C
 C---- UGTENV
 C
       CALL UGTENV('TESTENV',ENVNAM)
-      WRITE (LUNOUT,FMT=6002) ' UGTENV',ENVNAM,'Get value of TESTENV'
+      WRITE (LUNOUT,FMT=6002) ' UGTENV',ENVNAM(1:12),
+     .                                    'Get value of TESTENV'
 C
 C---- UGTUID
 C
