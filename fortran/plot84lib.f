@@ -12244,7 +12244,8 @@ C     .. Scalar Arguments ..
       CHARACTER NAME* (*)
 C     ..
 C     .. Array Arguments ..
-      CHARACTER*1 LINE(*)
+c      CHARACTER LINE(*)
+      INTEGER LINE(*)
 C     ..
 C     .. Scalars in Common ..
       INTEGER INIT,IUNIT,LUNIN,LUNOUT
@@ -12264,7 +12265,7 @@ C     .. External Functions ..
       EXTERNAL CCPONL
 C     ..
 C     .. External Subroutines ..
-      EXTERNAL QCLOSE,QOPEN,QWRITI,QMODE
+      EXTERNAL QCLOSE,QOPEN,QWRITI, QMODE
 C     ..
 C     .. Common blocks ..
       COMMON /PINOUT/LUNIN,LUNOUT
@@ -12372,7 +12373,7 @@ C
       NBYTES (1) = LENGTH + 3
       NL = 1
       CALL QWRITI(IUNIT,NBYTES,1)
-      CALL QWRITE(IUNIT,LINE,LENGTH)
+      CALL QWRITI(IUNIT,LINE,LENGTH)
       CALL QWRITC(IUNIT,LINEFEED)
       PC(4:4) = CHAR(0)
       RETURN
@@ -12384,7 +12385,7 @@ C
       NL = 1
       CALL QWRITI(IUNIT,NBYTES,1)
       IF (IOFF.GT.0) CALL QWRITC(IUNIT,BLANK)
-      CALL QWRITE(IUNIT,LINE,LENGTH)
+      CALL QWRITI(IUNIT,LINE,LENGTH)
       CALL QWRITC(IUNIT,LINEFEED)
       PC(4:4) = CHAR(0)
       RETURN
