@@ -1093,7 +1093,7 @@ proterr()			/* protocol error exit */
 static void
 ioerr()
 {
-  perror("binsort -- I/O error, f. computer or system");
+  perror("binsort -- I/O error (check space available in $BINSORT_SCR)");
   my_exit(1);
 }
 
@@ -1112,10 +1112,14 @@ static void
 my_exit(status)
 int     status;
 {
-fclose(stdin);
-fclose(stdout);
-fclose(stderr);
-_exit(status);
+  /* The only way we have of communicating the error to the parent
+     when we're in the SRTRET phase without getting into
+     signal-handling is to return a number of bytes != lrecl; we
+     assume lrecl>1.  When we should be reading data, the parent
+     should gets a broken pipe signal and aborts.  Life's too short to
+     sanitise this... DL 14/9/94 */
+  if (status != 0) (void) fwrite ("1", 1, 1, stdout);
+  exit (status);
 }
 
 

@@ -317,12 +317,16 @@ char		*record;
 
     if ((ret = fread(record, sizeof(char), recl, filin)) == recl)
       return(0);
-    else if (feof(filin)) {
+    else if (feof(filin) && ret == 0) {	/* ensure record not truncated */
       fclose(filin);
       return(-1);
     }
     else {
-      perror("Sort routine SRTRET: ");
-      return(ferror(filin));
+      ret=ferror(filin);
+      if (ret != 0) {
+	perror("Sort routine SRTRET: ");
+	return (ret);
+      } else			/* e.g. premature EOF */
+	return (256);
     }
 }
