@@ -19,6 +19,10 @@ C       PRTRSM       INASU
 C
 C-------------------------------------  Changes  -----
 C
+C
+C  Modified LOOKUP/SETUP/ZEROIT --- increased prime number to 1009
+C   Now checks for overflow of hash table            26/7/93  PRE
+C
 C  Added PATSGP                  15/12/92  PRE
 C  MSYMLB ignores blank lines in SYMOP file
 C
@@ -2187,6 +2191,9 @@ C---- The function lookup returns the value nfind (which was input when
 C     setting up the function in the subroutine setup) for the large
 C     range variable nser
 C
+      INTEGER KPRI
+      PARAMETER (KPRI=1009)
+C
 C     .. Scalar Arguments ..
       INTEGER NSER
 C     ..
@@ -2194,17 +2201,14 @@ C     .. Arrays in Common ..
       INTEGER IT
 C     ..
 C     .. Local Scalars ..
-      INTEGER KPRI,NDX,NSER4
+      INTEGER NDX,NSER4
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC MOD
 C     ..
 C     .. Common blocks ..
-      COMMON /LOOK/IT(2,461)
+      COMMON /LOOK/IT(2,KPRI)
       SAVE /LOOK/
-C     ..
-C     .. Data statements ..
-      DATA KPRI/461/
 C     ..
 C
 C
@@ -2245,6 +2249,9 @@ C
 C
 C     IT(1, NDX) = NSER,  IT(2, NDX) = NFIND
 C
+      INTEGER KPRI
+      PARAMETER (KPRI=1009)
+C
 C     .. Scalar Arguments ..
       INTEGER NFIND,NSER
 C     ..
@@ -2252,23 +2259,27 @@ C     .. Arrays in Common ..
       INTEGER IT
 C     ..
 C     .. Local Scalars ..
-      INTEGER I,KPRI,NDX,NSER4
+      INTEGER I,NDX,NSER4
+      CHARACTER STROUT*140
 C     ..
 C     .. Intrinsic Functions ..
       INTRINSIC MOD
 C     ..
 C     .. Common blocks ..
-      COMMON /LOOK/IT(2,461)
+      COMMON /LOOK/IT(2,KPRI)
       SAVE /LOOK/
-C     ..
-C     .. Data statements ..
-      DATA KPRI/461/
 C     ..
 C
 C
       NSER4 = NSER
    10 CONTINUE
       NDX = MOD(NSER4,KPRI) + 1
+      IF (NDX .GT. KPRI) THEN
+         WRITE (STROUT, '(A,I8)')
+     $     ' **** Error in SETUP: overflowed hash table, size ', KPRI
+         CALL PUTLIN(STROUT,'CURWIN')
+         CALL CCPERR(1,'*** Filled hash table in SETUP ***')
+      ENDIF
       IF (IT(1,NDX).NE.0) THEN
         NSER4 = NSER4 + 3
         GO TO 10
@@ -2277,10 +2288,25 @@ C
       IT(1,NDX) = NSER
       IT(2,NDX) = NFIND
       RETURN
+      END
 C
-C     ==============
-      ENTRY ZEROIT()
-C     =============
+C     ===================
+      SUBROUTINE ZEROIT()
+C     ===================
+C
+      INTEGER KPRI
+      PARAMETER (KPRI=1009)
+C
+C     .. Arrays in Common ..
+      INTEGER IT
+C     ..
+C     .. Local Scalars ..
+      INTEGER I
+C     ..
+C     ..
+C     .. Common blocks ..
+      COMMON /LOOK/IT(2,KPRI)
+      SAVE /LOOK/
 C
       DO 20 I = 1,KPRI
         IT(1,I) = 0
