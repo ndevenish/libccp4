@@ -747,9 +747,17 @@ c
 c
       character ciftime*(*)
 c
-      integer gmt_hour,gmt_minutes,localdaymonth,
+ifelse(_efc,1,
+[      integer gmt_hour,gmt_minutes,localdaymonth,
+     +        localhours,localminutes,localmonth,localseconds,
+     +        localyear,nhours,nminutes,diff
+      integer(kind=8) :: stime
+      real(kind=8)    :: rtc
+],
+[      integer gmt_hour,gmt_minutes,localdaymonth,
      +        localhours,localminutes,localmonth,localseconds,
      +        localyear,nhours,nminutes,stime,diff
+])
 c
       character gmt_diff*1, timstr*8
 c
@@ -772,6 +780,9 @@ dnl * len is quoted since also m4 macro
 c
 ifelse(_ifc,1,
 [      stime = time(timstr)
+],
+_efc,1,
+[      stime = int(rtc(), kind=8)
 ],
 [
       stime = time()])
