@@ -200,7 +200,7 @@ FORTRAN_SUBR ( SYMTR4, symtr4,
     /* mat4_to_symop will pad with spaces, but ccp4_CtoFString needs 
      * null-terminated 
      */
-    temp_symch[79] = 0;
+    temp_symch[79] = '\0';
     ccp4_CtoFString(FTN_STR(symchs+i*FTN_LEN(symchs)),FTN_LEN(symchs),temp_symch);
   }
 }
