@@ -8,6 +8,9 @@ C
 C     CCB 23/4/01
 C     Hexagonal spacegroup symbols renamed H.. rather than R..
 C
+C     EJD 16/07/02
+C     New s/r SETLIM_ZERO uses asu limits from syminfo.lib (cctbx)
+C
       SUBROUTINE SYMLIB_OUTLINE
 
 C_BEGIN_SYMLIB
@@ -47,7 +50,7 @@ C    prtrsm       inasu
 C
 C  3b) Asymmetric units for choosing asymmetric units
 C    in real space consistent with FFT expectations; FFT grids etc.
-C    setlim       setgrd         setlim_arp
+C    setlim       setgrd         setlim_arp     setlim_zero
 C
 c  Internal routines:-
 C    fndsmp       factrz
@@ -580,6 +583,23 @@ C                  if spacegroup not recognized, returns xzylim(1,1) = -1.0
 C                  Note that the minimum limits (xyzlim(1,)) will always
 C                   = 0.0
 C
+C----  SUBROUTINE SETLIM_ZERO(LSPGRP,XYZLIM)
+C
+C Set appropriate box (asymmetric unit) for spacegroup (true spacegroup)
+C     LSPGRP. For high symmetry spacegroups, this will be more than
+C     one asymmetric unit.
+C
+C NB This s/r differs from SETLIM in that the limits are taken from cctbx
+C via CCP4's syminfo.lib file.
+C
+C On entry:
+C     lspgrp    true spacegroup (not FFT spacegroup)
+C
+C On exit
+C     xyzlim(2,3)  minimum, maximum limits on x,y,z (fractions of cell)
+C                  if spacegroup not recognized, returns xzylim(1,1) = -1.0
+C                  Note that the minimum limits (xyzlim(1,)) will always
+C                   = 0.0
 C
 C---- SUBROUTINE SETGRD(NLAUE,SAMPLE,NXMIN,NYMIN,NZMIN,NX,NY,NZ)
 C
@@ -6138,6 +6158,280 @@ C     2018: P21221    3004: I21       3005: C21         3018: P22121
      $ QUAR,ONEL,ONEL, ONEL,HALFL,ONEL, QUAR,ONEL,ONEL, ONEL,ONEL,QUAR/
 C
       DO 10 J=1,NUMSGP
+         IF (LSPGRP .EQ. NSPGRP(J)) GO TO 20
+ 10   CONTINUE
+C
+C Spacegroup not found
+      XYZLIM(1,1) = -1.0
+      RETURN
+C
+ 20   DO 30, I=1,3
+         XYZLIM(1,I) = 0.0
+         XYZLIM(2,I) = ASULIM(I,J)
+ 30   CONTINUE
+C
+      END
+C
+C
+C     =====================================
+      SUBROUTINE SETLIM_ZERO(LSPGRP,XYZLIM)
+C     =====================================
+C
+C Set appropriate box (asymmetric unit) for spacegroup (true spacegroup)
+C     LSPGRP. For high symmetry spacegroups, this will be more than
+C     one asymmetric unit.
+C
+C NB This s/r differs from SETLIM in that the limits are taken from cctbx
+C via CCP4's syminfo.lib file.
+C
+C On entry:
+C     lspgrp    true spacegroup (not FFT spacegroup)
+C
+C On exit
+C     xyzlim(2,3)  minimum, maximum limits on x,y,z (fractions of cell)
+C                  if spacegroup not recognized, returns xzylim(1,1) = -1.0
+C                  Note that the minimum limits (xyzlim(1,)) will always
+C                   = 0.0
+C
+C      IMPLICIT NONE
+C
+      INTEGER LSPGRP
+      REAL XYZLIM(2,3)
+C
+      INTEGER I,J
+C
+      INTEGER NUMSGP
+      PARAMETER (NUMSGP=300)
+      REAL ONE,HALF,THRD,TWTD,SIXT,QUAR,EIGH,TWLT,ROUND,ROUND2
+      REAL ONEL,HALFL,THRDL,SIXTL,QUARL
+      PARAMETER (ROUND=0.00001, ROUND2=2.0*ROUND)
+      PARAMETER (ONE=1.0+ROUND,HALF=0.5+ROUND,THRD=1./3.+ROUND,
+     $     TWTD=2./3.+ROUND,SIXT=1./6.+ROUND,
+     $     QUAR=0.25+ROUND,EIGH=0.125+ROUND,TWLT=1./12.+ROUND)
+      PARAMETER (ONEL=ONE-ROUND2,HALFL=HALF-ROUND2,THRDL=THRD-ROUND2,
+     $     SIXTL=SIXT-ROUND2,QUARL=QUAR-ROUND2)
+C
+      INTEGER NSPGRP(NUMSGP)
+      REAL ASULIM(3,NUMSGP)
+C
+C  asulim contains maximum limit on x,y,z: the box is always assumed to
+C     start at 0,0,0
+C
+C  Space group numbers
+      DATA (NSPGRP(JJ),JJ=1,265)/
+     $   1,   2,   3,1003,   4,1004,   5,1005,   6,1006,   7,1007,
+     $   8,   9,1009,  10,1010,  11,1011,  12,1012,  13,1013,  14,
+     $1014,  15,1015,  16,  17,1017,2017,  18,3018,2018,  19,  20,
+     $  21,  22,  23,  24,  25,  26,  27,  28,  29,  30,  31,  32,
+     $  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,
+     $  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,
+     $  57,  58,  59,1059,  60,  61,  62,  63,  64,  65,  66,  67,
+     $  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,
+     $  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  91,
+     $  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103,
+     $ 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115,
+     $ 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127,
+     $ 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139,
+     $ 140, 141, 142, 143, 144, 145, 146,1146, 147, 148,1148, 149,
+     $ 150, 151, 152, 153, 154, 155,1155, 156, 157, 158, 159, 160,
+     $1160, 161,1161, 162, 163, 164, 165, 166,1166, 167,1167, 168,
+     $ 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180,
+     $ 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192,
+     $ 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204,
+     $ 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216,
+     $ 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228,
+     $ 229, 230,3004,2005,3005,1008,1018,1020,1021,1022,1023,1094,
+     $1197/
+C
+      DATA ((ASULIM(II,JJ),II=1,3),JJ=1,60)/
+C   1:P 1             :   2:P -1            :   3:P 1 2 1         :
+     $ONEL ,ONEL ,ONEL ,  ONEL ,HALFL,ONEL ,  HALFL,ONEL ,ONEL ,
+C1003:P 1 1 2         :   4:P 1 21 1        :1004:P 1 1 21        :
+     $ONEL ,HALFL,ONEL ,  ONEL ,HALF ,ONEL ,  ONEL ,HALFL,ONEL ,
+C   5:C 1 2 1         :1005:B 1 1 2         :   6:P 1 m 1         :
+     $HALFL,HALF ,ONEL ,  HALF ,HALFL,ONEL ,  ONEL ,HALFL,ONEL ,
+C1006:P 1 1 m         :   7:P 1 c 1         :1007:P 1 1 b         :
+     $ONEL ,ONEL ,HALFL,  ONEL ,HALFL,ONEL ,  ONEL ,HALF ,ONEL ,
+C   8:C 1 m 1         :   9:C 1 c 1         :1009:B 1 1 b         :
+     $ONEL ,QUAR ,ONEL ,  ONEL ,QUAR ,ONEL ,  HALF ,HALF ,ONEL ,
+C  10:P 1 2/m 1       :1010:P 1 1 2/m       :  11:P 1 21/m 1      :
+     $HALFL,HALFL,ONEL ,  ONEL ,HALFL,HALFL,  ONEL ,QUAR ,ONEL ,
+C1011:P 1 1 21/m      :  12:C 1 2/m 1       :1012:B 1 1 2/m       :
+     $ONEL ,ONEL ,QUAR ,  HALFL,QUAR ,ONEL ,  HALF ,HALFL,HALFL,
+C  13:P 1 2/c 1       :1013:P 1 1 2/b       :  14:P 1 21/c 1      :
+     $HALFL,HALFL,ONEL ,  ONEL ,QUAR ,ONEL ,  ONEL ,QUAR ,ONEL ,
+C1014:P 1 1 21/b      :  15:C 1 2/c 1       :1015:B 1 1 2/b       :
+     $ONEL ,QUAR ,ONEL ,  HALFL,QUAR ,ONEL ,  HALF ,QUAR ,ONEL ,
+C  16:P 2 2 2         :  17:P 2 2 21        :1017:P 21 2 2        :
+     $HALFL,HALFL,ONEL ,  HALFL,HALFL,ONEL ,  HALFL,HALFL,ONEL ,
+C2017:P 2 21 2        :  18:P 21 21 2       :3018:P 2 21 21       :
+     $ONEL ,QUAR ,ONEL ,  ONEL ,QUAR ,ONEL ,  ONEL ,QUAR ,ONEL ,
+C2018:P 21 2 21       :  19:P 21 21 21      :  20:C 2 2 21        :
+     $HALFL,HALFL,ONEL ,  ONEL ,QUAR ,ONEL ,  HALFL,QUAR ,ONEL ,
+C  21:C 2 2 2         :  22:F 2 2 2         :  23:I 2 2 2         :
+     $HALFL,QUAR ,ONEL ,  QUAR ,QUAR ,ONEL ,  HALFL,QUAR ,ONEL ,
+C  24:I 21 21 21      :  25:P m m 2         :  26:P m c 21        :
+     $ONEL ,QUAR ,HALFL,  HALFL,HALFL,ONEL ,  HALFL,HALFL,ONEL ,
+C  27:P c c 2         :  28:P m a 2         :  29:P c a 21        :
+     $HALFL,HALFL,ONEL ,  QUAR ,ONEL ,ONEL ,  ONEL ,HALFL,HALF ,
+C  30:P n c 2         :  31:P m n 21        :  32:P b a 2         :
+     $ONEL ,QUAR ,ONEL ,  HALFL,HALFL,ONEL ,  ONEL ,QUAR ,ONEL ,
+C  33:P n a 21        :  34:P n n 2         :  35:C m m 2         :
+     $ONEL ,QUAR ,ONEL ,  ONEL ,QUAR ,ONEL ,  HALFL,QUAR ,ONEL ,
+C  36:C m c 21        :  37:C c c 2         :  38:A m m 2         :
+     $HALFL,QUAR ,ONEL ,  HALFL,QUAR ,ONEL ,  HALFL,QUAR ,ONEL ,
+C  39:A b m 2         :  40:A m a 2         :  41:A b a 2         :
+     $HALFL,QUAR ,ONEL ,  QUAR ,HALF ,ONEL ,  ONEL ,QUAR ,HALF ,
+C  42:F m m 2         :  43:F d d 2         :  44:I m m 2         :
+     $QUAR ,QUAR ,ONEL ,  HALF ,EIGH ,ONEL ,  HALFL,QUAR ,ONEL /
+
+      DATA ((ASULIM(II,JJ),II=1,3),JJ=61,120)/
+C  45:I b a 2         :  46:I m a 2         :  47:P 2/m 2/m 2/m   :
+     $HALFL,QUAR ,ONEL ,  QUAR ,ONEL ,HALF ,  HALFL,HALFL,HALFL,
+C  48:P 2/n 2/n 2/n   :  49:P 2/c 2/c 2/m   :  50:P 2/b 2/a 2/n   :
+     $HALFL,QUAR ,ONEL ,  HALFL,HALFL,HALFL,  HALFL,QUAR ,ONEL ,
+C  51:P 21/m 2/m 2/a  :  52:P 2/n 21/n 2/a  :  53:P 2/m 2/n 21/a  :
+     $QUAR ,HALFL,ONEL ,  HALF ,QUAR ,ONEL ,  QUAR ,HALFL,ONEL ,
+C  54:P 21/c 2/c 2/a  :  55:P 21/b 21/a 2/m :  56:P 21/c 21/c 2/n :
+     $QUAR ,HALFL,ONEL ,  ONEL ,QUAR ,HALFL,  ONEL ,QUAR ,HALF ,
+C  57:P 2/b 21/c 21/m :  58:P 21/n 21/n 2/m :  59:P 21/m 21/m 2/n :
+     $ONEL ,HALF ,QUAR ,  ONEL ,QUAR ,HALFL,  HALFL,QUAR ,ONEL ,
+C1059:P 21/m 21/m 2/n :  60:P 21/b 2/c 21/n :  61:P 21/b 21/c 21/a:
+     $ONEL ,QUAR ,ONEL ,  HALFL,QUAR ,ONEL ,  HALF ,QUAR ,ONEL ,
+C  62:P 21/n 21/m 21/a:  63:C 2/m 2/c 21/m  :  64:C 2/m 2/c 21/a  :
+     $HALF ,QUAR ,ONEL ,  HALFL,HALF ,QUAR ,  QUAR ,QUAR ,ONEL ,
+C  65:C 2/m 2/m 2/m   :  66:C 2/c 2/c 2/m   :  67:C 2/m 2/m 2/a   :
+     $HALFL,QUAR ,HALFL,  HALFL,QUAR ,HALFL,  QUAR ,QUAR ,ONEL ,
+C  68:C 2/c 2/c 2/a   :  69:F 2/m 2/m 2/m   :  70:F 2/d 2/d 2/d   :
+     $QUAR ,QUAR ,ONEL ,  QUAR ,QUAR ,HALFL,  QUAR ,EIGH ,ONEL ,
+C  71:I 2/m 2/m 2/m   :  72:I 2/b 2/a 2/m   :  73:I 21/b 21/c 21/a:
+     $HALFL,QUAR ,HALFL,  HALFL,QUAR ,HALFL,  QUAR ,QUAR ,ONEL ,
+C  74:I 21/m 21/m 21/a:  75:P 4             :  76:P 41            :
+     $QUAR ,QUAR ,ONEL ,  HALFL,HALFL,ONEL ,  HALFL,HALFL,ONEL ,
+C  77:P 42            :  78:P 43            :  79:I 4             :
+     $HALFL,HALFL,ONEL ,  HALFL,HALFL,ONEL ,  HALFL,QUAR ,ONEL ,
+C  80:I 41            :  81:P -4            :  82:I -4            :
+     $ONEL ,HALFL,QUARL,  HALFL,HALFL,ONEL ,  HALFL,QUAR ,ONEL ,
+C  83:P 4/m           :  84:P 42/m          :  85:P 4/n           :
+     $HALFL,HALFL,HALFL,  HALFL,HALFL,HALFL,  HALFL,QUAR ,ONEL ,
+C  86:P 42/n          :  87:I 4/m           :  88:I 41/a          :
+     $HALFL,QUAR ,ONEL ,  HALFL,QUAR ,HALFL,  QUAR ,QUAR ,ONEL ,
+C  89:P 4 2 2         :  90:P 4 21 2        :  91:P 41 2 2        :
+     $HALFL,HALFL,HALFL,  HALFL,HALFL,HALFL,  ONEL ,ONEL ,EIGH ,
+C  92:P 41 21 2       :  93:P 42 2 2        :  94:P 42 21 2       :
+     $HALFL,HALF ,HALFL,  ONEL ,HALFL,QUAR ,  ONEL ,QUAR ,HALFL,
+C  95:P 43 2 2        :  96:P 43 21 2       :  97:I 4 2 2         :
+     $ONEL ,ONEL ,EIGH ,  HALFL,HALF ,HALFL,  HALFL,HALFL,QUAR ,
+C  98:I 41 2 2        :  99:P 4 m m         : 100:P 4 b m         :
+     $ONEL ,QUAR ,QUAR ,  HALFL,HALFL,ONEL ,  ONEL ,QUAR ,ONEL ,
+C 101:P 42 c m        : 102:P 42 n m        : 103:P 4 c c         :
+     $HALFL,HALFL,ONEL ,  ONEL ,QUAR ,ONEL ,  HALFL,HALFL,HALF /
+
+      DATA ((ASULIM(II,JJ),II=1,3),JJ=121,180)/
+C 104:P 4 n c         : 105:P 42 m c        : 106:P 42 b c        :
+     $HALFL,HALFL,HALF ,  HALFL,HALFL,HALF ,  ONEL ,QUAR ,HALF ,
+C 107:I 4 m m         : 108:I 4 c m         : 109:I 41 m d        :
+     $HALFL,QUAR ,ONEL ,  HALFL,QUAR ,ONEL ,  QUAR ,QUAR ,ONEL ,
+C 110:I 41 c d        : 111:P -4 2 m        : 112:P -4 2 c        :
+     $QUAR ,QUAR ,ONEL ,  HALFL,HALFL,ONEL ,  HALFL,HALFL,HALF ,
+C 113:P -4 21 m       : 114:P -4 21 c       : 115:P -4 m 2        :
+     $ONEL ,QUAR ,ONEL ,  ONEL ,QUAR ,HALFL,  HALFL,HALFL,HALFL,
+C 116:P -4 c 2        : 117:P -4 b 2        : 118:P -4 n 2        :
+     $ONEL ,HALFL,QUAR ,  ONEL ,QUAR ,HALFL,  ONEL ,HALFL,QUAR ,
+C 119:I -4 m 2        : 120:I -4 c 2        : 121:I -4 2 m        :
+     $HALFL,HALFL,QUAR ,  ONEL ,QUAR ,QUAR ,  HALFL,QUAR ,ONEL ,
+C 122:I -4 2 d        : 123:P 4/m 2/m 2/m   : 124:P 4/m 2/c 2/c   :
+     $QUAR ,QUAR ,ONEL ,  HALFL,HALFL,HALFL,  HALFL,HALFL,QUAR ,
+C 125:P 4/n 2/b 2/m   : 126:P 4/n 2/n 2/c   : 127:P 4/m 21/b 2/m  :
+     $HALFL,QUAR ,ONEL ,  HALFL,QUAR ,HALFL,  ONEL ,QUAR ,HALFL,
+C 128:P 4/m 21/n 2/c  : 129:P 4/n 21/m 2/m  : 130:P 4/n 2/c 2/c   :
+     $HALFL,HALFL,QUAR ,  HALFL,QUAR ,ONEL ,  HALFL,HALFL,QUAR ,
+C 131:P 42/m 2/m 2/c  : 132:P 42/m 2/c 2/m  : 133:P 42/n 2/b 2/c  :
+     $HALFL,HALFL,QUAR ,  HALFL,HALFL,HALFL,  HALFL,QUAR ,HALFL,
+C 134:P 42/n 2/n 2/m  : 135:P 42/m 21/b 2/c : 136:P 42/m 21/n 2/m :
+     $HALFL,QUAR ,ONEL ,  ONEL ,QUAR ,QUAR ,  ONEL ,QUAR ,HALFL,
+C 137:P 42/n 21/m 2/c : 138:P 42/n 21/c 2/m : 139:I 4/m 2/m 2/m   :
+     $HALFL,QUAR ,HALFL,  HALFL,QUAR ,ONEL ,  HALFL,QUAR ,HALFL,
+C 140:I 4/m 2/c 2/m   : 141:I 41/a 2/m 2/d  : 142:I 41/a 2/c 2/d  :
+     $HALFL,QUAR ,HALFL,  QUAR ,QUAR ,HALFL,  ONEL ,QUAR ,EIGH ,
+C 143:P 3             : 144:P 31            : 145:P 32            :
+     $TWTD ,TWTD ,ONEL ,  ONEL ,ONEL ,THRDL,  ONEL ,ONEL ,THRDL,
+C 146:H 3             :1146:R 3             : 147:P -3            :
+     $THRD ,THRD ,ONEL ,  ONEL ,ONEL ,ONEL ,  TWTD ,THRD ,ONEL ,
+C 148:H -3            :1148:R -3            : 149:P 3 1 2         :
+     $THRD ,THRD ,HALFL,  HALFL,HALFL,ONEL ,  TWTD ,TWTD ,HALFL,
+C 150:P 3 2 1         : 151:P 31 1 2        : 152:P 31 2 1        :
+     $TWTD ,THRD ,ONEL ,  ONEL ,ONEL ,SIXT ,  HALFL,ONEL ,THRD ,
+C 153:P 32 1 2        : 154:P 32 2 1        : 155:H 3 2           :
+     $ONEL ,ONEL ,SIXT ,  ONEL ,HALFL,THRD ,  THRD ,THRD ,HALFL,
+C1155:R 3 2           : 156:P 3 m 1         : 157:P 3 1 m         :
+     $HALFL,HALFL,ONEL ,  TWTD ,TWTD ,ONEL ,  TWTD ,THRD ,ONEL ,
+C 158:P 3 c 1         : 159:P 3 1 c         : 160:H 3 m           :
+     $TWTD ,TWTD ,HALF ,  TWTD ,THRD ,ONEL ,  THRD ,THRDL,ONEL /
+
+      DATA ((ASULIM(II,JJ),II=1,3),JJ=181,240)/
+C1160:R 3 m           : 161:H 3 c           :1161:R 3 c           :
+     $ONEL ,ONEL ,ONEL ,  THRD ,THRDL,HALF ,  HALF ,HALF ,ONEL ,
+C 162:P -3 1 2/m      : 163:P -3 1 2/c      : 164:P -3 2/m 1      :
+     $TWTD ,THRD ,HALFL,  TWTD ,TWTD ,THRDL,  TWTD ,THRD ,ONEL ,
+C 165:P -3 2/c 1      : 166:H -3 2/m        :1166:R -3 2/m        :
+     $TWTD ,THRD ,HALF ,  THRD ,SIXT ,ONEL ,  HALFL,HALFL,ONEL ,
+C 167:H -3 2/c        :1167:R -3 2/c        : 168:P 6             :
+     $TWTD ,SIXT ,THRD ,  ONEL ,QUAR ,ONEL ,  TWTD ,THRD ,ONEL ,
+C 169:P 61            : 170:P 65            : 171:P 62            :
+     $ONEL ,ONEL ,SIXTL,  ONEL ,ONEL ,SIXTL,  ONEL ,HALFL,THRDL,
+C 172:P 64            : 173:P 63            : 174:P -6            :
+     $ONEL ,HALFL,THRDL,  TWTD ,THRD ,ONEL ,  TWTD ,TWTD ,HALFL,
+C 175:P 6/m           : 176:P 63/m          : 177:P 6 2 2         :
+     $TWTD ,THRD ,HALFL,  TWTD ,TWTD ,THRDL,  TWTD ,THRD ,HALFL,
+C 178:P 61 2 2        : 179:P 65 2 2        : 180:P 62 2 2        :
+     $ONEL ,ONEL ,SIXTL,  HALFL,ONEL ,THRDL,  ONEL ,HALFL,SIXT ,
+C 181:P 64 2 2        : 182:P 63 2 2        : 183:P 6 m m         :
+     $ONEL ,HALFL,SIXT ,  TWTD ,TWTD ,THRDL,  TWTD ,THRD ,ONEL ,
+C 184:P 6 c c         : 185:P 63 c m        : 186:P 63 m c        :
+     $TWTD ,THRD ,HALF ,  TWTD ,THRD ,HALF ,  TWTD ,THRD ,ONEL ,
+C 187:P -6 m 2        : 188:P -6 c 2        : 189:P -6 2 m        :
+     $TWTD ,TWTD ,HALFL,  TWTD ,TWTD ,THRDL,  TWTD ,THRD ,HALFL,
+C 190:P -6 2 c        : 191:P 6/m 2/m 2/m   : 192:P 6/m 2/c 2/c   :
+     $TWTD ,TWTD ,THRDL,  TWTD ,THRD ,HALFL,  TWTD ,THRD ,THRDL,
+C 193:P 63/m 2/c 2/m  : 194:P 63/m 2/m 2/c  : 195:P 2 3           :
+     $TWTD ,THRD ,THRDL,  TWTD ,TWTD ,THRDL,  HALFL,HALFL,ONEL ,
+C 196:F 2 3           : 197:I 2 3           : 198:P 21 3          :
+     $QUAR ,QUAR ,ONEL ,  QUAR ,QUAR ,ONEL ,  ONEL ,QUAR ,ONEL ,
+C 199:I 21 3          : 200:P 2/m -3        : 201:P 2/n -3        :
+     $ONEL ,QUAR ,HALF ,  HALFL,HALFL,HALFL,  QUAR ,QUAR ,ONEL ,
+C 202:F 2/m -3        : 203:F 2/d -3        : 204:I 2/m -3        :
+     $QUAR ,QUAR ,HALFL,  EIGH ,EIGH ,ONEL ,  QUAR ,QUAR ,HALFL,
+C 205:P 21/a -3       : 206:I 21/a -3       : 207:P 4 3 2         :
+     $HALF ,QUAR ,ONEL ,  QUAR ,QUAR ,HALF ,  HALFL,HALFL,HALFL,
+C 208:P 42 3 2        : 209:F 4 3 2         : 210:F 41 3 2        :
+     $QUAR ,QUAR ,ONEL ,  QUAR ,QUAR ,HALFL,  EIGH ,EIGH ,ONEL ,
+C 211:I 4 3 2         : 212:P 43 3 2        : 213:P 41 3 2        :
+     $QUAR ,QUAR ,HALFL,  ONEL ,EIGH ,ONEL ,  ONEL ,EIGH ,ONEL ,
+C 214:I 41 3 2        : 215:P -4 3 m        : 216:F -4 3 m        :
+     $ONEL ,EIGH ,HALF ,  HALFL,HALFL,ONEL ,  QUAR ,QUAR ,ONEL /
+
+      DATA ((ASULIM(II,JJ),II=1,3),JJ=241,265)/
+C 217:I -4 3 m        : 218:P -4 3 n        : 219:F -4 3 c        :
+     $QUAR ,QUAR ,ONEL ,  QUAR ,QUAR ,ONEL ,  QUAR ,QUAR ,HALF ,
+C 220:I -4 3 d        : 221:P 4/m -3 2/m    : 222:P 4/n -3 2/n    :
+     $QUAR ,QUAR ,HALFL,  HALFL,HALFL,HALFL,  QUAR ,QUAR ,HALFL,
+C 223:P 42/m -3 2/n   : 224:P 42/n -3 2/m   : 225:F 4/m -3 2/m    :
+     $QUAR ,QUAR ,HALFL,  QUAR ,QUAR ,ONEL ,  QUAR ,QUAR ,HALFL,
+C 226:F 4/m -3 2/c    : 227:F 41/d -3 2/m   : 228:F 41/d -3 2/c   :
+     $QUAR ,QUAR ,QUAR ,  EIGH ,EIGH ,ONEL ,  EIGH ,EIGH ,HALF ,
+C 229:I 4/m -3 2/m    : 230:I 41/a -3 2/d   :3004:I 1 21 1        :
+     $QUAR ,QUAR ,HALFL,  EIGH ,EIGH ,ONEL ,  QUAR ,ONEL ,ONEL ,
+C2005:A 2 1 1         :3005:C 1 21 1        :1008:B 1 1 m         :
+     $ONEL ,QUAR ,ONEL ,  ONEL ,HALF ,HALFL,  ONEL ,QUAR ,ONEL ,
+C1018:P 21 21 2a      :1020:C 2 2 21a       :1021:C 2 2 2a        :
+     $ONEL ,QUAR ,ONEL ,  QUAR ,HALFL,ONEL ,  ONEL ,QUAR ,HALFL,
+C1022:F 2 2 2a        :1023:I 2 2 2a        :1094:P 42 21 2a      :
+     $QUAR ,QUAR ,ONEL ,  ONEL ,QUAR ,ONEL ,  ONEL ,QUAR ,ONEL ,
+C1197:I 2 3a          :
+     $QUAR ,QUAR ,ONEL/
+C
+      DO 10, J=1,NUMSGP
          IF (LSPGRP .EQ. NSPGRP(J)) GO TO 20
  10   CONTINUE
 C
