@@ -814,7 +814,8 @@ C     .. Local Scalars ..
       LOGICAL DINIT,EINIT,VAX, MVS
       CHARACTER FILNAM* (ISTRLN), LINE* (ISTRLN),
      +     ENVFIL* (ISTRLN), LOGFIL* (ISTRLN), LOGNAM* (ISTRLN),
-     +     TEMP* (ISTRLN), BKS*1, VERSION*20, PVERSION*20, PROGNAME*20
+     +     TEMP* (ISTRLN), BKS*1, VERSION*20, PVERSION*20, 
+     +     PATCH_LEVEL*20, PROGNAME*20
 C     ..
 C     .. Local Arrays ..
       CHARACTER ENAME(ILIMIT)* (IENV),ETYPE(ILIMIT)* (5),
@@ -899,10 +900,14 @@ C
               ISKIP = ISKIP + 1
             ELSE IF (LINE(II:II).EQ.'I') THEN
               CALL CCP4_VERSION(VERSION)
+              CALL CCP4_PATCH_LEVEL(PATCH_LEVEL)
               CALL CCP4_PROG_VERSION(PVERSION,1)
               CALL CCPPNM (PROGNAME)
               WRITE(TEMP,'(''CCP4 software suite: library version '',
      +                      A20)') VERSION
+              WRITE(6,'(A)') TEMP(1:LENSTR(TEMP)) 
+              WRITE(TEMP,'(''CCP4 software suite: patch level     '',
+     +                      A20)') PATCH_LEVEL
               WRITE(6,'(A)') TEMP(1:LENSTR(TEMP)) 
               WRITE(TEMP,'(''Program:  '',A20)') PROGNAME
               IF (PVERSION.NE.' ') TEMP = 
@@ -2514,6 +2519,25 @@ C     .. Scalar Arguments ..
       CHARACTER*(*) VERSION
 
       VERSION = '4.1'
+
+      END
+C
+C_BEGIN_CCP4_PATCH_LEVEL
+      SUBROUTINE CCP4_PATCH_LEVEL(PATCH_LEVEL)
+C     =================================
+C
+C---- Return current CCP4 patch level as string
+C
+C Arguments:
+C ==========
+C
+C      PATCH_LEVEL  (O)   CHARACTER*(*): current patch level of CCP4 suite
+C_END_CCP4_PATCH_LEVEL
+C
+C     .. Scalar Arguments ..
+      CHARACTER*(*) PATCH_LEVEL
+
+      PATCH_LEVEL = '4.1.1'
 
       END
 C
