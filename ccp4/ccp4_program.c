@@ -107,7 +107,7 @@ int ccp4VerbosityLevel(int level)
 int ccp4_licence_exists(const char *name)
 {
   int sue=1,lpath;
-  char *filepath,*filename,tmp_string[20];
+  char *filepath=NULL,*filename=NULL,tmp_string[20];
 
   strtoupper(tmp_string,name);
   if (strmatch(tmp_string,"CCP4")) {
@@ -118,8 +118,8 @@ int ccp4_licence_exists(const char *name)
       strcpy(filename,filepath);
       strcpy(filename+lpath,"/.agree2ccp4");
       if (ccpexists(filename)) sue = 0;
-      /* Filename is allocated but not freed?
-	 What about filepath? */
+      /* Make sure that we clean up */
+      if (filename) free(filename);
     }
     if (sue == 1) {
       filepath = (char *) getenv("HOME");
@@ -129,8 +129,8 @@ int ccp4_licence_exists(const char *name)
         strcpy(filename,filepath);
         strcpy(filename+lpath,"/.agree2ccp4");
         if (ccpexists(filename)) sue = 0;
-	/* Filename is allocated but not freed?
-	   What about filepath? */
+	/* Make sure that we clean up */
+	if (filename) free(filename);
       }
     }
     if (sue == 1) {
