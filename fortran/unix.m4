@@ -996,7 +996,7 @@ C     but it seems not to.  This works in HP-UX A.09.01.
 
 dnl * f2c needs bit-twiddling stuff (also in library.c)
 
-ifelse(_f2c,1
+ifelse(_f2c,1,
 [      INTEGER FUNCTION IEOR (I,J)
       INTRINSIC XOR
       IEOR = XOR (I,J)
