@@ -158,14 +158,13 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   /* Open the symop file: */
   if (!(symopfile = getenv("SYMINFO"))) {
     printf("Environment variable SYMINFO not set ... guessing location of symmetry file. \n");
-    if (!(ccp4dir = getenv("CCP4"))) {
-      printf("Environment variable CCP4 not set ... big trouble! \n");
+    if (!(ccp4dir = getenv("CLIBD"))) {
+      printf("Environment variable CLIBD not set ... big trouble! \n");
       return NULL;
     }
 
     symopfile = ccp4_utils_malloc((strlen(ccp4dir)+22)*sizeof(char));
-    strcpy(symopfile,ccp4dir);
-    strcat(symopfile,"/lib/data/syminfo.lib");
+    strcpy(symopfile,ccp4_utils_joinfilenames(ccp4dir,"syminfo.lib"));
     symopfile[strlen(ccp4dir)+21] = '\0';
     printf(" SYMINFO file set to %s \n",symopfile);
   } else {
