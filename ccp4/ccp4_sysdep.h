@@ -215,7 +215,7 @@
 
 /* rint() function does not seen to exist for mingw32
    defined in library_utils.c */
-#  if (defined _WIN32) || (defined _MSC_VER)
+#  if ((defined _WIN32) || (defined _MSC_VER)) && (!defined rint)
   double rint(double x);
 #endif
 
