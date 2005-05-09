@@ -864,7 +864,8 @@ C---- it's a string, treat as space-group name
 C     
                SPGNAM = LINE(IBEG(JTOK) :IEND(JTOK))
                CALL  CCPUPC(SPGNAM)
-               IF (SPGNAM(1:1).EQ.'R') THEN
+               IF (SPGNAM(1:1).EQ.'R' .AND. 
+     +             INDEX(SPGNAM,':H').LE.0) THEN
                  WRITE(6,'(A,A)') 'Warning: rhombohedral axes implied',
      +                  ' - if you have hexagonal axes then use H'
                  CALL PUTLIN(ERRLINE,'CURWIN')
