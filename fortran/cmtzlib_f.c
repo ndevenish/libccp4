@@ -1576,13 +1576,12 @@ FORTRAN_SUBR ( LSTRSL, lstrsl,
 }
 
 /* Fortran wrapper for MtzInd2reso */
-FORTRAN_FUN (float, LSTLSQ, lstlsq,
-	       (const int *mindx, const int *ih, const int *ik, const int *il),
-               (const int *mindx, const int *ih, const int *ik, const int *il),
-               (const int *mindx, const int *ih, const int *ik, const int *il))
+FORTRAN_SUBR (LSTLSQ1, lstlsq1,
+	       (float *reso, const int *mindx, const int *ih, const int *ik, const int *il),
+               (float *reso, const int *mindx, const int *ih, const int *ik, const int *il),
+               (float *reso, const int *mindx, const int *ih, const int *ik, const int *il))
 {
   int in[3];
-  float reso;
 
 /*   CMTZLIB_DEBUG(puts("CMTZLIB_F: LSTLSQ");) */
 
@@ -1590,9 +1589,9 @@ FORTRAN_FUN (float, LSTLSQ, lstlsq,
   in[1] = *ik;
   in[2] = *il;
 
-  reso = MtzInd2reso(in, coefhkl[*mindx-1]);
+  (*reso) = 0.25*MtzInd2reso(in, coefhkl[*mindx-1]);
 
-  return reso/4.0;
+  return;
 
 }
 

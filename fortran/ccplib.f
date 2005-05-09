@@ -2339,7 +2339,70 @@ C
         IT(1,I) = 0
         IT(2,I) = 0
    20 CONTINUE
+      RETURN
 C     
       END
 C
+C^L
+C
+C     ==================================
+      REAL FUNCTION LSTLSQ(MINDX, IH, IK, IL)
+C     ==================================
+C
+      IMPLICIT NONE
+C     
+      EXTERNAL LSTLSQ1
+C
+C     PARAMETERS
+      INTEGER MINDX, IH, IK, IL
+C
+C     reso RETURN value
+      REAL RESO
+C
+      CALL LSTLSQ1(RESO, MINDX, IH, IK, IL)
+      LSTLSQ=RESO
+      RETURN
+      END
+C     
+C^L   
+C     
+C     ==================================
+      REAL FUNCTION STHLSQ(IH, IK, IL)
+C     ==================================
+C     
+      IMPLICIT NONE
+C     
+      EXTERNAL STHLSQ1
+C
+C     PARAMETERS
+      INTEGER IH, IK, IL
+C
+C     reso RETURN value
+      REAL RESO
+C
+      CALL STHLSQ1(RESO, IH, IK, IL)
+      STHLSQ=RESO
+      RETURN
+      END
+C     
+C^L   
+C     
+C     ==================================
+      REAL FUNCTION LSTLSQ(IH, IK, IL)
+C     ==================================
+C     
+      IMPLICIT NONE
+C
+      EXTERNAL STS3R41
+C     
+C     PARAMETERS
+      INTEGER IH, IK, IL
+C
+C     reso RETURN value
+      REAL RESO
+C
+      CALL STS3R41(RESO, IH, IK, IL)
+      STS3R4=RESO
+      RETURN
+      END
 

@@ -1733,10 +1733,10 @@ FORTRAN_SUBR ( SETRSL, setrsl,
 
 }
 
-FORTRAN_FUN (float, STHLSQ, sthlsq,
-	     (const int *ih, const int *ik, const int *il),
-	     (const int *ih, const int *ik, const int *il),
-	     (const int *ih, const int *ik, const int *il))
+FORTRAN_SUBR (STHLSQ1, sthlsq1,
+	     (float *reso, const int *ih, const int *ik, const int *il),
+	     (float *reso, const int *ih, const int *ik, const int *il),
+	     (flaot *reso, const int *ih, const int *ik, const int *il))
 {
   int in[3];
 
@@ -1746,13 +1746,14 @@ FORTRAN_FUN (float, STHLSQ, sthlsq,
   in[1] = *ik;
   in[2] = *il;
 
-  return (0.25*MtzInd2reso(in, coefhkl));
+  (*reso) = 0.25*MtzInd2reso(in, coefhkl);
+  return;
 }
 
-FORTRAN_FUN (float, STS3R4, sts3r4,
-	     (const int *ih, const int *ik, const int *il),
-	     (const int *ih, const int *ik, const int *il),
-	     (const int *ih, const int *ik, const int *il))
+FORTRAN_SUBR (STS3R41, sts3r41,
+	     (float *reso, const int *ih, const int *ik, const int *il),
+	     (float *reso, const int *ih, const int *ik, const int *il),
+	     (float *reso, const int *ih, const int *ik, const int *il))
 {
   int in[3];
 
@@ -1762,7 +1763,9 @@ FORTRAN_FUN (float, STS3R4, sts3r4,
   in[1] = *ik;
   in[2] = *il;
 
-  return (0.25*MtzInd2reso(in, coefhkl));
+  (*reso) = 0.25*MtzInd2reso(in, coefhkl);
+
+  return;
 }
 
 /* straight translation, needs to be done properly, used in phistats */
