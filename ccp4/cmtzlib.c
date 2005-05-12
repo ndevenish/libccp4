@@ -1644,7 +1644,7 @@ int ccp4_lhprt(const MTZ *mtz, int iprint) {
   }
 
   /* write overall cell - just for scripts which grep for this */
-  printf("\n\n * Cell Dimensions : (obsolete - use crystal cells)\n\n");
+  printf("\n\n * Cell Dimensions : (obsolete - refer to dataset cell dimensions above)\n\n");
   for (i = 0; i < mtz->nxtal; ++i) 
     if (mtz->xtal[i]->cell[0] > 0.001) {
       printf(" %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f \n\n",
