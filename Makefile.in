@@ -361,9 +361,10 @@ $(LF)(lgglib.o) : $(srcdir)/lgglib.f
 	-rm -rf lgglib.dir; mkdir lgglib.dir
 	echo '      SUBROUTINE LGGLIB' > lgglib.dir/lgglib.$F
 	echo '      END' >> lgglib.dir/lgglib.$F
+	@$(SETFLAGS) ; \
 	cd lgglib.dir && $(fsplit_dir)/fsplit $(srcdir)/lgglib.f >/dev/null && $(RMEMPTY) && \
 	  for i in `pwd`/*.$F; do \
-	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
+	    $(FC) -c  $${lgglib_FLAGS-"$(FFLAGS)"} $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
 	rm -f lgglib.dir/*.o
 lgglib : lgglib.o
