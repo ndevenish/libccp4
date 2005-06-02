@@ -2388,7 +2388,7 @@ C
 C^L   
 C     
 C     ==================================
-      REAL FUNCTION LSTLSQ(IH, IK, IL)
+      REAL FUNCTION STS3R4(IH, IK, IL)
 C     ==================================
 C     
       IMPLICIT NONE
