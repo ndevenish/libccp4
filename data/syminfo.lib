@@ -14319,7 +14319,7 @@ number  5
 basisop x+1/4,y+1/4,-x+z-1/4
 symbol ccp4 3004
 symbol Hall ' C 2y (x+1/4,y+1/4,-x+z-1/4)'
-symbol xHM  ''
+symbol xHM  'I 1 21 1'
 symbol old  'I 1 21 1'
 symbol laue '-P 2y' '2/m'
 symbol patt '-I 2y' '2/m'
@@ -14361,7 +14361,7 @@ number  5
 basisop x+1/4,y+1/4,z
 symbol ccp4 3005
 symbol Hall ' C 2y (x+1/4,y+1/4,z)'
-symbol xHM  ''
+symbol xHM  'C 1 21 1'
 symbol old  'C 1 21 1'
 symbol laue '-P 2y' '2/m'
 symbol patt '-C 2y' '2/m'
@@ -14382,7 +14382,7 @@ number  8
 basisop x,y,z
 symbol ccp4 1008
 symbol Hall ' C -2y'
-symbol xHM  ''
+symbol xHM  'B 1 1 m'
 symbol old  'B 1 1 m'
 symbol laue '-P 2y' '2/m'
 symbol patt '-C 2y' '2/m'
