@@ -1200,8 +1200,14 @@ FORTRAN_SUBR ( MSYMLB3, msymlb3,
       *lspgrp = spacegroup->spg_num;
     }
     /* produce de-coloned version of xHM symbol */
-    no_colon_name = (char *) ccp4_utils_malloc((strlen(spacegroup->symbol_xHM)+1)*sizeof(char));
-    strcpy(no_colon_name,spacegroup->symbol_xHM);
+    if (strlen(spacegroup->symbol_xHM) > 0) {
+      no_colon_name = (char *) ccp4_utils_malloc((strlen(spacegroup->symbol_xHM)+1)*sizeof(char));
+      strcpy(no_colon_name,spacegroup->symbol_xHM);
+    } else {
+      /* If no _xHM try _old. This should only happen in exceptional circumstances! */
+      no_colon_name = (char *) ccp4_utils_malloc((strlen(spacegroup->symbol_old)+1)*sizeof(char));
+      strcpy(no_colon_name,spacegroup->symbol_old);
+    }
     ccp4spg_name_de_colon(no_colon_name);
     ccp4_CtoFString(FTN_STR(namspg_cif),FTN_LEN(namspg_cif),no_colon_name);
     if (spacegroup->symbol_old) {
