@@ -87,6 +87,11 @@ void ccp4f_mem_tidy(void) {
 #endif
 #endif
 
+#ifdef GFORTRAN
+extern int _gfortran_iargc(void);
+extern void _gfortran_getarg(int *i,char *arg,int arg_len);
+#endif
+
 FORTRAN_SUBR ( CCPFYP, ccpfyp,
                (),
                (),
@@ -111,14 +116,25 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
 /* couldn't find a C equivalent to this. In any case, since
    these functions are for Fortran programs, this may be
    the only way?? */
-
+/*
+   Note: for GFORTRAN iargc and getarg are intrinsics
+   which do not follow the postpended underscore convention
+   */
   /* IARGC doesn't include argv[0] */
+#ifdef GFORTRAN
+  argc = _gfortran_iargc() +1;
+#else
   argc = FORTRAN_CALL (IARGC, iargc, (), (), ()) + 1;
+#endif
   argv = (char **) ccp4_utils_malloc(argc*sizeof(char *));
   if (debug) 
     printf("Allocating memory for %d command line arguments \n",argc);
   for (i = 0; i < argc; ++i) {
+#ifdef GFORTRAN
+    _gfortran_getarg_i4(&i,arg,arg_len);
+#else
     FORTRAN_CALL (GETARG, getarg, (&i,arg,arg_len), (&i,arg), (&i,arg,arg_len));
+#endif
     argv[i] = ccp4_FtoCString(arg,arg_len);
     if (debug) 
       printf("CCPFYP: command line argument %d %s\n",i,argv[i]);
