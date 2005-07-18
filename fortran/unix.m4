@@ -85,6 +85,8 @@ _f2c,1,
   [define(_cant_unlink,1)],dnl
 _g77,1,
   [define(_cant_unlink,1)],dnl
+_gfort,1,
+  [define(_cant_unlink,1)],dnl
 _lf95,1,
   [define(_cant_unlink,1)],dnl
 _pgf,1,
@@ -496,6 +498,9 @@ C     .. Local Scalars ..
 C     ..
 C     .. External Subroutines ..
 ifelse(_ifc,8,,
+_gfort,1,
+[      INTEGER IERRNO
+      EXTERNAL GFORTRAN_IERRNO,GFORTRAN_GERROR],
 [      INTEGER IERRNO
       EXTERNAL IERRNO,GERROR])
 C     ..
