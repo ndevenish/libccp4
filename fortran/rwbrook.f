@@ -477,6 +477,12 @@ C...  MMDB get CELL and VOL for cache
 C...  MMDB get the orthogonalisation and fractional matrices
             RO(1,1) = 0.0
             CALL MMDB_F_RBORF(IUNIT,RO,RF,NCODE,IRET)
+            IF (NCODE.LT.0) THEN
+               ERRLIN = 
+     +        'XYZOPEN2: Orthogonalisation code not determined.  '//
+     +        'Possible disagreement between CRYST1 and SCALEx cards.'
+               CALL CCPERR(2,ERRLIN(1:LENSTR(ERRLIN)))
+            ENDIF
 C IFSCAL indicates SCALEx cards found, MATRIX indicates RO,RF in /ORTHOG/ set up
             IF (IRET.EQ.0) THEN
               IFSCAL=.TRUE.
