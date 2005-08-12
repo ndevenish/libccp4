@@ -182,8 +182,11 @@ int MtzRrefl(CCP4File *filein, int ncol, float *refldata);
  */
 int MtzPut(MTZ *mtz, const char *logname);
 
-/** Opens a new MTZ file for writing.
- * @param logname logical name for output file.
+/** Opens a new MTZ file for writing. The output file can be specified
+ * either with a true filename, or more likely as a logical name
+ * corresponding to an environment variable or a CCP4 command line
+ * argument such as HKLOUT.
+ * @param logname logical name or filename for output file.
  * @return pointer to file or NULL on failure
  */
 CCP4File *MtzOpenForWrite(const char *logname);
@@ -929,12 +932,17 @@ int ccp4_lwidx(MTZ *mtz, const char crystal_name[],  const char dataset_name[],
 
 
 /** Function to output reflection values for iref'th reflection.
- * In "in-memory" mode, values are added/updated for columns for which 
- * a column-pointer is given in lookup, up to a maximum of ncol columns.
- * In the traditional file-based mode, a reflection record is written
- * to file.
+ * The reflection values are provided in an array "adata". The value
+ * in adata[i] will be assigned to the MTZ column pointed to by lookup[i].
+ * Typically, lookup[i] is a pointer returned from an earlier call to
+ * MtzAddColumn().
+ * In "in-memory" mode, values are added/updated to column data held
+ * in memory. In the traditional file-based mode, a reflection record is
+ * written to file.
+ * This function will also update the column ranges and the crystal/file
+ * resolution limits.
  * @param mtz pointer to MTZ struct
- * @param adata array of values.
+ * @param adata array of reflection column values.
  * @param lookup array of pointers to columns.
  * @param ncol number of columns.
  * @param iref Reflection number such that 1st reflection is iref=1.
