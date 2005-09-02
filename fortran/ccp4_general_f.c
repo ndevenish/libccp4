@@ -96,7 +96,7 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
                (),
                (),
                ())
-{ int argc, i, ierr, arg_len=500, debug=0, ihtml, isumm;
+{ int argc, i, ierr, arg_len=500, debug=0;
   char **argv=NULL, arg[500];
 
   /* turn on line buffering for stdout from C (don't think this affects
@@ -162,9 +162,7 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
 
   /* initialise html/summary stuff 
      Note, command line switches dealt with in ccp4fyp */
-  ihtml = 0;
-  isumm = 0;
-  FORTRAN_CALL (CCP4H_INIT_LIB, ccp4h_init_lib, (&ihtml,&isumm), (&ihtml,&isumm), (&ihtml,&isumm));
+  FORTRAN_CALL (CCP4H_INIT, ccp4h_init, (), (), ());
 
   if (debug) 
     printf(" Leaving CCPFYP \n");
