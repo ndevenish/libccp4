@@ -159,8 +159,13 @@ int ccperror_noexit(int ierr, const char *message)
       printf("</pre>\n");
       printf("</html>\n");
     }
-    if (summary_output(-1)) 
-      printf("<!--SUMMARY_END-->\n");
+    if (summary_output(-1)) {
+      if (html_log_output(-1)) {
+        printf("<!--SUMMARY_END--></FONT></B>\n");
+      } else {
+        printf("<!--SUMMARY_END-->\n");
+      }
+    }
 
   } else if (ierr==1 || ierr==-1) {
     /* Level 1 (-1) : fatal error */
@@ -181,8 +186,13 @@ int ccperror_noexit(int ierr, const char *message)
       printf("</pre>\n");
       printf("</html>\n");
     }
-    if (summary_output(-1)) 
-      printf("<!--SUMMARY_END-->\n");
+    if (summary_output(-1)) {
+      if (html_log_output(-1)) {
+        printf("<!--SUMMARY_END--></FONT></B>\n");
+      } else {
+        printf("<!--SUMMARY_END-->\n");
+      }
+    }
 
   } else if (ierr==2) {
     /* Level 2 : severe warning */
