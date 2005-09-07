@@ -95,7 +95,6 @@ C   ccp4h_init() - write initial comment to identify file
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
      .                 htmlopen,summopen, summlevel
       save   /ccp4hdat/
-      data htmlopen/.false./
       call ccp4h_init_lib(0,0)
       if (html .and. .not.htmlopen) then
         call ccp4h_summary_beg()
@@ -124,7 +123,7 @@ C
       common /ccp4hdat/lpt,html,logsumm,cbin,chtml,cpid,htmlinit,
      .                 htmlopen,summopen, summlevel
       save   /ccp4hdat/
-      data htmlinit/-1/
+      data htmlinit/-1/, htmlopen/.false./
       if (htmlinit.lt.0) then
         lpt=lunsto(idum)
         cbin = ' '
