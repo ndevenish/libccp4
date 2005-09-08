@@ -3,7 +3,7 @@ C     pxxml.f: write XML tags into program outout
 C     Copyright (C) 2001  Alun Ashton
 C
 C     This code is distributed under the terms and conditions of the
-C     CCP4 licence agreement as `Part 1' (Annex 2) software.
+C     CCP4 Program Suite Licence Agreement as a CCP4 Library.
 C     A copy of the CCP4 licence can be obtained by writing to the
 C     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
 C
