@@ -152,9 +152,10 @@ int ccp4_cmap_read_section(CMMFile *mfile, void *section)
              mfile->data.block_size);
 
 /* ensure legit section (although rely upon EOF ) */  
-  if (secs.quot < 0 || secs.rem < 0) 
+  if (secs.quot < 0 || secs.rem < 0) {
     ccp4_file_raw_seek(mfile->stream, mfile->data.offset, SEEK_SET);
-  else if( secs.rem > data_offset && secs.rem < mfile->data.section_size ) 
+    secs.quot = 0;
+  } else if( secs.rem > data_offset && secs.rem < mfile->data.section_size ) 
     ccp4_file_raw_seek(mfile->stream, - secs.rem, SEEK_CUR);
   else if ( secs.rem >= mfile->data.section_size ) {
     ccp4_file_raw_seek(mfile->stream, (mfile->data.block_size-secs.rem), SEEK_CUR);
