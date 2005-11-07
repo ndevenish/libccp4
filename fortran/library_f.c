@@ -742,3 +742,104 @@ int isatty_(int *iunit)
   return isatty(*iunit);
 }
 #endif
+
+# G95 support
+#if defined(G95)
+int isatty_(int *iunit)
+{
+  return isatty(*iunit);
+}
+
+/* FORTRAN gerror intrinsic */
+int gerror_(str, Lstr)
+char *str;
+int  Lstr;
+{
+  int i;
+
+  if (errno == 0) {             /* Avoid `Error 0' or some such message */
+    for (i=1; Lstr; i++)
+      str[i] = ' ';
+  } else {
+    (void) strncpy (str, strerror (errno), Lstr);
+    for (i = strlen (str); i < Lstr; i++) str[i] = ' ';  /* pad with spaces */
+  }
+  return 0;
+}
+
+/* FORTRAN IErrNo intrinsic */
+int ierrno_() {
+  return errno;
+}
+
+#include <time.h>
+
+int time_()
+{
+  int ltim;
+  time_t t_ltim;
+
+  t_ltim = time(NULL);
+  ltim = (int) t_ltim;
+
+  return ltim;
+}
+
+void ltime_(int stime, int tarray[9])
+{
+  int i;
+  struct tm *ldatim;
+
+  if (localtime_r((time_t) stime, ldatim) != NULL) {
+    tarray[0] = ldatim->tm_sec;
+    tarray[1] = ldatim->tm_min;
+    tarray[2] = ldatim->tm_hour;
+    tarray[3] = ldatim->tm_mday;
+    tarray[4] = ldatim->tm_mon;
+    tarray[5] = ldatim->tm_year;
+    tarray[6] = ldatim->tm_wday;
+    tarray[7] = ldatim->tm_yday;
+    tarray[8] = ldatim->tm_isdst;
+  } else {
+    for (i=0; i<9; i++)
+      tarray[i] = 0;
+  }
+
+}
+
+void g95_gmtime_(int stime, int gmarray[9])
+{
+  int i;
+  struct tm *udatim;
+
+  if (gmtime_r((time_t) stime, udatim) != NULL) {
+    gmarray[0] = udatim->tm_sec;
+    gmarray[1] = udatim->tm_min;
+    gmarray[2] = udatim->tm_hour;
+    gmarray[3] = udatim->tm_mday;
+    gmarray[4] = udatim->tm_mon;
+    gmarray[5] = udatim->tm_year;
+    gmarray[6] = udatim->tm_wday;
+    gmarray[7] = udatim->tm_yday;
+    gmarray[8] = udatim->tm_isdst;
+  } else {
+    for (i=0; i<9; i++) 
+      gmarray[i] = 0;
+  }
+
+}
+
+void g95_system_(char *command)
+{
+   int result;
+
+   result = system(command);
+
+   if (result == -1) 
+     printf(" Forked command %s failed\n",command);
+
+}
+
+
+#endif /* G95 support */
+

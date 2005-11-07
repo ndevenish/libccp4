@@ -647,8 +647,14 @@ C  STRING (I)   CHARACTER*(*): string containing command
 C_END_CCPSPW
 C
        CHARACTER STRING*(*)
+ifelse(_g95,1,
+[
+       EXTERNAL G95_SYSTEM
+       CALL G95_SYSTEM(STRING)],
+[
        EXTERNAL SYSTEM
        CALL SYSTEM(STRING)
+])dnl
        END
 C
       SUBROUTINE CEXIT (ICODE)
@@ -869,6 +875,11 @@ _AIX,1,
 [      stime = time()
       call gmtime(stime,gmtarray)
       call ltime_(stime,tarray)]
+],
+_g95,1,
+[      stime = time()
+      call g95_gmtime(stime,gmtarray)
+      call ltime(stime,tarray)
 ],
 [      stime = time()
       call gmtime(stime,gmtarray)
