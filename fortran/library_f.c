@@ -743,7 +743,7 @@ int isatty_(int *iunit)
 }
 #endif
 
-# G95 support
+/* G95 support */
 #if defined(G95)
 int isatty_(int *iunit)
 {
