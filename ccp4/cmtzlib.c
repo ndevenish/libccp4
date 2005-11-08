@@ -557,8 +557,8 @@ MTZ *MtzGetUserCellTolerance(const char *logname, int read_refs, const double ce
       if (ntok < 6) {
         if (!cset_warn) {
           if (ccp4_liberr_verbosity(-1)) {
-            printf("Dataset id missing from COLUMN records in MTZ header. \n");
-            printf("Making default assignments. \n");
+            printf("\nWARNING: Dataset id missing from COLUMN records in MTZ header. \n");
+            printf("WARNING: Making default dataset assignments. \n");
 	  }
           ccp4_signal(CCP4_ERRLEVEL(2) | CMTZ_ERRNO(CMTZERR_DatasetIncomplete),
                         "MtzGet", NULL);
