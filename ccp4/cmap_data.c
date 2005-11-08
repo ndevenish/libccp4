@@ -163,7 +163,7 @@ int ccp4_cmap_read_section(CMMFile *mfile, void *section)
 
   read_dim = mfile->map_dim[0] * mfile->map_dim[1];
 /* do not read if at end */
-  if (secs.quot < mfile->data.number)
+  if (secs.quot < 0 || secs.quot < mfile->data.number)
     result = ccp4_file_read(mfile->stream, section, read_dim);
 
   if (result != read_dim)
