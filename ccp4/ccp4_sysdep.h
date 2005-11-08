@@ -159,7 +159,7 @@
 #include <ctype.h>
 
 #if defined(_AIX) || defined (__hpux) || defined(F2C) ||\
-    defined(G77) || defined(_WIN32) /* would do no harm on others, though */
+    defined(G77) || defined(_WIN32) || defined (sun) /* would do no harm on others, though */
 #  include <time.h>
 #endif
 
