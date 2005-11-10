@@ -87,6 +87,11 @@
 #include "ccp4_utils.h"
 #include "ccp4_errno.h"
 #include "ccp4_fortran.h"
+
+#if defined(GFORTRAN) || defined (G95)
+#include <time.h>
+#endif
+
 static char rcsid[] = "$Id$";
 
 /** Creates a null-terminated C string from an input
@@ -743,8 +748,10 @@ int isatty_(int *iunit)
 }
 #endif
 
+/* neither gfortran or g95 have isatty */
+
 /* G95 support */
-#if defined(G95)
+#if defined(G95) || defined (GFORTRAN)
 int isatty_(int *iunit)
 {
   return isatty(*iunit);
@@ -772,19 +779,6 @@ int ierrno_() {
   return errno;
 }
 
-#include <time.h>
-
-int time_()
-{
-  int ltim;
-  time_t t_ltim;
-
-  t_ltim = time(NULL);
-  ltim = (int) t_ltim;
-
-  return ltim;
-}
-
 void ltime_(int stime, int tarray[9])
 {
   int i;
@@ -807,7 +801,18 @@ void ltime_(int stime, int tarray[9])
 
 }
 
-void g95_gmtime_(int stime, int gmarray[9])
+void idate_ (int *day, int *month, int *year)
+{
+     struct tm *lt=NULL;
+     time_t tim;
+     tim = time(NULL);
+     lt = localtime(&tim);
+     *day = lt->tm_mday;
+     *month = lt->tm_mon+1;  /* need range 1-12 */
+     *year = lt->tm_year + 1900;
+}
+
+void gmtime_(int stime, int gmarray[9])
 {
   int i;
   struct tm *udatim;
@@ -823,23 +828,37 @@ void g95_gmtime_(int stime, int gmarray[9])
     gmarray[7] = udatim->tm_yday;
     gmarray[8] = udatim->tm_isdst;
   } else {
-    for (i=0; i<9; i++) 
+    for (i=0; i<9; i++)
       gmarray[i] = 0;
   }
 
 }
 
-void g95_system_(char *command)
+void system_(int *status, char *cmd, int cmd_len)
 {
-   int result;
+  char *str = calloc( cmd_len+1, sizeof(char));
+  str = strncpy( str, cmd, cmd_len);
 
-   result = system(command);
+  if ( (*status = system( str)) == -1 )
+     printf(" Forked command %s failed\n",cmd);
 
-   if (result == -1) 
-     printf(" Forked command %s failed\n",command);
-
+  free( str);
+  return;
 }
 
+#endif
+
+#if defined (G95)
+int time_()
+{
+  int ltim;
+  time_t t_ltim;
+
+  t_ltim = time(NULL);
+  ltim = (int) t_ltim;
+
+  return ltim;
+}
 
 #endif /* G95 support */
 
