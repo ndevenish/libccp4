@@ -467,7 +467,7 @@ char *ccp4_utils_username(void)
  * @param filename full file name string.
  * @return pointer to basename
  */
-char *ccp4_utils_basename(char *filename)
+char *ccp4_utils_basename(const char *filename)
 {
   int i, indx1=-1, length;
   char *basename;
@@ -498,7 +498,7 @@ char *ccp4_utils_basename(char *filename)
  * @param filename full file name string.
  * @return pointer to pathname with trailing separator.
  */
-char *ccp4_utils_pathname(char *filename)
+char *ccp4_utils_pathname(const char *filename)
 {
   int i, indx1=-1, length;
   char *pathname;
@@ -521,7 +521,7 @@ char *ccp4_utils_pathname(char *filename)
  * @param filename full file name string.
  * @return pointer to extension
  */
-char *ccp4_utils_extension(char *filename)
+char *ccp4_utils_extension(const char *filename)
 {
   int i, indx1=-1, length=1;
   char *extension;

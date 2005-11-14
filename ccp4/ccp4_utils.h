@@ -70,11 +70,11 @@ int ccp4_file_size(const char *);
 
 char *ccp4_utils_username(void);
 
-char *ccp4_utils_basename(char *filename);
+char *ccp4_utils_basename(const char *filename);
 
-char *ccp4_utils_pathname(char *filename);
+char *ccp4_utils_pathname(const char *filename);
 
-char *ccp4_utils_extension(char *filename);
+char *ccp4_utils_extension(const char *filename);
 
 char *ccp4_utils_joinfilenames(char *dir, char *file);
 
