@@ -174,8 +174,6 @@
 #  define Skip_f2c_Undefs       /* g2c.h infelicity... */
 #  if defined (HAVE_G2C_H)
 #    include "g2c.h"
-#  else
-#    include "f2c.h"
 #  endif
 #endif
 
