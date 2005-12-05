@@ -13,6 +13,7 @@
  *  Martyn Winn 
  */
 
+#include <math.h>
 #include "cvecmat.h"
 static char rcsid[] = "$Id$";
 
@@ -106,8 +107,8 @@ float invert4matrix(const float a[4][4], float ai[4][4])
 	    }
 
 	    am = x[0][0]*x[1][1]*x[2][2] - x[0][0]*x[1][2]*x[2][1] +
-     +         x[0][1]*x[1][2]*x[2][0] - x[0][1]*x[1][0]*x[2][2] +
-     +         x[0][2]*x[1][0]*x[2][1] - x[0][2]*x[1][1]*x[2][0];
+                 x[0][1]*x[1][2]*x[2][0] - x[0][1]*x[1][0]*x[2][2] +
+                 x[0][2]*x[1][0]*x[2][1] - x[0][2]*x[1][1]*x[2][0];
 	    i2 = ii + jj;
 	    c[ii][jj] = ccp4_pow_ii(-1.0, i2) * am;
 	}
@@ -124,14 +125,14 @@ float invert4matrix(const float a[4][4], float ai[4][4])
 /* ---- Get inverse matrix */
 
 
-  if (d > 1.0e-30) {
+  if (fabs(d) > 1.0e-30) {
     for (i = 0; i < 4; ++i) {
 	for (j = 0; j < 4; ++j) {
 	    ai[i][j] = c[j][i] / d;
 	}
     }
   } else {
-    return 0;
+    return 0.0;
   }
 
   return d;
