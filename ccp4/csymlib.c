@@ -35,8 +35,6 @@ static char rcsid[] = "$Id$";
 #define  CSYMERR_NoAsuDefined        4
 #define  CSYMERR_NoLaueCodeDefined   5
 
-static int reported_syminfo = 0;       /* report location of SYMINFO first time only */
-
 CCP4SPG *ccp4spg_load_by_standard_num(const int numspg) 
 { 
   return ccp4spg_load_spacegroup(numspg, 0, NULL, NULL, 0, NULL);
@@ -72,6 +70,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   FILE *filein;
   char *symopfile, *ccp4dir, filerec[80];
   ccp4_symop *op2,*op3,opinv;
+
+  static int reported_syminfo = 0;       /* report location of SYMINFO first time only */
 
   /* spacegroup variables */
   int sg_num, sg_ccp4_num, sg_nsymp, sg_num_cent;
@@ -1554,6 +1554,11 @@ int ccp4spg_generate_origins(const char *namspg, const int nsym, const float rsy
 
 void ccp4spg_print_recip_spgrp(const CCP4SPG* sp)
 {
+  if (!sp) {  
+    ccp4_signal(CSYM_ERRNO(CSYMERR_NullSpacegroup),"ccp4spg_print_recip_spgrp",NULL); 
+    return;
+  }
+
     printf("Reciprocal space symmetry: \n");
     printf("Space group: \"%s\" Point group: \"%s\" Laue group: \"%s\" \n",
        sp->symbol_xHM,sp->point_group,sp->laue_name); 
