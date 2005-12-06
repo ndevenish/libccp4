@@ -7526,7 +7526,7 @@ basisop x-1/2,y-1/4,z+1/4
 symbol ccp4 68
 symbol Hall '-C 2a 2ac (x-1/2,y-1/4,z+1/4)'
 symbol xHM  'C c c a :1'
-symbol old  'C 2/c 2/c 2/a' 'C c c a'
+symbol old  'C c c a' 'C 2/c 2/c 2/a'
 symbol laue '-P 2 2' 'mmm'
 symbol patt '-C 2 2' 'mmm'
 symbol pgrp '-P 2 2' 'mmm'
@@ -10527,7 +10527,7 @@ basisop x-1/2,y+1/4,z-3/8
 symbol ccp4 142
 symbol Hall '-I 4bd 2c (x-1/2,y+1/4,z-3/8)'
 symbol xHM  'I 41/a c d :1'
-symbol old  'I 41/a 2/c 2/d' 'I41/a c d'
+symbol old  'I41/a c d' 'I 41/a 2/c 2/d'
 symbol laue '-P 4 2' '4/mmm'
 symbol patt '-I 4 2' '4/mmm'
 symbol pgrp '-P 4 2' '4/mmm'
@@ -14048,7 +14048,7 @@ basisop x-1/8,y-1/8,z-1/8
 symbol ccp4 228
 symbol Hall '-F 4ud 2vw 3 (x-1/8,y-1/8,z-1/8)'
 symbol xHM  'F d -3 c :1'
-symbol old  'F 41/d -3 2/c' 'F d -3 c'
+symbol old  'F d -3 c' 'F 41/d -3 2/c'
 symbol laue '-P 4 2 3' 'm-3m'
 symbol patt '-F 4 2 3' 'm-3m'
 symbol pgrp '-P 4 2 3' 'm-3m'
