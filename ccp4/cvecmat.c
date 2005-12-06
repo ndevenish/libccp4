@@ -65,12 +65,12 @@ double invert3matrix(const double a[3][3], double ai[3][3])
 
   d = a[0][0]*c[0][0] + a[0][1]*c[0][1] + a[0][2]*c[0][2];
 
-  if (d > 1.0e-30) {
+  if (fabs(d) > 1.0e-30) {
     for ( i = 0; i < 3; i++ ) 
       for ( j = 0; j < 3; j++ ) 
         ai[i][j] = c[j][i] / d;
   } else {
-    return 0;
+    return 0.0;
   }
   return d;
 }
