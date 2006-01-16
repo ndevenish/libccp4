@@ -1746,7 +1746,7 @@ int ccp4_lrbat(MTZBAT *batch, float *buf, char *charbuf, int iprint)
 int MtzPrintBatchHeader(const MTZBAT *batch) {
 
   int i;
-  char labtype[20],axes[5],string1[40],string2[40];
+  char labtype[26],axes[5],string1[40],string2[40];
 
   switch (batch->ldtype) {
   case 1:
