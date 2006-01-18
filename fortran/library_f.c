@@ -749,13 +749,16 @@ int isatty_(int *iunit)
 #endif
 
 /* neither gfortran or g95 have isatty */
+/* not true, since August 05 this has been added to gfortran"
 
 /* G95 support */
-#if defined(G95) || defined (GFORTRAN)
+#if defined(G95)
 int isatty_(int *iunit)
 {
   return isatty(*iunit);
 }
+#endif
+#if defined(G95) || defined (GFORTRAN)
 
 /* FORTRAN gerror intrinsic */
 int gerror_(str, Lstr)

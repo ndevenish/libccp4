@@ -626,6 +626,10 @@ _xlf,1,
       IFLUN = FLUN
       ANSWER = 0
       IF (ISATTY(GETFD(IFLUN)) .EQ. 1) ANSWER = 1],
+_gfort,1,
+[      LOGICAL ISATTY
+      ANSWER = 0
+      IF (ISATTY(FLUN)) ANSWER = 1],
 dnl (else)
 [      LOGICAL ISATTY
       EXTERNAL ISATTY
