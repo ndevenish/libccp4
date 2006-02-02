@@ -809,7 +809,7 @@ _ifc,8,
 [      integer gmt_hour,gmt_minutes,localdaymonth,
      +        localhours,localminutes,localmonth,localseconds,
      +        localyear,nhours,nminutes,diff
-      integer(kind=8)  :: stime
+      integer(kind=4)  :: stime
 ],
 _xlf,1,
 [      integer gmt_hour,gmt_minutes,localdaymonth,
@@ -831,6 +831,8 @@ ifelse(_AIX,1,
       integer time
       external time,timef],
 _xlf,1,
+,
+_ifc,8,
 ,
 [
       integer time])
