@@ -136,7 +136,9 @@ int ccp4_utils_setenv (char *str)
     defined (__osf__) || defined (__FreeBSD__) || defined (linux) || \
     defined (_WIN32) || defined __linux__
   /* putenv is the POSIX.1, draft 3 proposed mechanism */
+#if !(defined(__hpux) && defined(__HP_cc))
   int putenv ();
+#endif
   char *param;
 
   if ( (param = (char *) ccp4_utils_malloc( (strlen(str)+1)*sizeof(char) )) == NULL) {
@@ -201,24 +203,24 @@ int ccp4_utils_noinpbuf(void)
 union float_uint_uchar ccp4_nan ()
 
 #if NATIVEFT == DFNTF_BEIEEE || NATIVEFT == DFNTF_LEIEEE
-#  define NAN 0xfffa5a5a
+#  define CCP4_NAN 0xfffa5a5a
 #endif
 /* For \idx{Convex} native mode and \idx{VAX} use a \idx{Rop} value:        */
 /*                                                                          */
 /* <magic numbers>=                                                         */
 #if NATIVEFT == DFNTF_CONVEXNATIVE
-#  define NAN 0x80000000
+#  define CCP4_NAN 0x80000000
 #endif
 #if NATIVEFT == DFNTF_VAX
-#  define NAN 0x00008000
+#  define CCP4_NAN 0x00008000
 #endif
-#ifndef NAN
-#  error "NAN isn't defined (needs NATIVEFT)"
+#ifndef CCP4_NAN
+#  error "CCP4_NAN isn't defined (needs NATIVEFT)"
 #endif
 {
   union float_uint_uchar realnum;
 
-  realnum.i = NAN;
+  realnum.i = CCP4_NAN;
   return (realnum);
 }
 
@@ -251,7 +253,7 @@ void ccp4_utils_bml (int ncols, union float_uint_uchar cols[])
 {
   int i;
   for (i=0; i<ncols; i++)
-    if (cols[i].i != NAN)
+    if (cols[i].i != CCP4_NAN)
       if (cols[i].f <= MDFBIG) cols[i].f = 0.0;
 }
 
@@ -263,7 +265,7 @@ void ccp4_utils_wrg (int ncols, union float_uint_uchar cols[], float wminmax[])
 {
   int i;
   for (i=0; i<ncols; i++)
-    if (cols[i].i != NAN)
+    if (cols[i].i != CCP4_NAN)
        if (cols[i].f > MDFBIG) {
          if (cols[i].f < wminmax[2*i]) wminmax[2*i] = cols[i].f;
          if (cols[i].f > wminmax[1+2*i]) wminmax[1+2*i] = cols[i].f; }
@@ -286,10 +288,10 @@ void ccp4_utils_hgetlimits (int *IValueNotDet, float *ValueNotDet)
 int ccp4_utils_mkdir (const char *path, const char *cmode)
 #if !defined (_MSC_VER) && !defined(_WIN32)
 {  
-  mode_t mode = 0;
+  unsigned mode = 0;
   int result; 
 #if defined (__APPLE__)
-  static const unsigned short TBM = 0x07;
+  static const unsigned TBM = 0x07;
 
   switch (strlen(cmode)) {
   case 4:
@@ -319,7 +321,7 @@ int ccp4_utils_mkdir (const char *path, const char *cmode)
   Try also S_IRWXU, S_IRWXG, etc. */
   sscanf(cmode,"%o",&mode);
 #endif   
-  result = mkdir(path,mode); 
+  result = mkdir(path, (mode_t) mode); 
 
   if (result == -1) {
     if (errno == EEXIST) {
@@ -350,9 +352,10 @@ int ccp4_utils_mkdir (const char *path, const char *cmode)
  */
 int ccp4_utils_chmod (const char *path, const char *cmode)
 #if !defined (_MSC_VER) || !defined(_WIN32)
-{ mode_t mode = 0;
+{
+  unsigned mode = 0;
 #if defined (__APPLE__)
-  static const unsigned short TBM = 0x07;
+  static const unsigned TBM = 0x07;
 
   switch (strlen(cmode)) {
   case 4:
@@ -382,7 +385,7 @@ int ccp4_utils_chmod (const char *path, const char *cmode)
   Try also S_IRWXU, S_IRWXG, etc. */
   sscanf(cmode,"%o",&mode);
 #endif
-  return (chmod(path,mode)); 
+  return (chmod(path, (mode_t) mode)); 
 }
 #else
    {
