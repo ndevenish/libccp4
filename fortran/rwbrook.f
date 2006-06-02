@@ -402,7 +402,18 @@ C...  MMDB open channel (need to test for failures)
       CALL UGTENV(LOGNAM,FILNAM)
       IF (LRWSTAT(1:5) .EQ. 'INPUT' .AND. FILNAM.EQ.' ') THEN
         CALL MMDB_F_OPEN(LOGNAM,LRWSTAT,LFILTYP,IUNIT,IRET)
+      ELSEIF (LRWSTAT(1:5) .EQ. 'INPUT') THEN
+        CALL MMDB_F_OPENL(LOGNAM,LRWSTAT,LFILTYP,IUNIT,IRET)
       ELSE
+        IF (LFILTYP(1:1).EQ.' ' .AND. FILESOPEN.GE.1) THEN
+          IF (ABS(TYPE(1)).EQ.1) THEN
+            IFILTYP = 1
+            LFILTYP = 'PDB'
+          ELSEIF (ABS(TYPE(1)).EQ.2) THEN
+            IFILTYP = 2
+            LFILTYP = 'CIF'
+          ENDIF
+        ENDIF
         CALL MMDB_F_OPENL(LOGNAM,LRWSTAT,LFILTYP,IUNIT,IRET)
       ENDIF
       IF (IRET.NE.RWBERR_Ok) THEN
@@ -532,15 +543,6 @@ C
 C==== If the file is an OUTPUT file
 C
       ELSE
-
-        IFILTYP = 1
-        IF (LFILTYP(1:1).EQ.' ' .AND. FILESOPEN.GT.1) THEN
-          IF (ABS(TYPE(1)).EQ.1 .OR. ABS(TYPE(1)).EQ.2) THEN
-            IFILTYP = ABS(TYPE(1))
-          ELSE
-            IFILTYP = 1
-          ENDIF
-        ENDIF
 
         IF (LFILTYP(1:3) .EQ. 'CIF') IFILTYP = 2 
         IF (LFILTYP(1:3) .EQ. 'PDB') IFILTYP = 1
