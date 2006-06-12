@@ -164,6 +164,14 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
     printf(" parser initialised \n");
 
   while (fgets(filerec,80,filein)) {
+
+    /* if syminfo.lib comes from a DOS platform, and we are on
+       unix, need to strip spurious \r character */
+    if (filerec[strlen(filerec)-2]=='\r') {
+      filerec[strlen(filerec)-2]='\n';
+      filerec[strlen(filerec)-1]='\0';
+    }
+
     if (strlen(filerec) > 1) {
 
       ccp4_parser(filerec, 80, parser, iprint);
