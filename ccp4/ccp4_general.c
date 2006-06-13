@@ -470,7 +470,7 @@ int ccp4fyp(int argc, char **argv)
 	   Do clean up and exit */
 	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 			file_type,file_ext,env_file,def_file,dir,parser);
-	ccp4_signal(CGEN_ERRNO(CGENERR_AllocFail),"ccp4fyp",NULL);
+	ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_AllocFail),"ccp4fyp",NULL);
 	return 1;
       }
       strcpy(env_file,argv[ienviron]);
@@ -493,7 +493,7 @@ int ccp4fyp(int argc, char **argv)
 	       Do clean up and exit */
 	    ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 			    file_type,file_ext,env_file,def_file,dir,parser);
-	    ccp4_signal(CGEN_ERRNO(CGENERR_EnvPathFail),"ccp4fyp",NULL);
+	    ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_EnvPathFail),"ccp4fyp",NULL);
 	    return 1;
 	  }
 	}
@@ -505,7 +505,7 @@ int ccp4fyp(int argc, char **argv)
       if (diag) printf(" no filename found\n");
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 		      file_type,file_ext,env_file,def_file,dir,parser);
-      ccp4_signal(CGEN_ERRNO(CGENERR_EOptionUseError),"ccp4fyp",NULL);
+      ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_EOptionUseError),"ccp4fyp",NULL);
       return 1;
     }
   }
@@ -542,7 +542,7 @@ int ccp4fyp(int argc, char **argv)
 	 Do clean up and exit */
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 		      file_type,file_ext,env_file,def_file,dir,parser);
-      ccp4_signal(CGEN_ERRNO(CGENERR_EnvPathFail),"ccp4fyp",NULL);
+      ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_EnvPathFail),"ccp4fyp",NULL);
       return 1;
     }
     if (diag) printf("--> Full path for environ.def is \"%s\"\n",env_file);
@@ -567,7 +567,7 @@ int ccp4fyp(int argc, char **argv)
        Do clean up and exit */
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 		      file_type,file_ext,env_file,def_file,dir,parser);
-      ccp4_signal(CGEN_ERRNO(CGENERR_CantOpenEnvFile),"ccp4fyp",NULL);
+      ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_CantOpenEnvFile),"ccp4fyp",NULL);
       return 1;
     } else {
       /* Set up a ccp4_parser array to deal with the contents of
@@ -594,7 +594,7 @@ int ccp4fyp(int argc, char **argv)
 	    ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 			    file_type,file_ext,env_file,def_file,dir,parser);
 	    if (envfp) fclose(envfp);
-	    ccp4_signal(CGEN_ERRNO(CGENERR_ParseEnvFail),"ccp4fyp",NULL);
+	    ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_ParseEnvFail),"ccp4fyp",NULL);
 	    return -1;
 	  } else {
 	    /* Store in arrays for use when decoding default.def
@@ -605,7 +605,7 @@ int ccp4fyp(int argc, char **argv)
 	      ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 			      file_type,file_ext,env_file,def_file,dir,parser);
 	      if (envfp) fclose(envfp);
-	      ccp4_signal(CGEN_ERRNO(CGENERR_MaxNamesExceeded),"ccp4fyp",NULL);
+	      ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_MaxNamesExceeded),"ccp4fyp",NULL);
 	      return 1;
 	    } else {
 	      /* Store logical name in envname */
@@ -673,7 +673,7 @@ int ccp4fyp(int argc, char **argv)
 	   Do clean up and exit */
 	ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 			file_type,file_ext,env_file,def_file,dir,parser);
-	ccp4_signal(CGEN_ERRNO(CGENERR_AllocFail),"ccp4fyp",NULL);
+	ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_AllocFail),"ccp4fyp",NULL);
 	return 1;
       }
       strcpy(def_file,argv[idefault]);
@@ -696,7 +696,7 @@ int ccp4fyp(int argc, char **argv)
 	       Do clean up and exit */
 	    ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 			    file_type,file_ext,env_file,def_file,dir,parser);
-	    ccp4_signal(CGEN_ERRNO(CGENERR_DefPathFail),"ccp4fyp",NULL);
+	    ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_DefPathFail),"ccp4fyp",NULL);
 	    return 1;
 	  }
 	}
@@ -708,7 +708,7 @@ int ccp4fyp(int argc, char **argv)
       if (diag) printf(" no filename found\n");
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 		      file_type,file_ext,env_file,def_file,dir,parser);
-      ccp4_signal(CGEN_ERRNO(CGENERR_DOptionUseError),"ccp4fyp",NULL);
+      ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_DOptionUseError),"ccp4fyp",NULL);
       return 1;
     }
   }
@@ -745,7 +745,7 @@ int ccp4fyp(int argc, char **argv)
 	 Do clean up and exit */
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 		      file_type,file_ext,env_file,def_file,dir,parser);
-      ccp4_signal(CGEN_ERRNO(CGENERR_DefPathFail),"ccp4fyp",NULL);
+      ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_DefPathFail),"ccp4fyp",NULL);
       return 1;
     }
     if (diag) printf("--> Full path for default.def is \"%s\"\n",def_file);
@@ -768,7 +768,7 @@ int ccp4fyp(int argc, char **argv)
 	 Do clean up and exit */
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 		      file_type,file_ext,env_file,def_file,dir,parser);
-      ccp4_signal(CGEN_ERRNO(CGENERR_CantOpenDefFile),"ccp4fyp",NULL);
+      ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_CantOpenDefFile),"ccp4fyp",NULL);
       return 1;
     }
     /* Set a ccp4_parser array to deal with the contents of default.def */
@@ -794,7 +794,7 @@ int ccp4fyp(int argc, char **argv)
 	  ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 			  file_type,file_ext,env_file,def_file,dir,parser);
 	  if (deffp) fclose(deffp);
-	  ccp4_signal(CGEN_ERRNO(CGENERR_ParseDefFail),"ccp4fyp",NULL);
+	  ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_ParseDefFail),"ccp4fyp",NULL);
 	  return -1;
 	}
 	if (diag) printf("Decoded line: %s = %s\n",def_logical_name,def_file_name);
@@ -870,7 +870,7 @@ int ccp4fyp(int argc, char **argv)
       if (diag) printf("  no associated file name\n");
       ccp4fyp_cleanup(ienv,envname,envtype,envext,logical_name,file_name,
 		      file_type,file_ext,env_file,def_file,dir,parser);
-      ccp4_signal(CGEN_ERRNO(CGENERR_LogicalNameUseError),"ccp4fyp",NULL);
+      ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_LogicalNameUseError),"ccp4fyp",NULL);
       return 1;
     }
     /* Next pair of arguments */
@@ -980,7 +980,7 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
       /* Exceeded the allowed number of logical names
 	 Clean up, set message and return an error */
       ccp4setenv_cleanup(file_ext,file_root,file_path,file_name);
-      ccp4_signal(CGEN_ERRNO(CGENERR_MaxNamesExceeded),"ccp4setenv",NULL);
+      ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_MaxNamesExceeded),"ccp4setenv",NULL);
       return 1;
     } else {
       /* Store logical name in envname */
@@ -1072,7 +1072,7 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
 	  /* Couldn't get CLIBD from the environment
 	     Clean up, set message and return an error */
 	  ccp4setenv_cleanup(file_ext,file_root,file_path,file_name);
-	  ccp4_signal(CGEN_ERRNO(CGENERR_CantGetClibd),"ccp4setenv",NULL);
+	  ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_CantGetClibd),"ccp4setenv",NULL);
 	  printf("Couldn't CLIBD from the environment - check setup\n");
 	  return 1;
 	}
@@ -1095,7 +1095,7 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
 	  /* Couldn't get CCP4_SCR
 	     Clean up, set message and return an error */
 	  ccp4setenv_cleanup(file_ext,file_root,file_path,file_name);
-	  ccp4_signal(CGEN_ERRNO(CGENERR_CantGetCcp4Scr),"ccp4setenv",NULL);
+	  ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_CantGetCcp4Scr),"ccp4setenv",NULL);
 	  return 1;
 	}
         /* Replace <file_root> with <prognam>_<file_root> */
@@ -1172,7 +1172,7 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
 	if (diag) printf("CCP4SETENV: \"%s\" cannot be opened for reading\n",file_name);
 	printf("File: \"%s\"\nCannot be opened for reading\n",file_name);
 	ccp4setenv_cleanup(file_ext,file_root,file_path,file_name);
-	ccp4_signal(CGEN_ERRNO(CGENERR_CantFindInFile),"ccp4setenv",NULL);
+	ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_CantFindInFile),"ccp4setenv",NULL);
 	return -1;
       }
     }
@@ -1187,7 +1187,7 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
     /* Unable to set environment variable
        Clean up and exit the program */
     ccp4setenv_cleanup(file_ext,file_root,file_path,file_name);
-    ccp4_signal(CGEN_ERRNO(CGENERR_CantSetEnvironment),"ccp4setenv",NULL);
+    ccp4_signal(CCP4_ERRLEVEL(3) | CGEN_ERRNO(CGENERR_CantSetEnvironment),"ccp4setenv",NULL);
     printf("Cannot create environment variable: \"%s\"\n",logical_name);
     return -1;
   }
