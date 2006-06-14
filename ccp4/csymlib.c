@@ -34,6 +34,7 @@ static char rcsid[] = "$Id$";
 #define  CSYMERR_NullSpacegroup      3
 #define  CSYMERR_NoAsuDefined        4
 #define  CSYMERR_NoLaueCodeDefined   5
+#define  CSYMERR_SyminfoTokensMissing 6
 
 CCP4SPG *ccp4spg_load_by_standard_num(const int numspg) 
 { 
@@ -165,8 +166,9 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
 
   while (fgets(filerec,80,filein)) {
 
-    /* if syminfo.lib comes from a DOS platform, and we are on
-       unix, need to strip spurious \r character */
+    /* If syminfo.lib comes from a DOS platform, and we are on
+       unix, need to strip spurious \r character. Note this is
+       necessary because we have removed \r as parser delimiter. */
     if (filerec[strlen(filerec)-2]=='\r') {
       filerec[strlen(filerec)-2]='\n';
       filerec[strlen(filerec)-1]='\0';
@@ -177,7 +179,12 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
       ccp4_parser(filerec, 80, parser, iprint);
 
       if (ccp4_keymatch(key, "number")) {
-        sg_num = (int) token[1].value;
+        if (parser->ntokens < 2) {
+           printf("Current SYMINFO line = %s\n",filerec);
+           ccp4_signal(CCP4_ERRLEVEL(2) | CSYM_ERRNO(CSYMERR_SyminfoTokensMissing),"ccp4spg_load_spacegroup",NULL);
+        } else {
+          sg_num = (int) token[1].value;
+        }
       }
 
       if (ccp4_keymatch(key, "basisop")) {
@@ -185,34 +192,49 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
       }
 
       if (ccp4_keymatch(key, "symbol")) {
-        if (strcmp(token[1].fullstring,"ccp4") == 0)
-          sg_ccp4_num = (int) token[2].value;
-        if (strcmp(token[1].fullstring,"Hall") == 0)
-          strcpy(sg_symbol_Hall,token[2].fullstring);
-        if (strcmp(token[1].fullstring,"xHM") == 0)
-          strcpy(sg_symbol_xHM,token[2].fullstring);
-        if (strcmp(token[1].fullstring,"old") == 0)
-          strcpy(sg_symbol_old,token[2].fullstring);
-        if (strcmp(token[1].fullstring,"patt") == 0)
-          strcpy(sg_patt_group,token[3].fullstring);
-        if (strcmp(token[1].fullstring,"pgrp") == 0)
-          strcpy(sg_point_group,token[3].fullstring);
+        if (parser->ntokens < 3) {
+           printf("Current SYMINFO line = %s\n",filerec);
+           ccp4_signal(CCP4_ERRLEVEL(2) | CSYM_ERRNO(CSYMERR_SyminfoTokensMissing),"ccp4spg_load_spacegroup",NULL);
+        } else {
+          if (strcmp(token[1].fullstring,"ccp4") == 0)
+            sg_ccp4_num = (int) token[2].value;
+          if (strcmp(token[1].fullstring,"Hall") == 0)
+            strcpy(sg_symbol_Hall,token[2].fullstring);
+          if (strcmp(token[1].fullstring,"xHM") == 0)
+            strcpy(sg_symbol_xHM,token[2].fullstring);
+          if (strcmp(token[1].fullstring,"old") == 0)
+            strcpy(sg_symbol_old,token[2].fullstring);
+          if (strcmp(token[1].fullstring,"patt") == 0)
+            strcpy(sg_patt_group,token[3].fullstring);
+          if (strcmp(token[1].fullstring,"pgrp") == 0)
+            strcpy(sg_point_group,token[3].fullstring);
+        }
       }
 
       if (ccp4_keymatch(key, "hklasu")) {
-        if (strcmp(token[1].fullstring,"ccp4") == 0)
-          strcpy(sg_asu_descr,token[2].fullstring);
+        if (parser->ntokens < 3) {
+           printf("Current SYMINFO line = %s\n",filerec);
+           ccp4_signal(CCP4_ERRLEVEL(2) | CSYM_ERRNO(CSYMERR_SyminfoTokensMissing),"ccp4spg_load_spacegroup",NULL);
+        } else {
+          if (strcmp(token[1].fullstring,"ccp4") == 0)
+            strcpy(sg_asu_descr,token[2].fullstring);
+        }
       }
 
       if (ccp4_keymatch(key, "mapasu")) {
-        if (strcmp(token[1].fullstring,"zero") == 0) {
-          strcpy(map_asu_x,token[2].fullstring);
-          strcpy(map_asu_y,token[3].fullstring);
-          strcpy(map_asu_z,token[4].fullstring);
-        } else if (strcmp(token[1].fullstring,"ccp4") == 0) {
-          strcpy(map_asu_ccp4_x,token[2].fullstring);
-          strcpy(map_asu_ccp4_y,token[3].fullstring);
-          strcpy(map_asu_ccp4_z,token[4].fullstring);
+        if (parser->ntokens < 5) {
+           printf("Current SYMINFO line = %s\n",filerec);
+           ccp4_signal(CCP4_ERRLEVEL(2) | CSYM_ERRNO(CSYMERR_SyminfoTokensMissing),"ccp4spg_load_spacegroup",NULL);
+        } else {
+          if (strcmp(token[1].fullstring,"zero") == 0) {
+            strcpy(map_asu_x,token[2].fullstring);
+            strcpy(map_asu_y,token[3].fullstring);
+            strcpy(map_asu_z,token[4].fullstring);
+          } else if (strcmp(token[1].fullstring,"ccp4") == 0) {
+            strcpy(map_asu_ccp4_x,token[2].fullstring);
+            strcpy(map_asu_ccp4_y,token[3].fullstring);
+            strcpy(map_asu_ccp4_z,token[4].fullstring);
+          }
         }
       }
 
