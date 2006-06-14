@@ -124,6 +124,7 @@ static const char *const csym_errlist[] =
     "Pointer to spacegroup structure is NULL",   /* 3 = CSYMERR_NullSpacegroup */
     "ASU definition not found for this spacegroup", /* 4 = CSYMERR_NoAsuDefined */
     "Undefined Laue code for this spacegroup",   /* 5 = CSYMERR_NoLaueCodeDefined */
+    "Not enough tokens on SYMINFO line",         /* 6 = CSYMERR_SyminfoTokensMissing */
   };
 
 static const char *const cgen_errlist[] =
