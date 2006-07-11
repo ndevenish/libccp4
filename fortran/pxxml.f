@@ -56,11 +56,12 @@ C     No provision for existing XML files to be reopened
 
       integer XMLFileUnit, ifail, elementstatus(80), elementnumber 
       character*80 openelements(80), XMLFileName
+      character*1024 XMLOutputLine
 
-      character version*10, date*8, progname*20
+      character version*10, date*8, progname*32
       
       common /ccp4xmld/ elementnumber, elementstatus, openelements, 
-     $     XMLFileName
+     $     XMLFileName,XMLOutputLine
 
       integer lenstr
       external ccpexs,lenstr
@@ -123,15 +124,17 @@ C              <leftopen
       logical ccpexs
 
       character*(*) ElementName
+      character*32 progname
 
       character*80 indentline
       integer indent
 
       integer XMLFileUnit, ifail, elementstatus(80), elementnumber 
       character*80 openelements(80), XMLFileName
+      character*1024 XMLOutputLine
       
       common /ccp4xmld/ elementnumber, elementstatus, openelements,
-     $     XMLFileName
+     $     XMLFileName,XMLOutputLine
 c      save /ccp4xml/
 
       integer lenstr
@@ -140,8 +143,9 @@ c      save /ccp4xml/
       indentline=' ' 
 
       if (.not.ccpexs(XMLFileName) .and. .not.(XMLFileUnit.eq.6)) then
-        call XMLOpen (XMLFileUnit, ElementName, ifail)
-        elementnumber=elementnumber-1
+        call ccppnm(progname)
+        call ccplwc(progname)
+        call XMLOpen (XMLFileUnit,progname(1:lenstr(progname)), ifail)
       endif
 
       elementnumber=elementnumber+1
@@ -159,13 +163,11 @@ c      save /ccp4xml/
 c     close previous element if needed
       if (elementnumber.gt.1) then
         if (elementstatus(elementnumber-1).eq.1) then
-c     indent the closing tag
-          do 5 indent = 1, elementnumber-1
-            write (indentline(indent:indent), 110)
- 5        continue
 c     add the closing bracket and print
-          write (indentline(elementnumber:elementnumber),100)
-          write (XMLFileUnit,120) indentline(1:elementnumber)
+          write (XMLOutputLine(lenstr(XMLOutputLine)+1:),100)
+          write (XMLFileUnit,'(a)') 
+     $              XMLOutputLine(1:lenstr(XMLOutputLine))
+          XMLOutputLine = ' '
 c     change status to complete and open
           elementstatus(elementnumber-1)=2
         endif
@@ -177,7 +179,7 @@ c     firstly indent line
         write (indentline(indent:indent), 110)
  10   continue
 c     write indent and tag
-      write (XMLFileUnit,130) indentline(1:elementnumber),
+      write (XMLOutputLine,130) indentline(1:elementnumber),
      $     ElementName(1:lenstr(ElementName))
 
       elementstatus(elementnumber)=1
@@ -207,32 +209,25 @@ C
 
       character*(*) ElementName, AttributeName, AttributeValue
 
-      character*80 indentline
       integer indent
 
       integer XMLFileUnit, ifail, elementstatus(80), elementnumber 
       character*80 openelements(80), XMLFileName
+      character*1024 XMLOutputLine
       
       common /ccp4xmld/ elementnumber, elementstatus, openelements,
-     $     XMLFileName
+     $     XMLFileName,XMLOutputLine
 c      save /ccp4xml/
 
       external lenstr
-
-      indentline=' ' 
 
 c     firstly check element is open otherwise open!
       if (elementstatus(elementnumber).ne.1) then
         call XMLOpenElement(XMLFileUnit, ElementName, ifail)
       endif 
-c
-c     firstly indent line
-      do 10 indent = 1, elementnumber
-        write (indentline(indent:indent), 110)
- 10   continue
 
 c     secondly write the attribute 
-      write (XMLFileUnit, 120) indentline(1:elementnumber),
+      write (XMLOutputLine(lenstr(XMLOutputLine)+1:), 120) 
      $     AttributeName(1:lenstr(AttributeName)),
      $     AttributeValue(1:lenstr(AttributeValue))
 
@@ -240,7 +235,7 @@ c     secondly write the attribute
 c this is the indent
  110  format(' ')
 c simply a string...
- 120  format(a,'  ',a,'="',a,'" ')
+ 120  format('  ',a,'="',a,'" ')
 
       return
       end
@@ -254,21 +249,16 @@ C
       
       character*(*) ElementName, ElementValue
 
-      character*80 indentline
-      integer indent
-
       integer XMLFileUnit, ifail, elementstatus(80), elementnumber 
       character*80 openelements(80), XMLFileName
+      character*1024 XMLOutputLine
       
       common /ccp4xmld/ elementnumber, elementstatus, openelements,
-     $     XMLFileName
+     $     XMLFileName,XMLOutputLine
 c      save /ccp4xml/
 
       integer lenstr
       external lenstr
-
-      indentline=' '
-      indent=0
 
       if (ElementName(1:lenstr(ElementName)).ne.
      $     openelements(elementnumber)) then
@@ -277,37 +267,16 @@ c      save /ccp4xml/
 
       if (elementnumber.ne.1) then
 c     complete element and give the value
-        do 10 indent = 1, elementnumber
-          write (indentline(indent:indent), 110)
- 10     continue
-        write (XMLFileUnit, 135) indentline(1:elementnumber)
-        write (XMLFileUnit, 125) indentline(1:elementnumber), 
-     $       ElementValue(1:lenstr(ElementValue))
+        write (XMLOutputLine(lenstr(XMLOutputLine)+1:), 125) 
+     $               ElementValue(1:lenstr(ElementValue))
         elementstatus(elementnumber)=2
       endif
 
       call XMLCloseElement(XMLFileUnit, ElementName, ifail)
       
 
-c unindented root tag
- 95   format('<',a,'>')
-c tag end and start...
- 100  format('>')
- 105  format('<')
-c this is the indent
- 110  format(' ')
-c simply a string...
- 120  format(a)
 c an indented string
- 125  format(a,a)
-c indented open tag
- 130  format(a,'<',a)
-c indented completion tag
- 135  format(a, '>')
-c indented complete tag
- 140  format(a,'<',a,'>')
-c indented complete end tag
- 150  format(a,'</',a,'>')
+ 125  format('>',a)
 
       return
       end
@@ -329,10 +298,19 @@ C
       
       integer lenstr
       external lenstr
+      character*1024 XMLOutputLine
 
       common /ccp4xmld/ elementnumber, elementstatus, openelements,
-     $     XMLFileName
+     $     XMLFileName,XMLOutputLine
 c      save /ccp4xml/
+
+c  sanity check to see if element is open
+      do i = elementnumber,1,-1
+        if (ElementName(1:lenstr(ElementName)).eq.
+     $     openelements(i)) goto 1
+      enddo
+      call ccperr(2,'XMLCloseElement: trying to close wrong element')
+      return
 
  1    continue
 
@@ -350,18 +328,32 @@ c      save /ccp4xml/
 C     if the element to close is not the open one then close 
 C     the open one - can assume its just e.g. <wibble and not
 C     <wibble> so only need a />
-        write (XMLFileUnit, 155) indentline(1:elementnumber)
+        write (XMLOutputLine(lenstr(XMLOutputLine)+1:), 155)
+        write (XMLFileUnit,'(a)') 
+     $              XMLOutputLine(1:lenstr(XMLOutputLine))
+        XMLOutputLine = ' '
         openelements(elementnumber)=' '
         elementstatus(elementnumber)=0
         elementnumber=elementnumber-1
         goto 1
       else
         if (elementstatus(elementnumber).eq.1) then
-          write (XMLFileUnit, 155) indentline(1:elementnumber)
+          write (XMLOutputLine(lenstr(XMLOutputLine)+1:), 155)
           elementstatus(elementnumber)=2
+          write (XMLFileUnit,'(a)') 
+     $              XMLOutputLine(1:lenstr(XMLOutputLine))
+          XMLOutputLine = ' '
         else
-          write (XMLFileUnit, 150) indentline(1:elementnumber),
+          if (lenstr(XMLOutputLine).eq.0) then
+            write (XMLOutputLine,145) indentline(1:elementnumber),
+     $            openelements(elementnumber)(1:elementlength)
+          else
+            write (XMLOutputLine(lenstr(XMLOutputLine)+1:), 150)
      $         openelements(elementnumber)(1:elementlength)
+          endif
+          write (XMLFileUnit,'(a)') 
+     $              XMLOutputLine(1:lenstr(XMLOutputLine))
+          XMLOutputLine = ' '
         endif
         openelements(elementnumber)=' '
         elementstatus(elementnumber)=0
@@ -374,12 +366,12 @@ C     <wibble> so only need a />
 
 c this is the indent
  110  format(' ')
-c indented completion tag
- 135  format(a, '>')
 c indented complete end tag
- 150  format(a,'</',a,'>')
+ 145  format(a,'</',a,'>')
 c indented complete end tag
- 155  format(a,' />')
+ 150  format('</',a,'>')
+c indented complete end tag
+ 155  format(' />')
 
       return
       end 
