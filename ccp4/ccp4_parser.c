@@ -462,7 +462,7 @@ int ccp4_parse(const char *line, CCP4PARSERARRAY *parser)
   char this_char,next_char,matchquote;
 
   int llen,ich,lword,diag=0;
-  int token,nulltoken,isquote,iscommt,isdelim;
+  int token,nulltoken,isquote,iscommt=0,isdelim;
   double value;
   char *delim,*nulldelim,*comm;
   char quot[]="\"\'";
@@ -568,6 +568,9 @@ int ccp4_parse(const char *line, CCP4PARSERARRAY *parser)
 
 	  /* Is the current character the start of a comment? */
 	  iscommt = charmatch(this_char,comm);
+	  if (diag)
+	    printf("CCP4_PARSE: character = %c comments = %s iscommt = %d\n",
+		   this_char,comm,iscommt);
 	  if (iscommt) {
 	    if (diag) printf("CCP4_PARSE: start of a comment\n");
 	  }
@@ -719,8 +722,10 @@ int ccp4_parse(const char *line, CCP4PARSERARRAY *parser)
       }
 
       /* Don't do any more processing after a comment */
+      
       if (iscommt) {
 	parser->ntokens = ntok;
+	if (diag) printf("CCP4_PARSE: returning after a comment\n");
 	return ntok;
       }
       /* Check the next pair of characters */
@@ -729,6 +734,7 @@ int ccp4_parse(const char *line, CCP4PARSERARRAY *parser)
     parser->ntokens = ntok;
     if (diag) printf("CCP4_PARSE: ntokens = %d, and ntok = %d\n",parser->ntokens,ntok);
   }
+  if (diag) printf("CCP4_PARSE: returning at function end\n");
   return ntok;
 }
 
