@@ -1,10 +1,13 @@
       INTEGER MaxRshells
       PARAMETER (MaxRshells = 100)
-      INTEGER NRshells,Nreflns,Nfpb
-      REAL Res,Rs,sds,rmult,Poss,FPB
-      COMMON /Rshell/NRshells,Res(2,MaxRshells),
-     +               Nreflns(4,MaxRshells),Rs(7,MaxRshells),
-     +               sds(2,MaxRshells),rmult(MaxRshells),
-     +               Poss(3,MaxRshells),FPB(MaxRshells),
+      INTEGER NRshells,Nreflns(4,MaxRshells),
      +               Nfpb(MaxRshells)
+      REAL    Res(2,MaxRshells),Rs(7,MaxRshells),
+     +               sds(2,MaxRshells),rmult(MaxRshells),
+     +               Poss(3,MaxRshells),FPB(MaxRshells)
+      COMMON /Rshell/NRshells,Res,
+     +               Nreflns,Rs,
+     +               sds,rmult,
+     +               Poss,FPB,
+     +               Nfpb
 C     ..
