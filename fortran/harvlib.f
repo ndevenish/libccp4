@@ -6,6 +6,112 @@ C     This code is distributed under the terms and conditions of the
 C     CCP4 Program Suite Licence Agreement as a CCP4 Library.
 C     A copy of the CCP4 licence can be obtained by writing to the
 C     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
+c
+c--------------------------------------------------------------
+c
+c  use of ccifStatus  is output only in ccif_output_fmt
+c        CALL ccif_output_fmt('_atom_type.symbol',
+c     +                       '-',8,0,'z',ccifStatus)
+c--------------------------------------------------------------
+c
+c peter uses for a _get_ call for status
+c      integer unknown, value, dict, null
+c      parameter(unknown=0, value=1, dict=2, null=3)
+c      if ( status .ne. value .and. status .ne. dict )
+c          NO _get_ calls in this library
+c
+c call ccif_setup_context should have status=0 on return
+c--------------------------------------------------------------
+c for _put_ calls status is append_row for 1st in a loop
+c    then following items in a loop is keep_context (I think?)
+c  an initial istat == APPEND_ROW  returns istat = KEEP_CONTEXT
+c
+c used in both _get_ and _put_
+c
+c #define KEEP_CONTEXT 1       
+c     Get item from existing context 
+c #define ADVANCE_CONTEXT 2     
+c     Advance context given by ncontext parameter to
+c     next packet before returning item 
+c #define APPEND_ROW      3     
+c     Convert to loop if necessary and append new row of
+c     unknowns. Context points at this new row 
+c #define ADVANCE_AND_HOLD 4    
+c     Same as ADVANCE_CONTEXT, except that context
+c     won't be freed when the end of the category is
+c     reached, IF category is present in a loop 
+c     structure 
+c--------------------------------------------------------------------
+c Returned status value for getting value 
+c Note that these are carefully chosen, so that bitwise operations can
+c be used to alter one of their properties independently of the others,
+c and so that they are contiguous (i.e. they can be used as the
+c expression in a Fortran computed goto).
+c
+c value & 0x01 -> unknown
+c value ^ 0x06 -> dictionary value
+c value | 0x06 -> null
+c unknown | 0x04 -> dictionary value
+c etc., for both single and looped values
+c
+c
+c #define NO_VALUE   0     
+c    Value not found in context. 
+c #define LOOP_UNKNOWN  1  
+c      Value specified in loop packet as '?' ('?' in a
+c      data item is returned as NO_VALUE). Only returned
+c      if there is no default value in the dictionary. 
+c #define SINGLE_VALUE 2
+c     One occurence of data value in file, in a
+c     Data_item. No context assigned. 
+c #define LOOP_VALUE   3   
+c      Value retrieved from loop. Context assigned
+c      (even if it only has one row) 
+c #define SINGLE_DICT  4   
+c     Value not in file: returned value is default from
+c     dictionary. Treated otherwise as SINGLE_VALUE.
+c     Must only be returned from routines which know
+c     how to convert from strings to target data type 
+c#define LOOP_DICT    5 
+c     Specified as '?' in a loop packet, but overridden
+c     by dictionary default value. 
+c#define SINGLE_NULL  6   
+c   Value specified as '.' in a data item (can override
+c   dictonary default value). At the moment, only
+c   returned by routines which try to convert
+c   values in CIF from a string to target data type 
+c#define LOOP_NULL    7   
+c    Value specified as '.' in a loop packet. See comment
+c    for SINGLE_NULL 
+c#define END_OF_CONTEXT 8 
+c         Ran off end of context, or item is not in a loop
+c         structure. (implies input status was
+c         ADVANCE_CONTEXT). No value returned, and context
+c         freed. 
+c#define PARENTHESIS_ESD 9 
+c    Special value for an esd extracted from a
+c    123.456(78)e+10 -type expression 
+c #define INVALID_TOKEN  10 
+c    Special value for CCIF_PUT_CHAR. Could not create a
+c    STAR token from text provided. 
+c
+c---------------------------------------------------------------
+c Returned status values for setting up a new context:
+c #define CAT_NOT_PRESENT 0  
+c    Category not present in specified block.
+c     If file has been opened for output, and disposition
+c     of context is not read-only, then a context has
+c     been assigned to this category and block 
+c#define LOOP_CONTEXT    1  
+c   Category occurs wholly or partly in a loop
+c   in specified block 
+c#define ITEM_CONTEXT    2  
+c   Category occurs as data item(s) in specified block 
+c
+c---------------------------------------------------------------
+c
+c
+c
 C
       SUBROUTINE HSymTrn(Nsym,Rsm,Symchs)
 C     ==========================================
@@ -305,8 +411,6 @@ C     .. Array Arguments ..
       REAL a1,a2,a3,a4,b1,b2,b3,b4,c
 C     ..
 C     .. Local Scalars ..
-      INTEGER Jdo
-      CHARACTER IDwork*6
       LOGICAL First
 C     ..
 C     .. External Functions ..
@@ -318,7 +422,9 @@ C
 C
       IF ( .not. Harvest) RETURN
 C
-C    
+C
+c
+c
         IF (First) THEN
           First = .false.
         CALL ccif_output_fmt('_atom_type.symbol',
@@ -344,12 +450,34 @@ C
       END IF
 C
 C
-
+         ccifStatus =  KeepContext
       CALL ccif_setup_context('_atom_type.symbol',CurrCategory,
      +                         ccifBlockID,ccifContext,
      +                         ccifStatus,'loop')
+c
+c
+c
+c Returned values for setting up contexts (see value_manip.h)
+c   cat_not_present = 0
+c   loop_context    = 1
+c   item_context    = 2
+c   if CCIF_NOITEM then istat = NO_VALUE =0 ???
+c
+c
+c
+
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for _atom_type.symbol',
+     + ccifStatus
+       RETURN
+      END IF
 C
-C
+C---- return value may nor be input value
+c     should be reset each time after call
+c
+c  this is a loop_ start with AppendRow
+c
         ccifStatus = AppendRow
         CALL ccif_put_char('_atom_type.symbol',AtName,
      +                           ccifContext,ccifStatus)
@@ -413,11 +541,17 @@ C
 C
 C---- do _Cell
 C
+c
       CALL ccif_setup_context('cell',CurrCategory,ccifBlockID,
      +                        ccifContext,ccifStatus,' ')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for cell',ccifStatus
+       RETURN
+      END IF
 C
-C
-      ccifStatus = AppendRow
+C--- ccifStatus is o/p from ccif_output_fmt
+c
       CALL ccif_output_fmt('_cell.length_a',' ',8,3,'f',ccifStatus)
       CALL ccif_output_fmt('_cell.length_b',' ',8,3,'f',ccifStatus)
       CALL ccif_output_fmt('_cell.length_c',' ',8,3,'f',ccifStatus)
@@ -425,7 +559,8 @@ C
       CALL ccif_output_fmt('_cell.angle_beta',' ',8,3,'f',ccifStatus)
       CALL ccif_output_fmt('_cell.angle_gamma',' ',8,3,'f',ccifStatus)
 C
-C
+c  this is a set of independent values start with KeepContext
+c
       ccifStatus = KeepContext
       CALL ccif_put_real('_cell.length_a',Cell(1),ccifContext,
      +                   ccifStatus)
@@ -486,12 +621,19 @@ C
      +     '_exptl_crystal.percent_solvent',
      +                        CurrCategory,ccifBlockID,ccifContext,
      +                        ccifStatus,' ')
-      CALL ccif_output_fmt(
-     +     '_exptl_crystal.percent_solvent',
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +        '_exptl_crystal.percent_solvent',ccifStatus
+       RETURN
+      END IF
+      CALL ccif_output_fmt('_exptl_crystal.percent_solvent',
      +         ' ',8,1,'f',ccifStatus)
+c
+c  this is a set of independent values start with KeepContext
+c
       ccifStatus = KeepContext
-      CALL ccif_put_real(
-     +     '_exptl_crystal.percent_solvent',
+      CALL ccif_put_real('_exptl_crystal.percent_solvent',
      +                    Fraction,ccifContext,ccifStatus)
       CALL ccif_release_context(ccifContext)
 C
@@ -527,10 +669,17 @@ C
       CALL ccif_setup_context('_reflns_shell.d_res_high',
      +                        CurrCategory,ccifBlockID,
      +                        ccifContext,ccifStatus,'loop')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for _reflns_shell.d_res_high',
+     +   ccifStatus
+       RETURN
+      END IF
 C
+c  this is a loop_  start with AppendRow for each row
 C
-      ccifStatus = AppendRow
       DO 10 Jdo=1,NRshells
+      ccifStatus = AppendRow
       CALL ccif_put_real('_reflns_shell.d_res_low',
      +      Res(1,Jdo),ccifContext,ccifStatus)
 C
@@ -661,9 +810,9 @@ C
      +      sds(2,Jdo),ccifContext,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF (Nfpb(Jdo) .lt. ValueNotDet -1.0 .and. 
      +    Nfpb(Jdo) .gt. 0) THEN
-      ccifStatus = KeepContext
       CALL ccif_put_int(
      +      '_reflns_shell.num_fract_bias_in_mean',
      +      Nfpb(Jdo),ccifContext,ccifStatus)
@@ -672,7 +821,6 @@ C
      +      '_reflns_shell.mean_fract_bias',
      +      FPB(Jdo),ccifContext,ccifStatus)
       END IF
-      ccifStatus = KeepContext
 C
 C
  10   CONTINUE
@@ -680,6 +828,7 @@ C
       END IF
 C
 C
+      ccifStatus = KeepContext
       IF (EnvRet .eq. 0) THEN
         CALL ccif_close_cif('DEPOSITFILE',ccifStatus)
       ELSE
@@ -705,14 +854,13 @@ C
       include 'harvest.inc'
 C
 C     .. Array Arguments ..
-      INTEGER Nlines
+      INTEGER Nlines,NHlines,Jdo,KK,MM,LL
       CHARACTER Method(Nlines)*80
 C     ..
       CHARACTER Cwork*800
       CHARACTER Awork(MaxLines)*80
 C     ..
 C     .. External Subroutines ..
-      INTEGER Lenstr
       EXTERNAL ccif_output_fmt,
      +          ccif_put_real,
      +           ccif_release_context,
@@ -728,13 +876,22 @@ C
       CALL ccif_setup_context('_reflns.data_reduction_method',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
-        ccifStatus = AppendRow
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_reflns.data_reduction_method',ccifStatus
+       RETURN
+      END IF
 C
 C
         IF (NHlines .le. MaxLines) THEN
         DO 10 Jdo =1 ,NHlines
           Awork(Jdo) = Method(Jdo)
  10     CONTINUE
+c
+c  this is a set of independent values start with KeepContext
+c
+         ccifStatus = KeepContext
          CALL ccif_put_text('_reflns.data_reduction_method',
      +   NHlines,Cwork,10,ccifContext,ccifStatus,'NEW')
         GO TO 20
@@ -755,13 +912,14 @@ C
 C
 C
          IF (MM .eq. 1) THEN
+         ccifStatus = KeepContext
          CALL ccif_put_text('_reflns.data_reduction_method',
      +   10,Cwork,10,ccifContext,ccifStatus,'NEW')
          ELSE
+         ccifStatus = KeepContext
          CALL ccif_put_text('_reflns.data_reduction_method',
      +   10,Cwork,10,ccifContext,ccifStatus,'  ')
          END IF
-         ccifStatus = KeepContext
 C
 C
         GO TO 30
@@ -776,6 +934,7 @@ C
           Awork(LL) = Method(Jdo)
  50     CONTINUE
         KK = NHlines - KK + 1
+         ccifStatus = KeepContext
          CALL ccif_put_text('_reflns.data_reduction_method',
      +   KK,Cwork,10,ccifContext,ccifStatus,' ')
         GO TO 20
@@ -826,7 +985,16 @@ C
       CALL ccif_setup_context('_exptl_crystal.density_Matthews',
      +                        CurrCategory,ccifBlockID,ccifContext,
      +                        ccifStatus,' ')
-      ccifStatus = AppendRow
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_exptl_crystal.density_Matthews',ccifStatus
+       RETURN
+      END IF
+      ccifStatus = KeepContext
+c
+c  this is a set of independent values start with KeepContext
+c
       CALL ccif_put_real('_exptl_crystal.density_Matthews',Fraction,
      +                   ccifContext,ccifStatus)
       CALL ccif_release_context(ccifContext)
@@ -857,7 +1025,7 @@ C     .. Scalar Arguments ..
      +              Pkage* (*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER chmodRet,Jdo,mkdirPT
+      INTEGER chmodRet,mkdirPT
       CHARACTER ciftime*50,Buffer*256,EnvWork*256,
      +          FileName*256,mkdirMode*3,chmodMode*3,dummy*160
 C     ..
@@ -1124,17 +1292,26 @@ C----  do   _entry.id
 C
       CALL ccif_setup_context('ENTRY',CurrCategory,ccifBlockID,
      +                        ccifContext,ccifStatus,' ')
-      ccifStatus = AppendRow
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'ENTRY',ccifStatus
+         STOP
+      END IF
+      ccifStatus = KeepContext
       CALL ccif_put_char('_entry.id',
      +                   ProjectName(1:Lenstr(ProjectName)),
      +                   ccifContext,ccifStatus)
       CALL ccif_release_context(ccifContext)
-
-
-
       CALL ccif_setup_context('DIFFRN',CurrCategory,ccifBlockID,
      +                        ccifContext,ccifStatus,' ')
-      ccifStatus = AppendRow
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'DIFFRN',ccifStatus
+       RETURN
+      END IF
+      ccifStatus = KeepContext
       CALL ccif_put_char('_diffrn.id',
      +     DataSetName(1:Lenstr(DataSetName)),ccifContext,
      +                   ccifStatus)
@@ -1145,7 +1322,13 @@ C---- do   _audit.creation_date
 C
       CALL ccif_setup_context('AUDIT',CurrCategory,ccifBlockID,
      +                        ccifContext,ccifStatus,' ')
-      ccifStatus = AppendRow
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'AUDIT',ccifStatus
+       RETURN
+      END IF
+      ccifStatus = KeepContext
       CALL ccif_put_char('_audit.creation_date',
      +     ciftime(1:Lenstr(ciftime)),ccifContext,
      +                   ccifStatus)
@@ -1167,14 +1350,13 @@ C
       include 'harvest.inc'
 C
 C     .. Array Arguments ..
-      INTEGER Nlines
+      INTEGER Nlines,NHlines,Jdo,KK,MM,LL
       CHARACTER Rcriteria(Nlines)*80
 C     ..
       CHARACTER Cwork*800
       CHARACTER Awork(MaxLines)*80
 C     ..
 C     .. External Subroutines ..
-      INTEGER Lenstr
       EXTERNAL ccif_output_fmt,
      +          ccif_put_real,
      +           ccif_release_context,
@@ -1190,13 +1372,22 @@ C
       CALL ccif_setup_context('_reflns.merge_reject_criterion',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
-        ccifStatus = AppendRow
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_reflns.merge_reject_criterion',ccifStatus
+       RETURN
+      END IF
 C
 C
         IF (NHlines .le. MaxLines) THEN
         DO 10 Jdo =1 ,NHlines
           Awork(Jdo) = Rcriteria(Jdo)
  10     CONTINUE
+        ccifStatus = KeepContext
+c
+c  this is a set of independent values start with KeepContext
+c
         CALL ccif_put_text('_reflns.merge_reject_criterion',
      +   NHlines,Cwork,10,ccifContext,ccifStatus,'NEW')
         GO TO 20
@@ -1217,13 +1408,14 @@ C
 C
 C
          IF (MM .eq. 1) THEN
+         ccifStatus = KeepContext
          CALL ccif_put_text('_reflns.merge_reject_criterion',
      +   10,Cwork,10,ccifContext,ccifStatus,'NEW')
          ELSE
+         ccifStatus = KeepContext
          CALL ccif_put_text('_reflns.merge_reject_criterion',
      +   10,Cwork,10,ccifContext,ccifStatus,'  ')
          END IF
-         ccifStatus = KeepContext
 C
 C
         GO TO 30
@@ -1238,6 +1430,7 @@ C
           Awork(LL) = Rcriteria(Jdo)
  50     CONTINUE
         KK = NHlines - KK + 1
+         ccifStatus = KeepContext
          CALL ccif_put_text('_reflns.merge_reject_criterion',
      +   KK,Cwork,10,ccifContext,ccifStatus,' ')
         GO TO 20
@@ -1272,11 +1465,10 @@ C
 C
 C
 C     .. Array Arguments ..
-      REAL R1,R2
+      REAL R1,R2,Rlow,Rhigh
       INTEGER Ntotal
 C     ..
 C     .. External Subroutines ..
-      INTEGER Lenstr
       EXTERNAL ccif_output_fmt,
      +          ccif_put_real,
      +           ccif_release_context,
@@ -1290,12 +1482,24 @@ C
       CALL ccif_setup_context('_reflns.overall_d_res_high',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_reflns.overall_d_res_high',ccifStatus
+       RETURN
+      END IF
 C
 C
+      ccifStatus = KeepContext
+c
+c  this is a set of independent values start with KeepContext
+c
       CALL ccif_output_fmt('_reflns.overall_d_res_high',
      +             ' ',6,2,'f',ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_output_fmt('_reflns.overall_d_res_low',
      +             ' ',6,2,'f',ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_output_fmt('_reflns.overall_number_observations',
      +    ' ',10,0,'d',ccifStatus)
 C
@@ -1314,9 +1518,9 @@ C
       ccifStatus = KeepContext
       CALL ccif_put_real('_reflns.overall_d_res_high',
      +                   Rhigh,ccifContext,ccifStatus)
+C
+C
       ccifStatus = KeepContext
-C
-C
       IF (Ntotal .ne. IvalueNotDet) 
      + CALL ccif_put_int('_reflns.overall_number_observations',
      +                   Ntotal,ccifContext,ccifStatus)
@@ -1383,6 +1587,8 @@ C     This routine is truly horrible and really ought to be re-written
 C     in an understandable form with an outer loop over tokens rather
 C     than characters...
 C
+       implicit none
+
 C     .. Parameters ..
       INTEGER Maxdelim
       PARAMETER (Maxdelim=20)
@@ -1877,9 +2083,16 @@ C
 C
       CALL ccif_setup_context('_phasing_MIR_der.id',CurrCategory,
      +                        ccifBlockID,ccifContext,ccifStatus,'loop')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_phasing_MIR_der.id',ccifStatus
+       RETURN
+      END IF
 C
+c  this is a set of independent values start with KeepContext
 C
-      ccifStatus = AppendRow
+      ccifStatus = KeepContext
       IF (DerPointer .le. 0) THEN
         CALL ccif_output_fmt('_phasing_MIR_der.id','-',15,0,'z',
      +                       ccifStatus)
@@ -1907,11 +2120,12 @@ C
      +                        ' ',9,0,'d',ccifStatus)
         CALL ccif_output_fmt('_phasing_MIR_der.Reflns_anomalous',
      +                       ' ',9,0,'d',ccifStatus)
-        ccifStatus = KeepContext
       END IF
 C
 C
+c  this is a loop_  start with AppendRow
       DerPointer = DerPointer + 1
+      ccifStatus = AppendRow
       IF (lenstr(SS(DerPointer)).gt.0) THEN
         CALL ccif_put_char('_phasing_MIR_der.id',
      +      SS(DerPointer) (1:Lenstr(SS(DerPointer))),
@@ -1945,15 +2159,15 @@ C
      +                   CC(DerPointer) (1:
      +                   Lenstr(CC(DerPointer))),ccifContext,
      +                   ccifStatus)
-      ccifStatus = KeepContext
 C
 C
       IF (Reflns(1) .lt. IvalueNotDet -1 .and. 
      +    Reflns(1) .gt. 0) THEN
+          ccifStatus = KeepContext
           CALL ccif_put_int(
      +                  '_phasing_MIR_der.Reflns_centric',
      +                      Reflns(1),ccifContext,ccifStatus)
-      ccifStatus = KeepContext
+         ccifStatus = KeepContext
       IF (Package(1:4) .eq. 'CCP4') THEN
       IF (Power(1) .lt. valueNotDet -1.0 .and. 
      +    Power(1) .ne. 0.0) 
@@ -1967,33 +2181,33 @@ C
      +                       RCullis(1),ccifContext,ccifStatus)
       END IF
       END IF
-      ccifStatus = KeepContext
 C
 C
       IF (Reflns(2) .lt. IvalueNotDet -1 .and. 
      +    Reflns(2) .gt. 0) THEN
+          ccifStatus = KeepContext
           CALL ccif_put_int(
      +                   '_phasing_MIR_der.Reflns_acentric',
      +                      Reflns(2),ccifContext,ccifStatus)
-          ccifStatus = KeepContext
+      ccifStatus = KeepContext
       IF (Package(1:4) .eq. 'CCP4') THEN
       IF (Power(2) .lt. valueNotDet -1.0 .and. 
      +    Power(2) .ne. 0.0) 
      +    CALL ccif_put_real(
      +                '_phasing_MIR_der.Power_acentric',
      +                       Power(2),ccifContext,ccifStatus)
-         ccifStatus = KeepContext
+      ccifStatus = KeepContext
       IF (RCullis(2) .lt. valueNotDet -1.0 .and. 
      +    RCullis(2) .ne. 0.0) CALL ccif_put_real(
      +               '_phasing_MIR_der.R_cullis_acentric',
      +                       RCullis(2),ccifContext,ccifStatus)
       END IF
       END IF
-      ccifStatus = KeepContext
 C
 C
       IF (Reflns(3) .lt. IvalueNotDet -1 .and. 
      +    Reflns(3) .gt. 0) THEN
+          ccifStatus = KeepContext
           CALL ccif_put_int(
      +                '_phasing_MIR_der.Reflns_anomalous',
      +                      Reflns(3),ccifContext,ccifStatus)
@@ -2055,9 +2269,14 @@ C
       CALL ccif_setup_context('_phasing_MIR_der_site.der_id',
      +                        CurrCategory,ccifBlockID,ccifContext,
      +                        ccifStatus,'loop')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_phasing_MIR_der_site.der_id',ccifStatus
+       RETURN
+      END IF
 C
 C
-      ccifStatus = AppendRow
       IF (MirDerSiteID .le. 0) THEN
         CALL ccif_output_fmt('_phasing_MIR_der_site.der_id','-',15,0,
      +                       'z',ccifStatus)
@@ -2085,11 +2304,13 @@ C
         CALL ccif_output_fmt(
      +       '_phasing_MIR_der_site.Occupancy_anom_su',
      +                       ' ',8,3,'f',ccifStatus)
-        ccifStatus = KeepContext
       END IF
 C
 C
+c  this is a loop_  start with AppendRow
+c
       DO 10 Jdo = 1,NumDerSites
+        ccifStatus = AppendRow
         IF (lenstr(DerID).gt.0) THEN
           CALL ccif_put_char('_phasing_MIR_der_site.der_id',
      +                     DerID(1:Lenstr(DerID)),ccifContext,
@@ -2123,16 +2344,17 @@ C
 C
       IF (Package(1:4) .eq. 'CCP4') THEN
         IF (OccEsd(Jdo) .lt. valueNotDet -1.0) THEN
+        ccifStatus = KeepContext
           CALL ccif_put_real_esd(
      +      '_phasing_MIR_der_site.Occupancy_iso',
      +                           Occ(Jdo),OccEsd(Jdo),ccifContext,
      +                           ccifStatus,' ')
         ELSE
+        ccifStatus = KeepContext
           CALL ccif_put_real(
      +      '_phasing_MIR_der_site.Occupancy_iso',
      +                       Occ(Jdo),ccifContext,ccifStatus)
         END IF
-        ccifStatus = KeepContext
       END IF
 C
 C---- Need both value not defined and 'finite' function
@@ -2140,16 +2362,17 @@ C     for calculated values
 C
         IF (Package(1:4) .eq. 'CCP4') THEN
          IF (AnomESD(Jdo) .lt. valueNotDet -1.0) THEN
+        ccifStatus = KeepContext
           CALL ccif_put_real_esd(
      +      '_phasing_MIR_der_site.Occupancy_anom',
      +                           anom(Jdo),AnomEsd(Jdo),ccifContext,
      +                           ccifStatus,' ')
          ELSE
+        ccifStatus = KeepContext
           CALL ccif_put_real(
      +      '_phasing_MIR_der_site.Occupancy_anom',
      +                       anom(Jdo),ccifContext,ccifStatus)
          END IF
-         ccifStatus = KeepContext
         END IF
    10 CONTINUE
 C
@@ -2172,7 +2395,7 @@ C
       include 'harvest.inc'
 C
 C     .. Array Arguments ..
-      REAL R1,R2,fomT,fomC,fomA,SigmaNat
+      REAL R1,R2,fomT,fomC,fomA,SigmaNat,TMP
       INTEGER Mt,Mc,Ma
 C     ..
 C     .. External Subroutines ..
@@ -2184,7 +2407,6 @@ C     .. External Subroutines ..
      +              ccif_setup_context
 C     ..
 C     .. Local Scalars ..
-      INTEGER Jdo
       CHARACTER Criteria*15
 C     ..
 C     .. External Functions ..
@@ -2206,6 +2428,12 @@ C
      +                        ccifStatus,' ')
 C
 C
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_phasing_MIR.entry_id',ccifStatus
+       RETURN
+      END IF
         CALL ccif_output_fmt(
      +           '_phasing_MIR.d_res_high',
      +           ' ',6,2,'f',ccifStatus)
@@ -2243,51 +2471,52 @@ C
      + WRITE (Criteria,6000)  SigmaNat
  6000   FORMAT('FP >',f3.1,' SIGFP')
 C
+c  this is a set of independent values start with KeepContext
 C
-      ccifStatus = KeepContext
+        ccifStatus = KeepContext
       IF (lenstr(DName).gt.0)
      + CALL ccif_put_char('_phasing_MIR.entry_id',
      +                   DName(1:Lenstr(DName)),
      +                   ccifContext,ccifStatus)
-      ccifStatus = KeepContext
+        ccifStatus = KeepContext
       CALL ccif_put_real('_phasing_MIR.d_res_high',
      +                   R1,ccifContext,ccifStatus)
-      ccifStatus = KeepContext
+        ccifStatus = KeepContext
       CALL ccif_put_real('_phasing_MIR.d_res_low',
      +                   R2,ccifContext,ccifStatus)
 
-      ccifStatus = KeepContext
+        ccifStatus = KeepContext
       IF (SigmaNat .lt. valueNotDet -1.0 .and.
      +    SigmaNat .gt. 0.01)
      + CALL ccif_put_char('_phasing_MIR.reflns_criterion',
      +                   Criteria,ccifContext,ccifStatus)
-      ccifStatus = KeepContext      
 C
 C
       IF (Mt .ne. 0 .and. Mt .lt. IvalueNotDet -1) THEN
+        ccifStatus = KeepContext
          CALL ccif_put_int('_phasing_MIR.reflns',
      +                     Mt,ccifContext,ccifStatus)
-         ccifStatus = KeepContext
+        ccifStatus = KeepContext
          CALL ccif_put_real('_phasing_MIR.FOM',
      +                     fomT,ccifContext,ccifStatus)
-         ccifStatus = KeepContext
       END IF
 C
 C
       IF (Mc .ne. 0 .and. Mc .lt. IvalueNotDet -1) THEN
+        ccifStatus = KeepContext
           CALL ccif_put_int('_phasing_MIR.reflns_centric',
      +                      Mc,ccifContext,ccifStatus)
-          ccifStatus = KeepContext
+        ccifStatus = KeepContext
           CALL ccif_put_real('_phasing_MIR.FOM_centric',
      +                      fomC,ccifContext,ccifStatus)
-          ccifStatus = KeepContext
       END IF
 C
 C
       IF (Ma .ne. 0 .and. Ma .lt. IvalueNotDet -1) THEN
+        ccifStatus = KeepContext
           CALL ccif_put_int('_phasing_MIR.reflns_acentric',
      +                       Ma,ccifContext,ccifStatus)
-          ccifStatus = KeepContext
+        ccifStatus = KeepContext
           CALL ccif_put_real('_phasing_MIR.FOM_acentric',
      +                       fomA,ccifContext,ccifStatus)
       END IF
@@ -2319,11 +2548,8 @@ C
       include 'harvest.inc'
 C
 C     .. Array Arguments ..
-      REAL R1,R2,fomA,fomC,fomO
+      REAL R1,R2,fomA,fomC,fomO,TMP
       INTEGER  KRa,KRc,KRo
-C     ..
-C     .. Scalar Arguments ..
-      INTEGER NumShells
 C     ..
 C     .. External Subroutines ..
       EXTERNAL ccif_output_fmt,
@@ -2334,8 +2560,6 @@ C     .. External Subroutines ..
      +              ccif_setup_context
 C     ..
 C     .. Local Scalars ..
-      INTEGER Jdo
-      CHARACTER IDwork*6
       LOGICAL First
 C     ..
 C     .. External Functions ..
@@ -2355,9 +2579,14 @@ C
       CALL ccif_setup_context('_phasing_MIR_shell.d_res_high',
      +                        CurrCategory,ccifBlockID,ccifContext,
      +                        ccifStatus,'loop')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_phasing_MIR_shell.d_res_high',ccifStatus
+       RETURN
+      END IF
 C
 C
-        ccifStatus = AppendRow
         IF (First) THEN
           First = .false.
         CALL ccif_output_fmt('_phasing_MIR_shell.d_res_high',
@@ -2378,7 +2607,6 @@ C
         CALL ccif_output_fmt(
      +         '_phasing_MIR_shell.reflns_acentric',
      +         ' ',8,0,'d',ccifStatus)
-        ccifStatus = KeepContext
        END IF
 C
 C
@@ -2389,15 +2617,18 @@ C
       END IF
 C
 C
+c  this is a loop_  start with AppendRow
+c
+        ccifStatus = AppendRow
         CALL ccif_put_real('_phasing_MIR_shell.d_res_high',
      +                     R1,ccifContext,ccifStatus)
         ccifStatus = KeepContext
         CALL ccif_put_real('_phasing_MIR_shell.d_res_low',
      +                     R2,ccifContext,ccifStatus)
-        ccifStatus = KeepContext
 C
 C
       IF (KRo .lt. IvalueNotDet -1 .and. KRo .gt. 0) THEN
+        ccifStatus = KeepContext
         CALL ccif_put_int('_phasing_MIR_shell.reflns',
      +                    KRo,ccifContext,ccifStatus)
         ccifStatus = KeepContext
@@ -2405,12 +2636,12 @@ C
       IF (fomO .lt. valueNotDet -1.0) CALL ccif_put_real(
      +     '_phasing_MIR_shell.FOM',fomO,
      +     ccifContext,ccifStatus)
-        ccifStatus = KeepContext
       END IF
       END IF
 C
 C
       IF (KRc .lt. IvalueNotDet -1 .and. KRc .gt. 0) THEN
+        ccifStatus = KeepContext
           CALL ccif_put_int(
      +         '_phasing_MIR_shell.reflns_centric',
      +         KRc,ccifContext,ccifStatus)
@@ -2419,12 +2650,12 @@ C
       IF (fomC .lt. valueNotDet -1.0) CALL ccif_put_real(
      +        '_phasing_MIR_shell.FOM_centric',
      +        fomC,ccifContext,ccifStatus)
-        ccifStatus = KeepContext
       END IF
       END IF
 C
 C
       IF (KRa .lt. IvalueNotDet -1 .and. KRa .gt. 0) THEN
+           ccifStatus = KeepContext
            CALL ccif_put_int(
      +     '_phasing_MIR_shell.reflns_acentric',
      +      KRa,ccifContext,ccifStatus)
@@ -2459,7 +2690,6 @@ C     .. Array Arguments ..
       INTEGER NPARMR,NRESTR,NCONSTR
 C     ..
 C     .. External Subroutines ..
-      INTEGER Lenstr
       EXTERNAL ccif_output_fmt,
      +          ccif_put_real,
      +           ccif_release_context,
@@ -2474,9 +2704,17 @@ C
       CALL ccif_setup_context('REFINE',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'REFINE',ccifStatus
+       RETURN
+      END IF
 C
 C
-      ccifStatus = AppendRow
+c  this is a set of independent values start with KeepContext
+c
+      ccifStatus = KeepContext
       IF (NPARMR .gt. 0 .and. NPARMR .lt. IvalueNotDet -1)
      + CALL ccif_put_int('_refine.ls_number_parameters',
      +       NPARMR,ccifContext,ccifStatus)
@@ -2524,7 +2762,6 @@ C     .. Array Arguments ..
      +     Good,GoodFree,ESUml,bESU
 C     ..
 C     .. External Subroutines ..
-      INTEGER Lenstr
       EXTERNAL ccif_output_fmt,
      +          ccif_put_real,
      +           ccif_release_context,
@@ -2538,9 +2775,16 @@ C
       CALL ccif_setup_context('REFINE',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'REFINE',ccifStatus
+       RETURN
+      END IF
 C
+c  this is a set of independent values start with KeepContext
 C
-      ccifStatus = AppendRow
+      ccifStatus = KeepContext
       IF (Corr .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +            '_refine.Correlation_coeff_Fo_to_Fc',
@@ -2629,14 +2873,13 @@ C
       include 'harderiv.inc'
 C
 C     .. Array Arguments ..
-      INTEGER NHlines
+      INTEGER NHlines,Jdo,KK,LL,MM
       CHARACTER Hlines(NHlines)*80
 C     ..
       CHARACTER Cwork*800
       CHARACTER Awork(MaxLines)*80
 C     ..
 C     .. External Subroutines ..
-      INTEGER Lenstr
       EXTERNAL ccif_output_fmt,
      +          ccif_put_real,
      +           ccif_release_context,
@@ -2652,13 +2895,20 @@ C
       CALL ccif_setup_context('_refine.details',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
-        ccifStatus = AppendRow
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_refine.details',ccifStatus
+       RETURN
+      END IF
 C
 C
         IF (NHlines .le. MaxLines) THEN
         DO 10 Jdo =1 ,NHlines
           Awork(Jdo) = Hlines(Jdo)
  10     CONTINUE
+c  this is a set of independent values start with KeepContext
+         ccifStatus = KeepContext
          CALL ccif_put_text('_refine.details',
      +   NHlines,Cwork,10,ccifContext,ccifStatus,'NEW')
         GO TO 20
@@ -2682,13 +2932,14 @@ C
 C
 C
          IF (MM .eq. 1) THEN
+         ccifStatus = KeepContext
          CALL ccif_put_text('_refine.details',
      +   10,Cwork,10,ccifContext,ccifStatus,'NEW')
          ELSE
+         ccifStatus = KeepContext
          CALL ccif_put_text('_refine.details',
      +   10,Cwork,10,ccifContext,ccifStatus,'  ')
          END IF
-         ccifStatus = KeepContext
 C
 C
         GO TO 30
@@ -2703,6 +2954,7 @@ C
           Awork(LL) = Hlines(Jdo)
  50     CONTINUE
         KK = NHlines - KK + 1
+         ccifStatus = KeepContext
          CALL ccif_put_text('_refine.details',
      +   KK,Cwork,10,ccifContext,ccifStatus,' ')
         GO TO 20
@@ -2731,11 +2983,12 @@ C
 C
 C     .. Array Arguments ..
       REAL Vterms(*),Wterms(*)
+      INTEGER Nval,Ntot,Jdo
       INTEGER Nterms(*)
       CHARACTER Cterms(Nval)*80
 C     ..
 C     .. Scalar Arguments ..
-      INTEGER Nval
+      REAL    Rtot
 C     ..
 C     .. External Subroutines ..
       EXTERNAL ccif_put_char,
@@ -2760,7 +3013,14 @@ C
      +                        ccifBlockID,
      +                        ccifContext,ccifStatus,'loop')
 C
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'REFINE_FUNCT_MINIMIZED',ccifStatus
+       RETURN
+      END IF
 C
+c  this is a set of independent values start with KeepContext
         CALL ccif_output_fmt(
      +       '_refine_funct_minimized.Residual',
      +                       ' ',16,5,'g',ccifStatus)
@@ -2775,7 +3035,6 @@ C
      +                       '-',6,3,'f',ccifStatus)
 C
 C
-      ccifStatus = KeepContext
       Ntot = 0
       Rtot = 0.0
 C
@@ -2783,6 +3042,7 @@ C
 c Hrefine_fnmin(Nval,Nterms,Vterms,Cterms,Wterms)
       DO 90 Jdo = 1,Nval
         IF (Nterms(Jdo) .gt. 0 ) THEN
+        ccifStatus = AppendRow
         IF (lenstr(Cterms(Jdo)).gt.0) THEN
           CALL ccif_put_char('_refine_funct_minimized.type',
      +                     Cterms(Jdo)(1:Lenstr(Cterms(Jdo))),
@@ -2792,14 +3052,14 @@ c Hrefine_fnmin(Nval,Nterms,Vterms,Cterms,Wterms)
           CALL ccif_put_int('_refine_funct_minimized.number_terms',
      +                        Nterms(Jdo),
      +                        ccifContext,ccifStatus)
-          ccifStatus = KeepContext
         Ntot = Ntot + Nterms(Jdo)
+        ccifStatus = KeepContext
           CALL ccif_put_real('_refine_funct_minimized.Residual',
      +                        Vterms(Jdo),
      +                        ccifContext,ccifStatus)
-          ccifStatus = KeepContext
         Rtot = Rtot + Vterms(Jdo)
         IF (Wterms(Jdo).gt.0.0) then
+        ccifStatus = KeepContext
           CALL ccif_put_real('_refine_funct_minimized.weight',
      +                        Wterms(Jdo),
      +                        ccifContext,ccifStatus)
@@ -2808,6 +3068,7 @@ c Hrefine_fnmin(Nval,Nterms,Vterms,Cterms,Wterms)
    90 CONTINUE
 C
 C
+        ccifStatus = AppendRow
         CALL ccif_put_char('_refine_funct_minimized.type',
      +                     'Total_Function',
      +                     ccifContext,ccifStatus)
@@ -2844,7 +3105,6 @@ C     .. Array Arguments ..
       REAL fom,Freefom
 C     ..
 C     .. External Subroutines ..
-      INTEGER Lenstr
       EXTERNAL ccif_output_fmt,
      +          ccif_put_real,
      +           ccif_release_context,
@@ -2861,13 +3121,20 @@ C
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
 C
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_refine.overall_FOM_free_R_set',ccifStatus
+       RETURN
+      END IF
 C
-      ccifStatus = AppendRow
+c  this is a set of independent values start with KeepContext
+      ccifStatus = KeepContext
       IF (Freefom .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +      '_refine.overall_FOM_free_R_set',
      +                   Freefom,ccifContext,ccifStatus)
-      
+      ccifStatus = KeepContext
       IF (fom .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +      '_refine.overall_FOM_work_R_set',
@@ -2916,7 +3183,14 @@ C
       CALL ccif_setup_context('REFINE',
      +                        CurrCategory,ccifBlockID,ccifContext,
      +                        ccifStatus,' ')
-      ccifStatus = AppendRow
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'REFINE',ccifStatus
+       RETURN
+      END IF
+c  this is a set of independent values start with KeepContext
+      ccifStatus = KeepContext
       CALL ccif_put_char('_refine.ls_matrix_type',
      +                   String(1:Lenstr(String)),
      +                   ccifContext,ccifStatus)
@@ -2944,7 +3218,6 @@ C     .. Array Arguments ..
       REAL R1,R2
 C     ..
 C     .. External Subroutines ..
-      INTEGER Lenstr
       EXTERNAL ccif_output_fmt,
      +          ccif_put_real,
      +           ccif_release_context,
@@ -2959,6 +3232,12 @@ C
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
 C
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'REFINE',ccifStatus
+       RETURN
+      END IF
 C
       CALL ccif_output_fmt('_refine.ls_d_res_high',
      +    ' ',6,3,'f',ccifStatus)
@@ -2966,6 +3245,7 @@ C
      +    ' ',6,3,'f',ccifStatus)
 C
 C
+c  this is a set of independent values start with KeepContext
       ccifStatus = KeepContext
       CALL ccif_put_real('_refine.ls_d_res_low',
      +                   R1,ccifContext,ccifStatus)
@@ -3014,12 +3294,19 @@ C
       CALL ccif_setup_context('REFLNS',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'REFLNS',ccifStatus
+       RETURN
+      END IF
 C
 C
-       ccifStatus = AppendRow
        IF (lenstr(SigmaLine).gt.0) THEN
        WRITE(SigmaLine,6000) Criteria
  6000  FORMAT('Fobs >=  ',F5.2,'  *standard deviations')
+c  this is a set of independent values start with KeepContext
+       ccifStatus = KeepContext
        CALL ccif_put_char('_reflns.observed_criterion',
      +   SigmaLine(1:Lenstr(SigmaLine)),ccifContext,ccifStatus)
         CALL ccif_release_context(ccifContext)
@@ -3062,8 +3349,6 @@ C     .. Array Arguments ..
       REAL rmsd,sigd
 C     ..
 C     .. Local Scalars ..
-      INTEGER Jdo
-      CHARACTER IDwork*6
       LOGICAL First
 C     ..
 C     .. External Functions ..
@@ -3099,8 +3384,16 @@ C
      +                         CurrCategory,
      +                         ccifBlockID,ccifContext,
      +                         ccifStatus,'loop')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'REFINE_LS_RESTR',ccifStatus
+       RETURN
+      END IF
 C
 C
+c  this is a loop_  start with AppendRow
+c
         ccifStatus = AppendRow
         IF (lenstr(RType).gt.0) THEN
           CALL ccif_put_char('_refine_ls_restr.type',
@@ -3174,12 +3467,11 @@ C
 C     .. Array Arguments ..
       INTEGER Nall,Nobs,Nmiss,Nwork,Nfree,
      +                            NfreeMiss
-      REAL PercentObs,PercentFree,
+      REAL PercentObs,PercentFree,PP,
      +                            Rall,Robs,Rwork,Rfree,
      +                            Wall,Wobs,Wwork,Wfree
 C     ..
 C     .. External Subroutines ..
-      INTEGER Lenstr
       EXTERNAL ccif_output_fmt,
      +          ccif_put_real,
      +           ccif_release_context,
@@ -3193,6 +3485,12 @@ C
       CALL ccif_setup_context('REFINE',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'REFINE',ccifStatus
+       RETURN
+      END IF
 C
 C
       CALL ccif_output_fmt('_refine.ls_number_reflns_all',
@@ -3230,6 +3528,7 @@ C
       CALL ccif_output_fmt('_refine.ls_percent_reflns_R_free',
      +             ' ',3,3,'f',ccifStatus)
 C
+c  this is a set of independent values start with KeepContext
 C
       ccifStatus = KeepContext
       IF (Nall .lt. IvalueNotDet -1 .and. Nall .gt. 0)
@@ -3339,9 +3638,9 @@ C
 C
 C     .. Array Arguments ..
       REAL RGall,RGwork,RGfree,RDhigh,RDlow
+      INTEGER NN
 C     ..
 C     .. External Subroutines ..
-      INTEGER Lenstr
       EXTERNAL ccif_output_fmt,
      +          ccif_put_real,
      +           ccif_release_context,
@@ -3355,6 +3654,12 @@ C
       CALL ccif_setup_context('REFINE_ANALYZE',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'REFINE_ANALYZE',ccifStatus
+       RETURN
+      END IF
 C
 C
       CALL ccif_output_fmt('_refine_analyze.RG_d_res_high',
@@ -3372,6 +3677,9 @@ ccx     +             ' ',3,3,'f',ccifStatus)
 C
 C
       NN = 0
+c
+c  this is a set of independent values start with KeepContext
+c
       ccifStatus = KeepContext
       IF (RDhigh .lt. valueNotDet -1.0)
      + CALL ccif_put_real('_refine_analyze.RG_d_res_high',
@@ -3389,15 +3697,14 @@ C
          CALL ccif_put_real('_refine_analyze.RG_work',
      +                   RGwork,ccifContext,ccifStatus)
        NN = NN + 1
-       ccifStatus = KeepContext
       END IF
 C
 C
+      ccifStatus = KeepContext
       IF (RGfree .lt. valueNotDet -1.0) THEN
          CALL ccif_put_real('_refine_analyze.RG_free',
      +                   RGfree,ccifContext,ccifStatus)
        NN = NN + 1
-         ccifStatus = KeepContext
        END IF
 C
 C       _refine.ls_RG_work_free_ratio
@@ -3447,8 +3754,6 @@ C     .. Array Arguments ..
       REAL Clow,Chigh,Usigma
 C     ..
 C     .. Local Scalars ..
-      INTEGER Jdo
-      CHARACTER IDwork*6
       LOGICAL First
 C     ..
 C     .. External Functions ..
@@ -3481,8 +3786,16 @@ C
      +                         CurrCategory,
      +                         ccifBlockID,ccifContext,
      +                         ccifStatus,'loop')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'REFINE_LS_RESTR_TYPE',ccifStatus
+       RETURN
+      END IF
 C
 C
+c  this is a loop_  start with AppendRow
+c
         ccifStatus = AppendRow
         IF (lenstr(RType).gt.0) THEN
           CALL ccif_put_char('_refine_ls_restr_type.type',
@@ -3559,8 +3872,8 @@ C     .. Array Arguments ..
      +         Nfree
 C     ..
 C     .. Local Scalars ..
-      INTEGER Jdo
-      CHARACTER IDwork*6
+      INTEGER NN,NPP
+      REAL PP
       LOGICAL First
 C     ..
 C     .. External Functions ..
@@ -3576,9 +3889,14 @@ C
       CALL ccif_setup_context('REFINE_LS_SHELL',
      +                        CurrCategory,ccifBlockID,ccifContext,
      +                        ccifStatus,'loop')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'REFINE_LS_SHELL',ccifStatus
+       RETURN
+      END IF
 C
 C
-        ccifStatus = AppendRow
         IF (First) THEN
           First = .false.
         CALL ccif_output_fmt('_refine_ls_shell.d_res_high',
@@ -3613,16 +3931,17 @@ C
      +                       ' ',3,3,'f',ccifStatus)
         CALL ccif_output_fmt('_refine_ls_shell.weight_exp',
      +                       ' ',3,3,'f',ccifStatus)
-        ccifStatus = KeepContext
        END IF
 C
 C
+c  this is a loop_  start with AppendRow
+c
+        ccifStatus = AppendRow
         CALL ccif_put_real('_refine_ls_shell.d_res_high',
      +                     Rhigh,ccifContext,ccifStatus)
         ccifStatus = KeepContext
         CALL ccif_put_real('_refine_ls_shell.d_res_low',
      +                     Rlow,ccifContext,ccifStatus)
-        ccifStatus = KeepContext
 C
 C
         IF (Nfree .lt. IValueNotDet -1) THEN
@@ -3630,6 +3949,7 @@ C
         ELSE
          NN = NrefAll
         END IF
+        ccifStatus = KeepContext
         IF (NN .lt. IvalueNotDet -1)
      +  CALL ccif_put_int('_refine_ls_shell.number_reflns_all',
      +                     NN,ccifContext,ccifStatus)
@@ -3752,14 +4072,13 @@ C
       include 'harvest.inc'
 C
 C     .. Array Arguments ..
-      INTEGER NHlines
+      INTEGER NHlines,Jdo,KK,MM,LL
       CHARACTER Hlines(NHlines)*80
 C     ..
       CHARACTER Cwork*800
       CHARACTER Awork(MaxLines)*80
 C     ..
 C     .. External Subroutines ..
-      INTEGER Lenstr
       EXTERNAL ccif_output_fmt,
      +          ccif_put_real,
      +           ccif_release_context,
@@ -3775,13 +4094,20 @@ C
       CALL ccif_setup_context('REFINE',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
-        ccifStatus = AppendRow
 C
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'REFINE',ccifStatus
+       RETURN
+      END IF
 C
         IF (NHlines .le. MaxLines) THEN
         DO 10 Jdo =1 ,NHlines
           Awork(Jdo) = Hlines(Jdo)
  10     CONTINUE
+c  this is a set of independent values start with KeepContext
+         ccifStatus = KeepContext
          CALL ccif_put_text('_refine.solvent_model_details',
      +   NHlines,Cwork,10,ccifContext,ccifStatus,'NEW')
         GO TO 20
@@ -3802,13 +4128,14 @@ C
 C
 C
          IF (MM .eq. 1) THEN
+         ccifStatus = KeepContext
          CALL ccif_put_text('_refine.solvent_model_details',
      +   10,Cwork,10,ccifContext,ccifStatus,'NEW')
          ELSE
+         ccifStatus = KeepContext
          CALL ccif_put_text('_refine.solvent_model_details',
      +   10,Cwork,10,ccifContext,ccifStatus,'  ')
          END IF
-         ccifStatus = KeepContext
 C
 C
         GO TO 30
@@ -3852,9 +4179,6 @@ C
       include 'harvest.inc'
 C
 C     .. Scalar Arguments ..
-      REAL VALND
-      INTEGER IVND,RowLimit
-      LOGICAL Private,UseCWD
       CHARACTER WghtScheme* (*)
 C     ..
 C     .. External Functions ..
@@ -3870,8 +4194,15 @@ C
      +                        CurrCategory,ccifBlockID,
      +                        ccifContext,ccifStatus,' ')
 C
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'REFINE',ccifStatus
+       RETURN
+      END IF
 C
-      ccifStatus = AppendRow
+      ccifStatus = KeepContext
+c  this is a set of independent values start with KeepContext
       CALL ccif_put_char('_refine.ls_weighting_scheme',
      +       WghtScheme(1:Lenstr(WghtScheme)),
      +       ccifContext,ccifStatus)
@@ -3894,14 +4225,13 @@ C
       include 'harvest.inc'
 C
 C     .. Array Arguments ..
-      INTEGER NHlines
+      INTEGER NHlines,Jdo,KK,MM,LL
       CHARACTER Hlines(NHlines)*80
 C     ..
       CHARACTER Cwork*800
       CHARACTER Awork(MaxLines)*80
 C     ..
 C     .. External Subroutines ..
-      INTEGER Lenstr
       EXTERNAL ccif_output_fmt,
      +          ccif_put_real,
      +           ccif_release_context,
@@ -3917,13 +4247,20 @@ C
       CALL ccif_setup_context('_refine.ls_weighting_details',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
-        ccifStatus = AppendRow
 C
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_refine.ls_weighting_details',ccifStatus
+       RETURN
+      END IF
 C
         IF (NHlines .le. MaxLines) THEN
         DO 10 Jdo =1 ,NHlines
           Awork(Jdo) = Hlines(Jdo)
  10     CONTINUE
+c  this is a set of independent values start with KeepContext
+         ccifStatus = KeepContext
          CALL ccif_put_text('_refine.ls_weighting_details',
      +   NHlines,Cwork,10,ccifContext,ccifStatus,'NEW')
         GO TO 20
@@ -3944,13 +4281,14 @@ C
 C
 C
          IF (MM .eq. 1) THEN
+         ccifStatus = KeepContext
          CALL ccif_put_text('_refine.ls_weighting_details',
      +   10,Cwork,10,ccifContext,ccifStatus,'NEW')
          ELSE
+         ccifStatus = KeepContext
          CALL ccif_put_text('_refine.ls_weighting_details',
      +   10,Cwork,10,ccifContext,ccifStatus,'  ')
          END IF
-         ccifStatus = KeepContext
 C
 C
         GO TO 30
@@ -3962,6 +4300,7 @@ C
           Awork(LL) = Hlines(Jdo)
  50     CONTINUE
         KK = NHlines - KK + 1
+         ccifStatus = KeepContext
          CALL ccif_put_text('_refine.ls_weighting_details',
      +   KK,Cwork,10,ccifContext,ccifStatus,' ')
         GO TO 20
@@ -4077,8 +4416,13 @@ C
      +                        CurrCategory,ccifBlockID,ccifContext,
      +                        ccifStatus,'loop')
 C
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_refln_sys_abs.index_h',ccifStatus
+       RETURN
+      END IF
 C
-      ccifStatus = AppendRow
       IF (First) THEN
         First = .false.
         CALL ccif_output_fmt('_refln_sys_abs.index_h',' ',8,0,
@@ -4093,10 +4437,12 @@ C
      +                       'f',ccifStatus)
         CALL ccif_output_fmt('_refln_sys_abs.I_over_sigmaI',
      +                       ' ',8,1,'f',ccifStatus)
-        ccifStatus = KeepContext
       END IF
 C
 C
+c  this is a loop_  start with AppendRow
+c
+        ccifStatus = AppendRow
         CALL ccif_put_int('_refln_sys_abs.index_h',IH,ccifContext,
      +                     ccifStatus)
         ccifStatus = KeepContext
@@ -4144,7 +4490,7 @@ C
 C
 C
 C     .. Array Arguments ..
-      REAL WilsonB,R1,R2,AMI,AMF
+      REAL WilsonB,R1,R2,AMI,AMF,TMP
       INTEGER Nref
       CHARACTER Criteria* (*)
 C     ..
@@ -4164,6 +4510,12 @@ C
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
 C
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_reflns.entry_id',ccifStatus
+       RETURN
+      END IF
 C
       CALL ccif_output_fmt('_reflns.d_resolution_high',
      +             ' ',6,2,'f',ccifStatus)
@@ -4178,8 +4530,8 @@ C
       CALL ccif_output_fmt('_reflns.mean<F_over_sigF>_obs_all',
      +    ' ',8,2,'f',ccifStatus)
 C
+c  this is a set of independent values start with KeepContext
 C
-      ccifStatus = KeepContext
       IF (lenstr(PName).gt.0)
      + CALL ccif_put_char('_reflns.entry_id',
      +   PName(1:Lenstr(PName)),ccifContext,ccifStatus)
@@ -4212,14 +4564,17 @@ C
      + CALL ccif_put_real('_reflns.B_iso_Wilson_estimate',
      +                   WilsonB,ccifContext,ccifStatus)
        END IF
+      ccifStatus = KeepContext
        IF (AMI .lt. valueNotDet -1.0)
      +  CALL ccif_put_real(
      +       '_reflns.mean<I_over_sigI>_obs_all',
      +                   AMI,ccifContext,ccifStatus)
+      ccifStatus = KeepContext
        IF (AMF .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +      '_reflns.mean<F_over_sigF>_obs_all',
      +                   AMF,ccifContext,ccifStatus)
+      ccifStatus = KeepContext
       IF (Nref .lt. IvalueNotDet -1 .and. Nref .gt. 0)
      + CALL ccif_put_int('_reflns.number_obs',
      +                   Nref,ccifContext,ccifStatus)
@@ -4272,9 +4627,6 @@ C
 C     .. Array Arguments ..
       REAL Z,ACT,ACO,CT,CO
 C     ..
-C     .. Scalar Arguments ..
-      INTEGER NumShells
-C     ..
 C     .. External Subroutines ..
       EXTERNAL ccif_output_fmt,
      +          ccif_put_char,
@@ -4284,8 +4636,6 @@ C     .. External Subroutines ..
      +              ccif_setup_context
 C     ..
 C     .. Local Scalars ..
-      INTEGER Jdo
-      CHARACTER IDwork*6
       LOGICAL First
 C     ..
 C     .. External Functions ..
@@ -4302,9 +4652,14 @@ C
       CALL ccif_setup_context('_EBI_reflns_intensity_shell.Z',
      +                        CurrCategory,ccifBlockID,ccifContext,
      +                        ccifStatus,'loop')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_EBI_reflns_intensity_shell.Z',ccifStatus
+       RETURN
+      END IF
 C
 C
-        ccifStatus = AppendRow
         IF (First) THEN
           First = .false.
         CALL ccif_output_fmt('_EBI_reflns_intensity_shell.Z',
@@ -4321,10 +4676,11 @@ C
         CALL ccif_output_fmt(
      +     '_EBI_reflns_intensity_shell.NZ_centric_observed',
      +     ' ',8,1,'f',ccifStatus)
-        ccifStatus = KeepContext
        END IF
 C
+c  this is a loop_  start with AppendRow
 C
+        ccifStatus = AppendRow
         CALL ccif_put_real('_EBI_reflns_intensity_shell.Z',
      +                     Z,ccifContext,ccifStatus)
         ccifStatus = KeepContext
@@ -4380,7 +4736,8 @@ C
 C
 C     .. Array Arguments ..
       INTEGER  nmeas,nuniq,ncent,nano,Ntb
-      REAL     R1,R2,fsigi,Rfac,ranom,sdIsignal,fpbias
+      REAL     R1,R2,fsigi,Rfac,ranom,sdIsignal,fpbias,
+     +         Rlow, Rhigh
 C     ..
 C     .. External Subroutines ..
       EXTERNAL ccif_output_fmt,
@@ -4442,16 +4799,22 @@ C
       END IF
 C
 C
-      ccifStatus = KeepContext
       IF (rom_context .eq. -1) then
       CALL ccif_setup_context(
      +     '_diffrn_reflns.d_res_high',
      +      CurrCategory,ccifBlockID,
      +      rom_context,ccifStatus,' ')
-       ccifStatus = RowAppend
-      ENDIF
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_diffrn_reflns.d_res_high',ccifStatus
+       RETURN
+      END IF
+      end if
 C
+c  this is a set of independent values start with KeepContext
 C
+      ccifStatus = KeepContext
       CALL ccif_put_real('_diffrn_reflns.d_res_low',
      +      Rlow,rom_context,ccifStatus)
 C
@@ -4459,27 +4822,30 @@ C
       ccifStatus = KeepContext
       CALL ccif_put_real('_diffrn_reflns.d_res_high',
      +      Rhigh,rom_context,ccifStatus)
+C
+C
       ccifStatus = KeepContext
-C
-C
       IF (Nmeas .lt. IvalueNotDet -1 .and. Nmeas .gt. 0)
      + CALL ccif_put_int(
      +    '_diffrn_reflns.number_measured_all',
      +      Nmeas,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF (Nuniq .lt. IvalueNotDet -1 .and. Nuniq .gt. 0)
      + CALL ccif_put_int(
      +       '_diffrn_reflns.number_unique_all',
      +        Nuniq,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF ( Ncent .lt. IValueNotDet -1 .and. Ncent .gt. 0) 
      + CALL ccif_put_int(
      +     '_diffrn_reflns.number_centric_all',
      +       Ncent,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF ( Nano .lt. IValueNotDet -1 .and. Nano .gt. 0) 
      + CALL ccif_put_int(
      +      '_diffrn_reflns.number_anomalous_all',
@@ -4499,6 +4865,7 @@ C
      +      Ranom,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF (fsigi .lt. ValueNotDet -1.0 .and. fsigi .gt. 0.001)
      + CALL ccif_put_real(
      +      '_diffrn_reflns.meanI_over_sigI_all',
@@ -4515,11 +4882,12 @@ C
 C
 C
 C
-      ccifStatus = KeepContext
       IF (Ntb .lt. IValueNotDet -1 .and. Ntb .gt. 0) THEN
+      ccifStatus = KeepContext
          CALL ccif_put_int(
      +   '_diffrn_reflns.num_fract_bias_in_mean',
      +      Ntb,rom_context,ccifStatus)
+      ccifStatus = KeepContext
          CALL ccif_put_real(
      +   '_diffrn_reflns.mean_fract_bias',
      +      fpbias,rom_context,ccifStatus)
@@ -4589,15 +4957,21 @@ C
      +                       ' ',6,2,'f',ccifStatus)
 C
 C
-      ccifStatus = KeepContext
-      IF (rom_context .eq. -1) THEN
-        CALL ccif_setup_context('_diffrn_reflns.d_res_high',
+      IF (rom_context .eq. -1) then
+      CALL ccif_setup_context('_diffrn_reflns.d_res_high',
      +                        CurrCategory,ccifBlockID,
      +                        rom_context,ccifStatus,' ')
-        ccifStatus = RowAppend
-      ENDIF
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_diffrn_reflns.d_res_high',ccifStatus
+       RETURN
+      END IF
+      end if
 C
+c  this is a set of independent values start with KeepContext
 C
+      ccifStatus = KeepContext
       IF (pcv .lt. ValueNotDet -1.0 .and. pcv .gt. 0.01)
      + CALL ccif_put_real('_diffrn_reflns.PCV',
      +      pcv,rom_context,ccifStatus)
@@ -4716,16 +5090,22 @@ C
      +                       ' ',8,1,'f',ccifStatus)
 C
 C
-      ccifStatus = KeepContext
-      IF (rom_context .eq. -1) THEN
-       CALL ccif_setup_context(
+      IF (rom_context .eq. -1) then
+      CALL ccif_setup_context(
      +  '_diffrn_reflns.d_res_high',
      +        CurrCategory,ccifBlockID,
      +          rom_context,ccifStatus,' ')
-        ccifStatus = RowAppend
-      ENDIF
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_diffrn_reflns.d_res_high',ccifStatus
+       RETURN
+      END IF
+      end if
 C
+c  this is a set of independent values start with KeepContext
 C
+      ccifStatus = KeepContext
       CALL ccif_put_real('_diffrn_reflns.min_intensity',
      +      aihmin,rom_context,ccifStatus)
       ccifStatus = KeepContext
@@ -4756,14 +5136,17 @@ C
      +  CALL ccif_put_int(
      +    '_diffrn_reflns.num_partials_measured',
      +       Nssp,rom_context,ccifStatus)
+      ccifStatus = KeepContext
       IF (t1p .lt. ValueNotDet -1.0 .and. t1p .gt. 0.001)
      + CALL ccif_put_real(
      + '_diffrn_reflns.Intensity_rms_partially_recorded',
      +      t1p,rom_context,ccifStatus)
+      ccifStatus = KeepContext
       IF (t2p .lt. ValueNotDet -1.0 .and. t2p .gt. 0.001)
      + CALL ccif_put_real(
      + '_diffrn_reflns.mean_scatter_over_sd_part',
      +      t2p,rom_context,ccifStatus)
+      ccifStatus = KeepContext
       IF (t3p .lt. ValueNotDet -1.0 .and. t3p .gt. 0.001)
      + CALL ccif_put_real(
      + '_diffrn_reflns.sigma_scatter_over_sd_part',
@@ -4799,8 +5182,7 @@ C     .. External Subroutines ..
      +              ccif_setup_context
 C     ..
 C     .. Local Scalars ..
-      INTEGER Jdo
-      CHARACTER IDwork*6
+      REAL TMP
       LOGICAL First
 C     ..
 C     .. External Functions ..
@@ -4817,9 +5199,14 @@ C
      +      '_EBI_tmp_reflns_scaling_shell.d_res_high',
      +                        CurrCategory,ccifBlockID,ccifContext,
      +                        ccifStatus,'loop')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  '_EBI_tmp_reflns_scaling_shell.d_res_high',ccifStatus
+       RETURN
+      END IF
 C
 C
-        ccifStatus = AppendRow
         IF (First) THEN
           First = .false.
         CALL ccif_output_fmt(
@@ -4837,7 +5224,6 @@ C
         CALL ccif_output_fmt(
      +    '_EBI_tmp_reflns_scaling_shell.mean<F_over_sigF>_obs',
      +                       ' ',9,2,'f',ccifStatus)
-        ccifStatus = KeepContext
        END IF
 C
 C
@@ -4847,7 +5233,9 @@ C
         R2 = TMP
       END IF
 C
+c  this is a loop_  start with AppendRow
 C
+        ccifStatus = AppendRow
         CALL ccif_put_real(
      +       '_EBI_tmp_reflns_scaling_shell.d_res_high',
      +                     R1,ccifContext,ccifStatus)
@@ -4920,7 +5308,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Local Scalars ..
       INTEGER Jdo
-      CHARACTER IDwork*6
+      REAL Rlow,Rhigh
       LOGICAL First
 C     ..
 C     .. External Functions ..
@@ -5061,7 +5449,7 @@ C     .. External Subroutines ..
 C     ..
 C     .. Local Scalars ..
       INTEGER Jdo
-      CHARACTER IDwork*6
+      REAL Rlow,Rhigh
       LOGICAL First
 C     ..
 C     .. External Functions ..
@@ -5152,16 +5540,10 @@ C
       include 'harvest.inc'
 C
 C     .. Scalar Arguments ..
-      REAL VALND
-      INTEGER IVND,RowLimit
-      LOGICAL Private,UseCWD
       CHARACTER SoftwareAuthor* (*),
      +           SoftwareEmail* (*),
      +            SoftwareDescr* (*),
      +             SoftwareClass* (*)
-C     ..
-C     .. Local Scalars ..
-      INTEGER Jdo
 C     ..
 C     .. External Functions ..
       INTEGER Lenstr
@@ -5173,9 +5555,16 @@ C
 C
       CALL ccif_setup_context('SOFTWARE',CurrCategory,ccifBlockID,
      +                        ccifContext,ccifStatus,' ')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Error in ccif_setup_context for '//
+     +  'SOFTWARE',ccifStatus
+       RETURN
+      END IF
 C
+c  this is a set of independent values start with KeepContext
 C
-      ccifStatus = AppendRow
+      ccifStatus = KeepContext
       IF (Lenstr(SoftwareClass) .gt. 1)
      +  CALL ccif_put_char('_software.classification',
      +       SoftwareClass(1:Lenstr(SoftwareClass)),
@@ -5443,10 +5832,14 @@ C         _Symmetry.space_group_name_H-M
 C
       CALL ccif_setup_context('Symmetry',CurrCategory,ccifBlockID,
      +                        ccifContext,ccifStatus,' ')
-      ccifStatus = AppendRow
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Symmetry',ccifStatus
+       RETURN
+      END IF
+c  this is a set of independent values start with KeepContext
       CALL ccif_put_int('_Symmetry.Int_Tables_number',IntTabNum,
      +                  ccifContext,ccifStatus)
-      ccifStatus = KeepContext
       CALL ccif_put_char('_Symmetry.space_group_name_H-M',SGname,
      +                   ccifContext,ccifStatus)
       CALL ccif_release_context(ccifContext)
@@ -5455,12 +5848,18 @@ C---- do loop    _Symmetry_equiv.pos_as_xyz
 C
       CALL ccif_setup_context('Symmetry_EQUIV',CurrCategory,
      +                        ccifBlockID,ccifContext,ccifStatus,'loop')
+      IF (ccifStatus .lt. 0 .or. ccifStatus .gt. 2) then
+       write(6,'(a,2x,i8)') 
+     + 'Symmetry_EQUIV',ccifStatus
+       RETURN
+      END IF
 C
 C
-      ccifStatus = AppendRow
       DO 90 Jdo = 1,Nsymm
         WRITE (IDwork,FMT=6008) Jdo
  6008   FORMAT (i6)
+c  this is a loop_ start with aPPENDrOW
+        ccifStatus = AppendRow
         CALL ccif_put_char('_Symmetry_equiv.id',IDwork,ccifContext,
      +                     ccifStatus)
         ccifStatus = KeepContext
@@ -5473,7 +5872,6 @@ C
      +                       EquivPos(Jdo) (1:Lenstr(EquivPos(Jdo))),
      +                       ccifContext,ccifStatus)
         END IF
-        ccifStatus = KeepContext
    90 CONTINUE
 C
 C
@@ -5530,8 +5928,7 @@ c     set output format here
          call ccif_output_fmt(
      +        '_pdbx_phasing_DM_shell.delta_phi_final','-',
      +        7,2,'f',ccifStatus)
-        
-         ccifStatus = KeepContext 
+         
 c     call file writing functions here
          call ccif_put_real('_pdbx_phasing_DM_shell.d_res_high',
      +        Hrres(i),
