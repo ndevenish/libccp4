@@ -417,6 +417,7 @@ C
      +                        ccifContext,ccifStatus,' ')
 C
 C
+      ccifStatus = AppendRow
       CALL ccif_output_fmt('_cell.length_a',' ',8,3,'f',ccifStatus)
       CALL ccif_output_fmt('_cell.length_b',' ',8,3,'f',ccifStatus)
       CALL ccif_output_fmt('_cell.length_c',' ',8,3,'f',ccifStatus)
@@ -425,16 +426,22 @@ C
       CALL ccif_output_fmt('_cell.angle_gamma',' ',8,3,'f',ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       CALL ccif_put_real('_cell.length_a',Cell(1),ccifContext,
      +                   ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_real('_cell.length_b',Cell(2),ccifContext,
      +                   ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_real('_cell.length_c',Cell(3),ccifContext,
      +                   ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_real('_cell.angle_alpha',Cell(4),ccifContext,
      +                   ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_real('_cell.angle_beta',Cell(5),ccifContext,
      +                   ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_real('_cell.angle_gamma',Cell(6),ccifContext,
      +                   ccifStatus)
 C
@@ -482,7 +489,7 @@ C
       CALL ccif_output_fmt(
      +     '_exptl_crystal.percent_solvent',
      +         ' ',8,1,'f',ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       CALL ccif_put_real(
      +     '_exptl_crystal.percent_solvent',
      +                    Fraction,ccifContext,ccifStatus)
@@ -522,8 +529,8 @@ C
      +                        ccifContext,ccifStatus,'loop')
 C
 C
-      DO 10 Jdo=1,NRshells
       ccifStatus = AppendRow
+      DO 10 Jdo=1,NRshells
       CALL ccif_put_real('_reflns_shell.d_res_low',
      +      Res(1,Jdo),ccifContext,ccifStatus)
 C
@@ -654,9 +661,9 @@ C
      +      sds(2,Jdo),ccifContext,ccifStatus)
 C
 C
-      ccifStatus = KeepContext
       IF (Nfpb(Jdo) .lt. ValueNotDet -1.0 .and. 
      +    Nfpb(Jdo) .gt. 0) THEN
+      ccifStatus = KeepContext
       CALL ccif_put_int(
      +      '_reflns_shell.num_fract_bias_in_mean',
      +      Nfpb(Jdo),ccifContext,ccifStatus)
@@ -665,6 +672,7 @@ C
      +      '_reflns_shell.mean_fract_bias',
      +      FPB(Jdo),ccifContext,ccifStatus)
       END IF
+      ccifStatus = KeepContext
 C
 C
  10   CONTINUE
@@ -672,7 +680,6 @@ C
       END IF
 C
 C
-      ccifStatus = 1
       IF (EnvRet .eq. 0) THEN
         CALL ccif_close_cif('DEPOSITFILE',ccifStatus)
       ELSE
@@ -721,13 +728,13 @@ C
       CALL ccif_setup_context('_reflns.data_reduction_method',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
+        ccifStatus = AppendRow
 C
 C
         IF (NHlines .le. MaxLines) THEN
         DO 10 Jdo =1 ,NHlines
           Awork(Jdo) = Method(Jdo)
  10     CONTINUE
-         ccifStatus = 1
          CALL ccif_put_text('_reflns.data_reduction_method',
      +   NHlines,Cwork,10,ccifContext,ccifStatus,'NEW')
         GO TO 20
@@ -748,14 +755,13 @@ C
 C
 C
          IF (MM .eq. 1) THEN
-         ccifStatus = 1
          CALL ccif_put_text('_reflns.data_reduction_method',
      +   10,Cwork,10,ccifContext,ccifStatus,'NEW')
          ELSE
-         ccifStatus = 1
          CALL ccif_put_text('_reflns.data_reduction_method',
      +   10,Cwork,10,ccifContext,ccifStatus,'  ')
          END IF
+         ccifStatus = KeepContext
 C
 C
         GO TO 30
@@ -770,7 +776,6 @@ C
           Awork(LL) = Method(Jdo)
  50     CONTINUE
         KK = NHlines - KK + 1
-         ccifStatus = 1
          CALL ccif_put_text('_reflns.data_reduction_method',
      +   KK,Cwork,10,ccifContext,ccifStatus,' ')
         GO TO 20
@@ -821,7 +826,7 @@ C
       CALL ccif_setup_context('_exptl_crystal.density_Matthews',
      +                        CurrCategory,ccifBlockID,ccifContext,
      +                        ccifStatus,' ')
-      ccifStatus = 1
+      ccifStatus = AppendRow
       CALL ccif_put_real('_exptl_crystal.density_Matthews',Fraction,
      +                   ccifContext,ccifStatus)
       CALL ccif_release_context(ccifContext)
@@ -1119,6 +1124,7 @@ C----  do   _entry.id
 C
       CALL ccif_setup_context('ENTRY',CurrCategory,ccifBlockID,
      +                        ccifContext,ccifStatus,' ')
+      ccifStatus = AppendRow
       CALL ccif_put_char('_entry.id',
      +                   ProjectName(1:Lenstr(ProjectName)),
      +                   ccifContext,ccifStatus)
@@ -1128,6 +1134,7 @@ C
 
       CALL ccif_setup_context('DIFFRN',CurrCategory,ccifBlockID,
      +                        ccifContext,ccifStatus,' ')
+      ccifStatus = AppendRow
       CALL ccif_put_char('_diffrn.id',
      +     DataSetName(1:Lenstr(DataSetName)),ccifContext,
      +                   ccifStatus)
@@ -1138,6 +1145,7 @@ C---- do   _audit.creation_date
 C
       CALL ccif_setup_context('AUDIT',CurrCategory,ccifBlockID,
      +                        ccifContext,ccifStatus,' ')
+      ccifStatus = AppendRow
       CALL ccif_put_char('_audit.creation_date',
      +     ciftime(1:Lenstr(ciftime)),ccifContext,
      +                   ccifStatus)
@@ -1182,13 +1190,13 @@ C
       CALL ccif_setup_context('_reflns.merge_reject_criterion',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
+        ccifStatus = AppendRow
 C
 C
         IF (NHlines .le. MaxLines) THEN
         DO 10 Jdo =1 ,NHlines
           Awork(Jdo) = Rcriteria(Jdo)
  10     CONTINUE
-         ccifStatus = 1
         CALL ccif_put_text('_reflns.merge_reject_criterion',
      +   NHlines,Cwork,10,ccifContext,ccifStatus,'NEW')
         GO TO 20
@@ -1209,14 +1217,13 @@ C
 C
 C
          IF (MM .eq. 1) THEN
-         ccifStatus = 1
          CALL ccif_put_text('_reflns.merge_reject_criterion',
      +   10,Cwork,10,ccifContext,ccifStatus,'NEW')
          ELSE
-         ccifStatus = 1
          CALL ccif_put_text('_reflns.merge_reject_criterion',
      +   10,Cwork,10,ccifContext,ccifStatus,'  ')
          END IF
+         ccifStatus = KeepContext
 C
 C
         GO TO 30
@@ -1231,7 +1238,6 @@ C
           Awork(LL) = Rcriteria(Jdo)
  50     CONTINUE
         KK = NHlines - KK + 1
-         ccifStatus = 1
          CALL ccif_put_text('_reflns.merge_reject_criterion',
      +   KK,Cwork,10,ccifContext,ccifStatus,' ')
         GO TO 20
@@ -1302,10 +1308,13 @@ C
       END IF
 C
 C
+      ccifStatus = KeepContext
       CALL ccif_put_real('_reflns.overall_d_res_low',
      +                   Rlow,ccifContext,ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_real('_reflns.overall_d_res_high',
      +                   Rhigh,ccifContext,ccifStatus)
+      ccifStatus = KeepContext
 C
 C
       IF (Ntotal .ne. IvalueNotDet) 
@@ -1870,6 +1879,7 @@ C
      +                        ccifBlockID,ccifContext,ccifStatus,'loop')
 C
 C
+      ccifStatus = AppendRow
       IF (DerPointer .le. 0) THEN
         CALL ccif_output_fmt('_phasing_MIR_der.id','-',15,0,'z',
      +                       ccifStatus)
@@ -1897,11 +1907,11 @@ C
      +                        ' ',9,0,'d',ccifStatus)
         CALL ccif_output_fmt('_phasing_MIR_der.Reflns_anomalous',
      +                       ' ',9,0,'d',ccifStatus)
+        ccifStatus = KeepContext
       END IF
 C
 C
       DerPointer = DerPointer + 1
-      ccifStatus = AppendRow
       IF (lenstr(SS(DerPointer)).gt.0) THEN
         CALL ccif_put_char('_phasing_MIR_der.id',
      +      SS(DerPointer) (1:Lenstr(SS(DerPointer))),
@@ -1935,15 +1945,15 @@ C
      +                   CC(DerPointer) (1:
      +                   Lenstr(CC(DerPointer))),ccifContext,
      +                   ccifStatus)
+      ccifStatus = KeepContext
 C
 C
       IF (Reflns(1) .lt. IvalueNotDet -1 .and. 
      +    Reflns(1) .gt. 0) THEN
-          ccifStatus = KeepContext
           CALL ccif_put_int(
      +                  '_phasing_MIR_der.Reflns_centric',
      +                      Reflns(1),ccifContext,ccifStatus)
-         ccifStatus = KeepContext
+      ccifStatus = KeepContext
       IF (Package(1:4) .eq. 'CCP4') THEN
       IF (Power(1) .lt. valueNotDet -1.0 .and. 
      +    Power(1) .ne. 0.0) 
@@ -1957,33 +1967,33 @@ C
      +                       RCullis(1),ccifContext,ccifStatus)
       END IF
       END IF
+      ccifStatus = KeepContext
 C
 C
       IF (Reflns(2) .lt. IvalueNotDet -1 .and. 
      +    Reflns(2) .gt. 0) THEN
-          ccifStatus = KeepContext
           CALL ccif_put_int(
      +                   '_phasing_MIR_der.Reflns_acentric',
      +                      Reflns(2),ccifContext,ccifStatus)
-      ccifStatus = KeepContext
+          ccifStatus = KeepContext
       IF (Package(1:4) .eq. 'CCP4') THEN
       IF (Power(2) .lt. valueNotDet -1.0 .and. 
      +    Power(2) .ne. 0.0) 
      +    CALL ccif_put_real(
      +                '_phasing_MIR_der.Power_acentric',
      +                       Power(2),ccifContext,ccifStatus)
-      ccifStatus = KeepContext
+         ccifStatus = KeepContext
       IF (RCullis(2) .lt. valueNotDet -1.0 .and. 
      +    RCullis(2) .ne. 0.0) CALL ccif_put_real(
      +               '_phasing_MIR_der.R_cullis_acentric',
      +                       RCullis(2),ccifContext,ccifStatus)
       END IF
       END IF
+      ccifStatus = KeepContext
 C
 C
       IF (Reflns(3) .lt. IvalueNotDet -1 .and. 
      +    Reflns(3) .gt. 0) THEN
-          ccifStatus = KeepContext
           CALL ccif_put_int(
      +                '_phasing_MIR_der.Reflns_anomalous',
      +                      Reflns(3),ccifContext,ccifStatus)
@@ -2047,6 +2057,7 @@ C
      +                        ccifStatus,'loop')
 C
 C
+      ccifStatus = AppendRow
       IF (MirDerSiteID .le. 0) THEN
         CALL ccif_output_fmt('_phasing_MIR_der_site.der_id','-',15,0,
      +                       'z',ccifStatus)
@@ -2074,11 +2085,11 @@ C
         CALL ccif_output_fmt(
      +       '_phasing_MIR_der_site.Occupancy_anom_su',
      +                       ' ',8,3,'f',ccifStatus)
+        ccifStatus = KeepContext
       END IF
 C
 C
       DO 10 Jdo = 1,NumDerSites
-        ccifStatus = AppendRow
         IF (lenstr(DerID).gt.0) THEN
           CALL ccif_put_char('_phasing_MIR_der_site.der_id',
      +                     DerID(1:Lenstr(DerID)),ccifContext,
@@ -2121,6 +2132,7 @@ C
      +      '_phasing_MIR_der_site.Occupancy_iso',
      +                       Occ(Jdo),ccifContext,ccifStatus)
         END IF
+        ccifStatus = KeepContext
       END IF
 C
 C---- Need both value not defined and 'finite' function
@@ -2137,6 +2149,7 @@ C
      +      '_phasing_MIR_der_site.Occupancy_anom',
      +                       anom(Jdo),ccifContext,ccifStatus)
          END IF
+         ccifStatus = KeepContext
         END IF
    10 CONTINUE
 C
@@ -2231,40 +2244,50 @@ C
  6000   FORMAT('FP >',f3.1,' SIGFP')
 C
 C
+      ccifStatus = KeepContext
       IF (lenstr(DName).gt.0)
      + CALL ccif_put_char('_phasing_MIR.entry_id',
      +                   DName(1:Lenstr(DName)),
      +                   ccifContext,ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_real('_phasing_MIR.d_res_high',
      +                   R1,ccifContext,ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_real('_phasing_MIR.d_res_low',
      +                   R2,ccifContext,ccifStatus)
 
+      ccifStatus = KeepContext
       IF (SigmaNat .lt. valueNotDet -1.0 .and.
      +    SigmaNat .gt. 0.01)
      + CALL ccif_put_char('_phasing_MIR.reflns_criterion',
      +                   Criteria,ccifContext,ccifStatus)
+      ccifStatus = KeepContext      
 C
 C
       IF (Mt .ne. 0 .and. Mt .lt. IvalueNotDet -1) THEN
          CALL ccif_put_int('_phasing_MIR.reflns',
      +                     Mt,ccifContext,ccifStatus)
+         ccifStatus = KeepContext
          CALL ccif_put_real('_phasing_MIR.FOM',
      +                     fomT,ccifContext,ccifStatus)
+         ccifStatus = KeepContext
       END IF
 C
 C
       IF (Mc .ne. 0 .and. Mc .lt. IvalueNotDet -1) THEN
           CALL ccif_put_int('_phasing_MIR.reflns_centric',
      +                      Mc,ccifContext,ccifStatus)
+          ccifStatus = KeepContext
           CALL ccif_put_real('_phasing_MIR.FOM_centric',
      +                      fomC,ccifContext,ccifStatus)
+          ccifStatus = KeepContext
       END IF
 C
 C
       IF (Ma .ne. 0 .and. Ma .lt. IvalueNotDet -1) THEN
           CALL ccif_put_int('_phasing_MIR.reflns_acentric',
      +                       Ma,ccifContext,ccifStatus)
+          ccifStatus = KeepContext
           CALL ccif_put_real('_phasing_MIR.FOM_acentric',
      +                       fomA,ccifContext,ccifStatus)
       END IF
@@ -2334,6 +2357,7 @@ C
      +                        ccifStatus,'loop')
 C
 C
+        ccifStatus = AppendRow
         IF (First) THEN
           First = .false.
         CALL ccif_output_fmt('_phasing_MIR_shell.d_res_high',
@@ -2354,6 +2378,7 @@ C
         CALL ccif_output_fmt(
      +         '_phasing_MIR_shell.reflns_acentric',
      +         ' ',8,0,'d',ccifStatus)
+        ccifStatus = KeepContext
        END IF
 C
 C
@@ -2364,16 +2389,15 @@ C
       END IF
 C
 C
-        ccifStatus = AppendRow
         CALL ccif_put_real('_phasing_MIR_shell.d_res_high',
      +                     R1,ccifContext,ccifStatus)
         ccifStatus = KeepContext
         CALL ccif_put_real('_phasing_MIR_shell.d_res_low',
      +                     R2,ccifContext,ccifStatus)
+        ccifStatus = KeepContext
 C
 C
       IF (KRo .lt. IvalueNotDet -1 .and. KRo .gt. 0) THEN
-        ccifStatus = KeepContext
         CALL ccif_put_int('_phasing_MIR_shell.reflns',
      +                    KRo,ccifContext,ccifStatus)
         ccifStatus = KeepContext
@@ -2381,12 +2405,12 @@ C
       IF (fomO .lt. valueNotDet -1.0) CALL ccif_put_real(
      +     '_phasing_MIR_shell.FOM',fomO,
      +     ccifContext,ccifStatus)
+        ccifStatus = KeepContext
       END IF
       END IF
 C
 C
       IF (KRc .lt. IvalueNotDet -1 .and. KRc .gt. 0) THEN
-        ccifStatus = KeepContext
           CALL ccif_put_int(
      +         '_phasing_MIR_shell.reflns_centric',
      +         KRc,ccifContext,ccifStatus)
@@ -2395,12 +2419,12 @@ C
       IF (fomC .lt. valueNotDet -1.0) CALL ccif_put_real(
      +        '_phasing_MIR_shell.FOM_centric',
      +        fomC,ccifContext,ccifStatus)
+        ccifStatus = KeepContext
       END IF
       END IF
 C
 C
       IF (KRa .lt. IvalueNotDet -1 .and. KRa .gt. 0) THEN
-           ccifStatus = KeepContext
            CALL ccif_put_int(
      +     '_phasing_MIR_shell.reflns_acentric',
      +      KRa,ccifContext,ccifStatus)
@@ -2452,15 +2476,15 @@ C
      +                         ccifContext,ccifStatus,' ')
 C
 C
-      ccifStatus = 1
+      ccifStatus = AppendRow
       IF (NPARMR .gt. 0 .and. NPARMR .lt. IvalueNotDet -1)
      + CALL ccif_put_int('_refine.ls_number_parameters',
      +       NPARMR,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (NRESTR .gt. 0 .and. NRESTR .lt. IvalueNotDet -1)
      + CALL ccif_put_int('_refine.ls_number_restraints',
      +      NRESTR,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (NCONSTR .gt. 0 .and. NCONSTR .lt. IvalueNotDet -1)
      + CALL ccif_put_int('_refine.ls_number_constraints',
      +      NCONSTR,ccifContext,ccifStatus)
@@ -2516,56 +2540,56 @@ C
      +                         ccifContext,ccifStatus,' ')
 C
 C
-      ccifStatus = 1
+      ccifStatus = AppendRow
       IF (Corr .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +            '_refine.Correlation_coeff_Fo_to_Fc',
      +                   Corr,ccifContext,ccifStatus)
 C
 C
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (FreeCorr .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +            '_refine.Correlation_coeff_Fo_to_Fc_Free',
      +                   FreeCorr,ccifContext,ccifStatus)
 C
 C
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (Good .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +       '_refine.ls_goodness_of_fit_work',
      +                   Good,ccifContext,ccifStatus)
 C
 C
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (GoodFree .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +       '_refine.ls_goodness_of_fit_FreeR',
      +                   GoodFree,ccifContext,ccifStatus)
 C
 C
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (ESUml .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +       '_refine.Overall_SU_ML',
      +                   ESUml,ccifContext,ccifStatus)
 C
 C
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (bESU .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +       '_refine.Overall_SU_B',
      +                   bESU,ccifContext,ccifStatus)
 C
 C
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (DPI .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +      '_refine.Overall_SU_R_Cruickshank_DPI',
      +                   DPI,ccifContext,ccifStatus)
 C
 C
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (FreeESU .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +      '_refine.Overall_SU_R_free',
@@ -2628,13 +2652,13 @@ C
       CALL ccif_setup_context('_refine.details',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
+        ccifStatus = AppendRow
 C
 C
         IF (NHlines .le. MaxLines) THEN
         DO 10 Jdo =1 ,NHlines
           Awork(Jdo) = Hlines(Jdo)
  10     CONTINUE
-         ccifStatus = 1
          CALL ccif_put_text('_refine.details',
      +   NHlines,Cwork,10,ccifContext,ccifStatus,'NEW')
         GO TO 20
@@ -2658,14 +2682,13 @@ C
 C
 C
          IF (MM .eq. 1) THEN
-         ccifStatus = 1
          CALL ccif_put_text('_refine.details',
      +   10,Cwork,10,ccifContext,ccifStatus,'NEW')
          ELSE
-         ccifStatus = 1
          CALL ccif_put_text('_refine.details',
      +   10,Cwork,10,ccifContext,ccifStatus,'  ')
          END IF
+         ccifStatus = KeepContext
 C
 C
         GO TO 30
@@ -2680,7 +2703,6 @@ C
           Awork(LL) = Hlines(Jdo)
  50     CONTINUE
         KK = NHlines - KK + 1
-         ccifStatus = 1
          CALL ccif_put_text('_refine.details',
      +   KK,Cwork,10,ccifContext,ccifStatus,' ')
         GO TO 20
@@ -2753,6 +2775,7 @@ C
      +                       '-',6,3,'f',ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       Ntot = 0
       Rtot = 0.0
 C
@@ -2760,7 +2783,6 @@ C
 c Hrefine_fnmin(Nval,Nterms,Vterms,Cterms,Wterms)
       DO 90 Jdo = 1,Nval
         IF (Nterms(Jdo) .gt. 0 ) THEN
-        ccifStatus = AppendRow
         IF (lenstr(Cterms(Jdo)).gt.0) THEN
           CALL ccif_put_char('_refine_funct_minimized.type',
      +                     Cterms(Jdo)(1:Lenstr(Cterms(Jdo))),
@@ -2770,14 +2792,14 @@ c Hrefine_fnmin(Nval,Nterms,Vterms,Cterms,Wterms)
           CALL ccif_put_int('_refine_funct_minimized.number_terms',
      +                        Nterms(Jdo),
      +                        ccifContext,ccifStatus)
+          ccifStatus = KeepContext
         Ntot = Ntot + Nterms(Jdo)
-        ccifStatus = KeepContext
           CALL ccif_put_real('_refine_funct_minimized.Residual',
      +                        Vterms(Jdo),
      +                        ccifContext,ccifStatus)
+          ccifStatus = KeepContext
         Rtot = Rtot + Vterms(Jdo)
         IF (Wterms(Jdo).gt.0.0) then
-        ccifStatus = KeepContext
           CALL ccif_put_real('_refine_funct_minimized.weight',
      +                        Wterms(Jdo),
      +                        ccifContext,ccifStatus)
@@ -2786,7 +2808,6 @@ c Hrefine_fnmin(Nval,Nterms,Vterms,Cterms,Wterms)
    90 CONTINUE
 C
 C
-        ccifStatus = AppendRow
         CALL ccif_put_char('_refine_funct_minimized.type',
      +                     'Total_Function',
      +                     ccifContext,ccifStatus)
@@ -2841,12 +2862,12 @@ C
      +                         ccifContext,ccifStatus,' ')
 C
 C
-      ccifStatus = 1
+      ccifStatus = AppendRow
       IF (Freefom .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +      '_refine.overall_FOM_free_R_set',
      +                   Freefom,ccifContext,ccifStatus)
-      ccifStatus = 1
+      
       IF (fom .lt. valueNotDet -1.0)
      + CALL ccif_put_real(
      +      '_refine.overall_FOM_work_R_set',
@@ -2895,7 +2916,7 @@ C
       CALL ccif_setup_context('REFINE',
      +                        CurrCategory,ccifBlockID,ccifContext,
      +                        ccifStatus,' ')
-      ccifStatus = 1
+      ccifStatus = AppendRow
       CALL ccif_put_char('_refine.ls_matrix_type',
      +                   String(1:Lenstr(String)),
      +                   ccifContext,ccifStatus)
@@ -2945,10 +2966,10 @@ C
      +    ' ',6,3,'f',ccifStatus)
 C
 C
-      ccifStatus = 1
+      ccifStatus = KeepContext
       CALL ccif_put_real('_refine.ls_d_res_low',
      +                   R1,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       CALL ccif_put_real('_refine.ls_d_res_high',
      +                   R2,ccifContext,ccifStatus)
 C
@@ -2995,10 +3016,10 @@ C
      +                         ccifContext,ccifStatus,' ')
 C
 C
+       ccifStatus = AppendRow
        IF (lenstr(SigmaLine).gt.0) THEN
        WRITE(SigmaLine,6000) Criteria
  6000  FORMAT('Fobs >=  ',F5.2,'  *standard deviations')
-       ccifStatus = 1
        CALL ccif_put_char('_reflns.observed_criterion',
      +   SigmaLine(1:Lenstr(SigmaLine)),ccifContext,ccifStatus)
         CALL ccif_release_context(ccifContext)
@@ -3210,61 +3231,61 @@ C
      +             ' ',3,3,'f',ccifStatus)
 C
 C
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (Nall .lt. IvalueNotDet -1 .and. Nall .gt. 0)
      + CALL ccif_put_int('_refine.ls_number_reflns_all',
      +                   Nall,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (Nobs .lt. IvalueNotDet -1 .and. Nobs .gt. 0)
      + CALL ccif_put_int('_refine.ls_number_reflns_obs',
      +                   Nobs,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (Nwork .lt. IvalueNotDet -1 .and. Nwork .gt. 0)
      + CALL ccif_put_int('_refine.ls_number_reflns_R_work',
      +                   Nwork,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (Nfree .lt. IvalueNotDet -1 .and. Nfree .gt. 0)
      + CALL ccif_put_int('_refine.ls_number_reflns_R_free',
      +                   Nfree,ccifContext,ccifStatus)
 C
 C
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (Rall .lt. valueNotDet -1.0)
      + CALL ccif_put_real('_refine.ls_R_factor_all',
      +                   Rall,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (Robs .lt. valueNotDet -1.0)
      + CALL ccif_put_real('_refine.ls_R_factor_obs',
      +                   Robs,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (Rwork .lt. valueNotDet -1.0)
      + CALL ccif_put_real('_refine.ls_R_factor_R_work',
      +                   Rwork,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (Rfree .lt. valueNotDet -1.0)
      + CALL ccif_put_real('_refine.ls_R_factor_R_free',
      +                   Rfree,ccifContext,ccifStatus)
 C
 C 
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (Wall .lt. valueNotDet -1.0)
      + CALL ccif_put_real('_refine.ls_wR_factor_all',
      +                   Wall,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (Wobs .lt. valueNotDet -1.0)
      + CALL ccif_put_real('_refine.ls_wR_factor_obs',
      +                   Wobs,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (Wwork .lt. valueNotDet -1.0)
      + CALL ccif_put_real('_refine.ls_wR_factor_R_work',
      +                   Wwork,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (Wfree .lt. valueNotDet -1.0)
      + CALL ccif_put_real('_refine.ls_wR_factor_R_free',
      +                   Wfree,ccifContext,ccifStatus)
 C
 C
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (PercentObs .lt. valueNotDet -1.0) THEN
          CALL ccif_put_real('_refine.ls_percent_reflns_obs',
      +                   PercentObs,ccifContext,ccifStatus)
@@ -3278,7 +3299,7 @@ C
       END IF
 C
 C
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (PercentFree .lt. valueNotDet -1.0) THEN
         CALL ccif_put_real('_refine.ls_percent_reflns_R_free',
      +                   PercentFree,ccifContext,ccifStatus)
@@ -3351,37 +3372,38 @@ ccx     +             ' ',3,3,'f',ccifStatus)
 C
 C
       NN = 0
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (RDhigh .lt. valueNotDet -1.0)
      + CALL ccif_put_real('_refine_analyze.RG_d_res_high',
      +                   RDhigh,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (RDlow .lt. valueNotDet -1.0)
      + CALL ccif_put_real('_refine_analyze.RG_d_res_low',
      +                   RDlow,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (RGall .lt. valueNotDet -1.0)
      + CALL ccif_put_real('_refine_analyze.RG_all',
      +                   RGall,ccifContext,ccifStatus)
-      ccifStatus = 1
+      ccifStatus = KeepContext
       IF (RGwork .lt. valueNotDet -1.0) THEN
          CALL ccif_put_real('_refine_analyze.RG_work',
      +                   RGwork,ccifContext,ccifStatus)
        NN = NN + 1
+       ccifStatus = KeepContext
       END IF
 C
 C
-      ccifStatus = 1
       IF (RGfree .lt. valueNotDet -1.0) THEN
          CALL ccif_put_real('_refine_analyze.RG_free',
      +                   RGfree,ccifContext,ccifStatus)
        NN = NN + 1
+         ccifStatus = KeepContext
        END IF
 C
 C       _refine.ls_RG_work_free_ratio
 C
 ccx       IF (NN .eq. 2) THEN
-ccx       ccifStatus = 1
+ccx       ccifStatus = KeepContext
 ccx       Rrat = RGfree/RGwork
 ccx         CALL ccif_put_real('_refine_analyze.RG_free_work_ratio',
 ccx     +                   Rrat,ccifContext,ccifStatus)
@@ -3556,6 +3578,7 @@ C
      +                        ccifStatus,'loop')
 C
 C
+        ccifStatus = AppendRow
         IF (First) THEN
           First = .false.
         CALL ccif_output_fmt('_refine_ls_shell.d_res_high',
@@ -3590,15 +3613,16 @@ C
      +                       ' ',3,3,'f',ccifStatus)
         CALL ccif_output_fmt('_refine_ls_shell.weight_exp',
      +                       ' ',3,3,'f',ccifStatus)
+        ccifStatus = KeepContext
        END IF
 C
 C
-        ccifStatus = AppendRow
         CALL ccif_put_real('_refine_ls_shell.d_res_high',
      +                     Rhigh,ccifContext,ccifStatus)
         ccifStatus = KeepContext
         CALL ccif_put_real('_refine_ls_shell.d_res_low',
      +                     Rlow,ccifContext,ccifStatus)
+        ccifStatus = KeepContext
 C
 C
         IF (Nfree .lt. IValueNotDet -1) THEN
@@ -3606,7 +3630,6 @@ C
         ELSE
          NN = NrefAll
         END IF
-        ccifStatus = KeepContext
         IF (NN .lt. IvalueNotDet -1)
      +  CALL ccif_put_int('_refine_ls_shell.number_reflns_all',
      +                     NN,ccifContext,ccifStatus)
@@ -3752,13 +3775,13 @@ C
       CALL ccif_setup_context('REFINE',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
+        ccifStatus = AppendRow
 C
 C
         IF (NHlines .le. MaxLines) THEN
         DO 10 Jdo =1 ,NHlines
           Awork(Jdo) = Hlines(Jdo)
  10     CONTINUE
-         ccifStatus = 1
          CALL ccif_put_text('_refine.solvent_model_details',
      +   NHlines,Cwork,10,ccifContext,ccifStatus,'NEW')
         GO TO 20
@@ -3779,14 +3802,13 @@ C
 C
 C
          IF (MM .eq. 1) THEN
-         ccifStatus = 1
          CALL ccif_put_text('_refine.solvent_model_details',
      +   10,Cwork,10,ccifContext,ccifStatus,'NEW')
          ELSE
-         ccifStatus = 1
          CALL ccif_put_text('_refine.solvent_model_details',
      +   10,Cwork,10,ccifContext,ccifStatus,'  ')
          END IF
+         ccifStatus = KeepContext
 C
 C
         GO TO 30
@@ -3801,7 +3823,7 @@ C
           Awork(LL) = Hlines(Jdo)
  50     CONTINUE
         KK = NHLines - KK + 1
-         ccifStatus = 1
+         ccifStatus = KeepContext
          CALL ccif_put_text('_refine.solvent_model_details',
      +   KK,Cwork,10,ccifContext,ccifStatus,' ')
         GO TO 20
@@ -3849,7 +3871,7 @@ C
      +                        ccifContext,ccifStatus,' ')
 C
 C
-      ccifStatus = 1
+      ccifStatus = AppendRow
       CALL ccif_put_char('_refine.ls_weighting_scheme',
      +       WghtScheme(1:Lenstr(WghtScheme)),
      +       ccifContext,ccifStatus)
@@ -3895,13 +3917,13 @@ C
       CALL ccif_setup_context('_refine.ls_weighting_details',
      +                         CurrCategory,ccifBlockID,
      +                         ccifContext,ccifStatus,' ')
+        ccifStatus = AppendRow
 C
 C
         IF (NHlines .le. MaxLines) THEN
         DO 10 Jdo =1 ,NHlines
           Awork(Jdo) = Hlines(Jdo)
  10     CONTINUE
-         ccifStatus = 1
          CALL ccif_put_text('_refine.ls_weighting_details',
      +   NHlines,Cwork,10,ccifContext,ccifStatus,'NEW')
         GO TO 20
@@ -3922,14 +3944,13 @@ C
 C
 C
          IF (MM .eq. 1) THEN
-         ccifStatus = 1
          CALL ccif_put_text('_refine.ls_weighting_details',
      +   10,Cwork,10,ccifContext,ccifStatus,'NEW')
          ELSE
-         ccifStatus = 1
          CALL ccif_put_text('_refine.ls_weighting_details',
      +   10,Cwork,10,ccifContext,ccifStatus,'  ')
          END IF
+         ccifStatus = KeepContext
 C
 C
         GO TO 30
@@ -3941,7 +3962,6 @@ C
           Awork(LL) = Hlines(Jdo)
  50     CONTINUE
         KK = NHlines - KK + 1
-         ccifStatus = 1
          CALL ccif_put_text('_refine.ls_weighting_details',
      +   KK,Cwork,10,ccifContext,ccifStatus,' ')
         GO TO 20
@@ -4058,6 +4078,7 @@ C
      +                        ccifStatus,'loop')
 C
 C
+      ccifStatus = AppendRow
       IF (First) THEN
         First = .false.
         CALL ccif_output_fmt('_refln_sys_abs.index_h',' ',8,0,
@@ -4072,10 +4093,10 @@ C
      +                       'f',ccifStatus)
         CALL ccif_output_fmt('_refln_sys_abs.I_over_sigmaI',
      +                       ' ',8,1,'f',ccifStatus)
+        ccifStatus = KeepContext
       END IF
 C
 C
-        ccifStatus = AppendRow
         CALL ccif_put_int('_refln_sys_abs.index_h',IH,ccifContext,
      +                     ccifStatus)
         ccifStatus = KeepContext
@@ -4158,6 +4179,7 @@ C
      +    ' ',8,2,'f',ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF (lenstr(PName).gt.0)
      + CALL ccif_put_char('_reflns.entry_id',
      +   PName(1:Lenstr(PName)),ccifContext,ccifStatus)
@@ -4172,16 +4194,20 @@ C
       END IF
 C
 C
+      ccifStatus = KeepContext
       CALL ccif_put_real('_reflns.d_resolution_high',
      +                   R1,ccifContext,ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_real('_reflns.d_resolution_low',
      +                   R2,ccifContext,ccifStatus)
 C
 C 
+      ccifStatus = KeepContext
       IF (Lenstr(Criteria) .gt. 1) 
      + CALL ccif_put_char('_reflns.observed_criterion',
      +   Criteria(1:Lenstr(Criteria)),ccifContext,ccifStatus)
       IF (WilsonB .lt. valueNotDet -1.0) THEN
+      ccifStatus = KeepContext
       IF (WilsonB .gt. 0.0)
      + CALL ccif_put_real('_reflns.B_iso_Wilson_estimate',
      +                   WilsonB,ccifContext,ccifStatus)
@@ -4278,6 +4304,7 @@ C
      +                        ccifStatus,'loop')
 C
 C
+        ccifStatus = AppendRow
         IF (First) THEN
           First = .false.
         CALL ccif_output_fmt('_EBI_reflns_intensity_shell.Z',
@@ -4294,10 +4321,10 @@ C
         CALL ccif_output_fmt(
      +     '_EBI_reflns_intensity_shell.NZ_centric_observed',
      +     ' ',8,1,'f',ccifStatus)
+        ccifStatus = KeepContext
        END IF
 C
 C
-        ccifStatus = AppendRow
         CALL ccif_put_real('_EBI_reflns_intensity_shell.Z',
      +                     Z,ccifContext,ccifStatus)
         ccifStatus = KeepContext
@@ -4415,19 +4442,24 @@ C
       END IF
 C
 C
-      IF (rom_context .eq. -1)
-     + CALL ccif_setup_context(
+      ccifStatus = KeepContext
+      IF (rom_context .eq. -1) then
+      CALL ccif_setup_context(
      +     '_diffrn_reflns.d_res_high',
      +      CurrCategory,ccifBlockID,
      +      rom_context,ccifStatus,' ')
+       ccifStatus = RowAppend
+      ENDIF
 C
 C
       CALL ccif_put_real('_diffrn_reflns.d_res_low',
      +      Rlow,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       CALL ccif_put_real('_diffrn_reflns.d_res_high',
      +      Rhigh,rom_context,ccifStatus)
+      ccifStatus = KeepContext
 C
 C
       IF (Nmeas .lt. IvalueNotDet -1 .and. Nmeas .gt. 0)
@@ -4454,11 +4486,13 @@ C
      +       Nano,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       CALL ccif_put_real(
      +      '_diffrn_reflns.Rmerge_I_all',
      +      Rfac,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF (Ranom .lt. ValueNotDet -1.0 .and. Ranom .gt. 0.01)
      + CALL ccif_put_real(
      +     '_diffrn_reflns.Rmerge_I_anomalous_all',
@@ -4471,6 +4505,7 @@ C
      +      fsigi,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF (sdIsignal .lt. ValueNotDet -1.0 .and. 
      +    sdIsignal .gt. 0.001)
      + CALL ccif_put_real(
@@ -4480,6 +4515,7 @@ C
 C
 C
 C
+      ccifStatus = KeepContext
       IF (Ntb .lt. IValueNotDet -1 .and. Ntb .gt. 0) THEN
          CALL ccif_put_int(
      +   '_diffrn_reflns.num_fract_bias_in_mean',
@@ -4553,10 +4589,13 @@ C
      +                       ' ',6,2,'f',ccifStatus)
 C
 C
-      IF (rom_context .eq. -1)
-     + CALL ccif_setup_context('_diffrn_reflns.d_res_high',
+      ccifStatus = KeepContext
+      IF (rom_context .eq. -1) THEN
+        CALL ccif_setup_context('_diffrn_reflns.d_res_high',
      +                        CurrCategory,ccifBlockID,
      +                        rom_context,ccifStatus,' ')
+        ccifStatus = RowAppend
+      ENDIF
 C
 C
       IF (pcv .lt. ValueNotDet -1.0 .and. pcv .gt. 0.01)
@@ -4564,32 +4603,38 @@ C
      +      pcv,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF (pcvo .lt. ValueNotDet -1.0 .and. pcvo .gt. 0.01)
      + CALL ccif_put_real('_diffrn_reflns.PCV_mean',
      +      pcvo,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF (Rmeas .lt. ValueNotDet -1.0 .and. Rmeas .gt. 0.01)
      + CALL ccif_put_real('_diffrn_reflns.Rmeas',
      +      Rmeas,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF (Rmeaso .lt. ValueNotDet -1.0 .and. Rmeaso .gt. 0.01)
      + CALL ccif_put_real('_diffrn_reflns.Rmeas_mean',
      +      Rmeaso,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF (Rmult .lt. ValueNotDet -1.0 .and. Rmult .gt. 0.01)
      + CALL ccif_put_real('_diffrn_reflns.multiplicity',
      +      Rmult,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF (complt .lt. ValueNotDet -1.0 .and. complt .gt. 0.01)
      + CALL ccif_put_real(
      +      '_diffrn_reflns.percent_possible_all',
      +      complt,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF (anomfrc .lt. ValueNotDet -1.0 .and. anomfrc .gt. 0.01)
      + CALL ccif_put_real(
      +      '_diffrn_reflns.anom_diff_percent_meas',
@@ -4671,33 +4716,42 @@ C
      +                       ' ',8,1,'f',ccifStatus)
 C
 C
-      IF (rom_context .eq. -1)
-     + CALL ccif_setup_context(
+      ccifStatus = KeepContext
+      IF (rom_context .eq. -1) THEN
+       CALL ccif_setup_context(
      +  '_diffrn_reflns.d_res_high',
      +        CurrCategory,ccifBlockID,
      +          rom_context,ccifStatus,' ')
+        ccifStatus = RowAppend
+      ENDIF
 C
 C
       CALL ccif_put_real('_diffrn_reflns.min_intensity',
      +      aihmin,rom_context,ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_real('_diffrn_reflns.max_intensity',
      +      aihmax,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       CALL ccif_put_int(
      +   '_diffrn_reflns.num_fully_measured',
      +       Nssf,rom_context,ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_real(
      +     '_diffrn_reflns.Intensity_rms_fully_recorded',
      +      t1f,rom_context,ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_real(
      +     '_diffrn_reflns.mean_scatter_over_sd_full',
      +      t2f,rom_context,ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_real(
      +     '_diffrn_reflns.sigma_scatter_over_sd_full',
      +      t3f,rom_context,ccifStatus)
 C
 C
+      ccifStatus = KeepContext
       IF (Nssp .lt. IValueNotDet -1 .and. Nssp .gt. 0)
      +  CALL ccif_put_int(
      +    '_diffrn_reflns.num_partials_measured',
@@ -4765,6 +4819,7 @@ C
      +                        ccifStatus,'loop')
 C
 C
+        ccifStatus = AppendRow
         IF (First) THEN
           First = .false.
         CALL ccif_output_fmt(
@@ -4782,6 +4837,7 @@ C
         CALL ccif_output_fmt(
      +    '_EBI_tmp_reflns_scaling_shell.mean<F_over_sigF>_obs',
      +                       ' ',9,2,'f',ccifStatus)
+        ccifStatus = KeepContext
        END IF
 C
 C
@@ -4792,7 +4848,6 @@ C
       END IF
 C
 C
-        ccifStatus = AppendRow
         CALL ccif_put_real(
      +       '_EBI_tmp_reflns_scaling_shell.d_res_high',
      +                     R1,ccifContext,ccifStatus)
@@ -5120,18 +5175,22 @@ C
      +                        ccifContext,ccifStatus,' ')
 C
 C
+      ccifStatus = AppendRow
       IF (Lenstr(SoftwareClass) .gt. 1)
      +  CALL ccif_put_char('_software.classification',
      +       SoftwareClass(1:Lenstr(SoftwareClass)),
      +       ccifContext,ccifStatus)
+      ccifStatus = KeepContext
       IF (Lenstr(SoftwareAuthor) .gt. 1)
      +  CALL ccif_put_char('_software.contact_author',
      +       SoftwareAuthor(1:Lenstr(SoftwareAuthor)),
      +       ccifContext,ccifStatus)
+      ccifStatus = KeepContext
       IF (Lenstr(SoftwareEmail) .gt. 1)
      +  CALL ccif_put_char('_software.contact_author_email',
      +       SoftwareEmail(1:Lenstr(SoftwareEmail)),
      +       ccifContext,ccifStatus)
+      ccifStatus = KeepContext
       IF (Lenstr(SoftwareDescr) .gt. 1)
      +  CALL ccif_put_char('_software.description',
      +       SoftwareDescr(1:Lenstr(SoftwareDescr)),
@@ -5140,10 +5199,12 @@ C
 C---- do  _software.name
 C         _software.version
 C
+      ccifStatus = KeepContext
       IF (lenstr(SoftwareName).gt.0)
      + CALL ccif_put_char('_software.name',
      +                   SoftwareName(1:Lenstr(SoftwareName)),
      +                   ccifContext,ccifStatus)
+      ccifStatus = KeepContext
       IF (lenstr(SoftwareVersion).gt.0)
      + CALL ccif_put_char('_software.version',
      + SoftwareVersion(1:Lenstr(SoftwareVersion)),ccifContext,
@@ -5382,8 +5443,10 @@ C         _Symmetry.space_group_name_H-M
 C
       CALL ccif_setup_context('Symmetry',CurrCategory,ccifBlockID,
      +                        ccifContext,ccifStatus,' ')
+      ccifStatus = AppendRow
       CALL ccif_put_int('_Symmetry.Int_Tables_number',IntTabNum,
      +                  ccifContext,ccifStatus)
+      ccifStatus = KeepContext
       CALL ccif_put_char('_Symmetry.space_group_name_H-M',SGname,
      +                   ccifContext,ccifStatus)
       CALL ccif_release_context(ccifContext)
@@ -5394,10 +5457,10 @@ C
      +                        ccifBlockID,ccifContext,ccifStatus,'loop')
 C
 C
+      ccifStatus = AppendRow
       DO 90 Jdo = 1,Nsymm
         WRITE (IDwork,FMT=6008) Jdo
  6008   FORMAT (i6)
-        ccifStatus = AppendRow
         CALL ccif_put_char('_Symmetry_equiv.id',IDwork,ccifContext,
      +                     ccifStatus)
         ccifStatus = KeepContext
@@ -5410,6 +5473,7 @@ C
      +                       EquivPos(Jdo) (1:Lenstr(EquivPos(Jdo))),
      +                       ccifContext,ccifStatus)
         END IF
+        ccifStatus = KeepContext
    90 CONTINUE
 C
 C
@@ -5466,7 +5530,8 @@ c     set output format here
          call ccif_output_fmt(
      +        '_pdbx_phasing_DM_shell.delta_phi_final','-',
      +        7,2,'f',ccifStatus)
-         
+        
+         ccifStatus = KeepContext 
 c     call file writing functions here
          call ccif_put_real('_pdbx_phasing_DM_shell.d_res_high',
      +        Hrres(i),
