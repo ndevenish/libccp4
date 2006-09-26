@@ -5900,6 +5900,7 @@ C
       REAL Hrres(Hmaxbin+1),Hrefls(Hmaxbin),Hsfomn(Hmaxbin)
       REAL Hsphicn(Hmaxbin)
       INTEGER Hnres
+      INTEGER i
 C
       IF ( .not. Harvest) RETURN
 c
