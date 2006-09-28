@@ -782,21 +782,21 @@ int ierrno_() {
   return errno;
 }
 
-void ltime_(int stime, int tarray[9])
+void ltime_(int *stime, int tarray[9])
 {
   int i;
-  struct tm *ldatim;
+  struct tm ldatim;
 
-  if (localtime_r((time_t) stime, ldatim) != NULL) {
-    tarray[0] = ldatim->tm_sec;
-    tarray[1] = ldatim->tm_min;
-    tarray[2] = ldatim->tm_hour;
-    tarray[3] = ldatim->tm_mday;
-    tarray[4] = ldatim->tm_mon;
-    tarray[5] = ldatim->tm_year;
-    tarray[6] = ldatim->tm_wday;
-    tarray[7] = ldatim->tm_yday;
-    tarray[8] = ldatim->tm_isdst;
+  if (localtime_r((time_t) stime, &ldatim) != NULL) {
+    tarray[0] = ldatim.tm_sec;
+    tarray[1] = ldatim.tm_min;
+    tarray[2] = ldatim.tm_hour;
+    tarray[3] = ldatim.tm_mday;
+    tarray[4] = ldatim.tm_mon;
+    tarray[5] = ldatim.tm_year;
+    tarray[6] = ldatim.tm_wday;
+    tarray[7] = ldatim.tm_yday;
+    tarray[8] = ldatim.tm_isdst;
   } else {
     for (i=0; i<9; i++)
       tarray[i] = 0;
@@ -815,21 +815,21 @@ void idate_ (int *day, int *month, int *year)
      *year = lt->tm_year + 1900;
 }
 
-void gmtime_(int stime, int gmarray[9])
+void gmtime_(int *stime, int gmarray[9])
 {
   int i;
-  struct tm *udatim;
+  struct tm udatim;
 
-  if (gmtime_r((time_t) stime, udatim) != NULL) {
-    gmarray[0] = udatim->tm_sec;
-    gmarray[1] = udatim->tm_min;
-    gmarray[2] = udatim->tm_hour;
-    gmarray[3] = udatim->tm_mday;
-    gmarray[4] = udatim->tm_mon;
-    gmarray[5] = udatim->tm_year;
-    gmarray[6] = udatim->tm_wday;
-    gmarray[7] = udatim->tm_yday;
-    gmarray[8] = udatim->tm_isdst;
+  if (gmtime_r((time_t) stime, &udatim) != NULL) {
+    gmarray[0] = udatim.tm_sec;
+    gmarray[1] = udatim.tm_min;
+    gmarray[2] = udatim.tm_hour;
+    gmarray[3] = udatim.tm_mday;
+    gmarray[4] = udatim.tm_mon;
+    gmarray[5] = udatim.tm_year;
+    gmarray[6] = udatim.tm_wday;
+    gmarray[7] = udatim.tm_yday;
+    gmarray[8] = udatim.tm_isdst;
   } else {
     for (i=0; i<9; i++)
       gmarray[i] = 0;
