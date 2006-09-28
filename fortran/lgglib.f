@@ -8,9 +8,9 @@ C     A copy of the CCP4 licence can be obtained by writing to the
 C     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
 C
       function angle(v1,v2)
-c calculate the angle between two vector v1, and v2
-c v1 v2 are the input 3*vector
-c angle is the output angle between them (in degree unit)
+c calculate the angle between two vectors v1, and v2
+c v1, v2 are the input 3*vectors
+c angle is the output angle between them (in degrees)
       real*4 v1(3),v2(3)
 c
       external acosd
@@ -26,31 +26,44 @@ c	write(7,*) 'arc=',arc
       end if
       angle = acosd(arc)
       end
+c
+c
       SUBROUTINE ANGLZ(CELL,V,A)
       DIMENSION CELL(6),V(3),A(3)
       DO 10 I=1,3
 10	A(I)=CELL(I)*V(I)
       END
+c
+c
       SUBROUTINE ANTIARR(IM,IN,A1,A)
+c    Transpose an array
       DIMENSION A1(IM,IN),A(IN,IM)
       DO 10 II=1,IM
       DO 10 IJ=1,IN
 10	A(IJ,II)=A1(II,IJ)
       END
+c
+c
       SUBROUTINE ARRAD(IM,IN,A1,A2,OUT)
+c    Add two arrays      
       DIMENSION A1(IM,IN),A2(IM,IN),OUT(IM,IN)
       DO 10 II=1,IM
       DO 10 IJ=1,IN
 10	OUT(II,IJ)=A1(II,IJ)+A2(II,IJ)
       END
+c
+c
       SUBROUTINE ARRGIVE(N,XYZ0,XYZ)
-C To transfer a N-dimensional XYZ0 array to another one XYZ.
+C    Copy an N-dimensional real array XYZ0 to another one XYZ.
       REAL*4 XYZ(N),XYZ0(N)
       DO I = 1, N
        XYZ(I) = XYZ0(I)
       END DO
       END
+c
+c
       SUBROUTINE ARRI(IM,IN,A,V,I)
+c    Extract the i'th row of an array       
       INTEGER IM,IN
       DIMENSION A(IM,IN)
       DIMENSION V(IN)
@@ -58,22 +71,28 @@ C To transfer a N-dimensional XYZ0 array to another one XYZ.
 20	V(I1)=A(I,I1)
       RETURN
       END
+c
+c
       SUBROUTINE ARRJ(IM,IN,A,VJ,IJ)
+c    Extract the j'th column of an array  
       DIMENSION A(IM,IN)
       DIMENSION VJ(IM)
       DO 20 I1=1,IM
 20	VJ(I1)=A(I1,IJ)
       RETURN
       END
-C------A ARRAY MULT A CONSTANT
+c
+c
+C------MULTIPLY A REAL ARRAY BY A CONSTANT
       SUBROUTINE ARRMC(IM,IN,A1,C,A)
       DIMENSION A1(IM,IN),A(IM,IN)
       DO 10 I1=1,IM
       DO 10 I2=1,IN
 10	A(I1,I2)=A1(I1,I2)*C
       END
-
-C-------A STANDARD SUBPROGRAM WHICH CAN MULT TWO ARRAY
+c
+c
+C-------A STANDARD SUBPROGRAM TO MULTIPLY TWO ARRAYS
 C	A1(IM1,IN1)*A2(IM2,IN2)=RSLT(IM1,IN2)
       SUBROUTINE ARRMULT(IM1,IN1,IM2,IN2,A1,A2,RSLT,V1,V2)
       INTEGER IM1,IM2,IN1,IN2
@@ -95,15 +114,15 @@ C	A1(IM1,IN1)*A2(IM2,IN2)=RSLT(IM1,IN2)
       DO 10 IJ=1,IN
 10	OUT(II,IJ)=A1(II,IJ)-A2(II,IJ)
       END
-
+c
+c
       subroutine arrrtoi(im,in,rmat,imat,err)
-c to transfer a matrix from real to integer
-c      IM and IN is the dimension.
-c      rmat is input real IM*IN-dimension matrix
+c    convert a matrix from real to integer
+c      IM and IN are the dimensions.
 c     rmat is input real IM*IN-dimension matrix
-c     imat is input integer IM*IN-dimension matrix
-c     err: if value differcen between real and integer is bigger than
-c           this value program will warn  you
+c     imat is output integer IM*IN-dimension matrix
+c     err: if difference between real and integer values is bigger than
+c           this parameter program will warn you
       real*4 rmat(im,in)
       integer imat(im,in)
 c
@@ -121,16 +140,20 @@ c	 WRITE(6,*)  'i,j,real,integer',i,j,rmat(i,j),imat(i,j)
       end do
       end do
       end
+c      
+c
       subroutine arrvalue(n,array,value)
-c to set a value to a n-dimensional array
+c    initialise an n-dimensional array
       real array(n)
       do i = 1, n
         array(i) = value
       end do
       end
+c
+c
       SUBROUTINE AVERG(M,N,XIN,AVE)
-C A routine to calculate the averge value of a M*N array XIN.
-C The mean M-dimensional array is AVE which averge the N data in XIN.
+C A routine to calculate the row averages of an M*N array XIN.
+C The mean M-dimensional array is AVE which average the N data in XIN.
       DIMENSION XIN(M,N),AVE(M)
       XN = N
       DO I = 1, M
@@ -141,14 +164,16 @@ C The mean M-dimensional array is AVE which averge the N data in XIN.
       AVE(I) = AVE(I)/ XN
       END DO
       END 
+c
+c
       function bondangle(xyz1,xyz2,xyz3)
-c subroutine to calculate a bond angle by giving 3 atoms. the ourtine angle
+c subroutine to calculate a bond angle by giving 3 atoms. the output angle
 c will be vector 2-1 and 2-3
 c  1     3
 c   \   /
 c    \2/
 c   bondangle
-c xyz1,xyz2,xyz3 are 3 atoms positon and bondangle is shown in the fig
+c xyz1,xyz2,xyz3 are the 3 atom positions and bondangle is shown in the fig
 c	real xyz1(3),xyz2(3),xyz3(3)
       real xyz1(3),xyz2(3),xyz3(3)
       real b1(3),b2(3)
@@ -156,15 +181,17 @@ c	real xyz1(3),xyz2(3),xyz3(3)
       call arrps(3,1,xyz3,xyz2,b2)
       bondangle = angle(b1,b2)
       end 
+c
+c
       function bonddihed(xyz1,xyz2,xyz3,xyz4)
-c subroutine to calculate a dihedrial angle by giving 4 atoms. 
-c the ourput angle will be between plane of 1-2-3 and 2-3-4
+c subroutine to calculate a dihedral angle by giving 4 atoms. 
+c the output angle will be between plane of 1-2-3 and 2-3-4
 c  1         4                      1        
 c   \       /                        \       
 c    \2---3/                          \2---3\  bonddihed=180 in this case
 c   bonddihed= 0 in this case                \
 c                                             4
-c xyz1,xyz2,xyz3 xyz4 are the 4 atom positons and bonddihed is 
+c xyz1,xyz2,xyz3 xyz4 are the 4 atom positions and bonddihed is 
 c shown in the fig
 c	real xyz1(3),xyz2(3),xyz3(3),xyz4(3)
       real xyz1(3),xyz2(3),xyz3(3),xyz4(3)
@@ -212,13 +239,15 @@ c	else
 c	 stop ' what could be?'
       end if
       end
+c
+c
       subroutine caseres(res1,res2)
 c A subroutine to change the case of amino acid e.g. PHE to Phe
 c res1 input residue name
 c res2 output residue name
 c
       character*3 res1,res2,nam1(20),nam2(20)
-c...  data statements.  Seperate declaration and init required for f2c
+c...  data statements.  Separate declaration and init required for f2c
       data nam1 /
      1 'ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE',
      2 'LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL'/
@@ -234,15 +263,19 @@ c
       end do
       res2 = res1
       end
+c
+c
       SUBROUTINE CLLZ(NSYM,SYM,CELL)
       DIMENSION SYM(3,4,NSYM),CELL(6)
       DO 20 IS=1,NSYM
       DO 20 IC=1,3
 20	SYM(IC,4,IS)=SYM(IC,4,IS)*CELL(IC)
       END	
+c
+c
       SUBROUTINE COMPARE ( NATM, XYZ1, XYZ2, A, T )
 C	DIMENSION XYZ1(3,NATM), XYZ2(3,NATM), A(3,3), T(3)
-C A subroutine to compare two structure without superimpostion.
+C A subroutine to compare two structure without superposition.
 c MOL2 i.e. XYZ2(3*NATM) = A(3*3) * XYZ1(3*NATM) + T(3)
 C Where    NATM represents the number of the atoms in each molecule
 c                which will be superimposed.
@@ -251,7 +284,7 @@ c          XYZ2(3,NATM) represents the coordinates of MOL2
 C          A(3*3)       represents the output matrix.
 c          T(3*3)       represents the output vector.
 c
-C NATM can not be larger than NATM0 (now is 50000) or the parameter NATM0
+C NATM can not be larger than NATM0 (currently 50000) or the parameter NATM0
 C should be modified in this routine. 
 c
 C	COMMON/SHIFS/ SCALR,SCALT
@@ -265,9 +298,9 @@ C
 C	COMMON/RMS/ RMS,SMEAN,NREF,NREF1
 C RMS is the final R.M.S between two molecules.
 C SMEAN is the mean distance.
-c NREF is the number of the cycles of the rotation refinements
-c NREF1 is not for the who calcution.
-c They could be used to judge the SCALR,and SCALS
+c NREF is the number of cycles of rotation refinement
+c NREF1 is not used by this routine.
+c They could be used to judge the SCALR and SCALS
 c
 C	COMMON/IAT/ IAT1,IAT2,IAT3,IAT
 C	DATA SCALR/1./,IAT/0/
@@ -287,7 +320,7 @@ c   NATM0 is the largest number of atoms.
 c
 c	DEG=180./3.14159265359
 c
-C Number of atom can not be more than NATM0 or less than 3.
+C Number of atoms cannot be more than NATM0 or less than 3.
 c
 C
       CALL RTMOV(NATM,XYZ1,A,T,DIS)
@@ -345,6 +378,8 @@ C
 5	FORMAT(1X,' X2 = (',3F10.6,' ) * ( X1 ) + (',f10.5,' )')
 C
       END 
+c
+c
       SUBROUTINE CRSTLARR(CELL,CRST,CRIS)
       DIMENSION CRST(3,3),CRIS(3,3),BUF1(3),BUF2(3),
      1IUF(3),CELL(6)
@@ -367,13 +402,15 @@ C
       CALL IVSN(3,CRST,BUF1,BUF2,IUF,VAL,1E-6)
       RETURN
       END
+c
+c
       SUBROUTINE CRTMOVE(NATM,XIN,A,T0,T,XOUT)
 C A routine to compute: XOUT = A * (XIN-T0) + T
 C        where   XIN is the input 3*NATM array
-C                XOUT is the Output 3*NATM array
+C                XOUT is the output 3*NATM array
 c                A(3,3) is a 3*3 rotation matrix
-c                T0(3) is a 3-dimensinal translational vector.
-c                T(3) is a 3-dimensinal translational vector.
+c                T0(3) is a 3-dimensional translational vector.
+c                T(3) is a 3-dimensional translational vector.
 C Note: XIN has been changed into XIN-T0 after this subroutine.
 c 89/11/06, BMC,UU,SE
 c	DIMENSION XIN(3,NATM),XOUT(3,NATM),A(3,3),T(3)
@@ -387,17 +424,19 @@ C
       CALL ARRAD(3,1,XOUT(1,I),T,XOUT(1,I))
       END DO
       END
+c
+c
       SUBROUTINE LGG_CRYSTAL(CELL,CELLS,DEOR,ORTH,DEORS,ORTHS)
 C PJX - renamed from CRYSTAL to avoid clashes with similarly named
 C common block in mapmask, ncsmask and dm
 C
-C this is a routine which input a cell parameter,CELL and calculate
-c CELLS*6 --- cells dimension in reciprocal space
-c DEOR3*3 --- Deorthongalization matraix in real space 
-c ORTH3*3 --- Orthongalization matric in recepical space.
-c DEORS3*3 --- Deorthongalization matraix in reciprocal space 
-c ORTHS3*3 --- Orthongalization matric in reciprcal space.
-c All the matrix have cell dimesion information in it.
+C this is a routine which inputs a cell parameter, CELL and calculates
+c CELLS*6 --- cell dimensions in reciprocal space
+c DEOR3*3 --- Deorthogonalization matrix in real space 
+c ORTH3*3 --- Orthogonalization matrix in recepical space.
+c DEORS3*3 --- Deorthogonalization matrix in reciprocal space 
+c ORTHS3*3 --- Orthogonalization matrix in reciprocal space.
+c All the matrices have cell dimension information in them.
 c Guoguang 931118
 c
       REAL DEOR(3,3),ORTH(3,3),CELL(6)
@@ -433,16 +472,18 @@ C
       CELLS(6) = ANGLE(ORTHS(1,1),ORTHS(1,2))	
       RETURN
       END
+c
+c
       SUBROUTINE CRYSTREC(CELL,CELLS,DEOR,ORTH,DEORS,ORTHS)
-C this is a routine which input a cell parameter,CELL and calculate
-c matrix for deorthgonalization and orthgonalization
+C this is a routine which inputs a cell parameter, CELL and calculates
+c matrices for deorthogonalization and orthgonalization
 c The convention in this routine is x=a* y in plane of a*-b*, z is C direction
-c CELLS*6 --- cells dimension in reciprocal space
-c DEOR3*3 --- Deorthongalization matraix in real space 
-c ORTH3*3 --- Orthongalization matric in recepical space.
-c DEORS3*3 --- Deorthongalization matraix in reciprocal space 
-c ORTHS3*3 --- Orthongalization matric in reciprcal space.
-c All the matrix have cell dimesion information in it.
+c CELLS*6 --- cell dimensions in reciprocal space
+c DEOR3*3 --- Deorthogonalization matrix in real space 
+c ORTH3*3 --- Orthogonalization matrix in reciprocal space.
+c DEORS3*3 --- Deorthogonalization matrix in reciprocal space 
+c ORTHS3*3 --- Orthogonalization matrix in reciprocal space.
+c All the matrices have cell dimension information in them.
 c Guoguang 950914
 c
       REAL DEOR(3,3),ORTH(3,3),CELL(6)
@@ -454,14 +495,16 @@ c Get a PDB convention
       CALL LGG_CRYSTAL(CELLS,CELL1,DEORS,ORTHS,DEOR,ORTH)
 c
       end
-c This is a subroutine to separate one line into several lines by recognize
+c
+c
+c This is a subroutine to split one line into multiple lines by detecting
 c a separation character for example ; | and so on
-c the several lines will be writen to unit iout
-c iout -- unit to be writen
-c il   -- length of the character
-c line -- the character line to be cut
+c the multiple lines will be written to unit iout
+c iout -- unit to be written to
+c il   -- length of the line
+c line -- the line of characters to be split
 c sep  -- "separation character"
-c iline -- output how many lines is separated.
+c iline -- output number of lines after splitting.
 c guoguang 940616
       subroutine cutline(iout,line,sep,iline)
       character*(*) line
@@ -520,14 +563,17 @@ c	WRITE(6,*)  'il',il,line(1:il)
       end if
 C	stop 'CUTLINE'
       end
+c
+c
       function dedx2(x1,x2,x3,y1,y2,y3,abc)
-c 	this is a program which calculte dy/dx(x2). to treat the
-c 3 points as square equation. 
+c   this is a program which calculates dy/dx(x2) by fitting 
+c   a quadratic through 3 points. 
 c   y = a*x^2 + b*x + c
 c   dy/dx = 2*a*x + b
-c  here dedv = dy/dx(x2) = 2*a*x2 + b
-c   When there are 3 points x1,y1, x2,y2, x3,y3, a, b, c could
-c be obtained from liner equation and dy/dx(x2) could be obtained.
+c  Here dedv = dy/dx(x2) = 2*a*x2 + b
+c  When there are 3 points x1,y1, x2,y2, x3,y3, the coefficients a,b,c
+c  can be obtained from a linear equation and dy/dx(x2) can thus be 
+c  obtained.
 c
 c 
       dimension abc(3),y(3),arr(3,3)
@@ -550,8 +596,10 @@ c
       dedx2 = 2.*abc(1)*x2 + abc(2)
       return
       end
-c a subroutine to transfer denso misseting angle to matrix
-c definatin [rot]=[rotx]*[roty]*[rotz]
+c
+c
+c a subroutine to convert denzo missetting angle to a matrix
+c definition [rot]=[rotx]*[roty]*[rotz]
 c 
       subroutine denmis(phi,rot)
       real phi(3),rot(3,3)
@@ -572,10 +620,12 @@ c
       rot(2,3) =  sinx*cosy
       rot(3,3) =  cosx*cosy
       end	
+c
+c
       function dihedral(x1,x2,x3,x4)
-c calculte the dihedral angle of the four input postion
-c x1, x2, x3, x4 are the four input postion
-c dihedral is the output dihedral angle in degree
+c calculate the dihedral angle of four input positions
+c x1, x2, x3, x4 are the four input positions
+c dihedral is the output dihedral angle in degrees
       real*4 x1(3),x2(3),x3(3),x4(3)
       real*4 b1(3),b2(3),b3(3),b4(3)
 c
@@ -587,14 +637,18 @@ c
       call veccrsmlt(b1,b2,b4)
       dihedral = angle(b3,b4)
       end
+c
+c
       FUNCTION DIST(XYZ1,XYZ2)
-c Subroutine to calculate distance between two postion
+c Subroutine to calculate distance between two positions
       REAL xyz1(3),xyz2(3)
       DX = XYZ1(1)-XYZ2(1)
       DY = XYZ1(2)-XYZ2(2)
       DZ = XYZ1(3)-XYZ2(3)
       DIST = SQRT(DX*DX + DY*DY + DZ*DZ)
       END 
+c
+c
       FUNCTION DOSQ(N,V)
 c	DIMENSION V(N)
 C DOSQ = SIGMA ( V(i)^2 )
@@ -605,10 +659,12 @@ C          i
 10	DOSQ = DOSQ + V(I)*V(I)
       RETURN
       END
+c
+c
 c------------------------------------------------------------
       subroutine down(txt,len)
 c
-c convert character string to upper case
+c convert character string to lower case
 c
       character*(*) txt
       character*80 save
@@ -629,10 +685,11 @@ c      end do
       txt = save
       return
       end
-
+c
+c
       SUBROUTINE DRVRBD(ITH,ROH,A)
-C This is a subroutine to calcalate the matrix of deriv(E)/deriv(theta i)
-c where E is a rotation 3*3 matrix and theta i (i=1,2,3) is Eulerian Angle
+C This is a subroutine to calculate the matrix of deriv(E)/deriv(theta i)
+c where E is a 3*3 rotation matrix and theta i (i=1,2,3) is Eulerian Angle
 c in ROH system.
 C	DIMENSION A(3,3),ROH(3)
 c parameter description:
@@ -644,7 +701,7 @@ c       when ITH = 3
 c                     the output matrix is deriv(E) /deriv(theta3)
 c ROH are the three Eulerian angles
 c A  is the output deriv matrix. i.e. A = deriv(E) /deriv)(theta i)
-c                               made by Guoguang Lu
+c                               written by Guoguang Lu
 c
       DIMENSION A(3,3),ROH(3)
       DIMENSION A1(3,3)
@@ -700,15 +757,17 @@ c	E(3,3) = COTH
       A(3,2) =                 -SITH*siPH
       A(3,3) = 0.
       ELSE
-      STOP 'invaild parameter ITH '
+      STOP 'invalid parameter ITH '
       END IF
-C SINCE ROH IS IN DEGREE, SO THE MATRIX HAS TO MULTIPLIED ARC
+C SINCE ROH IS IN DEGREES, THE MATRIX HAS TO BE MULTIPLIED BY ARC
       CALL ARRMC(3,3,A,ARC,A1)
       call arrgive(9,a1,a)
       END
+c
+c
       SUBROUTINE DRVROHTH(ITH,ROH,A)
-C This is a subroutine to calcalate the matrix of deriv(E)/deriv(theta i)
-c where E is a rotation 3*3 matrix and theta i (i=1,2,3) is Eulerian Angle
+C This is a subroutine to calculate the matrix of deriv(E)/deriv(theta i)
+c where E is a 3*3 rotation matrix and theta i (i=1,2,3) is Eulerian Angle
 c in ROH system.
 C	DIMENSION A(3,3),ROH(3)
 c parameter description:
@@ -720,7 +779,7 @@ c       when ITH = 3
 c                     the output matrix is deriv(E) /deriv(theta3)
 c ROH are the three Eulerian angles
 c A  is the output deriv matrix. i.e. A = deriv(E) /deriv)(theta i)
-c                               made by Guoguang Lu
+c                               written by Guoguang Lu
 c
       DIMENSION A(3,3),ROH(3)
       ARC=3.14159265359/180.0
@@ -775,12 +834,14 @@ C      E(3,3) = COTH*COPH
       A(3,2) = 0.
       A(3,3) = - COTH*SIPH
       ELSE
-      STOP 'invaild parameter ITH '
+      STOP 'invalid parameter ITH '
       END IF
       END
+c
+c
       SUBROUTINE DRVROHTHARC(ITH,ROH,A)
-C This is a subroutine to calcalate the matrix of deriv(E)/deriv(theta i)
-c where E is a rotation 3*3 matrix and theta i (i=1,2,3) is Eulerian Angle
+C This is a subroutine to calculate the matrix of deriv(E)/deriv(theta i)
+c where E is a 3*3 rotation matrix and theta i (i=1,2,3) is Eulerian Angle
 c in ROH system.
 C	DIMENSION A(3,3),ROH(3)
 c parameter description:
@@ -792,7 +853,7 @@ c       when ITH = 3
 c                     the output matrix is deriv(E) /deriv(theta3)
 c ROH are the three Eulerian angles
 c A  is the output deriv matrix. i.e. A = deriv(E) /deriv)(theta i)
-c                               made by Guoguang Lu
+c                               written by Guoguang Lu
 c
       DIMENSION A(3,3),ROH(3)
 C	ARC=3.14159265359/180.0
@@ -848,12 +909,14 @@ C      E(3,3) = COTH*COPH
       A(3,2) = 0.
       A(3,3) = - COTH*SIPH
       ELSE
-      STOP 'invaild parameter ITH '
+      STOP 'invalid parameter ITH '
       END IF
       END
+c
+c
       SUBROUTINE DRVROHTHD(ITH,ROH,A)
-C This is a subroutine to calcalate the matrix of deriv(E)/deriv(theta i)
-c where E is a rotation 3*3 matrix and theta i (i=1,2,3) is Eulerian Angle
+C This is a subroutine to calculate the matrix of deriv(E)/deriv(theta i)
+c where E is a 3*3 rotation matrix and theta i (i=1,2,3) is Eulerian Angle
 c in ROH system.
 C	DIMENSION A(3,3),ROH(3)
 c parameter description:
@@ -865,7 +928,7 @@ c       when ITH = 3
 c                     the output matrix is deriv(E) /deriv(theta3)
 c ROH are the three Eulerian angles
 c A  is the output deriv matrix. i.e. A = deriv(E) /deriv)(theta i)
-c                               made by Guoguang Lu
+c                               written by Guoguang Lu
 c
       DIMENSION A(3,3),ROH(3)
       DIMENSION A1(3,3)
@@ -921,17 +984,19 @@ C      E(3,3) = COTH*COPH
       A(3,2) = 0.
       A(3,3) = - COTH*SIPH
       ELSE
-      STOP 'invaild parameter ITH '
+      STOP 'invalid parameter ITH '
       END IF
-C SINCE ROH IS IN DEGREE, SO THE MATRIX HAS TO MULTIPLIED ARC
+C SINCE ROH IS IN DEGREES, THE MATRIX HAS TO MULTIPLIED BY ARC
       CALL ARRMC(3,3,A,ARC,A1)
       CALL arrgive(9,A1,A1)
       END
+c
+c
       function dstll2(x1,x2,y1,y2)
 c a routine to calculate the line-line distance.
 c input:
-c x1 and x2 are two postion one line X
-c y1 and y2 are two postion one line Y
+c x1 and x2 are two positions on line X
+c y1 and y2 are two positions on line Y
 c output
 c  dstll1 is the distance between x and y 
       real x1(3),x2(3)
@@ -951,20 +1016,22 @@ c
        dstll2 = sqrt(d2*d2-d1*d1)
       end if
       end 
+c
+c
       FUNCTION DSTPL1(VL,XYZ0,XYZ,VPL)
 C-----------DISTANCE FROM A POINT TO LINE	
 c	FUNCTION DSTPL1(VL,XYZ0,XYZ,VPL)
-c  VL -3- is the input directional vector of the line
-c  XYZ0 -3- is the a input position which belong to the line
-c  XYZ -3-  is the input coordinate of the point.
+c  VL -3- is the input direction vector of the line
+c  XYZ0 -3- is the input position of a point on the line
+c  XYZ -3-  is the input coordinates of the point.
 c  VPL -3-  is the output vector from the point to the line which is
-c           pendancular to the directional vector of the line.
+c           perpendicular to the direction vector of the line.
 c  DISTPL1 is the output distance from the point to the line i.e. /VPL(3)/
 C  so the equation of the line should be 
 C         x-XYZ0(1)      y-XYZ0(2)       z-XYZ0(3)
 C        ----------- =  -----------  =  -----------
 C          VL(1)          VL(2)           VL(3)
-C        where the x,y,z is any position of the line
+C        where x,y,z is any position on the line
 c
 
       DIMENSION VL(3),XYZ0(3),XYZ(3),VPL(3)
@@ -977,7 +1044,8 @@ c
       DSTPL1=VEM(3,VPL)
       RETURN
       END
-
+c
+c
       FUNCTION DSTPL2(VL,XYZ0,XYZ,VP0,VPL)
 C-----------DISTANCE FROM A POINT TO LINE	
 c	FUNCTION DSTPL1(VL,XYZ0,XYZ,VP0,VPL)
@@ -1006,15 +1074,17 @@ c
       DSTPL2=VEM(3,VPL)
       RETURN
       END
+c
+c
       FUNCTION DSTPLROTR(A,T,XYZ)
 C-----------DISTANCE FROM A POINT TO A ROTATION axis defined by ROT,T
 c	FUNCTION DSTPL1(VL,XYZ0,XYZ,VPL)
 c  A 3*3 is the rotation matrix which defines the axis
 c  T  3 is the translation vector which defines the axis
-c When there is an non-crystallographic rotation and trnaslation
+c When there is a non-crystallographic rotation and translation
 c x2 = A*x1 + t
 c where A(3,3) is the 3*3 matrix
-c 	t(3) is translation vection.
+c 	t(3) is translation vector.
 c  XYZ -3-  is the input coordinate of the point.
 c  DISTPLROTR is the output distance from the point to the line i.e. /VPL(3)/
 C  so the equation of the line should be 
@@ -1032,7 +1102,7 @@ c
       if (vlm.lt.1.e-4) then
        WRITE(6,*) 'a',a
        WRITE(6,*) 'vlm',vlm
-       stop 'some thing strange in dstplrotr'
+       stop 'something strange in dstplrotr'
       end if
       if (abs(vlm-1.).gt.1.e-5) then
        call arrmc(3,1,vl,1./vlm,vl0)
@@ -1049,6 +1119,8 @@ c
       call arrps(3,1,x1,b1,x2)
       dstplrotr = dist(x2,xyz)/(2.*sind(vkapa/2.))
       end
+c
+c
       FUNCTION DSTPS1(VS,XYZ0,XYZ)
 C------DISTANCE FROM A POINT TO A SECTION
 c	FUNCTION DSTPS1(VL,XYZ0,XYZ,VPL)
@@ -1067,6 +1139,8 @@ c
       DSTPS1=POIMULT(3,3,VS,BUF)/VEM(3,VS)
       RETURN
       END
+c
+c
 c----------------------------------------------------------
       subroutine elb(txt,len)
 c
@@ -1087,6 +1161,8 @@ c
       txt = save
       return
       end
+c
+c
       SUBROUTINE ELIZE(N,E)
       DIMENSION E(N,N)
       DO 10 I=1,N
@@ -1098,14 +1174,17 @@ c	WRITE(6,*) I,E
 10	CONTINUE
       RETURN
       END
-
+c
+c
       function error2d(xy1,xy2)
       real xy1(2),xy2(2)
       e1 = xy2(1)-xy1(1)
       e2 = xy2(2)-xy1(2)
       error2d = sqrt(e1*e1+e2*e2)
       end
-c read in a file and put to an other file
+c
+c
+c read in a file and copy to another file
 c nin --- unit of input file
 c nout -- unit of output file
 c file -- name of the input file
@@ -1119,24 +1198,27 @@ c file -- name of the input file
       goto 5
 10	continue
       end
-
+c
+c
       SUBROUTINE FMATIN(N,X)
       REAL X(N)
       DO I = 1, N
        CALL FRCINSIDE(X(i))
       END DO
       END
+c
+c
       SUBROUTINE FRAC2ANG(XYZ)
-C A subroutine to transfer the factional coordinate xyz to orthogonal 
-c one in Angstrom unit.
+C A subroutine to convert fractional coordinates xyz into orthogonal 
+c coordinates in Angstrom units.
 C 
 C	SUBROUTINE FRAC2ANG(XYZ)
 C	COMMON/CELL/ CELL,DEOR,ORTH
 C	DIMENSION CELL(6),DEOR(3,3),ORTH(3,3),XYZ(3)
-C XYZ is a input factional coordinate 3-dim array.
-c CELL: 6-dim array to save the cell constant
-c DEOR is 3*3 array, respresent the deorthongonallizing array.
-c ORTH is 3*3 array, respresent the orthongonallizing array.
+C XYZ is an input fractional coordinate 3-dim array.
+c CELL: 6-dim array to save the cell constants
+c DEOR is 3*3 array, representing the deorthogonalizing array.
+c ORTH is 3*3 array, representing the orthogonalizing array.
 c
       COMMON/CELL/ CELL,DEOR,ORTH
       DIMENSION CELL(6),DEOR(3,3),ORTH(3,3),XYZ(3)
@@ -1147,6 +1229,8 @@ c
 C
       CALL matmult(3,3,3,1,ORTH,B3,XYZ,B1,B2)
       END
+c
+c
       SUBROUTINE FRCINSIDE(X)
 10	CONTINUE
       IF (X.GE.1.) THEN
@@ -1155,19 +1239,21 @@ C
       X = MOD(X,1.) + 1.
       END IF
       END
+c
+c
       SUBROUTINE FRCTOANG(XYZ)
-C A subroutine to transfer the factional coordinate xyz to orthogonal 
-c one in Angstrom unit.
+C A subroutine to convert fractional coordinates xyz into orthogonal 
+c coordinates in Angstrom units.
 C 
 C	SUBROUTINE FRAC2ANG(XYZ)
 C	COMMON/CELL/ CELL,DEOR,ORTH
 C	DIMENSION CELL(6),DEOR(3,3),ORTH(3,3),XYZ(3)
-C XYZ is a input factional coordinate 3-dim array.
-c CELL: 6-dim array to save the cell constant
-c DEOR is 3*3 array, respresent the deorthongonallizing array.
-c ORTH is 3*3 array, respresent the orthongonallizing array.
-c obs: different from frac2ang, the door and orth must be from 
-c 	subourtine crystal
+C XYZ is an input fractional coordinate 3-dim array.
+c CELL: 6-dim array to save the cell constants
+c DEOR is 3*3 array, representing the deorthogonalizing array.
+c ORTH is 3*3 array, representing the orthogonalizing array.
+c obs: different from frac2ang, the deor and orth must be from 
+c 	subroutine crystal
 c
       COMMON/CELL/ CELL,DEOR,ORTH
       DIMENSION CELL(6),DEOR(3,3),ORTH(3,3),XYZ(3)
@@ -1195,13 +1281,15 @@ c	close (31)
       getnam = ' '
       call ugtenv(filnam,getnam)
       end
+c
+c
       SUBROUTINE GETPDB(X,ATOM,RES,SEQ,NATM,FILNAM)
 C A subroutine to read the Protein data bank format coordinate file
-c X 3*21000 arraies, output xyz coordinates
-c ATOM 21000 character*4 arraies, output atom names
-c RES 21000 character*4 arraies, output residue number e.x. A101 A103...
-C  If resudiue number is like A   1 then it will become A1
-c SEQ 21000 character*4 arraies, output peptide name. e.x. PHE TRY ....
+c X 3*21000 arrays, output xyz coordinates
+c ATOM 21000 character*4 arrays, output atom names
+c RES 21000 character*4 arrays, output residue number e.g. A101 A103...
+C  If residue number is like A   1 then it will become A1
+c SEQ 21000 character*4 arrays, output peptide name. e.g. PHE TRY ....
 C NATM is the number of atoms in the coordinate file
 c FILNAT is the file name of the coordinate.
 c
@@ -1241,13 +1329,15 @@ C
       CLOSE (3)
 C
       END
+c
+c
       SUBROUTINE GETPDB1(X,ATOM,SEQ,RES,BFAC,OCC,NATM,FILNAM)
 C A subroutine to read the Protein data bank format coordinate file
-c X 3*15000 arraies, output xyz coordinates
-c ATOM 15000 character*4 arraies, output atom names
-c RES 15000 character*4 arraies, output residue number e.x. A101 A103...
-C  If resudiue number is like A   1 then it will become A1
-c SEQ 15000 character*4 arraies, output peptide name. e.x. PHE TRY ....
+c X 3*15000 arrays, output xyz coordinates
+c ATOM 15000 character*4 arrays, output atom names
+c RES 15000 character*4 arrays, output residue number e.g. A101 A103...
+C  If residue number is like A   1 then it will become A1
+c SEQ 15000 character*4 arrays, output peptide name. e.g. PHE TRY ....
 C NATM is the number of atoms in the coordinate file
 c FILNAT is the file name of the coordinate.
 c
@@ -1297,19 +1387,21 @@ C
       CLOSE (3)
 C
       END
+c
+c
       SUBROUTINE GETPDB2(X,ATOM,SEQ,RES,BFAC,OCC,NATM,FILNAM)
 C A subroutine to read the Protein data bank format coordinate file
-c X 3*maxatom arraies, output xyz coordinates
-c ATOM maxatom character*4 arraies, output atom names
-c RES maxatom character*4 arraies, output residue number e.x. A101 A103...
-C  If resudiue number is like A   1 then it will become A1
-c SEQ maxatom character*4 arraies, output peptide name. e.x. PHE TRY ....
+c X 3*maxatom arrays, output xyz coordinates
+c ATOM maxatom character*4 arrays, output atom names
+c RES maxatom character*4 arrays, output residue number e.g. A101 A103...
+C  If residue number is like A   1 then it will become A1
+c SEQ maxatom character*4 arrays, output peptide name. e.g. PHE TRY ....
 C NATM is the number of atoms in the coordinate file
 c FILNAT is the file name of the coordinate.
 c
 c in this subroutine, hydrogen atoms were included.
 c
-c	getpdb1 is for xplor file and exlude Hydrogen
+c	getpdb1 is for xplor file and exclude Hydrogen
 c	getpdb2 is for any file
       parameter (maxatom = 50000)
       DIMENSION X(3,maxatom)
@@ -1355,19 +1447,21 @@ C
       CLOSE (3)
 C
       END
+c
+c
       SUBROUTINE GETPDB3(X,ATOM,SEQ,CH,RES,BFAC,OCC,NATM,FILNAM)
 C A subroutine to read the Protein data bank format coordinate file
-c X 3*15000 arraies, output xyz coordinates
-c ATOM 15000 character*4 arraies, output atom names
-c RES 15000 character*4 arraies, output residue number e.x. A101 A103...
-C  If resudiue number is like A   1 then it will become A1
-c SEQ 15000 character*4 arraies, output peptide name. e.x. PHE TRY ....
+c X 3*15000 arrays, output xyz coordinates
+c ATOM 15000 character*4 arrays, output atom names
+c RES 15000 character*4 arrays, output residue number e.g. A101 A103...
+C  If residue number is like A   1 then it will become A1
+c SEQ 15000 character*4 arrays, output peptide name. e.g. PHE TRY ....
 C NATM is the number of atoms in the coordinate file
 c FILNAT is the file name of the coordinate.
 c
 c in this subroutine, hydrogen atoms were included.
 c
-c	getpdb1 is for xplor file and exlude Hydrogen
+c	getpdb1 is for xplor file and exclude Hydrogen
 c	getpdb2 is for any file
       parameter (maxpro = 50000)
       DIMENSION X(3,maxpro)
@@ -1408,7 +1502,7 @@ C
       NATM = NATM + 1
       IF (NATM.GT.maxpro) then
        WRITE(6,*)  'Error: atom number is',natm
-       WRITE(6,*)  'Error.. Atoms can not be more than',maxpro
+       WRITE(6,*)  'Error.. Atoms cannot be more than',maxpro
        stop
       end if
       GOTO 5
@@ -1417,14 +1511,16 @@ C
       CLOSE (3)
 C
       END
+c
+c
       SUBROUTINE GETPDBCA(X,ATOM,RES,SEQ,NATM,FILNAM)
 C A subroutine to read the Protein data bank format coordinate file
 c In this version only Ca atoms are read. -- Guoguang 950922
-c X 3*50000 arraies, output xyz coordinates
-c ATOM 50000 character*4 arraies, output atom names
-c RES 50000 character*4 arraies, output residue number e.x. A101 A103...
-C  If resudiue number is like A   1 then it will become A1
-c SEQ 50000 character*4 arraies, output peptide name. e.x. PHE TRY ....
+c X 3*50000 arrays, output xyz coordinates
+c ATOM 50000 character*4 arrays, output atom names
+c RES 50000 character*4 arrays, output residue number e.g. A101 A103...
+C  If residue number is like A   1 then it will become A1
+c SEQ 50000 character*4 arrays, output peptide name. e.g. PHE TRY ....
 C NATM is the number of atoms in the coordinate file
 c FILNAT is the file name of the coordinate.
 c
@@ -1459,20 +1555,22 @@ C
 12	CONTINUE
 C
       NATM = NATM + 1
-      IF (NATM.GT.50000) STOP 'Atoms can not be more than 50000.'
+      IF (NATM.GT.50000) STOP 'Atoms cannot be more than 50000.'
       GOTO 5
 20	CONTINUE
       NATM = NATM - 1
       CLOSE (3)
 C
       END
+c
+c
       SUBROUTINE GETRDI(X,ATOM,RES,SEQ,NATM,FILNAM)
 C A subroutine to read the Diamond format coordinate file
-c X 3*5500 arraies, output xyz coordinates
-c ATOM 5500 character*4 arraies, output atom names
-c RES 5500 character*4 arraies, output residue number e.x. A101 A103...
+c X 3*5500 arrays, output xyz coordinates
+c ATOM 5500 character*4 arrays, output atom names
+c RES 5500 character*4 arrays, output residue number e.g. A101 A103...
 C  If res is 'A  1'  then it will be truncated to 'A1  '
-c SEQ 5500 character*4 arraies, output peptide name. e.x. PHE TRY ....
+c SEQ 5500 character*4 arrays, output peptide name. e.g. PHE TRY ....
 C NATM is the number of atoms in the coordinate file
 c FILNAT is the file name of the coordinate.
 c
@@ -1533,6 +1631,8 @@ C
       END IF
 
       END
+c
+c
       SUBROUTINE GETSHELX ( X, ATOM, NATM, FILNAM )
 c A routine to get coordinates and atom names from a SHELXX format
 c file.
@@ -1563,7 +1663,7 @@ C
 C
 5	NATM = NATM + 1
       IF (NATM.GT.MAXATM) 
-     +   STOP 'Atoms of Shelxx can not be more than 500.'
+     +   STOP 'Atoms of Shelxx cannot be more than 500.'
       READ(1,10) ATOM(NATM),(X(I,NATM),I=1,3)
 C	WRITE(6,*) NATM,ATOM(NATM),(X(I,NATM),I=1,3)
 10	FORMAT(A4,5X,3F10.5)
@@ -1577,6 +1677,7 @@ C	WRITE(6,*) NATM,ATOM(NATM),(X(I,NATM),I=1,3)
 C
 C *  ROH - MATRIX
 C
+c
       SUBROUTINE HUBER(ROT,E)
 
       DIMENSION E(3,3),ROT(3)
@@ -1638,28 +1739,32 @@ C	ARC= 1.0
       E(3,2) = SITH
       E(3,3) = COTH*COPH
       END
+c
+c
       SUBROUTINE IARRGIVE(N,XYZ0,XYZ)
-C To transfer a N-dimensional XYZ0 array to another one XYZ.
+C    Copy an N-dimensional integer array XYZ0 to another one XYZ.
       INTEGER*4 XYZ(N),XYZ0(N)
       DO I = 1, N
        XYZ(I) = XYZ0(I)
       END DO
       END
-C------A ARRAY MULT A CONSTANT
-C --- AND INTEGER VERSION
+c
+c
+C------MULTIPLY AN INTEGER ARRAY BY A CONSTANT
       SUBROUTINE IARRMC(IM,IN,A1,C,A)
       INTEGER A1(IM,IN),A(IM,IN),C
       DO 10 I1=1,IM
       DO 10 I2=1,IN
 10	A(I1,I2)=A1(I1,I2)*C
       END
-
+c
+c
       subroutine imatext(isym0,sout,ss1,ss2,ss3,trans)
-c A subroutine to transfer a symmetric matrics into a strings.
-c isym0 is 3*3 symtric matrix.
+c A subroutine to transfer a symmetric matrix into a string.
+c isym0 is 3*3 symmetric matrix.
 c in is 3-dimensional strings of the input like 'x''y''z' or 'h''k''l'
-c trans is true. recongonize the matrix as a transpos one.
-c sout is a 3-dimesinal output strings
+c trans is true. recognize the matrix as a transpose one.
+c sout is a 3-dimensional output string
 c
 c Guoguang 91-02-06
       character sout(3)*12,ss1*1,ss2*1,ss3*1
@@ -1728,14 +1833,16 @@ c make the text shorter
       end do
 c
       end
-C-------A STANDARD SUBPROGRAM WHICH CAN MULT TWO ARRAY (a new qick versiion
+c
+c
+C-------A STANDARD SUBPROGRAM TO MULTIPLY TWO ARRAYS (a new quick version
 C --- this is for I4 version
 C) BMC 91/02/11/ Guoguang
 C	A1(IM1,IN1)*A2(IM2,IN2)=RSLT(IM1,IN2)
       SUBROUTINE IMATMULT(IM1,IN1,IM2,IN2,A1,A2,RSLT)
       INTEGER A1(IM1,IN1),A2(IM2,IN2),RSLT(IM1,IN2)
       IF (IN1.NE.IM2) THEN
-      stop 'The two arraies can not be mutiplited'
+      stop 'The two arrays cannot be multiplied'
       end if
       DO I = 1, IM1
       DO J = 1, IN2
@@ -1747,12 +1854,14 @@ C	A1(IM1,IN1)*A2(IM2,IN2)=RSLT(IM1,IN2)
       END DO
       RETURN
       END
+c
+c
 c if you have a rigid movement x2=R*x1+1
 c where R(3,3) is the rotation and t(3) is the translation
 c then x1 =R2*x1-t2
 c where R2=R-1
 c       t2 =R-1*t
-c The program read in R,T matrix (3,4) and retrun a inversed RT2
+c The program reads in R,T matrix (3,4) and returns a inversed RT2
 c nmat is the number of matrix
 c
       subroutine invrt(nmat,rt,rt2)
@@ -1768,70 +1877,84 @@ c
       end do
 c
       end
-C--------- CHANG A MATRIC INTO A INVERSE MATRIC ---------
+c
+c
+C--------- IN PLACE MATRIX INVERSION ---------
+
       SUBROUTINE IVSN(N,A,B,C,ME,DE,EP)
+      
 C----  N is the dimension of the matrix A with N rows and N columns
 c----  A-N,N- is the input matrix with N rows and N columns.
 c---   ME(N), B(N) AND C(N) are the buffer of N-dimensional array.
 c---   DE could any value
-c      EP is the least value of the matrix i.e. when |A| < EP, the program
+c      EP is the least value of the pivot i.e. when |A| < EP, the program
 c      will stop.
+
+c  on output, DE is the determinant of the original matrix
+c  on output, A is the inverse of the original input A
+c  ME is an index array which keeps track of row swaps
 
       DIMENSION A(N,N),ME(N),B(N),C(N)
       INTEGER I,J,K,ME
       
-      DE=1.
+      DE = 1.0
+      
       DO 10 J=1,N
-10	ME(J)=J
+10	    ME(J)=J
+
       DO 20 I=1,N
-      Y=0.
-      DO 30 J=I,N
-      IF (ABS(A(I,J)).LE.ABS(Y)) GOTO 30
-      K=J
-      Y=A(I,J)
-30	CONTINUE
-      DE=DE*Y
-      IF (ABS(Y).LT.EP) then
-       write(6,*) 'Illegal Matrix:'
-       write(6,'(3f10.4)') a
-       WRITE(6,*)  'the determinant of the matrix is ',y
-       STOP 4444
-      end if
-      Y=1./Y
-      DO 40 J=1,N
-      C(J)=A(J,K)
-      A(J,K)=A(J,I)
-      A(J,I)=-C(J)*Y
-      B(J)=A(I,J)*Y
-40	A(I,J)=A(I,J)*Y
-      A(I,I)=Y
-      J=ME(I)
-      ME(I)=ME(K)
-      ME(K)=J
-      DO 11 K=1,N
-      IF(K.EQ.I) GOTO 11
-      DO 12 J=1,N
-      IF (J.EQ.I) GOTO 12
-      A(K,J)=A(K,J)-B(J)*C(K)
-12	CONTINUE
-11	CONTINUE
+          Y=0.
+          DO 30 J=I,N
+              IF (ABS(A(I,J)).LE.ABS(Y)) GOTO 30
+              K=J
+              Y=A(I,J)
+30	    CONTINUE
+          DE = DE*Y
+          IF (ABS(Y).LT.EP) then
+              write(6,*) 'Ill conditioned matrix:'
+              write(6,'(3f12.6)') a
+              WRITE(6,*)  'the pivot of the matrix is ', y, ' N = ',N
+              STOP 4444
+          end if
+          Y = 1.0/Y
+          DO 40 J=1,N
+              C(J) = A(J,K)
+              A(J,K) = A(J,I)
+              A(J,I) = -C(J)*Y
+              B(J) = A(I,J)*Y
+40	        A(I,J) = A(I,J)*Y
+          A(I,I) = Y
+          J = ME(I)
+          ME(I) = ME(K)
+          ME(K) = J
+          DO 11 K=1,N
+              IF(K.EQ.I) GOTO 11
+              DO 12 J=1,N
+                  IF (J.EQ.I) GOTO 12
+                  A(K,J) = A(K,J) - B(J)*C(K)
+12	        CONTINUE
+11	    CONTINUE
+
 20	CONTINUE
+
       DO 33 I=1,N
-      DO 44 K=1,N
-      IF(ME(K).EQ.I) GOTO 55
-44	CONTINUE
-55	IF(K.EQ.I) GOTO 33
-      DO 66 J=1,N
-      W=A(I,J)
-      A(I,J)=A(K,J)
-66	A(K,J)=W
-      IW=ME(I)
-      ME(I)=ME(K)
-      ME(K)=IW
-      DE=-DE
+          DO 44 K=1,N
+              IF(ME(K).EQ.I) GOTO 55
+44	    CONTINUE
+55	    IF(K.EQ.I) GOTO 33
+          DO 66 J=1,N
+              W = A(I,J)        ! swap rows k and i
+              A(I,J) = A(K,J)
+66	        A(K,J) = W
+          IW = ME(I)            ! keep track of index changes 
+          ME(I) = ME(K)
+          ME(K) = IW
+          DE = -DE  ! determinant changes sign when two rows swapped
 33	CONTINUE
       RETURN
       END
+c
+c
       SUBROUTINE KABMOD(TH1,TH2,TH3,TH11,TH12,TH13)
       DIMENSION TH(6)
 C
@@ -1854,19 +1977,21 @@ C
       TH13 = TH(6)
       RETURN
       END
+c
+c
       SUBROUTINE LATTIC(NSYM,SYM,LAT)
-C A subroutine to add the translation vector to the symmetric arraies 
-c and modify the number of the symmetric operations according to the
-c Bravius Lattic.
+C A subroutine to add the translation vector to the symmetry arrays 
+c and modify the number of symmetry operations according to the
+c Bravais Lattice.
 C	CHARACTER*1 LAT
 C	DIMENSION SYM(3,4,192)
 c Parameter description: 
 c NSYM are the number of the symmetric operation. The input value do
-c   not includ the non-1 translation operation. But output includ it.
-c SYM(3,4,NSYM) is the symmetric op arraies. 
-c LAT is the the Bravius lattic. It could be "P", "A", "B", "C", "I",
+c   not include the non-1 translation operation. But output includes it.
+c SYM(3,4,NSYM) is the symmetry op arrays. 
+c LAT is the Bravais lattice. It could be "P", "A", "B", "C", "I",
 c "F",or "R"
-C                                  Writen by      Guoguang Lu
+C                                  Written by      Guoguang Lu
 c                                                 27/02/88
       CHARACTER*1 LAT
       DIMENSION SYM(3,4,192),TR(3,4)
@@ -1907,7 +2032,7 @@ c
       TR(2,3) = 1./3.
       TR(3,3) = 1./3.
       ELSE 
-      WRITE(6,*)  'Error Lattic>> No lattic ',LAT
+      WRITE(6,*)  'Error Lattice>> No lattice ',LAT
       WRITE(6,*)  'Only P,A,B,C,I,F and R are allowed.'
       END IF
       DO ISYM = 1, NSYM
@@ -1930,12 +2055,14 @@ c
       NSYM = NSYM * NTR
       RETURN	
       END
+c
+c
       SUBROUTINE LSQEQ(M,N,A,PHI,DETA,ATA,B1)
 C	DIMENSION A(M,N),PHI(M),DETA(N),ATA(N,N)
 C	DIMENSION B1(N)
 C This is a subroutine to compute the solution of least square equation
-C of a nomal matrix. i.e. AT*A*DETA = AT*PHI ==> DETA = (AT*A)^(-1)*AT*PHI
-C It could be get the deta the make the SIGMA (phi)^2 = minimun
+C of a normal matrix. i.e. AT*A*DETA = AT*PHI ==> DETA = (AT*A)^(-1)*AT*PHI
+C It could be get the deta the make the SIGMA (phi)^2 = minimum
 c        where  there are M equations
 c                   .......
 c                  phi i = 0
@@ -1943,19 +2070,19 @@ c                   .......
 c
 c  Note:  In the program parameter PHI(I) = - phi0 i  in the equation.
 c
-C                                             Made by Guoguang Lu
+C                                             written by Guoguang Lu
 c                                               23/01/1989
 c parameter description:
-c M is the number of the equation. i.e. PHIi = 0 (i=1,...M)
-C N is the number of the varablities.
+c M is the number of equations. i.e. PHIi = 0 (i=1,...M)
+C N is the number of the variables.
 C           (N should be less than 3*N0 given in parameter statement.)
 C           (At this moment, N0 is 6000.)
 c (A,PHI) is a M*(N+1) normal  matrix
 c A is a M*N array
 c PHI is a M-dimensional vector. Here, PHI should be -phi0 in the equation.
 c DETA is the output shift.
-c ATA(N,N ) is a N*N buffer arraies.
-c B1(N)     is a N-dimensional buffer arraies.
+c ATA(N,N ) is a N*N buffer array.
+c B1(N)     is a N-dimensional buffer array.
 c Note :   M must not be less than N.
       PARAMETER (N0 = 6000 )
       DIMENSION A(M,N),PHI(M),DETA(N),ATA(N,N)
@@ -2013,8 +2140,10 @@ C
       END IF
 C
       END
+c
+c
       subroutine matitor(im,in,imat,rmat)
-c to transfer a matrix from integer*2 to real*4
+c    Convert a matrix from integer*2 to real*4
 c
       real*4 rmat(im,in)
       integer imat(im,in)
@@ -2025,13 +2154,15 @@ c
       end do
       end do
       end
-C-------A STANDARD SUBPROGRAM WHICH CAN MULT TWO ARRAY (a new qick versiion
+c
+c
+C-------A STANDARD SUBPROGRAM TO MULTIPLY TWO ARRAYS (a new quick version
 C) BMC 89/11/05/ Guoguang
 C	A1(IM1,IN1)*A2(IM2,IN2)=RSLT(IM1,IN2)
       SUBROUTINE MATMULT(IM1,IN1,IM2,IN2,A1,A2,RSLT)
       DIMENSION A1(IM1,IN1),A2(IM2,IN2),RSLT(IM1,IN2)
       IF (IN1.NE.IM2) THEN
-      stop 'The two arraies can not be mutiplited'
+      stop 'The two arrays cannot be multiplied'
       end if
       DO I = 1, IM1
       DO J = 1, IN2
@@ -2043,8 +2174,10 @@ C	A1(IM1,IN1)*A2(IM2,IN2)=RSLT(IM1,IN2)
       END DO
       RETURN
       END
+c
+c
       subroutine matrtoi(im,in,rmat,imat)
-c to transfer a matrix from real to integer
+c    Convert a matrix from real to integer
 c
       real*4 rmat(im,in)
       integer imat(im,in)
@@ -2055,6 +2188,8 @@ c
       end do
       end do
       end
+c
+c
       FUNCTION MATSYM(S,TEXT,ICOL) 
 C 
 C A FORTRAN FUNCTION SUBPROGRAM TO SCAN A SYMMETRY CARD AND BUILD 
@@ -2070,7 +2205,7 @@ C
 C EXPLANATION OF ARGUMENTS
 C S IS THE 1ST ELEMENT OF THE 3X4 ARRAY WHERE THE SYM. OP. IS TO BE 
 C STORED. 
-C TEXT  IS THE ARRAY OF THE TEXTRECORD WHICH IS TO BE SCANNED  (LENGTH:
+C TEXT  IS THE ARRAY OF THE TEXT RECORD WHICH IS TO BE SCANNED  (LENGTH:
 C 36 CHARACTERS, CONTIGUOUSLY)
 C ICOL POINTS - IN CASE OF ERRORS - TO THE POSITION OF AN INVALID 
 C CHARACTER OR AN SYNTAX ERROR WITHIN THE SYMMETRY CARD 
@@ -2125,12 +2260,12 @@ C  HAVE ALL CHARACTERS  BEEN ANALYSED IN 3 FIELDS?
 C---NO MORE THAN THREE FIELDS PERMITTED 
  104  SIGN = 1.0
       ICOL = ICOL+1 
-C----MARCH ON, FIND WHATS NEXT
+C----MARCH ON, FIND WHAT'S NEXT
       IFNUM=ICHAR(ICOL) 
       IF (11-IFNUM) 9980,110,110
 C----TEST FOR SIGNS 
  110  IF (10-IFNUM) 118,115,112 
-C----TEST TO DISTINGUTSH BETWEEN NUMBERS AND LETTERS
+C----TEST TO DISTINGUISH BETWEEN NUMBERS AND LETTERS
  112  IF (6-IFNUM) 125,130,130
 C----FOUND A SIGN 
 C     COME HERE FOR MINUS 
@@ -2175,7 +2310,7 @@ C----A SUBFIELD BEGINS WITH A PLUS OR MINUS
 C----A COMMA MUST BE NEXT UNLESS ICOL IS ICOLMX+1 WHICH MEANS THE END 
       IF(ICHAR(ICOL).EQ.13)   GO TO 101 
  163  IF (ICOLMX+1-ICOL) 9980,1000,9980 
-C----EVERYTHING SEEMS OK SEE IF DETERMINATE IS A NICE + OR - 1. 
+C----EVERYTHING SEEMS OK SEE IF DETERMINANT IS A NICE + OR - 1. 
  1000 CONTINUE
       D=S(1,1)*S(2,2)*S(3,3)
      $ -S(1,2)*S(2,1)*S(3,3)
@@ -2209,7 +2344,9 @@ C----INCORRECT NUMBER OF COMMAS
  9987 MATSYM = 3
       GO TO 2005
       END 
-c this is subroutine to transfer misseting angle to matrix
+c
+c
+c this is subroutine to transfer missetting angle to matrix
 c  ROT = (phiz)*(phiy)*(phix)
       subroutine misseting(phi,rot)
       real phi(3),rot(3,3)
@@ -2235,7 +2372,7 @@ c where R(3,3) is the rotation and t(3) is the translation
 c then x1 =R2*x1-t2
 c where R2=R-1
 c       t2 =R-1*t
-c The program read in R,T matrix (3,4) 1 and 2, then retrun a RT
+c The program reads in R,T matrix (3,4) 1 and 2, then returns an RT
 c which is rt = rt1*rt2
 c
 c 
@@ -2246,7 +2383,7 @@ c
       real extr(4)
       real b1(3),b2(3)
       integer me(3)
-c...  data statements.  Seperate declaration and init required for f2c
+c...  data statements.  Separate declaration and init required for f2c
       data extr /0.,0.,0.,1./
 c
       do i = 1, 4
@@ -2285,8 +2422,9 @@ c	write(6,'(4f10.5)') gt
 c
       end
 c
-c a subroutine to transfer a normalized matrix to denso misseting angle 
-c definatin [rot]=[rotx]*[roty]*[rotz]
+c
+c a subroutine to transfer a normalized matrix to denzo missetting angle 
+c definition [rot]=[rotx]*[roty]*[rotz]
 c  GuoGuang 930706
       subroutine mtodenmis(rot0,phi)
       real rot0(3,3)
@@ -2348,6 +2486,8 @@ c	rot(3,3) = cosy*cosx
        WRITE(6,*)  'not implemented yet'
       end if
       end 
+c
+c
       SUBROUTINE MTOHUBER(E,HB,HB1)
       DIMENSION E(3,3),HB(3),HB1(3)
 C
@@ -2407,7 +2547,8 @@ c	IF (ABS(TST-E(2,3)) .GT. 0.1) WRITE (6,1020) TST,E(2,3)
       HB1(2)=TH1
       HB1(3)=PH1
       END
-
+c
+c
       SUBROUTINE MTOHUBERARC(E,HB,HB1)
       DIMENSION E(3,3),HB(3),HB1(3)
 C
@@ -2457,8 +2598,9 @@ C	PH = PH/ARC
       HB1(2)=TH1
       HB1(3)=PH1
       END
-
-c this is subroutine to transfer misseting angle to matrix
+c
+c
+c this is subroutine to transfer missetting angle to matrix
 c  ROT = (phiz)*(phiy)*(phix)
       subroutine mtomisset(rot,phi)
       real phi(3),rot(3,3)
@@ -2502,6 +2644,7 @@ c	rot(3,3) = cosy*cosx
        WRITE(6,*)  'not implemented yet'
       end if
       end 
+c
 C
 C * POLAR ANGLES
 C
@@ -2565,7 +2708,8 @@ C --- PB == PHI
       POL1(3)=PK1
 
       END
-
+c
+c
       subroutine mtopolors(e,p1,p2)
       dimension e(3,3),p1(3),p2(3)
       dimension b1(3),b2(3)
@@ -2605,6 +2749,7 @@ c
       if (p2(2).gt.180) p2(2) = p2(2) -360.
       p2(1) = 180. - p1(1)
       end
+c
 c
       subroutine mtopolorz(e,p1,p2)
 c 
@@ -2646,6 +2791,8 @@ c
       p2(2) = 180. + p1(2)
       if (p2(2).gt.180) p2(2) = p2(2) -360.
       end
+c
+c
       SUBROUTINE MTOR_B(IOPT2,E,ROT1,ROT2)
 C
 C * R&B ANGLES:  -180 < AL < 180
@@ -2702,12 +2849,14 @@ C      GO TO 100
       ROT2(2)=BE1
       ROT2(3)=GA1
       END
+c
+c
       subroutine mtovec(a,vec,vkapa)
-c this is a subroutine which give a tranfer a orthorgal matrix
-c to a polor angle rotate a direction of a vector which is 1.
-c a is the input 3*3  orthorgonal matrix.
-c vec is the output 3-dim vector which indicate the axi directrion
-c kapa is the output polor angle.
+c this is a subroutine which give a transfer a orthogonal matrix
+c to a polar angle rotate a direction of a vector which is 1.
+c a is the input 3*3  orthogonal matrix.
+c vec is the output 3-dim vector which indicate the axis direction
+c kappa is the output polar angle.
 c Guoguang 901001 bmc
       dimension a(3,3),vec(3),a1(3,3),a2(9),vec1(3)
       integer*2 sgn(3,8)
@@ -2753,7 +2902,7 @@ c
        end do
        vv = vem(3,vec1)
 cc	 if (abs(vv-1.).gt.1e-4) then
-c	  write(6,*) 'Warning: modolar of vector is not 0, but',vv
+c	  write(6,*) 'Warning: modulus of vector is not 0, but',vv
 c	 end if
        call arrmc(3,1,vec1,1./vv,vec1)
       end if
@@ -2821,8 +2970,10 @@ c
 c	WRITE(6,*)  'kapa1,kapa2,error',v2,vkapa,abs(v2-vkapa)
 c
       end
+c
+c
       subroutine nodir(name1,name2,len2)
-c a subroutine which extract the file name from a complet filename.
+c a subroutine which extracts the file name from a complete filename.
 c e.g. input name1 = /nfs/pdb/full/1cnd.pdb
 c      output name2 = 1cnd.pdb
 c      len2 is the length of the second word
@@ -2837,9 +2988,10 @@ c	i1 = index(name1,'.pdb')
       len2 = i1 - i
       name2(1:len2) = name1(i+1:i1)
       end
-
+c
+c
       SUBROUTINE ORIEN ( NATM, XYZ1, XYZ2, A )
-c The subroutine select three atoms to calculate the initial superposing
+c The subroutine selects three atoms to calculate the initial superposing
 c matrix A from two molecules in 3*4 array XYZ1 and XYZ2 individually.
 c Parameter description:
 c NATM is the number of the atoms
@@ -2861,8 +3013,8 @@ c	DATA IAT/0/,IAT1/1/,IAT2/2/,IAT3/3/
       DIMENSION C1(3,3),C2(3,3),C1P(3,3)
       DIMENSION B1(3),B2(3)
 c
-c If IAT = 0, define the three atoms which is used do calculate the 
-c  initial orientational matrix
+c If IAT = 0, define the three atoms used to calculate the 
+c  initial orientation matrix
 c
       IF (IAT.EQ.0) THEN
        IAT1 = 1
@@ -2929,8 +3081,9 @@ C
       call elize(3,a)
       call arrvalue(3,t,0.)
       END
-
-C-----------APENIX PROGRAM FOR THE NEWGIN SYSTEM ANGLE
+c
+c
+C-----------APPENDIX PROGRAM FOR THE NEWGIN SYSTEM ANGLE
 C              WHEN INOPT1=8
       SUBROUTINE OXFORD(ROT,E)
       DIMENSION E(3,3),ROT(3)
@@ -2952,6 +3105,8 @@ C              WHEN INOPT1=8
       E(2,3)=SIND(A1)*SIND(A2)
       E(3,3)=COSD(A2)
       END
+c
+c
       subroutine packexpnd(cell,natom,xyz,nsym,sym)
       parameter(maxatm=25000)
       real xyz(3,maxatm),sym(3,4,160)
@@ -2961,7 +3116,7 @@ C              WHEN INOPT1=8
       real tmove0(3),ave(3)
       real b1(3),b2(3),b3(3),b4(3),b5(3)
       real tmove(3,27)
-c...  data statements.  Seperate declaration and init required for f2c
+c...  data statements.  Separate declaration and init required for f2c
       data tmove
      1 /-1.,-1.,-1.,   -1.,-1.,0.,   -1.,-1.,1.,
      2  -1., 0.,-1.,   -1., 0.,0.,   -1., 0.,1.,
@@ -3028,6 +3183,8 @@ c	1 the unit cell'
       call arrgive(nsym*12,sym1,sym)
 c
       end
+c
+c
       CHARACTER*16 FUNCTION PLTNAM(IDUM3)
 c	CALL SYSTEM('printenv USER > PLTNAM')
 c       call ccpdpn(55,'PLTNAM','UNKNOWN','F',0,0)
@@ -3042,8 +3199,10 @@ c	end do
       call getlog(pltnam)
       call up(pltnam,16)
       END
-C------------STANDARD FUNCTION SUBPROGRAM OF
-C----------------POINT MULTIPLE OF TWO VECTOR
+c
+c
+C------------STANDARD FUNCTION SUBPROGRAM FOR
+C----------------DOT PRODUCT OF TWO VECTORS
       FUNCTION POIMULT(N1,N2,V1,V2)
       DIMENSION V1(N1),V2(N2)
       POIMULT=0.
@@ -3051,8 +3210,10 @@ C----------------POINT MULTIPLE OF TWO VECTOR
       DO 10 I=1,N1
 10	POIMULT=V1(I)*V2(I)+POIMULT
       RETURN
-90	PRINT*,'PORMULT> Two vector does not have same dimension'
+90	PRINT*,'POIMULT> Two vectors do not have same dimension'
       END
+c
+c
       SUBROUTINE POLOR(POL,E)
       DIMENSION E(3,3),POL(3)
       EQUIVALENCE  (S1,SIPS),  (S2,SITH),  (S3,SIPH)
@@ -3086,13 +3247,14 @@ C
       E(2,3) =-S1*C1*S2*CPC   - S1*C2*S3
       E(3,3) = C3             + S1SQ*S2*S2*CPC
       END
-
+c
+c
       subroutine polors(pol,e)
-c a program of myself to calculate matrix from polor angel
-c pol is psi phi kapa
-c which pis is angle between axi and Y
-c 	phi is angle between image of axi in XZ and X
-c	kapa is rotating angle
+c my program to calculate matrix from polar angle
+c pol is psi phi kappa
+c where psi is angle between axis and Y
+c 	phi is angle between image of axis in XZ and X
+c	kappa is rotating angle
 
       dimension e(3,3),pol(3)
       dimension b1(3)
@@ -3102,12 +3264,14 @@ c	kapa is rotating angle
       b1(3) = - sind(pol(1))*sind(pol(2))
       call rotvsvec(b1,pol(3),e)
       end
+c
+c
       subroutine polorz(pol,e)
-c a program of myself to calculate matrix from polor angel (z system)
-c pol is psi phi kapa
-c which pis is angle between axi and Z
-c 	phi is angle between image of axi in XY and X
-c	kapa is rotating angle
+c my program to calculate matrix from polar angle (z system)
+c pol is psi phi kappa
+c where psi is angle between axis and Z
+c 	phi is angle between image of axis in XY and X
+c	kappa is rotating angle
 
       real e(3,3),pol(3)
       real b1(3)
@@ -3120,29 +3284,32 @@ c	b1(3) = - sind(pol(1))*sind(pol(2))
       b1(2) = sind(pol(1))*sind(pol(2))
       call rotvsvec(b1,pol(3),e)
       end
+c
+c
       SUBROUTINE POS2VEC(NATM,POS,VEC)
 C This subroutine is to calculate the center-atom vector from the 
-c coordinate.NATM vector will be produced from NATM atoms when NATM >= 3. 
+c coordinate. NATM vector will be produced from NATM atoms when NATM >= 3. 
 c The NATM vectors is CEN->atom2, CEN->atom3,....CEN->atomN, where
 C CEN is the centre of the NATM atoms It is used to superimpose the 
 c orientation of two molecules.
-c                                  Made by Guoguang Lu
+c                                  written by Guoguang Lu
 c 
 C	DIMENSION POS(3,NATM), VEC(3,NATM)
-C Parameter desciption:
-C       NATM represent the number of the atoms
-c       POS(1->3,i) represent the coordinate of the ith atom
-c       VEC  represent the output vectors
+C Parameter description:
+C       NATM is the number of atoms
+c       POS(1->3,i) is the coordinate of the i'th atom
+c       VEC  is the output vectors
 c
       DIMENSION POS(3,NATM), VEC(3,NATM),C(3)
       IF (NATM.LT.3) STOP 'Number of the atoms is less than 3'
       CALL AVERG(3,NATM,POS,C)
-C  C is the center coodinate of the atoms
+C  C is the center coordinate of the atoms
       DO I=1,NATM
       CALL ARRPS(3,1,POS(1,I),C,VEC(1,I))
 C	CALL ARRMC (3,1,VEC(1,I),1./VEM(3,VEC(1,I)),VEC(1,I))
       END DO
       END
+c
 C
 C *  R&B - MATRIX
 C
@@ -3179,13 +3346,15 @@ C
       E(2,3) =          - C1*S2
       E(3,3) = C2
       END 
+c
+c
       real function lgg_radii(natm,xyz)
 c pjx: renamed from radii to avoid clash with common block
 c of same name in refmac4
 c Explicitly typed to real
 c
-c--calculate averge radii of a group of atoms.
-c first caculate the center of the gravity
+c--calculate average radii of a group of atoms.
+c first calculate the center of gravity
 c then the mean distance from each atom to this center.
 c
       real xyz(3,natm)
@@ -3199,18 +3368,20 @@ c
       end do
       lgg_radii = lgg_radii/float(natm)
       end
-c this is a subroutine to change orthogonization matrix according to
+c
+c
+c this is a subroutine to change orthogonalization matrix according to
 c cell dimension raxis spindle and xray axis 
 c input 
-c character cell(6)   ------ cell dimenstion
-c character aspin*3   ------ raxis spindel axis
+c character cell(6)   ------ cell dimensions
+c character aspin*3   ------ raxis spindle axis
 c character axray*2   ------ raxis xray axis
 c output
-c CELLS*6 --- cells dimension in reciprocal space
-c DEOR3*3 --- Deorthongalization matraix in real space
-c ORTH3*3 --- Orthongalization matric in recepical space.
-c DEORS3*3 --- Deorthongalization matraix in reciprocal space
-c ORTHS3*3 --- Orthongalization matric in reciprcal space.
+c CELLS*6 --- cell dimensions in reciprocal space
+c DEOR3*3 --- Deorthogonalization matrix in real space
+c ORTH3*3 --- Orthogonalization matrix in receprocal space.
+c DEORS3*3 --- Deorthogonalization matrix in reciprocal space
+c ORTHS3*3 --- Orthogonalization matrix in reciprocal space.
 c AND COMMON/DET/ DET 3*3 MATRIX transfer from statnd X-a orthogonal matrix
 c
 c Guoguang 930723
@@ -3231,7 +3402,7 @@ c
       character*3 aspin,pspin(6)
       character*2 axray,pxray(6)
       DIMENSION B1(3),B2(3),IUF(3)
-c...  data statements.  Seperate declaration and init required for f2c
+c...  data statements.  Separate declaration and init required for f2c
       data pdir /1.,0.,0.,0.,1.,0.,0.,0.,1.,
      1	-1.,0.,0.,0.,-1.,0.,0.,0.,-1./
       data ic /1,2,3,1,2,3/
@@ -3239,11 +3410,11 @@ c...  data statements.  Seperate declaration and init required for f2c
       data pspin /'+a*','+b*','+c*','-a*','-b*','-c*'/
       data pxray /'+a','+b','+c','-a','-b','-c'/
 c
-c standard orthongonization matrix
+c standard orthogonalization matrix
 c
       call lgg_crystal(cell,cells,deor,orth,deors,orths)
 c
-c transfering  matrix from new system to old det
+c transferring matrix from new system to old det
 c
 c xray axis
       do i = 1, 6
@@ -3265,7 +3436,7 @@ c spindle axis
         goto 40
        end if
       end do
-        WRITE(6,*) 'spindel axis',(pspin(i),' ',i=1,6)
+        WRITE(6,*) 'spindle axis',(pspin(i),' ',i=1,6)
       WRITE(6,*) 'but you have ',aspin
         stop 'wrong xray  axis'
 c
@@ -3290,9 +3461,11 @@ c	CELLS(5) = ANGLE(ORTHS(1,3),ORTHS(1,1))
 c	CELLS(6) = ANGLE(ORTHS(1,1),ORTHS(1,2))	
 c
       end
+c
+c
 c this is a subroutine to change raxis spindle and xray axis into U matrix
 c input 
-c character aspin*3   ------ raxis spindel axis
+c character aspin*3   ------ raxis spindle axis
 c character axray*2   ------ raxis xray axis
 c real*4 umat(3,3)     ------ raxis U matrix
 c Guoguang 930723
@@ -3303,7 +3476,7 @@ c
       real pdir(3,6)
       character*3 aspin,pspin(6)
       character*2 axray,pxray(6)
-c...  data statements.  Seperate declaration and init required for f2c
+c...  data statements.  Separate declaration and init required for f2c
       data pdir /1.,0.,0.,0.,1.,0.,0.,0.,1.,
      1	-1.,0.,0.,0.,-1.,0.,0.,0.,-1./
       data pspin /'+a*','+b*','+c*','-a*','-b*','-c*'/
@@ -3333,10 +3506,12 @@ c
       call arrgive(9,rmat,umat)
 c
       end
+c
+c
       SUBROUTINE RECEPICAL(CELL,DEOR,ORTH)
-C this is a routine which input a cell parameter,CELL and convert this 
-c parameter into recepical cell parameter. then give a deorthongalization
-c and orthongalization matric in recepical space.
+C This is a routine which inputs cell parameters, CELL and converts 
+c them into reciprocal cell parameters. It then gives a deorthogonalization
+c and orthogonalization matrix in reciprocal space.
 c
       DIMENSION DEOR(3,3),ORTH(3,3),CELL(6)
       DIMENSION BUFF(3,3)
@@ -3387,10 +3562,12 @@ C
       CALL IVSN(3,ORTH,B1,B2,IUF,VAL,1E-6)
       RETURN
       END
+c
+c
       SUBROUTINE RECEPICAL0(CELL,DEOR,ORTH)
-C this is a routine which input a cell parameter,CELL and convert this 
-c parameter into recepical cell parameter. then give a deorthongalization
-c and orthongalization matric in recepical space.
+C This is a routine which inputs cell parameters, CELL and converts 
+c them into reciprocal cell parameters. It then gives a deorthogonalization
+c and orthogonalization matrix in reciprocal space.
 c
       DIMENSION DEOR(3,3),ORTH(3,3),CELL(6)
       DIMENSION BUFF(3,3)
@@ -3441,39 +3618,47 @@ C
       CALL IVSN(3,DEOR,B1,B2,IUF,VAL,1E-6)
       RETURN
       END
+c
+c
       SUBROUTINE REDSTRIN(NUNIT,NCHA,TXT,NPAR)
-C A subroutine to write a string of character in unit NUNIT according 
-c to the space in the string. It is used to chang a character into 
+C A subroutine to write a string of characters in unit NUNIT according 
+c to the spaces in the string. It is used to change a character into 
 c parameters under help of a file NUNIT.
 c NUNIT is the unit number.
-c NCHA is how long string of character is.
+c NCHA is length of character string.
 c TXT is the NCHA bytes character.
 C NPAR is how many parameters in this string.
       CHARACTER*120 TXT
       NPAR = 0
       REWIND (NUNIT)
       I = 1
-10	IF (TXT(I:I).NE.' '.AND.I.LE.NCHA) THEN
-C
-      J = I
-20	IF (TXT(J+1:J+1).EQ.' '.OR.J.GE.NCHA) THEN
-      WRITE(NUNIT,'(A)') TXT(I:J)
-      NPAR = NPAR + 1
-      ELSE	
-      J = J + 1
-      GOTO 20
-      END IF
-      I = J + 1
-      GOTO 10
-      ELSE IF (I.LT.NCHA) THEN
-      I = I + 1
-      GOTO 10
+10	IF (I.LE.NCHA) THEN
+         IF (TXT(I:I).NE.' ') THEN
+            J = I
+20	      IF (J.GE.NCHA) THEN
+               WRITE(NUNIT,'(A)') TXT(I:J)
+               NPAR = NPAR + 1
+            ELSE IF (TXT(J+1:J+1).EQ.' ') THEN
+               WRITE(NUNIT,'(A)') TXT(I:J)
+               NPAR = NPAR + 1         
+            ELSE	
+               J = J + 1
+               GOTO 20
+            END IF
+            I = J + 1
+            GOTO 10
+         ELSE IF (I.LT.NCHA) THEN
+            I = I + 1
+            GOTO 10
+         END IF
       END IF
 C
       REWIND(NUNIT)
       END
+c
+c
       subroutine refmtoroh(amat,roh,roh2,rms)
-c This is a subroutine to calculate from a matrix to Eulerian angls in
+c This is a subroutine to calculate from a matrix to Eulerian angles in
 c Rober O Huber system and refine ROH angles to minimize 
 c Sigma((Aroh(i,j)-Amat(i,j)**2). The output will include two
 c symmetric ROH angles a rms value of input matrix and the matrix
@@ -3534,6 +3719,8 @@ c	 WRITE(6,*) 'Refinement finished with rms,rms1:',rms,rms1
       end if
 c
       end
+c
+c
       SUBROUTINE REFORN ( NATM, XYZ1, XYZ2, A, VT, DIS )
 C	DIMENSION XYZ1(3,NATM), XYZ2(3,NATM), A(3,3)
 C	DIMENSION VT(3*NATM,3), DIS(NATM,3)
@@ -3558,15 +3745,15 @@ C
 C	COMMON/RMS/ RMS,SMEAN,NREF,NREF1
 C RMS is the final R.M.S between two molecules.
 C SMEAN is the mean distance.
-c NREF is the number of the cycles of the rotation refinements
-c NREF1 is the number of the cycles of the translation refinements
-c They could be used to judge the SCALR,and SCALS
+c NREF is the number of cycles of rotation refinement
+c NREF1 is the number of cycles of translation refinement
+c They could be used to judge the SCALR and SCALS
 c
-c The program use atom-atom vector to proceed the Eulerian anlge least 
-c square refinement. It has been tested that this method migth be more
+c The routine uses the atom-atom vector to perform the Eulerian angle least 
+c square refinement. Testing shows that that this method might be more
 c accurate than others at least in orientation.
 c
-C SUPOS1 is almost same with SUPOS,but used as a subroutine as a first
+C SUPOS1 is almost same with SUPOS, but used as a subroutine as a first
 c step of the refinement by subroutine SUPRIMP.
 c
 c                                           by Guoguang Lu
@@ -3592,7 +3779,7 @@ C
       INTEGER MAXREF
       PARAMETER (MAXREF=100)
 C
-c...  data statements.  Seperate declaration and init required for f2c
+c...  data statements.  Separate declaration and init required for f2c
       DATA SCALR/1./,SCALT/1./
 C
       DEG=180./3.14159265359
@@ -3667,6 +3854,8 @@ C	WRITE(6,'(A)') '0'
       CALL HUBER(ROH,A)
 
       END 
+c
+c
       SUBROUTINE REFORNFIN ( NATM, XYZ1, XYZ2, A, VT, DIS )
 C	DIMENSION XYZ1(3,NATM), XYZ2(3,NATM), A(3,3)
 C	DIMENSION VT(3*NATM,3), DIS(NATM,3)
@@ -3692,15 +3881,15 @@ C
 C	COMMON/RMS/ RMS,SMEAN,NREF,NREF1
 C RMS is the final R.M.S between two molecules.
 C SMEAN is the mean distance.
-c NREF is the number of the cycles of the rotation refinements
-c NREF1 is the number of the cycles of the translation refinements
-c They could be used to judge the SCALR,and SCALS
+c NREF is the number of cycles of rotation refinement
+c NREF1 is the number of cycles of translation refinement
+c They could be used to judge the SCALR and SCALS
 c
-c The program use atom-atom vector to proceed the Eulerian anlge least 
-c square refinement. It has been tested that this method migth be more
+c The program use the atom-atom vector to perform the Eulerian angle least 
+c square refinement. Testing shows that this method might be more
 c accurate than others at least in orientation.
 c
-C SUPOS1 is almost same with SUPOS,but used as a subroutine as a first
+C SUPOS1 is almost the same as SUPOS, but used as a subroutine as a first
 c step of the refinement by subroutine SUPRIMP.
 c
 c                                           by Guoguang Lu
@@ -3799,6 +3988,8 @@ C	WRITE(6,'(A)') '0'
       CALL HUBERARC(ROH,A)
 
       END 
+c
+c
       SUBROUTINE REFRT ( NATM, X1, X2, A, T, VT, DIS )
 C	DIMENSION X1(3,NATM), X2(3,NATM), A(3,3), T(3)
 C	DIMENSION VT(3*NATM,6),DIS(3,NATM)
@@ -3826,13 +4017,13 @@ C
 C	COMMON/RMS/ RMS,SMEAN,NREF,NREF1
 C RMS is the final R.M.S between two molecules.
 C SMEAN is the mean distance.
-c NREF is the number of the cycles of the refinements
-c NREF1 is not useful .
-c They could be used to judge the SCALR,and SCALS
+c NREF is the number of cycles of refinement
+c NREF1 is not useful.
+c They could be used to judge the SCALR and SCALS
 c
-c The program use translation liner to least square refinement. It has been 
-c tested that it works quite well. The function of this routine is similar
-c with SUPOS but the r.m.s. is less and the orietation might be more dangers.
+c The program use translation linear to least square refinement. Testing 
+c shows that it works quite well. The function of this routine is similar
+c to SUPOS but the r.m.s. is less and the orientation might be more dangerous.
 c
 c
 c                                           by Guoguang Lu
@@ -3858,6 +4049,7 @@ C
       SCALT = 1.
       iat = 0.
       NREF=0
+      epsilon = 1.
 C
       CALL MTOHUBER(A,ROH,B1)
 c
@@ -3873,6 +4065,7 @@ C   Refine th1, th2, th3, tx, ty and tz
 c
 10	CONTINUE
 c
+      if ( (nref.gt.99) .or. (abs(epsilon).le.1.0e-5) ) goto 25
 C	WRITE(6,*)
 c	WRITE(6,*) 'Cycle of refinement:',NREF
 C	WRITE(6,*) 'Matrix'
@@ -3915,14 +4108,16 @@ C
       CALL ARRPS(3,NATM,DIS,X2,DIS)
 C
       RMS = DOSQ(NATM*3, DIS)
-c	TYPE *, 'rms new and old ',rms, rms1
+c	TYPE *, 'rms new and old ',rms, rms1 
 C
       IF (RMS.LT.RMS1) THEN
+      epsilon = (rms1-rms)/rms1
       NREF = NREF+1
       RMS1=RMS
       GOTO 10
       END IF
 C
+   25 continue
       CALL ARRMC(3,1,ROHOLD,1.,ROH)
       CALL ARRMC(3,1,TOLD,1.,T)
       CALL HUBER(ROH,A)
@@ -3947,6 +4142,8 @@ C           i              i
 c 
 c
       END
+c
+c
       SUBROUTINE REFRTFIN ( NATM, X1, X2, A, T, VT, DIS )
 C	DIMENSION X1(3,NATM), X2(3,NATM), A(3,3), T(3)
 C	DIMENSION VT(3*NATM,6),DIS(3,NATM)
@@ -3974,13 +4171,13 @@ C
 C	COMMON/RMS/ RMS,SMEAN,NREF,NREF1
 C RMS is the final R.M.S between two molecules.
 C SMEAN is the mean distance.
-c NREF is the number of the cycles of the refinements
-c NREF1 is not useful .
-c They could be used to judge the SCALR,and SCALS
+c NREF is the number of cycles of refinement
+c NREF1 is not useful.
+c They could be used to judge the SCALR and SCALS
 c
-c The program use translation liner to least square refinement. It has been 
-c tested that it works quite well. The function of this routine is similar
-c with SUPOS but the r.m.s. is less and the orietation might be more dangers.
+c The routine uses translation linear to least square refinement. Testing
+c shows that it works quite well. The function of this routine is similar
+c to SUPOS but the r.m.s. is less and the orientation might be more dangerous.
 c
 c
 c                                           by Guoguang Lu
@@ -3997,7 +4194,7 @@ C
       DIMENSION B1(3),B2(3),ROHOLD(3),ROH(3),TOLD(3)
       EQUIVALENCE (DETA,DROH)
       EQUIVALENCE (DETA(4),DT)
-c...  data statements.  Seperate declaration and init required for f2c
+c...  data statements.  Separate declaration and init required for f2c
       DATA SCALR/1./,SCALT/1./,IAT/0/
 C
       DEG=180./3.14159265359
@@ -4101,6 +4298,8 @@ C           i              i
 c 
 c
       END
+c
+c
       SUBROUTINE REFRTFIN1 ( NATM, X1, X2, A, T, VT, DIS, DIST )
 C	DIMENSION X1(3,NATM), X2(3,NATM), A(3,3), T(3)
 C	DIMENSION VT(NATM,6),DIS(3,NATM)
@@ -4129,13 +4328,13 @@ C
 C	COMMON/RMS/ RMS,SMEAN,NREF,NREF1
 C RMS is the final R.M.S between two molecules.
 C SMEAN is the mean distance.
-c NREF is the number of the cycles of the refinements
-c NREF1 is not useful .
-c They could be used to judge the SCALR,and SCALS
+c NREF is the number of cycles of refinement
+c NREF1 is not useful.
+c They could be used to judge the SCALR and SCALS
 c
-c The program use translation liner to least square refinement. It has been 
-c tested that it works quite well. The function of this routine is similar
-c with SUPOS but the r.m.s. is less and the orietation might be more dangers.
+c The routine uses translation linear to least square refinement. Testing
+c shows that it works quite well. The function of this routine is similar
+c to SUPOS but the r.m.s. is less and the orientation might be more dangerous.
 c
 c
 c                                           by Guoguang Lu
@@ -4269,10 +4468,12 @@ C           i              i
 c 
 c
       END
+c
+c
       function gg_res3to1(rin)
       character gg_res3to1*1,rin*3
       character*3 res(20),abr(20)
-c...  data statements.  Seperate declaration and init required for f2c
+c...  data statements.  Separate declaration and init required for f2c
       data RES /'ALA','GLU','GLN','ASP','ASN','LEU','GLY'
      1 ,'LYS','SER','VAL','ARG','THR'
      2 ,'PRO','ILE','MET','PHE','TYR','CYS','TRP','HIS'/
@@ -4293,20 +4494,20 @@ c
 c	write(6,*) 'Warning: no such residues ',rin
       gg_res3to1 = ' '
       end
-
-
+c
+c
       subroutine rotvsvec(vec,vkapa,a)
 c a subroutine to give a matrix when you know there is a rotation
-c which angle is vkapa along the vector vec as axi.
-c vec is the input 3-dimensional vector where the rotation axi is
+c which angle is vkapa along the vector vec as axis.
+c vec is the input 3-dimensional vector where the rotation axis is
 c vkapa is the rotating angle
-c  a is the output 3*3 roating matrix.
+c  a is the output 3*3 rotating matrix.
 c
       real vec(3),a(3,3)
       external sind
 c	WRITE(6,*)  'vec,vkapa'
 C	WRITE(6,*)  vec,vkapa
-c There is an strange bug on Alpha, ---- cosd(vkapa) has the wrong sign!!!!
+c There is a strange bug on Alpha, ---- cosd(vkapa) has the wrong sign!!!!
 c Instead I have to have cos(vkapa*pai/180.)
       pai = 3.141592654
 c
@@ -4327,12 +4528,14 @@ c
       a(3,2) = vec(2)*vec(3)*(1.-coskapa) +vec(1)*sinkapa
 c
       end
+c
+c
       SUBROUTINE RTMOV(NATM,XIN,A,T,XOUT)
 C A routine to compute: XOUT = A * XIN + T
 C        where   XIN is the input 3*NATM array
 C                XOUT is the Output 3*NATM array
 c                A(3,3) is a 3*3 rotation matrix
-c                T(3) is a 3-dimensinal translational vector.
+c                T(3) is a 3-dimensional translation vector.
 c	DIMENSION XIN(3,NATM),XOUT(3,NATM),A(3,3),T(3)
 C
       DIMENSION XIN(3,NATM),XOUT(3,NATM),A(3,3),T(3)
@@ -4341,19 +4544,21 @@ C
       CALL ARRAD(3,1,XOUT(1,I),T,XOUT(1,I))
       END DO
       END
+c
+c
       function screw(a,t)
 c	dimension a(3,3),t(3),POL(3),xyz0(3)
-C this is a routine to calculte how much the movement is along the
-c the rotation axi.
-c When there is an non-crystallographic rotation and trnaslation
+C this is a routine to calculate how much the movement is along the
+c the rotation axis.
+c When there is a non-crystallographic rotation and translation
 c x2 = A*x1 + t
 c where A(3,3) is the 3*3 matrix
-c 	t(3) is translation vection.
-c the routine output POL(3) (psi, pai and kapa), go and xyz0(3)
-c where psi (POL(1))  is the angle between the roatation axi and y axi
-c	pia is the angle between X axi and the image of the rotation axi
-c	kapa is the rotating angle.
-c 	go is the screw amount along the axi direction
+c 	t(3) is translation vector.
+c the routine output POL(3) (psi, phi and kappa), go and xyz0(3)
+c where psi (POL(1))  is the angle between the rotation axis and y axis
+c	phi is the angle between X axis and the image of the rotation axis
+c	kappa is the rotating angle.
+c 	go is the screw amount along the axis direction
 c		Guoguang 900927
 c
 
@@ -4372,8 +4577,10 @@ c
 c vec is the direction of the axis vector.
       screw = poimult(3,3,t,vec)
       end
+c
+c
       subroutine sectime(sec,nhour,nmin,sres)
-c input second and output the hour and minute and residue second
+c input seconds and output the hour and minute and residue second
       nmin = 0
       nhour = 0
       if (sec.gt.60.) then
@@ -4387,25 +4594,27 @@ c input second and output the hour and minute and residue second
        nmin = nmin0 - nhour*60 
       end if
       end
+c
+c
       subroutine seekaxis(a,t,cen1,cen2,POL,go,xyz0)
 c	dimension a(3,3),t(3),POL(3),xyz0(3)
-C this is a routine to calculte how much the movement is along the
+C this is a routine to calculate how much the movement is along the
 c the rotation axis and where is the rotation axis from a rigid movement
 c matrix.
-c When there is an non-crystallographic rotation and trnaslation
+c When there is a non-crystallographic rotation and translation
 c x2 = A*x1 + t
 c where A(3,3) is the 3*3 matrix
-c 	t(3) is translation vection.
+c 	t(3) is translation vector.
 c cen(3), center of the two mass molecule
-c the routine output POL(3) (psi, pai and kapa), go and xyz0(3)
-c where psi (POL(1))  is the angle between the roatation axi and y axi
-c	pia is the angle between X axi and the image of the rotation axi
-c	kapa is the rotating angle.
-c 	go is the screw amount along the axi direction
+c the routine output POL(3) (psi, phi and kappa), go and xyz0(3)
+c where psi (POL(1))  is the angle between the rotation axis and y axis
+c	phi is the angle between X axis and the image of the rotation axis
+c	kappa is the rotating angle.
+c 	go is the screw amount along the axis direction
 c		Guoguang 900927
-c	xyz0(3) is one point where the axi pass by. This point should be 
+c	xyz0(3) is one point where the axis pass by. This point should be 
 c        a project point of CEN on the axis line, where CEN is center of
-c	two input molecule (CEN1+CEN2)/2.
+c	two input molecules (CEN1+CEN2)/2.
 c
 
       dimension a(3,3),t(3),POL(3),xyz0(3),cen(3),cen1(3),cen2(3)
@@ -4435,13 +4644,13 @@ c	b1(1) = sind(POL(1))*cosd(POL(2))
 c	b1(3) = - sind(POL(1))*sind(POL(2))
       call mtovec(a,vec,vkapa)
       call arrgive(3,vec,b3)
-c b1 and vec is the direction of the axi vector.
+c b1 and vec is the direction of the axis vector.
       go = poimult(3,3,t,b3)
-c now define a new coordinte system 
+c now define a new coordinate system 
 c X0 = rot * X'
 c where Z' is the rotating axis.
 c and X'is in the Z'/cen2-cen1 plane 
-c Y' is perpedicular to X' and Z'
+c Y' is perpendicular to X' and Z'
 c so b1 is Z' vector.
       call arrps(3,1,cen2,cen1,b4)
       call veccrsmlt(b3,b4,b5)
@@ -4505,21 +4714,23 @@ c the passing point in old system
       call arrad(3,1,b4,cen,xyz0)
 c
       end
+c
+c
       subroutine seekscrew(a,t,POL,go,xyz0)
 c	dimension a(3,3),t(3),POL(3),xyz0(3)
-C this is a routine to calculte how much the movement is along the
-c the rotation axi.
-c When there is an non-crystallographic rotation and trnaslation
+C this is a routine to calculate how much the movement is along the
+c the rotation axis.
+c When there is a non-crystallographic rotation and translation
 c x2 = A*x1 + t
 c where A(3,3) is the 3*3 matrix
-c 	t(3) is translation vection.
-c the routine output POL(3) (psi, pai and kapa), go and xyz0(3)
-c where psi (POL(1))  is the angle between the roatation axi and y axi
-c	pia is the angle between X axi and the image of the rotation axi
-c	kapa is the rotating angle.
-c 	go is the screw amount along the axi direction
+c 	t(3) is translation vector.
+c the routine output POL(3) (psi, phi and kappa), go and xyz0(3)
+c where psi (POL(1))  is the angle between the rotation axis and y axis
+c	phi is the angle between X axis and the image of the rotation axis
+c	kappa is the rotating angle.
+c 	go is the screw amount along the axis direction
 c		Guoguang 900927
-c	xyz0(3) is one point where the axi pass by.
+c	xyz0(3) is one point where the axis pass by.
 c
 
       dimension a(3,3),t(3),POL(3),xyz0(3)
@@ -4546,15 +4757,15 @@ c	b1(1) = sind(POL(1))*cosd(POL(2))
 c	b1(3) = - sind(POL(1))*sind(POL(2))
       call mtovec(a,b1,vkapa)
       call arrmc(3,1,b1,1.,vec)
-c b1 and vec is the direction of the axi vector.
+c b1 and vec is the direction of the axis vector.
       go = poimult(3,3,t,b1)
 c
       b2(1) = 0.
       b2(2) = 0.
       b2(3) = 1.
-c now decide a new coordinte system 
+c now decide a new coordinate system 
 c X0 = rot * X'
-c where Z' is the rotating axi.
+c where Z' is the rotating axis.
 c and X'is in the XY plane.
 c so b1 is Z' vector.
       call veccrsmlt(b1,b2,b3)
@@ -4598,12 +4809,12 @@ c b1 is the translation in new coordinate system
       end if
 c
       if (vem(2,b1).lt.1e-6) then
-c the axies pass by the oringe.
+c the axes pass by the origin.
        call arrmc(3,1,t,0.,xyz0)
        return
       end if
 c
-c set a new coordinate system to make axi x'' is the image of t in new
+c set a new coordinate system to make axis x'' is the image of t in new
 c x'y' plane. and X' = rot2 * X''
 c 
 c
@@ -4658,11 +4869,11 @@ c to check the result.
 c
       if (ds1.gt.1e-4) then
         if (df/ds1.gt.1e-4) 
-     + stop 'distance between 0-axis and t to axi is not same'
+     + stop 'distance between 0-axis and t to axis is not same'
       
       else
         if (ds2.gt.2e-4) 
-     + stop 'distance between 0-axis  and t to axi is not same'
+     + stop 'distance between 0-axis  and t to axis is not same'
       end if
 
       call arrps(3,1,b1,b2,b3)
@@ -4672,23 +4883,25 @@ c
       WRITE(6,*)  'go ', go
       WRITE(6,*)  'screw', go1
       end if
-c go is the real screw value along axi
+c go is the real screw value along axis
       end
+c
+c
       subroutine seekscrewz(a,t,POL,go,xyz0)
 c	dimension a(3,3),t(3),POL(3),xyz0(3)
-C this is a routine to calculte how much the movement is along the
-c the rotation axi.
-c When there is an non-crystallographic rotation and trnaslation
+C this is a routine to calculate how much the movement is along the
+c the rotation axis.
+c When there is a non-crystallographic rotation and translation
 c x2 = A*x1 + t
 c where A(3,3) is the 3*3 matrix
-c 	t(3) is translation vection.
-c the routine output POL(3) (psi, pai and kapa), go and xyz0(3)
-c where psi (POL(1))  is the angle between the roatation axi and y axi
-c	pia is the angle between X axi and the image of the rotation axi
-c	kapa is the rotating angle.
-c 	go is the screw amount along the axi direction
+c 	t(3) is translation vector.
+c the routine output POL(3) (psi, phi and kappa), go and xyz0(3)
+c where psi (POL(1))  is the angle between the rotation axis and y axis
+c	phi is the angle between X axis and the image of the rotation axis
+c	kappa is the rotating angle.
+c 	go is the screw amount along the axis direction
 c		Guoguang 900927
-c	xyz0(3) is one point where the axi pass by.
+c	xyz0(3) is one point where the axis pass by.
 c
 
       dimension a(3,3),t(3),POL(3),xyz0(3)
@@ -4715,15 +4928,15 @@ c	b1(1) = sind(POL(1))*cosd(POL(2))
 c	b1(3) = - sind(POL(1))*sind(POL(2))
       call mtovec(a,b1,vkapa)
       call arrmc(3,1,b1,1.,vec)
-c b1 and vec is the direction of the axi vector.
+c b1 and vec is the direction of the axis vector.
       go = poimult(3,3,t,b1)
 c
       b2(1) = 0.
       b2(2) = 0.
       b2(3) = 1.
-c now decide a new coordinte system 
+c now decide a new coordinate system 
 c X0 = rot * X'
-c where Z' is the rotating axi.
+c where Z' is the rotating axis.
 c and X'is in the XY plane.
 c so b1 is Z' vector.
       call veccrsmlt(b1,b2,b3)
@@ -4767,12 +4980,12 @@ c b1 is the translation in new coordinate system
       end if
 c
       if (vem(2,b1).lt.1e-6) then
-c the axies pass by the oringe.
+c the axes pass by the origin.
        call arrmc(3,1,t,0.,xyz0)
        return
       end if
 c
-c set a new coordinate system to make axi x'' is the image of t in new
+c set a new coordinate system to make axis x'' is the image of t in new
 c x'y' plane. and X' = rot2 * X''
 c 
 c
@@ -4827,10 +5040,10 @@ c to check the result.
 c
       if (ds1.gt.1e-4) then
         if (df/ds1.gt.1e-4) 
-     +  stop 'distance between 0-axis and t to axi is not same'
+     +  stop 'distance between 0-axis and t to axis is not same'
       else
         if (ds2.gt.2e-4) 
-     +   stop 'distance between 0-axis  and t to axi is not same'
+     +   stop 'distance between 0-axis  and t to axis is not same'
       end if
 
       call arrps(3,1,b1,b2,b3)
@@ -4840,15 +5053,17 @@ c
       WRITE(6,*)  'go ', go
       WRITE(6,*)  'screw', go1
       end if
-c go is the real screw value along axi
+c go is the real screw value along axis
       end
+c
+c
       SUBROUTINE SQSTLZ(M,P,PS,U,V)
 C a subroutine to calculate the orientation matrix and the two axes
-c  form a symmetric matrix of a ellips .         by LGG
-c   M(2,2)  is the input symmetric matrix of the ellips.
-C   P(2,2)  is one of the two orientation matrix of the ellips
-C   PS(2,2) is the invers matrix of the matrix PS(2,2)
-C   U, V  are the lenth of the two axes of the ellips.
+c  from a symmetric matrix of an ellipse.         by LGG
+c   M(2,2)  is the input symmetric matrix of the ellipse.
+C   P(2,2)  is one of the two orientation matrices of the ellipse
+C   PS(2,2) is the inverse matrix of the matrix PS(2,2)
+C   U, V  are the lengths of the two axes of the ellipse.
 C
       DIMENSION M(2,2),P(2,2),PS(2,2)
       REAL M,P,A,B,C,U,V,X1,X2
@@ -4873,21 +5088,23 @@ C
       PS(2,2)=P(2,2)
       RETURN
       END
+c
+c
       subroutine spacegp(nunit,file,latnam,nsym,nrot,sym,nsp)
-c this is a subroutine which user give a space group number, it read the 
-c ccp4 symmetry libary, then it give out the symmetryc operation
+c In this subroutine the user gives a space group name, the subroutine reads the 
+c ccp4 symmetry library, then it outputs the symmetry operations
 c Input
-c       nunit --- unit number of libary file
+c       nunit --- unit number of library file
 c	file--- symmetry libary file name
-c	latnam  ---  *14 character of a spacegruop name
+c	latnam  ---  *14 character of a spacegroup name
 c Output
-c 	nsymm --- Total symmetry operation numbre in this spacegroup
+c 	nsymm --- Total number of symmetry operations in this spacegroup
 c	nrot ---- only rotation symmetric operation in this spacegroup
 c	symm  ---- a 3*4*nsym symmmetric operation c matrix.
-c	nsp --- space groupt number
+c	nsp --- space group number
 c in common symdump,  if dump is true, dump all the information
-c maxop is the maximium symmetric operation number
-c libary format
+c maxop is the maximum number of symmetry operations
+c library format
 c155 6  2    R32
 c X,Y,Z * -Y,X-Y,Z * Y-X,-X,Z
 c Y,X,-Z * -X,Y-X,-Z * X-Y,-Y,-Z
@@ -4903,7 +5120,7 @@ c Y+2/3,X+1/3,-Z+1/3 * -X+2/3,Y-X+1/3,-Z+1/3 * X-Y+2/3,-Y+1/3,-Z+1/3
 c	COMMON/SYMDUMP/ DUMP
 c
       character*80 key,str*40
-c...  data statements.  Seperate declaration and init required for f2c
+c...  data statements.  Separate declaration and init required for f2c
       data dump /.false./
 c
 c	WRITE(6,*)  'nsp',nsp
@@ -4934,7 +5151,7 @@ c	if (isp.ne.nsp) goto 10
         str(1:iend-ist) = key(ist:iend-1)
         NSYM=NSYM+1
         IF (MATSYM(SYM(1,1,nsym),STR,ICOL).EQ.0) GOTO 502
-        WRITE(6,*) 'Error in symop after colunm ',ICOL
+        WRITE(6,*) 'Error in symop after column ',ICOL
         write(6,*) key
         write(6,*) str
         stop 'Check you file SYMOP'
@@ -4958,6 +5175,8 @@ c	if (isp.ne.nsp) goto 10
       latnam = '      '
       STOP 'Check your SYMOP file'
       END
+c
+c
       SUBROUTINE SPSTRUNCT(STRING)
       CHARACTER*(*) STRING
       LENS = LEN(STRING)
@@ -4971,17 +5190,22 @@ C
       IL = IL - 1
       GOTO 5
       END
+c
+c
       SUBROUTINE SQUROOT(A,B,C,X1,X2)
+c    Finds roots of a quadratic equation
       REAL A,B,C,X1,X2
       X1=(-B+SQRT(B*B-4*A*C))/(2*A)
       X2=(-B-SQRT(B*B-4*A*C))/(2*A)
       RETURN
       END
-C a rubroutine to calculate the statistics of a group of number
+c
+c
+C a subroutine to calculate the statistics of a group of numbers
 c	subroutine statis(n,value,vmean,rms,dmean)
 c	dimension value(n)
 c  n is the number of value in the group
-c value is the n-dimensinal array which to statisticed.
+c value is the n-dimensional array whose statistics are required.
 c vmean is the output mean value of the array value(n)
 c rms is the output r.m.s in value(n)
 c dmean is the output mean deviation of value(n)
@@ -5003,54 +5227,67 @@ c
       rms = sqrt(rms/n)
       dmean = dmean / n
       end 
+c
+c
       SUBROUTINE LGG_STRING(NUNIT,NCHA,TXT,NPAR,cont)
-C A subroutine to write a string of character in unit NUNIT according 
-c to the space in the string. It is used to chang a character into 
-c parameters under help of a file NUNIT.
+C A subroutine to write a character string to unit NUNIT using 
+c the spaces in the string to split the string into a list of
+c parameters.
 c NUNIT is the unit number.
-c NCHA is how long string of character is.
-c TXT is the NCHA bytes character.
-C NPAR is how many parameters in this string.
+c NCHA is the length of the character string.
+c TXT is the character string.
+C NPAR is the number of parameters in this string.
 c cont is a flag which represent if this is a continue string or start
-c	.ture. = continue
+c	.true. = continue
 c	.false. = start
 c
 c
       CHARACTER*(*) TXT
-      logical*1 cont
+      logical*1 cont 
+      
       if (.not.cont) then
-       NPAR = 0
-       REWIND (NUNIT)
+         NPAR = 0
+         REWIND (NUNIT)
       end if
+      
       jcha = 0
       if (ncha.gt.0) then
-        if (txt(ncha:ncha).eq.'-') then
-         jcha = 1
-         txt(ncha:ncha)=' '
-        end if
+         if (txt(ncha:ncha).eq.'-') then
+            jcha = 1
+            txt(ncha:ncha)=' '
+         end if
       end if
+      
       I = 1
- 10   IF ((I.LE.NCHA-jcha).AND.(TXT(I:I).NE.' ')) THEN
-        J = I
- 20     CONTINUE
-        IF (((J+1).GT.NCHA).OR.(TXT(J+1:J+1).EQ.' ')) THEN
-          WRITE(NUNIT,'(A)') TXT(I:J)
-          NPAR = NPAR + 1
-        ELSE  
-          J = J + 1
-          GOTO 20
-        END IF
-        I = J + 1
-        GOTO 10
-      ELSE IF (I.LT.NCHA-jcha) THEN
-        I = I + 1
-        GOTO 10
-      END IF
+ 10   IF (I.LE.NCHA-jcha) then 
+         if (TXT(I:I).NE.' ') THEN
+            J = I
+ 20         CONTINUE
+            IF ((J+1).GT.NCHA) THEN
+               WRITE(NUNIT,'(A)') TXT(I:J)
+               NPAR = NPAR + 1
+            else if (TXT(J+1:J+1).EQ.' ') then
+               WRITE(NUNIT,'(A)') TXT(I:J)
+               NPAR = NPAR + 1            
+            ELSE  
+               J = J + 1
+               GOTO 20
+            END IF
+            I = J + 1
+            GOTO 10
+         ELSE IF (I.LT.NCHA-jcha) THEN
+            I = I + 1
+            GOTO 10
+         END IF
+      endif
+      
       if (jcha.eq.1) TXT(NCHA:NCHA)='-'
 C
 c	if (jcha.eq.0) REWIND(NUNIT)
 C
       END
+c
+c
       SUBROUTINE SUPIM ( NATM, XYZ1, XYZ2, A, T )
 C	DIMENSION XYZ1(3,NATM), XYZ2(3,NATM), A(3,3), T(3)
 C A subroutine to give the superimpose matrix and vector from MOL1 to 
@@ -5073,26 +5310,26 @@ C
 C	COMMON/RMS/ RMS,SMEAN,NREF,NREF1
 C RMS is the final R.M.S between two molecules.
 C SMEAN is the mean distance.
-c NREF is the number of the cycles of the rotation refinements
+c NREF is the number of cycles of rotation refinement
 c NREF1 is not useful 
-c They could be used to judge the SCALR,and SCALS
+c They could be used to judge the SCALR and SCALS
 c
 C	COMMON/IAT/ IAT1,IAT2,IAT3,IAT
 C	DATA SCALR/60./,IAT/0/
-C      The routine use the first three atoms to get the initial Eulerian 
-C angle. IAT1, IAT2 and IAT3 are the indexes of the three select atoms.
-c If IAT = 0, theses atoms will be selected inside this routine. If not,
+C      The routine uses the first three atoms to get the initial Eulerian 
+C angle. IAT1, IAT2 and IAT3 are the indexes of the three selected atoms.
+c If IAT = 0, these atoms will be selected inside this routine. If not,
 c the three atoms will be defined outside the routine through the common
-c block. If the program does not work or you want special atoms, changing 
-c IAT1,IAT2,IAT3 in COMMON/IAT/ and give the IAT to 0 in order to select 
+c block. If the program does not work or you want special atoms, change
+c IAT1,IAT2,IAT3 in COMMON/IAT/ and set IAT to 0 in order to select 
 c the three atoms in the main routine.
 c
-C NATM can not be larger than NATM0 (now is 50000) or the parameter NATM0
+C NATM cannot be larger than NATM0 (currently 50000) or the parameter NATM0
 C should be modified in this routine. 
 c
-c The program use translation liner to least square refinement. It has been 
-c tested that it works quite well. The function of this routine is similar
-c with SUPOS but the r.m.s. is less and the orietation might be more dangers.
+c The program use translation linear to least square refinement. Testing 
+c shows that it works quite well. The function of this routine is similar
+c to SUPOS but the r.m.s. is less and the orientation might be more dangerous.
 c
 c
 c                                           by Guoguang Lu
@@ -5111,7 +5348,7 @@ c   NATM0 is the largest number of atoms.
       DIMENSION CEN1(3),CEN2(3)
       DIMENSION B1(3),B2(3),B3(3),T0(3)
 c
-C Number of atom can not be more than NATM0 or less than 3.
+C Number of atoms cannot be more than NATM0 or less than 3.
 c
       IF (NATM.GT.NATM0) THEN
       WRITE(6,*) 'ERROR> Atom is more than ',NATM0
@@ -5127,7 +5364,7 @@ C compute the  gravity of mol1 and mol2 to CEN1 and CEN2
       CALL AVERG(3,NATM,XYZ2,CEN2)
 C T is the initial translation vector
       CALL ARRPS(3,1,CEN2,CEN1,T0)
-c Change the oringe to CEN1.
+c Change the origin to CEN1.
       CALL TMOVE(3,NATM,XYZ1,CEN1,-1.,X1)
       CALL TMOVE(3,NATM,XYZ2,CEN1,-1.,X2)
 c
@@ -5174,6 +5411,8 @@ C
 5	FORMAT(1X,' X2 = (',3F10.6,' ) * ( X1 ) + (',F8.3,' )')
 C
       END 
+c
+c
       SUBROUTINE SUPRIMP ( NATM, XYZ1, XYZ2, A, T )
 C	DIMENSION XYZ1(3,NATM), XYZ2(3,NATM), A(3,3), T(3)
 C A subroutine to give the superimpose matrix and vector from MOL1 to 
@@ -5185,7 +5424,7 @@ c          XYZ2(3,NATM) represents the coordinates of MOL2
 C          A(3*3)       represents the output matrix.
 c          T(3*3)       represents the output vector.
 c
-C NATM can not be larger than NATM0 (now is 50000) or the parameter NATM0
+C NATM cannot be larger than NATM0 (currently 50000) or the parameter NATM0
 C should be modified in this routine. 
 c
 C	COMMON/SHIFS/ SCALR,SCALT
@@ -5199,28 +5438,28 @@ C
 C	COMMON/RMS/ RMS,SMEAN,NREF,NREF1
 C RMS is the final R.M.S between two molecules.
 C SMEAN is the mean distance.
-c NREF is the number of the cycles of the rotation refinements
-c NREF1 is not for the who calcution.
-c They could be used to judge the SCALR,and SCALS
+c NREF is the number of cycles of rotation refinement
+c NREF1 is not used by this routine.
+c They could be used to judge the SCALR and SCALS
 c
 C	COMMON/IAT/ IAT1,IAT2,IAT3,IAT
 C	DATA SCALR/1./,IAT/0/
 C      The routine use the first three atoms to get the initial Eulerian 
 C angle. IAT1, IAT2 and IAT3 are the indexes of the three select atoms.
-c If IAT = 0, theses atoms will be selected inside this routine. If not,
+c If IAT = 0, these atoms will be selected inside this routine. If not,
 c the three atoms will be defined outside the routine through the common
-c block. If the program does not work or you want special atoms, changing 
-c IAT1,IAT2,IAT3 in COMMON/IAT/ and give the IAT to 0 in order to select 
-c the three atoms in the main routine. Subroutine ORIEN is to proceed this
-c computing
+c block. If the program does not work or you want special atoms, change 
+c IAT1,IAT2,IAT3 in COMMON/IAT/ and set IAT to 0 in order to select 
+c the three atoms in the main routine. Subroutine ORIEN performs this
+c computation.
 c 
 c     Then the program use the subroutine REFORN to refine the orientation
 c by vector method. The refinement equation is same with subroutine SUPOS.
 C
-c The program use translation liner and Eulerian non-liner least square 
-c  refinement to refine both th1,th2 th3 and tx,ty,tz. It has been 
-c tested that it could get very low r.m.s.,  much less than any method 
-c in most cases, however time is little expensive.
+c The program use translation linear and Eulerian non-linear least square 
+c refinement to refine both th1,th2,th3 and tx,ty,tz. Testing shows
+c that it can give very low r.m.s., much less than any other method 
+c in most cases, however it is a little expensive in computer time.
 c
 c                                           by Guoguang Lu
 C                                               27/01/1989
@@ -5238,7 +5477,7 @@ c   NATM0 is the largest number of atoms.
 c
 c	DEG=180./3.14159265359
 c
-C Number of atom can not be more than NATM0 or less than 3.
+C Number of atoms cannot be more than NATM0 or less than 3.
 c
       IF (NATM.GT.50000) THEN
       WRITE(6,*) 'ERROR> Atom is more than ',NATM0
@@ -5260,7 +5499,7 @@ C compute the  gravity of mol1 and mol2 to CEN1 and CEN2
       CALL AVERG(3,NATM,XYZ2,CEN2)
 C T is the initial translation vector
       CALL ARRPS(3,1,CEN2,CEN1,T0)
-c Change the oringe to CEN1.
+c Change the origin to CEN1.
       CALL TMOVE(3,NATM,XYZ1,CEN1,-1.,X1)
       CALL TMOVE(3,NATM,XYZ2,CEN1,-1.,X2)
 c
@@ -5305,6 +5544,8 @@ C
 5	FORMAT(1X,' X2 = (',3F10.6,' ) * ( X1 ) + (',f10.5,' )')
 C
       END 
+c
+c
       SUBROUTINE SUPRIMPFIN ( NATM, XYZ1, XYZ2, A, T )
 C	DIMENSION XYZ1(3,NATM), XYZ2(3,NATM), A(3,3), T(3)
 C A subroutine to give the superimpose matrix and vector from MOL1 to 
@@ -5316,7 +5557,7 @@ c          XYZ2(3,NATM) represents the coordinates of MOL2
 C          A(3*3)       represents the output matrix.
 c          T(3*3)       represents the output vector.
 c
-C NATM can not be larger than NATM0 (now is 50000) or the parameter NATM0
+C NATM cannot be larger than NATM0 (currently 50000) or the parameter NATM0
 C should be modified in this routine. 
 c
 C	COMMON/SHIFS/ SCALR,SCALT
@@ -5330,28 +5571,28 @@ C
 C	COMMON/RMS/ RMS,SMEAN,NREF,NREF1
 C RMS is the final R.M.S between two molecules.
 C SMEAN is the mean distance.
-c NREF is the number of the cycles of the rotation refinements
-c NREF1 is not for the who calcution.
+c NREF is the number of the cycles of the rotation refinement
+c NREF1 is not used by this routine.
 c They could be used to judge the SCALR,and SCALS
 c
 C	COMMON/IAT/ IAT1,IAT2,IAT3,IAT
 C	DATA SCALR/1./,IAT/0/
 C      The routine use the first three atoms to get the initial Eulerian 
 C angle. IAT1, IAT2 and IAT3 are the indexes of the three select atoms.
-c If IAT = 0, theses atoms will be selected inside this routine. If not,
+c If IAT = 0, these atoms will be selected inside this routine. If not,
 c the three atoms will be defined outside the routine through the common
-c block. If the program does not work or you want special atoms, changing 
+c block. If the program does not work or you want special atoms, change
 c IAT1,IAT2,IAT3 in COMMON/IAT/ and give the IAT to 0 in order to select 
 c the three atoms in the main routine. Subroutine ORIEN is to proceed this
 c computing
 c 
-c     Then the program use the subroutine REFORN to refine the orientation
+c     Then the program uses the subroutine REFORN to refine the orientation
 c by vector method. The refinement equation is same with subroutine SUPOS.
 C
-c The program use translation liner and Eulerian non-liner least square 
-c  refinement to refine both th1,th2 th3 and tx,ty,tz. It has been 
-c tested that it could get very low r.m.s.,  much less than any method 
-c in most cases, however time is little expensive.
+c The program use translation linear and Eulerian non-linear least square 
+c refinement to refine both th1,th2,th3 and tx,ty,tz. Testing shows
+c that it can give very low r.m.s., much less than any other method 
+c in most cases, however it is a little expensive in computer time.
 c
 c                                           by Guoguang Lu
 C                                               27/01/1989
@@ -5361,7 +5602,7 @@ C
       COMMON/IAT/ IAT1,IAT2,IAT3,IAT
 c	DATA SCALR/1./,SCALS/1./,IAT/0/,IAT1/1/,IAT2/2/,IAT3/3/
       PARAMETER (NATM0 = 50000)
-c   NATM0 is the largest number of atoms.
+c   NATM0 is the maximum number of atoms.
       DIMENSION XYZ1(3,NATM), XYZ2(3,NATM), A(3,3), T(3)
       DIMENSION X1(3,NATM0),X2(3,NATM0),VT(3*6*NATM0),DIS(3*NATM0)
       DIMENSION CEN1(3),CEN2(3)
@@ -5369,7 +5610,7 @@ c   NATM0 is the largest number of atoms.
 c
 c	DEG=180./3.14159265359
 c
-C Number of atom can not be more than NATM0 or less than 3.
+C Number of atoms cannot be more than NATM0 or less than 3.
 c
       IF (NATM.GT.50000) THEN
       WRITE(6,*) 'ERROR> Atom is more than ',NATM0
@@ -5392,7 +5633,7 @@ C compute the  gravity of mol1 and mol2 to CEN1 and CEN2
       CALL AVERG(3,NATM,XYZ2,CEN2)
 C T is the initial translation vector
       CALL ARRPS(3,1,CEN2,CEN1,T0)
-c Change the oringe to CEN1.
+c Change the origin to CEN1.
       CALL TMOVE(3,NATM,XYZ1,CEN1,-1.,X1)
       CALL TMOVE(3,NATM,XYZ2,CEN1,-1.,X2)
 c
@@ -5441,19 +5682,21 @@ C
 5	FORMAT(1X,' X2 = (',3F10.6,' ) * ( X1 ) + (',f10.5,' )')
 C
       END 
+c
+c
       subroutine lgg_symlib(nunit,file,nsp,nsym,nrot,sym,latnam)
-c this is a subroutine which user give a space group number, it read the 
-c ccp4 symmetry libary, then it give out the symmetryc operation
+c In this subroutine the user gives a space group number, the subroutine reads the 
+c ccp4 symmetry library, then it outputs the symmetry operations
 c Input
-c	file--- symmetry libary file name
-c	nsp --- space groupt number
+c	file--- symmetry library file name
+c	nsp --- space group number
 c Output
-c 	nsymm --- Total symmetry operation numbre in this spacegroup
-c	nrot ---- only rotation symmetric operation in this spacegroup
-c	symm  ---- a 3*4*nsym symmmetric operation c matrix.
-c	latnam  ---  *14 character of a spacegruop name
+c 	nsymm --- Total number of symmetry operations in this spacegroup
+c	nrot ---- only rotation symmetric operations in this spacegroup
+c	symm  ---- a 3*4*nsym symmetric operation c matrix.
+c	latnam  ---  *14 character spacegroup name
 c in common symdump,  if dump is true, dump all the information
-c maxop is the maximium symmetric operation number
+c maxop is the maximum number of symmetry operations
 c libary format
 c155 6  2    R32
 c X,Y,Z * -Y,X-Y,Z * Y-X,-X,Z
@@ -5471,7 +5714,7 @@ c	COMMON/SYMDUMP/ DUMP
 c
       character*80 key,str*40
 c
-c...  data statements.  Seperate declaration and init required for f2c
+c...  data statements.  Separate declaration and init required for f2c
       data dump /.false./
 c
 c	WRITE(6,*)  'nsp',nsp
@@ -5529,11 +5772,13 @@ c	call spstrunct(latnam)
       latnam = '      '
       STOP 'Check your SYMOP file'
       END
+c
+c
       SUBROUTINE TMOVE(M,NATM,XIN,T,CONST,XOUT)
 C  XOUT = XIN + CONST * T
-C where    XIN is a input M*NATM-dimensional array.
-C          XOUT N is a output M*NATM-dimensional array.
-c          T is a M-dimensinonal vector.
+C where    XIN is  input M*NATM-dimensional array.
+C          XOUT N is  output M*NATM-dimensional array.
+c          T is a M-dimensional vector.
 c          CONST is a constant.
 C	DIMENSION XIN(M,NATM),XOUT(M,NATM),T(M),B(100)
 c
@@ -5543,6 +5788,8 @@ c
       CALL ARRAD(M,1,XIN(1,I),B,XOUT(1,I))
       END DO
       END
+c
+c
 c------------------------------------------------------------
       subroutine up(txt,len)
 c
@@ -5567,13 +5814,16 @@ c      end do
       txt = save
       return
       end
-
+c
+c
       SUBROUTINE VECCRSMLT(A1,A2,A)
       DIMENSION A1(3),A2(3),A(3)
       A(1)=VLDIM2(A1(2),A1(3),A2(2),A2(3))
       A(2)=VLDIM2(A1(3),A1(1),A2(3),A2(1))
       A(3)=VLDIM2(A1(1),A1(2),A2(1),A2(2))
       END
+c
+c
       FUNCTION VEM(N,V)
       DIMENSION V(N)
       C=0
@@ -5582,8 +5832,10 @@ c      end do
       VEM=SQRT(C)
       RETURN
       END
+c
+c
       FUNCTION VLDIM3(MAT)
-C A function to calculate the modoler of a 3*3-dimension matrix.
+C A function to calculate the modulus of a 3*3-dimension matrix.
 c VLDIM3 = | MAT3*3 |
       dimension mat(3,3)
       dimension B1(3)
@@ -5591,35 +5843,43 @@ C
       call veccrsmlt(mat(1,1),mat(1,2),b1)
       vldim3 = poimult(3,3,b1,mat(1,3))
       end
+c
+c
       FUNCTION VLDIM2(A11,A12,A21,A22)
       VLDIM2=A11*A22-A21*A12
       END
-
+c
+c
         REAL FUNCTION COSD(ANGINDEG)
         REAL ANGINDEG
         COSD = COS(ANGINDEG*3.1415926/180.)
         END
-
+c
+c
         REAL FUNCTION SIND(ANGINDEG)
         REAL ANGINDEG
         SIND = SIN(ANGINDEG*3.1415926/180.)
         END
-
+c
+c
         REAL FUNCTION TAND(ANGINDEG)
         REAL ANGINDEG
         TAND = TAN(ANGINDEG*3.1415926/180.)
         END
-
+c
+c
         REAL FUNCTION ACOSD(VAL)
         REAL VAL
         ACOSD = ACOS(VAL)*180./3.1415926
         END
-
+c
+c
         REAL FUNCTION ASIND(VAL)
         REAL VAL
         ASIND = ASIN(VAL)*180./3.1415926
         END
-
+c
+c
         REAL FUNCTION ATAND(VAL)
         REAL VAL
         ATAND = ATAN(VAL)*180./3.1415926
