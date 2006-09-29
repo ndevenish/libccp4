@@ -848,15 +848,16 @@ int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nli
 /** Write or update symmetry information for MTZ header. This provides support
  * for the Fortran API, and is not particularly convenient for C programs. 
  * Note: ordering of matrices in rsymx was changed in November 2003.
- * @param mtz pointer to MTZ struct
- * @param nsymx number of symmetry operators
- * @param nsympx number of primitive symmetry operators
- * @param rsymx array of symmetry operators (dimensions ordered in C convention,
+ * @param mtz Pointer to MTZ struct
+ * @param nsymx Number of symmetry operators. If zero, symmetry operations
+ *   are not updated.
+ * @param nsympx Number of primitive symmetry operators.
+ * @param rsymx Array of symmetry operators (dimensions ordered in C convention,
  *   with translations in elements [*][3])
- * @param ltypex lattice type
- * @param nspgrx spacegroup number
- * @param spgrnx spacegroup name
- * @param pgnamx point group name
+ * @param ltypex Lattice type. If blank, not updated.
+ * @param nspgrx Spacegroup number. If zero, not updated.
+ * @param spgrnx Spacegroup name. If blank, not updated.
+ * @param pgnamx Point group name. If blank, not updated.
  * @return 1 on success, 0 on failure 
  */
 int ccp4_lwsymm(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4], 
