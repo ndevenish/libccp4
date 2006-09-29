@@ -2060,23 +2060,28 @@ int ccp4_lwsymm(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4],
 {
   int i,j,k,length;
 
-  mtz->mtzsymm.nsym = nsymx;
-  mtz->mtzsymm.nsymp = nsympx;
-  for (i = 0; i < nsymx; ++i) {
-    for (j = 0; j < 4; ++j) {
-      for (k = 0; k < 4; ++k) {
-        mtz->mtzsymm.sym[i][j][k] = rsymx[i][j][k];
+  if (nsymx > 0) {
+    mtz->mtzsymm.nsym = nsymx;
+    mtz->mtzsymm.nsymp = nsympx;
+    for (i = 0; i < nsymx; ++i) {
+      for (j = 0; j < 4; ++j) {
+        for (k = 0; k < 4; ++k) {
+          mtz->mtzsymm.sym[i][j][k] = rsymx[i][j][k];
+        }
       }
     }
   }
-  mtz->mtzsymm.symtyp = ltypex[0];
-  mtz->mtzsymm.spcgrp = nspgrx;
+  if (ltypex[0] != ' ' && ltypex[0] != '\0') mtz->mtzsymm.symtyp = ltypex[0];
+  if (nspgrx != 0) mtz->mtzsymm.spcgrp = nspgrx;
 
-  length = ( strlen(spgrnx) < MAXSPGNAMELENGTH ) ? strlen(spgrnx) : MAXSPGNAMELENGTH;
-  strncpy(mtz->mtzsymm.spcgrpname,spgrnx,length);
-  mtz->mtzsymm.spcgrpname[length] = '\0';
-
-  strcpy(mtz->mtzsymm.pgname,pgnamx);
+  if (strcmp(spgrnx,"")) {
+    length = ( strlen(spgrnx) < MAXSPGNAMELENGTH ) ? strlen(spgrnx) : MAXSPGNAMELENGTH;
+    strncpy(mtz->mtzsymm.spcgrpname,spgrnx,length);
+    mtz->mtzsymm.spcgrpname[length] = '\0';
+  }
+  if (strcmp(pgnamx,"")) {
+    strcpy(mtz->mtzsymm.pgname,pgnamx);
+  }
 
   return 1;
 }

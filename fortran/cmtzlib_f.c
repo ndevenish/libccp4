@@ -2233,7 +2233,7 @@ FORTRAN_SUBR ( LWSYMM, lwsymm,
        rsym[i][j][k] = rsymx[i][k][j];
 
  /* if there is a cell, check specified symmetry is consistent with it */
- if (mtzdata[*mindx-1]->xtal[0]->cell[0] != 0.0 ) 
+ if (mtzdata[*mindx-1]->xtal[0]->cell[0] != 0.0 && nsym > 0) 
    if (!ccp4spg_check_symm_cell(nsym,rsym,mtzdata[*mindx-1]->xtal[0]->cell)) {
      printf(" LWSYMM: severe warning - specified symmetry not consistent with cell dimensions! \n");
      printf(" Spacegroup %s \n",temp_spgrnx);
