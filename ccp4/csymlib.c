@@ -1932,6 +1932,8 @@ int ccp4spg_check_symm_cell(int nsym, float rsym[][4][4], float cell[6]) {
   int i,k,l,status=1;
   ccp4_symop *op1;
 
+  if (nsym <= 0) return 0;
+
   /* identify spacegroup from supplied symops */
   op1 = (ccp4_symop *) ccp4_utils_malloc(nsym*sizeof(ccp4_symop));
   for (i = 0; i < nsym; ++i) {
