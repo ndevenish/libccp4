@@ -444,6 +444,14 @@ MTZ *MtzGetUserCellTolerance(const char *logname, int read_refs, const double ce
     }
 
     istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, MTZRECORDLENGTH);
+    if (istat == EOF) {
+      /* Unexpected end-of-file */
+      ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_ReadFail),"MtzGet",NULL);
+      ccp4_parse_end(parser);
+      ccp4_file_close(filein);
+      free(filename);
+      return NULL;
+    }
     hdrrec[MTZRECORDLENGTH] = '\0';
     ntok = ccp4_parser(hdrrec, MTZRECORDLENGTH, parser, iprint);
   }
