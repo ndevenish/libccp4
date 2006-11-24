@@ -111,6 +111,80 @@ C     First element should be information about the program
       return
       end
 
+C      subroutine XMLWriteJournalCitation(XMLFileUnit, AuthorsString, 
+C     +  JournalString, VolumeString, PageStart, PageEnd, YearString, 
+C     +  ifail)
+C      For example:
+C        call XMLWriteJournalCitation(XMLFILEUNIT,'B.W.Matthews',
+C     +   'J.Mol.Biol.','33','491','497','1968',ifail)
+C      If using the Bioxhit schema, this should only be called once 
+C      for each processing_stage.
+
+      subroutine XMLWriteJournalCitation(XMLFileUnit, AuthorsString, 
+     +  JournalString, VolumeString, IssueString, PageStart, PageEnd, 
+     +  YearString, ifail)
+
+      integer XMLFileUnit, ifail
+      character*(*) AuthorsString, JournalString, VolumeString, 
+     +  IssueString, PageStart, PageEnd, YearString
+
+      call XMLOpenElement(XMLFileUnit,'citation',ifail)
+
+      call XMLWriteElement(XMLFileUnit, 
+     +    'citation_type', 'journal', ifail)
+      if (AuthorsString.ne.' ') call XMLWriteElement(XMLFileUnit, 
+     +    'citation_id', AuthorsString, ifail)
+      if (JournalString.ne.' ') call XMLWriteElement(XMLFileUnit, 
+     +    'journal_abbreviation', JournalString, ifail)
+      if (VolumeString.ne.' ') call XMLWriteElement(XMLFileUnit, 
+     +     'journal_volume', VolumeString, ifail)
+      if (IssueString.ne.' ') call XMLWriteElement(XMLFileUnit, 
+     +     'journal_issue', IssueString, ifail)
+      if (PageStart.ne.' ') call XMLWriteElement(XMLFileUnit, 
+     +     'page_from', PageStart, ifail)
+      if (PageEnd.ne.' ') call XMLWriteElement(XMLFileUnit, 
+     +     'page_to', PageEnd, ifail)
+      if (YearString.ne.' ') call XMLWriteElement(XMLFileUnit, 
+     +     'publication_year', YearString, ifail)
+
+      call XMLCloseElement(XMLFileUnit,'citation',ifail)
+
+      return
+      end
+
+C      subroutine XMLWriteMessages(XMLFileUnit, ccperr_level, 
+C     +  MessageString, ifail)
+C      For example: 
+C        call XMLWriteMessage(XMLFileUnit,0,'Normal Termination',ifail)
+C      If using the Bioxhit schema, this should only be called once 
+C      for each processing_stage.
+
+      subroutine XMLWriteMessages(XMLFileUnit, ccperr_level, 
+     +  MessageString, ifail)
+
+      integer XMLFileUnit, ifail, ccperr_level
+      character*(*) MessageString
+      character MessageCode*4,MessageSeverity*12
+
+      write(MessageCode,'(I4)') ccperr_level
+      if (ccperr_level.eq.0) MessageSeverity='information'
+      if (ccperr_level.eq.1) MessageSeverity='fatal error'
+      if (ccperr_level.eq.2) MessageSeverity='warning'
+      if (ccperr_level.eq.3) MessageSeverity='information'
+      if (ccperr_level.eq.4) MessageSeverity='information'
+
+      call XMLOpenElement(XMLFileUnit,'messages',ifail)
+      call XMLWriteElement(XMLFileUnit, 
+     +    'message_code', MessageCode, ifail)
+      if (MessageString.ne.' ') call XMLWriteElement(XMLFileUnit, 
+     +    'message_text', MessageString, ifail)
+      call XMLWriteElement(XMLFileUnit, 
+     +    'message_severity', MessageSeverity, ifail)        
+      call XMLCloseElement(XMLFileUnit,'messages',ifail)
+
+      return
+      end
+
 C subroutine XMLOpenElement(XMLFileUnit, ElementName, ifail)
 C     XMLFileUnit - integer - if file not already opened it will be
 C     element name = value is char string.
