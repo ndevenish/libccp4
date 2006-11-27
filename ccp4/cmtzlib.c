@@ -115,6 +115,7 @@ MTZ *MtzGetUserCellTolerance(const char *logname, int read_refs, const double ce
   if (debug) 
     printf(" File opened successfully \n");
 
+  /* specify location of stamp as 2*sizeof(float), where float is default mode */
   ccp4_file_setstamp(filein, 2);
   /* Read architecture */
   istat = ccp4_file_rarch (filein);
@@ -134,7 +135,9 @@ MTZ *MtzGetUserCellTolerance(const char *logname, int read_refs, const double ce
   key   = parser->keyword;
   token = parser->token;
 
+  /* return to beginning of the file */
   ccp4_file_seek (filein, 0, SEEK_SET);
+  /* set reading characters */
   ccp4_file_setmode(filein,0);
   istat = ccp4_file_readchar(filein, (uint8 *) hdrrec, 4);
   /* We don't test all reads, but this one should trap for e.g. truncated files */
@@ -159,6 +162,7 @@ MTZ *MtzGetUserCellTolerance(const char *logname, int read_refs, const double ce
   if (debug) 
     printf(" MTZ file confirmed \n");
 
+  /* set reading integers */
   ccp4_file_setmode(filein,6);
   istat = ccp4_file_read(filein, (uint8 *) &hdrst, 1);
   if (debug) printf(" hdrst read as %d \n",hdrst);
@@ -1198,9 +1202,22 @@ int MtzParseLabin(char *labin_line, const char prog_labels[][31],
 
   for (i = 1; i < ntok; i += 2) {
     strcpy(label1,token[i].fullstring);
+
+    if (strlen(label1)>30) {
+      printf("MtzParseLabin: labels cannot be longer than 30 characters: \"%s\"\n",label1);
+      err++;
+      break;
+    }
+
     /* Trap against trying to access tokens that don't exist */
     if (i+1 < ntok) {
       strcpy(label2,token[i+1].fullstring);
+
+      if (strlen(label2)>30) {
+        printf("MtzParseLabin: labels cannot be longer than 30 characters: \"%s\"\n",label2);
+        err++;
+        break;
+      }
 
       /* check first label against program labels */
       imatch = 0;
