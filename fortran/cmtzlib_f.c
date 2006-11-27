@@ -1593,7 +1593,7 @@ FORTRAN_SUBR ( LWOPEN_NOEXIT, lwopen_noexit,
 	       (const int *mindx, fpstr filename, int filename_len, int *ifail))
 
 { 
-  char *temp_name, err_str[200];
+  char *temp_name, *fullfilename, err_str[300];
   int nxtal=1, nset[1]={1};
   int i,j,k,icol;
 
@@ -1628,9 +1628,29 @@ FORTRAN_SUBR ( LWOPEN_NOEXIT, lwopen_noexit,
  iwref[*mindx-1] = 0;
 
  if (!cmtz_in_memory) {
+
+   if (mtzdata[*mindx-1]->filein) {
+     if (getenv(temp_name) != NULL) {
+       fullfilename = strdup(getenv(temp_name));
+     } else {
+       fullfilename = strdup(temp_name);
+     }
+     if (!strcmp(mtzdata[*mindx-1]->filein->name,fullfilename)) {
+       strcpy(err_str,"LWOPEN_NOEXIT: output file is same as open input file: ");
+       strncat(err_str,fullfilename,245);
+       ccperror(2,err_str);
+       free(temp_name);
+       free(fullfilename); 
+       *ifail = 1;
+       return;
+     }
+
+     free(fullfilename); 
+   }
+
    if ( !(mtzdata[*mindx-1]->fileout = MtzOpenForWrite(temp_name)) ) {
      strcpy(err_str,"LWOPEN_NOEXIT: failed to open output file ");
-     strncat(err_str,temp_name,160);
+     strncat(err_str,temp_name,260);
      ccperror(2,err_str);
      free(temp_name);
      *ifail = 1;
