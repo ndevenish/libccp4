@@ -1708,7 +1708,7 @@ FORTRAN_SUBR ( SETRSL, setrsl,
 FORTRAN_SUBR (STHLSQ1, sthlsq1,
 	     (float *reso, const int *ih, const int *ik, const int *il),
 	     (float *reso, const int *ih, const int *ik, const int *il),
-	     (flaot *reso, const int *ih, const int *ik, const int *il))
+	     (float *reso, const int *ih, const int *ik, const int *il))
 {
   int in[3];
 
