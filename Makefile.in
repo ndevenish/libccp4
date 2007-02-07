@@ -39,7 +39,7 @@
 # SHARED_LIB_FFLAGS SHARED_LIB_CFLAGS for option shared build
 
 SHELL       = /bin/sh
-DESTDIR     = $(libdir)/..
+DESTDIR     = $(prefix)
 srcdir	    = $(top_srcdir)/lib/src
 mmdbsrcdir  = $(top_srcdir)/lib/src/mmdb
 includedir  = /include
