@@ -66,7 +66,7 @@ this may be re-implemented.
 #include "ccp4_general.h"
 static char rcsid[] = "$Id$";
 
-#define MFILES 4
+#define MFILES 9
 #define MAXSYM 192
 
 static int cmtz_in_memory = 0;
