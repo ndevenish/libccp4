@@ -1644,10 +1644,18 @@ int ccp4_lhprt(const MTZ *mtz, int iprint) {
       break;
     }
 
-  /* Calculate overall  resolution limits */
-  for (i = 0; i < mtz->nxtal; ++i) {
+  /* Calculate overall resolution limits. Two cases: If we have written some reflections
+     to file, we probably want to know the resolution limits for these. In this case,
+     mtz->resmax_out and mtz->resmin_out have been set and we use those. Otherwise, 
+     we use the resolution limits of the crystals in memory. */
+  if (mtz->resmax_out > 0.0001) {
+    maxres = mtz->resmax_out;
+    minres = mtz->resmin_out;
+  } else {
+    for (i = 0; i < mtz->nxtal; ++i) {
       if (mtz->xtal[i]->resmax > maxres) maxres = mtz->xtal[i]->resmax;
       if (mtz->xtal[i]->resmin < minres) minres = mtz->xtal[i]->resmin;
+    }
   }
   printf(" *  Resolution Range :\n\n");
   if (maxres > 0.0) {
