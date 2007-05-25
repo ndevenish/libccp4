@@ -882,7 +882,7 @@ CCP4File *ccp4_file_open (const char *filename, const int flag)
 #else
   struct stat st;
 #endif
-  
+
   if (!(cfile = _file_init())) {
     ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_open", NULL);
     return NULL; }
@@ -933,6 +933,7 @@ CCP4File *ccp4_file_open (const char *filename, const int flag)
     *mptr++ = 'b';
 #endif
     *mptr++ = '\0';
+
 #ifdef VMS
     if (cfile->scratch)
       cfile->stream = fopen (filename, fmode,
@@ -944,8 +945,13 @@ CCP4File *ccp4_file_open (const char *filename, const int flag)
                              "ctx=stm", "mrs=0", "rat=cr", "rfm=stmlf");
 #else
 # ifdef _MSC_VER
-    if (cfile->scratch) 
+	if (cfile->scratch) { 
       cfile->stream = tmpfile();
+// if tmpfile fails, try opening temporary file the unix way
+	  if (!cfile->stream) {
+	     cfile->stream = fopen (filename, fmode);
+	  }
+	}
     else 
       cfile->stream = fopen (filename, fmode);
 # else
@@ -2215,5 +2221,4 @@ char *ccp4_file_print(CCP4File *cfile, char *msg_start, char *msg_end)
 
   return msg_curr;
 }
-
 
