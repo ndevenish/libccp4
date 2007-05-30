@@ -874,7 +874,7 @@ _xlf,1,
 _AIX,1,
 [      stime = time()
       call gmtime(stime,gmtarray)
-      call ltime_(stime,tarray)]
+      call ltime_(stime,tarray)
 ],
 [      stime = time()
       call gmtime(stime,gmtarray)
