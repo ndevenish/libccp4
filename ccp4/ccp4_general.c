@@ -1050,14 +1050,14 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
     }
     /* If no path supplied then get appropriate path depending
        on the extension
-       .dic, .lib, .bes, .prt = $CLIBD
+       .dic, .lib, .bes, .prt, .cif = $CLIBD
        .scr = $CCP4_SCR
     */
     if (lpath < 0) {
       /* Fetch the appropriate path name from the environment */
       
       if (strmatch(file_ext,"lib") || strmatch(file_ext,"dic")
-	  || strmatch(file_ext,"bes") || strmatch(file_ext,"prt")) {
+	  || strmatch(file_ext,"bes") || strmatch(file_ext,"prt") || strmatch(file_ext, "cif")) {
 	/* Fetch CLIBD */
 	clibd = (char *) getenv("CLIBD");
 	if (clibd) {
