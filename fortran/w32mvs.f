@@ -139,7 +139,7 @@ C     with status UNKNOWN rather than new if they exist
       IF (ISTAT.EQ.NEW) THEN
         OPNVAR = ' '
         CALL UGTENV('CCP4_OPEN',OPNVAR)
-        IF (OPNVAR.EQ.'UNKNOWN') ISTAT = 1
+        IF (OPNVAR.EQ.'UNKNOWN' .OR. OPNVAR.EQ.'unknown') ISTAT = 1
       END IF
 C
 C     check for `logical name' referencing real file
