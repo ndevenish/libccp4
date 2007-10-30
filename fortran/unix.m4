@@ -123,6 +123,7 @@ C TTSEND - Write string to terminal with various carriage control
 C     options
 C UGTARG - Get command-line argument
 C hciftime - Time in cif format
+C ccp4_fflush_stdout - Flush buffers to stdout
 C
 C Functions:
 C
@@ -934,3 +935,12 @@ c
 
 C
 
+      subroutine ccp4_fflush_stdout()
+dnl   work around a buglet: : gfortran-4.1.2 glibc-2.7-2
+dnl   (2.6.23.1-37.fc8 x86_64 SMP) C. Flensburg 20071029.
+      implicit none
+ifelse(_gfort,1,
+[      call flush(6)
+],dnl (else)
+[      continue])
+      end

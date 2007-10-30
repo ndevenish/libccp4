@@ -198,6 +198,12 @@ FORTRAN_SUBR ( CCPERR, ccperr,
   strncpy(tmp_errstr,errstr,length);
   tmp_errstr[length]='\0';
 
+  /* work around a buglet: gfortran-4.1.2 glibc-2.7-2 (2.6.23.1-37.fc8 x86_64 SMP)
+     Flush stdout using a Fortran call before printing further. C. Flensburg 20071029. */
+#ifdef GFORTRAN
+  FORTRAN_CALL (CCP4_FFLUSH_STDOUT, ccp4_fflush_stdout, (), (), ());
+#endif
+
   if (abs(*istat) <= 2)
     FORTRAN_CALL (CCP4H_SUMMARY_BEG, ccp4h_summary_beg, (), (), ());
 
