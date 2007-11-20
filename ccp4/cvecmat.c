@@ -82,16 +82,17 @@ double invert3matrix(const double a[3][3], double ai[3][3])
 float invert4matrix(const float a[4][4], float ai[4][4])
 
 {
-    float c[4][4], d;
+    double c[4][4], d;
     int i, j;
-    float x[3][3];
+    double x[3][3];
     int i1, j1, i2 ;
-    float am;
+    double am, q;
     int ii, jj;
 
     /* Function Body */
     for (ii = 0; ii < 4; ++ii) {
 	for (jj = 0; jj < 4; ++jj) {
+            ai[ii][jj] = 0.0;
 	    i = -1;
 	    for (i1 = 0; i1 < 4; ++i1) {
 		if (i1 != ii) {
@@ -126,16 +127,17 @@ float invert4matrix(const float a[4][4], float ai[4][4])
 
 
   if (fabs(d) > 1.0e-30) {
+    q = 1.0/d;
     for (i = 0; i < 4; ++i) {
 	for (j = 0; j < 4; ++j) {
-	    ai[i][j] = c[j][i] / d;
+	  ai[i][j] = (float) (c[j][i] * q);
 	}
     }
   } else {
     return 0.0;
   }
 
-  return d;
+  return ((float) d);
 } 
 
 float ccp4_pow_ii(const float base, const int power) {
