@@ -105,7 +105,7 @@ MMDBOBJS = bfgs_min.o mmdb_chain.o    mmdb_manager.o  mmdb_symop.o \
            linalg_.o  mmdb_coormngr.o mmdb_mmcif.o    mmdb_utils.o \
            machine_.o mmdb_cryst.o    mmdb_model.o    stream_.o \
            mattype_.o mmdb_file.o     mmdb_rwbrook.o  mmdb_atom.o \
-           mmdb_graph.o  mmdb_selmngr.o  mmdb_align.o \
+           mmdb_graph.o  mmdb_selmngr.o  mmdb_align.o hybrid_36.o \
            mmdb_tables.o math_.o mmdb_sbase.o mmdb_sbase0.o mmdb_uddata.o \
            mmdb_xml.o   mmdb_bondmngr.o mmdb_ficif.o random_n.o
 CORELIBFILES = $(srcdir)/library_err.c $(srcdir)/ccp4_errno.h $(srcdir)/library_file.c \
@@ -167,7 +167,7 @@ $(mmdbsrcdir)/linalg_.h        $(mmdbsrcdir)/mmdb_align.h     $(mmdbsrcdir)/mmdb
 $(mmdbsrcdir)/mmdb_mask.h      $(mmdbsrcdir)/mmdb_sbase.h     $(mmdbsrcdir)/mmdb_title.h     $(mmdbsrcdir)/random_n.h \
 $(mmdbsrcdir)/machine_.h       $(mmdbsrcdir)/mmdb_atom.h      $(mmdbsrcdir)/mmdb_coormngr.h  $(mmdbsrcdir)/mmdb_file.h \
 $(mmdbsrcdir)/mmdb_mmcif.h     $(mmdbsrcdir)/mmdb_selmngr.h   $(mmdbsrcdir)/mmdb_uddata.h    $(mmdbsrcdir)/stream_.h \
-$(mmdbsrcdir)/mmdb_sbase0.h
+$(mmdbsrcdir)/mmdb_sbase0.h    $(mmdbsrcdir)/hybrid_36.h
 
 
 ##### Makefile targets ######
@@ -630,6 +630,7 @@ mmdb_uddata.o:    $(mmdbsrcdir)/mmdb_uddata.cpp
 mmdb_xml.o:       $(mmdbsrcdir)/mmdb_xml.cpp
 mmdb_ficif.o:     $(mmdbsrcdir)/mmdb_ficif.cpp
 random_n.o:       $(mmdbsrcdir)/random_n.cpp
+hybrid_36.o:      $(mmdbsrcdir)/hybrid_36.cpp
 
 library_err.o:    $(srcdir)/library_err.c
 library_f.o:      $(srcdir)/library_f.c
