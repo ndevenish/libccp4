@@ -1611,7 +1611,7 @@ C     INAT0   (O) INTEGER       Lower limit of atom range (-99 if not set)
 C     INAT1   (O) INTEGER       Upper limit of atom range (-99 if not set)
 C     IRES0   (O) INTEGER       Lower limit of residue range (-99 if not set)
 C     IRES1   (O) INTEGER       Upper limit of residue range (-99 if not set)
-C     CHNAM   (O) CHARACTER*1   Chain identifier (' ' if not set)
+C     CHNAM   (O) CHARACTER*(*) Chain identifier (' ' if not set)
 C     IMODE (I/O) INTEGER       On entry: -1 = don't allow MODE
 C                                         any other value = allow MODE
 C                               On exit:  Type of atoms to include:
@@ -1650,7 +1650,7 @@ C     ..Parameters
 C
 C     ..Scalar arguments
       INTEGER   NTOK,JTOK,INAT0,INAT1,IRES0,IRES1,IMODE,IFAIL
-      CHARACTER LINE*80,CHNAM*1
+      CHARACTER LINE*80,CHNAM*(*)
 C
 C     ..Array arguments
       INTEGER IBEG(MAXTOK),IEND(MAXTOK),ITYP(MAXTOK),IDEC(MAXTOK)
@@ -1743,11 +1743,11 @@ C     =============
         IF (.NOT.LRESI) ERRLINE = 'CHAIN only allowed after RESidue'
         IF (LCHAIN) ERRLINE = 'Only one CHAIN allowed per line'
         ITOK = ITOK + 1
-        IF (ITYP(ITOK).EQ.1 .AND. IDEC(ITOK).EQ.1) THEN
-          CHNAM = LINE(IBEG(ITOK):IBEG(ITOK))
+        IF (ITYP(ITOK).EQ.1 .AND. IDEC(ITOK).LE.2) THEN
+          CHNAM = LINE(IBEG(ITOK):IEND(ITOK))
           LCHAIN = .TRUE.
         ELSE
-          ERRLINE = 'Chain name should be a single character'
+          ERRLINE = 'Chain name should be one or two characters'
         END IF
 C
 C---- Number ...
