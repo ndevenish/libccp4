@@ -1302,8 +1302,8 @@ int ccpputenv(char *logical_name, char *file_name)
 */
 void ccp4_banner(void) {
 
-  int diag=0;
-  char date[11],time[9],prog_vers_str[19];
+  int diag=0,i,npad;
+  char date[11],time[9],prog_vers_str[19],infoline[100];
 
   if (diag) printf("Entering ccp4_banner \n");
 
@@ -1315,13 +1315,47 @@ void ccp4_banner(void) {
        version number */
     sprintf(prog_vers_str,"version %-10s",CCP4_VERSION_NO);
   }
-
+  /* Trim back the spaces in this string */
+  i = strlen(prog_vers_str);
+  while (prog_vers_str[--i] == ' ') {
+    prog_vers_str[i] = '\0';
+  }
+  
   printf(" \n");
   printf(" ###############################################################\n");
   printf(" ###############################################################\n");
   printf(" ###############################################################\n");
-  printf(" ### CCP4 %3s: %-17s  %-18s: %-8s##\n", 
-	 CCP4_VERSION_NO,ccp4ProgramName(NULL),prog_vers_str,ccp4RCSDate(NULL));
+  /* Information line
+     This has information on the version numbers, names and RCS date
+     Originally it was printed using the line:
+
+     printf(" ### CCP4 %3s: %-17s  %-18s: %-8s##\n",
+     CCP4_VERSION_NO,ccp4ProgramName(NULL),prog_vers_str,ccp4RCSDate(NULL));
+
+     If the CCP4 version number exceeded three characters this would lead
+     to the tail of the line being misaligned.
+
+     This version tries to account for components of the line being
+     longer than expected (nb it is still possible to run out of space).
+  */
+  sprintf(infoline," ### CCP4 %3s: %-17s",CCP4_VERSION_NO,ccp4ProgramName(NULL));
+  /* Trim back spaces in this string */
+  i = strlen(infoline);
+  while (infoline[--i] == ' ') {
+    infoline[i] = '\0';
+  }
+  /* Determine how much padding we need based on length of the
+     program version number plus what's already been printed*/
+  npad = 51 - strlen(infoline) - strlen(prog_vers_str);
+  i = strlen(infoline);
+  while (npad) {
+    infoline[i++] = ' ';
+    infoline[i] = '\0';
+    --npad;
+  }
+  sprintf(infoline+i,"%s : %-8s##",prog_vers_str,ccp4RCSDate(NULL));
+  printf("%s\n",infoline);
+  /* Rest of the banner */
   printf(" ###############################################################\n");
   printf(" User: %s  Run date: %s Run time: %s \n\n\n",
 	 ccp4_utils_username(),ccp4_utils_date(date),ccp4_utils_time(time)); 
