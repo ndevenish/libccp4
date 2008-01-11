@@ -22,7 +22,7 @@
 #include "ccp4_general.h"
 static char rcsid[] = "$Id$";
 
-char *ccp4_prog_vers(char *progvers) 
+char *ccp4_prog_vers(const char *progvers) 
 {
   static char programversion[MAXLEN_PROGVERSION]="";
   int         i;

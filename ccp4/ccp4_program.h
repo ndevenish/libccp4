@@ -58,7 +58,7 @@ typedef int (*CCP4INTFUNCPTR)(int, char *);
  * @param progvers Program version string, or NULL to query existing value.
  * @return Program version string.
  */
-char *ccp4_prog_vers(char *progvers);
+char *ccp4_prog_vers(const char *progvers);
 
 /** Set or return program name.
  * @param progname Program name, or NULL to query existing value.
