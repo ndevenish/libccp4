@@ -97,6 +97,7 @@ static const char *const cmtz_errlist[] =
     "MTZ header is corrupted: missing tokens in COLUMN record", /* 21 = CMTZERR_COLUMNIncomplete */
     "Batch headers corrupted",                   /* 22 = CMTZERR_BadBatchHeader */
     "Input MTZ file has different minor version to that supported by current library",      /* 23 = CMTZERR_DifferentVersion */
+    "File column type different from type expected by program",      /* 24 = CMTZERR_ColTypeMismatch */
   };
 
 /* parser library errors */

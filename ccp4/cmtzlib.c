@@ -52,6 +52,7 @@ static char rcsid[] = "$Id$";
 #define  CMTZERR_COLUMNIncomplete    21
 #define  CMTZERR_BadBatchHeader    22
 #define  CMTZERR_DifferentVersion  23
+#define  CMTZERR_ColTypeMismatch   24
 
 MTZ *MtzGet(const char *logname, int read_refs)
 
@@ -1296,10 +1297,11 @@ MTZCOL **ccp4_lrassn(const MTZ *mtz, const char labels[][31], const int nlabels,
 
 	 /* check requested column type against file type. */
 	 } else if (strncmp(col->type,types[ilab],1)) {
-           printf("From ccp4_lrassn: expected type %s does not match file type %s for column %s\n", 
+           ccp4_signal(CCP4_ERRLEVEL(3) | CMTZ_ERRNO(CMTZERR_ColTypeMismatch),"ccp4_lrassn",NULL);
+           printf("   From ccp4_lrassn: expected type %s does not match file type %s for column %s\n", 
              types[ilab],col->type,col->label);
            if (!strcmp(types[ilab],"R") || !strcmp(types[ilab],"I"))
-             printf("(This may be intended for generic types R/I.) \n");
+             printf("   (This may be intended for generic types R/I.) \n");
 	 }
        }
 
