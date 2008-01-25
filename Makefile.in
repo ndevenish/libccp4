@@ -128,7 +128,7 @@ CSYMOBJS = csymlib.o
 CUCOBJS = ccp4_unitcell.o
 FINTERFACEOBJS = cmtzlib_f.o csymlib_f.o ccp4_parser_f.o library_f.o \
                 ccp4_diskio_f.o ccp4_general_f.o ccp4_unitcell_f.o cmaplib_f.o \
-                binsortint.o
+                binsortint.o hybrid_36_f.o
 FORTRANOBJS =  $(LF)(parser.o) $(LF)(fftlib.o) $(LF)(lgglib.o) $(LF)(libhtml.o) \
                $(LF)(modlib.o) $(LF)(plotsubs.o) $(LF)(plot84lib.o) \
                $(LF)(pxxml.o) $(LF)(ccplib.o) $(LF)(unix.o) \
@@ -672,6 +672,7 @@ csymlib.o:        $(srcdir)/csymlib.c $(srcdir)/csymlib.h
 csymlib_f.o:      $(srcdir)/csymlib_f.c $(srcdir)/csymlib.h
 ccp4_unitcell.o:  $(srcdir)/ccp4_unitcell.c $(srcdir)/ccp4_unitcell.h
 ccp4_unitcell_f.o:  $(srcdir)/ccp4_unitcell_f.c $(srcdir)/ccp4_unitcell.h
+hybrid_36_f.o:    $(srcdir)/hybrid_36_f.c $(mmdbsrcdir)/hybrid_36.h
 cvecmat.o:        $(srcdir)/cvecmat.c $(srcdir)/cvecmat.h
 cmtzlib_python_wrap.o: $(srcdir)/cmtzlib_python_wrap.c  $(srcdir)/mtzdata.h 
 cmaplib_python_wrap.o: $(srcdir)/cmaplib_python_wrap.c 
