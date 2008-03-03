@@ -2535,7 +2535,8 @@ int MtzPut(MTZ *mtz, const char *logname)
    }
   }
  }
- sprintf(hdrrec,"RESO %-20f %-20f",mtz->resmin_out,mtz->resmax_out);
+ /* print enough digits to retain precision. C. Flensburg 20080227 */
+ sprintf(hdrrec,"RESO %-20.16f %-20.16f",mtz->resmin_out,mtz->resmax_out);
  MtzWhdrLine(fileout,46,hdrrec);
 
  if (debug) 
