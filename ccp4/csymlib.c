@@ -169,9 +169,11 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
     /* If syminfo.lib comes from a DOS platform, and we are on
        unix, need to strip spurious \r character. Note this is
        necessary because we have removed \r as parser delimiter. */
-    if (filerec[strlen(filerec)-2]=='\r') {
-      filerec[strlen(filerec)-2]='\n';
-      filerec[strlen(filerec)-1]='\0';
+    if (strlen(filerec) > 1){
+      if (filerec[strlen(filerec)-2]=='\r') {
+        filerec[strlen(filerec)-2]='\n';
+        filerec[strlen(filerec)-1]='\0';
+      }
     }
 
     if (strlen(filerec) > 1) {
