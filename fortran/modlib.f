@@ -588,6 +588,8 @@ C---- COMPUTE SIN & COS
       MM=M+MQ
       X=.5*(A(LL)-A(MM))
       Y=-A(LM)/SQRT(A(LM)**2+X*X)
+C---- Protect against rounding error. C. Flensburg 20080307.
+      IF (ABS(Y).GT.1.0) Y=SIGN(1.0,Y)
       IF (X.LT.0.) Y=-Y
       SINX=Y/SQRT(2.*(1.+(SQRT(1.-Y*Y))))
       SINX2=SINX**2
