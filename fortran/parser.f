@@ -852,7 +852,7 @@ C
             ENDIF
 C     
 C---- A single field, see if it is a number or a string
-C     
+C
             IF (ITYP(JTOK).EQ.2) THEN
 C     
 C---- it's a number, treat as space-group number
@@ -878,13 +878,15 @@ C     open symop on channel 24 - closed at end of reading
 C     NSYMP returns number of primitive operations
 C     
 C           CALL  MSYMLB(24,NUMSGP,SPGNAM,PGNAME,NSYMP,NSYM,RSYM)
+            nsymp = 0
+            nsym = 0 
             CALL  MSYMLB3(24,NUMSGP,SPGNAM,SPGNAMS,PGNAME,NSYMP,NSYM,
      +                    RSYM)
          ELSE
 C     
 C     
 C---- Read symmetry operations
-C     
+C    
             NSYM = NSYM + 1
             NSYMP = NSYM
             CALL  CCPUPC(LINE)
