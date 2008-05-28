@@ -27,7 +27,7 @@ int parse_maplabels(CMMFile *mfile)
   for (i=0 ; i!=mfile->labels.number ; i++) {
     ccp4_file_readchar(mfile->stream,(uint8 *) buffer,n_byt_label);
     cptr = buffer+n_byt_label;
-    while (*--cptr == ' ');
+    while (cptr> buffer && *--cptr == ' ');
     *(++cptr) = '\0';
     mfile->labels.labels[i] = strdup(buffer);
   }
