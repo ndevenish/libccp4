@@ -468,7 +468,9 @@ char *ccp4_utils_username(void)
   char *userid=NULL;
   if (!(userid = getlogin())) {
     passwd_struct = getpwuid(getuid());
-    userid = passwd_struct->pw_name;
+    if (passwd_struct) {
+      userid = passwd_struct->pw_name;
+    }
   }
   return(userid); 
 }
