@@ -1,8 +1,17 @@
 C
-C     This code is distributed under the terms and conditions of the
-C     CCP4 Program Suite Licence Agreement as a CCP4 Library.
-C     A copy of the CCP4 licence can be obtained by writing to the
-C     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
+C     This library is free software: you can redistribute it and/or
+C     modify it under the terms of the GNU Lesser General Public License
+C     version 3, modified in accordance with the provisions of the 
+C     license to address the requirements of UK law.
+C 
+C     You should have received a copy of the modified GNU Lesser General 
+C     Public License along with this library.  If not, copies may be 
+C     downloaded from http://www.ccp4.ac.uk/ccp4license.php
+C 
+C     This program is distributed in the hope that it will be useful,
+C     but WITHOUT ANY WARRANTY; without even the implied warranty of
+C     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+C     GNU Lesser General Public License for more details.
 C
       SUBROUTINE ROTMAT( U, ANG, R)
 C     =============================
