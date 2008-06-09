@@ -34,7 +34,7 @@ changequote([,])dnl * use [] as quotes rather than `'
 dnl
 dnl * units for record lengths:
 ifelse(_sgi,1,
-  [define(_ubytes,'WORDS')],
+  [ifelse(_f90,1,[define(_ubytes,'BYTES')],[define(_ubytes,'WORDS')])],
 dnl Changed in `DEC fortran' as opposed to (old) MIPS compiler on Ultrix:
 _dec_fortran,1,
   [define(_ubytes,'WORDS')],
