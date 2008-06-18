@@ -26,7 +26,7 @@
 
 #include <errno.h>
 
-static char rcsidhe[] = "$Id$";
+/* rcsidhe[] = "$Id$" */
 
 #ifndef CCP4_ERRSYSTEM
 #define CCP4_ERRSYSTEM(x) (((x)&0xfff)<<24)

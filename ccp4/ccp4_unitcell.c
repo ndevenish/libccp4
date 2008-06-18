@@ -27,7 +27,7 @@
 #include "ccp4_unitcell.h"
 #include "cvecmat.h"
 #include "ccp4_errno.h"
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 /* from input cell and orthogonalisation code, find orthogonalisation
    and fractionalisation matrices. Returns cell volume. */

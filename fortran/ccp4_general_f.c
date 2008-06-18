@@ -34,7 +34,7 @@
 #include "ccp4_general.h"
 #include "cmtzlib.h"
 #include "csymlib.h"
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 /** Free all memory malloc'd from static pointers in Fortran interface.
  * To be called before program exit. The function can be

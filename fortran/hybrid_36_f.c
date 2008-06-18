@@ -24,7 +24,7 @@
 
 #include "ccp4_fortran.h"
 #include "mmdb/hybrid_36.h"
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 /* I wanted to do these as Fortran functions, but not sure I could handle
    the string conversion properly for CHARACTER function.

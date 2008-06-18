@@ -23,7 +23,7 @@
  */
 
 #include "ccp4_array.h"
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 ccp4_ptr ccp4array_new_(ccp4_ptr *p)
 {

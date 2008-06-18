@@ -31,7 +31,7 @@
 #include "cvecmat.h"
 #include "ccp4_errno.h"
 #include "ccp4_unitcell.h"
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 /* stuff for error reporting */
 #define CSYM_ERRNO(n) (CCP4_ERR_SYM | (n))

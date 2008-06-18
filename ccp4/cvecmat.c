@@ -24,7 +24,7 @@
 
 #include <math.h>
 #include "cvecmat.h"
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 /*  c = a X b  */
 

@@ -32,7 +32,7 @@
 #ifndef __CCPGeneral__
 #define __CCPGeneral__
 
-static char rcsidhl[] = "$Id$";
+/* rcsidhl[] = "$Id$" */
 
 /* note order: this must be outside CCP4 namespace */
 #include "ccp4_parser.h"

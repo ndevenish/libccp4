@@ -29,7 +29,7 @@
 #include "ccp4_parser.h"
 #include "ccp4_utils.h"
 #include "ccp4_general.h"
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 char *ccp4_prog_vers(const char *progvers) 
 {

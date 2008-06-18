@@ -71,7 +71,7 @@ giving the same API as the original parser.f
 #include "ccp4_parser.h"
 #include "ccp4_general.h"
 
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 /*------------------------------------------------------------------*/
 

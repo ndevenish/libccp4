@@ -28,7 +28,7 @@
 #include <string.h>
 #include "ccp4_types.h"
 #include "library_file.h"
-static char rcsidh[] = "$Id$";
+/* rcsidh[] = "$Id$" */
 
 #ifdef __cplusplus
 namespace CCP4 {

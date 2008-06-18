@@ -61,7 +61,7 @@ bytes, to stream-mode files.
 #include "ccp4_errno.h"
 #include "ccp4_fortran.h"
 #include "ccp4_file_err.h"
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 
 /**

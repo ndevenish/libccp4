@@ -26,7 +26,7 @@
 #define __CCP4_FORTRAN
 
 #include "ccp4_types.h"
-static char rcsidhh[] = "$Id$";
+/* rcsidhh[] = "$Id$" */
 
 /* stardent is now obsolete, but we retain this category in case it is useful later */
 #ifdef CALL_LIKE_STARDENT

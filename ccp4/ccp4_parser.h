@@ -105,7 +105,7 @@ See the distributed programs <a href="../ncont.html">NCONT</a> and
 #ifndef __CCP4_Parser__
 #define __CCP4_Parser__
 
-static char rcsidhhh[] = "$Id$";
+/* rcsidhhh[] = "$Id$" */
 
 /* note order: these must be outside CCP4 namespace */
 #include <stdio.h>

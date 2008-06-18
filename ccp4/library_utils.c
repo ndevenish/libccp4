@@ -60,7 +60,7 @@ are just generally useful (platform independent date).
 
 #define CCP4_ERRNO(y) (CCP4_ERR_UTILS | (y))          
                                        
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 /* static uint16 nativeIT = NATIVEIT; */ /* machine integer type - currently unused here */
 static uint16 nativeFT = NATIVEFT; /* machine float type */

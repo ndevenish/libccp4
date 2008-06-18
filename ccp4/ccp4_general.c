@@ -69,7 +69,7 @@
 #include "cmtzlib.h"
 #include "csymlib.h"
 #include "ccp4_errno.h"
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 /*------------------------------------------------------------------*/
 

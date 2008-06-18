@@ -101,7 +101,7 @@
 #include <time.h>
 #endif
 
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 /** Creates a null-terminated C string from an input
  * string obtained from a Fortran call. Trailing blanks are

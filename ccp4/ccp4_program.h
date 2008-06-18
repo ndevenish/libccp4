@@ -32,7 +32,7 @@
 #ifndef __CCP4Program__
 #define __CCP4Program__
 
-static char rcsidhp[] = "$Id$";
+/* rcsidhp[] = "$Id$" */
 
 #ifdef  __cplusplus
 namespace CCP4 {

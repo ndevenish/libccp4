@@ -87,7 +87,7 @@ ISYM column is present.
 #include "csymlib.h"
 #include "cmtzlib.h"
 #include "cvecmat.h"
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 #define MSPAC 4
 #define MAXSYM 192

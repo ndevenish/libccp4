@@ -52,7 +52,7 @@ This document covers some peculiarities of the C implementation.
 #include"ccp4_parser.h"
 #include"csymlib.h"
 #include"ccp4_general.h"
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 static struct _IOConvMap *ioArray[MAXFILES];
 static int last_Read = -1;

@@ -24,7 +24,7 @@
 
 #include "ccp4_fortran.h"
 #include "ccp4_unitcell.h"
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 /* from input cell and orthogonalisation code, find orthogonalisation
    and fractionalisation matrices. Returns cell volume. */

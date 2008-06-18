@@ -73,7 +73,7 @@ this may be re-implemented.
 #include "csymlib.h"
 #include "ccp4_program.h"
 #include "ccp4_general.h"
-static char rcsid[] = "$Id$";
+/* rcsid[] = "$Id$" */
 
 #define MFILES 9
 #define MAXSYM 192
