@@ -2201,14 +2201,15 @@ char *ccp4_file_print(CCP4File *cfile, char *msg_start, char *msg_end)
       strcpy(msg_curr,cfile->name);
       msg_curr = strrchr(msg_curr,'\0'); }
 
-  if (cfile->open)
+  if (cfile->open) {
     if ((msg_end - msg_curr) > 6 ) {
       strcat(msg_start, " opened");
       msg_curr = strrchr(msg_curr,'\0'); }
-  else
+  } else {
     if ((msg_end - msg_curr) > 7 ) {
       strcat(msg_start, " closed");
       msg_curr = strrchr(msg_curr,'\0'); }
+  }
 
   if (cfile->append) {
     if ((msg_end - msg_curr) > 13 ) {

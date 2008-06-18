@@ -101,7 +101,6 @@ char *ccp4RCSDate(const char *rcs_string)
 {
   static char RCSDate[MAXLEN_RCSDATE]="";
   char        tmpstr1[8],tmpstr2[3];
-  int         i;
 
   /* Deconstruct the RCS string passed to this
      function */
