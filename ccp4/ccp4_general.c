@@ -1028,8 +1028,8 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
   if (file_path) free(file_path);
   file_path = ccp4_utils_pathname(value);
   lpath = strlen(file_path)-1;
-  /* If no path is found assume that the file is in the CWD */
-  if (strcmp(file_path, "") == 0) {
+  /* If no path is found and this is HKLIN (or HKLOUT) file assume that the file is in the CWD */
+  if (((strcmp(toupper(logical_name), "HKLIN") == 0) || (strcmp(toupper(logical_name), "HKLOUT") == 0)) && ((strcmp(file_path, "") == 0))) {
      file_path = getcwd(NULL, 0);
      lpath = strlen(file_path);
   }
