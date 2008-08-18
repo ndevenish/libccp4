@@ -1028,6 +1028,11 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
   if (file_path) free(file_path);
   file_path = ccp4_utils_pathname(value);
   lpath = strlen(file_path)-1;
+  /* If no path is found assume that the file is in the CWD */
+  if (strcmp(file_path, "") == 0) {
+     file_path = getcwd(NULL, 0);
+     lpath = strlen(file_path);
+  }
   if (diag) printf("CCP4SETENV: path = \"%s\"\n",file_path); 
 
   /* Get file extension */
