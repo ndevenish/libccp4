@@ -1064,7 +1064,7 @@ int ccp4setenv(char *logical_name, char* value, char **envname,
     */
     
     /* Fetch the appropriate path name for the file except when its HKLIN or HKLOUT (could be in CWD) */
-    if ((lpath < 0) && ((strcmp(logical_name, "HKLIN") != 0) && (strcmp(logical_name, "HKLOUT") != 0))) {
+    if ((lpath < 0) && ((strncasecmp(logical_name, "HKLIN", 5) != 0) && (strncasecmp(logical_name, "HKLOUT", 6) != 0))) {
       /* Fetch the appropriate path name from the environment */
       
       if (strmatch(file_ext,"lib") || strmatch(file_ext,"dic")
