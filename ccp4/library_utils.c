@@ -462,10 +462,9 @@ void *ccp4_utils_calloc(size_t nelem , size_t elsize)
  * @return pointer to character string containing login name.
  */
 #if ! defined (_MSC_VER)
-static const char userid_unknown[] = "unknown";
-
 char *ccp4_utils_username(void)
 { 
+  static char userid_unknown[] = "unknown";
   struct passwd *passwd_struct=NULL;
   char *userid=NULL;
   if (!(userid = getlogin())) {

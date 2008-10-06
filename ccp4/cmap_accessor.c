@@ -185,7 +185,7 @@ unsigned int ccp4_cmap_get_datamode(const CMMFile *mfile)
 void ccp4_cmap_set_datamode(CMMFile *mfile, unsigned int datamode)
 {
   if (ccp4_file_is_write(mfile->stream) && !mfile->data.number && 
-      datamode >= 0 && datamode <= 6 && datamode != 5) {
+      datamode <= 6 && datamode != 5) {
     mfile->data_mode = datamode;
     ccp4_file_setmode(mfile->stream, datamode);
     mfile->data.section_size = mfile->map_dim[0]*mfile->map_dim[1]*
