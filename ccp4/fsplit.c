@@ -46,6 +46,8 @@ static char sccsid[] = "@(#)fsplit.c	5.5 (Berkeley) 3/12/91";
 
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
