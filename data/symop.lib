@@ -4711,7 +4711,7 @@
  1/4-Z,1/4+Y,3/4-X
  1/4+Z,3/4-Y,1/4-X
  3/4+Z,3/4+Y,3/4+X
-1003 2 2 P2 PG2C MONOCLINIC 'P 1 1 2'  !(dyad along z)
+1003 2 2 P112 PG2C MONOCLINIC 'P 1 1 2'  !(dyad along z)
  X,Y,Z
  -X,-Y,Z
 1004 2 2 P1121 PG2C MONOCLINIC 'P 1 1 21'  !(unique axis c)
@@ -4727,11 +4727,11 @@
  -X,-Y,Z 
  1/2+X,+Y,1/2+Z 
  1/2-X,-Y,1/2+Z
-2005 4 2 A2 PG2C MONOCLINIC 'A 2 1 1'  
+2005 4 2 A2 PG2 MONOCLINIC 'A 1 2 1'  
  X, Y, Z 
- X,-Y,-Z
+ -X,Y,-Z
  X,1/2+Y,1/2+Z
- X,1/2-Y,1/2-Z
+ -X,1/2+Y,1/2-Z
 3005 4 2 C21 PG2 MONOCLINIC 'C 1 21 1' ! (Origin on screw at 1/4X)
  X, Y, Z 
  -X,1/2+Y,-Z
@@ -4742,33 +4742,33 @@
  -X,Y,-Z
  X+1/2,Y+1/2,Z+1/2
  -X+1/2,Y+1/2,-Z+1/2
-1006 2 2 P11m       PG2C MONOCLINIC 'P 1 1 m'
+1006 2 2 P11m       PGmC MONOCLINIC 'P 1 1 m'
  X,Y,Z 
  X,Y,-Z
-1007 2 2 P11b       PG2C MONOCLINIC 'P 1 1 b'
+1007 2 2 P11b       PGmC MONOCLINIC 'P 1 1 b'
  X,Y,Z
  X,1/2+Y,-Z
-1008 4 2 B11m       PG2 MONOCLINIC 'B 1 1 m'
+1008 4 2 B11m       PGmC MONOCLINIC 'B 1 1 m'
  X,Y,Z
- X,-Y,Z
- 1/2+X,1/2+Y,Z
- 1/2+X,1/2-Y,Z
-1009 4 2 B11b       PG2C MONOCLINIC 'B 1 1 b'
+ X,Y,-Z
+ 1/2+X,Y,1/2+Z
+ 1/2+X,Y,1/2-Z
+1009 4 2 B11b       PGmC MONOCLINIC 'B 1 1 b'
  X,Y,Z
  X,1/2+Y,-Z
  1/2+X,Y,1/2+Z
  1/2+X,1/2+Y,1/2-Z
-1010 4 4 P112/m     PG2C MONOCLINIC 'P 1 1 2/m'
+1010 4 4 P112/m     PG2/mC MONOCLINIC 'P 1 1 2/m'
  X,Y,Z
  X,Y,-Z
  -X,-Y,Z
  -X,-Y,-Z
-1011 4 4 P1121/m    PG2C MONOCLINIC 'P 1 1 21/m'
+1011 4 4 P1121/m    PG2/mC MONOCLINIC 'P 1 1 21/m'
  X,Y,Z
  -X,-Y,1/2+Z
  -X,-Y,-Z
  X,Y,1/2-Z
-1012 8 4 B112/m     PG2C MONOCLINIC 'B 1 1 2/m' 
+1012 8 4 B112/m     PG2/mC MONOCLINIC 'B 1 1 2/m' 
  X,Y,Z
  X,Y,-Z
  -X,-Y,Z
@@ -4777,17 +4777,17 @@
  1/2+X,Y,1/2-Z
  1/2-X,-Y,1/2+Z
  1/2-X,-Y,1/2-Z
-1013 4 4 P112/b     PG2C MONOCLINIC 'P 1 1 2/b' 
+1013 4 4 P112/b     PG2/mC MONOCLINIC 'P 1 1 2/b' 
  X,Y,Z
  -X,1/2-Y,Z
  -X,-Y,-Z
  X,1/2+Y,-Z
-1014 4 4 P1121/b    PG2C MONOCLINIC 'P 1 1 21/b'
+1014 4 4 P1121/b    PG2/mC MONOCLINIC 'P 1 1 21/b'
  X,Y,Z
  -X,-Y,-Z
  -X,1/2-Y,1/2+Z
  X,1/2+Y,1/2-Z
-1015 8 4 B112/b     PG2C MONOCLINIC 'B 1 1 2/b' 
+1015 8 4 B112/b     PG2/mC MONOCLINIC 'B 1 1 2/b' 
  X,Y,Z
  -X,1/2-Y,Z
  -X,-Y,-Z
