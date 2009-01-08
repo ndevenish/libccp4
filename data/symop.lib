@@ -3,24 +3,24 @@
 2 2 2 P-1 PG1bar TRICLINIC 'P -1'
  X,Y,Z
  -X,-Y,-Z
-3 2 2 P2 PG2 MONOCLINIC 'P 1 2 1' 
+3 2 2 P2 PG2 MONOCLINIC 'P 1 2 1'
  X,Y,Z
  -X,Y,-Z
 4 2 2 P21 PG2 MONOCLINIC 'P 1 21 1'
  X,Y,Z
  -X,Y+1/2,-Z
-5 4 2 C2 PG2 MONOCLINIC 'C 1 2 1' 
-  X,Y, Z 
- -X,Y,-Z 
- 1/2+X,1/2+Y,Z 
+5 4 2 C2 PG2 MONOCLINIC 'C 1 2 1'
+ X,Y,Z
+ -X,Y,-Z
+ 1/2+X,1/2+Y,Z
  1/2-X,1/2+Y,-Z
-6 2 2 Pm PGm MONOCLINIC 'P 1 m 1' 
- X, Y,Z 
+6 2 2 Pm PGm MONOCLINIC 'P 1 m 1'
+ X,Y,Z
  X,-Y,Z
-7 2 2 Pc PGm MONOCLINIC 'P 1 c 1' 
+7 2 2 Pc PGm MONOCLINIC 'P 1 c 1'
  X,Y,Z
  X,-Y,1/2+Z
-8 4 2 Cm PGm MONOCLINIC 'C 1 m 1' 
+8 4 2 Cm PGm MONOCLINIC 'C 1 m 1'
  X,Y,Z
  X,-Y,Z
  1/2+X,1/2+Y,Z
@@ -30,17 +30,17 @@
  X,-Y,1/2+Z
  1/2+X,1/2+Y,Z
  1/2+X,1/2-Y,1/2+Z
-10 4 4 P2/m PG2/m MONOCLINIC 'P 1 2/m 1' 
+10 4 4 P2/m PG2/m MONOCLINIC 'P 1 2/m 1'
  X,Y,Z
  X,-Y,Z
  -X,Y,-Z
  -X,-Y,-Z
-11 4 4 P21/m PG2/m MONOCLINIC 'P 1 21/m 1' 
+11 4 4 P21/m PG2/m MONOCLINIC 'P 1 21/m 1'
  X,Y,Z
  -X,1/2+Y,-Z
  -X,-Y,-Z
  X,1/2-Y,Z
-12 8 4 C2/m PG2/m MONOCLINIC 'C 1 2/m 1' 
+12 8 4 C2/m PG2/m MONOCLINIC 'C 1 2/m 1'
  X,Y,Z
  X,-Y,Z
  -X,Y,-Z
@@ -54,12 +54,12 @@
  -X,Y,1/2-Z
  -X,-Y,-Z
  X,-Y,1/2+Z
-14 4 4 P21/c PG2/m MONOCLINIC 'P 1 21/c 1' 
+14 4 4 P21/c PG2/m MONOCLINIC 'P 1 21/c 1'
  X,Y,Z
  -X,-Y,-Z
  -X,1/2+Y,1/2-Z
  X,1/2-Y,1/2+Z
-15 8 4 C2/c PG2/m MONOCLINIC 'C 1 2/c 1' 
+15 8 4 C2/c PG2/m MONOCLINIC 'C 1 2/c 1'
  X,Y,Z
  -X,Y,1/2-Z
  -X,-Y,-Z
@@ -68,27 +68,27 @@
  1/2-X,1/2+Y,1/2-Z
  1/2-X,1/2-Y,-Z
  1/2+X,1/2-Y,1/2+Z
-16 4 4 P222 PG222 ORTHORHOMBIC 'P 2 2 2' 
- X,Y,Z 
+16 4 4 P222 PG222 ORTHORHOMBIC 'P 2 2 2'
+ X,Y,Z
  -X,-Y,Z
  -X,Y,-Z
  X,-Y,-Z
-17 4 4 P2221 PG222 ORTHORHOMBIC 'P 2 2 21' 
+17 4 4 P2221 PG222 ORTHORHOMBIC 'P 2 2 21'
  X,Y,Z
  -X,-Y,1/2+Z
  -X,Y,1/2-Z
  X,-Y,-Z
-18 4 4 P21212 PG222 ORTHORHOMBIC 'P 21 21 2' 
+18 4 4 P21212 PG222 ORTHORHOMBIC 'P 21 21 2'
  X,Y,Z
  -X,-Y,Z
  1/2-X,1/2+Y,-Z
  1/2+X,1/2-Y,-Z
-19 4 4 P212121 PG222 ORTHORHOMBIC 'P 21 21 21' 
+19 4 4 P212121 PG222 ORTHORHOMBIC 'P 21 21 21'
  X,Y,Z
  1/2-X,-Y,1/2+Z
  -X,1/2+Y,1/2-Z
  1/2+X,1/2-Y,-Z
-20 8 4 C2221 PG222 ORTHORHOMBIC 'C 2 2 21' 
+20 8 4 C2221 PG222 ORTHORHOMBIC 'C 2 2 21'
  X,Y,Z
  -X,-Y,1/2+Z
  -X,Y,1/2-Z
@@ -97,16 +97,16 @@
  1/2-X,1/2-Y,1/2+Z
  1/2-X,1/2+Y,1/2-Z
  1/2+X,1/2-Y,-Z
-21 8 4 C222 PG222 ORTHORHOMBIC 'C 2 2 2' 
-  X, Y,Z
+21 8 4 C222 PG222 ORTHORHOMBIC 'C 2 2 2'
+ X,Y,Z
  -X,-Y,Z
- -X, Y,-Z
-  X,-Y,-Z
+ -X,Y,-Z
+ X,-Y,-Z
  1/2+X,1/2+Y,Z
  1/2-X,1/2-Y,Z
  1/2-X,1/2+Y,-Z
  1/2+X,1/2-Y,-Z
-22 16 4 F222 PG222 ORTHORHOMBIC 'F 2 2 2' 
+22 16 4 F222 PG222 ORTHORHOMBIC 'F 2 2 2'
  X,Y,Z
  -X,-Y,Z
  -X,Y,-Z
@@ -123,7 +123,7 @@
  1/2-X,1/2-Y,Z
  1/2-X,1/2+Y,-Z
  1/2+X,1/2-Y,-Z
-23 8 4 I222 PG222 ORTHORHOMBIC 'I 2 2 2' 
+23 8 4 I222 PG222 ORTHORHOMBIC 'I 2 2 2'
  X,Y,Z
  -X,-Y,Z
  X,-Y,-Z
@@ -152,10 +152,10 @@
  X,-Y,1/2+Z
  -X,Y,Z
 27 4 4 Pcc2 PGmm2 ORTHORHOMBIC 'P c c 2'
-  X, Y,Z
+ X,Y,Z
  -X,-Y,Z
-  X,-Y,1/2+Z
- -X, Y,1/2+Z
+ X,-Y,1/2+Z
+ -X,Y,1/2+Z
 28 4 4 Pma2 PGmm2 ORTHORHOMBIC 'P m a 2'
  X,Y,Z
  -X,-Y,Z
@@ -711,7 +711,7 @@
  -Y,X,1/2+Z
  Y,-X,1/2+Z
 78 4 4 P43 PG4 TETRAGONAL 'P 43'
- X,Y,Z 
+ X,Y,Z
  -X,-Y,1/2+Z
  -Y,X,3/4+Z
  Y,-X,1/4+Z
@@ -1608,8 +1608,8 @@
  -Y,1/2-X,3/4+Z
  1/2+Y,X,1/4+Z
 143 3 3 P3 PG3 TRIGONAL 'P 3'
- X,Y,Z 
- -Y,X-Y,Z 
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
 144 3 3 P31 PG3 TRIGONAL 'P 31'
  X,Y,Z
@@ -1634,27 +1634,27 @@
  Z,X,Y
  Y,Z,X
 147 6 6 P-3 PG3bar TRIGONAL 'P -3'
- X,Y,Z 
- -Y,X-Y,Z 
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  -X,-Y,-Z
  Y,Y-X,-Z
  X-Y,X,-Z
 148 18 6 H-3 PG3bar TRIGONAL 'H -3'
- X,Y,Z 
- -Y,X-Y,Z 
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  -X,-Y,-Z
  Y,Y-X,-Z
  X-Y,X,-Z
- 2/3+X,1/3+Y,1/3+Z 
- 2/3-Y,1/3+X-Y,1/3+Z 
+ 2/3+X,1/3+Y,1/3+Z
+ 2/3-Y,1/3+X-Y,1/3+Z
  2/3+Y-X,1/3-X,1/3+Z
  2/3-X,1/3-Y,1/3-Z
  2/3+Y,1/3+Y-X,1/3-Z
  2/3+X-Y,1/3+X,1/3-Z
- 1/3+X,2/3+Y,2/3+Z 
- 1/3-Y,2/3+X-Y,2/3+Z 
+ 1/3+X,2/3+Y,2/3+Z
+ 1/3-Y,2/3+X-Y,2/3+Z
  1/3+Y-X,2/3-X,2/3+Z
  1/3-X,2/3-Y,2/3-Z
  1/3+Y,2/3+Y-X,2/3-Z
@@ -1713,19 +1713,19 @@
  -Y,X-Y,Z
  Y-X,-X,Z
  Y,X,-Z
- X-Y,-Y,-Z 
+ X-Y,-Y,-Z
  -X,Y-X,-Z
  2/3+X,1/3+Y,1/3+Z
  2/3-Y,1/3+X-Y,1/3+Z
  2/3+Y-X,1/3-X,1/3+Z
  2/3+Y,1/3+X,1/3-Z
- 2/3+X-Y,1/3-Y,1/3-Z 
+ 2/3+X-Y,1/3-Y,1/3-Z
  2/3-X,1/3+Y-X,1/3-Z
  1/3+X,2/3+Y,2/3+Z
  1/3-Y,2/3+X-Y,2/3+Z
  1/3+Y-X,2/3-X,2/3+Z
  1/3+Y,2/3+X,2/3-Z
- 1/3+X-Y,2/3-Y,2/3-Z 
+ 1/3+X-Y,2/3-Y,2/3-Z
  1/3-X,2/3+Y-X,2/3-Z
 1155 6 6 R32 PG32 TRIGONAL 'R 3 2'
  X,Y,Z
@@ -1735,48 +1735,48 @@
  -X,-Z,-Y
  -Z,-Y,-X
 156 6 6 P3m1 PG3m1 TRIGONAL 'P 3 m 1'
- X,Y,Z 
- -Y,X-Y,Z 
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  -Y,-X,Z
  Y-X,Y,Z
  X,X-Y,Z
 157 6 6 P31m PG31m TRIGONAL 'P 3 1 m'
- X,Y,Z 
- -Y,X-Y,Z 
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  Y,X,Z
  X-Y,-Y,Z
  -X,Y-X,Z
 158 6 6 P3c1 PG3m1 TRIGONAL 'P 3 c 1'
- X,Y,Z 
- -Y,X-Y,Z 
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  -Y,-X,1/2+Z
  Y-X,Y,1/2+Z
  X,X-Y,1/2+Z
 159 6 6 P31c PG31m TRIGONAL 'P 3 1 c'
- X,Y,Z 
- -Y,X-Y,Z 
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  Y,X,1/2+Z
  X-Y,-Y,1/2+Z
  -X,Y-X,1/2+Z
 160 18 6 H3m PG3m TRIGONAL 'H 3 m'
- X,Y,Z 
- -Y,X-Y,Z 
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  -Y,-X,Z
  Y-X,Y,Z
  X,X-Y,Z
- 2/3+X,1/3+Y,1/3+Z 
- 2/3-Y,1/3+X-Y,1/3+Z 
+ 2/3+X,1/3+Y,1/3+Z
+ 2/3-Y,1/3+X-Y,1/3+Z
  2/3+Y-X,1/3-X,1/3+Z
  2/3-Y,1/3-X,1/3+Z
  2/3+Y-X,1/3+Y,1/3+Z
  2/3+X,1/3+X-Y,1/3+Z
- 1/3+X,2/3+Y,2/3+Z 
- 1/3-Y,2/3+X-Y,2/3+Z 
+ 1/3+X,2/3+Y,2/3+Z
+ 1/3-Y,2/3+X-Y,2/3+Z
  1/3+Y-X,2/3-X,2/3+Z
  1/3-Y,2/3-X,2/3+Z
  1/3+Y-X,2/3+Y,2/3+Z
@@ -1789,20 +1789,20 @@
  X,Z,Y
  Z,Y,X
 161 18 6 H3c PG3m TRIGONAL 'H 3 c'
- X,Y,Z 
- -Y,X-Y,Z 
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  -Y,-X,1/2+Z
  Y-X,Y,1/2+Z
  X,X-Y,1/2+Z
- 2/3+X,1/3+Y,1/3+Z 
- 2/3-Y,1/3+X-Y,1/3+Z 
+ 2/3+X,1/3+Y,1/3+Z
+ 2/3-Y,1/3+X-Y,1/3+Z
  2/3+Y-X,1/3-X,1/3+Z
  2/3-Y,1/3-X,5/6+Z
  2/3+Y-X,1/3+Y,5/6+Z
  2/3+X,1/3+X-Y,5/6+Z
- 1/3+X,2/3+Y,2/3+Z 
- 1/3-Y,2/3+X-Y,2/3+Z 
+ 1/3+X,2/3+Y,2/3+Z
+ 1/3-Y,2/3+X-Y,2/3+Z
  1/3+Y-X,2/3-X,2/3+Z
  1/3-Y,2/3-X,1/6+Z
  1/3+Y-X,2/3+Y,1/6+Z
@@ -1841,8 +1841,8 @@
  X-Y,-Y,1/2+Z
  -X,Y-X,1/2+Z
 164 12 12 P-3m1 PG3barm1 TRIGONAL 'P -3 2/m 1' 'P -3 m 1'
- X,Y,Z 
- -Y,X-Y,Z 
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  Y,X,-Z
  X-Y,-Y,-Z
@@ -1854,8 +1854,8 @@
  Y-X,Y,Z
  X,X-Y,Z
 165 12 12 P-3c1 PG3barm1 TRIGONAL 'P -3 2/c 1' 'P -3 c 1'
- X,Y,Z 
- -Y,X-Y,Z 
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  Y,X,1/2-Z
  X-Y,-Y,1/2-Z
@@ -1867,8 +1867,8 @@
  Y-X,Y,1/2+Z
  X,X-Y,1/2+Z
 166 36 12 H-3m PG3barm TRIGONAL 'H -3 2/m' 'H -3 m'
- X,Y,Z 
- -Y,X-Y,Z 
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  Y,X,-Z
  X-Y,-Y,-Z
@@ -1879,8 +1879,8 @@
  -Y,-X,Z
  Y-X,Y,Z
  X,X-Y,Z
- 2/3+X,1/3+Y,1/3+Z 
- 2/3-Y,1/3+X-Y,1/3+Z 
+ 2/3+X,1/3+Y,1/3+Z
+ 2/3-Y,1/3+X-Y,1/3+Z
  2/3+Y-X,1/3-X,1/3+Z
  2/3+Y,1/3+X,1/3-Z
  2/3+X-Y,1/3-Y,1/3-Z
@@ -1891,8 +1891,8 @@
  2/3-Y,1/3-X,1/3+Z
  2/3+Y-X,1/3+Y,1/3+Z
  2/3+X,1/3+X-Y,1/3+Z
- 1/3+X,2/3+Y,2/3+Z 
- 1/3-Y,2/3+X-Y,2/3+Z 
+ 1/3+X,2/3+Y,2/3+Z
+ 1/3-Y,2/3+X-Y,2/3+Z
  1/3+Y-X,2/3-X,2/3+Z
  1/3+Y,2/3+X,2/3-Z
  1/3+X-Y,2/3-Y,2/3-Z
@@ -1917,8 +1917,8 @@
  X,Z,Y
  Z,Y,X
 167 36 12 H-3c PG3barm TRIGONAL 'H -3 2/c' 'H -3 c'
- X,Y,Z 
- -Y,X-Y,Z 
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  Y,X,1/2-Z
  X-Y,-Y,1/2-Z
@@ -1929,8 +1929,8 @@
  -Y,-X,1/2+Z
  Y-X,Y,1/2+Z
  X,X-Y,1/2+Z
- 2/3+X,1/3+Y,1/3+Z 
- 2/3-Y,1/3+X-Y,1/3+Z 
+ 2/3+X,1/3+Y,1/3+Z
+ 2/3-Y,1/3+X-Y,1/3+Z
  2/3+Y-X,1/3-X,1/3+Z
  2/3+Y,1/3+X,5/6-Z
  2/3+X-Y,1/3-Y,5/6-Z
@@ -1941,8 +1941,8 @@
  2/3-Y,1/3-X,5/6+Z
  2/3+Y-X,1/3+Y,5/6+Z
  2/3+X,1/3+X-Y,5/6+Z
- 1/3+X,2/3+Y,2/3+Z 
- 1/3-Y,2/3+X-Y,2/3+Z 
+ 1/3+X,2/3+Y,2/3+Z
+ 1/3-Y,2/3+X-Y,2/3+Z
  1/3+Y-X,2/3-X,2/3+Z
  1/3+Y,2/3+X,1/6-Z
  1/3+X-Y,2/3-Y,1/6-Z
@@ -1967,12 +1967,12 @@
  X+1/2,Z+1/2,Y+1/2
  Z+1/2,Y+1/2,X+1/2
 168 6 6 P6 PG6 HEXAGONAL 'P 6'
- X,Y,Z 
- -Y,X-Y,Z 
- Y-X,-X,Z 
- -X,-Y,Z 
- Y,Y-X,Z 
- X-Y,X,Z 
+ X,Y,Z
+ -Y,X-Y,Z
+ Y-X,-X,Z
+ -X,-Y,Z
+ Y,Y-X,Z
+ X-Y,X,Z
 169 6 6 P61 PG6 HEXAGONAL 'P 61'
  X,Y,Z
  -Y,X-Y,Z+1/3
@@ -1988,40 +1988,40 @@
  Y,Y-X,Z+1/6
  X-Y,X,Z+5/6
 171 6 6 P62 PG6 HEXAGONAL 'P 62'
- X,Y,Z 
- -Y,X-Y,2/3+Z 
- Y-X,-X,1/3+Z 
- -X,-Y,Z 
- Y,Y-X,2/3+Z 
+ X,Y,Z
+ -Y,X-Y,2/3+Z
+ Y-X,-X,1/3+Z
+ -X,-Y,Z
+ Y,Y-X,2/3+Z
  X-Y,X,1/3+Z
 172 6 6 P64 PG6 HEXAGONAL 'P 64'
- X,Y,Z 
- -Y,X-Y,1/3+Z 
- Y-X,-X,2/3+Z 
- -X,-Y,Z 
- Y,Y-X,1/3+Z 
+ X,Y,Z
+ -Y,X-Y,1/3+Z
+ Y-X,-X,2/3+Z
+ -X,-Y,Z
+ Y,Y-X,1/3+Z
  X-Y,X,2/3+Z
 173 6 6 P63 PG6 HEXAGONAL 'P 63'
- X,Y,Z 
- -Y,X-Y,Z 
- Y-X,-X,Z 
- -X,-Y,1/2+Z 
- Y,Y-X,1/2+Z 
- X-Y,X,1/2+Z 
+ X,Y,Z
+ -Y,X-Y,Z
+ Y-X,-X,Z
+ -X,-Y,1/2+Z
+ Y,Y-X,1/2+Z
+ X-Y,X,1/2+Z
 174 6 6 P-6 PG6bar HEXAGONAL 'P -6'
- X,Y,Z 
- -Y,X-Y,Z 
- Y-X,-X,Z 
+ X,Y,Z
+ -Y,X-Y,Z
+ Y-X,-X,Z
  X,Y,-Z
  -Y,X-Y,-Z
  Y-X,-X,-Z
 175 12 12 P6/m PG6/m HEXAGONAL 'P 6/m'
- X,Y,Z 
- -Y,X-Y,Z 
- Y-X,-X,Z 
- -X,-Y,Z 
- Y,Y-X,Z 
- X-Y,X,Z 
+ X,Y,Z
+ -Y,X-Y,Z
+ Y-X,-X,Z
+ -X,-Y,Z
+ Y,Y-X,Z
+ X-Y,X,Z
  -X,-Y,-Z
  Y,Y-X,-Z
  X-Y,X,-Z
@@ -2029,12 +2029,12 @@
  -Y,X-Y,-Z
  Y-X,-X,-Z
 176 12 12 P63/m PG6/m HEXAGONAL 'P 63/m'
- X,Y,Z 
- -Y,X-Y,Z 
- Y-X,-X,Z 
- -X,-Y,1/2+Z 
- Y,Y-X,1/2+Z 
- X-Y,X,1/2+Z 
+ X,Y,Z
+ -Y,X-Y,Z
+ Y-X,-X,Z
+ -X,-Y,1/2+Z
+ Y,Y-X,1/2+Z
+ X-Y,X,1/2+Z
  -X,-Y,-Z
  Y,Y-X,-Z
  X-Y,X,-Z
@@ -2042,86 +2042,86 @@
  -Y,X-Y,1/2-Z
  Y-X,-X,1/2-Z
 177 12 12 P622 PG622 HEXAGONAL 'P 6 2 2'
- X,Y,Z        
- -Y,X-Y,Z       
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  -X,-Y,Z
  Y,Y-X,Z
  X-Y,X,Z
- Y,X,-Z       
+ Y,X,-Z
  X-Y,-Y,-Z
- -X,Y-X,-Z      
- -Y,-X,-Z     
+ -X,Y-X,-Z
+ -Y,-X,-Z
  Y-X,Y,-Z
- X,X-Y,-Z      
+ X,X-Y,-Z
 178 12 12 P6122 PG622 HEXAGONAL 'P 61 2 2'
- X,Y,Z        
- -Y,X-Y,1/3+Z   
+ X,Y,Z
+ -Y,X-Y,1/3+Z
  Y-X,-X,2/3+Z
- -X,-Y,1/2+Z  
- Y,Y-X,5/6+Z   
+ -X,-Y,1/2+Z
+ Y,Y-X,5/6+Z
  X-Y,X,1/6+Z
- Y,X,1/3-Z  
+ Y,X,1/3-Z
  X-Y,-Y,-Z
  -X,Y-X,2/3-Z
  -Y,-X,5/6-Z
  Y-X,Y,1/2-Z
  X,X-Y,1/6-Z
 179 12 12 P6522 PG622 HEXAGONAL 'P 65 2 2'
- X,Y,Z       
- -Y,X-Y,2/3+Z   
+ X,Y,Z
+ -Y,X-Y,2/3+Z
  Y-X,-X,1/3+Z
- -X,-Y,1/2+Z  
- Y,Y-X,1/6+Z   
+ -X,-Y,1/2+Z
+ Y,Y-X,1/6+Z
  X-Y,X,5/6+Z
- Y,X,2/3-Z  
+ Y,X,2/3-Z
  X-Y,-Y,-Z
- -X,Y-X,1/3-Z   
- -Y,-X,1/6-Z  
+ -X,Y-X,1/3-Z
+ -Y,-X,1/6-Z
  Y-X,Y,1/2-Z
- X,X-Y,5/6-Z   
+ X,X-Y,5/6-Z
 180 12 12 P6222 PG622 HEXAGONAL 'P 62 2 2'
- X,Y,Z        
- -Y,X-Y,2/3+Z       
+ X,Y,Z
+ -Y,X-Y,2/3+Z
  Y-X,-X,1/3+Z
  -X,-Y,Z
  Y,Y-X,2/3+Z
  X-Y,X,1/3+Z
- Y,X,2/3-Z       
+ Y,X,2/3-Z
  X-Y,-Y,-Z
- -X,Y-X,1/3-Z      
- -Y,-X,2/3-Z     
+ -X,Y-X,1/3-Z
+ -Y,-X,2/3-Z
  Y-X,Y,-Z
- X,X-Y,1/3-Z      
+ X,X-Y,1/3-Z
 181 12 12 P6422 PG622 HEXAGONAL 'P 64 2 2'
- X,Y,Z        
- -Y,X-Y,1/3+Z       
+ X,Y,Z
+ -Y,X-Y,1/3+Z
  Y-X,-X,2/3+Z
  -X,-Y,Z
  Y,Y-X,1/3+Z
  X-Y,X,2/3+Z
- Y,X,1/3-Z       
+ Y,X,1/3-Z
  X-Y,-Y,-Z
- -X,Y-X,2/3-Z      
- -Y,-X,1/3-Z     
+ -X,Y-X,2/3-Z
+ -Y,-X,1/3-Z
  Y-X,Y,-Z
- X,X-Y,2/3-Z      
+ X,X-Y,2/3-Z
 182 12 12 P6322 PG622 HEXAGONAL 'P 63 2 2'
- X,Y,Z        
- -Y,X-Y,Z       
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  -X,-Y,1/2+Z
  Y,Y-X,1/2+Z
  X-Y,X,1/2+Z
- Y,X,-Z       
+ Y,X,-Z
  X-Y,-Y,-Z
- -X,Y-X,-Z      
- -Y,-X,1/2-Z     
+ -X,Y-X,-Z
+ -Y,-X,1/2-Z
  Y-X,Y,1/2-Z
- X,X-Y,1/2-Z      
+ X,X-Y,1/2-Z
 183 12 12 P6mm PG6mm HEXAGONAL 'P 6 m m'
- X,Y,Z        
- -Y,X-Y,Z       
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  -X,-Y,Z
  Y,Y-X,Z
@@ -2133,8 +2133,8 @@
  X-Y,-Y,Z
  -X,Y-X,Z
 184 12 12 P6cc PG6mm HEXAGONAL 'P 6 c c'
- X,Y,Z        
- -Y,X-Y,Z       
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  -X,-Y,Z
  Y,Y-X,Z
@@ -2146,8 +2146,8 @@
  X-Y,-Y,1/2+Z
  -X,Y-X,1/2+Z
 185 12 12 P63cm PG6mm HEXAGONAL 'P 63 c m'
- X,Y,Z        
- -Y,X-Y,Z       
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  -X,-Y,1/2+Z
  Y,Y-X,1/2+Z
@@ -2159,8 +2159,8 @@
  X-Y,-Y,Z
  -X,Y-X,Z
 186 12 12 P63mc PG6mm HEXAGONAL 'P 63 m c'
- X,Y,Z        
- -Y,X-Y,Z       
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  -X,-Y,1/2+Z
  Y,Y-X,1/2+Z
@@ -2172,8 +2172,8 @@
  X-Y,-Y,1/2+Z
  -X,Y-X,1/2+Z
 187 12 12 P-6m2 PG6barm2 HEXAGONAL 'P -6 m 2'
- X,Y,Z        
- -Y,X-Y,Z       
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  X,Y,-Z
  -Y,X-Y,-Z
@@ -2185,8 +2185,8 @@
  Y-X,Y,-Z
  X,X-Y,-Z
 188 12 12 P-6c2 PG6barm2 HEXAGONAL 'P -6 c 2'
- X,Y,Z        
- -Y,X-Y,Z       
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  X,Y,1/2-Z
  -Y,X-Y,1/2-Z
@@ -2198,8 +2198,8 @@
  Y-X,Y,-Z
  X,X-Y,-Z
 189 12 12 P-62m PG6bar2m HEXAGONAL 'P -6 2 m'
- X,Y,Z        
- -Y,X-Y,Z       
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  X,Y,-Z
  -Y,X-Y,-Z
@@ -2211,8 +2211,8 @@
  X-Y,-Y,Z
  -X,Y-X,Z
 190 12 12 P-62c PG6bar2m HEXAGONAL 'P -6 2 c'
- X,Y,Z        
- -Y,X-Y,Z       
+ X,Y,Z
+ -Y,X-Y,Z
  Y-X,-X,Z
  X,Y,1/2-Z
  -Y,X-Y,1/2-Z
@@ -2224,110 +2224,110 @@
  X-Y,-Y,1/2+Z
  -X,Y-X,1/2+Z
 191 24 24 P6/mmm PG6/mmm HEXAGONAL 'P 6/m 2/m 2/m' 'P 6/m m m'
- X,Y,Z 
- -Y,X-Y,Z 
- Y-X,-X,Z 
- -X,-Y,Z 
- Y,Y-X,Z 
- X-Y,X,Z 
- Y,X,-Z 
+ X,Y,Z
+ -Y,X-Y,Z
+ Y-X,-X,Z
+ -X,-Y,Z
+ Y,Y-X,Z
+ X-Y,X,Z
+ Y,X,-Z
  X-Y,-Y,-Z
- -X,Y-X,-Z 
- -Y,-X,-Z 
+ -X,Y-X,-Z
+ -Y,-X,-Z
  Y-X,Y,-Z
- X,X-Y,-Z 
- -X,-Y,-Z 
- Y,Y-X,-Z 
- X-Y,X,-Z 
- X,Y,-Z 
- Y-X,-X,-Z 
- -Y,X-Y,-Z 
- -Y,-X,Z 
+ X,X-Y,-Z
+ -X,-Y,-Z
+ Y,Y-X,-Z
+ X-Y,X,-Z
+ X,Y,-Z
+ Y-X,-X,-Z
+ -Y,X-Y,-Z
+ -Y,-X,Z
  Y-X,Y,Z
- X,X-Y,Z 
- Y,X,Z 
+ X,X-Y,Z
+ Y,X,Z
  X-Y,-Y,Z
- -X,Y-X,Z 
+ -X,Y-X,Z
 192 24 24 P6/mcc PG6/mmm HEXAGONAL 'P 6/m 2/c 2/c' 'P 6/m c c'
- X,Y,Z 
- -Y,X-Y,Z 
- Y-X,-X,Z 
- -X,-Y,Z 
- Y,Y-X,Z 
- X-Y,X,Z 
- Y,X,1/2-Z 
+ X,Y,Z
+ -Y,X-Y,Z
+ Y-X,-X,Z
+ -X,-Y,Z
+ Y,Y-X,Z
+ X-Y,X,Z
+ Y,X,1/2-Z
  X-Y,-Y,1/2-Z
- -X,Y-X,1/2-Z 
- -Y,-X,1/2-Z 
+ -X,Y-X,1/2-Z
+ -Y,-X,1/2-Z
  Y-X,Y,1/2-Z
- X,X-Y,1/2-Z 
- -X,-Y,-Z 
- Y,Y-X,-Z 
- X-Y,X,-Z 
- X,Y,-Z 
- Y-X,-X,-Z 
- -Y,X-Y,-Z 
- -Y,-X,1/2+Z 
+ X,X-Y,1/2-Z
+ -X,-Y,-Z
+ Y,Y-X,-Z
+ X-Y,X,-Z
+ X,Y,-Z
+ Y-X,-X,-Z
+ -Y,X-Y,-Z
+ -Y,-X,1/2+Z
  Y-X,Y,1/2+Z
- X,X-Y,1/2+Z 
- Y,X,1/2+Z 
+ X,X-Y,1/2+Z
+ Y,X,1/2+Z
  X-Y,-Y,1/2+Z
- -X,Y-X,1/2+Z 
+ -X,Y-X,1/2+Z
 193 24 24 P63/mcm PG6/mmm HEXAGONAL 'P 63/m 2/c 2/m' 'P 63/m c m'
- X,Y,Z 
- -Y,X-Y,Z 
- Y-X,-X,Z 
- -X,-Y,1/2+Z 
- Y,Y-X,1/2+Z 
- X-Y,X,1/2+Z 
- Y,X,1/2-Z 
+ X,Y,Z
+ -Y,X-Y,Z
+ Y-X,-X,Z
+ -X,-Y,1/2+Z
+ Y,Y-X,1/2+Z
+ X-Y,X,1/2+Z
+ Y,X,1/2-Z
  X-Y,-Y,1/2-Z
- -X,Y-X,1/2-Z 
- -Y,-X,-Z 
+ -X,Y-X,1/2-Z
+ -Y,-X,-Z
  Y-X,Y,-Z
- X,X-Y,-Z 
- -X,-Y,-Z 
- Y,Y-X,-Z 
- X-Y,X,-Z 
- X,Y,1/2-Z 
- Y-X,-X,1/2-Z 
- -Y,X-Y,1/2-Z 
- -Y,-X,1/2+Z 
+ X,X-Y,-Z
+ -X,-Y,-Z
+ Y,Y-X,-Z
+ X-Y,X,-Z
+ X,Y,1/2-Z
+ Y-X,-X,1/2-Z
+ -Y,X-Y,1/2-Z
+ -Y,-X,1/2+Z
  Y-X,Y,1/2+Z
- X,X-Y,1/2+Z 
- Y,X,Z 
+ X,X-Y,1/2+Z
+ Y,X,Z
  X-Y,-Y,Z
- -X,Y-X,Z 
+ -X,Y-X,Z
 194 24 24 P63/mmc PG6/mmm HEXAGONAL 'P 63/m 2/m 2/c' 'P 63/m m c'
- X,Y,Z 
- -Y,X-Y,Z 
- Y-X,-X,Z 
- -X,-Y,1/2+Z 
- Y,Y-X,1/2+Z 
- X-Y,X,1/2+Z 
- Y,X,-Z 
+ X,Y,Z
+ -Y,X-Y,Z
+ Y-X,-X,Z
+ -X,-Y,1/2+Z
+ Y,Y-X,1/2+Z
+ X-Y,X,1/2+Z
+ Y,X,-Z
  X-Y,-Y,-Z
- -X,Y-X,-Z 
- -Y,-X,1/2-Z 
+ -X,Y-X,-Z
+ -Y,-X,1/2-Z
  Y-X,Y,1/2-Z
- X,X-Y,1/2-Z 
- -X,-Y,-Z 
- Y,Y-X,-Z 
- X-Y,X,-Z 
- X,Y,1/2-Z 
- Y-X,-X,1/2-Z 
- -Y,X-Y,1/2-Z 
- -Y,-X,Z 
+ X,X-Y,1/2-Z
+ -X,-Y,-Z
+ Y,Y-X,-Z
+ X-Y,X,-Z
+ X,Y,1/2-Z
+ Y-X,-X,1/2-Z
+ -Y,X-Y,1/2-Z
+ -Y,-X,Z
  Y-X,Y,Z
- X,X-Y,Z 
- Y,X,1/2+Z 
+ X,X-Y,Z
+ Y,X,1/2+Z
  X-Y,-Y,1/2+Z
- -X,Y-X,1/2+Z 
+ -X,Y-X,1/2+Z
 195 12 12 P23 PG23 CUBIC 'P 2 3'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -2337,10 +2337,10 @@
  Y,-Z,-X
  -Y,-Z,X
 196 48 12 F23 PG23 CUBIC 'F 2 3'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -2349,10 +2349,10 @@
  -Y,Z,-X
  Y,-Z,-X
  -Y,-Z,X
- X,1/2+Y,1/2+Z 
- -X,1/2-Y,1/2+Z 
- -X,1/2+Y,1/2-Z 
- X,1/2-Y,1/2-Z 
+ X,1/2+Y,1/2+Z
+ -X,1/2-Y,1/2+Z
+ -X,1/2+Y,1/2-Z
+ X,1/2-Y,1/2-Z
  Z,1/2+X,1/2+Y
  Z,1/2-X,1/2-Y
  -Z,1/2-X,1/2+Y
@@ -2361,10 +2361,10 @@
  -Y,1/2+Z,1/2-X
  Y,1/2-Z,1/2-X
  -Y,1/2-Z,1/2+X
- 1/2+X,Y,1/2+Z 
- 1/2-X,-Y,1/2+Z 
- 1/2-X,Y,1/2-Z 
- 1/2+X,-Y,1/2-Z 
+ 1/2+X,Y,1/2+Z
+ 1/2-X,-Y,1/2+Z
+ 1/2-X,Y,1/2-Z
+ 1/2+X,-Y,1/2-Z
  1/2+Z,X,1/2+Y
  1/2+Z,-X,1/2-Y
  1/2-Z,-X,1/2+Y
@@ -2373,10 +2373,10 @@
  1/2-Y,Z,1/2-X
  1/2+Y,-Z,1/2-X
  1/2-Y,-Z,1/2+X
- 1/2+X,1/2+Y,Z 
- 1/2-X,1/2-Y,Z 
- 1/2-X,1/2+Y,-Z 
- 1/2+X,1/2-Y,-Z 
+ 1/2+X,1/2+Y,Z
+ 1/2-X,1/2-Y,Z
+ 1/2-X,1/2+Y,-Z
+ 1/2+X,1/2-Y,-Z
  1/2+Z,1/2+X,Y
  1/2+Z,1/2-X,-Y
  1/2-Z,1/2-X,Y
@@ -2386,10 +2386,10 @@
  1/2+Y,1/2-Z,-X
  1/2-Y,1/2-Z,X
 197 24 12 I23 PG23 CUBIC 'I 2 3'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -2398,10 +2398,10 @@
  -Y,Z,-X
  Y,-Z,-X
  -Y,-Z,X
- 1/2+X,1/2+Y,1/2+Z 
- 1/2-X,1/2-Y,1/2+Z 
- 1/2-X,1/2+Y,1/2-Z 
- 1/2+X,1/2-Y,1/2-Z 
+ 1/2+X,1/2+Y,1/2+Z
+ 1/2-X,1/2-Y,1/2+Z
+ 1/2-X,1/2+Y,1/2-Z
+ 1/2+X,1/2-Y,1/2-Z
  1/2+Z,1/2+X,1/2+Y
  1/2+Z,1/2-X,1/2-Y
  1/2-Z,1/2-X,1/2+Y
@@ -2411,10 +2411,10 @@
  1/2+Y,1/2-Z,1/2-X
  1/2-Y,1/2-Z,1/2+X
 198 12 12 P213 PG23 CUBIC 'P 21 3'
- X,Y,Z 
- 1/2-X,-Y,1/2+Z 
- -X,1/2+Y,1/2-Z 
- 1/2+X,1/2-Y,-Z 
+ X,Y,Z
+ 1/2-X,-Y,1/2+Z
+ -X,1/2+Y,1/2-Z
+ 1/2+X,1/2-Y,-Z
  Z,X,Y
  1/2+Z,1/2-X,-Y
  1/2-Z,-X,1/2+Y
@@ -2425,9 +2425,9 @@
  1/2-Y,-Z,1/2+X
 199 24 12 I213 PG23 CUBIC 'I 21 3'
  X,Y,Z
- 1/2-X,-Y,1/2+Z 
- -X,1/2+Y,1/2-Z 
- 1/2+X,1/2-Y,-Z 
+ 1/2-X,-Y,1/2+Z
+ -X,1/2+Y,1/2-Z
+ 1/2+X,1/2-Y,-Z
  Z,X,Y
  1/2+Z,1/2-X,-Y
  1/2-Z,-X,1/2+Y
@@ -2437,9 +2437,9 @@
  1/2+Y,1/2-Z,-X
  1/2-Y,-Z,1/2+X
  1/2+X,1/2+Y,1/2+Z
- -X,1/2-Y,Z 
- 1/2-X,Y,-Z 
- X,-Y,1/2-Z 
+ -X,1/2-Y,Z
+ 1/2-X,Y,-Z
+ X,-Y,1/2-Z
  1/2+Z,1/2+X,1/2+Y
  Z,-X,1/2-Y
  -Z,1/2-X,Y
@@ -2449,10 +2449,10 @@
  Y,-Z,1/2-X
  -Y,1/2-Z,X
 200 24 24 Pm-3 PGm3bar CUBIC 'P 2/m -3' 'P m -3'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -2474,10 +2474,10 @@
  -Y,Z,X
  Y,Z,-X
 201 24 24 Pn-3 PGm3bar CUBIC 'P 2/n -3' 'P n -3'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -2499,10 +2499,10 @@
  1/2-Y,1/2+Z,1/2+X
  1/2+Y,1/2+Z,1/2-X
 202 96 24 Fm-3 PGm3bar CUBIC 'F 2/m -3' 'F m -3'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -2523,10 +2523,10 @@
  Y,-Z,X
  -Y,Z,X
  Y,Z,-X
- X,1/2+Y,1/2+Z 
- -X,1/2-Y,1/2+Z 
- -X,1/2+Y,1/2-Z 
- X,1/2-Y,1/2-Z 
+ X,1/2+Y,1/2+Z
+ -X,1/2-Y,1/2+Z
+ -X,1/2+Y,1/2-Z
+ X,1/2-Y,1/2-Z
  Z,1/2+X,1/2+Y
  Z,1/2-X,1/2-Y
  -Z,1/2-X,1/2+Y
@@ -2547,10 +2547,10 @@
  Y,1/2-Z,1/2+X
  -Y,1/2+Z,1/2+X
  Y,1/2+Z,1/2-X
- 1/2+X,Y,1/2+Z 
- 1/2-X,-Y,1/2+Z 
- 1/2-X,Y,1/2-Z 
- 1/2+X,-Y,1/2-Z 
+ 1/2+X,Y,1/2+Z
+ 1/2-X,-Y,1/2+Z
+ 1/2-X,Y,1/2-Z
+ 1/2+X,-Y,1/2-Z
  1/2+Z,X,1/2+Y
  1/2+Z,-X,1/2-Y
  1/2-Z,-X,1/2+Y
@@ -2571,10 +2571,10 @@
  1/2+Y,-Z,1/2+X
  1/2-Y,Z,1/2+X
  1/2+Y,Z,1/2-X
- 1/2+X,1/2+Y,Z 
- 1/2-X,1/2-Y,Z 
- 1/2-X,1/2+Y,-Z 
- 1/2+X,1/2-Y,-Z 
+ 1/2+X,1/2+Y,Z
+ 1/2-X,1/2-Y,Z
+ 1/2-X,1/2+Y,-Z
+ 1/2+X,1/2-Y,-Z
  1/2+Z,1/2+X,Y
  1/2+Z,1/2-X,-Y
  1/2-Z,1/2-X,Y
@@ -2616,7 +2616,7 @@
  1/4-Z,1/4+X,1/4+Y
  1/4+Z,1/4+X,1/4-Y
  1/4+Z,1/4-X,1/4+Y
- 1/4-Y,1/4-Z,1/4-X 
+ 1/4-Y,1/4-Z,1/4-X
  1/4+Y,1/4-Z,1/4+X
  1/4-Y,1/4+Z,1/4+X
  1/4+Y,1/4+Z,1/4-X
@@ -2640,7 +2640,7 @@
  1/4-Z,3/4+X,3/4+Y
  1/4+Z,3/4+X,3/4-Y
  1/4+Z,3/4-X,3/4+Y
- 1/4-Y,3/4-Z,3/4-X 
+ 1/4-Y,3/4-Z,3/4-X
  1/4+Y,3/4-Z,3/4+X
  1/4-Y,3/4+Z,3/4+X
  1/4+Y,3/4+Z,3/4-X
@@ -2664,7 +2664,7 @@
  3/4-Z,1/4+X,3/4+Y
  3/4+Z,1/4+X,3/4-Y
  3/4+Z,1/4-X,3/4+Y
- 3/4-Y,1/4-Z,3/4-X 
+ 3/4-Y,1/4-Z,3/4-X
  3/4+Y,1/4-Z,3/4+X
  3/4-Y,1/4+Z,3/4+X
  3/4+Y,1/4+Z,3/4-X
@@ -2688,15 +2688,15 @@
  3/4-Z,3/4+X,1/4+Y
  3/4+Z,3/4+X,1/4-Y
  3/4+Z,3/4-X,1/4+Y
- 3/4-Y,3/4-Z,1/4-X 
+ 3/4-Y,3/4-Z,1/4-X
  3/4+Y,3/4-Z,1/4+X
  3/4-Y,3/4+Z,1/4+X
  3/4+Y,3/4+Z,1/4-X
 204 48 24 Im-3 PGm3bar CUBIC 'I 2/m -3' 'I m -3'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -2717,10 +2717,10 @@
  Y,-Z,X
  -Y,Z,X
  Y,Z,-X
- 1/2+X,1/2+Y,1/2+Z 
- 1/2-X,1/2-Y,1/2+Z 
- 1/2-X,1/2+Y,1/2-Z 
- 1/2+X,1/2-Y,1/2-Z 
+ 1/2+X,1/2+Y,1/2+Z
+ 1/2-X,1/2-Y,1/2+Z
+ 1/2-X,1/2+Y,1/2-Z
+ 1/2+X,1/2-Y,1/2-Z
  1/2+Z,1/2+X,1/2+Y
  1/2+Z,1/2-X,1/2-Y
  1/2-Z,1/2-X,1/2+Y
@@ -2742,10 +2742,10 @@
  1/2-Y,1/2+Z,1/2+X
  1/2+Y,1/2+Z,1/2-X
 205 24 24 Pa-3 PGm3bar CUBIC 'P 21/a -3' 'P a -3'
- X,Y,Z 
- 1/2-X,-Y,1/2+Z 
- -X,1/2+Y,1/2-Z 
- 1/2+X,1/2-Y,-Z 
+ X,Y,Z
+ 1/2-X,-Y,1/2+Z
+ -X,1/2+Y,1/2-Z
+ 1/2+X,1/2-Y,-Z
  Z,X,Y
  1/2+Z,1/2-X,-Y
  1/2-Z,-X,1/2+Y
@@ -2767,10 +2767,10 @@
  1/2-Y,1/2+Z,X
  1/2+Y,Z,1/2-X
 206 48 24 Ia-3 PGm3bar CUBIC 'I 21/a -3' 'I a -3'
- X,Y,Z 
- 1/2-X,-Y,1/2+Z 
- -X,1/2+Y,1/2-Z 
- 1/2+X,1/2-Y,-Z 
+ X,Y,Z
+ 1/2-X,-Y,1/2+Z
+ -X,1/2+Y,1/2-Z
+ 1/2+X,1/2-Y,-Z
  Z,X,Y
  1/2+Z,1/2-X,-Y
  1/2-Z,-X,1/2+Y
@@ -2791,10 +2791,10 @@
  Y,1/2-Z,1/2+X
  1/2-Y,1/2+Z,X
  1/2+Y,Z,1/2-X
- 1/2+X,1/2+Y,1/2+Z 
- -X,1/2-Y,Z 
- 1/2-X,+Y,-Z 
- X,-Y,1/2-Z 
+ 1/2+X,1/2+Y,1/2+Z
+ -X,1/2-Y,Z
+ 1/2-X,+Y,-Z
+ X,-Y,1/2-Z
  1/2+Z,1/2+X,1/2+Y
  Z,-X,1/2-Y
  -Z,1/2-X,Y
@@ -2816,10 +2816,10 @@
  -Y,Z,1/2+X
  Y,1/2+Z,-X
 207 24 24 P432 PG432 CUBIC 'P 4 3 2'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -2841,10 +2841,10 @@
  -Z,Y,X
  -Z,-Y,-X
 208 24 24 P4232 PG432 CUBIC 'P 42 3 2'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -2866,10 +2866,10 @@
  1/2-Z,1/2+Y,1/2+X
  1/2-Z,1/2-Y,1/2-X
 209 96 24 F432 PG432 CUBIC 'F 4 3 2'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -2890,10 +2890,10 @@
  Z,-Y,X
  -Z,Y,X
  -Z,-Y,-X
- X,1/2+Y,1/2+Z 
- -X,1/2-Y,1/2+Z 
- -X,1/2+Y,1/2-Z 
- X,1/2-Y,1/2-Z 
+ X,1/2+Y,1/2+Z
+ -X,1/2-Y,1/2+Z
+ -X,1/2+Y,1/2-Z
+ X,1/2-Y,1/2-Z
  Z,1/2+X,1/2+Y
  Z,1/2-X,1/2-Y
  -Z,1/2-X,1/2+Y
@@ -2914,10 +2914,10 @@
  Z,1/2-Y,1/2+X
  -Z,1/2+Y,1/2+X
  -Z,1/2-Y,1/2-X
- 1/2+X,Y,1/2+Z 
- 1/2-X,-Y,1/2+Z 
- 1/2-X,Y,1/2-Z 
- 1/2+X,-Y,1/2-Z 
+ 1/2+X,Y,1/2+Z
+ 1/2-X,-Y,1/2+Z
+ 1/2-X,Y,1/2-Z
+ 1/2+X,-Y,1/2-Z
  1/2+Z,X,1/2+Y
  1/2+Z,-X,1/2-Y
  1/2-Z,-X,1/2+Y
@@ -2938,10 +2938,10 @@
  1/2+Z,-Y,1/2+X
  1/2-Z,Y,1/2+X
  1/2-Z,-Y,1/2-X
- 1/2+X,1/2+Y,Z 
- 1/2-X,1/2-Y,Z 
- 1/2-X,1/2+Y,-Z 
- 1/2+X,1/2-Y,-Z 
+ 1/2+X,1/2+Y,Z
+ 1/2-X,1/2-Y,Z
+ 1/2-X,1/2+Y,-Z
+ 1/2+X,1/2-Y,-Z
  1/2+Z,1/2+X,Y
  1/2+Z,1/2-X,-Y
  1/2-Z,1/2-X,Y
@@ -2963,10 +2963,10 @@
  1/2-Z,1/2+Y,X
  1/2-Z,1/2-Y,-X
 210 96 24 F4132 PG432 CUBIC 'F 41 3 2'
- X,Y,Z 
- -X,1/2-Y,1/2+Z 
- 1/2-X,1/2+Y,-Z 
- 1/2+X,-Y,1/2-Z 
+ X,Y,Z
+ -X,1/2-Y,1/2+Z
+ 1/2-X,1/2+Y,-Z
+ 1/2+X,-Y,1/2-Z
  Z,X,Y
  1/2+Z,-X,1/2-Y
  -Z,1/2-X,1/2+Y
@@ -2987,10 +2987,10 @@
  1/4+Z,3/4-Y,3/4+X
  3/4-Z,3/4+Y,1/4+X
  1/4-Z,1/4-Y,1/4-X
- X,1/2+Y,1/2+Z 
- -X,-Y,Z 
- 1/2-X,Y,1/2-Z 
- 1/2+X,1/2-Y,-Z 
+ X,1/2+Y,1/2+Z
+ -X,-Y,Z
+ 1/2-X,Y,1/2-Z
+ 1/2+X,1/2-Y,-Z
  Z,1/2+X,1/2+Y
  1/2+Z,1/2-X,-Y
  -Z,-X,Y
@@ -3011,10 +3011,10 @@
  1/4+Z,1/4-Y,1/4+X
  3/4-Z,1/4+Y,3/4+X
  1/4-Z,3/4-Y,3/4-X
- 1/2+X,Y,1/2+Z 
- 1/2-X,1/2-Y,Z 
- -X,1/2+Y,1/2-Z 
- X,-Y,-Z 
+ 1/2+X,Y,1/2+Z
+ 1/2-X,1/2-Y,Z
+ -X,1/2+Y,1/2-Z
+ X,-Y,-Z
  1/2+Z,X,1/2+Y
  Z,-X,-Y
  1/2-Z,1/2-X,Y
@@ -3035,10 +3035,10 @@
  3/4+Z,3/4-Y,1/4+X
  1/4-Z,3/4+Y,3/4+X
  3/4-Z,1/4-Y,3/4-X
- 1/2+X,1/2+Y,Z 
- 1/2-X,-Y,1/2+Z 
- -X,Y,-Z 
- X,1/2-Y,1/2-Z 
+ 1/2+X,1/2+Y,Z
+ 1/2-X,-Y,1/2+Z
+ -X,Y,-Z
+ X,1/2-Y,1/2-Z
  1/2+Z,1/2+X,Y
  Z,1/2-X,1/2-Y
  1/2-Z,-X,1/2+Y
@@ -3060,10 +3060,10 @@
  1/4-Z,1/4+Y,1/4+X
  3/4-Z,3/4-Y,1/4-X
 211 48 24 I432 PG432 CUBIC 'I 4 3 2'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -3084,10 +3084,10 @@
  Z,-Y,X
  -Z,Y,X
  -Z,-Y,-X
- 1/2+X,1/2+Y,1/2+Z 
- 1/2-X,1/2-Y,1/2+Z 
- 1/2-X,1/2+Y,1/2-Z 
- 1/2+X,1/2-Y,1/2-Z 
+ 1/2+X,1/2+Y,1/2+Z
+ 1/2-X,1/2-Y,1/2+Z
+ 1/2-X,1/2+Y,1/2-Z
+ 1/2+X,1/2-Y,1/2-Z
  1/2+Z,1/2+X,1/2+Y
  1/2+Z,1/2-X,1/2-Y
  1/2-Z,1/2-X,1/2+Y
@@ -3109,10 +3109,10 @@
  1/2-Z,1/2+Y,1/2+X
  1/2-Z,1/2-Y,1/2-X
 212 24 24 P4332 PG432 CUBIC 'P 43 3 2'
- X,Y,Z 
- 1/2-X,-Y,1/2+Z 
- -X,1/2+Y,1/2-Z 
- 1/2+X,1/2-Y,-Z 
+ X,Y,Z
+ 1/2-X,-Y,1/2+Z
+ -X,1/2+Y,1/2-Z
+ 1/2+X,1/2-Y,-Z
  Z,X,Y
  1/2+Z,1/2-X,-Y
  1/2-Z,-X,1/2+Y
@@ -3134,10 +3134,10 @@
  3/4-Z,1/4+Y,3/4+X
  1/4-Z,1/4-Y,1/4-X
 213 24 24 P4132 PG432 CUBIC 'P 41 3 2'
- X,Y,Z 
- 1/2-X,-Y,1/2+Z 
- -X,1/2+Y,1/2-Z 
- 1/2+X,1/2-Y,-Z 
+ X,Y,Z
+ 1/2-X,-Y,1/2+Z
+ -X,1/2+Y,1/2-Z
+ 1/2+X,1/2-Y,-Z
  Z,X,Y
  1/2+Z,1/2-X,-Y
  1/2-Z,-X,1/2+Y
@@ -3159,10 +3159,10 @@
  1/4-Z,3/4+Y,1/4+X
  3/4-Z,3/4-Y,3/4-X
 214 48 24 I4132 PG432 CUBIC 'I 41 3 2'
- X,Y,Z 
- 1/2-X,-Y,1/2+Z 
- -X,1/2+Y,1/2-Z 
- 1/2+X,1/2-Y,-Z 
+ X,Y,Z
+ 1/2-X,-Y,1/2+Z
+ -X,1/2+Y,1/2-Z
+ 1/2+X,1/2-Y,-Z
  Z,X,Y
  1/2+Z,1/2-X,-Y
  1/2-Z,-X,1/2+Y
@@ -3183,10 +3183,10 @@
  1/4+Z,1/4-Y,3/4+X
  1/4-Z,3/4+Y,1/4+X
  3/4-Z,3/4-Y,3/4-X
- 1/2+X,1/2+Y,1/2+Z 
- -X,1/2-Y,Z 
- 1/2-X,Y,-Z 
- X,-Y,1/2-Z 
+ 1/2+X,1/2+Y,1/2+Z
+ -X,1/2-Y,Z
+ 1/2-X,Y,-Z
+ X,-Y,1/2-Z
  1/2+Z,1/2+X,1/2+Y
  Z,-X,1/2-Y
  -Z,1/2-X,Y
@@ -3208,10 +3208,10 @@
  3/4-Z,1/4+Y,3/4+X
  1/4-Z,1/4-Y,1/4-X
 215 24 24 P-43m PG4bar3m CUBIC 'P -4 3 m'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -3233,10 +3233,10 @@
  -Z,Y,-X
  -Z,-Y,X
 216 96 24 F-43m PG4bar3m CUBIC 'F -4 3 m'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -3257,10 +3257,10 @@
  Z,-Y,-X
  -Z,Y,-X
  -Z,-Y,X
- X,1/2+Y,1/2+Z 
- -X,1/2-Y,1/2+Z 
- -X,1/2+Y,1/2-Z 
- X,1/2-Y,1/2-Z 
+ X,1/2+Y,1/2+Z
+ -X,1/2-Y,1/2+Z
+ -X,1/2+Y,1/2-Z
+ X,1/2-Y,1/2-Z
  Z,1/2+X,1/2+Y
  Z,1/2-X,1/2-Y
  -Z,1/2-X,1/2+Y
@@ -3281,10 +3281,10 @@
  Z,1/2-Y,1/2-X
  -Z,1/2+Y,1/2-X
  -Z,1/2-Y,1/2+X
- 1/2+X,Y,1/2+Z 
- 1/2-X,-Y,1/2+Z 
- 1/2-X,Y,1/2-Z 
- 1/2+X,-Y,1/2-Z 
+ 1/2+X,Y,1/2+Z
+ 1/2-X,-Y,1/2+Z
+ 1/2-X,Y,1/2-Z
+ 1/2+X,-Y,1/2-Z
  1/2+Z,X,1/2+Y
  1/2+Z,-X,1/2-Y
  1/2-Z,-X,1/2+Y
@@ -3305,10 +3305,10 @@
  1/2+Z,-Y,1/2-X
  1/2-Z,Y,1/2-X
  1/2-Z,-Y,1/2+X
- 1/2+X,1/2+Y,Z 
- 1/2-X,1/2-Y,Z 
- 1/2-X,1/2+Y,-Z 
- 1/2+X,1/2-Y,-Z 
+ 1/2+X,1/2+Y,Z
+ 1/2-X,1/2-Y,Z
+ 1/2-X,1/2+Y,-Z
+ 1/2+X,1/2-Y,-Z
  1/2+Z,1/2+X,Y
  1/2+Z,1/2-X,-Y
  1/2-Z,1/2-X,Y
@@ -3330,10 +3330,10 @@
  1/2-Z,1/2+Y,-X
  1/2-Z,1/2-Y,X
 217 48 24 I-43m PG4bar3m CUBIC 'I -4 3 m'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -3354,10 +3354,10 @@
  Z,-Y,-X
  -Z,Y,-X
  -Z,-Y,X
- 1/2+X,1/2+Y,1/2+Z 
- 1/2-X,1/2-Y,1/2+Z 
- 1/2-X,1/2+Y,1/2-Z 
- 1/2+X,1/2-Y,1/2-Z 
+ 1/2+X,1/2+Y,1/2+Z
+ 1/2-X,1/2-Y,1/2+Z
+ 1/2-X,1/2+Y,1/2-Z
+ 1/2+X,1/2-Y,1/2-Z
  1/2+Z,1/2+X,1/2+Y
  1/2+Z,1/2-X,1/2-Y
  1/2-Z,1/2-X,1/2+Y
@@ -3379,10 +3379,10 @@
  1/2-Z,1/2+Y,1/2-X
  1/2-Z,1/2-Y,1/2+X
 218 24 24 P-43n PG4bar3m CUBIC 'P -4 3 n'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -3404,10 +3404,10 @@
  1/2-Z,1/2+Y,1/2-X
  1/2-Z,1/2-Y,1/2+X
 219 96 24 F-43c PG4bar3m CUBIC 'F -4 3 c'
- X,Y,Z 
- -X,-Y,Z 
- -X,Y,-Z 
- X,-Y,-Z 
+ X,Y,Z
+ -X,-Y,Z
+ -X,Y,-Z
+ X,-Y,-Z
  Z,X,Y
  Z,-X,-Y
  -Z,-X,Y
@@ -3428,10 +3428,10 @@
  1/2+Z,1/2-Y,1/2-X
  1/2-Z,1/2+Y,1/2-X
  1/2-Z,1/2-Y,1/2+X
- X,1/2+Y,1/2+Z 
- -X,1/2-Y,1/2+Z 
- -X,1/2+Y,1/2-Z 
- X,1/2-Y,1/2-Z 
+ X,1/2+Y,1/2+Z
+ -X,1/2-Y,1/2+Z
+ -X,1/2+Y,1/2-Z
+ X,1/2-Y,1/2-Z
  Z,1/2+X,1/2+Y
  Z,1/2-X,1/2-Y
  -Z,1/2-X,1/2+Y
@@ -3452,10 +3452,10 @@
  1/2+Z,-Y,-X
  1/2-Z,Y,-X
  1/2-Z,-Y,X
- 1/2+X,Y,1/2+Z 
- 1/2-X,-Y,1/2+Z 
- 1/2-X,Y,1/2-Z 
- 1/2+X,-Y,1/2-Z 
+ 1/2+X,Y,1/2+Z
+ 1/2-X,-Y,1/2+Z
+ 1/2-X,Y,1/2-Z
+ 1/2+X,-Y,1/2-Z
  1/2+Z,X,1/2+Y
  1/2+Z,-X,1/2-Y
  1/2-Z,-X,1/2+Y
@@ -3476,10 +3476,10 @@
  Z,1/2-Y,-X
  -Z,1/2+Y,-X
  -Z,1/2-Y,X
- 1/2+X,1/2+Y,Z 
- 1/2-X,1/2-Y,Z 
- 1/2-X,1/2+Y,-Z 
- 1/2+X,1/2-Y,-Z 
+ 1/2+X,1/2+Y,Z
+ 1/2-X,1/2-Y,Z
+ 1/2-X,1/2+Y,-Z
+ 1/2+X,1/2-Y,-Z
  1/2+Z,1/2+X,Y
  1/2+Z,1/2-X,-Y
  1/2-Z,1/2-X,Y
@@ -4715,35 +4715,35 @@
  X,Y,Z
  -X,-Y,Z
 1004 2 2 P1121 PG2C MONOCLINIC 'P 1 1 21'  !(unique axis c)
- X,Y,Z 
+ X,Y,Z
  -X,-Y,1/2+Z
 3004 4 2 I21 PG2 MONOCLINIC  'I 1 21 1'
- X,Y,Z 
+ X,Y,Z
  -X,1/2+Y,-Z
- X+1/2,Y+1/2,Z+1/2 
+ X+1/2,Y+1/2,Z+1/2
  -X+1/2,Y,1/2-Z
 1005 4 2 B2 PG2C MONOCLINIC 'B 1 1 2' 'B 2'
- X,Y,Z 
- -X,-Y,Z 
- 1/2+X,+Y,1/2+Z 
+ X,Y,Z
+ -X,-Y,Z
+ 1/2+X,+Y,1/2+Z
  1/2-X,-Y,1/2+Z
-2005 4 2 A2 PG2 MONOCLINIC 'A 1 2 1'  
- X, Y, Z 
+2005 4 2 A2 PG2 MONOCLINIC 'A 1 2 1'
+ X,Y,Z
  -X,Y,-Z
  X,1/2+Y,1/2+Z
  -X,1/2+Y,1/2-Z
 3005 4 2 C21 PG2 MONOCLINIC 'C 1 21 1' ! (Origin on screw at 1/4X)
- X, Y, Z 
+ X,Y,Z
  -X,1/2+Y,-Z
- 1/2+X,1/2+Y,Z 
-  1/2-X, Y,-Z
+ 1/2+X,1/2+Y,Z
+ 1/2-X,Y,-Z
 4005 4 2 I2 PG2 MONOCLINIC 'I 1 2 1' 'I 2' !!! GJK @ 2003-06-02
  X,Y,Z
  -X,Y,-Z
  X+1/2,Y+1/2,Z+1/2
  -X+1/2,Y+1/2,-Z+1/2
 1006 2 2 P11m       PGmC MONOCLINIC 'P 1 1 m'
- X,Y,Z 
+ X,Y,Z
  X,Y,-Z
 1007 2 2 P11b       PGmC MONOCLINIC 'P 1 1 b'
  X,Y,Z
@@ -4768,7 +4768,7 @@
  -X,-Y,1/2+Z
  -X,-Y,-Z
  X,Y,1/2-Z
-1012 8 4 B112/m     PG2/mC MONOCLINIC 'B 1 1 2/m' 
+1012 8 4 B112/m     PG2/mC MONOCLINIC 'B 1 1 2/m'
  X,Y,Z
  X,Y,-Z
  -X,-Y,Z
@@ -4777,7 +4777,7 @@
  1/2+X,Y,1/2-Z
  1/2-X,-Y,1/2+Z
  1/2-X,-Y,1/2-Z
-1013 4 4 P112/b     PG2/mC MONOCLINIC 'P 1 1 2/b' 
+1013 4 4 P112/b     PG2/mC MONOCLINIC 'P 1 1 2/b'
  X,Y,Z
  -X,1/2-Y,Z
  -X,-Y,-Z
@@ -4787,7 +4787,7 @@
  -X,-Y,-Z
  -X,1/2-Y,1/2+Z
  X,1/2+Y,1/2-Z
-1015 8 4 B112/b     PG2/mC MONOCLINIC 'B 1 1 2/b' 
+1015 8 4 B112/b     PG2/mC MONOCLINIC 'B 1 1 2/b'
  X,Y,Z
  -X,1/2-Y,Z
  -X,-Y,-Z
@@ -4797,74 +4797,74 @@
  1/2-X,-Y,1/2-Z
  1/2+X,1/2+Y,1/2-Z
 1017 4 4 P2122 PG222 ORTHORHOMBIC 'P 21 2 2' !(unique axis a)
- X,Y,Z 
- -X,Y,-Z 
- 1/2+X,-Y,-Z 
+ X,Y,Z
+ -X,Y,-Z
+ 1/2+X,-Y,-Z
  1/2-X,-Y,Z
 2017 4 4 P2212 PG222 ORTHORHOMBIC 'P 2 21 2' !(unique axis b)
-  X,Y,Z 
-  X,1/2-Y,-Z 
- -X,1/2+Y,-Z 
+ X,Y,Z
+ X,1/2-Y,-Z
+ -X,1/2+Y,-Z
  -X,-Y,Z
 1018 4 4 P21212a PG222 ORTHORHOMBIC 'P 21 21 2 (a)' ! origin on 21 21, shift (1/4,1/4,0)
- X,Y,Z 
- 1/2-X,1/2-Y,Z 
- X+1/2,-Y,-Z 
+ X,Y,Z
+ 1/2-X,1/2-Y,Z
+ X+1/2,-Y,-Z
  -X,Y+1/2,-Z
 2018 4 4 P21221 PG222 ORTHORHOMBIC 'P 21 2 21'  !(unique axis b)
- X,Y,Z 
- -X,Y,-Z 
- 1/2+X,-Y,1/2-Z 
+ X,Y,Z
+ -X,Y,-Z
+ 1/2+X,-Y,1/2-Z
  1/2-X,-Y,1/2+Z
 3018 4 4 P22121 PG222 ORTHORHOMBIC 'P 2 21 21'  !(unique axis a)
- X,Y,Z 
-  X,-Y,-Z 
- -X,1/2+Y,1/2-Z 
+ X,Y,Z
+ X,-Y,-Z
+ -X,1/2+Y,1/2-Z
  -X,1/2-Y,1/2+Z
 1020 8 4 C2221a PG222 ORTHORHOMBIC 'C 2 2 21a)' ! P212121 with C centring, shift(1/4,0,0)
- X,Y,Z 
- 1/2-X,-Y,1/2+Z 
- 1/2+X,1/2-Y,-Z 
+ X,Y,Z
+ 1/2-X,-Y,1/2+Z
+ 1/2+X,1/2-Y,-Z
  -X,1/2+Y,1/2-Z
- 1/2+X,1/2+Y,Z 
- -X,1/2-Y,1/2+Z 
- X,-Y,-Z 
+ 1/2+X,1/2+Y,Z
+ -X,1/2-Y,1/2+Z
+ X,-Y,-Z
  1/2-X,Y,1/2-Z
 1021 8 4 C222a PG222 ORTHORHOMBIC 'C 2 2 2a'  ! C21212a origin on 21 21
- X,Y,Z 
- 1/2-X,1/2-Y,Z 
- X+1/2,-Y,-Z 
+ X,Y,Z
+ 1/2-X,1/2-Y,Z
+ X+1/2,-Y,-Z
  -X,Y+1/2,-Z
- 1/2+ X,1/2+Y,Z 
- -X,-Y,Z 
- X,1/2-Y,-Z 
+ 1/2+ X,1/2+Y,Z
+ -X,-Y,Z
+ X,1/2-Y,-Z
  1/2-X,Y,-Z
 1022 16 4 F222a PG222 ORTHORHOMBIC 'F 2 2 2a' ! same as 1018 with face centring  shift (1/4,0,0)
- X,Y,Z         
- 1/2-X,1/2-Y,Z 
- X+1/2,-Y,-Z 
+ X,Y,Z
+ 1/2-X,1/2-Y,Z
+ X+1/2,-Y,-Z
  -X,Y+1/2,-Z
- X,Y+1/2,Z+1/2 
- 1/2-X,-Y,Z+1/2 
- X+1/2,-Y+1/2,-Z+1/2 
+ X,Y+1/2,Z+1/2
+ 1/2-X,-Y,Z+1/2
+ X+1/2,-Y+1/2,-Z+1/2
  -X,Y,-Z+1/2
- X+1/2,Y,Z+1/2 
- -X,1/2-Y,Z+1/2 
- X,-Y,-Z+1/2 
+ X+1/2,Y,Z+1/2
+ -X,1/2-Y,Z+1/2
+ X,-Y,-Z+1/2
  -X+1/2,Y+1/2,-Z+1/2
- X+1/2,Y+1/2,Z 
- -X,-Y,Z 
- X,-Y+1/2,-Z 
+ X+1/2,Y+1/2,Z
+ -X,-Y,Z
+ X,-Y+1/2,-Z
  -X+1/2,Y,-Z
 1023 8 4 I222a PG222 ORTHORHOMBIC 'I 2 2 2a'  ! as 1018 with origin shift (1/4,1/4,1/4)
- X,Y,Z 
- 1/2-X,1/2-Y,Z 
- X+1/2,-Y,-Z 
+ X,Y,Z
+ 1/2-X,1/2-Y,Z
+ X+1/2,-Y,-Z
  -X,Y+1/2,-Z
- 1/2+X,1/2+Y,1/2+Z 
-  -X,-Y,1/2+Z
- 1/2-X,Y,1/2-Z 
-  X,1/2-Y,1/2-Z
+ 1/2+X,1/2+Y,1/2+Z
+ -X,-Y,1/2+Z
+ 1/2-X,Y,1/2-Z
+ X,1/2-Y,1/2-Z
 1059 8 8 Pmmn2 PGmmm ORTHORHOMBIC 'P 21/m 21/m 2/n a'
  X,Y,Z
  1/2-X,1/2-Y,Z
@@ -4875,13 +4875,13 @@
  X,1/2-Y,Z
  1/2-X,Y,Z
 1094 8 8 P42212a PG422 TETRAGONAL 'P 42 21 2a' ! (as P21212a) origin on 21 21 ie Shift 1/4,1/4,1/4
- X,Y,Z                 
+ X,Y,Z
  1/2-X,1/2-Y,Z
- -Y,X+1/2,1/2+Z        
+ -Y,X+1/2,1/2+Z
  Y+1/2,-X,1/2+Z
- -X,Y+1/2,-Z           
+ -X,Y+1/2,-Z
  X+1/2,-Y,-Z
- Y,X,1/2-Z             
+ Y,X,1/2-Z
  1/2-Y,1/2-X,1/2-Z
 1197 24 12 I23a PG23 CUBIC 'I 2 3a' ! Expansion of 1023 which is an expansion of 1018
  X,Y,Z
