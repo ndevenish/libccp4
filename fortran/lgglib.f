@@ -1100,7 +1100,7 @@ C  so the equation of the line should be
 C        where the x,y,z is any position of the line
 c		Guoguang 970921
 c
-      real a(3,3),t(3),POL(3),xyz0(3),vpl(3)
+      real a(3,3),t(3),xyz(3),POL(3),xyz0(3),vpl(3)
       real B(3),BUF(3),vl(3),vl0(3)
       real b1(3),b2(3),x1(3),x2(3)
       external sind
@@ -1236,7 +1236,7 @@ c
       B3(2) = XYZ(2) * CELL(2)
       B3(3) = XYZ(3) * CELL(3)
 C
-      CALL matmult(3,3,3,1,ORTH,B3,XYZ,B1,B2)
+      CALL matmult(3,3,3,1,ORTH,B3,XYZ,B1)
       END
 c
 c
@@ -1274,7 +1274,7 @@ C
       B3(1) = XYZ(1)
       B3(2) = XYZ(2)
       B3(3) = XYZ(3)
-      CALL matmult(3,3,3,1,ORTH,B3,XYZ,B1,B2)
+      CALL matmult(3,3,3,1,ORTH,B3,XYZ,B1)
       END
       character*80 function getnam(filnam)
       character*(*) filnam
@@ -3021,6 +3021,8 @@ c	DATA IAT/0/,IAT1/1/,IAT2/2/,IAT3/3/
       DIMENSION V21(3),V22(3)
       DIMENSION C1(3,3),C2(3,3),C1P(3,3)
       DIMENSION B1(3),B2(3)
+c local elements
+      REAL T(3)
 c
 c If IAT = 0, define the three atoms used to calculate the 
 c  initial orientation matrix
@@ -3585,7 +3587,7 @@ c
       AP=CELL(4)
       BA=CELL(5)
       GA=CELL(6)
-      CALL ARRVALUE(3*3,BUFF,0.,BUFF)
+      CALL ARRVALUE(3*3,BUFF,0.)
       COASTAR=(COSD(BA)*COSD(GA)-COSD(AP))/(SIND(BA)
      1*SIND(GA))
       SIASTAR=SQRT(1.-COASTAR*COASTAR)
@@ -5406,7 +5408,7 @@ C
 2	FORMAT(1X,' X2 = (',3F10.6,' ) * ( X1 -',F8.3,' ) + ('
      1 ,F8.3,' )')
 C
-      CALL MATMULT(3,3,3,1,A,CEN1,B3,B1,B2)
+      CALL MATMULT(3,3,3,1,A,CEN1,B3)
       CALL ARRPS(3,1,T0,B3,B3)
       CALL ARRAD(3,1,CEN1,B3,T)
 C
@@ -5648,7 +5650,7 @@ c Change the origin to CEN1.
 c
 C Refine th1, th2, th3, tx, ty and tz
 c
-      CALL REFRTFIN ( NATM, X1, X2, A, T0, VT, DIS, VT )
+      CALL REFRTFIN ( NATM, X1, X2, A, T0, VT, DIS )
       NREFRT = NREF1
       CALL REFRTFIN1 ( NATM, X1, X2, A, T0, VT, DIS, VT(1+2*6*NATM) )
       NREFRT1 = NREF1
@@ -5843,14 +5845,14 @@ c
       END
 c
 c
-      FUNCTION VLDIM3(MAT)
+      FUNCTION VLDIM3(AT)
 C A function to calculate the modulus of a 3*3-dimension matrix.
-c VLDIM3 = | MAT3*3 |
-      dimension mat(3,3)
+c VLDIM3 = | AT3*3 |
+      dimension at(3,3)
       dimension B1(3)
 C
-      call veccrsmlt(mat(1,1),mat(1,2),b1)
-      vldim3 = poimult(3,3,b1,mat(1,3))
+      call veccrsmlt(at(1,1),at(1,2),b1)
+      vldim3 = poimult(3,3,b1,at(1,3))
       end
 c
 c

@@ -458,14 +458,13 @@ void *ccp4_utils_calloc(size_t nelem , size_t elsize)
  * (MVisualStudio version in w32mvs.c)
  * Note that getlogin only works for processes attached to
  * a terminal (and hence won't work from the GUI).
- * In these instances use getpwuid instead.
  * @return pointer to character string containing login name.
  */
 #if ! defined (_MSC_VER)
 char *ccp4_utils_username(void)
 { 
   static char userid_unknown[] = "unknown";
-  struct passwd *passwd_struct=NULL;
+  /* struct passwd *passwd_struct=NULL; */
   char *userid=NULL;
   if (!(userid = getlogin())) {
     /*
