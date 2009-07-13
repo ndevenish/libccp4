@@ -82,7 +82,7 @@ appropriate functions, but other symmetry libraries could be used.
 
  *  @section cmtz_examples Examples
 
-See examples on <a href="ftp://ftp.ccp4.ac.uk/pub/mdw/cmtz">ftp area</a>
+See examples on <a href="ftp://ftp.ccp4.ac.uk/mdw/cmtz">ftp area</a>
 
  */
 

@@ -88,7 +88,7 @@ used.
 
  *  @section csym_examples Examples
 
-See examples on <a href="ftp://ftp.ccp4.ac.uk/pub/mdw/csym">ftp area</a>
+See examples on <a href="ftp://ftp.ccp4.ac.uk/mdw/csym">ftp area</a>
 
 */
 
