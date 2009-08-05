@@ -4717,11 +4717,6 @@
 1004 2 2 P1121 PG2C MONOCLINIC 'P 1 1 21'  !(unique axis c)
  X,Y,Z
  -X,-Y,1/2+Z
-3004 4 2 I21 PG2 MONOCLINIC  'I 1 21 1'
- X,Y,Z
- -X,1/2+Y,-Z
- X+1/2,Y+1/2,Z+1/2
- -X+1/2,Y,1/2-Z
 1005 4 2 B2 PG2C MONOCLINIC 'B 1 1 2' 'B 2'
  X,Y,Z
  -X,-Y,Z
@@ -4742,6 +4737,11 @@
  -X,Y,-Z
  X+1/2,Y+1/2,Z+1/2
  -X+1/2,Y+1/2,-Z+1/2
+5005 4 2 I21 PG2 MONOCLINIC  'I 1 21 1'
+ X,Y,Z
+ -X,1/2+Y,-Z
+ X+1/2,Y+1/2,Z+1/2
+ -X+1/2,Y,1/2-Z
 1006 2 2 P11m       PGmC MONOCLINIC 'P 1 1 m'
  X,Y,Z
  X,Y,-Z
