@@ -129,6 +129,10 @@ CUCOBJS = ccp4_unitcell.o
 FINTERFACEOBJS = cmtzlib_f.o csymlib_f.o ccp4_parser_f.o library_f.o \
                 ccp4_diskio_f.o ccp4_general_f.o ccp4_unitcell_f.o cmaplib_f.o \
                 binsortint.o hybrid_36_f.o
+FORTRANLOBJS = cciflib.dir/*.o ccplib.dir/*.o dna_output.dir/*.o fftlib.dir/*.o \
+           harvlib.dir/*.o keyparse.dir/*.o lgglib.dir/*.o libhtml.dir/*.o \
+           modlib.dir/*.o  parser.dir/*.o plot84lib.dir/*.o plotsubs.dir/*.o \
+           pxxml.dir/*.o rwbrook.dir/*.o unix.dir/*.o pack_f.o pack_c.o
 FORTRANOBJS =  $(LF)(parser.o) $(LF)(fftlib.o) $(LF)(lgglib.o) $(LF)(libhtml.o) \
                $(LF)(modlib.o) $(LF)(plotsubs.o) $(LF)(plot84lib.o) \
                $(LF)(pxxml.o) $(LF)(ccplib.o) $(LF)(unix.o) \
@@ -341,7 +345,6 @@ $(LF)(parser.o) : $(srcdir)/parser.f
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f parser.dir/*.o
 parser : parser.o
 	$(RANLIB) $(LF)
 
@@ -353,7 +356,6 @@ $(LF)(ccplib.o) : $(srcdir)/ccplib.f
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f ccplib.dir/*.o
 ccplib : ccplib.o
 	$(RANLIB) $(LF)
 
@@ -366,7 +368,6 @@ $(LF)(lgglib.o) : $(srcdir)/lgglib.f
 	  for i in `pwd`/*.$F; do \
 	    eval $(FC) -c  $${lgglib_FLAGS-"$(FFLAGS)"} $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f lgglib.dir/*.o
 lgglib : lgglib.o
 	$(RANLIB) $(LF)
 
@@ -378,7 +379,6 @@ $(LF)(plot84lib.o) : $(srcdir)/plot84lib.f
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f plot84lib.dir/*.o
 plot84lib : plot84lib.o
 	$(RANLIB) $(LF)
 
@@ -390,7 +390,6 @@ $(LF)(libhtml.o) : $(srcdir)/libhtml.f
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f libhtml.dir/*.o
 libhtml : libhtml.o
 	$(RANLIB) $(LF)
 
@@ -402,7 +401,6 @@ $(LF)(pxxml.o) : $(srcdir)/pxxml.f
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f pxxml.dir/*.o
 pxxml : pxxml.o
 	$(RANLIB) $(LF)
 
@@ -414,7 +412,6 @@ $(LF)(rwbrook.o) : $(srcdir)/rwbrook.f
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f rwbrook.dir/*.o
 rwbrook : rwbrook.o
 	$(RANLIB) $(LF)
 
@@ -426,7 +423,6 @@ $(LF)(cciflib.o) : $(srcdir)/cciflib.f
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) -I$(srcdir) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f cciflib.dir/*.o
 cciflib : cciflib.o
 	$(RANLIB) $(LF)
 
@@ -442,7 +438,6 @@ $(LF)(harvlib.o) : $(srcdir)/harvlib.f
 	for i in `pwd`/*.$F; do \
 	  $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) -I$(srcdir) $$i; done\
 	  && $(AR) ../$(LF) *.o ; fi
-	rm -f harvlib.dir/*.o
 harvlib : harvlib.o
 	$(RANLIB) $(LF)
 
@@ -454,7 +449,6 @@ $(LF)(keyparse.o) : $(srcdir)/keyparse.f
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f keyparse.dir/*.o
 keyparse : keyparse.o
 	$(RANLIB) $(LF)
 
@@ -466,7 +460,6 @@ $(LF)(dna_output.o) : $(srcdir)/dna_output.f $(srcdir)/dna_header.fh
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -I$(srcdir) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f dna_output.dir/*.o
 dna_output : dna_output.o
 	$(RANLIB) $(LF)
 
@@ -474,10 +467,9 @@ dna_output : dna_output.o
 #  for ipdisp. May be useful but could be moved. 
 $(LF)(pack_c.o):   $(srcdir)/pack_c.c $(srcdir)/pack_c.h
 	$(CC) $(CFLAGS) $(SHARED_LIB_CFLAGS) -I$(srcdir) -c $(srcdir)/pack_c.c
-	$(AR) $(LF) pack_c.o && rm pack_c.o
+	$(AR) $(LF) pack_c.o
 $(LF)(pack_f.o):   $(srcdir)/pack_f.f
-	$(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $(srcdir)/pack_f.$(F) && $(AR) $(LF) pack_f.o \
-          && rm pack_f.o
+	$(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $(srcdir)/pack_f.$(F) && $(AR) $(LF) pack_f.o
 pack:   $(LF)(pack_c.o) $(LF)(pack_f.o)
 	$(RANLIB) $(LF) 
 
@@ -490,7 +482,6 @@ $(LF)(sorting_main.o) : $(srcdir)/sorting_main.f
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f sorting_main.dir/*.o
 sorting_main : sorting_main.o
 	$(RANLIB) $(LF)
 
@@ -502,7 +493,6 @@ $(LF)(plotsubs.o) : $(srcdir)/plotsubs.f
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f plotsubs.dir/*.o
 plotsubs : plotsubs.o
 	$(RANLIB) $(LF)
 
@@ -514,7 +504,6 @@ $(LF)(modlib.o) : $(srcdir)/modlib.f
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f modlib.dir/*.o
 modlib : modlib.o
 	$(RANLIB) $(LF)
 
@@ -526,7 +515,6 @@ $(LF)(fftlib.o) : $(srcdir)/fftlib.f
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done \
 	  && $(AR) ../$(LF) *.o
-	rm -f fftlib.dir/*.o
 fftlib : fftlib.o
 	$(RANLIB) $(LF)
 
@@ -543,7 +531,6 @@ $(LF)(unix.o) : $(srcdir)/unix.m4
 	  for i in `pwd`/*.$F; do \
 	    $(FC) -c $(FFLAGS) $(SHARED_LIB_FFLAGS) $$i; done\
 	  && $(AR) ../$(LF) *.o
-	rm -f unix.dir/*.o 
 unix : unix.o
 	$(RANLIB) $(LF)
 

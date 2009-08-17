@@ -142,7 +142,7 @@ char **argv;
 	ofp = fopen(x, "w");
 	nflag = 0;
 	rv = 0;
-	while (getline() > 0) {
+	while (get_line() > 0) {
 		rv = 1;
 		fprintf(ofp, "%s", buf);
 		if (lend())		/* look for an 'end' statement */
@@ -233,7 +233,7 @@ int letters;
 	return(0);
 }
 
-getline()
+get_line()
 {
 	register char *ptr;
 
