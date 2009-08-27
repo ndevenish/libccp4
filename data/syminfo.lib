@@ -210,10 +210,10 @@ end_spacegroup
 begin_spacegroup
 number  5
 basisop z,y,-x
-symbol ccp4 0
+symbol ccp4 2005
 symbol Hall ' C 2y (z,y,-x)'
 symbol xHM  'A 1 2 1'
-symbol old  ''
+symbol old  'A 1 2 1' 'A 2'
 symbol laue '-P 2y' '2/m'
 symbol patt '-A 2y' '2/m'
 symbol pgrp ' P 2y' '2'
@@ -14333,27 +14333,6 @@ symop x,y,z
 symop -x+1/2,y,-z+1/2
 cenop x,y,z
 cenop x+1/2,y+1/2,z+1/2
-end_spacegroup
-
-begin_spacegroup
-number  5
-basisop z,y,-x
-symbol ccp4 2005
-symbol Hall ' A 2y'
-symbol xHM  'A 1 2 1'
-symbol old  'A 1 2 1' 'A 2'
-symbol laue '-P 2y' '2/m'
-symbol patt '-A 2y' '2/m'
-symbol pgrp ' P 2y' '2'
-hklasu ccp4 'k>=0 and (l>0 or (l=0 and h>=0))'
-mapasu ccp4 0<=x<1/2; 0<=y<=1/2; 0<=z<1
-mapasu zero 0<=x<1/2; 0<=y<=1/2; 0<=z<1
-mapasu nonz 0<=x<1/2; 0<=y<=1/2; 0<=z<1
-cheshire 0<=x<=1/2; 0<=y<=0; 0<=z<=1/2
-symop x,y,z
-symop -x,y,-z
-cenop x,y,z
-cenop x,y+1/2,z+1/2
 end_spacegroup
 
 begin_spacegroup
