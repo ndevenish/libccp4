@@ -1669,9 +1669,12 @@ int ccp4_lhprt(const MTZ *mtz, int iprint) {
     }
   }
   printf(" *  Resolution Range :\n\n");
-  if (maxres > 0.0) {
-    printf(" %10.5f %10.5f     ( %10.3f - %10.3f A )\n\n",
-       minres,maxres,1.0/sqrt(minres),1.0/sqrt(maxres));
+  if (maxres > 0.0 && minres > 0.0) {
+    printf(" %10.5f %10.5f     ( %10.3f - %10.3f A )\n\n", 
+            minres,maxres,1.0/sqrt(minres),1.0/sqrt(maxres));
+  } else if (maxres > 0.0)  {
+    printf(" %10.5f %10.5f     ( inf  - %10.3f A )\n\n", 
+            minres,maxres,1.0/sqrt(maxres));
   } else {
     printf("   Not set - no crystals or reflections? \n\n");
   }
@@ -2321,14 +2324,13 @@ int ccp4_lwrefl(MTZ *mtz, const float adata[], MTZCOL *lookup[],
         lookup[i]->ref[iref-1] = adata[i];
       } 
       /* update column ranges */
+      if (iref == 1) {
+        lookup[i]->min = FLT_MAX;
+        lookup[i]->max = -FLT_MAX;
+      }
       if (!ccp4_ismnf(mtz, adata[i])) {
-        if (iref == 1) {
-          lookup[i]->min = adata[i];
-          lookup[i]->max = adata[i];
-        } else {
-          if (adata[i] < lookup[i]->min) lookup[i]->min = adata[i];
-          if (adata[i] > lookup[i]->max) lookup[i]->max = adata[i];
-        }
+        if (adata[i] < lookup[i]->min) lookup[i]->min = adata[i];
+        if (adata[i] > lookup[i]->max) lookup[i]->max = adata[i];
       }
     }
   }
@@ -2583,6 +2585,10 @@ int MtzPut(MTZ *mtz, const char *logname)
 		mtz->xtal[i]->set[j]->col[k]->label);
 	 strncpy(mtz->xtal[i]->set[j]->col[k]->type,"R",2);
        }
+       /* catch case when min and max have not been set*/
+       if ( mtz->xtal[i]->set[j]->col[k]->min == FLT_MAX ) mtz->xtal[i]->set[j]->col[k]->min = 0.0f;
+       if ( mtz->xtal[i]->set[j]->col[k]->max == -FLT_MAX ) mtz->xtal[i]->set[j]->col[k]->max = 0.0f;
+
        sprintf(hdrrec+38,"%c %17.4f %17.4f %4d",
                    mtz->xtal[i]->set[j]->col[k]->type[0],
                    mtz->xtal[i]->set[j]->col[k]->min,
