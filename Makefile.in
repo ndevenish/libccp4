@@ -62,7 +62,6 @@ RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = $(SUBDIRS)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -186,7 +185,9 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = ccp4 data
+@FORTRAN_LIB_TRUE@FORTRAN_LIB = fortran
+SUBDIRS = ccp4 $(FORTRAN_LIB) data
+DIST_SUBDIRS = ccp4 fortran data
 EXTRA_DIST = AUTHORS COPYING ChangeLog INSTALL NEWS README
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive

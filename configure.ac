@@ -13,8 +13,14 @@ AM_CONFIG_HEADER(config.h)
 AC_PROG_LIBTOOL
 
 AC_PROG_CC
-AC_PROG_F77(_AC_F95_FC)
 
+AC_ARG_ENABLE(fortran, AS_HELP_STRING([--enable-fortran],[compile fortran API]),
+[fortran_api=$enableval], [fortran_api=yes])
+
+AM_CONDITIONAL([FORTRAN_LIB], [ test "x$fortran_api" = xyes ])
+
+AS_IF([test "x$fortran_api" = xyes],[
+AC_PROG_F77(_AC_F95_FC)
 cc_basename=`$ECHO "X$compiler_F77" | $Xsed -e 's%.*/%%' -e "s%^$host_alias-%%"`
 case $host_os in
   linux* )
@@ -46,7 +52,8 @@ case $host_os in
         M4=${M4-"m4 -D_xlf=1"} ;;
       esac
 esac
+])
 
 AC_SUBST(M4)
 
-AC_OUTPUT(libccp4c.pc libccp4f.pc Makefile ccp4/Makefile data/Makefile)
+AC_OUTPUT(libccp4c.pc libccp4f.pc Makefile ccp4/Makefile fortran/Makefile data/Makefile)
