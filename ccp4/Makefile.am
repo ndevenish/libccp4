@@ -19,7 +19,7 @@ library_f.h
 
 lib_LTLIBRARIES = libccp4c.la libccp4f.la
 
-libccp4c_la_LDFLAGS = -version-info 6:1
+libccp4c_la_LDFLAGS = -version-info 6:1:0
 
 libccp4f_c_files = \
 ccp4_diskio_f.c ccp4_parser_f.c cmaplib_f.c csymlib_f.c \
@@ -31,7 +31,7 @@ keyparse.f unix.f dna_output.f pack_f.f
 
 libccp4f_la_SOURCES = $(libccp4f_c_files) $(libccp4f_f_files)
 
-libccp4f_la_LDFLAGS = -version-info 6:1
+libccp4f_la_LDFLAGS = -version-info 6:1:0
 
 unix.f : $(srcdir)/unix.m4
-        $(M4) unix.m4 >unix.f
+	$(M4) unix.m4 >unix.f
