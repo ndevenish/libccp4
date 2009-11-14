@@ -56,7 +56,7 @@ am__objects_1 = ccp4_diskio_f.lo ccp4_parser_f.lo cmaplib_f.lo \
 	library_f.lo binsortint.lo
 am__objects_2 = ccplib.lo fftlib.lo modlib.lo parser.lo rwbrook.lo \
 	libhtml.lo keyparse.lo unix.lo dna_output.lo pack_f.lo \
-	pxxml.lo lgglib.lo plot84lib.lo plotsubs.lo
+	pxxml.lo lgglib.lo plot84lib.lo plotsubs.lo harvlib.lo
 am_libccp4f_la_OBJECTS = $(am__objects_1) $(am__objects_2)
 libccp4f_la_OBJECTS = $(am_libccp4f_la_OBJECTS)
 libccp4f_la_LINK = $(LIBTOOL) --tag=F77 $(AM_LIBTOOLFLAGS) \
@@ -207,7 +207,7 @@ binsortint.c
 libccp4f_f_files = \
 ccplib.f fftlib.f modlib.f parser.f rwbrook.f libhtml.f \
 keyparse.f unix.f dna_output.f pack_f.f pxxml.f lgglib.f \
-plot84lib.f plotsubs.f
+plot84lib.f plotsubs.f harvlib.f
 
 libccp4f_la_SOURCES = $(libccp4f_c_files) $(libccp4f_f_files)
 libccp4f_la_LDFLAGS = -version-info 6:0:1
