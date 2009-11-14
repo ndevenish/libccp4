@@ -6,7 +6,7 @@ ccp4_general_f.c ccp4_unitcell_f.c cmtzlib_f.c library_f.c
 
 libccp4f_f_files = \
 ccplib.f fftlib.f modlib.f parser.f rwbrook.f libhtml.f \
-keyparse.f unix.f dna_output.f pack_f.f
+keyparse.f unix.f dna_output.f pack_f.f pxxml.f
 
 libccp4f_la_SOURCES = $(libccp4f_c_files) $(libccp4f_f_files)
 
