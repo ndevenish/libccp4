@@ -2,7 +2,8 @@ lib_LTLIBRARIES = libccp4f.la
 
 libccp4f_c_files = \
 ccp4_diskio_f.c ccp4_parser_f.c cmaplib_f.c csymlib_f.c \
-ccp4_general_f.c ccp4_unitcell_f.c cmtzlib_f.c library_f.c
+ccp4_general_f.c ccp4_unitcell_f.c cmtzlib_f.c library_f.c \
+binsortint.c
 
 libccp4f_f_files = \
 ccplib.f fftlib.f modlib.f parser.f rwbrook.f libhtml.f \

@@ -53,7 +53,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libccp4f_la_LIBADD =
 am__objects_1 = ccp4_diskio_f.lo ccp4_parser_f.lo cmaplib_f.lo \
 	csymlib_f.lo ccp4_general_f.lo ccp4_unitcell_f.lo cmtzlib_f.lo \
-	library_f.lo
+	library_f.lo binsortint.lo
 am__objects_2 = ccplib.lo fftlib.lo modlib.lo parser.lo rwbrook.lo \
 	libhtml.lo keyparse.lo unix.lo dna_output.lo pack_f.lo \
 	pxxml.lo
@@ -201,7 +201,8 @@ top_srcdir = @top_srcdir@
 lib_LTLIBRARIES = libccp4f.la
 libccp4f_c_files = \
 ccp4_diskio_f.c ccp4_parser_f.c cmaplib_f.c csymlib_f.c \
-ccp4_general_f.c ccp4_unitcell_f.c cmtzlib_f.c library_f.c
+ccp4_general_f.c ccp4_unitcell_f.c cmtzlib_f.c library_f.c \
+binsortint.c
 
 libccp4f_f_files = \
 ccplib.f fftlib.f modlib.f parser.f rwbrook.f libhtml.f \
@@ -279,6 +280,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/binsortint.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ccp4_diskio_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ccp4_general_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ccp4_parser_f.Plo@am__quote@
