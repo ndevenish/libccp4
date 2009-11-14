@@ -1,5 +1,11 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* using g77 compiler */
+#undef G77
+
+/* using gfortran compiler */
+#undef GFORTRAN
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -29,6 +35,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* using intel fortran compiler */
+#undef IFC
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */

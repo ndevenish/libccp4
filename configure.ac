@@ -26,13 +26,21 @@ case $host_os in
   linux* )
     case $cc_basename,$host_cpu in    
       ifort*)
-        M4=${M4:-"m4 -D_ifc=8"} ;;
+        M4=${M4:-"m4 -D_ifc=8"}
+        AC_DEFINE([IFC],[8],[using intel fortran compiler])
+        ;;
       ifc*)
-        M4=${M4:-"m4 -D_efc=1"} ;;
+        M4=${M4:-"m4 -D_efc=1"}
+        AC_DEFINE([IFC],[1],[using intel fortran compiler])
+        ;;
       g77*)
-        M4=${M4:-"m4 -D_g77=1"} ;;
+        M4=${M4:-"m4 -D_g77=1"}
+        AC_DEFINE([G77],[1],[using g77 compiler])
+        ;;
       gfortran*)
-        M4=${M4-"m4 -D_gfort=1"} ;;
+        M4=${M4-"m4 -D_gfort=1"} 
+        AC_DEFINE([GFORTRAN],[1],[using gfortran compiler])
+        ;;
       xlf*)
         M4=${M4-"m4 -D_xlf=1"} ;;
       pgf*) ;;
@@ -41,16 +49,34 @@ case $host_os in
   darwin* )
     case $cc_basename,$host_cpu in   
       ifort*)
-        M4=${M4:-"m4 -D_ifc=8"} ;;
+        M4=${M4:-"m4 -D_ifc=8"}
+        AC_DEFINE([IFC],[8],[using intel fortran compiler])
+        ;;
       ifc*)
-        M4=${M4:-"m4 -D_efc=1"} ;;
+        M4=${M4:-"m4 -D_ifc=1"}
+        AC_DEFINE([IFC],[1],[using intel fortran compiler])
+        ;;
       g77*)
-        M4=${M4:-"m4 -D_g77=1"} ;;
+        M4=${M4:-"m4 -D_g77=1"}
+        AC_DEFINE([G77],[1],[using g77 compiler])
+        ;;
       gfortran*)
-        M4=${M4-"m4 -D_gfort=1"} ;;
+        M4=${M4-"m4 -D_gfort=1"}
+        AC_DEFINE([GFORTRAN],[1],[using gfortran compiler])
+        ;;
       xlf*)
         M4=${M4-"m4 -D_xlf=1"} ;;
       esac
+  ;;
+  irix* )
+    case $cc_basename,$host_cpu in
+      f77* )
+        M4=${M4:-"m4 -D_sgi=1"}
+        ;;
+      f90*)
+        M4=${M4:-"m4 -D_sgi=1 -D_f90=1"}
+        ;;
+      esac 
 esac
 ])
 

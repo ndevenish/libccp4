@@ -14661,13 +14661,37 @@ case $host_os in
   linux* )
     case $cc_basename,$host_cpu in
       ifort*)
-        M4=${M4:-"m4 -D_ifc=8"} ;;
+        M4=${M4:-"m4 -D_ifc=8"}
+
+cat >>confdefs.h <<\_ACEOF
+#define IFC 8
+_ACEOF
+
+        ;;
       ifc*)
-        M4=${M4:-"m4 -D_efc=1"} ;;
+        M4=${M4:-"m4 -D_efc=1"}
+
+cat >>confdefs.h <<\_ACEOF
+#define IFC 1
+_ACEOF
+
+        ;;
       g77*)
-        M4=${M4:-"m4 -D_g77=1"} ;;
+        M4=${M4:-"m4 -D_g77=1"}
+
+cat >>confdefs.h <<\_ACEOF
+#define G77 1
+_ACEOF
+
+        ;;
       gfortran*)
-        M4=${M4-"m4 -D_gfort=1"} ;;
+        M4=${M4-"m4 -D_gfort=1"}
+
+cat >>confdefs.h <<\_ACEOF
+#define GFORTRAN 1
+_ACEOF
+
+        ;;
       xlf*)
         M4=${M4-"m4 -D_xlf=1"} ;;
       pgf*) ;;
@@ -14676,15 +14700,49 @@ case $host_os in
   darwin* )
     case $cc_basename,$host_cpu in
       ifort*)
-        M4=${M4:-"m4 -D_ifc=8"} ;;
+        M4=${M4:-"m4 -D_ifc=8"}
+
+cat >>confdefs.h <<\_ACEOF
+#define IFC 8
+_ACEOF
+
+        ;;
       ifc*)
-        M4=${M4:-"m4 -D_efc=1"} ;;
+        M4=${M4:-"m4 -D_ifc=1"}
+
+cat >>confdefs.h <<\_ACEOF
+#define IFC 1
+_ACEOF
+
+        ;;
       g77*)
-        M4=${M4:-"m4 -D_g77=1"} ;;
+        M4=${M4:-"m4 -D_g77=1"}
+
+cat >>confdefs.h <<\_ACEOF
+#define G77 1
+_ACEOF
+
+        ;;
       gfortran*)
-        M4=${M4-"m4 -D_gfort=1"} ;;
+        M4=${M4-"m4 -D_gfort=1"}
+
+cat >>confdefs.h <<\_ACEOF
+#define GFORTRAN 1
+_ACEOF
+
+        ;;
       xlf*)
         M4=${M4-"m4 -D_xlf=1"} ;;
+      esac
+  ;;
+  irix* )
+    case $cc_basename,$host_cpu in
+      f77* )
+        M4=${M4:-"m4 -D_sgi=1"}
+        ;;
+      f90*)
+        M4=${M4:-"m4 -D_sgi=1 -D_f90=1"}
+        ;;
       esac
 esac
 
