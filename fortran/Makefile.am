@@ -8,7 +8,7 @@ binsortint.c
 libccp4f_f_files = \
 ccplib.f fftlib.f modlib.f parser.f rwbrook.f libhtml.f \
 keyparse.f unix.f dna_output.f pack_f.f pxxml.f lgglib.f \
-plot84lib.f plotsubs.f harvlib.f
+plot84lib.f plotsubs.f harvlib.f cciflib.f
 
 libccp4f_la_SOURCES = $(libccp4f_c_files) $(libccp4f_f_files)
 
