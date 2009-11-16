@@ -3208,6 +3208,14 @@ C--- Loop found
         ENDIF
 
       ELSE
+        write(6,'(/,A,A,A,/,A,/,A,/,A,/,A,A,/)')
+     +    ' There was a problem interpreting the section ', catnam_in,
+     +    ' in the mmCIF file. Possible problems include: ',
+     +    ' The file has been corrupted - have a look at it!',
+     +    ' The file has been truncated - check the end of it.',
+     +    ' Some numbers have run together - add spaces.',
+     +    ' The section contains items not in the CCP4-distributed',
+     +    ' mmCIF dictionary'
         write(ERRLINE,"(A,A)") 
      +    ' Error in ccp4ccif_setup_context: '//
      +    'Unexpected context type for category ',
