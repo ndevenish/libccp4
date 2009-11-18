@@ -25,6 +25,10 @@
  *  quantities. Some items are loaded from syminfo.lib while
  *  others are calculated on the fly.
  *
+ *  There is also a struct for symop rotation matrices and translation
+ *  vectors. This can be converted to other representations using
+ *  functions in ccp4_parser. 
+ *
  *  @author Martyn Winn 
  */
 
@@ -54,7 +58,7 @@ typedef struct ccp4_spacegroup_
   char symbol_old[20];    /* old spacegroup name */
 
   char point_group[20];   /* point group name */
-  char crystal[20];       /* crystal system */
+  char crystal[20];       /* crystal system e.g. MONOCLINIC */
 
   int nlaue;              /* CCP4 Laue class number, inferred from asu_descr */
   char laue_name[20];     /* Laue class name */

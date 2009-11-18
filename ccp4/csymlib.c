@@ -326,6 +326,23 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   strcpy(spacegroup->symbol_old,sg_symbol_old);
   strcpy(spacegroup->point_group,"PG");
   strcpy(spacegroup->point_group+2,sg_point_group);
+  if (sg_num <= 2) {
+    strcpy(spacegroup->crystal,"TRICLINIC");
+  } else if (sg_num >= 3 && sg_num <= 15) {
+    strcpy(spacegroup->crystal,"MONOCLINIC");
+  } else if (sg_num >= 16 && sg_num <= 74) {
+    strcpy(spacegroup->crystal,"ORTHORHOMBIC");
+  } else if (sg_num >= 75 && sg_num <= 142) {
+    strcpy(spacegroup->crystal,"TETRAGONAL");
+  } else if (sg_num >= 143 && sg_num <= 167) {
+    strcpy(spacegroup->crystal,"TRIGONAL");
+  } else if (sg_num >= 168 && sg_num <= 194) {
+    strcpy(spacegroup->crystal,"HEXAGONAL");
+  } else if (sg_num >= 195 && sg_num <= 230) {
+    strcpy(spacegroup->crystal,"CUBIC");
+  } else {
+    strcpy(spacegroup->crystal," ");
+  }
 
   if (debug) 
     printf(" Read in details of spacegroup %d %d \n",sg_num,sg_ccp4_num);
