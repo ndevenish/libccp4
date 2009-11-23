@@ -51,14 +51,22 @@ am__installdirs = "$(DESTDIR)$(libdir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libccp4f_la_LIBADD =
+am__libccp4f_la_SOURCES_DIST = ccp4_diskio_f.c ccp4_parser_f.c \
+	cmaplib_f.c csymlib_f.c ccp4_general_f.c ccp4_unitcell_f.c \
+	cmtzlib_f.c library_f.c binsortint.c ccplib.f fftlib.f \
+	modlib.f parser.f rwbrook.f libhtml.f keyparse.f unix.f \
+	dna_output.f pack_f.f pxxml.f lgglib.f plot84lib.f plotsubs.f \
+	cciflib.f harv_dummy.f harvlib.f
 am__objects_1 = ccp4_diskio_f.lo ccp4_parser_f.lo cmaplib_f.lo \
 	csymlib_f.lo ccp4_general_f.lo ccp4_unitcell_f.lo cmtzlib_f.lo \
 	library_f.lo binsortint.lo
-am__objects_2 = ccplib.lo fftlib.lo modlib.lo parser.lo rwbrook.lo \
+@CCIF_API_FALSE@am__objects_2 = harv_dummy.lo
+@CCIF_API_TRUE@am__objects_2 = harvlib.lo
+am__objects_3 = ccplib.lo fftlib.lo modlib.lo parser.lo rwbrook.lo \
 	libhtml.lo keyparse.lo unix.lo dna_output.lo pack_f.lo \
-	pxxml.lo lgglib.lo plot84lib.lo plotsubs.lo harvlib.lo \
-	cciflib.lo
-am_libccp4f_la_OBJECTS = $(am__objects_1) $(am__objects_2)
+	pxxml.lo lgglib.lo plot84lib.lo plotsubs.lo cciflib.lo \
+	$(am__objects_2)
+am_libccp4f_la_OBJECTS = $(am__objects_1) $(am__objects_3)
 libccp4f_la_OBJECTS = $(am_libccp4f_la_OBJECTS)
 libccp4f_la_LINK = $(LIBTOOL) --tag=F77 $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(F77LD) $(AM_FFLAGS) $(FFLAGS) \
@@ -83,7 +91,7 @@ F77LINK = $(LIBTOOL) --tag=F77 $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(F77LD) $(AM_FFLAGS) $(FFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(libccp4f_la_SOURCES)
-DIST_SOURCES = $(libccp4f_la_SOURCES)
+DIST_SOURCES = $(am__libccp4f_la_SOURCES_DIST)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -199,6 +207,8 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+@CCIF_API_FALSE@CCIF_API = harv_dummy.f
+@CCIF_API_TRUE@CCIF_API = harvlib.f
 lib_LTLIBRARIES = libccp4f.la
 libccp4f_c_files = \
 ccp4_diskio_f.c ccp4_parser_f.c cmaplib_f.c csymlib_f.c \
@@ -208,7 +218,7 @@ binsortint.c
 libccp4f_f_files = \
 ccplib.f fftlib.f modlib.f parser.f rwbrook.f libhtml.f \
 keyparse.f unix.f dna_output.f pack_f.f pxxml.f lgglib.f \
-plot84lib.f plotsubs.f harvlib.f cciflib.f
+plot84lib.f plotsubs.f cciflib.f $(CCIF_API)
 
 libccp4f_la_SOURCES = $(libccp4f_c_files) $(libccp4f_f_files)
 libccp4f_la_LDFLAGS = -version-info 6:0:1

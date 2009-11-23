@@ -1,3 +1,9 @@
+if CCIF_API
+  CCIF_API = harvlib.f
+else
+  CCIF_API = harv_dummy.f
+endif
+
 lib_LTLIBRARIES = libccp4f.la
 
 libccp4f_c_files = \
@@ -8,7 +14,7 @@ binsortint.c
 libccp4f_f_files = \
 ccplib.f fftlib.f modlib.f parser.f rwbrook.f libhtml.f \
 keyparse.f unix.f dna_output.f pack_f.f pxxml.f lgglib.f \
-plot84lib.f plotsubs.f harvlib.f cciflib.f
+plot84lib.f plotsubs.f cciflib.f $(CCIF_API)
 
 libccp4f_la_SOURCES = $(libccp4f_c_files) $(libccp4f_f_files)
 

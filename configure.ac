@@ -17,7 +17,11 @@ AC_PROG_CC
 AC_ARG_ENABLE(fortran, AS_HELP_STRING([--enable-fortran],[compile fortran API]),
 [fortran_api=$enableval], [fortran_api=yes])
 
+AC_ARG_ENABLE(ccif, AS_HELP_STRING([--enable-ccif],[compile ccif API]),
+[ccif_api=$enableval], [ccif_api=yes])
+
 AM_CONDITIONAL([FORTRAN_LIB], [ test "x$fortran_api" = xyes ])
+AM_CONDITIONAL([CCIF_API], [ test "x$ccif_api" = xyes ])
 
 AS_IF([test "x$fortran_api" = xyes],[
 AC_PROG_F77(_AC_F95_FC)
