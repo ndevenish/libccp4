@@ -84,6 +84,10 @@ case $host_os in
 esac
 ])
 
+PACKAGE_ROOT=$prefix
+test "x$PACKAGE_ROOT" = xNONE && PACKAGE_ROOT=$ac_default_prefix
+AC_DEFINE_UNQUOTED([PACKAGE_ROOT],[$PACKAGE_ROOT],[packge install directory])
+
 AC_SUBST(M4)
 
 AC_OUTPUT(libccp4c.pc libccp4f.pc Makefile ccp4/Makefile fortran/Makefile data/Makefile)

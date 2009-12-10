@@ -14768,6 +14768,14 @@ esac
 fi
 
 
+PACKAGE_ROOT=$prefix
+test "x$PACKAGE_ROOT" = xNONE && PACKAGE_ROOT=$ac_default_prefix
+
+cat >>confdefs.h <<_ACEOF
+#define PACKAGE_ROOT $PACKAGE_ROOT
+_ACEOF
+
+
 
 
 ac_config_files="$ac_config_files libccp4c.pc libccp4f.pc Makefile ccp4/Makefile fortran/Makefile data/Makefile"
