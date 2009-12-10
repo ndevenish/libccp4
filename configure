@@ -14772,7 +14772,7 @@ PACKAGE_ROOT=$prefix
 test "x$PACKAGE_ROOT" = xNONE && PACKAGE_ROOT=$ac_default_prefix
 
 cat >>confdefs.h <<_ACEOF
-#define PACKAGE_ROOT $PACKAGE_ROOT
+#define PACKAGE_ROOT "$PACKAGE_ROOT"
 _ACEOF
 
 
