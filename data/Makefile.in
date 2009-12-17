@@ -58,7 +58,7 @@ F77LINK = $(LIBTOOL) --tag=F77 $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 SOURCES = $(fontpack_SOURCES)
 DIST_SOURCES = $(fontpack_SOURCES)
 am__dist_pkgdata_DATA_DIST = atomsf_neutron.lib atomsf.lib \
-syminfo.lib font84.dat
+	syminfo.lib font84.dat symop.lib
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -189,7 +189,7 @@ fontpack_SOURCES = fontpack.f
 fontpack_LDADD = ../fortran/libccp4f.la ../ccp4/libccp4c.la
 dist_pkgdata_DATA = \
 atomsf_neutron.lib	atomsf.lib \
-syminfo.lib   $(FONT84)
+syminfo.lib   $(FONT84)	symop.lib
 
 all: all-am
 

@@ -12,7 +12,7 @@ pkgdatadir = $(datadir)/ccp4
 
 dist_pkgdata_DATA = \
 atomsf_neutron.lib	atomsf.lib \
-syminfo.lib   $(FONT84)
+syminfo.lib   $(FONT84)	symop.lib
 
 font84.dat: fontpack font84.ascii
 	./fontpack
