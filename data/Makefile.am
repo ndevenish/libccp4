@@ -1,8 +1,9 @@
 if FORTRAN_LIB
   FONT84 = font84.dat
+  FONTPACK = fontpack
 endif
 
-noinst_PROGRAMS = fontpack
+noinst_PROGRAMS = $(FONTPACK)
 
 fontpack_SOURCES = fontpack.f
 
