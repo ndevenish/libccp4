@@ -545,7 +545,7 @@ FORTRAN_SUBR ( HKLRANGE, hklrange,
                (int *ihrng0, int *ihrng1, int *ikrng0, int *ikrng1, int *ilrng0, int *ilrng1))
 {
   int i,j,itest;
-  int test[4],max;
+  int test[8],max;
 
   CSYMLIB_DEBUG(puts("CSYMLIB_F: HKLRANGE");)
 
@@ -562,41 +562,47 @@ FORTRAN_SUBR ( HKLRANGE, hklrange,
   max = *ihrng1;
   if (*ikrng1 > max) max = *ikrng1;
   if (*ilrng1 > max) max = *ilrng1;
-  test[0] = -max-1;
-  test[1] = -1;
-  test[2] = 1;
-  test[3] = max+1;
+  test[0] = -max-2;
+  test[1] = -max-1;
+  test[2] = -max+1;
+  test[3] = -1;
+  test[4] = 1;
+  test[5] = max-1;
+  test[6] = max+1;
+  test[7] = max+2;
 
   /* now try to cut it down by testing points */
   /* this is overkill but should be safe */
+  /* update: not so simple. Didn't work for R32, see bugzilla 4149 */
+  /* should be fixed now, but if further problems then consider not cutting down at all */ 
   itest = 0;
-  for (i = 0; i < 4; ++i)
-    for (j = 0; j < 4; ++j)
+  for (i = 0; i < 8; ++i)
+    for (j = 0; j < 8; ++j)
       if (ccp4spg_is_in_asu(spacegroup,*ihrng0,test[i],test[j])) itest = 1;
   if (!itest) *ihrng0 = 0;
   itest = 0;
-  for (i = 0; i < 4; ++i)
-    for (j = 0; j < 4; ++j)
+  for (i = 0; i < 8; ++i)
+    for (j = 0; j < 8; ++j)
       if (ccp4spg_is_in_asu(spacegroup,*ihrng1,test[i],test[j])) itest = 1;
   if (!itest) *ihrng1 = 0;
   itest = 0;
-  for (i = 0; i < 4; ++i)
-    for (j = 0; j < 4; ++j)
+  for (i = 0; i < 8; ++i)
+    for (j = 0; j < 8; ++j)
       if (ccp4spg_is_in_asu(spacegroup,test[i],*ikrng0,test[j])) itest = 1;
   if (!itest) *ikrng0 = 0;
   itest = 0;
-  for (i = 0; i < 4; ++i)
-    for (j = 0; j < 4; ++j)
+  for (i = 0; i < 8; ++i)
+    for (j = 0; j < 8; ++j)
       if (ccp4spg_is_in_asu(spacegroup,test[i],*ikrng1,test[j])) itest = 1;
   if (!itest) *ikrng1 = 0;
   itest = 0;
-  for (i = 0; i < 4; ++i)
-    for (j = 0; j < 4; ++j)
+  for (i = 0; i < 8; ++i)
+    for (j = 0; j < 8; ++j)
       if (ccp4spg_is_in_asu(spacegroup,test[i],test[j],*ilrng0)) itest = 1;
   if (!itest) *ilrng0 = 0;
   itest = 0;
-  for (i = 0; i < 4; ++i)
-    for (j = 0; j < 4; ++j)
+  for (i = 0; i < 8; ++i)
+    for (j = 0; j < 8; ++j)
       if (ccp4spg_is_in_asu(spacegroup,test[i],test[j],*ilrng1)) itest = 1;
   if (!itest) *ilrng1 = 0;
 
