@@ -836,7 +836,6 @@ C
       REAL FVALUE(*)
       CHARACTER*(*)LINE,SPGNAM,PGNAME
       CHARACTER*20 SPGNAMS
-      CHARACTER*200 ERRLINE
       INTEGER NUMSGP,NSYM,NSYMP,LENSTR
       EXTERNAL LENSTR
 
@@ -877,7 +876,6 @@ C
      +             INDEX(SPGNAM,':H').LE.0) THEN
                  WRITE(6,'(A,A)') 'Warning: rhombohedral axes implied',
      +                  ' - if you have hexagonal axes then use H'
-                 CALL PUTLIN(ERRLINE,'CURWIN')
                ENDIF
                NUMSGP = 0
             END IF
