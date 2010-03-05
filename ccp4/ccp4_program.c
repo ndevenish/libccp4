@@ -34,19 +34,12 @@
 char *ccp4_prog_vers(const char *progvers) 
 {
   static char programversion[MAXLEN_PROGVERSION]="";
-  int         i;
+
+  memset(programversion, 0, MAXLEN_PROGVERSION);
 
   if (progvers) {
-    i = 0;
-    while (progvers[i] != '\0' && i < MAXLEN_PROGVERSION) {
-      programversion[i] = progvers[i];
-      ++i;
-    }
-    if (i == MAXLEN_PROGVERSION) {
-      programversion[MAXLEN_PROGVERSION-1] = '\0';
-    } else {
-      programversion[i] = '\0';
-    }
+    strncpy(programversion, progvers, MAXLEN_PROGVERSION);
+    programversion[MAXLEN_PROGVERSION-1] = '\0';
   }
   return programversion;
 }
