@@ -1317,12 +1317,16 @@ void ccp4_banner(void) {
 
   int diag=0,i,npad;
   char date[11],time[9],prog_vers_str[19],infoline[100];
+  char prog_vers_full[MAXLEN_PROGVERSION];
 
   if (diag) printf("Entering ccp4_banner \n");
 
   /* Program version number */
-  if (ccp4_prog_vers(NULL) && strlen(ccp4_prog_vers(NULL))) {
-    sprintf(prog_vers_str,"version %-10s",ccp4_prog_vers(NULL));
+  strcpy(prog_vers_full,ccp4_prog_vers(NULL));
+  if (prog_vers_full && strlen(prog_vers_full)) {
+    strcpy(prog_vers_str,"version ");
+    strncpy(prog_vers_str+8,prog_vers_full,10);
+    prog_vers_str[18] = '\0';
   } else {
     /* If no program version available then use the major library
        version number */
