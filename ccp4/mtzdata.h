@@ -147,6 +147,11 @@ typedef struct { int spcgrp;           /**< spacegroup number */
 		 int nsymp;            /**< number of primitive symmetry ops. */
 		 char symtyp;          /**< lattice type (P,A,B,C,I,F,R) */
 		 char pgname[11];      /**< pointgroup name */
+                 char spg_confidence;  /**< L => Bravais lattice correct
+                                            P => pointgroup correct
+                                            E => spacegroup or enantiomorph
+                                            S => spacegroup is correct
+                                            X => flag not set */
                } SYMGRP;
 
 typedef union { char amnf[4]; 

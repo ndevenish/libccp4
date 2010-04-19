@@ -546,7 +546,12 @@ MTZ *MtzGetUserCellTolerance(const char *logname, int read_refs, const double ce
       mtz->mtzsymm.spcgrp = (int) token[4].value;
       strcpy(mtz->mtzsymm.spcgrpname,token[5].fullstring);
       strcpy(mtz->mtzsymm.pgname,token[6].fullstring);
-       }
+      if (ntok > 7) {
+        mtz->mtzsymm.spg_confidence = token[7].fullstring[0];
+      } else {
+        mtz->mtzsymm.spg_confidence = 'X';
+      }
+    }
     else if (strncmp (mkey, "SYMM",4) == 0) {
       symop_to_mat4(hdrrec+4,hdrrec+MTZRECORDLENGTH,mtz->mtzsymm.sym[isym++][0]);
        }
@@ -1137,6 +1142,13 @@ int MtzResLimits(const MTZ *mtz, float *minres, float *maxres) {
 
 int ccp4_lrsymi(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx, 
        char *spgrnx, char *pgnamx) {
+  char spgconf_temp[2];
+
+  return ccp4_lrsymi_c(mtz,nsympx,ltypex,nspgrx,spgrnx,pgnamx,spgconf_temp);
+}
+
+int ccp4_lrsymi_c(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx, 
+       char *spgrnx, char *pgnamx, char *spgconf) {
 
   *nsympx = mtz->mtzsymm.nsymp;
   *nspgrx = mtz->mtzsymm.spcgrp;
@@ -1144,6 +1156,8 @@ int ccp4_lrsymi(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx,
   ltypex[1] = '\0';
   strcpy(spgrnx,mtz->mtzsymm.spcgrpname);
   strcpy(pgnamx,mtz->mtzsymm.pgname);
+  spgconf[0] = mtz->mtzsymm.spg_confidence;
+  spgconf[1] = '\0';
 
   return *nspgrx;
 }
@@ -1700,10 +1714,21 @@ int ccp4_lhprt(const MTZ *mtz, int iprint) {
            mtz->mtzsymm.sym[i][j][1],mtz->mtzsymm.sym[i][j][2],
 	       mtz->mtzsymm.sym[i][j][3]);
     }
+    printf("\n");
 
   } else {
     printf(" * Space group = \'%s\' (number     %d)\n\n",mtz->mtzsymm.spcgrpname,
        mtz->mtzsymm.spcgrp);
+  }
+
+  if (mtz->mtzsymm.spg_confidence == 'L') {
+    printf("  (only Bravais lattice is fixed so far)\n\n");
+  } else if (mtz->mtzsymm.spg_confidence == 'P') {
+    printf("  (only pointgroup is fixed so far)\n\n");
+  } else if (mtz->mtzsymm.spg_confidence == 'E') {
+    printf("  (one of pair of enantiomorphic spacegroups)\n\n");
+  } else if (mtz->mtzsymm.spg_confidence == 'S') {
+    printf("  (spacegroup is known)\n\n");
   }
 
   return 1;
@@ -2105,6 +2130,16 @@ int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],
 int ccp4_lwsymm(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4], 
    char ltypex[], int nspgrx, char spgrnx[], char pgnamx[])
 {
+  char spgconf_temp[2]="";
+
+  return ccp4_lwsymm_c(mtz, nsymx, nsympx, rsymx, ltypex, nspgrx, spgrnx,
+		     pgnamx, spgconf_temp);
+}
+
+int ccp4_lwsymm_c(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4], 
+		  char ltypex[], int nspgrx, char spgrnx[], char pgnamx[], 
+                  char spgconf[])
+{
   int i,j,k,length;
 
   if (nsymx > 0) {
@@ -2120,6 +2155,7 @@ int ccp4_lwsymm(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4],
   }
   if (ltypex[0] != ' ' && ltypex[0] != '\0') mtz->mtzsymm.symtyp = ltypex[0];
   if (nspgrx != 0) mtz->mtzsymm.spcgrp = nspgrx;
+  if (spgconf[0] != ' ' && spgconf[0] != '\0') mtz->mtzsymm.spg_confidence = spgconf[0];
 
   if (strcmp(spgrnx,"")) {
     length = ( strlen(spgrnx) < MAXSPGNAMELENGTH ) ? strlen(spgrnx) : MAXSPGNAMELENGTH;
@@ -2509,9 +2545,10 @@ int MtzPut(MTZ *mtz, const char *logname)
  strncpy(spgname+1,mtz->mtzsymm.spcgrpname,length+1);
  spgname[length+2] = '\'';
  spgname[length+3] = '\0';
- sprintf(hdrrec,"SYMINF %3d %2d %c %5d %22s %5s",mtz->mtzsymm.nsym,mtz->mtzsymm.nsymp,
-      mtz->mtzsymm.symtyp,mtz->mtzsymm.spcgrp,spgname,mtz->mtzsymm.pgname);
- MtzWhdrLine(fileout,50,hdrrec);
+ sprintf(hdrrec,"SYMINF %3d %2d %c %5d %22s %5s %c",mtz->mtzsymm.nsym,
+         mtz->mtzsymm.nsymp,mtz->mtzsymm.symtyp,mtz->mtzsymm.spcgrp,spgname,
+         mtz->mtzsymm.pgname,mtz->mtzsymm.spg_confidence);
+ MtzWhdrLine(fileout,52,hdrrec);
  if (debug) printf(" MtzPut: SYMINF just written \n");
 
  for (i = 0; i < mtz->mtzsymm.nsym; ++i) {
@@ -3063,6 +3100,7 @@ MTZ *MtzMalloc(int nxtal, int nset[])
   mtz->mtzsymm.nsymp = 0;
   mtz->mtzsymm.symtyp = '\0';
   mtz->mtzsymm.pgname[0] = '\0';
+  mtz->mtzsymm.spg_confidence = '\0';
   mtz->batch = NULL;
   for (i = 0; i < 5; ++i) {
     mtz->order[i] = NULL;

@@ -695,6 +695,20 @@ int ccp4_lrcell(const MTZXTAL *xtl, float cell[]);
 int ccp4_lrsymi(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx, 
        char *spgrnx, char *pgnamx);
 
+/** Get spacegroup information as held in MTZ header. Extended version of
+ * ccp4_lrsymi to return confidence flag as well.
+ * @param mtz Pointer to MTZ struct.
+ * @param nsympx Number of primitive symmetry operators.
+ * @param ltypex Lattice type (P,A,B,C,I,F,R).
+ * @param nspgrx Spacegroup number.
+ * @param spgrnx Spacegroup name.
+ * @param pgnamx Pointgroup name.
+ * @param spgconf One-character flag indicating confidence in nominal spacegroup.
+ * @return Spacegroup number.
+ */
+int ccp4_lrsymi_c(const MTZ *mtz, int *nsympx, char *ltypex, int *nspgrx, 
+       char *spgrnx, char *pgnamx, char *spgconf);
+
 /** Get symmetry matrices from MTZ structure. Note: ordering of matrices
  * in rsymx was changed in April 2004.
  * @param mtz Pointer to MTZ struct.
@@ -871,6 +885,27 @@ int MtzAddHistory(MTZ *mtz, const char history[][MTZRECORDLENGTH], const int nli
  */
 int ccp4_lwsymm(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4], 
 		char ltypex[], int nspgrx, char spgrnx[], char pgnamx[]);
+
+/** Write or update symmetry information for MTZ header. This provides support
+ * for the Fortran API, and is not particularly convenient for C programs. Extended
+ * version of ccp4_lwsymm to set confidence flag as well.
+ * Note: ordering of matrices in rsymx was changed in November 2003.
+ * @param mtz Pointer to MTZ struct
+ * @param nsymx Number of symmetry operators. If zero, symmetry operations
+ *   are not updated.
+ * @param nsympx Number of primitive symmetry operators.
+ * @param rsymx Array of symmetry operators (dimensions ordered in C convention,
+ *   with translations in elements [*][3])
+ * @param ltypex Lattice type. If blank, not updated.
+ * @param nspgrx Spacegroup number. If zero, not updated.
+ * @param spgrnx Spacegroup name. If blank, not updated.
+ * @param pgnamx Point group name. If blank, not updated.
+ * @param spgconf One-character flag indicating confidence in nominal spacegroup.
+ * @return 1 on success, 0 on failure 
+ */
+int ccp4_lwsymm_c(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4], 
+		  char ltypex[], int nspgrx, char spgrnx[], char pgnamx[], 
+                  char spgconf[]);
 
 /* Assign columns for writing. Check to see if columns already exist,
  * else create them. New columns are assigned to the base dataset if it 
