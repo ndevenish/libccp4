@@ -907,6 +907,13 @@ int ccp4_lwsymm_c(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4],
 		  char ltypex[], int nspgrx, char spgrnx[], char pgnamx[], 
                   char spgconf[]);
 
+/** Write or update symmetry confidence information for MTZ header.
+ * @param mtz Pointer to MTZ struct
+ * @param spgconf One-character flag indicating confidence in nominal spacegroup.
+ * @return 1 on success, 0 on failure 
+ */
+int ccp4_lwsymconf(MTZ *mtz, char spgconf[]);
+
 /* Assign columns for writing. Check to see if columns already exist,
  * else create them. New columns are assigned to the base dataset if it 
  * exists, else the first dataset.

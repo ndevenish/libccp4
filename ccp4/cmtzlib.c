@@ -2127,9 +2127,18 @@ int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],
   return 1;
 }
 
+int ccp4_lwsymconf(MTZ *mtz, char spgconf[])
+{
+  if (spgconf[0] != ' ' && spgconf[0] != '\0') mtz->mtzsymm.spg_confidence = spgconf[0];
+
+  return 1;
+}
+
 int ccp4_lwsymm(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4], 
    char ltypex[], int nspgrx, char spgrnx[], char pgnamx[])
 {
+  /* Could set this to "X" but beware of legacy programs where lwsymm
+     still used. Don't want to overwrite flag in newer file. */
   char spgconf_temp[2]="";
 
   return ccp4_lwsymm_c(mtz, nsymx, nsympx, rsymx, ltypex, nspgrx, spgrnx,
