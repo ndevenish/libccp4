@@ -33,6 +33,8 @@
 #define MTZVERSN "MTZ:V1.1"         /**< traditional version number! */
 #define MTZ_MAJOR_VERSN 1      /**< MTZ file major version - keep to single digit */
 #define MTZ_MINOR_VERSN 1      /**< MTZ file minor version - keep to single digit */
+#define CCP4_MTZDATA 20100419   /**< Date stamp for the cmtz data structure 
+                                 (update if there are changes to the structs in this file) */
 
 /** defines for sizes in MTZ structure */
 #define SIZE1 20                    /**< size of pre-reflection block */
