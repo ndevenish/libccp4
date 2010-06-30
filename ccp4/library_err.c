@@ -107,6 +107,8 @@ static const char *const cmtz_errlist[] =
     "Batch headers corrupted",                   /* 22 = CMTZERR_BadBatchHeader */
     "Input MTZ file has different minor version to that supported by current library",      /* 23 = CMTZERR_DifferentVersion */
     "File column type different from type expected by program",      /* 24 = CMTZERR_ColTypeMismatch */
+    "MTZ header: error in column group specification",   /* 25 = CMTZERR_ColGroupError */
+    "MTZ header: error in column source specification",   /* 26 = CMTZERR_ColSourceError */
   };
 
 /* parser library errors */
