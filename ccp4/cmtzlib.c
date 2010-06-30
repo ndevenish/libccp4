@@ -665,6 +665,9 @@ MTZ *MtzGetUserCellTolerance(const char *logname, int read_refs, const double ce
   while (strncmp((strncpy(mkey,hdrrec,4)),"END",3) != 0) {
     if (strncmp (mkey, "COLS",4) == 0 ) {
       strcpy(label,token[1].fullstring);
+      /* Special trap for M/ISYM */
+      if (strncmp (label,"M/ISYM",6) == 0)
+        strcpy(label,"M_ISYM");
       icset = (int) token[3].value;
       newcol = NULL;
       for (i = 0; i < mtz->nxtal; ++i) {
@@ -691,6 +694,9 @@ MTZ *MtzGetUserCellTolerance(const char *logname, int read_refs, const double ce
       newcol->colsource[36] = '\0';
     } else if (strncmp (mkey, "COLG",4) == 0 ) {
       strcpy(label,token[1].fullstring);
+      /* Special trap for M/ISYM */
+      if (strncmp (label,"M/ISYM",6) == 0)
+        strcpy(label,"M_ISYM");
       icset = (int) token[5].value;
       newcol = NULL;
       for (i = 0; i < mtz->nxtal; ++i) {
@@ -2574,7 +2580,7 @@ int MtzPut(MTZ *mtz, const char *logname)
  if (debug) 
    printf(" MtzPut: entering \n");
 
- /* get data to fill out solumn source information */
+ /* get data to fill out column source information */
  taskenv = getenv( "CCP4_TASK_ID" );
  if ( taskenv != NULL ) {
    strncpy( colsource, taskenv, 36 );
@@ -2777,14 +2783,24 @@ int MtzPut(MTZ *mtz, const char *logname)
        MtzWhdrLine(fileout,MTZRECORDLENGTH,hdrrec);
 
        if ( mtz->xtal[i]->set[j]->col[k]->colsource[0] != '\0' ) {
-	 sprintf(hdrrec,"COLSRC %-30s %-36s  %4d",mtz->xtal[i]->set[j]->col[k]->label,mtz->xtal[i]->set[j]->col[k]->colsource,mtz->xtal[i]->set[j]->setid);
+         if (strcmp(mtz->xtal[i]->set[j]->col[k]->type,"Y") == 0 && 
+           strcmp(mtz->xtal[i]->set[j]->col[k]->label,"M_ISYM") == 0) {
+	   sprintf(hdrrec,"COLSRC %-30s %-36s  %4d","M/ISYM",mtz->xtal[i]->set[j]->col[k]->colsource,mtz->xtal[i]->set[j]->setid);
+         } else {
+	   sprintf(hdrrec,"COLSRC %-30s %-36s  %4d",mtz->xtal[i]->set[j]->col[k]->label,mtz->xtal[i]->set[j]->col[k]->colsource,mtz->xtal[i]->set[j]->setid);
+         }
 	 MtzWhdrLine(fileout,MTZRECORDLENGTH,hdrrec);
        }
 
        if ( mtz->xtal[i]->set[j]->col[k]->grpname[0] != '\0' &&
 	    mtz->xtal[i]->set[j]->col[k]->grptype[0] != '\0' &&
 	    mtz->xtal[i]->set[j]->col[k]->grpposn    >=   0  ) {
-	 sprintf(hdrrec,"COLGRP %-30s %-30s %-4s %1X %4d",mtz->xtal[i]->set[j]->col[k]->label,mtz->xtal[i]->set[j]->col[k]->grpname,mtz->xtal[i]->set[j]->col[k]->grptype,mtz->xtal[i]->set[j]->col[k]->grpposn,mtz->xtal[i]->set[j]->setid);
+         if (strcmp(mtz->xtal[i]->set[j]->col[k]->type,"Y") == 0 && 
+           strcmp(mtz->xtal[i]->set[j]->col[k]->label,"M_ISYM") == 0) {
+	   sprintf(hdrrec,"COLGRP %-30s %-30s %-4s %1X %4d","M/ISYM",mtz->xtal[i]->set[j]->col[k]->grpname,mtz->xtal[i]->set[j]->col[k]->grptype,mtz->xtal[i]->set[j]->col[k]->grpposn,mtz->xtal[i]->set[j]->setid);
+         } else {
+	   sprintf(hdrrec,"COLGRP %-30s %-30s %-4s %1X %4d",mtz->xtal[i]->set[j]->col[k]->label,mtz->xtal[i]->set[j]->col[k]->grpname,mtz->xtal[i]->set[j]->col[k]->grptype,mtz->xtal[i]->set[j]->col[k]->grpposn,mtz->xtal[i]->set[j]->setid);
+         }
 	 MtzWhdrLine(fileout,MTZRECORDLENGTH,hdrrec);
        }
      }
