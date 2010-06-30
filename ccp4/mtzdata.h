@@ -33,7 +33,7 @@
 #define MTZVERSN "MTZ:V1.1"         /**< traditional version number! */
 #define MTZ_MAJOR_VERSN 1      /**< MTZ file major version - keep to single digit */
 #define MTZ_MINOR_VERSN 1      /**< MTZ file minor version - keep to single digit */
-#define CCP4_MTZDATA 20100419   /**< Date stamp for the cmtz data structure 
+#define CCP4_MTZDATA 20100630   /**< Date stamp for the cmtz data structure 
                                  (update if there are changes to the structs in this file) */
 
 /** defines for sizes in MTZ structure */
@@ -57,7 +57,11 @@ typedef struct { char label[31];       /**< column name as given by user */
  		 float min;            /**< minimum data element */
 		 float max;            /**< maximum data element */
 		 float *ref;           /**< data array */
-	       } MTZCOL;
+	         char colsource[37];   /**< column source - originating job */
+	         char grpname[31];     /**< column group name */
+	         char grptype[5];      /**< column group type */
+	         int  grpposn;         /**< column group position in group */
+               } MTZCOL;
 
 /** MTZ dataset struct. */
 typedef struct { int setid;            /**< Dataset id */
@@ -179,6 +183,9 @@ typedef struct { CCP4File *filein;     /**< file for reading */
 		 MTZXTAL **xtal;       /**< crystals */
 		 MTZBAT *batch;        /**< first batch header */
 		 MTZCOL *order[5];     /**< sort order */
+		 char *xml;            /**< xml data block */
+                 char *unknown_headers;/**< unknown header data */
+                 int n_unknown_headers;/**< unknown header data */
 	       } MTZ;
 
 #endif
