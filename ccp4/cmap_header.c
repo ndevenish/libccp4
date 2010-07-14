@@ -104,7 +104,7 @@ int parse_mapheader(CMMFile *mfile)
   \return 1 on success, EOF on failure */
 int write_mapheader(CMMFile *mfile)
 {
-  const int write_total = 74;
+  const int write_total = 77;
   unsigned char buffer[224];
   int result;
   float fmean,frms;
