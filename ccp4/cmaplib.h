@@ -120,7 +120,7 @@ CMMFile_Stats stats;
 CMMFile_Labels labels;
 CMMFile_Skew skew;
 int reserved[8];
-char user_access[24];
+char user_access[28];
 };
 
 /* open a file for read/write */
