@@ -2002,7 +2002,7 @@ int MtzPrintBatchHeader(const MTZBAT *batch) {
          batch->phixyz[1][0],batch->phixyz[1][1],batch->phixyz[1][2]);
   }
   printf("   %s%s%s   %s\n",
-         "Reciprocal axis nearest ",batch->gonlab[0],"..",axes);
+         "Reciprocal axis nearest ",batch->gonlab[batch->ngonax-1],"..",axes);
   if (!batch->lcrflg) {
     printf("   %s %6.3f \n",
 	   "Mosaicity ........................",batch->crydat[0]);

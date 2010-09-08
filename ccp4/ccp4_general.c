@@ -1358,7 +1358,7 @@ void ccp4_banner(void) {
   sprintf(infoline," ### CCP4 %3s: %-17s",CCP4_VERSION_NO,ccp4ProgramName(NULL));
   /* Trim back spaces in this string */
   i = strlen(infoline);
-  while (infoline[--i] == ' ') {
+  while ( i != 0 && infoline[--i] == ' ') {
     infoline[i] = '\0';
   }
   /* Determine how much padding we need based on length of the
