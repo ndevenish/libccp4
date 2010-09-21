@@ -1069,6 +1069,17 @@ int ccp4_file_rarch (CCP4File *cfile)
         
     cfile->iconvert = (mtstring[1]>>4) & 0x0f;
     cfile->fconvert = (mtstring[0]>>4) & 0x0f;
+
+    /* iconvert and fconvert should be one of the DFNTI/DFNTF values listed
+       in ccp4_sysdep.h and hence non-zero. Some machine stamps can be corrupted
+       (e.g. mrc files from chimera). We try to trap for this, and revert to
+       native. */
+    if (cfile->iconvert == 0 || cfile->fconvert == 0) {
+       if (ccp4_liberr_verbosity(-1))
+          printf("Warning: Machine stamp corrupted? Assuming native format. \n");
+       cfile->iconvert = nativeIT;
+       cfile->fconvert = nativeFT;       
+    } 
   }
   
   return (cfile->fconvert | (cfile->iconvert<<8));
