@@ -215,6 +215,7 @@ static int HeaderPrint(const CMMFile *mfile)
       fprintf(stdout,"  %s\n",ccp4_cmap_get_label(mfile,i));
   }
   fprintf(stdout,"\n\n");
+  return (0);
 } 
 
 /* belongs to fortran interface , also provide translators for others?

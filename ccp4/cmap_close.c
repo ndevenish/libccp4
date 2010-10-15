@@ -47,11 +47,13 @@ void ccp4_cmap_close(CMMFile *mfile)
 	mfile->stats.offset = 0.0f;
       case 0:
       default:
-        mfile->stats.mean /= mfile->stats.total;
-        mfile->stats.rms /= mfile->stats.total;
-        mfile->stats.rms -= mfile->stats.mean*mfile->stats.mean;
-        mfile->stats.rms = (mfile->stats.rms > 0) ? sqrt(mfile->stats.rms) : 0;
-        mfile->stats.mean += (double) mfile->stats.offset;
+        if (mfile->stats.total != 0) {
+          mfile->stats.mean /= mfile->stats.total;
+          mfile->stats.rms /= mfile->stats.total;
+          mfile->stats.rms -= mfile->stats.mean*mfile->stats.mean;
+          mfile->stats.rms = (mfile->stats.rms > 0) ? sqrt(mfile->stats.rms) : 0;
+          mfile->stats.mean += (double) mfile->stats.offset;
+        }
         break;
       }
     }

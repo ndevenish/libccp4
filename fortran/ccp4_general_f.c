@@ -104,6 +104,7 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
   argv = (char **) ccp4_utils_malloc(argc*sizeof(char *));
   if (debug) 
     printf("Allocating memory for %d command line arguments \n",argc);
+  memset(arg, ' ', arg_len); /* necessary for ccp4_FtoCString */
   for (i = 0; i < argc; ++i) {
 #ifdef GFORTRAN
     _gfortran_getarg_i4(&i,arg,arg_len);
