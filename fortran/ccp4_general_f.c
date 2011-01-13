@@ -450,3 +450,12 @@ FORTRAN_SUBR (GETELAPSED, getelapsed,(void) , (void) , (void))
 {
   ccp4ProgramTime(0);
 }
+
+/* wrapper for ccp4VerbosityLevel */
+FORTRAN_FUN ( int, CCP4VERBOSITYLEVEL, ccp4verbositylevel,
+              (int *level),
+              (int *level),
+              (int *level))
+{
+  return ( ccp4VerbosityLevel(*level) );
+}
