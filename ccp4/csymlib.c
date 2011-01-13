@@ -31,6 +31,7 @@
 #include "cvecmat.h"
 #include "ccp4_errno.h"
 #include "ccp4_unitcell.h"
+#include "ccp4_general.h"
 /* rcsid[] = "$Id$" */
 
 /* stuff for error reporting */
@@ -144,11 +145,11 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
     symopfile = ccp4_utils_malloc((strlen(ccp4dir)+22)*sizeof(char));
     strcpy(symopfile,ccp4_utils_joinfilenames(ccp4dir,"syminfo.lib"));
     symopfile[strlen(ccp4dir)+21] = '\0';
-    printf(" SYMINFO file set to %s \n",symopfile);
+    ccp4printf(1," SYMINFO file set to %s \n",symopfile);
   } else {
     if (!reported_syminfo) {
-      printf("\n Spacegroup information obtained from library file: \n");
-      printf(" Logical Name: SYMINFO   Filename: %s\n\n",symopfile);
+      ccp4printf(1,"\n Spacegroup information obtained from library file: \n");
+      ccp4printf(1," Logical Name: SYMINFO   Filename: %s\n\n",symopfile);
       reported_syminfo = 1;
     }
   }
@@ -314,7 +315,7 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   fclose(filein);
 
   if (!sg_nsymp) {
-    printf(" Failed to find spacegroup in SYMINFO! \n");
+    ccp4printf(0," Failed to find spacegroup in SYMINFO! \n");
     return NULL;
   } 
 

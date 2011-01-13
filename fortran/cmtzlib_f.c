@@ -213,8 +213,8 @@ FORTRAN_SUBR ( LROPEN, lropen,
  /* Make sure HKL are in base dataset */
  MtzAssignHKLtoBase(mtzdata[*mindx-1]);
 
- printf("\n OPENED INPUT MTZ FILE \n");
- printf(" Logical Name: %s   Filename: %s \n\n",temp_name,fullfilename);
+ ccp4printf(1,"\n OPENED INPUT MTZ FILE \n");
+ ccp4printf(1," Logical Name: %s   Filename: %s \n\n",temp_name,fullfilename);
  if (*iprint > 0) ccp4_lhprt(mtzdata[*mindx-1], *iprint);
 
  /* set some control variables for Fortran calls */
@@ -658,12 +658,12 @@ FORTRAN_SUBR ( LKYOUT, lkyout,
  }
 
  if (*nlprgo <= 0) {
-   printf("Warning from LKYOUT: no program output labels !\n");
+   ccp4printf(1,"Warning from LKYOUT: no program output labels !\n");
    return;
  }
 
  if (*ntok <= 1) {
-   printf("Warning from LKYOUT: no arguments to LABOUT !\n");
+   ccp4printf(1,"Warning from LKYOUT: no arguments to LABOUT !\n");
    return;
  }
   label = (char *) ccp4_utils_malloc((*nlprgo)*31*sizeof(char));
@@ -2992,8 +2992,8 @@ FORTRAN_SUBR ( LWCLOS_NOEXIT, lwclos_noexit,
  } else {
    fullfilename = strdup(fileout[*mindx-1]);
  }
- printf("\n WRITTEN OUTPUT MTZ FILE \n");
- printf(" Logical Name: %s   Filename: %s \n\n",fileout[*mindx-1],fullfilename);
+ ccp4printf(1,"\n WRITTEN OUTPUT MTZ FILE \n");
+ ccp4printf(1," Logical Name: %s   Filename: %s \n\n",fileout[*mindx-1],fullfilename);
  if (*iprint > 0) ccp4_lhprt(mtzdata[*mindx-1], *iprint);
 
  wlun[*mindx-1] = 0;

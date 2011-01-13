@@ -52,6 +52,7 @@ This document covers some peculiarities of the C implementation.
 #include"ccp4_parser.h"
 #include"csymlib.h"
 #include"ccp4_general.h"
+#include"ccp4_program.h"
 /* rcsid[] = "$Id$" */
 
 static struct _IOConvMap *ioArray[MAXFILES];
@@ -82,6 +83,8 @@ static int ioArrayPrint(IOConvMap *ioMap)
   long length = ccp4_file_length((*ioMap->mapfile).stream);
   unsigned rw_mode = ccp4_file_is_read((*ioMap->mapfile).stream);
 
+  if (ccp4VerbosityLevel(-1) < 1) goto out;
+
   printf("\n Logical Name: %s   Filename: %s \n",
 	 ioMap->logname,filename);
   
@@ -94,6 +97,7 @@ static int ioArrayPrint(IOConvMap *ioMap)
       ioMap->ipc,filename);
     fprintf(stdout,"logical name %s\n\n",ioMap->logname);
   }
+  out:
   free(filename);      /* we strdup it in ccp4_file_name */
   return 1;
 }
@@ -168,7 +172,8 @@ static int HeaderPrint(const CMMFile *mfile)
   static const char axes[]={' ','X','Y','Z'};
 
   if(!mfile) {
-    fprintf(stderr,"WARNING: no header information to print.\n");
+    if (ccp4VerbosityLevel(-1) > 0)
+      fprintf(stderr,"WARNING: no header information to print.\n");
     return (0);}
 
   /* C. Vonrhein: make the output identical to old (pre-5.0) Fortran */
@@ -1215,7 +1220,7 @@ FORTRAN_SUBR( MSYMOP, msymop,
 
   for (i=0 ; i != nsymop ; ++i) {
     ccp4_cmap_get_symop(ioArray[ii]->mapfile,buffer);
-    fprintf(stdout,"  Symmetry operations:  %s\n",buffer);
+    ccp4printf(1,"  Symmetry operations:  %s\n",buffer);
     result += SymopToFMat4(buffer,&buffer[80],rot+16*i);
   }
 
@@ -1225,7 +1230,7 @@ FORTRAN_SUBR( MSYMOP, msymop,
   else if ( nsymop == 0) { 
     /* if no symops are found, what to return? here the I matrix */
     int k;
-    fprintf(stdout,"WARNING: 0 dimension symops, returning P1\n");
+    ccp4printf(0,"WARNING: 0 dimension symops, returning P1\n");
     memset(rot, '\0', 16*sizeof(float));
     for (k = 0; k !=4 ; k++)
       rot[(k<<2)+k] = 1.0f; 
@@ -1257,7 +1262,7 @@ FORTRAN_SUBR( CCP4_MAP_READ_SYMM_MATRIX,
 
   for (i=0 ; i != nsymop ; ++i) {
     ccp4_cmap_get_symop(ioArray[ii]->mapfile,buffer);
-    fprintf(stdout,"  Symmetry operations:  %s",buffer);
+    ccp4printf(1,"  Symmetry operations:  %s",buffer);
     result += SymopToFMat4(buffer,&buffer[80],rot+16*i);
   }
 
@@ -1267,7 +1272,7 @@ FORTRAN_SUBR( CCP4_MAP_READ_SYMM_MATRIX,
   else if ( nsymop == 0) { 
     /* if no symops are found, what to return? here the I matrix */
     int k;
-    fprintf(stdout,"WARNING: 0 dimension symops, returning P1\n");
+    ccp4printf(0,"WARNING: 0 dimension symops, returning P1\n");
     memset(rot, '\0', 16*sizeof(float));
     for (k = 0; k !=4 ; k++)
       rot[(k<<2)+k] = 1.0f; 
