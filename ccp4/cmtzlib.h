@@ -192,6 +192,12 @@ int MtzWrefl(CCP4File *fileout, int ncol, float *refldata);
  */
 int MtzDeleteRefl(MTZ *mtz, int iref);
 
+/** Position input file at start of reflections. Useful if you need
+ * to read the reflections a second time.
+ * @param mtz pointer to MTZ struct.
+ */
+void MtzRewdInput(MTZ *mtz);
+
 /**** Memory allocation ****/
 
 /** Allocates memory for an MTZ header structure. The structure can

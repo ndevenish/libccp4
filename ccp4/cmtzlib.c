@@ -1625,6 +1625,14 @@ int ccp4_lrreff(const MTZ *mtz, float *resol, float adata[], int logmss[],
   return 0;
 }
 
+void MtzRewdInput(MTZ *mtz) {
+  if (mtz->filein) {
+    ccp4_file_seek(mtz->filein, SIZE1, SEEK_SET);
+  } else {
+    printf("MtzRewdInput: No associated file. Was MtzGet called with read_refs option?\n");
+  }
+}
+
 int ccp4_ismnf(const MTZ *mtz, const float datum) {
 
   if (strncmp (mtz->mnf.amnf,"NAN",3) == 0) {
