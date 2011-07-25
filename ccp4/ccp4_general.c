@@ -60,6 +60,7 @@
 #include <math.h>
 #include <stdarg.h>
 
+#include "../config.h"
 /* Library header files */
 #include "ccp4_fortran.h"
 #include "ccp4_utils.h"
@@ -253,6 +254,7 @@ int ccp4fyp(int argc, char **argv)
   char *testarg=NULL;
 
   /* Filenames, directories etc */
+  const char *pkgroot=PACKAGE_ROOT;
   char *basename=NULL,*cinclude=NULL,*home=NULL;
   char *dir=NULL,*std_dir=NULL,*tmpstr=NULL;
 
@@ -571,6 +573,20 @@ int ccp4fyp(int argc, char **argv)
     /* Open the environ.def file as read-only*/
     ccp4printf(2,"Opening file \"%s\"\n",env_file);
     envfp = fopen(env_file,"r");
+    /* did not find the environ.def file in std_dir
+       so try "PACKAGE_ROOT" */
+    if (!envfp) {
+      free(env_file);
+      env_file = ccp4_utils_joinfilenames(ccp4_utils_joinfilenames(
+                  ccp4_utils_joinfilenames(pkgroot,"share"),"ccp4"),"environ.def");
+      if (diag) printf("CCP4FYP: reading environ.def file\n");
+      if (diag) printf("--> Full path for environ.def is \"%s\"\n",env_file);
+      /* Open the environ.def file as read-only*/
+      ccp4printf(2,"Opening file \"%s\"\n",env_file);
+      
+      envfp = fopen(env_file,"r");
+    } 
+    /* multiple failures */ 
     if (!envfp) {
       /* Failed to open the file
        Do clean up and exit */
@@ -772,6 +788,20 @@ int ccp4fyp(int argc, char **argv)
     /* Open the default.def file as read-only*/
     ccp4printf(2,"Opening file \"%s\"\n",def_file);
     deffp = fopen(def_file,"r");
+    /* did not find the default.def file in std_dir
+       so try "PACKAGE_ROOT" */
+    if (!deffp) {
+      free(def_file);
+      def_file = ccp4_utils_joinfilenames(ccp4_utils_joinfilenames(
+                  ccp4_utils_joinfilenames(pkgroot,"share"),"ccp4"),"default.def");
+      if (diag) printf("CCP4FYP: reading default.def file\n");
+      if (diag) printf("--> Full path for default.def is \"%s\"\n",def_file);
+      /* Open the default.def file as read-only*/
+      ccp4printf(2,"Opening file \"%s\"\n",def_file);
+        
+      deffp = fopen(def_file,"r"); 
+    }
+    /* multiple failures */
     if (!deffp) {
       /* Failed to open the file
 	 Do clean up and exit */
