@@ -827,6 +827,10 @@ MTZ *MtzGetUserCellTolerance(const char *logname, int read_refs, const double ce
           strcpy(batch->gonlab[1],token[2].fullstring); 
           strcpy(batch->gonlab[2],token[3].fullstring); 
           batch->gonlab[0][8] = batch->gonlab[1][8] = batch->gonlab[2][8] = '\0';
+        } else if (ntok == 2) {
+          strcpy(batch->gonlab[0],token[1].fullstring);
+          batch->gonlab[0][8] = '\0';
+          batch->gonlab[1][0] = batch->gonlab[2][0] = '\0';
         } else {
           batch->gonlab[0][0] = batch->gonlab[1][0] = batch->gonlab[2][0] = '\0';
 	}
