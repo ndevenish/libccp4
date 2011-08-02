@@ -119,6 +119,7 @@ int ccp4_utils_translate_mode_float(float *out, const void *buffer, int dim, int
  */
 size_t ccp4_utils_flength (char *s, int len)
 {
+  if (len <= 0 ) return 0;
   while (s[--len] == ' ')
     if (len == 0) return 0;
   return (++len);
