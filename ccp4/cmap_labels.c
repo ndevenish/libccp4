@@ -56,11 +56,14 @@ int write_maplabels(const CMMFile *mfile)
   char buffer[80];
 /*  const unsigned int labels_offset = 224U; */
   int i, result = 0;
+  size_t slen;
 
 /*  ccp4_file_seek(mfile->stream,labels_offset,SEEK_SET);  */
   for (i=0 ; i != mfile->labels.number ; i++) {
     memset(buffer,' ',80U);
-    strncpy(buffer,mfile->labels.labels[i],strlen(mfile->labels.labels[i]));
+    slen = strlen(mfile->labels.labels[i]);
+    if (slen > 80U) slen = 80U;
+    strncpy(buffer,mfile->labels.labels[i],slen);
     result += ccp4_file_writechar(mfile->stream,(uint8 *) buffer,80U);
   }
   memset(buffer,' ',80U);
