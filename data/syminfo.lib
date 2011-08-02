@@ -13442,7 +13442,7 @@ basisop x-1/4,y-1/4,z-1/4
 symbol ccp4 222
 symbol Hall '-P 4a 2bc 3 (x-1/4,y-1/4,z-1/4)'
 symbol xHM  'P n -3 n :1'
-symbol old  'P 4/n -3 2/n' P n -3 n'
+symbol old  'P 4/n -3 2/n' 'P n -3 n'
 symbol laue '-P 4 2 3' 'm-3m'
 symbol patt '-P 4 2 3' 'm-3m'
 symbol pgrp '-P 4 2 3' 'm-3m'
