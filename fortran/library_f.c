@@ -115,8 +115,6 @@ char *ccp4_FtoCString(fpstr str1, int str1_len)
   char *str2;
 
   size_t length = ccp4_utils_flength(FTN_STR(str1),str1_len);
-  if (length < 0)
-    return NULL;
   str2 = (char *) ccp4_utils_malloc((length+1)*sizeof(char));
   if(length) strncpy(str2, FTN_STR(str1), length); 
   str2[length] = '\0';
