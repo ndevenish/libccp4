@@ -873,6 +873,10 @@ CCIF_API_FALSE
 F77
 FFLAGS
 ac_ct_F77
+MMDB_CXXFLAGS
+MMDB_LIBS
+CCIF_CXXFLAGS
+CCIF_LIBS
 M4
 LIBOBJS
 LTLIBOBJS'
@@ -1483,6 +1487,8 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
+  --with-mmdb=PFX         use mmdb library (default NO) and set prefix
+  --with-ccif=PFX         use ccif library (default NO) and set prefix
 
 Some influential environment variables:
   CC          C compiler command
@@ -4266,13 +4272,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4269: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4275: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4272: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4278: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4275: output\"" >&5)
+  (eval echo "\"\$as_me:4281: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -5383,7 +5389,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 5386 "configure"' > conftest.$ac_ext
+  echo '#line 5392 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7230,11 +7236,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7233: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7239: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7237: \$? = $ac_status" >&5
+   echo "$as_me:7243: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7554,11 +7560,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7557: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7563: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7561: \$? = $ac_status" >&5
+   echo "$as_me:7567: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7659,11 +7665,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7662: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7668: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:7666: \$? = $ac_status" >&5
+   echo "$as_me:7672: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -7714,11 +7720,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7717: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7723: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:7721: \$? = $ac_status" >&5
+   echo "$as_me:7727: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -10462,7 +10468,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10465 "configure"
+#line 10471 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10562,7 +10568,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10565 "configure"
+#line 10571 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12572,11 +12578,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12575: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12581: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:12579: \$? = $ac_status" >&5
+   echo "$as_me:12585: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -12671,11 +12677,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12674: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12680: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:12678: \$? = $ac_status" >&5
+   echo "$as_me:12684: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -12723,11 +12729,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12726: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12732: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:12730: \$? = $ac_status" >&5
+   echo "$as_me:12736: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -14768,6 +14774,379 @@ esac
 fi
 
 
+
+
+
+
+# Check whether --with-mmdb was given.
+if test "${with_mmdb+set}" = set; then
+  withval=$with_mmdb;
+    test "$withval" = no || with_mmdb=yes
+    test "$withval" = yes || mmdb_prefix="$withval"
+else
+   with_mmdb="$enable_mmdb"
+    test $enable_mmdbold = yes && with_mmdb=yes
+    test $enable_cif = yes && with_mmdb=yes
+    test $enable_minimol = yes && with_mmdb=yes
+fi
+
+
+if test x$with_mmdb = xyes ; then
+#user override
+if test "x$MMDB_LIBS" != x && test "x$MMDB_CXXFLAGS" != x ; then
+
+  have_mmdb=yes
+
+else
+
+saved_LIBS="$LIBS"
+saved_CXXFLAGS="$CXXFLAGS"
+MMDB_CXXFLAGS=""
+MMDB_LIBS=""
+
+if test x$mmdb_prefix != x; then
+	# very likely the majority of cases, we will try to configure with:
+	# --with-mmdb=/some/thing
+	#
+
+
+ # should ideally be MMDB_CXXFLAGS="-I$MMDB_prefix/include", and the like
+ # when MMDB and dependencies get installed
+ #
+ac_mmdb_dirs='
+.
+include
+lib
+src
+lib/src
+lib/src/mmdb'
+for ac_dir in $ac_mmdb_dirs; do
+  if test -r "$mmdb_prefix/$ac_dir/mmdb/mmdb_manager.h"; then
+    ac_MMDB_CXXFLAGS="-I$mmdb_prefix/$ac_dir"
+    break
+    fi
+  done
+ #
+ # SGI compiler CC (CXX=CC) needs -lm to link maths library, but
+ # GCC c++ does not.
+ #
+for ac_dir in $ac_mmdb_dirs; do
+  for ac_extension in a so sl dylib; do
+  if test -r "$mmdb_prefix/$ac_dir/libmmdb.$ac_extension"; then
+    ac_MMDB_LDOPTS="-L$mmdb_prefix/$ac_dir -lmmdb"
+    break 2
+    fi
+  done
+  done
+
+else
+ # the compiler looks in the "standard" places for MMDB.  In real life,
+ # it would be quite unlikely that MMDB would be installed in /usr/include,
+ # /usr/lib etc. so this code will not usually find the right dependencies.
+ ac_MMDB_CXXFLAGS=""
+ ac_MMDB_LDOPTS=""
+fi
+
+{ echo "$as_me:$LINENO: checking for CMMDBManager in MMDB" >&5
+echo $ECHO_N "checking for CMMDBManager in MMDB... $ECHO_C" >&6; }
+	LIBS="$ac_MMDB_LDOPTS $saved_LIBS"
+	CXXFLAGS="$ac_MMDB_CXXFLAGS $saved_CXXFLAGS"
+	#
+	# AC_TRY_LINK uses the c compiler (set by AC_LANG), so we will
+	# temporarily reassign $CC to the c++ compiler.
+ 	#
+	#AC_LANG_PUSH(C++)
+	cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include "mmdb/mmdb_manager.h"
+int
+main ()
+{
+ CMMDBManager a;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  have_mmdb=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	have_mmdb=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+#	AC_LANG_POP(C++)  # the language we have just quit
+
+ LIBS="$saved_LIBS"
+ CXXFLAGS="$saved_CXXFLAGS"
+
+
+fi
+ # user override
+
+if test "x$have_mmdb" = xyes; then
+    test "x$MMDB_CXXFLAGS" = x && MMDB_CXXFLAGS=$ac_MMDB_CXXFLAGS
+     test "x$MMDB_LIBS" = x && MMDB_LIBS=$ac_MMDB_LDOPTS
+     { echo "$as_me:$LINENO: result: $have_mmdb" >&5
+echo "${ECHO_T}$have_mmdb" >&6; }
+     :
+else
+    { echo "$as_me:$LINENO: result: $have_mmdb" >&5
+echo "${ECHO_T}$have_mmdb" >&6; }
+      if test "x$mmdb_prefix" != x ; then
+      if test "x$ac_MMDB_CXXFLAGS" != x ; then
+        case "$ac_MMDB_CXXFLAGS" in
+        *src/mmdb )
+        ac_MMDB_LDOPTS=`echo "$ac_MMDB_CXXFLAGS" | sed s#src/mmdb#src#g`
+        ;;
+        *include/mmdb )
+        ac_MMDB_LDOPTS=`echo "$ac_MMDB_CXXFLAGS" | sed s#include/mmdb#lib#g`
+        ;;
+        *)
+        esac
+        MMDB_CXXFLAGS="$ac_MMDB_CXXFLAGS"
+        MMDB_LIBS=`echo "$ac_MMDB_LDOPTS -lmmdb" | sed s#-I#-L#`
+        { echo "$as_me:$LINENO: WARNING: assuming library $MMDB_LIBS headers $MMDB_CXXFLAGS" >&5
+echo "$as_me: WARNING: assuming library $MMDB_LIBS headers $MMDB_CXXFLAGS" >&2;}
+        have_mmdb=yes
+      else
+        MMDB_CXXFLAGS="-I$mmdb_prefix/src -I$mmdb_prefix/include"
+        MMDB_LIBS="-L$mmdb_prefix/src -L$mmdb_prefix/lib -lmmdb"
+        { echo "$as_me:$LINENO: WARNING: assuming library $MMDB_LIBS headers $MMDB_CXXFLAGS" >&5
+echo "$as_me: WARNING: assuming library $MMDB_LIBS headers $MMDB_CXXFLAGS" >&2;}
+        have_mmdb=yes
+      fi
+    else
+     test $enable_mmdb = yes &&
+       { { echo "$as_me:$LINENO: error: mmdb not found" >&5
+echo "$as_me: error: mmdb not found" >&2;}
+   { (exit 1); exit 1; }; }
+    fi
+
+
+fi
+
+
+fi #dnl --with-mmdb
+
+
+
+
+
+
+if test x"ccif_api" = xyes ; then
+
+
+
+
+# Check whether --with-ccif was given.
+if test "${with_ccif+set}" = set; then
+  withval=$with_ccif;
+    test "$withval" = no || with_ccif=yes
+    test "$withval" = yes || ccif_prefix="$withval"
+else
+   with_ccif="$enable_ccif"
+
+fi
+
+
+if test x$with_ccif = xyes ; then
+#user override
+if test "x$CCIF_LIBS" != x && test "x$CCIF_CXXFLAGS" != x ; then
+
+  have_ccif=yes
+
+else
+
+saved_LIBS="$LIBS"
+saved_CXXFLAGS="$CXXFLAGS"
+CCIF_CXXFLAGS=""
+CCIF_LIBS=""
+
+if test x$ccif_prefix != x; then
+	# very likely the majority of cases, we will try to configure with:
+	# --with-ccif=/some/thing
+	#
+
+
+ # should ideally be CCIF_CXXFLAGS="-I$ccif_prefix/include", and the like
+ # when CCIF and dependencies get installed
+ #
+ac_ccif_dirs='
+.
+include
+lib
+src
+lib/ccif'
+for ac_dir in $ac_ccif_dirs; do
+  if test -r "$ccif_prefix/$ac_dir/ccif/sym.h"; then
+    ac_CCIF_CXXFLAGS="-I$ccif_prefix/$ac_dir"
+    break
+    fi
+  done
+ #
+ # SGI compiler CC (CXX=CC) needs -lm to link maths library, but
+ # GCC c++ does not.
+ #
+for ac_dir in $ac_ccif_dirs; do
+  for ac_extension in a so sl dylib; do
+  if test -r "$ccif_prefix/$ac_dir/libccif.$ac_extension"; then
+    ac_CCIF_LDOPTS="-L$ccif_prefix/$ac_dir -lccif"
+    break 2
+    fi
+  done
+  done
+
+else
+ # the compiler looks in the "standard" places for CCIF.  In real life,
+ # it would be quite unlikely that CCIF would be installed in /usr/include,
+ # /usr/lib etc. so this code will not usually find the right dependencies.
+ ac_CCIF_CXXFLAGS=""
+ ac_CCIF_LDOPTS=""
+fi
+
+{ echo "$as_me:$LINENO: checking for CCCIFManager in CCIF" >&5
+echo $ECHO_N "checking for CCCIFManager in CCIF... $ECHO_C" >&6; }
+	LIBS="$ac_CCIF_LDOPTS $saved_LIBS"
+	CXXFLAGS="$ac_CCIF_CXXFLAGS $saved_CXXFLAGS"
+	#
+	# AC_TRY_LINK uses the c compiler (set by AC_LANG), so we will
+	# temporarily reassign $CC to the c++ compiler.
+ 	#
+	ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+	cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include "ccif/sym.h"
+int
+main ()
+{
+ zzs_scope();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  have_ccif=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	have_ccif=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+	ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+  # the language we have just quit
+
+ LIBS="$saved_LIBS"
+ CXXFLAGS="$saved_CXXFLAGS"
+
+
+fi
+ # user override
+
+if test "x$have_ccif" = xyes; then
+    test "x$CCIF_CXXFLAGS" = x && CCIF_CXXFLAGS=$ac_CCIF_CXXFLAGS
+     test "x$CCIF_LIBS" = x && CCIF_LIBS=$ac_CCIF_LDOPTS
+     { echo "$as_me:$LINENO: result: $have_ccif" >&5
+echo "${ECHO_T}$have_ccif" >&6; }
+     :
+else
+    { echo "$as_me:$LINENO: result: $have_ccif" >&5
+echo "${ECHO_T}$have_ccif" >&6; }
+      if test "x$ccif_prefix" != x ; then
+      if test "x$ac_CCIF_CXXFLAGS" != x ; then
+        case "$ac_CCIF_CXXFLAGS" in
+        *include/ccif )
+        ac_CCIF_LDOPTS=`echo "$ac_CCIF_CXXFLAGS" | sed s#include/ccif#lib#g`
+        ;;
+        *)
+        esac
+        CCIF_CXXFLAGS="$ac_CCIF_CXXFLAGS"
+        CCIF_LIBS=`echo "$ac_CCIF_LDOPTS -lccif" | sed s#-I#-L#`
+        { echo "$as_me:$LINENO: WARNING: assuming library $CCIF_LIBS headers $CCIF_CXXFLAGS" >&5
+echo "$as_me: WARNING: assuming library $CCIF_LIBS headers $CCIF_CXXFLAGS" >&2;}
+        have_ccif=yes
+      else
+        CCIF_CXXFLAGS="-I$ccif_prefix/src -I$ccif_prefix/include"
+        CCIF_LIBS="-L$ccif_prefix/ccif -L$ccif_prefix/lib -lccif"
+        { echo "$as_me:$LINENO: WARNING: assuming library $CCIF_LIBS headers $CCIF_CXXFLAGS" >&5
+echo "$as_me: WARNING: assuming library $CCIF_LIBS headers $CCIF_CXXFLAGS" >&2;}
+        have_ccif=yes
+      fi
+    else
+     { { echo "$as_me:$LINENO: error: ccif not found" >&5
+echo "$as_me: error: ccif not found" >&2;}
+   { (exit 1); exit 1; }; }
+    fi
+
+
+fi
+
+
+fi #dnl --with-ccif
+
+
+
+
+
+fi
+
 PACKAGE_ROOT=$prefix
 test "x$PACKAGE_ROOT" = xNONE && PACKAGE_ROOT=$ac_default_prefix
 
@@ -15924,12 +16303,16 @@ CCIF_API_FALSE!$CCIF_API_FALSE$ac_delim
 F77!$F77$ac_delim
 FFLAGS!$FFLAGS$ac_delim
 ac_ct_F77!$ac_ct_F77$ac_delim
+MMDB_CXXFLAGS!$MMDB_CXXFLAGS$ac_delim
+MMDB_LIBS!$MMDB_LIBS$ac_delim
+CCIF_CXXFLAGS!$CCIF_CXXFLAGS$ac_delim
+CCIF_LIBS!$CCIF_LIBS$ac_delim
 M4!$M4$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 15; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 19; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

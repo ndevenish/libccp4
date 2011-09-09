@@ -37,7 +37,8 @@ subdir = data
 DIST_COMMON = $(am__dist_pkgdata_DATA_DIST) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/macros/ccif.m4 \
+	$(top_srcdir)/macros/mmdb.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -58,8 +59,8 @@ F77LINK = $(LIBTOOL) --tag=F77 $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(fontpack_SOURCES)
 DIST_SOURCES = $(fontpack_SOURCES)
-am__dist_pkgdata_DATA_DIST = atomsf_neutron.lib atomsf.lib \
-	syminfo.lib font84.dat symop.lib
+am__dist_pkgdata_DATA_DIST = atomsf_neutron.lib atomsf.lib syminfo.lib \
+	font84.dat symop.lib
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -82,6 +83,8 @@ AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
+CCIF_CXXFLAGS = @CCIF_CXXFLAGS@
+CCIF_LIBS = @CCIF_LIBS@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -115,6 +118,8 @@ LTLIBOBJS = @LTLIBOBJS@
 M4 = @M4@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
+MMDB_CXXFLAGS = @MMDB_CXXFLAGS@
+MMDB_LIBS = @MMDB_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
 OBJEXT = @OBJEXT@
