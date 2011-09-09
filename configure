@@ -14785,9 +14785,6 @@ if test "${with_mmdb+set}" = set; then
     test "$withval" = yes || mmdb_prefix="$withval"
 else
    with_mmdb="$enable_mmdb"
-    test $enable_mmdbold = yes && with_mmdb=yes
-    test $enable_cif = yes && with_mmdb=yes
-    test $enable_minimol = yes && with_mmdb=yes
 fi
 
 

@@ -22,10 +22,7 @@ AC_ARG_WITH(mmdb,
   [
     test "$withval" = no || with_mmdb=yes 
     test "$withval" = yes || mmdb_prefix="$withval" ],
-  [ with_mmdb="$enable_mmdb" 
-    test $enable_mmdbold = yes && with_mmdb=yes
-    test $enable_cif = yes && with_mmdb=yes
-    test $enable_minimol = yes && with_mmdb=yes] ) 
+  [ with_mmdb="$enable_mmdb" ] ) 
 
 if test x$with_mmdb = xyes ; then
 #user override
