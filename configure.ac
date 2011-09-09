@@ -84,6 +84,62 @@ case $host_os in
 esac
 ])
 
+AM_PATH_MMDB(,
+  [ if test "x$mmdb_prefix" != x ; then
+      if test "x$ac_MMDB_CXXFLAGS" != x ; then
+        case "$ac_MMDB_CXXFLAGS" in
+        *src/mmdb )
+        ac_MMDB_LDOPTS=`echo "$ac_MMDB_CXXFLAGS" | sed s#src/mmdb#src#g`
+        ;;
+        *include/mmdb )
+        ac_MMDB_LDOPTS=`echo "$ac_MMDB_CXXFLAGS" | sed s#include/mmdb#lib#g`
+        ;;
+        *)
+        esac
+        MMDB_CXXFLAGS="$ac_MMDB_CXXFLAGS"
+        MMDB_LIBS=`echo "$ac_MMDB_LDOPTS -lmmdb" | sed s#-I#-L#`
+        AC_MSG_WARN([assuming library $MMDB_LIBS headers $MMDB_CXXFLAGS])
+        have_mmdb=yes
+      else
+        MMDB_CXXFLAGS="-I$mmdb_prefix/src -I$mmdb_prefix/include"
+        MMDB_LIBS="-L$mmdb_prefix/src -L$mmdb_prefix/lib -lmmdb"
+        AC_MSG_WARN([assuming library $MMDB_LIBS headers $MMDB_CXXFLAGS])
+        have_mmdb=yes
+      fi
+    else
+     test $enable_mmdb = yes &&
+       AC_MSG_ERROR([mmdb not found])
+    fi
+  ]
+)
+
+if test x"ccif_api" = xyes ; then
+AM_PATH_CCIF(,
+  [ if test "x$ccif_prefix" != x ; then
+      if test "x$ac_CCIF_CXXFLAGS" != x ; then
+        case "$ac_CCIF_CXXFLAGS" in
+        *include/ccif )
+        ac_CCIF_LDOPTS=`echo "$ac_CCIF_CXXFLAGS" | sed s#include/ccif#lib#g`
+        ;;
+        *)
+        esac
+        CCIF_CXXFLAGS="$ac_CCIF_CXXFLAGS"
+        CCIF_LIBS=`echo "$ac_CCIF_LDOPTS -lccif" | sed s#-I#-L#`
+        AC_MSG_WARN([assuming library $CCIF_LIBS headers $CCIF_CXXFLAGS])
+        have_ccif=yes
+      else
+        CCIF_CXXFLAGS="-I$ccif_prefix/src -I$ccif_prefix/include"
+        CCIF_LIBS="-L$ccif_prefix/ccif -L$ccif_prefix/lib -lccif"
+        AC_MSG_WARN([assuming library $CCIF_LIBS headers $CCIF_CXXFLAGS])
+        have_ccif=yes
+      fi
+    else
+     AC_MSG_ERROR([ccif not found])
+    fi
+  ]
+)
+fi
+
 PACKAGE_ROOT=$prefix
 test "x$PACKAGE_ROOT" = xNONE && PACKAGE_ROOT=$ac_default_prefix
 AC_DEFINE_UNQUOTED([PACKAGE_ROOT],["$PACKAGE_ROOT"],[packge install directory])
