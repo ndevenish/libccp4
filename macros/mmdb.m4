@@ -49,10 +49,7 @@ if test x$mmdb_prefix != x; then
 ac_mmdb_dirs='
 .
 include
-lib
-src
-lib/src
-lib/src/mmdb'
+lib'
 for ac_dir in $ac_mmdb_dirs; do
   if test -r "$mmdb_prefix/$ac_dir/mmdb/mmdb_manager.h"; then
     ac_MMDB_CXXFLAGS="-I$mmdb_prefix/$ac_dir"

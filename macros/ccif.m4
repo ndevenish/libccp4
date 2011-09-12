@@ -42,9 +42,7 @@ if test x$ccif_prefix != x; then
 ac_ccif_dirs='
 .
 include
-lib
-src
-lib/ccif'
+lib'
 for ac_dir in $ac_ccif_dirs; do
   if test -r "$ccif_prefix/$ac_dir/ccif/sym.h"; then
     ac_CCIF_CXXFLAGS="-I$ccif_prefix/$ac_dir -I$ccif_prefix/$ac_dir/ccif"
