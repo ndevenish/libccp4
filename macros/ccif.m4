@@ -17,15 +17,8 @@ AC_DEFUN([AM_PATH_CCIF],
 [
 AC_PROVIDE([AM_PATH_CCIF])
 
-AC_ARG_WITH(ccif,
-  AC_HELP_STRING( [--with-ccif=PFX], [use ccif library (default NO) and set prefix] ),
-  [
-    test "$withval" = no || with_ccif=yes 
-    test "$withval" = yes || ccif_prefix="$withval" ],
-  [ with_ccif="$enable_ccif" 
-  ] ) 
+AC_MSG_CHECKING([libccif])
 
-if test x$with_ccif = xyes ; then
 #user override
 AS_IF([test "x$CCIF_LIBS" != x && test "x$CCIF_CXXFLAGS" != x ],
 [
@@ -33,7 +26,7 @@ AS_IF([test "x$CCIF_LIBS" != x && test "x$CCIF_CXXFLAGS" != x ],
 ],
 [
 saved_LIBS="$LIBS"
-saved_CXXFLAGS="$CXXFLAGS"
+saved_CFLAGS="$CFLAGS"
 CCIF_CXXFLAGS=""
 CCIF_LIBS=""
 
@@ -54,7 +47,7 @@ src
 lib/ccif'
 for ac_dir in $ac_ccif_dirs; do
   if test -r "$ccif_prefix/$ac_dir/ccif/sym.h"; then
-    ac_CCIF_CXXFLAGS="-I$ccif_prefix/$ac_dir"
+    ac_CCIF_CXXFLAGS="-I$ccif_prefix/$ac_dir -I$ccif_prefix/$ac_dir/ccif"
     break
     fi
   done
@@ -70,7 +63,9 @@ for ac_dir in $ac_ccif_dirs; do
     fi
   done
   done
-
+  
+  test x"$ac_CCIF_CXXFLAGS" != x && have_ccif=yes
+  test x"$ac_CCIF_LDOPTS" != x && have_ccif=yes
 else
  # the compiler looks in the "standard" places for CCIF.  In real life,
  # it would be quite unlikely that CCIF would be installed in /usr/include, 
@@ -78,20 +73,6 @@ else
  ac_CCIF_CXXFLAGS=""
  ac_CCIF_LDOPTS=""
 fi
-
-AC_MSG_CHECKING([for CCCIFManager in CCIF])
-	LIBS="$ac_CCIF_LDOPTS $saved_LIBS"
-	CXXFLAGS="$ac_CCIF_CXXFLAGS $saved_CXXFLAGS"
-	#
-	# AC_TRY_LINK uses the c compiler (set by AC_LANG), so we will
-	# temporarily reassign $CC to the c++ compiler.
- 	#
-	AC_LANG_PUSH(C)
-	AC_TRY_LINK([#include "ccif/sym.h"] ,[ zzs_scope();  ], have_ccif=yes, have_ccif=no)
-	AC_LANG_POP(C)  # the language we have just quit
-
- LIBS="$saved_LIBS"
- CXXFLAGS="$saved_CXXFLAGS"
 
 ]) # user override
 
@@ -102,8 +83,6 @@ AS_IF([test "x$have_ccif" = xyes],
      ifelse([$1], , :, [$1])],
   [  AC_MSG_RESULT($have_ccif)
      ifelse([$2], , :, [$2])] )
-
-fi #dnl --with-ccif 
 
 AC_SUBST(CCIF_CXXFLAGS)
 AC_SUBST(CCIF_LIBS)
