@@ -193,7 +193,7 @@ top_srcdir = @top_srcdir@
 @FORTRAN_LIB_TRUE@FORTRAN_LIB = fortran
 SUBDIRS = ccp4 $(FORTRAN_LIB) data
 DIST_SUBDIRS = ccp4 fortran data
-EXTRA_DIST = AUTHORS COPYING ChangeLog INSTALL NEWS README
+EXTRA_DIST = AUTHORS COPYING ChangeLog INSTALL NEWS README macros/ccif.m4 macros/mmdb.m4
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

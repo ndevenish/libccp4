@@ -8,4 +8,4 @@ endif
 SUBDIRS = ccp4 $(FORTRAN_LIB) data
 DIST_SUBDIRS = ccp4 fortran data
 
-EXTRA_DIST = AUTHORS COPYING ChangeLog INSTALL NEWS README
+EXTRA_DIST = AUTHORS COPYING ChangeLog INSTALL NEWS README macros/ccif.m4 macros/mmdb.m4

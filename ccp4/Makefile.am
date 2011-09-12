@@ -1,3 +1,7 @@
+INCLUDES = $(MMDB_CXXFLAGS) $(CCIF_CXXFLAGS)
+
+AM_LDFLAGS = $(MMDB_LIBS) $(CCIF_LIBS)
+
 libccp4c_la_SOURCES = \
 ccp4_array.c cmap_data.c cmtzlib.c ccp4_general.c   \
 cmap_header.c csymlib.c ccp4_parser.c cmap_labels.c cvecmat.c            \
