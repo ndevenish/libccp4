@@ -3,6 +3,10 @@ if FORTRAN_LIB
   FONTPACK = fontpack
 endif
 
+INCLUDES = $(MMDB_CXXFLAGS) $(CCIF_CXXFLAGS)
+
+AM_LDFLAGS = $(MMDB_LIBS) $(CCIF_LIBS)
+
 noinst_PROGRAMS = $(FONTPACK)
 
 fontpack_SOURCES = fontpack.f

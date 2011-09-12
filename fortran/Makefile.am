@@ -4,6 +4,10 @@ else
   CCIF_API = harv_dummy.f
 endif
 
+INCLUDES = $(MMDB_CXXFLAGS) $(CCIF_CXXFLAGS)
+
+AM_LDFLAGS = $(MMDB_LIBS) $(CCIF_LIBS)
+
 lib_LTLIBRARIES = libccp4f.la
 
 libccp4f_c_files = \
