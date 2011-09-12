@@ -9,16 +9,26 @@ AM_INIT_AUTOMAKE(ccp4, 6.1)
 
 AC_CONFIG_SRCDIR([ccp4/cmtzlib.c])
 AM_CONFIG_HEADER(config.h)
+AC_CONFIG_MACRO_DIR([macros])
 
 AC_PROG_LIBTOOL
 
 AC_PROG_CC
+AC_PROG_CXX
+
 
 AC_ARG_ENABLE(fortran, AS_HELP_STRING([--enable-fortran],[compile fortran API]),
 [fortran_api=$enableval], [fortran_api=yes])
 
 AC_ARG_ENABLE(ccif, AS_HELP_STRING([--enable-ccif],[compile ccif API]),
 [ccif_api=$enableval], [ccif_api=yes])
+
+AC_ARG_WITH(ccif,
+  AC_HELP_STRING( [--with-ccif=PFX], [use ccif library (default NO) and set prefix] ),
+  [
+    ccif_api=yes
+    test "$withval" = yes || ccif_prefix="$withval" ],
+  [ with_ccif="$ccif_api" ] )
 
 AM_CONDITIONAL([FORTRAN_LIB], [ test "x$fortran_api" = xyes ])
 AM_CONDITIONAL([CCIF_API], [ test "x$ccif_api" = xyes ])
@@ -112,7 +122,7 @@ AM_PATH_MMDB(,
   ]
 )
 
-if test x"ccif_api" = xyes ; then
+if test x"$ccif_api" = xyes ; then
 AM_PATH_CCIF(,
   [ if test "x$ccif_prefix" != x ; then
       if test "x$ac_CCIF_CXXFLAGS" != x ; then
