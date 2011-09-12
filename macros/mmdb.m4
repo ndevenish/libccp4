@@ -18,16 +18,17 @@ AC_DEFUN([AM_PATH_MMDB],
 AC_PROVIDE([AM_PATH_MMDB])
 
 AC_ARG_WITH(mmdb,
-  AC_HELP_STRING( [--with-mmdb=PFX], [use mmdb library (default NO) and set prefix] ),
+  AC_HELP_STRING( [--with-mmdb=PFX], [use mmdb library and set prefix] ),
   [
-    test "$withval" = no || with_mmdb=yes 
+    test "$withval" = no || mmdb_prefix="" 
     test "$withval" = yes || mmdb_prefix="$withval" ],
-  [ with_mmdb="$enable_mmdb" ] ) 
+  [ mmdb_prefix="" ] ) 
 
-if test x$with_mmdb = xyes ; then
 #user override
 AS_IF([test "x$MMDB_LIBS" != x && test "x$MMDB_CXXFLAGS" != x ],
 [
+  ac_MMDB_LDOPTS=$MMDB_LIBS
+  ac_MMDB_CXXFLAGS=$MMDB_CXXFLAGS
   have_mmdb=yes
 ],
 [
@@ -86,9 +87,9 @@ AC_MSG_CHECKING([for CMMDBManager in MMDB])
 	# AC_TRY_LINK uses the c compiler (set by AC_LANG), so we will
 	# temporarily reassign $CC to the c++ compiler.
  	#
-	#AC_LANG_PUSH(C++)
+        AC_LANG_PUSH(C++)
 	AC_TRY_LINK([#include "mmdb/mmdb_manager.h"] ,[ CMMDBManager a;  ], have_mmdb=yes, have_mmdb=no)
-#	AC_LANG_POP(C++)  # the language we have just quit
+        AC_LANG_POP(C++)
 
  LIBS="$saved_LIBS"
  CXXFLAGS="$saved_CXXFLAGS"
@@ -102,8 +103,6 @@ AS_IF([test "x$have_mmdb" = xyes],
      ifelse([$1], , :, [$1])],
   [  AC_MSG_RESULT($have_mmdb)
      ifelse([$2], , :, [$2])] )
-
-fi #dnl --with-mmdb 
 
 AC_SUBST(MMDB_CXXFLAGS)
 AC_SUBST(MMDB_LIBS)
