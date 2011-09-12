@@ -107,7 +107,6 @@ AM_PATH_MMDB(,
         have_mmdb=yes
       fi
     else
-     test $enable_mmdb = yes &&
        AC_MSG_ERROR([mmdb not found])
     fi
   ]
