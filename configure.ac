@@ -20,7 +20,7 @@ AC_PROG_CXX
 AC_ARG_ENABLE(fortran, AS_HELP_STRING([--enable-fortran],[compile fortran API]),
 [fortran_api=$enableval], [fortran_api=yes])
 
-AC_ARG_ENABLE(ccif, AS_HELP_STRING([--enable-ccif],[compile ccif API]),
+AC_ARG_ENABLE(ccif, AS_HELP_STRING([--enable-ccif],[compile ccif API for fortran]),
 [ccif_api=$enableval], [ccif_api=yes])
 
 AC_ARG_WITH(ccif,
@@ -92,7 +92,6 @@ case $host_os in
         ;;
       esac 
 esac
-])
 
 AM_PATH_MMDB(,
   [ if test "x$mmdb_prefix" != x ; then
@@ -148,6 +147,8 @@ AM_PATH_CCIF(,
   ]
 )
 fi
+
+]) #dnl fortran API elements
 
 PACKAGE_ROOT=$prefix
 test "x$PACKAGE_ROOT" = xNONE && PACKAGE_ROOT=$ac_default_prefix

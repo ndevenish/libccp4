@@ -1490,7 +1490,7 @@ Optional Features:
   --enable-dependency-tracking   do not reject slow dependency extractors
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-fortran        compile fortran API
-  --enable-ccif           compile ccif API
+  --enable-ccif           compile ccif API for fortran
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -18878,9 +18878,6 @@ _ACEOF
       esac
 esac
 
-fi
-
-
 
 
 
@@ -19176,6 +19173,10 @@ fi
 
 
 fi
+
+
+fi
+ #dnl fortran API elements
 
 PACKAGE_ROOT=$prefix
 test "x$PACKAGE_ROOT" = xNONE && PACKAGE_ROOT=$ac_default_prefix
