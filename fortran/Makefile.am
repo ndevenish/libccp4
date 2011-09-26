@@ -27,4 +27,4 @@ libccp4f_la_LDFLAGS = -version-info 6:0:1
 AM_CFLAGS = -I$(srcdir)/../ccp4 
 
 unix.f : $(srcdir)/unix.m4
-	$(M4) unix.m4 >unix.f
+	$(M4) $(srcdir)/unix.m4 >unix.f
