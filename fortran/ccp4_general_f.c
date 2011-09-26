@@ -26,6 +26,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#if HAVE_CONFIG_H
+# include "config.h"
+#endif
 #include "ccp4_errno.h"
 #include "ccp4_fortran.h"
 #include "ccp4_parser.h"
