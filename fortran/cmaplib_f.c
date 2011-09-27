@@ -233,8 +233,7 @@ static int SymopToFMat4(char *symchs_begin, char *symchs_end, float *rot)
   float sign = 1.0f, value = 0.0f, value2;
   char *cp, *ptr_symchs = symchs_begin, ch;
   int j,k;                                 /* loop variables */
-  unsigned char Isep = FALSE;                             /* parsed seperator? *
-/
+  unsigned char Isep = FALSE;                             /* parsed seperator? */
  
   /* initialise and clear the relevant */
   /* use knowledge that are using [4][4] for rot */
@@ -686,7 +685,7 @@ FORTRAN_SUBR( MRDHDS, mrdhds,
 
   ioArray[ii] = (IOConvMap *) malloc(sizeof(IOConvMap));
 
-  if ((ioArray[ii]->mapfile = ccp4_cmap_open(file, O_RDONLY)) == NULL) 
+  if ((ioArray[ii]->mapfile = ccp4_cmap_open(file, O_RDONLY)) == NULL) {
     if (!(*ifail)) {
       ccp4_signal(CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_CantOpenFile),
 		  "MRDHDS", NULL);
@@ -697,6 +696,7 @@ FORTRAN_SUBR( MRDHDS, mrdhds,
       *ifail = -1; 
       return ;
     }
+  }
   ioArray[ii]->ipc = *iunit;
   ioArray[ii]->logname = strdup(temp_map);
 
@@ -753,7 +753,7 @@ FORTRAN_SUBR( CCP4_MAP_READ_OPEN_HEADER_CHECK,
 
   ioArray[ii] = (IOConvMap *) malloc(sizeof(IOConvMap));
 
-  if ((ioArray[ii]->mapfile = ccp4_cmap_open(file, O_RDONLY)) == NULL) 
+  if ((ioArray[ii]->mapfile = ccp4_cmap_open(file, O_RDONLY)) == NULL) {
     if (!(*ifail)) {
       ccp4_signal(CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_CantOpenFile),
 		  "MRDHDS", NULL);
@@ -764,6 +764,7 @@ FORTRAN_SUBR( CCP4_MAP_READ_OPEN_HEADER_CHECK,
     *ifail = -1; 
     return;
     }
+  }
   ioArray[ii]->ipc = *iunit;
   ioArray[ii]->logname = strdup(temp_map);
 

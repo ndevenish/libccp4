@@ -173,7 +173,7 @@ FORTRAN_SUBR ( USTENV, ustenv,
 
   temp_name = ccp4_FtoCString(FTN_STR(str), FTN_LEN(str));
 
-  if (*result = ccp4_utils_setenv (temp_name))  
+  if ((*result = ccp4_utils_setenv (temp_name)) != 0)
     ccp4_fatal("USTENV/CCP4_SETENV: Memory allocation failure"); 
   free(temp_name);
 }
@@ -759,7 +759,7 @@ int isatty_(int *iunit)
 #endif
 
 /* neither gfortran or g95 have isatty */
-/* not true, since August 05 this has been added to gfortran"
+/* not true, since August 05 this has been added to gfortran */
 
 /* G95 support */
 #if defined(G95)
@@ -796,8 +796,9 @@ void ltime_(int *stime, int tarray[9])
 {
   int i;
   struct tm ldatim;
+  time_t t = *stime;
 
-  if (localtime_r((time_t) stime, &ldatim) != NULL) {
+  if (localtime_r(&t, &ldatim) != NULL) {
     tarray[0] = ldatim.tm_sec;
     tarray[1] = ldatim.tm_min;
     tarray[2] = ldatim.tm_hour;
@@ -829,8 +830,9 @@ void gmtime_(int *stime, int gmarray[9])
 {
   int i;
   struct tm udatim;
+  time_t t = *stime;
 
-  if (gmtime_r((time_t) stime, &udatim) != NULL) {
+  if (gmtime_r(&t, &udatim) != NULL) {
     gmarray[0] = udatim.tm_sec;
     gmarray[1] = udatim.tm_min;
     gmarray[2] = udatim.tm_hour;

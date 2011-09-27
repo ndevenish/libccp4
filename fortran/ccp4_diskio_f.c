@@ -379,12 +379,13 @@ FORTRAN_SUBR ( QREAD, qread,
     (int *iunit, uint8 *buffer, int *nitems, int *result))
 {
   *result = 0;
-  if ( ccp4_file_read (_ioChannels[*iunit]->iobj, buffer, *nitems) != *nitems) 
+  if ( ccp4_file_read (_ioChannels[*iunit]->iobj, buffer, *nitems) != *nitems){
     if ( ccp4_file_feof(_ioChannels[*iunit]->iobj) ) 
       *result = -1;
     else 
       ccp4_signal(CCP4_ERRLEVEL(4) | CCP4_ERRNO(CIO_ReadFail),
 		  "QREAD", NULL);
+  }
 }
 
 /**
@@ -407,12 +408,13 @@ FORTRAN_SUBR ( QREADI, qreadi,
     (int *iunit, uint8* buffer, int *nitems, int *result))
     {
   *result = 0;
-  if ( ccp4_file_readint (_ioChannels[*iunit]->iobj, buffer, *nitems) != *nitems) 
+  if ( ccp4_file_readint (_ioChannels[*iunit]->iobj, buffer, *nitems) != *nitems) {
     if ( ccp4_file_feof(_ioChannels[*iunit]->iobj) ) 
       *result = -1;
     else 
       ccp4_signal(CCP4_ERRLEVEL(4) | CCP4_ERRNO(CIO_ReadFail),
 		  "QREADI", NULL);
+  }
 }
 
 /**
@@ -435,12 +437,13 @@ FORTRAN_SUBR ( QREADI2, qreadi2,
     (int *iunit, uint8* buffer, int *nitems, int *result))
     {
   *result = 0;
-  if ( ccp4_file_readshort (_ioChannels[*iunit]->iobj, buffer, *nitems) != *nitems) 
+  if ( ccp4_file_readshort (_ioChannels[*iunit]->iobj, buffer, *nitems) != *nitems) {
     if ( ccp4_file_feof(_ioChannels[*iunit]->iobj) ) 
       *result = -1;
     else 
       ccp4_signal(CCP4_ERRLEVEL(4) | CCP4_ERRNO(CIO_ReadFail),
 		  "QREADI2", NULL);
+  }
 }
 
 /**
@@ -463,12 +466,13 @@ FORTRAN_SUBR ( QREADR, qreadr,
     (int *iunit, uint8* buffer, int *nitems, int *result))
     {
   *result = 0;
-  if ( ccp4_file_readfloat (_ioChannels[*iunit]->iobj, buffer, *nitems) != *nitems) 
+  if ( ccp4_file_readfloat (_ioChannels[*iunit]->iobj, buffer, *nitems) != *nitems) { 
     if ( ccp4_file_feof(_ioChannels[*iunit]->iobj) ) 
       *result = -1;
     else 
       ccp4_signal(CCP4_ERRLEVEL(4) | CCP4_ERRNO(CIO_ReadFail),
 		  "QREADR", NULL);
+  }
 }
 
 /**
@@ -491,12 +495,13 @@ FORTRAN_SUBR ( QREADQ, qreadq,
     (int *iunit, uint8* buffer, int *nitems, int *result))
     {
   *result = 0;
-  if ( ccp4_file_readcomp (_ioChannels[*iunit]->iobj, buffer, *nitems) != *nitems) 
+  if ( ccp4_file_readcomp (_ioChannels[*iunit]->iobj, buffer, *nitems) != *nitems) {
     if ( ccp4_file_feof(_ioChannels[*iunit]->iobj) ) 
       *result = -1;
     else 
       ccp4_signal(CCP4_ERRLEVEL(4) | CCP4_ERRNO(CIO_ReadFail),
 		  "QREADQ", NULL);
+  }
 }
 
 /**

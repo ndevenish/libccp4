@@ -876,11 +876,11 @@ void ccp4spg_name_de_colon(char *name) {
 
   /* various spacegroup names have settings specified by colon. We'll
      deal with these on a case-by-case basis. */
-  if (ch1 = strstr(name,":R")) {
+  if ((ch1 = strstr(name,":R")) != NULL) {
   /* :R spacegroup should be R already so just replace with blanks */
     *ch1 = ' ';
     *(ch1+1) = ' ';
-  } else if (ch1 = strstr(name,":H")) {
+  } else if ((ch1 = strstr(name,":H")) != NULL) {
   /* :H spacegroup should be R so change to H */
     *ch1 = ' ';
     *(ch1+1) = ' ';
@@ -1033,7 +1033,7 @@ int ccp4spg_put_in_asu(const CCP4SPG* sp, const int hin, const int kin, const in
                         lin*sp->symop[i].rot[2][1] ); 
     *lout = (int) rint( hin*sp->symop[i].rot[0][2] + kin*sp->symop[i].rot[1][2] + 
                         lin*sp->symop[i].rot[2][2] ); 
-    if (isign = ccp4spg_is_in_pm_asu(sp,*hout,*kout,*lout)) {
+    if ((isign = ccp4spg_is_in_pm_asu(sp,*hout,*kout,*lout)) != 0) {
       *hout = *hout * isign;
       *kout = *kout * isign;
       *lout = *lout * isign;

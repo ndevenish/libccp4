@@ -46,7 +46,7 @@ int number_sections(CMMFile *mfile)
  \return offset in file, or EOF */
 int ccp4_cmap_seek_section(CMMFile *mfile, int sec, unsigned int whence)
 {
-  size_t curr_posn, item_size;
+  size_t curr_posn;
   div_t secs;
   int result = EOF;
   
@@ -139,7 +139,7 @@ int ccp4_cmap_write_section(CMMFile *mfile, const void *section)
   \return 1 on success, 0 on failure */
 int ccp4_cmap_read_section(CMMFile *mfile, void *section)
 {
-  int result = 0, item_size;
+  int result = 0;
   div_t secs;
   off_t curr_posn;
   const off_t data_offset = 0;
@@ -190,7 +190,7 @@ int ccp4_cmap_read_section(CMMFile *mfile, void *section)
   \return 1 on success, 0 on failure */
 int ccp4_cmap_read_section_header(const CMMFile *mfile, char *header)
 {
-  int result, item_size;
+  int result;
   div_t secs;
   
   if (mfile == NULL || header == NULL) {
@@ -411,7 +411,6 @@ int ccp4_cmap_read_row(CMMFile *mfile, void *row)
   \return 0 on success, EOF on failure */
 int ccp4_cmap_seek_data(CMMFile *mfile, int offset, unsigned int whence)
 {
-  int item_size;
   int result = EOF;
   
   if ( mfile == NULL ) {

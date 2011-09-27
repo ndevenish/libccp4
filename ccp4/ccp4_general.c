@@ -1353,7 +1353,7 @@ void ccp4_banner(void) {
 
   /* Program version number */
   strcpy(prog_vers_full,ccp4_prog_vers(NULL));
-  if (prog_vers_full && strlen(prog_vers_full)) {
+  if (strlen(prog_vers_full)) {
     strcpy(prog_vers_str,"version ");
     strncpy(prog_vers_str+8,prog_vers_full,10);
     prog_vers_str[18] = '\0';

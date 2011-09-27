@@ -89,12 +89,12 @@ static char user_label_in[MFILES][MCOLUMNS][2][31];
 static char user_label_out[MFILES][MCOLUMNS][2][31];
 static MTZCOL *collookup[MFILES][MCOLUMNS];
 static MTZCOL *collookup_out[MFILES][MCOLUMNS];
-static int sortorder[MFILES][5] = {0};
+static int sortorder[MFILES][5] = {{0}};
 static int logmss[MFILES][MCOLUMNS];
 static int ndatmss[MFILES];
 static MTZBAT *rbat[MFILES];
 static int nbatw[MFILES] = {0};
-static double coefhkl[MFILES][6] = {0};
+static double coefhkl[MFILES][6] = {{0}};
 
 /* MVS defaults to int and doesn't like it */
 #ifdef _MSC_VER
@@ -896,7 +896,7 @@ FORTRAN_SUBR ( LRIDX, lridx,
 		  int *isets, float *datcell, float *datwave,
                   int *ndatasets))
 {
-  int i,j,k,x,d,iset;
+  int j,k,x,d,iset;
   char cxname[64], cdname[64], cpname[64];
   int cisets;
   float cdatcell[6], cdatwave;
@@ -1021,7 +1021,7 @@ FORTRAN_SUBR ( LRIDC, lridc,
 		  int *isets, float *datcell, float *datwave,
                   int *ndatasets))
 {
-  int i,j,k,x,d,iset;
+  int j,k,x,d,iset;
   char cxname[64], cdname[64], cpname[64];
   int cisets;
   float cdatcell[6], cdatwave;
@@ -1081,7 +1081,7 @@ FORTRAN_SUBR ( LRID, lrid,
 		  fpstr dataset_name, int dataset_name_len,
 		  int *isets, int *ndatasets))
 {
-  int i,j,k,x,d,iset;
+  int j,k,x,d,iset;
   char cxname[64], cdname[64], cpname[64];
   int cisets;
   float cdatcell[6], cdatwave;
@@ -1188,7 +1188,7 @@ FORTRAN_SUBR ( LRREFF, lrreff,
 	       (const int *mindx, float *resol, float adata[], ftn_logical *eof),
 	       (const int *mindx, float *resol, float adata[], ftn_logical *eof))
 {
- int i,ieof,mcol,biomol,mindex;
+ int ieof,biomol,mindex;
 
   /*   CMTZLIB_DEBUG(puts("CMTZLIB_F: LRREFF");) */
 
@@ -1700,7 +1700,7 @@ FORTRAN_SUBR ( LWOPEN_NOEXIT, lwopen_noexit,
    for (i = 0; i < mtzdata[*mindx-1]->nxtal; ++i)
     for (j = 0; j < mtzdata[*mindx-1]->xtal[i]->nset; ++j)
      for (k = 0; k < mtzdata[*mindx-1]->xtal[i]->set[j]->ncol; ++k)
-       if (icol = mtzdata[*mindx-1]->xtal[i]->set[j]->col[k]->source)
+       if ((icol = mtzdata[*mindx-1]->xtal[i]->set[j]->col[k]->source) != 0)
          collookup_out[*mindx-1][icol-1] = mtzdata[*mindx-1]->xtal[i]->set[j]->col[k];
  }
 
@@ -2129,7 +2129,7 @@ FORTRAN_SUBR ( LWIDASX, lwidasx,
 	       (const int *mindx, int *nlprgo, fpstr xname, fpstr dname, int *iappnd),
 	       (const int *mindx, int *nlprgo, fpstr xname, int xname_len, 
                       fpstr dname, int dname_len, int *iappnd))
-{int i,j,k,istart;
+{int i,j,istart;
   char *crystal_name;
   char *dataset_name;
   MTZSET *baseset=NULL;

@@ -83,7 +83,6 @@ void *ccp4_cmap_open(const char *filename, int mode)
   CMMFile *mfile;
   CCP4File *cfile;
   const size_t stamp_offset = 212U;
-  char type[4];
   
   if ((cfile = ccp4_file_open(filename, mode)) == NULL) {
     ccp4_signal( CCP4_ERRLEVEL(3) | CMAP_ERRNO(CMERR_CantOpenFile),

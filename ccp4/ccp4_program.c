@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "ccp4_program.h"
 #include "ccp4_parser.h"
 #include "ccp4_utils.h"
