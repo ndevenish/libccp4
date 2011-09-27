@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS = -I macros
+
 # pkgconfigdir = $(libdir)/pkconfig
 # pkgconfig_DATA = libccp4c.pc libccp4f.pc
 
