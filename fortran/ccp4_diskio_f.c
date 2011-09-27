@@ -710,7 +710,7 @@ FORTRAN_SUBR ( QQINQ, qqinq,
       log_name = strdup("diskio.dft"); 
     if (!(file_name = getenv(log_name)))
       file_name = log_name;
-    for ( *istrm = 1; *istrm == MAXFILES; *istrm++)
+    for ( *istrm = 1; *istrm != MAXFILES; (*istrm)++)
       if (!strcmp(file_name,_ioChannels[*istrm]->iobj->name)) break;
   }
   if (*istrm != MAXFILES) {
