@@ -532,7 +532,7 @@ uninstall-am: uninstall-libLTLIBRARIES
 
 
 unix.f : $(srcdir)/unix.m4
-	$(M4) unix.m4 >unix.f
+	$(M4) $(srcdir)/unix.m4 >unix.f
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

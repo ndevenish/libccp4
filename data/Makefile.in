@@ -467,6 +467,8 @@ uninstall-am: uninstall-dist_pkgdataDATA
 
 
 font84.dat: fontpack font84.ascii
+	rm -f $@
+	[ -e font84.ascii ] || ln -s $(srcdir)/font84.ascii .
 	./fontpack
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
