@@ -538,8 +538,7 @@ FORTRAN_SUBR ( CCHMOD, cchmod,
 # if CALL_LIKE_MVS == 1
 int __stdcall ISATTY (int *lunit)
 {
-  lunit = 0 ;
-  return *lunit;
+  return 0;
 }
 
 /* erfc doesnt seem to be in Mircrosoft Visual Studdio so this is a fudge */
@@ -552,8 +551,7 @@ float __stdcall ERFC(float *value)
 
 int isatty_ (int *lunit)
 {
-  lunit = 0 ;
-  return *lunit;
+  return 0;
 }
 
 float erfc_ (float *value)
