@@ -206,6 +206,8 @@ FORTRAN_SUBR ( LROPEN, lropen,
  if (mtzdata[*mindx-1] == NULL) {
    printf("Error: failed to open file for read!\n");
    *ifail = -1;
+   free(fullfilename); 
+   free(temp_name);
    return;
  }
  rlun[*mindx-1] = 1;
