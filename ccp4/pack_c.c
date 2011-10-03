@@ -1430,12 +1430,12 @@ void mirror_longimg(LONG *img, LONG *x, LONG *y);
     { c = i = *x = *y = 0;
       while ((++i < BUFSIZ) && (c != EOF) && (c != '\n') && (*x==0) && (*y==0)) 
       { if ((header[i] = c = getc(packfile)) == '\n')
-        { if (sscanf(header, PACKIDENTIFIER, x, y) == 2)
-            ;
+        { if (sscanf(header, PACKIDENTIFIER, x, y) == 2) {
 /*          version = 1; */  
-          else if (sscanf(header, V2IDENTIFIER, x, y) == 2)
-            ;
+          }
+          else if (sscanf(header, V2IDENTIFIER, x, y) == 2) {
 /*          version = 2; */
+          }
         }
       }
     }
