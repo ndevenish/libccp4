@@ -796,7 +796,13 @@ void ltime_(int *stime, int tarray[9])
   struct tm ldatim;
   time_t t = *stime;
 
+#ifdef __MINGW32__ // no localtime_r in MinGW
+  struct tm* lt = localtime(&t);
+  if (lt != NULL) {
+    ldatim = *lt;
+#else
   if (localtime_r(&t, &ldatim) != NULL) {
+#endif
     tarray[0] = ldatim.tm_sec;
     tarray[1] = ldatim.tm_min;
     tarray[2] = ldatim.tm_hour;
@@ -830,7 +836,13 @@ void gmtime_(int *stime, int gmarray[9])
   struct tm udatim;
   time_t t = *stime;
 
+#ifdef __MINGW32__ // no gmtime_r in MinGW
+  struct tm *p = gmtime(&t);
+  if (p != NULL) {
+    udatim = *p;
+#else
   if (gmtime_r(&t, &udatim) != NULL) {
+#endif
     gmarray[0] = udatim.tm_sec;
     gmarray[1] = udatim.tm_min;
     gmarray[2] = udatim.tm_hour;
