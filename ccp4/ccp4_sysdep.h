@@ -74,7 +74,10 @@
 #  define CALL_LIKE_VMS 1
 #endif
 
-#if defined(_MSC_VER) || defined (WIN32)
+#ifdef __MINGW32__
+#  define CALL_LIKE_SUN 1
+#  define KNOWN_MACHINE
+#elif defined(_MSC_VER) || defined (WIN32)
 # if defined (_MSC_VER) && (_MSC_VER >= 800)
 #  define CALL_LIKE_MVS 2
 # else
