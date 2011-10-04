@@ -54,7 +54,7 @@ are just generally useful (platform independent date).
 #include <io.h>
 #endif
 
-#if !defined (_MSC_VER)
+#if !defined (_WIN32)
 #include <pwd.h>
 #endif
 
@@ -466,6 +466,7 @@ char *ccp4_utils_username(void)
 { 
   static char userid_unknown[] = "unknown";
   /* struct passwd *passwd_struct=NULL; */
+#ifndef _WIN32
   char *userid=NULL;
   if (!(userid = getlogin())) {
     /*
@@ -477,6 +478,9 @@ char *ccp4_utils_username(void)
     userid = userid_unknown;
   }
   return(userid); 
+#else
+  return userid_unknown;
+#endif
 }
 #endif
 
@@ -657,6 +661,9 @@ char *ccp4_utils_time(char *time)
 #if ! defined (_MSC_VER) 
 float ccp4_utils_etime (float tarray[2])
 {
+#ifdef _WIN32
+  tarray[0] = tarray[1] = 0.;
+#else
   static long clk_tck = 0;
 
   struct tms buffer;
@@ -664,6 +671,7 @@ float ccp4_utils_etime (float tarray[2])
   (void) times(&buffer);
   tarray[0] = (float) buffer.tms_utime / (float)clk_tck;
   tarray[1] = (float) buffer.tms_stime / (float)clk_tck;
+#endif
   return (tarray[0]+tarray[1]);
 }
 #endif
