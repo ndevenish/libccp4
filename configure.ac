@@ -35,7 +35,7 @@ if test "x$fortran_api" = xyes; then
   AC_PROG_F77(_AC_F95_FC)
   cc_basename=`$ECHO "X$compiler_F77" | $Xsed -e 's%.*/%%' -e "s%^$host_alias-%%"`
   case $host_os in
-    linux* )
+    linux*|mingw* )
       case $cc_basename,$host_cpu in    
         ifort*)
           M4=${M4:-"m4 -D_ifc=8"}
