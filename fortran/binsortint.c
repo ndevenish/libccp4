@@ -43,6 +43,9 @@ For information about key type values see binsortkey.h
 				Good Luck	J. Zelinka
 ***************************************************************************/
 
+/* Probably, these function have never been used on Windows. */
+#ifndef _WIN32
+
 #include "binsort.h"
 
 #include <stdio.h>
@@ -412,3 +415,4 @@ char            *record;
     } else			/* e.g. premature EOF */
       return (EIO);
 }
+#endif /* _WIN32 */
