@@ -19,7 +19,7 @@ dist_pkgdata_DATA = \
 atomsf_neutron.lib	atomsf.lib \
 syminfo.lib   $(FONT84)	symop.lib
 
-font84.dat: fontpack font84.ascii
+font84.dat: fontpack$(EXEEXT) font84.ascii
 	rm -f $@
 	[ -e font84.ascii ] || ln -s $(srcdir)/font84.ascii .
-	./fontpack
+	./fontpack$(EXEEXT)
