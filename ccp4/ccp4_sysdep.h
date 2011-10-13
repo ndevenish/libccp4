@@ -189,9 +189,8 @@
 #  endif
 #endif
 
-/* rint() function does not seen to exist for mingw32
-   defined in library_utils.c */
-#  if ((defined _WIN32) || (defined _MSC_VER)) && (!defined rint)
+/* defined in library_utils.c */
+#if defined(_MSC_VER)
   double rint(double x);
 #endif
 
