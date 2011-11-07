@@ -393,12 +393,7 @@ int ccp4fyp(int argc, char **argv)
   /* Program information requested by -i(nfo) option */
   if (info) {
     /* Print program information and stop */
-    printf("CCP4 software suite: library version %s\n",CCP4_VERSION_NO);
-    printf("CCP4 software suite: patch level     %s\n",CCP4_PATCH_LEVEL);
-    printf("Program:             %s",ccp4ProgramName(NULL));
-    if (ccp4_prog_vers(NULL) && strlen(ccp4_prog_vers(NULL))) 
-      printf("; version %s",ccp4_prog_vers(NULL));
-    printf("\n");
+    ccp4_prog_info();
     exit(0);
   }
 

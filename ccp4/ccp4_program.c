@@ -76,6 +76,20 @@ char *ccp4ProgramName(const char *progname)
   return programname;
 }
 
+/* ccp4_prog_info
+
+   Print program info for -i option.
+ */
+void ccp4_prog_info(void)
+{
+    printf("CCP4 software suite: library version %s\n",CCP4_VERSION_NO);
+    printf("CCP4 software suite: patch level     %s\n",CCP4_PATCH_LEVEL);
+    printf("Program:             %s",ccp4ProgramName(NULL));
+    if (ccp4_prog_vers(NULL) && strlen(ccp4_prog_vers(NULL))) 
+      printf("; version %s",ccp4_prog_vers(NULL));
+    printf("\n");
+}
+
 /* ccp4RCSDate
 
    Set or return program RCS date

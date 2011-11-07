@@ -75,6 +75,10 @@ char *ccp4_prog_vers(const char *progvers);
  */
 char *ccp4ProgramName(const char *progname);
 
+/** Print program info for -i option.
+ */ 
+void ccp4_prog_info(void);
+
 /** Set or return program RCS date
  * @param rcs_string Date string, or NULL to query existing value.
  * @return Date string
