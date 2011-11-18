@@ -91,6 +91,7 @@ ISYM column is present.
 
 #define MSPAC 4
 #define MAXSYM 192
+/* the two constants below are also defined in ccp4/csymlib.c, keep in sync */
 #define MAXSYMOPS 20
 #define MAXLENSYMOPSTR 80
 
@@ -114,99 +115,6 @@ FORTRAN_SUBR ( INVSYM, invsym,
   CSYMLIB_DEBUG(puts("CSYMLIB_F: INVSYM");)
 
   invert4matrix(a,ai);
-}
-
-/* symfr_driver
-
-   Convert one or more symop description strings into 4x4 matrix
-   representations via multiple calls to symop_to_mat4.
-
-   "line" is a string containing one or more symop description
-   strings to be translated into matrix representations.
-   Multiple symmetry operations can be specified in a single
-   input line, and must be separated by * (with spaces either
-   side).
-   "rot" is an array of 4x4 matrices in which the symops are
-   returned.
-
-   On success, symfr returns the number of symops translated and
-   stored; on failure -1 is returned.
-
-   See comments for SYMFR2 for description of the symop formats.
-*/
-int symfr_driver (const char *line, float rot[MAXSYMOPS][4][4])
-{
-  CCP4PARSERARRAY *symops=NULL;
-  int i,j,k,got_symop=0;
-  int ns=0,nsym=0,maxsymops=MAXSYMOPS;
-  char *symop=NULL,symopbuf[MAXLENSYMOPSTR];
-  float tmp_rot[4][4];
-
-  CSYMLIB_DEBUG(puts("CSYMLIB_F: symfr_driver");)
-
-  /* Set up a parser structure to break the line up into
-     individual symop strings */
-  if ((symops = ccp4_parse_start(maxsymops)) == NULL) {
-    /* Couldn't set up a parser structure - abort */
-    printf(" symfr_driver: failed to set up parser structure for reading symops.\n");
-    return -1;
-  }
-
-  /* Tokenise the line, splitting on spaces */
-  ccp4_parse_delimiters(symops," ","");
-  if ((ns = ccp4_parse(line,symops)) > 0) {
-
-    /* Initialise */
-    got_symop = 0;
-    symopbuf[0] = '\0';
-
-    /* Loop over tokens and reconstruct symop strings */
-    for (i=0; i<ns; ++i) {
-      symop = symops->token[i].fullstring;
-
-      /* If there are multiple symop strings then these
-	 will be delimited by asterisks */
-      if (strlen(symop) == 1 && symop[0] == '*') {
-	/* End of symop */
-	got_symop = 1;
-      } else {
-	/* Append token to symop */
-	if (strlen(symopbuf)+strlen(symop)+1 <= MAXLENSYMOPSTR) {
-	  strcat(symopbuf,symop);
-	} else {
-	  /* Error - symop string is too long */
-	  printf("SYMFR: symmetry operator string is too long!\n");
-	  if (symops) ccp4_parse_end(symops);
-	  return -1;
-	}
-	/* Check if this is the last token, in which case
-	   flag it to be processed */
-	if ((i+1)==ns) got_symop = 1;
-      }
-
-      /* Process a complete symop */
-      if (got_symop && strlen(symopbuf) > 0) {
-	/* Translate */
-	if (!symop_to_mat4(&(symopbuf[0]),&(symopbuf[0])+strlen(symopbuf),tmp_rot[0])) {
-	  /* Error */
-	  if (symops) ccp4_parse_end(symops);
-	  return -1;
-	}
-	/* Load result into the appropriate array location */
-	for (j = 0; j < 4; ++j) 
-	  for (k = 0; k < 4; ++k) 
-	    rot[nsym][j][k] = tmp_rot[j][k];
-	nsym++;
-	/* Reset for next symop */
-	got_symop = 0;
-	symopbuf[0] = '\0';
-      }
-    }
-  }
-
-  /* Tidy up and return the number of symops */
-  if (symops) ccp4_parse_end(symops);
-  return nsym;
 }
 
 FORTRAN_SUBR ( SYMFR3, symfr3,
