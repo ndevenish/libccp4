@@ -2935,7 +2935,7 @@ int MtzPut(MTZ *mtz, const char *logname)
      ccp4_file_setmode(fileout,2);
      ccp4_file_write(fileout, (uint8 *) buf, nwords);
      ccp4_file_setmode(fileout,0);
-     if (batch->gonlab[0] != "") {
+     if (batch->gonlab[0][0] != '\0') {
        sprintf(hdrrec,"BHCH %8s%8s%8s",batch->gonlab[0],batch->gonlab[1],batch->gonlab[2]);
      } else {
        sprintf(hdrrec,"BHCH                         ");
