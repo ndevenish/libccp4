@@ -92,7 +92,9 @@ static LONG setbits[33] =
 /******************************************************************************/
 
 
-
+#if __STDC__ && !defined(PROTOTYPE)
+#define PROTOTYPE 1
+#endif
 
 /* Functions required for packing: */
 
