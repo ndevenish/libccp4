@@ -61,6 +61,10 @@ For information about key type values see binsortkey.h
 #include <sys/types.h>		/* necessary on Titan, at least, and
 				   for POSIX wait */
 
+#if __STDC__ && !defined(PROTOTYPE)
+#define PROTOTYPE 1
+#endif
+
 #define	TRUE                    1
 #define	FALSE                   0
 
