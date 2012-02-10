@@ -3220,7 +3220,9 @@ C--- Loop found
      +    ' Error in ccp4ccif_setup_context: '//
      +    'Unexpected context type for category ',
      +    catnam_in
-        CALL CCPERR(1,ERRLINE)
+        CALL CCPERR(2,ERRLINE)
+C set the return value
+        ISTAT = cat_not_present
       ENDIF
 
       ISTAT_EXP = ISTAT
