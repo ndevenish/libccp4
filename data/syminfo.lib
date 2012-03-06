@@ -52,7 +52,7 @@ basisop x,y,z
 symbol ccp4 2
 symbol Hall '-P 1'
 symbol xHM  'P -1'
-symbol old  'P -1'
+symbol old  'P 1-'
 symbol laue '-P 1' '-1'
 symbol patt '-P 1' '-1'
 symbol pgrp '-P 1' '-1'
