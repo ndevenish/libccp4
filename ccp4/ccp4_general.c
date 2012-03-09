@@ -60,7 +60,7 @@
 #include <math.h>
 #include <stdarg.h>
 
-#include "../config.h"
+#include <config.h> /* PACKAGE_ROOT */
 /* Library header files */
 #include "ccp4_fortran.h"
 #include "ccp4_utils.h"

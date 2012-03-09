@@ -52,7 +52,7 @@
 /* Define to the full name of this package. */
 #undef PACKAGE_NAME
 
-/* packge install directory */
+/* package install directory */
 #undef PACKAGE_ROOT
 
 /* Define to the full name and version of this package. */
