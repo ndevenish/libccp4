@@ -51,12 +51,11 @@ host_triplet = @host@
 @FORTRAN_LIB_TRUE@am__append_7 = data/font84.dat
 subdir = .
 DIST_COMMON = $(am__configure_deps) $(am__dist_noinst_DATA_DIST) \
-	$(ccp4include_HEADERS) $(dist_ccp4data_DATA) \
-	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/config.h.in $(top_srcdir)/configure COPYING \
-	COPYING.LESSER INSTALL build-aux/config.guess \
-	build-aux/config.sub build-aux/depcomp build-aux/install-sh \
-	build-aux/ltmain.sh build-aux/missing
+	$(ccp4include_HEADERS) $(dist_data_DATA) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
+	$(top_srcdir)/configure COPYING COPYING.LESSER INSTALL \
+	build-aux/config.guess build-aux/config.sub build-aux/depcomp \
+	build-aux/install-sh build-aux/ltmain.sh build-aux/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
@@ -92,7 +91,7 @@ am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(ccp4datadir)" \
-	"$(DESTDIR)$(ccp4datadir)" "$(DESTDIR)$(ccp4includedir)"
+	"$(DESTDIR)$(datadir)" "$(DESTDIR)$(ccp4includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 ccp4_libccp4c_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
@@ -198,7 +197,7 @@ DIST_SOURCES = $(ccp4_libccp4c_la_SOURCES) \
 	$(am__fortran_libccp4f_la_SOURCES_DIST) \
 	$(am__data_fontpack_SOURCES_DIST)
 am__dist_noinst_DATA_DIST = data/font84.ascii
-DATA = $(ccp4data_DATA) $(dist_ccp4data_DATA) $(dist_noinst_DATA)
+DATA = $(ccp4data_DATA) $(dist_data_DATA) $(dist_noinst_DATA)
 HEADERS = $(ccp4include_HEADERS)
 ETAGS = etags
 CTAGS = ctags
@@ -382,7 +381,7 @@ fortran_libccp4f_la_CPPFLAGS = -I$(srcdir)/ccp4
 fortran_libccp4f_la_LIBADD = ccp4/libccp4c.la -lmmdb $(am__append_5)
 BUILT_SOURCES = fortran/unix.f
 CLEANFILES = fortran/unix.f $(am__append_7)
-dist_ccp4data_DATA = data/atomsf_neutron.lib data/atomsf.lib \
+dist_data_DATA = data/atomsf_neutron.lib data/atomsf.lib \
                      data/syminfo.lib data/symop.lib
 
 # Files default.def and environ.def are not part of libccp4.
@@ -889,26 +888,26 @@ uninstall-ccp4dataDATA:
 	test -n "$$files" || exit 0; \
 	echo " ( cd '$(DESTDIR)$(ccp4datadir)' && rm -f" $$files ")"; \
 	cd "$(DESTDIR)$(ccp4datadir)" && rm -f $$files
-install-dist_ccp4dataDATA: $(dist_ccp4data_DATA)
+install-dist_dataDATA: $(dist_data_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(ccp4datadir)" || $(MKDIR_P) "$(DESTDIR)$(ccp4datadir)"
-	@list='$(dist_ccp4data_DATA)'; test -n "$(ccp4datadir)" || list=; \
+	test -z "$(datadir)" || $(MKDIR_P) "$(DESTDIR)$(datadir)"
+	@list='$(dist_data_DATA)'; test -n "$(datadir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(ccp4datadir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(ccp4datadir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(datadir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(datadir)" || exit $$?; \
 	done
 
-uninstall-dist_ccp4dataDATA:
+uninstall-dist_dataDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(dist_ccp4data_DATA)'; test -n "$(ccp4datadir)" || list=; \
+	@list='$(dist_data_DATA)'; test -n "$(datadir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(ccp4datadir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(ccp4datadir)" && rm -f $$files
+	echo " ( cd '$(DESTDIR)$(datadir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(datadir)" && rm -f $$files
 install-ccp4includeHEADERS: $(ccp4include_HEADERS)
 	@$(NORMAL_INSTALL)
 	test -z "$(ccp4includedir)" || $(MKDIR_P) "$(DESTDIR)$(ccp4includedir)"
@@ -1135,7 +1134,7 @@ check: $(BUILT_SOURCES)
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA) $(HEADERS) \
 		config.h
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(ccp4datadir)" "$(DESTDIR)$(ccp4datadir)" "$(DESTDIR)$(ccp4includedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(ccp4datadir)" "$(DESTDIR)$(datadir)" "$(DESTDIR)$(ccp4includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -1197,7 +1196,7 @@ info: info-am
 info-am:
 
 install-data-am: install-ccp4dataDATA install-ccp4includeHEADERS \
-	install-dist_ccp4dataDATA
+	install-dist_dataDATA
 
 install-dvi: install-dvi-am
 
@@ -1246,7 +1245,7 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-ccp4dataDATA uninstall-ccp4includeHEADERS \
-	uninstall-dist_ccp4dataDATA uninstall-libLTLIBRARIES
+	uninstall-dist_dataDATA uninstall-libLTLIBRARIES
 
 .MAKE: all check install install-am install-strip
 
@@ -1259,16 +1258,15 @@ uninstall-am: uninstall-ccp4dataDATA uninstall-ccp4includeHEADERS \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
 	install install-am install-ccp4dataDATA \
 	install-ccp4includeHEADERS install-data install-data-am \
-	install-dist_ccp4dataDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-libLTLIBRARIES \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-ccp4dataDATA \
-	uninstall-ccp4includeHEADERS uninstall-dist_ccp4dataDATA \
+	install-dist_dataDATA install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libLTLIBRARIES install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-ccp4dataDATA \
+	uninstall-ccp4includeHEADERS uninstall-dist_dataDATA \
 	uninstall-libLTLIBRARIES
 
 fortran/unix.f: fortran/unix.m4 Makefile

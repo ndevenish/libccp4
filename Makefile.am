@@ -73,7 +73,7 @@ CLEANFILES = fortran/unix.f
 fortran/unix.f: fortran/unix.m4 Makefile
 	m4 $(M4_ARG) $< > $@
 
-dist_ccp4data_DATA = data/atomsf_neutron.lib data/atomsf.lib \
+dist_data_DATA = data/atomsf_neutron.lib data/atomsf.lib \
                      data/syminfo.lib data/symop.lib
 # Files default.def and environ.def are not part of libccp4.
 # They are included in CCP4 and may be useful for running programs
