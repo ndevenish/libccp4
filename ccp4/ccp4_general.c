@@ -60,7 +60,9 @@
 #include <math.h>
 #include <stdarg.h>
 
+#ifdef HAVE_CONFIG_H
 #include <config.h> /* PACKAGE_ROOT */
+#endif
 /* Library header files */
 #include "ccp4_fortran.h"
 #include "ccp4_utils.h"
@@ -218,6 +220,26 @@ int ccp4printf(int level, char *format, ...)
 
 /*------------------------------------------------------------------*/
 
+/* return parent of directory that contains arg, e.g.
+ * /foo/bin/prog        -> /foo    (actually /foo/bin/..)
+ * C:\CCP4\bin\prog.exe -> C:\CCP4 (actually C:\CCP4\bin\..)
+ * foo/prog             -> .       (actually foo/..)
+ * prog                 -> ..
+ * ../prog              -> ../..
+ */
+static const char* get_parent_directory(const char* arg)
+{
+    const char *last_sep = strrchr(arg, PATH_SEPARATOR);
+    const char *basename = last_sep != NULL ? last_sep + 1 : arg;
+    int dir_len = basename - arg;
+    char* parent_dir = (char*) ccp4_utils_malloc(dir_len + 3);
+    strncpy(parent_dir, arg, dir_len);
+    strcpy(parent_dir+dir_len, "..");
+    return parent_dir;
+}
+
+/*------------------------------------------------------------------*/
+
 /* ccp4fyp
 
    Initialise environment for CCP4 programs and parse the
@@ -254,7 +276,11 @@ int ccp4fyp(int argc, char **argv)
   char *testarg=NULL;
 
   /* Filenames, directories etc */
+#ifdef PACKAGE_ROOT
   const char *pkgroot=PACKAGE_ROOT;
+#else
+  const char *pkgroot=get_parent_directory(argv[0]);
+#endif
   char *basename=NULL,*cinclude=NULL,*home=NULL;
   char *dir=NULL,*std_dir=NULL,*tmpstr=NULL;
 
