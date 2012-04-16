@@ -2304,7 +2304,9 @@ int ccp4_lwsymm_c(MTZ *mtz, int nsymx, int nsympx, float rsymx[192][4][4],
     mtz->mtzsymm.spcgrpname[length] = '\0';
   }
   if (strcmp(pgnamx,"")) {
-    strcpy(mtz->mtzsymm.pgname,pgnamx);
+    length = ( strlen(pgnamx) < MAXPGNAMELENGTH ) ? strlen(pgnamx) : MAXPGNAMELENGTH;
+    strncpy(mtz->mtzsymm.pgname,pgnamx,length);
+    mtz->mtzsymm.pgname[length] = '\0';
   }
 
   return 1;

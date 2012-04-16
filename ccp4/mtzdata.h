@@ -40,6 +40,7 @@
 #define SIZE1 20                    /**< size of pre-reflection block */
 #define MTZRECORDLENGTH 80          /**< length of records */
 #define MAXSPGNAMELENGTH 20         /**< max length of a spacegroup name */
+#define MAXPGNAMELENGTH 10          /**< max length of a pointgroup name */
 
 #define NBATCHWORDS 185       /**< total size of batch header buffer */
 #define NBATCHINTEGERS 29     /**< size of integer section of batch header buffer */
@@ -152,7 +153,7 @@ typedef struct { int spcgrp;           /**< spacegroup number */
                                           (translations in [*][3]) */
 		 int nsymp;            /**< number of primitive symmetry ops. */
 		 char symtyp;          /**< lattice type (P,A,B,C,I,F,R) */
-		 char pgname[11];      /**< pointgroup name */
+		 char pgname[MAXPGNAMELENGTH+1];      /**< pointgroup name */
                  char spg_confidence;  /**< L => Bravais lattice correct
                                             P => pointgroup correct
                                             E => spacegroup or enantiomorph
