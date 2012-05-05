@@ -16,45 +16,110 @@ C     but WITHOUT ANY WARRANTY; without even the implied warranty of
 C     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 C     GNU Lesser General Public License for more details.
 C
+                                !
+                                !   A module to arrange memory for sorting
+                                !   records (allocate, reallocate, deallocate)
+      module sorting_commons
+      implicit none
+      integer :: nmax_rec = 2000000
+      INTEGER NKEYS_S,NRECORD_S,KEY_ADDRESS,RECORD_ADDRESS
+      integer  NRECORD_NOW,NRECORD_RETURN,INDEX_ADDRESS
+      integer NRECORD_IN_RUNS,NRECORD_IN_THIS_RUN
+      integer  NMAX_RECORD
+      integer nkeys_l,nrec_l
+      INTEGER SAVE_KEYS(5),SAVE_RECORD(200),ASCEND_DESCEND(5)
+      REAL, allocatable :: keys_mem(:)
+      real, allocatable :: array_mem(:)
+      real, allocatable :: index_mem(:)
+
+
+      contains
+
+      subroutine sorting_allocate_this()
+
+
+      if(nmax_rec.le.0)nmax_rec = 2000000
+
+      allocate(keys_mem(nkeys_l*nmax_rec))
+      allocate(array_mem(max(1,(nrec_l-nkeys_l)*nmax_rec)))
+      allocate(index_mem(nmax_rec))
+
+      end
+
+      subroutine sorting_reallocate_this()
+
+      integer nmax_old
+      integer nk1,nr1,ni1
+      real, allocatable :: temp_keys(:)
+      real, allocatable :: temp_recs(:)
+      real, allocatable :: temp_inds(:)
+
+      nmax_old = nmax_rec
+      nmax_rec = nint(1.5*nmax_rec) + 1
+
+
+      nk1 = nkeys_l*nmax_rec
+      nr1 = max(1,(nrec_l-nkeys_l)*nmax_rec)
+      ni1 = nmax_rec
+
+      allocate(temp_keys(nk1))
+      allocate(temp_recs(nr1))
+      allocate(temp_inds(ni1))
+
+      temp_keys(1:nk1) = keys_mem(1:nk1)
+      temp_recs(1:nr1) = array_mem(1:nr1)
+      temp_inds(1:ni1) = index_mem(1:ni1)
+
+      nmax_rec = nint(nmax_rec*1.5)
+      deallocate(keys_mem)
+      deallocate(array_mem)
+      deallocate(index_mem)
+
+      allocate(keys_mem(nkeys_l*nmax_rec))
+      allocate(array_mem(max(1,(nrec_l-nkeys_l)*nmax_rec)))
+      allocate(index_mem(nmax_rec))
+      
+      keys_mem(1:nk1) = temp_keys(1:nk1)
+      array_mem(1:nr1) = temp_recs(1:nr1)
+      index_mem(1:ni1) = temp_inds(1:ni1)
+
+      deallocate(temp_keys)
+      deallocate(temp_recs)
+      deallocate(temp_inds)
+
+
+      return
+      end
+
+      subroutine sorting_deallocate_this()
+
+      deallocate(keys_mem)
+      deallocate(array_mem)
+      deallocate(index_mem)
+
+      end
+
+      end module sorting_commons
+                                !
+                                !  now sorting bit
       INTEGER FUNCTION SRTBEG(NKEYS,KEYBUF,NRECL,ISS)
+      use sorting_commons
 C
       IMPLICIT NONE
-      INTEGER NMAX_MEM
-C     NMAX_MEM increased from 16000000 to 32000000
-      PARAMETER (NMAX_MEM = 32000000)
       INTEGER NKEYS,NRECL,KEYBUF(*),ISS
 C
-C----Common block for records to be sorted. At the moment
-C----no memory allocation is used. It could be changed by switching to 
-C----C or using FORTRAN 90 or using calling subroutine supplied 
-C----memory. In fortran last variant seems to be better. Then
-c----calling routine has to decide how much memory it needs.
-      INTEGER NKEYS_S,NRECORD_S,KEY_ADDRESS,RECORD_ADDRESS,
-     &        NRECORD_NOW,NRECORD_RETURN,INDEX_ADDRESS,
-     &        NRECORD_IN_RUNS,NRECORD_IN_THIS_RUN,
-     &        NMAX_RECORD
-      INTEGER SAVE_KEYS(5),SAVE_RECORD(200),ASCEND_DESCEND(5)
-      REAL LARGE_MEM(NMAX_MEM)
-      COMMON /SORT_MEMORY/NMAX_RECORD,NRECORD_IN_RUNS,
-     &       NRECORD_IN_THIS_RUN,NKEYS_S,NRECORD_S,
-     &       NRECORD_RETURN,NRECORD_NOW,SAVE_KEYS,
-     &       SAVE_RECORD,ASCEND_DESCEND,
-     &       KEY_ADDRESS,RECORD_ADDRESS,INDEX_ADDRESS,LARGE_MEM
-      SAVE /SORT_MEMORY/
-C
-      INTEGER IK,IREC,J,IRECORD_POSITIONS,NRECL_1
+      INTEGER IK,IREC,J,IRECORD_POSITIONS
+      logical found
 C
 C----Find out how many records could be sorted. We need memory for
 C----NRECL = NKEYS + NRECORDS number of fields and one field for
 C----index of records which is going to be sorted.
-      NRECL_1 = NRECL/4
-      NMAX_RECORD = NMAX_MEM/(NRECL_1+1)
+      nkeys_l = nkeys
+      nrec_l = nrecl/4
 C
-      IF(NMAX_RECORD.LE.1) THEN
-        SRTBEG = 1
-C
-C---Sorting can not be done
-      ENDIF
+C---allocate enough memory (if it is not enough then we will reallocate)
+      call sorting_allocate_this()
+
 C
 C----Save positions of keys and remaining records in an array
 C----It would be easier if keybuf would have only info about 
@@ -64,29 +129,28 @@ C----change in the calling subroutine use previous binsort style
 C----keybuf. 
       DO   IK=1,NKEYS
          J = (IK-1)*5+1
-        SAVE_KEYS(IK) = KEYBUF(J+2)/4 + 1
-        ASCEND_DESCEND(IK) = 1
-        IF(KEYBUF(J+1).NE.0) ASCEND_DESCEND(IK) = -1
+         SAVE_KEYS(IK) = KEYBUF(J+2)/4 + 1
+         ASCEND_DESCEND(IK) = 1
+         IF(KEYBUF(J+1).NE.0) ASCEND_DESCEND(IK) = -1
       ENDDO
       NKEYS_S = NKEYS
       IRECORD_POSITIONS = 0
       NRECORD_S = 0
-      DO    IREC=1,NRECL_1
+      DO    IREC=1,NREC_L
+         found = .FALSE.
          DO   IK=1,NKEYS
-            IF(SAVE_KEYS(IK).EQ.IREC) GOTO 100
+            IF(SAVE_KEYS(IK).EQ.IREC) then 
+               found = .TRUE.
+               exit
+            endif
          ENDDO
-         IRECORD_POSITIONS = IRECORD_POSITIONS + 1
-         SAVE_RECORD(IRECORD_POSITIONS) = IREC
-         NRECORD_S = NRECORD_S + 1
- 100     CONTINUE
+         if(.not.found) then
+            IRECORD_POSITIONS = IRECORD_POSITIONS + 1
+            SAVE_RECORD(IRECORD_POSITIONS) = IREC
+            NRECORD_S = NRECORD_S + 1
+         endif
       ENDDO
-C
-C---Now we have record numbers as well as key numbers. Define memory 
-C---for key and records
-      KEY_ADDRESS = 1
-      RECORD_ADDRESS = KEY_ADDRESS + NKEYS_S*NMAX_RECORD
-      INDEX_ADDRESS = RECORD_ADDRESS + NRECORD_S*NMAX_RECORD
-C
+c
 C---Now we are ready to accept records. It will be done by another 
 C---routine.
 C---If external merging is necessary it should be initialised here.
@@ -98,9 +162,9 @@ C
       END
 C
       INTEGER FUNCTION SRTRLS(ADATA)
+      use sorting_commons
       IMPLICIT NONE
-      INTEGER NMAX_MEM
-      PARAMETER (NMAX_MEM = 16000000)
+
 C
 C----Recieve one record and save it in the list.
 C----For large number of records if number of current records
@@ -108,34 +172,16 @@ C----is equal to maximum number of records then they should be
 C----sorted and then written to external files taken care of
 C----distribution. (polyphase merging is possible option to use)
       REAL ADATA(*)
-C
-C----Common block for records to be sorted. At the moment
-C----no memory allocation is used. It could be changed by switching to 
-C----C or using FORTRAN 90 or using calling subroutine supplied 
-C----memory. In fortran last variant seems to be better. Then
-c----calling routine has to decide how much memory it needs.
-      INTEGER NKEYS_S,NRECORD_S,KEY_ADDRESS,RECORD_ADDRESS,
-     &        NRECORD_NOW,NRECORD_RETURN,INDEX_ADDRESS,
-     &        NRECORD_IN_RUNS,NRECORD_IN_THIS_RUN,
-     &        NMAX_RECORD
-      INTEGER SAVE_KEYS(5),SAVE_RECORD(200),ASCEND_DESCEND(5)
-      REAL LARGE_MEM(NMAX_MEM)
-      COMMON /SORT_MEMORY/NMAX_RECORD,NRECORD_IN_RUNS,
-     &       NRECORD_IN_THIS_RUN,NKEYS_S,NRECORD_S,
-     &       NRECORD_RETURN,NRECORD_NOW,SAVE_KEYS,
-     &       SAVE_RECORD,ASCEND_DESCEND,
-     &       KEY_ADDRESS,RECORD_ADDRESS,INDEX_ADDRESS,LARGE_MEM
-      SAVE /SORT_MEMORY/
+
 C
       INTEGER IKEY_NOW,IREC_NOW,IK,IR
 C
 C---First save keys.
       NRECORD_NOW = NRECORD_NOW + 1
-      IF(NRECORD_NOW.GT.NMAX_RECORD) THEN
-         WRITE(*,*)'Too many records'
-         SRTRLS = 1
-         RETURN
-      ELSEIF(NRECORD_NOW.EQ.NMAX_RECORD) THEN
+      IF(NRECORD_NOW.GT.NMAX_REC) THEN
+                                ! Memory is not sufficient. Reallocate
+         call sorting_reallocate_this()
+      ELSEIF(NRECORD_NOW.EQ.NMAX_REC) THEN
 C
 C---Memory is not enough for internal sorting. External sorting
 C---part should be written. In that case available records 
@@ -157,13 +203,14 @@ Cmdw  When finished, need to rewind with QSEEK.
 
       IKEY_NOW = (NRECORD_NOW-1)*NKEYS_S
       DO   IK=1,NKEYS_S
-        LARGE_MEM(IKEY_NOW+IK) = ADATA(SAVE_KEYS(IK))*ASCEND_DESCEND(IK)
+         keys_mem(ikey_now+ik) = adata(save_keys(ik))*ascend_descend(ik)
       ENDDO
-      IREC_NOW = RECORD_ADDRESS + (NRECORD_NOW-1)*NRECORD_S - 1
+      IREC_NOW = (NRECORD_NOW-1)*NRECORD_S
+
       DO  IR=1,NRECORD_S
-         LARGE_MEM(IREC_NOW + IR) = ADATA(SAVE_RECORD(IR))
+         array_mem(irec_now + ir) = adata(save_record(ir))
       ENDDO
-      LARGE_MEM(INDEX_ADDRESS+NRECORD_NOW-1) = NRECORD_NOW
+      index_mem(nrecord_now) = nrecord_now
 C
 C---Normal return. No disaster.
       SRTRLS = 0
@@ -171,46 +218,24 @@ C---Normal return. No disaster.
       END
 C
       INTEGER FUNCTION SRTMRG()
+      use sorting_commons
 C
       IMPLICIT NONE
-      INTEGER NMAX_MEM
-      PARAMETER (NMAX_MEM = 16000000)
 C
 C---This function should do merging. But here we use only sorting
 C---It will have to be expanded for merging for large number of records
 C
-C----Common block for records to be sorted. At the moment
-C----no memory allocation is used. It could be changed by switching to 
-C----C or using FORTRAN 90 or using calling subroutine supplied 
-C----memory. In fortran last variant seems to be better. Then
-c----calling routine has to decide how much memory it needs.
-      INTEGER NKEYS_S,NRECORD_S,KEY_ADDRESS,RECORD_ADDRESS,
-     &        NRECORD_NOW,NRECORD_RETURN,INDEX_ADDRESS,
-     &        NRECORD_IN_RUNS,NRECORD_IN_THIS_RUN,
-     &        NMAX_RECORD
-      INTEGER SAVE_KEYS(5),SAVE_RECORD(200),ASCEND_DESCEND(5)
-      REAL LARGE_MEM(NMAX_MEM)
-      COMMON /SORT_MEMORY/NMAX_RECORD,NRECORD_IN_RUNS,
-     &       NRECORD_IN_THIS_RUN,NKEYS_S,NRECORD_S,
-     &       NRECORD_RETURN,NRECORD_NOW,SAVE_KEYS,
-     &       SAVE_RECORD,ASCEND_DESCEND,
-     &       KEY_ADDRESS,RECORD_ADDRESS,INDEX_ADDRESS,LARGE_MEM
-      SAVE /SORT_MEMORY/
-      INTEGER I,IR,IK
-
-      CALL HEAP_SORT(NRECORD_NOW,NKEYS_S,LARGE_MEM(1),
-     &    LARGE_MEM(INDEX_ADDRESS))
+      CALL HEAP_SORT(NRECORD_NOW,NKEYS_S,keys_mem,index_mem)
 C
 C---Records have been sorted. They should be distributed. 
-C---But it is next stage
+C---But it is next stage. 
       SRTMRG = 0
       RETURN
       END
 C
       INTEGER FUNCTION SRTRET(ADATA)
+      use sorting_commons
       IMPLICIT NONE
-      INTEGER NMAX_MEM
-      PARAMETER (NMAX_MEM = 16000000)
 C
 C----Retrieve next record from the sorted list of the records.
       REAL ADATA(*)
@@ -218,25 +243,8 @@ C
 C---This function should do merging. But here we use only sorting
 C---It will have to be expanded for merging for large number of records
 C
-C----Common block for records to be sorted. At the moment
-C----no memory allocation is used. It could be changed by switching to 
-C----C or using FORTRAN 90 or using calling subroutine supplied 
-C----memory. In fortran last variant seems to be better. Then
-c----calling routine has to decide how much memory it needs.
-      INTEGER NKEYS_S,NRECORD_S,KEY_ADDRESS,RECORD_ADDRESS,
-     &        NRECORD_NOW,NRECORD_RETURN,INDEX_ADDRESS,
-     &        NRECORD_IN_RUNS,NRECORD_IN_THIS_RUN,
-     &        NMAX_RECORD
-      INTEGER SAVE_KEYS(5),SAVE_RECORD(200),ASCEND_DESCEND(5)
-      REAL LARGE_MEM(NMAX_MEM)
-      COMMON /SORT_MEMORY/NMAX_RECORD,NRECORD_IN_RUNS,
-     &       NRECORD_IN_THIS_RUN,NKEYS_S,NRECORD_S,
-     &       NRECORD_RETURN,NRECORD_NOW,SAVE_KEYS,
-     &       SAVE_RECORD,ASCEND_DESCEND,
-     &       KEY_ADDRESS,RECORD_ADDRESS,INDEX_ADDRESS,LARGE_MEM
-      SAVE /SORT_MEMORY/
-C
       INTEGER IK,IR,IKEY_REC,IREC_R
+      integer kk
 C
 C----Take keys first.
       NRECORD_RETURN = NRECORD_RETURN + 1
@@ -253,15 +261,14 @@ C
 C---Take keys.
       IKEY_REC = (NRECORD_RETURN-1)*NKEYS_S
       DO   IK=1,NKEYS_S
-        ADATA(SAVE_KEYS(IK)) = LARGE_MEM(IKEY_REC + SAVE_KEYS(IK))*
-     &                     ASCEND_DESCEND(IK)
+         kk = save_keys(ik)
+        ADATA(kk) = keys_mem(ikey_rec + kk)*ascend_descend(ik)
       ENDDO
 C
 C--Now take records.
-      IREC_R = RECORD_ADDRESS +
-     &    (INT(LARGE_MEM(INDEX_ADDRESS+NRECORD_RETURN-1))-1)*NRECORD_S-1
+      IREC_R = (nint(index_mem(NRECORD_RETURN))-1)*nrecord_s
       DO   IR=1,NRECORD_S
-        ADATA(SAVE_RECORD(IR)) = LARGE_MEM(IREC_R +  IR)
+         ADATA(SAVE_RECORD(IR)) = array_mem(IREC_R +  IR)
       ENDDO
 C
 C---Succesful retrieval
@@ -298,7 +305,7 @@ C--------------------------------------------------------------
       L1 = N/2
 C
 C---Create heap. everybody tends to reach his level of incomptence
-      WRITE(*,*)'In heap_sort'
+c      WRITE(*,*)'In heap_sort'
 
       DO   L=L1,1,-1
         CALL SIFT_UP(N,L,NKEYS,A_KEY,INDEX_R)
@@ -408,3 +415,4 @@ C---H8
        ENDDO
        RETURN
        END
+
