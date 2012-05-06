@@ -628,6 +628,14 @@ int ccp4_file_setstamp(CCP4File *cfile, const size_t offset)
   return ccp4_file_raw_setstamp(cfile, offset*cfile->itemsize);
 }
 
+/* these defines used to be in ccp4_sysdep.h, but caused name conflicts.
+ * AFAICS they are used only in this file,
+ * in cmtzlib.c numeric values are used directly, not constants
+ */
+#define BYTE  0
+#define INT16 1
+#define INT32 6
+
 /**
  * ccp4_file_setmode:
  * @param cfile  (CCP4File *)

@@ -230,9 +230,8 @@
 #endif
 #define O_TMP    0x0010       /**< i/o mode: scratch file */
 
-#define BYTE  0
-#define INT16 1   
-#define INT32 6
+/* BYTE (0), INT16 (1) and INT32 (6) that used to be defined here
+ * are know in library_file.c, to avoid name conflicts.  */
 #define FLOAT32 2
 #define COMP32  3
 #define COMP64  4
