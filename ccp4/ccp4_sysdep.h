@@ -198,7 +198,7 @@
 #define  M_PI            3.14159265358979323846
 #endif
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 #  define PATH_SEPARATOR '\\'
 #  define EXT_SEPARATOR '.'
 #else
