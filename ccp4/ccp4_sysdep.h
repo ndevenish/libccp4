@@ -230,8 +230,12 @@
 #endif
 #define O_TMP    0x0010       /**< i/o mode: scratch file */
 
-/* BYTE (0), INT16 (1) and INT32 (6) that used to be defined here
- * are know in library_file.c, to avoid name conflicts.  */
+/* Before version 6.3 we defined BYTE, INT16 and INT32 (without the CCP4_
+ * prefix). The prefix has been added to avoid name conflicts.
+ */
+#define CCP4_BYTE  0
+#define CCP4_INT16 1
+#define CCP4_INT32 6
 #define FLOAT32 2
 #define COMP32  3
 #define COMP64  4

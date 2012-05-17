@@ -628,23 +628,15 @@ int ccp4_file_setstamp(CCP4File *cfile, const size_t offset)
   return ccp4_file_raw_setstamp(cfile, offset*cfile->itemsize);
 }
 
-/* these defines used to be in ccp4_sysdep.h, but caused name conflicts.
- * AFAICS they are used only in this file,
- * in cmtzlib.c numeric values are used directly, not constants
- */
-#define BYTE  0
-#define INT16 1
-#define INT32 6
-
 /**
  * ccp4_file_setmode:
  * @param cfile  (CCP4File *)
  * @param mode (int) io_mode
  *
  * set the data mode of cfile to mode
- * (BYTE (8 bit) = 0, 
- *  INT16  (16 bit) = 1, 
- *  INT32  (32 bit) = 6, 
+ * (CCP4_BYTE (8 bit) = 0, 
+ *  CCP4_INT16 (16 bit) = 1, 
+ *  CCP4_INT32 (32 bit) = 6, 
  *  FLOAT32 (32 bit) = 2, 
  *  COMP32 (2*16 bit) = 3, 
  *  COMP64 (2*32 bit) = 4).  
@@ -674,8 +666,8 @@ int ccp4_file_setmode (CCP4File *cfile, const int mode)
  * ccp4_file_mode:
  * @param cfile  (CCP4File *)
  *
- * get data mode of @cfile (BYTE =0, INT16 =1, INT32=6, FLOAT32 =2, 
- * COMP32 =3, COMP64 =4)
+ * get data mode of @cfile (CCP4_BYTE =0, CCP4_INT16 =1, CCP4_INT32=6,
+ * FLOAT32 =2, COMP32 =3, COMP64 =4)
  * @return %mode
  */
 int ccp4_file_mode (const CCP4File *cfile)
@@ -1432,13 +1424,13 @@ int ccp4_file_readint (CCP4File *cfile, uint8 *buffer, size_t nitems)
       ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_readint", NULL);
       return EOF; }   
 
-  n = _item_sizes[INT32] * nitems;
+  n = _item_sizes[CCP4_INT32] * nitems;
   if ( (result = ccp4_file_raw_read (cfile, (char *) buffer, n)) != n) {
     ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_readint", NULL);
     if (cfile->stream && !feof(cfile->stream)) 
       return EOF; } 
 
-  result /= _item_sizes[INT32];
+  result /= _item_sizes[CCP4_INT32];
 
   n = result;
 
@@ -1492,13 +1484,13 @@ int ccp4_file_readshort (CCP4File *cfile, uint8 *buffer, size_t nitems)
       ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_readshort", NULL);
       return EOF; }   
 
-  n = _item_sizes[INT16] * nitems;
+  n = _item_sizes[CCP4_INT16] * nitems;
   if ( (result = ccp4_file_raw_read (cfile, (char *) buffer, n)) != n) {
     ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_readshort", NULL);
     if (cfile->stream && !feof(cfile->stream)) 
       return EOF; } 
 
-  result /= _item_sizes[INT16];
+  result /= _item_sizes[CCP4_INT16];
 
   n = result;
   if (cfile->iconvert != nativeIT) {
@@ -1876,7 +1868,7 @@ int ccp4_file_writeint (CCP4File *cfile, const uint8 *buffer, size_t nitems)
       ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_writeint", NULL);
       return EOF; }   
       
-  n = nitems * _item_sizes[INT32];
+  n = nitems * _item_sizes[CCP4_INT32];
 
   if (cfile->iconvert != nativeIT) {
     char out_buffer[4];
@@ -1893,7 +1885,7 @@ int ccp4_file_writeint (CCP4File *cfile, const uint8 *buffer, size_t nitems)
         ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_BadMode), 
 		"ccp4_file_writeint", NULL);
         return EOF; }
-    result += ccp4_file_raw_write (cfile, out_buffer, _item_sizes[INT32]);
+    result += ccp4_file_raw_write (cfile, out_buffer, _item_sizes[CCP4_INT32]);
     }
    } else {
     result = ccp4_file_raw_write (cfile, (char *) buffer, n);
@@ -1902,7 +1894,7 @@ int ccp4_file_writeint (CCP4File *cfile, const uint8 *buffer, size_t nitems)
   if ( result != n) 
     ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_writeint", NULL);
 
-  return (result / _item_sizes[INT32]);
+  return (result / _item_sizes[CCP4_INT32]);
 }
 
 /**
@@ -1935,7 +1927,7 @@ int ccp4_file_writeshort (CCP4File *cfile, const uint8 *buffer, size_t nitems)
       ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_writeshort", NULL);
       return EOF; }   
       
-  n = nitems * _item_sizes[INT16];
+  n = nitems * _item_sizes[CCP4_INT16];
   
   if (cfile->iconvert != nativeIT) {
     char out_buffer[2];
@@ -1950,7 +1942,7 @@ int ccp4_file_writeshort (CCP4File *cfile, const uint8 *buffer, size_t nitems)
         ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_BadMode), 
 		"ccp4_file_readint", NULL);
         return EOF; }
-    result += ccp4_file_raw_write (cfile, out_buffer, _item_sizes[INT16]);
+    result += ccp4_file_raw_write (cfile, out_buffer, _item_sizes[CCP4_INT16]);
     }
    } else {
     result = ccp4_file_raw_write (cfile, (char *) buffer, n);
@@ -1959,7 +1951,7 @@ int ccp4_file_writeshort (CCP4File *cfile, const uint8 *buffer, size_t nitems)
   if ( result != n) 
     ccp4_signal(CCP4_ERRLEVEL(3), "ccp4_file_writeshort", NULL);
 
-  return (result / _item_sizes[INT16]);
+  return (result / _item_sizes[CCP4_INT16]);
 }
 
 /**
