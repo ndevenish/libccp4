@@ -107,6 +107,10 @@ ccp4_libccp4c_la_OBJECTS = $(am_ccp4_libccp4c_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
+ccp4_libccp4c_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(ccp4_libccp4c_la_LDFLAGS) $(LDFLAGS) \
+	-o $@
 am__DEPENDENCIES_1 =
 fortran_libccp4f_la_DEPENDENCIES = ccp4/libccp4c.la \
 	$(am__DEPENDENCIES_1)
@@ -146,6 +150,10 @@ am_fortran_libccp4f_la_OBJECTS =  \
 nodist_fortran_libccp4f_la_OBJECTS = fortran/unix.lo
 fortran_libccp4f_la_OBJECTS = $(am_fortran_libccp4f_la_OBJECTS) \
 	$(nodist_fortran_libccp4f_la_OBJECTS)
+fortran_libccp4f_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=F77 \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(F77LD) \
+	$(AM_FFLAGS) $(FFLAGS) $(fortran_libccp4f_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 @FORTRAN_LIB_TRUE@am_fortran_libccp4f_la_rpath = -rpath $(libdir)
 PROGRAMS = $(noinst_PROGRAMS)
 am__data_fontpack_SOURCES_DIST = data/fontpack.f
@@ -216,6 +224,7 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
+AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -381,6 +390,8 @@ fortran_libccp4f_la_CPPFLAGS = -I$(srcdir)/ccp4
 fortran_libccp4f_la_LIBADD = ccp4/libccp4c.la -lmmdb $(am__append_5)
 BUILT_SOURCES = fortran/unix.f
 CLEANFILES = fortran/unix.f $(am__append_7)
+ccp4_libccp4c_la_LDFLAGS = -no-undefined
+fortran_libccp4f_la_LDFLAGS = -no-undefined
 dist_data_DATA = data/atomsf_neutron.lib data/atomsf.lib \
                      data/syminfo.lib data/symop.lib
 
@@ -528,7 +539,7 @@ ccp4/cmap_symop.lo: ccp4/$(am__dirstamp) \
 	ccp4/$(DEPDIR)/$(am__dirstamp)
 ccp4/pack_c.lo: ccp4/$(am__dirstamp) ccp4/$(DEPDIR)/$(am__dirstamp)
 ccp4/libccp4c.la: $(ccp4_libccp4c_la_OBJECTS) $(ccp4_libccp4c_la_DEPENDENCIES) ccp4/$(am__dirstamp)
-	$(AM_V_CCLD)$(LINK) -rpath $(libdir) $(ccp4_libccp4c_la_OBJECTS) $(ccp4_libccp4c_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(ccp4_libccp4c_la_LINK) -rpath $(libdir) $(ccp4_libccp4c_la_OBJECTS) $(ccp4_libccp4c_la_LIBADD) $(LIBS)
 fortran/$(am__dirstamp):
 	@$(MKDIR_P) fortran
 	@: > fortran/$(am__dirstamp)
@@ -590,7 +601,7 @@ fortran/harv_dummy.lo: fortran/$(am__dirstamp) \
 fortran/unix.lo: fortran/$(am__dirstamp) \
 	fortran/$(DEPDIR)/$(am__dirstamp)
 fortran/libccp4f.la: $(fortran_libccp4f_la_OBJECTS) $(fortran_libccp4f_la_DEPENDENCIES) fortran/$(am__dirstamp)
-	$(AM_V_F77LD)$(F77LINK) $(am_fortran_libccp4f_la_rpath) $(fortran_libccp4f_la_OBJECTS) $(fortran_libccp4f_la_LIBADD) $(LIBS)
+	$(AM_V_F77LD)$(fortran_libccp4f_la_LINK) $(am_fortran_libccp4f_la_rpath) $(fortran_libccp4f_la_OBJECTS) $(fortran_libccp4f_la_LIBADD) $(LIBS)
 
 clean-noinstPROGRAMS:
 	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \

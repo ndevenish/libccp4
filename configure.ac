@@ -6,7 +6,7 @@ AC_CONFIG_MACRO_DIR(m4)
 AC_CONFIG_SRCDIR(ccp4/cmtzlib.c)
 AC_CONFIG_HEADERS(config.h)
 AM_INIT_AUTOMAKE([1.11 foreign subdir-objects silent-rules -Wall])
-LT_INIT([disable-shared])
+LT_INIT([disable-shared win32-dll])
 
 AC_PROG_CC
 AC_PROG_INSTALL
