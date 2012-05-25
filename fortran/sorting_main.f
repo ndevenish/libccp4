@@ -44,7 +44,7 @@ C
       allocate(array_mem(max(1,(nrec_l-nkeys_l)*nmax_rec)))
       allocate(index_mem(nmax_rec))
 
-      end
+      end subroutine
 
       subroutine sorting_reallocate_this()
 
@@ -89,7 +89,7 @@ C
 
 
       return
-      end
+      end subroutine
 
       subroutine sorting_deallocate_this()
 
@@ -97,7 +97,7 @@ C
       deallocate(array_mem)
       deallocate(index_mem)
 
-      end
+      end subroutine
 
       end module sorting_commons
                                 !
