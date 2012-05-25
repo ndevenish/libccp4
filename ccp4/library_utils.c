@@ -484,6 +484,16 @@ char *ccp4_utils_username(void)
 }
 #endif
 
+static int is_sep(char c)
+{
+#ifdef _WIN32
+    /* allow alternative separator for Windows (for MSYS, Cygwin, Wine) */
+    return c == PATH_SEPARATOR || c == '/';
+#else
+    return c == PATH_SEPARATOR;
+#endif
+}
+
 /** Extracts the basename from a full file name.
  * Separators for directories and extensions are OS-specific.
  * @param filename full file name string.
@@ -495,7 +505,7 @@ char *ccp4_utils_basename(const char *filename)
   char *basename;
 
   for ( i = strlen(filename)-1; i >= 0; i-- ) {
-    if (filename[i] == PATH_SEPARATOR) {
+    if (is_sep(filename[i])) {
       indx1 = i; 
       break;
     }
@@ -526,7 +536,7 @@ char *ccp4_utils_pathname(const char *filename)
   char *pathname;
 
   for ( i = strlen(filename)-1; i >= 0; i-- ) {
-    if (filename[i] == PATH_SEPARATOR) {
+    if (is_sep(filename[i])) {
       indx1 = i; 
       break;
     }
@@ -553,7 +563,7 @@ char *ccp4_utils_extension(const char *filename)
       indx1 = i; 
       length = strlen(filename) - indx1;
       break;
-    } else if (filename[i] == PATH_SEPARATOR) {
+    } else if (is_sep(filename[i])) {
       indx1 = i; 
       length = 1;
       break;
