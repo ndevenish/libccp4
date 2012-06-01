@@ -952,25 +952,24 @@ CCP4File *ccp4_file_open (const char *filename, const int flag)
       cfile->stream = fopen (filename, fmode,
                              "mbc=16",        /* bigger blocksize */
                              "ctx=stm", "mrs=0", "rat=cr", "rfm=stmlf");
-#else
-# ifdef _MSC_VER
-	if (cfile->scratch) { 
+#elif defined(_WIN32)
+    if (cfile->scratch) {
       cfile->stream = tmpfile();
-// if tmpfile fails, try opening temporary file the unix way
-	  if (!cfile->stream) {
-	     cfile->stream = fopen (filename, fmode);
-	  }
-	}
-    else 
+      if (!cfile->stream) {
+        ccp4_signal(CCP4_ERRLEVEL(2) | CCP4_ERRNO(CIO_CantOpenFile),
+                    "tmpfile() failed, opening normal file instead.", NULL);
+        cfile->stream = fopen (filename, fmode);
+      }
+    }
+    else
       cfile->stream = fopen (filename, fmode);
-# else
+#else
     cfile->stream = fopen (filename, fmode);
     if (cfile->stream) 
       if (cfile->scratch && unlink (filename)!=0) {
         ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_UnlinkFail),
                     "ccp4_file_open(unlink)", NULL);
         cfile->iostat = CIO_UnlinkFail; return NULL; }
-# endif
 #endif
     if (!cfile->stream) {
       ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_CantOpenFile),
