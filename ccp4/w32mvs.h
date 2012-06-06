@@ -23,8 +23,6 @@
 #include <stdio.h>
 #include <time.h>
 
-#define BUFSIZE 1024
-
 /* Getopt for GNU.
    Copyright (C) 1987 Free Software Foundation, Inc.
 
