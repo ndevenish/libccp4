@@ -26,7 +26,7 @@ C =======
 C
 C UGTENV - Get value of env. variable
 C UGERR  - Get error explanation
-C UGTIUD - Get user id - it's name
+C UGTUID - Get user id - it's name
 C UIDATE - Get date in 3 integer format
 C UTIME  - Get current time
 C USTIME - Get absolute time in seconds

@@ -29,7 +29,7 @@ C          to indicate if byte handling is available
 C UCPUTM - Get CPU time
 C UGERR  - Get error explanation
 C UGTENV - Get value of env. variable
-C UGTIUD - Get user id - it's name
+C UGTUID - Get user id - it's name
 C UIDATE - Get date in 3 integer 
 C UISATT - Is file a terminal?
 C USTIME - Get absolute time in seconds (-1 for VMS)
@@ -95,7 +95,7 @@ C     .. Scalar Arguments ..
       CHARACTER LOGNAM* (*)
 C     ..
 C     .. Local Scalars ..
-      INTEGER LLREC,IUN,IBYTES,ISTAT,L
+      INTEGER LLREC,IUN,IBYTES,ISTAT,L,IOS
       CHARACTER CCNTRL*7,ST*7,FRM*12,ERRSTR*500,
      +     NAMFIL*255,HANDLE*5,OPNVAR*20, access*10
       INTEGER UNKNWN, SCRTCH, OLD, NEW, RDONLY, PRINTR

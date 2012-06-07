@@ -124,7 +124,7 @@ C UBYTES - Returns number of bytes per word and 'words'/'bytes'
 C          to indicate if byte handling is available
 C UGERR  - Get error explanation
 C UGTENV - Get value of env. variable
-C UGTIUD - Get user id - it's name
+C UGTUID - Get user id - it's name
 C UISATT - Is file a terminal?
 C CCPSPW - Spawns a new process to run shell command
 C CEXIT  - Trivial interface to system dependent EXIT routine 
