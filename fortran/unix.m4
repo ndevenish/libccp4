@@ -137,7 +137,7 @@ C
 C Functions:
 C
 C VAXVMS - Logical function returns TRUE if VAX/VMS
-C WINMVS - Logical function returns TRUE if WINMVS
+C WINMVS - Logical function returns TRUE if Windows
 C RTNBKS - Returns backslash for Windows.
 C
       SUBROUTINE CCPOPN(IIUN,LOGNAM,KSTAT,ITYPE,LREC,IFAIL)
@@ -426,7 +426,9 @@ C Arguments: none
 C
 C Usage:     WINMVS ()
 C
-      WINMVS = .FALSE.
+ifelse(_windows,1,
+[      WINMVS = .TRUE.],
+[      WINMVS = .FALSE.])
 C
       END
 
@@ -444,7 +446,9 @@ C Arguments: none
 C
 C Usage:     RTNBKS ()
 C
-      RTNBKS=' '
+ifelse(_windows,1,
+[      RTNBKS='\'],
+[      RTNBKS=' '])
 C
       END
 

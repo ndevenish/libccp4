@@ -87,6 +87,10 @@ if test "x$enable_fortran" != "xno"; then
           ;;
         esac
   esac
+
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [return _WIN32;])],
+                    [M4_ARG="$M4_ARG -D_windows=1"], [])
+
   AC_MSG_NOTICE([fortran/unix.m4 will be processed with m4 $M4_ARG])
 
   AC_SEARCH_LIBS(cos, m, , AC_MSG_ERROR([math library not found.]))

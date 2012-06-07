@@ -18979,6 +18979,23 @@ $as_echo "#define GFORTRAN 1" >>confdefs.h
           ;;
         esac
   esac
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+return _WIN32;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  M4_ARG="$M4_ARG -D_windows=1"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: fortran/unix.m4 will be processed with m4 $M4_ARG" >&5
 $as_echo "$as_me: fortran/unix.m4 will be processed with m4 $M4_ARG" >&6;}
 
