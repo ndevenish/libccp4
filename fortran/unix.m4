@@ -98,6 +98,8 @@ _gfort,1,
   [define(_cant_unlink,1)],dnl
 _lf95,1,
   [define(_cant_unlink,1)],dnl
+_windows,1,
+  [define(_cant_unlink,1)],dnl
 _pgf,1,
   [define(_cant_unlink,1)])dnl
 dnl * In the case above, we then want to open STATUS='DELETE', if 
