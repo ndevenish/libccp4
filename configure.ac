@@ -94,9 +94,6 @@ if test "x$enable_fortran" != "xno"; then
   AC_MSG_NOTICE([fortran/unix.m4 will be processed with m4 $M4_ARG])
 
   AC_SEARCH_LIBS(cos, m, , AC_MSG_ERROR([math library not found.]))
-  dnl fork is used in fortran/binsortint.c 
-  AC_CHECK_FUNC(fork)
-  AM_CONDITIONAL([HAVE_FORK], [test "x$ac_cv_func_fork" = "xyes"])
   AC_LANG_PUSH([C++])
   AC_CHECK_LIB(mmdb, MMDB_CCIF_Init, :,
                AC_MSG_WARN([mmdb library not found.]))

@@ -43,19 +43,10 @@ fortran/cmtzlib_f.c fortran/library_f.c \
 fortran/ccplib.f fortran/fftlib.f fortran/modlib.f fortran/parser.f \
 fortran/rwbrook.f fortran/libhtml.f fortran/keyparse.f \
 fortran/dna_output.f fortran/pack_f.f fortran/pxxml.f fortran/lgglib.f \
-fortran/plot84lib.f fortran/plotsubs.f \
+fortran/plot84lib.f fortran/plotsubs.f fortran/sorting_main.f \
 fortran/cciflib.fh  fortran/dna_header.fh \
 fortran/harderiv.inc  fortran/harsymm.inc \
 fortran/harshell.inc  fortran/harvest.inc
-
-# there are two implementations of SRTBEG/SRTRLS/SRTMRG/SRTRET functions
-# the sorting_main.f is probably better, but needs to be reviewed and tested
-# before we switch to it on all platforms.
-if HAVE_FORK
-fortran_libccp4f_la_SOURCES += fortran/binsortint.c fortran/binsort.h
-else
-fortran_libccp4f_la_SOURCES += fortran/sorting_main.f
-endif
 
 nodist_fortran_libccp4f_la_SOURCES = fortran/unix.f
 
