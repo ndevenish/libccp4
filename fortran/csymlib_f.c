@@ -246,7 +246,7 @@ FORTRAN_SUBR ( SYMTR3, symtr3,
     for (j = 0; j < 4; ++j) 
       for (k = 0; k < 4; ++k) 
         rsym[j][k] = rsm[i][k][j];
-    mat4_to_symop(temp_symch,temp_symch+79,rsym);
+    mat4_to_symop(temp_symch,temp_symch+79,(const float (*)[4])rsym);
     /* mat4_to_symop fills temp_symch with spaces */
     /* ccp4_CtoFString will perform strlen(temp_symch) */
     temp_symch[79] = '\0';
@@ -282,7 +282,7 @@ FORTRAN_SUBR ( SYMTR4, symtr4,
     for (j = 0; j < 4; ++j) 
       for (k = 0; k < 4; ++k) 
         rsym[j][k] = rsm[i][k][j];
-    mat4_to_symop(temp_symch,temp_symch+80,rsym);
+    mat4_to_symop(temp_symch,temp_symch+80,(const float (*)[4])rsym);
     /* mat4_to_symop will pad with spaces, but ccp4_CtoFString needs 
      * null-terminated 
      */
@@ -1595,7 +1595,8 @@ FORTRAN_SUBR ( CALC_ORIG_PS, calc_orig_ps,
       }
     }
   }
-  *norig = ccp4spg_generate_origins(temp_namspg, *nsym, crsym, orig, &polarx, &polary, &polarz, 1);
+  *norig = ccp4spg_generate_origins(temp_namspg, *nsym, (const float (*)[4][4])crsym,
+                                    orig, &polarx, &polary, &polarz, 1);
   *lpaxisx = polarx ? FORTRAN_LOGICAL_TRUE : FORTRAN_LOGICAL_FALSE;
   *lpaxisy = polary ? FORTRAN_LOGICAL_TRUE : FORTRAN_LOGICAL_FALSE;
   *lpaxisz = polarz ? FORTRAN_LOGICAL_TRUE : FORTRAN_LOGICAL_FALSE;

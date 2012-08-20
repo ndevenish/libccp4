@@ -526,7 +526,7 @@ char *ccp4_utils_extension(const char *filename)
  * @param file file name string.
  * @return pointer to joined directory-filename path.
  */
-char *ccp4_utils_joinfilenames(char *dir, char *file)
+char *ccp4_utils_joinfilenames(const char *dir, const char *file)
 {
   char *join=NULL;
   int  lendir,lenfile,lenjoin;

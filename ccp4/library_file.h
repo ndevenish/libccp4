@@ -103,7 +103,7 @@ int ccp4_file_is_buffered(const CCP4File *);
 
 int ccp4_file_status(const CCP4File *);
 
-const char *ccp4_file_name( CCP4File *);
+char *ccp4_file_name( CCP4File *);
 
 int ccp4_file_read ( CCP4File*, uint8 *, size_t);
 

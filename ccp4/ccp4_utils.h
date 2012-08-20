@@ -85,7 +85,7 @@ char *ccp4_utils_pathname(const char *filename);
 
 char *ccp4_utils_extension(const char *filename);
 
-char *ccp4_utils_joinfilenames(char *dir, char *file);
+char *ccp4_utils_joinfilenames(const char *dir, const char *file);
 
 void ccp4_utils_idate (int *);
 

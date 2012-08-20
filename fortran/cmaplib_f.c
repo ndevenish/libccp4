@@ -79,7 +79,7 @@ static int GetChannel(int iunit)
 
 static int ioArrayPrint(IOConvMap *ioMap)
 {
-  const char *filename = ccp4_file_name((*ioMap->mapfile).stream);
+  char *filename = ccp4_file_name((*ioMap->mapfile).stream);
   long length = ccp4_file_length((*ioMap->mapfile).stream);
   unsigned rw_mode = ccp4_file_is_read((*ioMap->mapfile).stream);
 
@@ -1158,7 +1158,7 @@ FORTRAN_SUBR( MSYWRT, msywrt,
     for (j=0; j != 4 ; ++j) 
       for (k=0; k != 4 ; ++k) 
         rsm[j][k] = *(rot+16*i+j+4*k);
-    mat4_to_symop(buffer,&buffer[80],rsm);
+    mat4_to_symop(buffer,&buffer[80],(const float (*)[4])rsm);
     ccp4_cmap_set_symop(ioArray[ii]->mapfile,buffer);
   }
   /* record for FORTRAN API */
@@ -1185,7 +1185,7 @@ FORTRAN_SUBR( CCP4_MAP_WRITE_SYMM_MATRIX, ccp4_map_write_symm_matrix,
     for (j=0; j != 4 ; ++j) 
       for (k=0; k != 4 ; ++k) 
         rsm[j][k] = *(rot+16*i+j+4*k);
-    mat4_to_symop(buffer,&buffer[80],rsm);
+    mat4_to_symop(buffer,&buffer[80],(const float (*)[4])rsm);
     ccp4_cmap_set_symop(ioArray[ii]->mapfile,buffer);
   }
   /* record for FORTRAN API */

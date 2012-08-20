@@ -55,7 +55,7 @@ extern "C" {
 
 /* Define a type which is a pointer to a function taking an integer
    and a pointer to character, and returning an integer */
-typedef int (*CCP4INTFUNCPTR)(int, char *);
+typedef int (*CCP4INTFUNCPTR)(int, const char *);
 
 /*------------------------------------------------------------------*/
 
@@ -111,7 +111,8 @@ int ccp4VerbosityLevel(int level);
  * @param message A message string equivalent to that used in ccperror
  * @return Result of the executed function (invoke mode)
  */
-int ccp4Callback(CCP4INTFUNCPTR mycallback, char *mode, int ierr, char *message);
+int ccp4Callback(CCP4INTFUNCPTR mycallback, char *mode, int ierr,
+                 const char *message);
 
 /** Set a user-defined callback function
  * This is a wrapper to ccp4Callback - it stores a user-defined
@@ -129,7 +130,7 @@ int ccp4SetCallback(CCP4INTFUNCPTR mycallback);
  * @param message A message string equivalent to that used in ccperror
  * @return Result of the executed function
  */
-int ccp4InvokeCallback(int ierr, char *message);
+int ccp4InvokeCallback(int ierr, const char *message);
 
 /** A dummy callback function used by default in ccp4CallOnExit
  * Internal function. This function does nothing.
@@ -137,7 +138,7 @@ int ccp4InvokeCallback(int ierr, char *message);
  * @param message Message text supplied from ccperror
  * @return Always returns 1
 */      
-int ccp4NullCallback(int level, char *message);
+int ccp4NullCallback(int level, const char *message);
 
 /** Check existence of licence agreement
  * @param name Name of licence, e.g. "CCP4".
