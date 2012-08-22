@@ -957,7 +957,7 @@ C     ..
 C     .. Arrays in Common ..
       REAL CHRMAT,CUMAT,USRMAT
       INTEGER*2 IFHT,IFSTRT,IFWID,IFX0,IFY0,LENGF
-      CHARACTER*1 NFONTS
+      INTEGER*1 NFONTS
 C     ..
 C     .. Local Scalars ..
       REAL ATXL1,CHORGX,CHORGY,CUORGX,CUORGY,CWID,DSOFFX,DSOFFY,DSTRX,
@@ -1177,7 +1177,7 @@ C     ..
 C     .. Arrays in Common ..
       REAL CHRMAT,CUMAT,USRMAT
       INTEGER*2 IFHT,IFSTRT,IFWID,IFX0,IFY0,LENGF
-      CHARACTER*1 NFONTS
+      INTEGER*1 NFONTS
 C     ..
 C     .. Local Scalars ..
       REAL AW,CHORGX,CHORGY,CUORGX,CUORGY,RED,X1,X2,XORIG,Y1,Y2,YORIG
@@ -3975,7 +3975,7 @@ C     ..
 C     .. Arrays in Common ..
       REAL CHRMAT,CUMAT,USRMAT
       INTEGER*2 IFHT,IFSTRT,IFWID,IFX0,IFY0,LENGF
-      CHARACTER*1 NFONTS
+      INTEGER*1 NFONTS
 C     ..
 C     .. Local Scalars ..
       REAL CHORGX,CHORGY,CUORGX,CUORGY,SIZX,SIZY,XORIG,YORIG
@@ -4087,7 +4087,7 @@ C     ..
 C     .. Arrays in Common ..
       REAL CHRMAT,CUMAT,USRMAT
       INTEGER*2 IFHT,IFSTRT,IFWID,IFX0,IFY0,LENGF
-      CHARACTER*1 NFONTS
+      INTEGER*1 NFONTS
 C     ..
 C     .. Local Scalars ..
       REAL AH,AW,CHFACX,CHFACY,CHORGX,CHORGY,CHSIZH,CHSIZW,CSHIFT,
@@ -4200,10 +4200,10 @@ C
         J1 = ISTART
         J2 = ISTART + NSEG - 1
         DO 10 J = J1,J2
-          XX1 = ICHAR(NFONTS(1,J,IFNT)) + IXG
-          YY1 = ICHAR(NFONTS(2,J,IFNT)) + IYG
-          XX2 = ICHAR(NFONTS(3,J,IFNT)) + IXG
-          YY2 = ICHAR(NFONTS(4,J,IFNT)) + IYG
+          XX1 = NFONTS(1,J,IFNT) + IXG
+          YY1 = NFONTS(2,J,IFNT) + IYG
+          XX2 = NFONTS(3,J,IFNT) + IXG
+          YY2 = NFONTS(4,J,IFNT) + IYG
 C
 C---- scale
 C
@@ -4809,7 +4809,7 @@ C     ..
 C     .. Arrays in Common ..
       REAL CHRMAT,CUMAT,USRMAT
       INTEGER*2 IFHT,IFSTRT,IFWID,IFX0,IFY0,LENGF
-      CHARACTER*1 NFONTS
+      INTEGER*1 NFONTS
 C     ..
 C     .. Local Scalars ..
       REAL CHORGX,CHORGY,CUORGX,CUORGY,PI,XORIG,YORIG
@@ -8657,7 +8657,8 @@ C     .. Scalars in Common ..
 C     ..
 C     .. Arrays in Common ..
       INTEGER*2 IFHT,IFSTRT,IFWID,IFX0,IFY0,LENGF
-      CHARACTER*1 NFONTS
+      INTEGER*1 NFONTS
+      character str*255
 C     ..
 C     .. Local Scalars ..
       INTEGER IUNITF,IFAIL,ITEROP
@@ -8676,15 +8677,25 @@ C     .. Data statements ..
 C
       IFAIL = 0
       ITEROP = -IUNITF
-      CALL CCPDPN (ITEROP,'PUBLIC_FONT84','READONLY','U',80,IFAIL)
-      IF (IFAIL.NE.0) GO TO 10
-      READ (IUNITF) IFSTRT,LENGF,IFX0,IFY0,IFWID,IFHT,NFONTS
+      call getenv('PUBLIC_FONT84', str)
+      if (str.ne.' ') then
+          CALL CCPDPN (ITEROP,'PUBLIC_FONT84','READONLY','U',80,IFAIL)
+          IF (IFAIL.NE.0) GO TO 10
+          READ (IUNITF) IFSTRT,LENGF,IFX0,IFY0,IFWID,IFHT,NFONTS
+      else
+          call getenv('CCP4', str)
+          str(lenstr(str)+1:) = '/share/ccp4/font84.ascii'
+          call CCPDPN (ITEROP,str,'READONLY','F',0,IFAIL)
+          IF (IFAIL.NE.0) GO TO 10
+          READ(IUNITF,2000) IFSTRT,LENGF,IFX0,IFY0,IFWID,IFHT,NFONTS
+      endif
       CLOSE (UNIT=IUNITF)
       RETURN
    10 WRITE (LUNOUT,FMT=6000)
 C
 C---- Format statements
 C
+ 2000 FORMAT(10I5)
  6000 FORMAT (2X,'!!!GSRFNT ERROR: UNABLE TO READ FONTS - FILE=',
      +       'PUBLIC_FONT84')
 C
@@ -9087,7 +9098,7 @@ C     ..
 C     .. Arrays in Common ..
       REAL CHRMAT,CUMAT,USRMAT
       INTEGER*2 IFHT,IFSTRT,IFWID,IFX0,IFY0,LENGF
-      CHARACTER*1 NFONTS
+      INTEGER*1 NFONTS
 C     ..
 C     .. Local Scalars ..
       REAL CHORGX,CHORGY,CUORGX,CUORGY,XCOFF,XORIG,YCOFF,YORIG
@@ -9262,7 +9273,7 @@ C     ..
 C     .. Arrays in Common ..
       REAL CHRMAT,CUMAT,USRMAT
       INTEGER*2 IFHT,IFSTRT,IFWID,IFX0,IFY0,LENGF
-      CHARACTER*1 NFONTS
+      INTEGER*1 NFONTS
 C     ..
 C     .. Local Scalars ..
       REAL CHORGX,CHORGY,CUORGX,CUORGY,DXCHAR,DYCHAR,XCHOLD,XCOFF,
@@ -13289,7 +13300,7 @@ C     ..
 C     .. Arrays in Common ..
       REAL CHRMAT,CUMAT,USRMAT
       INTEGER*2 IFHT,IFSTRT,IFWID,IFX0,IFY0,LENGF
-      CHARACTER*1 NFONTS
+      INTEGER*1 NFONTS
 C     ..
 C     .. Local Scalars ..
       REAL AA,BB,CHORGX,CHORGY,CUORGX,CUORGY,PI,XORIG,YORIG
