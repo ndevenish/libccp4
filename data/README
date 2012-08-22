@@ -24,8 +24,8 @@
     * The header lines should start in the first column and the other lines be
       indented (for ease of locating the headers)
 
-* font84.ascii: data for creating the binary plot84 font file in $CCP4_LIB
-  with fontpack.
+* font84.ascii: Used directly by plot84lib.f. Previously: data for creating
+  the binary plot84 font file in $CCP4_LIB with fontpack.
 
 * atomsf.lib, atomsf_neutron.lib: formfactors for every known atom (for SFALL,
   MLPHARE, VECREF).  The format of the atomsf.lib file is as follows. 

@@ -75,20 +75,9 @@ dist_data_DATA = data/atomsf_neutron.lib data/atomsf.lib \
 # for details)
 
 if FORTRAN_LIB
-  ccp4data_DATA = data/font84.dat
-  noinst_PROGRAMS = data/fontpack
-  data_fontpack_SOURCES = data/fontpack.f
-  data_fontpack_LDADD = fortran/libccp4f.la
-  dist_noinst_DATA = data/font84.ascii
-  CLEANFILES += data/font84.dat
+  dist_ccp4data_DATA = data/font84.ascii
 endif
 
-data/font84.dat: data/font84.ascii data/fontpack$(EXEEXT) 
-	rm -f $@
-	[ -e data/font84.ascii ] || copy_font84_ascii=true; \
-	$${copy_font84_ascii:=false} && cp $< data/; \
-	( cd data/ && ./fontpack$(EXEEXT) ) && \
-	( $$copy_font84_ascii && rm -f data/font84.ascii ||: )
 
 # FIXME: all files but the first are unused now, should they be distributed?
 EXTRA_DIST = fortran/unix.m4 \

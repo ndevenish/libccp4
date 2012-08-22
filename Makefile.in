@@ -17,7 +17,6 @@
 
 
 
-
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -41,10 +40,8 @@ host_triplet = @host@
 @CCIF_API_TRUE@am__append_2 = fortran/harvlib.f fortran/cciflib.f
 @CCIF_API_TRUE@am__append_3 = -lccif
 @CCIF_API_FALSE@am__append_4 = fortran/harv_dummy.f
-@FORTRAN_LIB_TRUE@noinst_PROGRAMS = data/fontpack$(EXEEXT)
-@FORTRAN_LIB_TRUE@am__append_5 = data/font84.dat
 subdir = .
-DIST_COMMON = $(am__configure_deps) $(am__dist_noinst_DATA_DIST) \
+DIST_COMMON = $(am__configure_deps) $(am__dist_ccp4data_DATA_DIST) \
 	$(ccp4include_HEADERS) $(dist_data_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure COPYING COPYING.LESSER INSTALL \
@@ -150,11 +147,6 @@ fortran_libccp4f_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=F77 \
 	$(AM_FFLAGS) $(FFLAGS) $(fortran_libccp4f_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
 @FORTRAN_LIB_TRUE@am_fortran_libccp4f_la_rpath = -rpath $(libdir)
-PROGRAMS = $(noinst_PROGRAMS)
-am__data_fontpack_SOURCES_DIST = data/fontpack.f
-@FORTRAN_LIB_TRUE@am_data_fontpack_OBJECTS = data/fontpack.$(OBJEXT)
-data_fontpack_OBJECTS = $(am_data_fontpack_OBJECTS)
-@FORTRAN_LIB_TRUE@data_fontpack_DEPENDENCIES = fortran/libccp4f.la
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
@@ -195,12 +187,11 @@ AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(ccp4_libccp4c_la_SOURCES) $(fortran_libccp4f_la_SOURCES) \
-	$(nodist_fortran_libccp4f_la_SOURCES) $(data_fontpack_SOURCES)
+	$(nodist_fortran_libccp4f_la_SOURCES)
 DIST_SOURCES = $(ccp4_libccp4c_la_SOURCES) \
-	$(am__fortran_libccp4f_la_SOURCES_DIST) \
-	$(am__data_fontpack_SOURCES_DIST)
-am__dist_noinst_DATA_DIST = data/font84.ascii
-DATA = $(ccp4data_DATA) $(dist_data_DATA) $(dist_noinst_DATA)
+	$(am__fortran_libccp4f_la_SOURCES_DIST)
+am__dist_ccp4data_DATA_DIST = data/font84.ascii
+DATA = $(dist_ccp4data_DATA) $(dist_data_DATA)
 HEADERS = $(ccp4include_HEADERS)
 ETAGS = etags
 CTAGS = ctags
@@ -388,7 +379,7 @@ nodist_fortran_libccp4f_la_SOURCES = fortran/unix.f
 fortran_libccp4f_la_CPPFLAGS = -I$(srcdir)/ccp4
 fortran_libccp4f_la_LIBADD = ccp4/libccp4c.la -lmmdb $(am__append_3)
 BUILT_SOURCES = fortran/unix.f
-CLEANFILES = fortran/unix.f $(am__append_5)
+CLEANFILES = fortran/unix.f
 ccp4_libccp4c_la_LDFLAGS = -no-undefined
 fortran_libccp4f_la_LDFLAGS = -no-undefined
 dist_data_DATA = data/atomsf_neutron.lib data/atomsf.lib \
@@ -398,10 +389,7 @@ dist_data_DATA = data/atomsf_neutron.lib data/atomsf.lib \
 # They are included in CCP4 and may be useful for running programs
 # compiled with libccp4 (see http://www.ccp4.ac.uk/dist/html/ccp4.html
 # for details)
-@FORTRAN_LIB_TRUE@ccp4data_DATA = data/font84.dat
-@FORTRAN_LIB_TRUE@data_fontpack_SOURCES = data/fontpack.f
-@FORTRAN_LIB_TRUE@data_fontpack_LDADD = fortran/libccp4f.la
-@FORTRAN_LIB_TRUE@dist_noinst_DATA = data/font84.ascii
+@FORTRAN_LIB_TRUE@dist_ccp4data_DATA = data/font84.ascii
 
 # FIXME: all files but the first are unused now, should they be distributed?
 EXTRA_DIST = fortran/unix.m4 \
@@ -598,26 +586,6 @@ fortran/unix.lo: fortran/$(am__dirstamp) \
 fortran/libccp4f.la: $(fortran_libccp4f_la_OBJECTS) $(fortran_libccp4f_la_DEPENDENCIES) $(EXTRA_fortran_libccp4f_la_DEPENDENCIES) fortran/$(am__dirstamp)
 	$(AM_V_F77LD)$(fortran_libccp4f_la_LINK) $(am_fortran_libccp4f_la_rpath) $(fortran_libccp4f_la_OBJECTS) $(fortran_libccp4f_la_LIBADD) $(LIBS)
 
-clean-noinstPROGRAMS:
-	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
-data/$(am__dirstamp):
-	@$(MKDIR_P) data
-	@: > data/$(am__dirstamp)
-data/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) data/$(DEPDIR)
-	@: > data/$(DEPDIR)/$(am__dirstamp)
-data/fontpack.$(OBJEXT): data/$(am__dirstamp) \
-	data/$(DEPDIR)/$(am__dirstamp)
-data/fontpack$(EXEEXT): $(data_fontpack_OBJECTS) $(data_fontpack_DEPENDENCIES) $(EXTRA_data_fontpack_DEPENDENCIES) data/$(am__dirstamp)
-	@rm -f data/fontpack$(EXEEXT)
-	$(AM_V_F77LD)$(F77LINK) $(data_fontpack_OBJECTS) $(data_fontpack_LDADD) $(LIBS)
-
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f ccp4/ccp4_array.$(OBJEXT)
@@ -662,7 +630,6 @@ mostlyclean-compile:
 	-rm -f ccp4/library_utils.lo
 	-rm -f ccp4/pack_c.$(OBJEXT)
 	-rm -f ccp4/pack_c.lo
-	-rm -f data/fontpack.$(OBJEXT)
 	-rm -f fortran/cciflib.$(OBJEXT)
 	-rm -f fortran/cciflib.lo
 	-rm -f fortran/ccplib.$(OBJEXT)
@@ -844,15 +811,14 @@ mostlyclean-libtool:
 clean-libtool:
 	-rm -rf .libs _libs
 	-rm -rf ccp4/.libs ccp4/_libs
-	-rm -rf data/.libs data/_libs
 	-rm -rf fortran/.libs fortran/_libs
 
 distclean-libtool:
 	-rm -f libtool config.lt
-install-ccp4dataDATA: $(ccp4data_DATA)
+install-dist_ccp4dataDATA: $(dist_ccp4data_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(ccp4datadir)" || $(MKDIR_P) "$(DESTDIR)$(ccp4datadir)"
-	@list='$(ccp4data_DATA)'; test -n "$(ccp4datadir)" || list=; \
+	@list='$(dist_ccp4data_DATA)'; test -n "$(ccp4datadir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
@@ -862,9 +828,9 @@ install-ccp4dataDATA: $(ccp4data_DATA)
 	  $(INSTALL_DATA) $$files "$(DESTDIR)$(ccp4datadir)" || exit $$?; \
 	done
 
-uninstall-ccp4dataDATA:
+uninstall-dist_ccp4dataDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(ccp4data_DATA)'; test -n "$(ccp4datadir)" || list=; \
+	@list='$(dist_ccp4data_DATA)'; test -n "$(ccp4datadir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(ccp4datadir)'; $(am__uninstall_files_from_dir)
 install-dist_dataDATA: $(dist_data_DATA)
@@ -1121,8 +1087,7 @@ distcleancheck: distclean
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA) $(HEADERS) \
-		config.h
+all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS) config.h
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(ccp4datadir)" "$(DESTDIR)$(datadir)" "$(DESTDIR)$(ccp4includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -1157,8 +1122,6 @@ distclean-generic:
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
 	-rm -f ccp4/$(DEPDIR)/$(am__dirstamp)
 	-rm -f ccp4/$(am__dirstamp)
-	-rm -f data/$(DEPDIR)/$(am__dirstamp)
-	-rm -f data/$(am__dirstamp)
 	-rm -f fortran/$(DEPDIR)/$(am__dirstamp)
 	-rm -f fortran/$(am__dirstamp)
 
@@ -1169,7 +1132,7 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-noinstPROGRAMS mostlyclean-am
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -1190,7 +1153,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-ccp4dataDATA install-ccp4includeHEADERS \
+install-data-am: install-ccp4includeHEADERS install-dist_ccp4dataDATA \
 	install-dist_dataDATA
 
 install-dvi: install-dvi-am
@@ -1239,20 +1202,20 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-ccp4dataDATA uninstall-ccp4includeHEADERS \
+uninstall-am: uninstall-ccp4includeHEADERS uninstall-dist_ccp4dataDATA \
 	uninstall-dist_dataDATA uninstall-libLTLIBRARIES
 
 .MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-am clean \
-	clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-noinstPROGRAMS ctags dist dist-all dist-bzip2 dist-gzip \
-	dist-lzip dist-lzma dist-shar dist-tarZ dist-xz dist-zip \
-	distcheck distclean distclean-compile distclean-generic \
-	distclean-hdr distclean-libtool distclean-tags distcleancheck \
-	distdir distuninstallcheck dvi dvi-am html html-am info \
-	info-am install install-am install-ccp4dataDATA \
-	install-ccp4includeHEADERS install-data install-data-am \
+	clean-generic clean-libLTLIBRARIES clean-libtool ctags dist \
+	dist-all dist-bzip2 dist-gzip dist-lzip dist-lzma dist-shar \
+	dist-tarZ dist-xz dist-zip distcheck distclean \
+	distclean-compile distclean-generic distclean-hdr \
+	distclean-libtool distclean-tags distcleancheck distdir \
+	distuninstallcheck dvi dvi-am html html-am info info-am \
+	install install-am install-ccp4includeHEADERS install-data \
+	install-data-am install-dist_ccp4dataDATA \
 	install-dist_dataDATA install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-libLTLIBRARIES install-man install-pdf \
@@ -1260,19 +1223,12 @@ uninstall-am: uninstall-ccp4dataDATA uninstall-ccp4includeHEADERS \
 	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-ccp4dataDATA \
-	uninstall-ccp4includeHEADERS uninstall-dist_dataDATA \
+	tags uninstall uninstall-am uninstall-ccp4includeHEADERS \
+	uninstall-dist_ccp4dataDATA uninstall-dist_dataDATA \
 	uninstall-libLTLIBRARIES
 
 fortran/unix.f: fortran/unix.m4 Makefile
 	m4 $(M4_ARG) $< > $@
-
-data/font84.dat: data/font84.ascii data/fontpack$(EXEEXT) 
-	rm -f $@
-	[ -e data/font84.ascii ] || copy_font84_ascii=true; \
-	$${copy_font84_ascii:=false} && cp $< data/; \
-	( cd data/ && ./fontpack$(EXEEXT) ) && \
-	( $$copy_font84_ascii && rm -f data/font84.ascii ||: )
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
