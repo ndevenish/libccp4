@@ -70,12 +70,12 @@ fortran_libccp4f_la_LDFLAGS = -no-undefined
 dist_data_DATA = data/atomsf_neutron.lib data/atomsf.lib \
                      data/syminfo.lib data/symop.lib
 # Files default.def and environ.def are not part of libccp4.
-# They are included in CCP4 and may be useful for running programs
-# compiled with libccp4 (see http://www.ccp4.ac.uk/dist/html/ccp4.html
-# for details)
+# They are included in CCP4 and may be needed for running programs
+# compiled with libccp4 (see http://www.ccp4.ac.uk/dist/html/ccp4.html)
 
+dist_ccp4data_DATA = ccp4-config.cmake
 if FORTRAN_LIB
-  dist_ccp4data_DATA = data/font84.ascii
+  dist_ccp4data_DATA += data/font84.ascii
 endif
 
 

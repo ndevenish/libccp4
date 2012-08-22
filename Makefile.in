@@ -40,6 +40,7 @@ host_triplet = @host@
 @CCIF_API_TRUE@am__append_2 = fortran/harvlib.f fortran/cciflib.f
 @CCIF_API_TRUE@am__append_3 = -lccif
 @CCIF_API_FALSE@am__append_4 = fortran/harv_dummy.f
+@FORTRAN_LIB_TRUE@am__append_5 = data/font84.ascii
 subdir = .
 DIST_COMMON = $(am__configure_deps) $(am__dist_ccp4data_DATA_DIST) \
 	$(ccp4include_HEADERS) $(dist_data_DATA) $(srcdir)/Makefile.am \
@@ -190,7 +191,7 @@ SOURCES = $(ccp4_libccp4c_la_SOURCES) $(fortran_libccp4f_la_SOURCES) \
 	$(nodist_fortran_libccp4f_la_SOURCES)
 DIST_SOURCES = $(ccp4_libccp4c_la_SOURCES) \
 	$(am__fortran_libccp4f_la_SOURCES_DIST)
-am__dist_ccp4data_DATA_DIST = data/font84.ascii
+am__dist_ccp4data_DATA_DIST = ccp4-config.cmake data/font84.ascii
 DATA = $(dist_ccp4data_DATA) $(dist_data_DATA)
 HEADERS = $(ccp4include_HEADERS)
 ETAGS = etags
@@ -386,10 +387,9 @@ dist_data_DATA = data/atomsf_neutron.lib data/atomsf.lib \
                      data/syminfo.lib data/symop.lib
 
 # Files default.def and environ.def are not part of libccp4.
-# They are included in CCP4 and may be useful for running programs
-# compiled with libccp4 (see http://www.ccp4.ac.uk/dist/html/ccp4.html
-# for details)
-@FORTRAN_LIB_TRUE@dist_ccp4data_DATA = data/font84.ascii
+# They are included in CCP4 and may be needed for running programs
+# compiled with libccp4 (see http://www.ccp4.ac.uk/dist/html/ccp4.html)
+dist_ccp4data_DATA = ccp4-config.cmake $(am__append_5)
 
 # FIXME: all files but the first are unused now, should they be distributed?
 EXTRA_DIST = fortran/unix.m4 \
