@@ -9,6 +9,9 @@ AM_INIT_AUTOMAKE([1.11 foreign subdir-objects silent-rules -Wall])
 LT_INIT([disable-shared win32-dll])
 
 AC_PROG_CC
+dnl fortran/rwbrook.f provides interface to fortran mmdb interface
+dnl (mmdb/mmdb_rwbrook.h/cpp). CXX is used only to test linking with mmdb.
+AC_PROG_CXX
 AC_PROG_INSTALL
 
 AM_MAINTAINER_MODE dnl disable (by default) maintainer mode
@@ -22,12 +25,7 @@ AM_CONDITIONAL([FORTRAN_LIB], [ test "x$enable_fortran" != xno ])
 AM_CONDITIONAL([CCIF_API], [ test "x$enable_ccif" != xno ])
 
 if test "x$enable_fortran" != "xno"; then
-  dnl fortran/rwbrook.f provides interface to fortran mmdb interface
-  dnl (mmdb/mmdb_rwbrook.h/cpp). CXX is used only to test linking with mmdb.
-  AC_PROG_CXX
-
   AC_PROG_F77
-  AM_CONDITIONAL([GNU_FORTRAN], [test "x$G77" = "xyes"])
   # TODO: it'd be better to check for features rather than compilers,
   # but I'm afraid of changing this and unix.m4.
   cc_basename=`$ECHO "X$compiler_F77" | $Xsed -e 's%.*/%%' -e "s%^$host_alias-%%"`
@@ -107,6 +105,8 @@ if test "x$enable_fortran" != "xno"; then
   fi
 
 fi #dnl fortran API elements
+
+AM_CONDITIONAL([GNU_FORTRAN], [test "x$G77" = "xyes"])
 
 # TODO: prefix or pkgdatadir can be changed after configure is run,
 # setting PACKAGE_ROOT here can fail, it would be better to set:
