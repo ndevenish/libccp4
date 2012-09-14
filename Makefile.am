@@ -44,20 +44,12 @@ fortran/ccplib.f fortran/fftlib.f fortran/modlib.f fortran/parser.f \
 fortran/rwbrook.f fortran/libhtml.f fortran/keyparse.f \
 fortran/dna_output.f fortran/pack_f.f fortran/pxxml.f fortran/lgglib.f \
 fortran/plot84lib.f fortran/plotsubs.f fortran/sorting_main.f \
-fortran/cciflib.fh  fortran/dna_header.fh \
-fortran/harderiv.inc  fortran/harsymm.inc \
-fortran/harshell.inc  fortran/harvest.inc
+fortran/dna_header.fh
 
 nodist_fortran_libccp4f_la_SOURCES = fortran/unix.f
 
 fortran_libccp4f_la_CPPFLAGS = -I$(srcdir)/ccp4
 fortran_libccp4f_la_LIBADD = ccp4/libccp4c.la -lmmdb
-if CCIF_API
-  fortran_libccp4f_la_SOURCES += fortran/harvlib.f fortran/cciflib.f
-  fortran_libccp4f_la_LIBADD += -lccif
-else
-  fortran_libccp4f_la_SOURCES += fortran/harv_dummy.f
-endif
 
 BUILT_SOURCES = fortran/unix.f
 CLEANFILES = fortran/unix.f
@@ -67,13 +59,12 @@ fortran/unix.f: fortran/unix.m4 Makefile
 ccp4_libccp4c_la_LDFLAGS = -no-undefined
 fortran_libccp4f_la_LDFLAGS = -no-undefined
 
-dist_data_DATA = data/atomsf_neutron.lib data/atomsf.lib \
-                     data/syminfo.lib data/symop.lib
 # Files default.def and environ.def are not part of libccp4.
 # They are included in CCP4 and may be needed for running programs
 # compiled with libccp4 (see http://www.ccp4.ac.uk/dist/html/ccp4.html)
 
-dist_ccp4data_DATA = ccp4-config.cmake
+dist_ccp4data_DATA = ccp4-config.cmake data/atomsf_neutron.lib \
+		     data/atomsf.lib data/syminfo.lib data/symop.lib
 if FORTRAN_LIB
   dist_ccp4data_DATA += data/font84.ascii
 endif

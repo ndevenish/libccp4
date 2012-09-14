@@ -619,6 +619,11 @@ GNU_FORTRAN_TRUE
 ac_ct_F77
 FFLAGS
 F77
+FORTRAN_LIB_FALSE
+FORTRAN_LIB_TRUE
+MAINT
+MAINTAINER_MODE_FALSE
+MAINTAINER_MODE_TRUE
 CXXCPP
 am__fastdepCXX_FALSE
 am__fastdepCXX_TRUE
@@ -626,13 +631,6 @@ CXXDEPMODE
 ac_ct_CXX
 CXXFLAGS
 CXX
-CCIF_API_FALSE
-CCIF_API_TRUE
-FORTRAN_LIB_FALSE
-FORTRAN_LIB_TRUE
-MAINT
-MAINTAINER_MODE_FALSE
-MAINTAINER_MODE_TRUE
 CPP
 OTOOL64
 OTOOL
@@ -760,7 +758,6 @@ with_sysroot
 enable_libtool_lock
 enable_maintainer_mode
 enable_fortran
-enable_ccif
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1409,7 +1406,6 @@ Optional Features:
   --enable-maintainer-mode  enable make rules and dependencies not useful
 			  (and sometimes confusing) to the casual installer
   --disable-fortran       do not compile fortran API
-  --disable-ccif          do not compile ccif API for fortran
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -12356,61 +12352,7 @@ else
 fi
 
 
-
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable maintainer-specific portions of Makefiles" >&5
-$as_echo_n "checking whether to enable maintainer-specific portions of Makefiles... " >&6; }
-    # Check whether --enable-maintainer-mode was given.
-if test "${enable_maintainer_mode+set}" = set; then :
-  enableval=$enable_maintainer_mode; USE_MAINTAINER_MODE=$enableval
-else
-  USE_MAINTAINER_MODE=no
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $USE_MAINTAINER_MODE" >&5
-$as_echo "$USE_MAINTAINER_MODE" >&6; }
-   if test $USE_MAINTAINER_MODE = yes; then
-  MAINTAINER_MODE_TRUE=
-  MAINTAINER_MODE_FALSE='#'
-else
-  MAINTAINER_MODE_TRUE='#'
-  MAINTAINER_MODE_FALSE=
-fi
-
-  MAINT=$MAINTAINER_MODE_TRUE
-
-
-# Check whether --enable-fortran was given.
-if test "${enable_fortran+set}" = set; then :
-  enableval=$enable_fortran;
-fi
-
-# Check whether --enable-ccif was given.
-if test "${enable_ccif+set}" = set; then :
-  enableval=$enable_ccif;
-fi
-
-
- if  test "x$enable_fortran" != xno ; then
-  FORTRAN_LIB_TRUE=
-  FORTRAN_LIB_FALSE='#'
-else
-  FORTRAN_LIB_TRUE='#'
-  FORTRAN_LIB_FALSE=
-fi
-
- if  test "x$enable_ccif" != xno ; then
-  CCIF_API_TRUE=
-  CCIF_API_FALSE='#'
-else
-  CCIF_API_TRUE='#'
-  CCIF_API_FALSE=
-fi
-
-
-if test "x$enable_fortran" != "xno"; then
-      ac_ext=cpp
+ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -16001,6 +15943,46 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable maintainer-specific portions of Makefiles" >&5
+$as_echo_n "checking whether to enable maintainer-specific portions of Makefiles... " >&6; }
+    # Check whether --enable-maintainer-mode was given.
+if test "${enable_maintainer_mode+set}" = set; then :
+  enableval=$enable_maintainer_mode; USE_MAINTAINER_MODE=$enableval
+else
+  USE_MAINTAINER_MODE=no
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $USE_MAINTAINER_MODE" >&5
+$as_echo "$USE_MAINTAINER_MODE" >&6; }
+   if test $USE_MAINTAINER_MODE = yes; then
+  MAINTAINER_MODE_TRUE=
+  MAINTAINER_MODE_FALSE='#'
+else
+  MAINTAINER_MODE_TRUE='#'
+  MAINTAINER_MODE_FALSE=
+fi
+
+  MAINT=$MAINTAINER_MODE_TRUE
+
+
+# Check whether --enable-fortran was given.
+if test "${enable_fortran+set}" = set; then :
+  enableval=$enable_fortran;
+fi
+
+
+ if  test "x$enable_fortran" != xno ; then
+  FORTRAN_LIB_TRUE=
+  FORTRAN_LIB_FALSE='#'
+else
+  FORTRAN_LIB_TRUE='#'
+  FORTRAN_LIB_FALSE=
+fi
+
+
+if test "x$enable_fortran" != "xno"; then
   ac_ext=f
 ac_compile='$F77 -c $FFLAGS conftest.$ac_ext >&5'
 ac_link='$F77 -o conftest$ac_exeext $FFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -18928,14 +18910,6 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-   if test "x$G77" = "xyes"; then
-  GNU_FORTRAN_TRUE=
-  GNU_FORTRAN_FALSE='#'
-else
-  GNU_FORTRAN_TRUE='#'
-  GNU_FORTRAN_FALSE=
-fi
-
   # TODO: it'd be better to check for features rather than compilers,
   # but I'm afraid of changing this and unix.m4.
   cc_basename=`$ECHO "X$compiler_F77" | $Xsed -e 's%.*/%%' -e "s%^$host_alias-%%"`
@@ -19145,115 +19119,16 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-  if test x"$enable_ccif" != "xno"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing regcomp" >&5
-$as_echo_n "checking for library containing regcomp... " >&6; }
-if ${ac_cv_search_regcomp+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char regcomp ();
-int
-main ()
-{
-return regcomp ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' regex; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_search_regcomp=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if ${ac_cv_search_regcomp+:} false; then :
-  break
-fi
-done
-if ${ac_cv_search_regcomp+:} false; then :
-
-else
-  ac_cv_search_regcomp=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_regcomp" >&5
-$as_echo "$ac_cv_search_regcomp" >&6; }
-ac_res=$ac_cv_search_regcomp
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-else
-  as_fn_error $? "regex library not found." "$LINENO" 5
-fi
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ccif_signal in -lccif" >&5
-$as_echo_n "checking for ccif_signal in -lccif... " >&6; }
-if ${ac_cv_lib_ccif_ccif_signal+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lccif  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char ccif_signal ();
-int
-main ()
-{
-return ccif_signal ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_ccif_ccif_signal=yes
-else
-  ac_cv_lib_ccif_ccif_signal=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ccif_ccif_signal" >&5
-$as_echo "$ac_cv_lib_ccif_ccif_signal" >&6; }
-if test "x$ac_cv_lib_ccif_ccif_signal" = xyes; then :
-  :
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
-          ccif library not found.
-          If Fortran ccif API is not needed use --disable-ccif." >&5
-$as_echo "$as_me: WARNING:
-          ccif library not found.
-          If Fortran ccif API is not needed use --disable-ccif." >&2;}
-fi
-
-  fi
-
 fi #dnl fortran API elements
+
+ if test "x$G77" = "xyes"; then
+  GNU_FORTRAN_TRUE=
+  GNU_FORTRAN_FALSE='#'
+else
+  GNU_FORTRAN_TRUE='#'
+  GNU_FORTRAN_FALSE=
+fi
+
 
 # TODO: prefix or pkgdatadir can be changed after configure is run,
 # setting PACKAGE_ROOT here can fail, it would be better to set:
@@ -19399,20 +19274,16 @@ if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${am__fastdepCXX_TRUE}" && test -z "${am__fastdepCXX_FALSE}"; then
+  as_fn_error $? "conditional \"am__fastdepCXX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error $? "conditional \"MAINTAINER_MODE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${FORTRAN_LIB_TRUE}" && test -z "${FORTRAN_LIB_FALSE}"; then
   as_fn_error $? "conditional \"FORTRAN_LIB\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${CCIF_API_TRUE}" && test -z "${CCIF_API_FALSE}"; then
-  as_fn_error $? "conditional \"CCIF_API\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${am__fastdepCXX_TRUE}" && test -z "${am__fastdepCXX_FALSE}"; then
-  as_fn_error $? "conditional \"am__fastdepCXX\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GNU_FORTRAN_TRUE}" && test -z "${GNU_FORTRAN_FALSE}"; then

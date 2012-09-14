@@ -18,11 +18,8 @@ AM_MAINTAINER_MODE dnl disable (by default) maintainer mode
 
 AC_ARG_ENABLE(fortran, AS_HELP_STRING([--disable-fortran],
                                       [do not compile fortran API]))
-AC_ARG_ENABLE(ccif, AS_HELP_STRING([--disable-ccif],
-                                   [do not compile ccif API for fortran]))
 
 AM_CONDITIONAL([FORTRAN_LIB], [ test "x$enable_fortran" != xno ])
-AM_CONDITIONAL([CCIF_API], [ test "x$enable_ccif" != xno ])
 
 if test "x$enable_fortran" != "xno"; then
   AC_PROG_F77
@@ -96,13 +93,6 @@ if test "x$enable_fortran" != "xno"; then
   AC_CHECK_LIB(mmdb, MMDB_CCIF_Init, :,
                AC_MSG_WARN([mmdb library not found.]))
   AC_LANG_POP([C++])
-
-  if test x"$enable_ccif" != "xno"; then
-    AC_SEARCH_LIBS(regcomp, regex, , AC_MSG_ERROR(regex library not found.))
-    AC_CHECK_LIB(ccif, ccif_signal, :, AC_MSG_WARN([
-          ccif library not found.
-          If Fortran ccif API is not needed use --disable-ccif.]))
-  fi
 
 fi #dnl fortran API elements
 

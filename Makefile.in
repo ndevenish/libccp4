@@ -37,13 +37,10 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @FORTRAN_LIB_TRUE@am__append_1 = fortran/libccp4f.la
-@CCIF_API_TRUE@am__append_2 = fortran/harvlib.f fortran/cciflib.f
-@CCIF_API_TRUE@am__append_3 = -lccif
-@CCIF_API_FALSE@am__append_4 = fortran/harv_dummy.f
-@FORTRAN_LIB_TRUE@am__append_5 = data/font84.ascii
+@FORTRAN_LIB_TRUE@am__append_2 = data/font84.ascii
 subdir = .
 DIST_COMMON = $(am__configure_deps) $(am__dist_ccp4data_DATA_DIST) \
-	$(ccp4include_HEADERS) $(dist_data_DATA) $(srcdir)/Makefile.am \
+	$(ccp4include_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure COPYING COPYING.LESSER INSTALL \
 	build-aux/config.guess build-aux/config.sub build-aux/depcomp \
@@ -89,7 +86,7 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(ccp4datadir)" \
-	"$(DESTDIR)$(datadir)" "$(DESTDIR)$(ccp4includedir)"
+	"$(DESTDIR)$(ccp4includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 ccp4_libccp4c_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
@@ -109,23 +106,7 @@ ccp4_libccp4c_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(ccp4_libccp4c_la_LDFLAGS) $(LDFLAGS) \
 	-o $@
-am__DEPENDENCIES_1 =
-fortran_libccp4f_la_DEPENDENCIES = ccp4/libccp4c.la \
-	$(am__DEPENDENCIES_1)
-am__fortran_libccp4f_la_SOURCES_DIST = fortran/ccp4_diskio_f.c \
-	fortran/ccp4_parser_f.c fortran/cmaplib_f.c \
-	fortran/csymlib_f.c fortran/ccp4_general_f.c \
-	fortran/ccp4_unitcell_f.c fortran/cmtzlib_f.c \
-	fortran/library_f.c fortran/ccplib.f fortran/fftlib.f \
-	fortran/modlib.f fortran/parser.f fortran/rwbrook.f \
-	fortran/libhtml.f fortran/keyparse.f fortran/dna_output.f \
-	fortran/pack_f.f fortran/pxxml.f fortran/lgglib.f \
-	fortran/plot84lib.f fortran/plotsubs.f fortran/sorting_main.f \
-	fortran/cciflib.fh fortran/dna_header.fh fortran/harderiv.inc \
-	fortran/harsymm.inc fortran/harshell.inc fortran/harvest.inc \
-	fortran/harvlib.f fortran/cciflib.f fortran/harv_dummy.f
-@CCIF_API_TRUE@am__objects_1 = fortran/harvlib.lo fortran/cciflib.lo
-@CCIF_API_FALSE@am__objects_2 = fortran/harv_dummy.lo
+fortran_libccp4f_la_DEPENDENCIES = ccp4/libccp4c.la
 am_fortran_libccp4f_la_OBJECTS =  \
 	fortran/fortran_libccp4f_la-ccp4_diskio_f.lo \
 	fortran/fortran_libccp4f_la-ccp4_parser_f.lo \
@@ -139,7 +120,7 @@ am_fortran_libccp4f_la_OBJECTS =  \
 	fortran/rwbrook.lo fortran/libhtml.lo fortran/keyparse.lo \
 	fortran/dna_output.lo fortran/pack_f.lo fortran/pxxml.lo \
 	fortran/lgglib.lo fortran/plot84lib.lo fortran/plotsubs.lo \
-	fortran/sorting_main.lo $(am__objects_1) $(am__objects_2)
+	fortran/sorting_main.lo
 nodist_fortran_libccp4f_la_OBJECTS = fortran/unix.lo
 fortran_libccp4f_la_OBJECTS = $(am_fortran_libccp4f_la_OBJECTS) \
 	$(nodist_fortran_libccp4f_la_OBJECTS)
@@ -190,9 +171,11 @@ am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(ccp4_libccp4c_la_SOURCES) $(fortran_libccp4f_la_SOURCES) \
 	$(nodist_fortran_libccp4f_la_SOURCES)
 DIST_SOURCES = $(ccp4_libccp4c_la_SOURCES) \
-	$(am__fortran_libccp4f_la_SOURCES_DIST)
-am__dist_ccp4data_DATA_DIST = ccp4-config.cmake data/font84.ascii
-DATA = $(dist_ccp4data_DATA) $(dist_data_DATA)
+	$(fortran_libccp4f_la_SOURCES)
+am__dist_ccp4data_DATA_DIST = ccp4-config.cmake \
+	data/atomsf_neutron.lib data/atomsf.lib data/syminfo.lib \
+	data/symop.lib data/font84.ascii
+DATA = $(dist_ccp4data_DATA)
 HEADERS = $(ccp4include_HEADERS)
 ETAGS = etags
 CTAGS = ctags
@@ -364,32 +347,31 @@ ccp4/overview.h       ccp4/ccp4_errno.h     ccp4/ccp4_parser.h    \
 ccp4/ccp4_types.h     ccp4/cmap_data.h      ccp4/cmap_skew.h      \
 ccp4/cmtzlib.h        ccp4/pack_c.h
 
-fortran_libccp4f_la_SOURCES = fortran/ccp4_diskio_f.c \
-	fortran/ccp4_parser_f.c fortran/cmaplib_f.c \
-	fortran/csymlib_f.c fortran/ccp4_general_f.c \
-	fortran/ccp4_unitcell_f.c fortran/cmtzlib_f.c \
-	fortran/library_f.c fortran/ccplib.f fortran/fftlib.f \
-	fortran/modlib.f fortran/parser.f fortran/rwbrook.f \
-	fortran/libhtml.f fortran/keyparse.f fortran/dna_output.f \
-	fortran/pack_f.f fortran/pxxml.f fortran/lgglib.f \
-	fortran/plot84lib.f fortran/plotsubs.f fortran/sorting_main.f \
-	fortran/cciflib.fh fortran/dna_header.fh fortran/harderiv.inc \
-	fortran/harsymm.inc fortran/harshell.inc fortran/harvest.inc \
-	$(am__append_2) $(am__append_4)
+fortran_libccp4f_la_SOURCES = \
+fortran/ccp4_diskio_f.c fortran/ccp4_parser_f.c fortran/cmaplib_f.c \
+fortran/csymlib_f.c fortran/ccp4_general_f.c fortran/ccp4_unitcell_f.c \
+fortran/cmtzlib_f.c fortran/library_f.c \
+ \
+fortran/ccplib.f fortran/fftlib.f fortran/modlib.f fortran/parser.f \
+fortran/rwbrook.f fortran/libhtml.f fortran/keyparse.f \
+fortran/dna_output.f fortran/pack_f.f fortran/pxxml.f fortran/lgglib.f \
+fortran/plot84lib.f fortran/plotsubs.f fortran/sorting_main.f \
+fortran/dna_header.fh
+
 nodist_fortran_libccp4f_la_SOURCES = fortran/unix.f
 fortran_libccp4f_la_CPPFLAGS = -I$(srcdir)/ccp4
-fortran_libccp4f_la_LIBADD = ccp4/libccp4c.la -lmmdb $(am__append_3)
+fortran_libccp4f_la_LIBADD = ccp4/libccp4c.la -lmmdb
 BUILT_SOURCES = fortran/unix.f
 CLEANFILES = fortran/unix.f
 ccp4_libccp4c_la_LDFLAGS = -no-undefined
 fortran_libccp4f_la_LDFLAGS = -no-undefined
-dist_data_DATA = data/atomsf_neutron.lib data/atomsf.lib \
-                     data/syminfo.lib data/symop.lib
 
 # Files default.def and environ.def are not part of libccp4.
 # They are included in CCP4 and may be needed for running programs
 # compiled with libccp4 (see http://www.ccp4.ac.uk/dist/html/ccp4.html)
-dist_ccp4data_DATA = ccp4-config.cmake $(am__append_5)
+dist_ccp4data_DATA = ccp4-config.cmake data/atomsf_neutron.lib \
+	data/atomsf.lib data/syminfo.lib data/symop.lib \
+	$(am__append_2)
 
 # FIXME: all files but the first are unused now, should they be distributed?
 EXTRA_DIST = fortran/unix.m4 \
@@ -575,12 +557,6 @@ fortran/plotsubs.lo: fortran/$(am__dirstamp) \
 	fortran/$(DEPDIR)/$(am__dirstamp)
 fortran/sorting_main.lo: fortran/$(am__dirstamp) \
 	fortran/$(DEPDIR)/$(am__dirstamp)
-fortran/harvlib.lo: fortran/$(am__dirstamp) \
-	fortran/$(DEPDIR)/$(am__dirstamp)
-fortran/cciflib.lo: fortran/$(am__dirstamp) \
-	fortran/$(DEPDIR)/$(am__dirstamp)
-fortran/harv_dummy.lo: fortran/$(am__dirstamp) \
-	fortran/$(DEPDIR)/$(am__dirstamp)
 fortran/unix.lo: fortran/$(am__dirstamp) \
 	fortran/$(DEPDIR)/$(am__dirstamp)
 fortran/libccp4f.la: $(fortran_libccp4f_la_OBJECTS) $(fortran_libccp4f_la_DEPENDENCIES) $(EXTRA_fortran_libccp4f_la_DEPENDENCIES) fortran/$(am__dirstamp)
@@ -630,8 +606,6 @@ mostlyclean-compile:
 	-rm -f ccp4/library_utils.lo
 	-rm -f ccp4/pack_c.$(OBJEXT)
 	-rm -f ccp4/pack_c.lo
-	-rm -f fortran/cciflib.$(OBJEXT)
-	-rm -f fortran/cciflib.lo
 	-rm -f fortran/ccplib.$(OBJEXT)
 	-rm -f fortran/ccplib.lo
 	-rm -f fortran/dna_output.$(OBJEXT)
@@ -654,10 +628,6 @@ mostlyclean-compile:
 	-rm -f fortran/fortran_libccp4f_la-csymlib_f.lo
 	-rm -f fortran/fortran_libccp4f_la-library_f.$(OBJEXT)
 	-rm -f fortran/fortran_libccp4f_la-library_f.lo
-	-rm -f fortran/harv_dummy.$(OBJEXT)
-	-rm -f fortran/harv_dummy.lo
-	-rm -f fortran/harvlib.$(OBJEXT)
-	-rm -f fortran/harvlib.lo
 	-rm -f fortran/keyparse.$(OBJEXT)
 	-rm -f fortran/keyparse.lo
 	-rm -f fortran/lgglib.$(OBJEXT)
@@ -833,24 +803,6 @@ uninstall-dist_ccp4dataDATA:
 	@list='$(dist_ccp4data_DATA)'; test -n "$(ccp4datadir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(ccp4datadir)'; $(am__uninstall_files_from_dir)
-install-dist_dataDATA: $(dist_data_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(datadir)" || $(MKDIR_P) "$(DESTDIR)$(datadir)"
-	@list='$(dist_data_DATA)'; test -n "$(datadir)" || list=; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(datadir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(datadir)" || exit $$?; \
-	done
-
-uninstall-dist_dataDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(dist_data_DATA)'; test -n "$(datadir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(datadir)'; $(am__uninstall_files_from_dir)
 install-ccp4includeHEADERS: $(ccp4include_HEADERS)
 	@$(NORMAL_INSTALL)
 	test -z "$(ccp4includedir)" || $(MKDIR_P) "$(DESTDIR)$(ccp4includedir)"
@@ -1089,7 +1041,7 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS) config.h
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(ccp4datadir)" "$(DESTDIR)$(datadir)" "$(DESTDIR)$(ccp4includedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(ccp4datadir)" "$(DESTDIR)$(ccp4includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -1153,8 +1105,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-ccp4includeHEADERS install-dist_ccp4dataDATA \
-	install-dist_dataDATA
+install-data-am: install-ccp4includeHEADERS install-dist_ccp4dataDATA
 
 install-dvi: install-dvi-am
 
@@ -1203,7 +1154,7 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-ccp4includeHEADERS uninstall-dist_ccp4dataDATA \
-	uninstall-dist_dataDATA uninstall-libLTLIBRARIES
+	uninstall-libLTLIBRARIES
 
 .MAKE: all check install install-am install-strip
 
@@ -1215,17 +1166,16 @@ uninstall-am: uninstall-ccp4includeHEADERS uninstall-dist_ccp4dataDATA \
 	distclean-libtool distclean-tags distcleancheck distdir \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
 	install install-am install-ccp4includeHEADERS install-data \
-	install-data-am install-dist_ccp4dataDATA \
-	install-dist_dataDATA install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-libLTLIBRARIES install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
+	install-data-am install-dist_ccp4dataDATA install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am \
+	install-libLTLIBRARIES install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-ccp4includeHEADERS \
-	uninstall-dist_ccp4dataDATA uninstall-dist_dataDATA \
-	uninstall-libLTLIBRARIES
+	uninstall-dist_ccp4dataDATA uninstall-libLTLIBRARIES
 
 fortran/unix.f: fortran/unix.m4 Makefile
 	m4 $(M4_ARG) $< > $@

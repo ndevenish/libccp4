@@ -2,10 +2,11 @@
 # Find one or more of CCP4 libraries: ccp4c, ccp4f, mmdb, ccif,
 # clipper-core, clipper-ccp4, clipper-contrib, clipper-minimol, clipper-mmdb.
 #
-# ccp4f is a fortran library and requires ccp4c, mmdb and ccif.
 # Once done this will define
 #  CCP4_INCLUDE_DIRS - all include directories
-#  <name>_LIBRARY - library, name is one of CCP4C, CCP4F, MMDB, CCIF.
+#  <name>_LIBRARY - library, name is one of CCP4C, CCP4F, MMDB, CCIF,
+#                            CLIPPER-CORE, CLIPPER-CCP4, CLIPPER-CONTRIB,
+#                            CLIPPER-MINIMOL, CLIPPER-MMDB
 #  CCIF_LIBRARIES - CCIF_LIBRARY with (if needed) regex library
 #  CLIPPER-CORE_LIBRARIES - CLIPPER-CORE_LIBRARY with (if needed)
 #                           fftw2 and thread library
@@ -42,15 +43,15 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
                        $ENV{CCP4}/lib64)
     #message("DEBUG: ${_lib_var} (${_lower}) = ${${_upper}_LIBRARY}")
 
-    if (${_upper} STREQUAL "CCIF")
-        set(_header "ccif/ccif_defines.h")
-    elseif (${_upper} STREQUAL "MMDB")
+    if (${_upper} STREQUAL "MMDB")
         set(_header "mmdb/mmdb_defs.h")
     elseif (${_upper} STREQUAL "CCP4C")
         set(_header "ccp4/ccp4_general.h")
     elseif (${_upper} STREQUAL "CCP4F")
         # fortran library, no headers
         set(_header)
+    elseif (${_upper} STREQUAL "CCIF")
+        set(_header "ccif/ccif_defines.h")
     elseif (${_upper} STREQUAL "CLIPPER-CORE")
         find_package(Threads)
         set(_header "clipper/clipper.h")
@@ -138,10 +139,10 @@ set(CCP4_LIBRARIES ${CLIPPER-CCP4_LIBRARY}
                    ${CLIPPER-MINIMOL_LIBRARY}
                    ${CLIPPER-MMDB_LIBRARY}
                    ${CLIPPER-CORE_LIBRARIES}
+                   ${CCIF_LIBRARIES}
                    ${CCP4F_LIBRARY}
                    ${CCP4C_LIBRARY}
-                   ${MMDB_LIBRARY}
-                   ${CCIF_LIBRARIES})
+                   ${MMDB_LIBRARY})
 
 if(CCP4_INCLUDE_DIRS)
     list(REMOVE_DUPLICATES CCP4_INCLUDE_DIRS)
