@@ -4,7 +4,7 @@
 #
 # Once done this will define
 #  CCP4_INCLUDE_DIRS - all include directories
-#  <name>_LIBRARY - library, name is one of CCP4C, CCP4F, MMDB, CCIF,
+#  <name>_LIBRARY - library, name is one of CCP4C, CCP4F, MMDB, CCIF, SSM,
 #                            CLIPPER-CORE, CLIPPER-CCP4, CLIPPER-CONTRIB,
 #                            CLIPPER-MINIMOL, CLIPPER-MMDB
 #  CCIF_LIBRARIES - CCIF_LIBRARY with (if needed) regex library
@@ -52,6 +52,8 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
         set(_header)
     elseif (${_upper} STREQUAL "CCIF")
         set(_header "ccif/ccif_defines.h")
+    elseif (${_upper} STREQUAL "SSM")
+        set(_header "ssm/ss_vxedge.h")
     elseif (${_upper} STREQUAL "CLIPPER-CORE")
         find_package(Threads)
         set(_header "clipper/clipper.h")
@@ -139,6 +141,7 @@ set(CCP4_LIBRARIES ${CLIPPER-CCP4_LIBRARY}
                    ${CLIPPER-MINIMOL_LIBRARY}
                    ${CLIPPER-MMDB_LIBRARY}
                    ${CLIPPER-CORE_LIBRARIES}
+                   ${SSM_LIBRARY}
                    ${CCIF_LIBRARIES}
                    ${CCP4F_LIBRARY}
                    ${CCP4C_LIBRARY}
