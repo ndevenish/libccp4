@@ -2790,7 +2790,7 @@ int MtzPut(MTZ *mtz, const char *logname)
        if ( mtz->xtal[i]->set[j]->col[k]->min == FLT_MAX ) mtz->xtal[i]->set[j]->col[k]->min = 0.0f;
        if ( mtz->xtal[i]->set[j]->col[k]->max == -FLT_MAX ) mtz->xtal[i]->set[j]->col[k]->max = 0.0f;
 
-       sprintf(hdrrec+38,"%c %17.4f %17.4f %4d",
+       sprintf(hdrrec+38,"%c %17.9g %17.9g %4d",
                    mtz->xtal[i]->set[j]->col[k]->type[0],
                    mtz->xtal[i]->set[j]->col[k]->min,
                    mtz->xtal[i]->set[j]->col[k]->max,
