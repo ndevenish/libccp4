@@ -6,7 +6,7 @@
 #  CCP4_INCLUDE_DIRS - all include directories
 #  <name>_LIBRARY - library, name is one of CCP4C, CCP4F, MMDB, CCIF, SSM,
 #                            CLIPPER-CORE, CLIPPER-CCP4, CLIPPER-CONTRIB,
-#                            CLIPPER-MINIMOL, CLIPPER-MMDB
+#                            CLIPPER-MINIMOL, CLIPPER-MMDB, CLIPPER-CIF
 #  CCIF_LIBRARIES - CCIF_LIBRARY with (if needed) regex library
 #  CLIPPER-CORE_LIBRARIES - CLIPPER-CORE_LIBRARY with (if needed)
 #                           fftw2 and thread library
@@ -65,6 +65,8 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
         set(_header "clipper/clipper-minimol.h")
     elseif (${_upper} STREQUAL "CLIPPER-MMDB")
         set(_header "clipper/clipper-mmdb.h")
+    elseif (${_upper} STREQUAL "CLIPPER-CIF")
+        set(_header "clipper/clipper-cif.h")
     else()
         message(FATAL_ERROR "'${_component}' is not a valid CCP4 library.")
     endif()
