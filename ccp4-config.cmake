@@ -6,7 +6,8 @@
 #  CCP4_INCLUDE_DIRS - all include directories
 #  <name>_LIBRARY - library, name is one of CCP4C, CCP4F, MMDB, CCIF, SSM,
 #                            CLIPPER-CORE, CLIPPER-CCP4, CLIPPER-CONTRIB,
-#                            CLIPPER-MINIMOL, CLIPPER-MMDB, CLIPPER-CIF
+#                            CLIPPER-MINIMOL, CLIPPER-MMDB, CLIPPER-CIF,
+#                            RFFTW2, FFTW2
 #  CCIF_LIBRARIES - CCIF_LIBRARY with (if needed) regex library
 #  CLIPPER-CORE_LIBRARIES - CLIPPER-CORE_LIBRARY with (if needed)
 #                           fftw2 and thread library
@@ -17,6 +18,10 @@
 # FIND_PACKAGE(CCP4 COMPONENTS mmdb ccp4c)
 # or
 # FIND_PACKAGE(CCP4 REQUIRED mmdb ccp4c)
+#
+# Checking for clipper-core sets also variables for FFTW2 library used
+# by clipper: FFTW2_LIBRARY, RFFTW2_LIBRARY, FFTW2_INCLUDE_DIRS,
+# and if fftw2 is prefixed with 's' FFTW2_DEFINITIONS=-DFFTW2_PREFIX_S.
 #
 # Sample usage:
 #   FIND_PACKAGE(CCP4 REQUIRED mmdb ccp4)
@@ -104,6 +109,20 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
 
     # check if clipper-core needs rfftw fftw
     if (${_upper} STREQUAL "CLIPPER-CORE")
+        # first look for FFTW2 libs are available separately
+        find_library(FFTW2_LIBRARY NAMES sfftw fftw
+                     HINTS ${LIB_INSTALL_DIR}
+                     PATHS $ENV{CLIB} $ENV{CCP4}/lib $ENV{CCP4}/lib64)
+        message(STATUS "FFTW2 library - ${FFTW2_LIBRARY}")
+        if (${FFTW2_LIBRARY} MATCHES "sfftw")
+            find_library(RFFTW2_LIBRARY NAMES srfftw)
+            find_path(FFTW2_INCLUDE_DIRS srfftw.h)
+            set(FFTW2_DEFINITIONS "-DFFTW2_PREFIX_S")
+        else()
+            find_library(RFFTW2_LIBRARY NAMES rfftw)
+            find_path(FFTW2_INCLUDE_DIRS rfftw.h)
+        endif()
+
         set(_SAVE ${CMAKE_REQUIRED_INCLUDES})
         set(CMAKE_REQUIRED_INCLUDES "${_SAVE};${CLIPPER-CORE_INCLUDE_DIR}")
         set(_CLIP_SRC "#include <clipper/clipper.h>\n"
@@ -118,13 +137,8 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
             check_cxx_source_compiles("${_CLIP_SRC}" ${_VAR})
         endif()
         if (NOT ${_VAR})
-            set(_ADD_LIBS srfftw sfftw ${CMAKE_THREAD_LIBS_INIT})
-            set(CMAKE_REQUIRED_LIBRARIES ${CLIPPER-CORE_LIBRARY} ${_ADD_LIBS})
-            set(_VAR _LINKING_WITH_CLIPPER_CORE_AND_SFFTW)
-            check_cxx_source_compiles("${_CLIP_SRC}" ${_VAR})
-        endif()
-        if (NOT ${_VAR})
-            set(_ADD_LIBS rfftw fftw ${CMAKE_THREAD_LIBS_INIT})
+            set(_ADD_LIBS ${RFFTW2_LIBRARY} ${FFTW2_LIBRARY}
+                          ${CMAKE_THREAD_LIBS_INIT})
             set(CMAKE_REQUIRED_LIBRARIES ${CLIPPER-CORE_LIBRARY} ${_ADD_LIBS})
             set(_VAR _LINKING_WITH_CLIPPER_CORE_AND_FFTW)
             check_cxx_source_compiles("${_CLIP_SRC}" ${_VAR})
@@ -157,5 +171,5 @@ message(STATUS "CCP4 include directory: ${CCP4_INCLUDE_DIRS}")
 mark_as_advanced(CCP4C_INCLUDE_DIR MMDB_INCLUDE_DIR CCIF_INCLUDE_DIR
                  CLIPPER-CORE_INCLUDE_DIR CLIPPER-CCP4_INCLUDE_DIR
                  CLIPPER-CONTRIB_INCLUDE_DIR CLIPPER-MINIMOL_INCLUDE_DIR
-                 CLIPPER-MMDB_INCLUDE_DIR)
+                 CLIPPER-MMDB_INCLUDE_DIR FFTW2_INCLUDE_DIRS)
 
