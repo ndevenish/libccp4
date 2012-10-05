@@ -25,7 +25,7 @@
       indented (for ease of locating the headers)
 
 * font84.ascii: Used directly by plot84lib.f. Previously: data for creating
-  the binary plot84 font file in $CCP4_LIB with fontpack.
+  the binary plot84 font file in $CCP4/lib with fontpack.
 
 * atomsf.lib, atomsf_neutron.lib: formfactors for every known atom (for SFALL,
   MLPHARE, VECREF).  The format of the atomsf.lib file is as follows. 
