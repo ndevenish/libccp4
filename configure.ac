@@ -1,5 +1,5 @@
 
-AC_INIT(libccp4, 6.3)
+AC_INIT(libccp4, 6.3.0)
 
 AC_CONFIG_AUX_DIR(build-aux)
 AC_CONFIG_MACRO_DIR(m4)
@@ -23,6 +23,15 @@ AM_CONDITIONAL([FORTRAN_LIB], [ test "x$enable_fortran" != xno ])
 
 if test "x$enable_fortran" != "xno"; then
   AC_PROG_F77
+  # AC_PROG_F77 doesn't fail if compiler is not found, test it explicitely
+  AC_LANG_PUSH(Fortran 77)
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])], [],
+                 [AC_MSG_ERROR([Fortran compiler not found.])])
+  AC_LANG_POP(Fortran 77)
+  AC_PATH_PROG(M4,m4)
+  if test x"$M4" = "x"; then
+      AC_MSG_ERROR([m4 program not found.])
+  fi
   # TODO: it'd be better to check for features rather than compilers,
   # but I'm afraid of changing this and unix.m4.
   cc_basename=`$ECHO "X$compiler_F77" | $Xsed -e 's%.*/%%' -e "s%^$host_alias-%%"`

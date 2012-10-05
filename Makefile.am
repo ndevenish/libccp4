@@ -76,3 +76,7 @@ ccp4/w32mvs.c ccp4/vmslibrary.c \
 fortran/vmsdiskio.for fortran/vms.for \
 fortran/testlib.f fortran/mthlib.for fortran/w32mvs.f
 
+# Clean up Fortran modules.
+clean-local: clean-modules
+clean-modules:
+	$(RM) *.mod
