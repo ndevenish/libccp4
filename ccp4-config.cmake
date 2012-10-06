@@ -37,15 +37,19 @@ include(CheckFunctionExists)
 include(CheckCSourceCompiles)
 include(CheckCXXSourceCompiles)
 
+set(_ccp4 $ENV{CCP4})
+if(_ccp4)
+    set(_clib "${_ccp4}/lib")
+    set(_cincl "${_ccp4}/include")
+endif()
+
 foreach(_component ${CCP4_FIND_COMPONENTS})
     string(TOUPPER ${_component} _upper)
     string(TOLOWER ${_component} _lower)
     set(_lib_var "${_upper}_LIBRARY")
     find_library(${_lib_var} NAMES ${_lower}
-                 HINTS ${LIB_INSTALL_DIR}
-                 PATHS $ENV{CLIB}
-                       $ENV{CCP4}/lib
-                       $ENV{CCP4}/lib64)
+                 HINTS ${LIB_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}/lib
+                 PATHS ${_clib})
     #message("DEBUG: ${_lib_var} (${_lower}) = ${${_upper}_LIBRARY}")
 
     if (${_upper} STREQUAL "MMDB")
@@ -79,7 +83,8 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
     if (_header)
         set(_incl_var "${_upper}_INCLUDE_DIR")
         find_path(${_incl_var} ${_header}
-                  PATHS $ENV{CINCL} $ENV{CCP4}/include)
+                  HINTS ${CMAKE_INSTALL_PREFIX}/include
+                  PATHS ${_cincl})
         message(STATUS "Looking for ${_header} - ${${_incl_var}}")
         find_package_handle_standard_args(CCP4 DEFAULT_MSG
                                           ${_lib_var} ${_incl_var})
@@ -109,19 +114,25 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
 
     # check if clipper-core needs rfftw fftw
     if (${_upper} STREQUAL "CLIPPER-CORE")
-        # first look for FFTW2 libs are available separately
+        # first search in the install path, then in system and $CCP4
         find_library(FFTW2_LIBRARY NAMES sfftw fftw
-                     HINTS ${LIB_INSTALL_DIR}
-                     PATHS $ENV{CLIB} $ENV{CCP4}/lib $ENV{CCP4}/lib64)
-        message(STATUS "FFTW2 library - ${FFTW2_LIBRARY}")
+                     HINTS ${LIB_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}/lib
+                     NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH)
+        find_library(FFTW2_LIBRARY NAMES sfftw fftw
+                     PATHS ${_clib})
+        message(STATUS "FFTW2 libraries - ${FFTW2_LIBRARY}")
         if (${FFTW2_LIBRARY} MATCHES "sfftw")
-            find_library(RFFTW2_LIBRARY NAMES srfftw)
-            find_path(FFTW2_INCLUDE_DIRS srfftw.h)
+            set (_fftw_prefix s)
             set(FFTW2_DEFINITIONS "-DFFTW2_PREFIX_S")
-        else()
-            find_library(RFFTW2_LIBRARY NAMES rfftw)
-            find_path(FFTW2_INCLUDE_DIRS rfftw.h)
         endif()
+        find_library(RFFTW2_LIBRARY NAMES ${_fftw_prefix}rfftw
+                     HINTS ${LIB_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}/lib
+                     PATHS ${_clib})
+        message(STATUS "                - ${RFFTW2_LIBRARY}")
+        find_path(FFTW2_INCLUDE_DIRS ${_fftw_prefix}rfftw.h
+                  HINTS ${CMAKE_INSTALL_PREFIX}/include
+                  PATHS ${_cincl})
+        message(STATUS "FFTW2 header directory - ${FFTW2_INCLUDE_DIRS}")
 
         set(_SAVE ${CMAKE_REQUIRED_INCLUDES})
         set(CMAKE_REQUIRED_INCLUDES "${_SAVE};${CLIPPER-CORE_INCLUDE_DIR}")
@@ -136,7 +147,7 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
             set(_VAR _LINKING_WITH_CLIPPER_CORE_AND_THREADS)
             check_cxx_source_compiles("${_CLIP_SRC}" ${_VAR})
         endif()
-        if (NOT ${_VAR})
+        if ((NOT ${_VAR}) AND ${FFTW2_LIBRARY})
             set(_ADD_LIBS ${RFFTW2_LIBRARY} ${FFTW2_LIBRARY}
                           ${CMAKE_THREAD_LIBS_INIT})
             set(CMAKE_REQUIRED_LIBRARIES ${CLIPPER-CORE_LIBRARY} ${_ADD_LIBS})
