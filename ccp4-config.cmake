@@ -114,18 +114,28 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
 
     # check if clipper-core needs rfftw fftw
     if (${_upper} STREQUAL "CLIPPER-CORE")
+        set(_fftw_names sfftw fftw)
+        if (${${_lib_var}} MATCHES ".a$")
+            # fftw should also be static
+            set(_fftw_names libsfftw.a libfftw.a ${_fftw_names})
+        endif()
         # first search in the install path, then in system and $CCP4
-        find_library(FFTW2_LIBRARY NAMES sfftw fftw
+        find_library(FFTW2_LIBRARY NAMES ${_fftw_names}
                      HINTS ${LIB_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}/lib
                      NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH)
-        find_library(FFTW2_LIBRARY NAMES sfftw fftw
+        find_library(FFTW2_LIBRARY NAMES ${_fftw_names}
                      PATHS ${_clib})
         message(STATUS "FFTW2 libraries - ${FFTW2_LIBRARY}")
         if (${FFTW2_LIBRARY} MATCHES "sfftw")
             set (_fftw_prefix s)
             set(FFTW2_DEFINITIONS "-DFFTW2_PREFIX_S")
         endif()
-        find_library(RFFTW2_LIBRARY NAMES ${_fftw_prefix}rfftw
+        set(_rfftw_names ${_fftw_prefix}rfftw)
+        if (${FFTW2_LIBRARY} MATCHES ".a$")
+            set(_rfftw_names lib${_fftw_prefix}rfftw.a ${_rfftw_names})
+        else()
+        endif()
+        find_library(RFFTW2_LIBRARY NAMES ${_rfftw_names}
                      HINTS ${LIB_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}/lib
                      PATHS ${_clib})
         message(STATUS "                - ${RFFTW2_LIBRARY}")
@@ -147,7 +157,7 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
             set(_VAR _LINKING_WITH_CLIPPER_CORE_AND_THREADS)
             check_cxx_source_compiles("${_CLIP_SRC}" ${_VAR})
         endif()
-        if ((NOT ${_VAR}) AND ${FFTW2_LIBRARY})
+        if ((NOT ${_VAR}) AND FFTW2_LIBRARY)
             set(_ADD_LIBS ${RFFTW2_LIBRARY} ${FFTW2_LIBRARY}
                           ${CMAKE_THREAD_LIBS_INIT})
             set(CMAKE_REQUIRED_LIBRARIES ${CLIPPER-CORE_LIBRARY} ${_ADD_LIBS})
