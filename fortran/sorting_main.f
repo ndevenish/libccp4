@@ -48,15 +48,10 @@ C
 
       subroutine sorting_reallocate_this()
 
-      integer nmax_old
       integer nk1,nr1,ni1
       real, allocatable :: temp_keys(:)
       real, allocatable :: temp_recs(:)
       real, allocatable :: temp_inds(:)
-
-      nmax_old = nmax_rec
-      nmax_rec = nint(1.5*nmax_rec) + 1
-
 
       nk1 = nkeys_l*nmax_rec
       nr1 = max(1,(nrec_l-nkeys_l)*nmax_rec)
