@@ -10,6 +10,7 @@
 #                            CLIPPER-MINIMOL, CLIPPER-MMDB, CLIPPER-CIF,
 #                            RFFTW2, FFTW2
 #  CCIF_LIBRARIES - CCIF_LIBRARY with (if needed) regex library
+#  CCP4SRS_LIBRARIES - CCP4SRS_LIBRARY with (if needed) mmdb and zlib libraries
 #  CLIPPER-CORE_LIBRARIES - CLIPPER-CORE_LIBRARY with (if needed)
 #                           fftw2 and thread library
 #  CCP4_LIBRARIES - all requested libraries with necessary dependencies
@@ -19,6 +20,8 @@
 # FIND_PACKAGE(CCP4 COMPONENTS mmdb ccp4c)
 # or
 # FIND_PACKAGE(CCP4 REQUIRED mmdb ccp4c)
+#
+# Checking for ccp4srs in some cases (static linking) sets also ZLIB_LIBRARY.
 #
 # Checking for clipper-core sets also variables for FFTW2 library used
 # by clipper: FFTW2_LIBRARY, RFFTW2_LIBRARY, FFTW2_INCLUDE_DIRS,
@@ -115,6 +118,41 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
         endif()
     endif()
 
+    # check if libccp4srs needs mmdb and zlib
+    if (${_upper} STREQUAL "CCP4SRS")
+        set(_SAVE ${CMAKE_REQUIRED_INCLUDES})
+        set(CMAKE_REQUIRED_INCLUDES "${_SAVE};${CCP4SRS_INCLUDE_DIR}")
+        set(_SRS_SRC "#include <ccp4srs/memio_.h>\n"
+                      "int main() { CMemIO m; m.read(\"f\", 1);}")
+        set(CMAKE_REQUIRED_LIBRARIES ${CCP4SRS_LIBRARY})
+        set(_VAR _LINKING_WITH_CCP4SRS)
+        check_cxx_source_compiles("${_SRS_SRC}" ${_VAR})
+        if (${_VAR})
+            set(CCP4SRS_LIBRARIES ${CCP4SRS_LIBRARY})
+        else()
+            find_library(ZLIB_LIBRARY NAMES z zlib zlib1 zdll
+                 HINTS ${LIB_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}/lib
+                 PATHS ${_clib} c:/MinGW/lib)
+            if (NOT ZLIB_LIBRARY)
+             message(FATAL_ERROR "Linking with ccp4srs fails. zlib not found.")
+            endif()
+            if (NOT MMDB_LIBRARY)
+                find_library(MMDB_LIBRARY NAMES mmdb
+                         HINTS ${LIB_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}/lib
+                         PATHS ${_clib})
+            endif()
+            set(_ADD_LIBS ${MMDB_LIBRARY} ${ZLIB_LIBRARY})
+            set(CMAKE_REQUIRED_LIBRARIES ${CCP4SRS_LIBRARY} ${_ADD_LIBS})
+            set(_VAR _LINKING_WITH_CCP4SRS_MMDB_AND_ZLIB)
+            check_cxx_source_compiles("${_SRS_SRC}" ${_VAR})
+            if (NOT ${_VAR})
+                message(FATAL_ERROR "Linking with ccp4srs failed.")
+            endif()
+            set(CCP4SRS_LIBRARIES ${CCP4SRS_LIBRARY} ${_ADD_LIBS})
+        endif()
+        SET(CMAKE_REQUIRED_INCLUDES ${_SAVE})
+    endif()
+
     # check if clipper-core needs rfftw fftw
     if (${_upper} STREQUAL "CLIPPER-CORE")
         set(_fftw_names sfftw fftw)
@@ -181,7 +219,7 @@ set(CCP4_LIBRARIES ${CLIPPER-CCP4_LIBRARY}
                    ${CLIPPER-MINIMOL_LIBRARY}
                    ${CLIPPER-MMDB_LIBRARY}
                    ${CLIPPER-CORE_LIBRARIES}
-                   ${CCP4SRS_LIBRARY}
+                   ${CCP4SRS_LIBRARIES}
                    ${SSM_LIBRARY}
                    ${CCIF_LIBRARIES}
                    ${CCP4F_LIBRARY}
@@ -193,7 +231,15 @@ if(CCP4_INCLUDE_DIRS)
 endif()
 message(STATUS "CCP4 include directory: ${CCP4_INCLUDE_DIRS}")
 
+if(CCP4_LIBRARIES)
+    # reverse twice, because REMOVE_DUPLICATES leaves the first
+    list(REVERSE CCP4_LIBRARIES)
+    list(REMOVE_DUPLICATES CCP4_LIBRARIES)
+    list(REVERSE CCP4_LIBRARIES)
+endif()
+
 mark_as_advanced(CCP4C_INCLUDE_DIR MMDB_INCLUDE_DIR CCIF_INCLUDE_DIR
+                 SSM_INCLUDE_DIR CCP4SRS_INCLUDE_DIR
                  CLIPPER-CORE_INCLUDE_DIR CLIPPER-CCP4_INCLUDE_DIR
                  CLIPPER-CONTRIB_INCLUDE_DIR CLIPPER-MINIMOL_INCLUDE_DIR
                  CLIPPER-MMDB_INCLUDE_DIR FFTW2_INCLUDE_DIRS)
