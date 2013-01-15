@@ -31,7 +31,7 @@
 #include "library_file.h"
 #include "ccp4_errno.h"
 #include "ccp4_file_err.h"
-/* rcsid[] = "$Id$" */
+/* rcsid[] = "$Id: library_file.c,v 1.26 2012/08/20 12:21:16 gxg60988 Exp $" */
                                                         
 static uint16 nativeIT = NATIVEIT; /* machine integer type */ 
 static uint16 nativeFT = NATIVEFT; /* machine float type */
@@ -2094,7 +2094,7 @@ long ccp4_file_tell (CCP4File *cfile)
 
   if (cfile->buffered && cfile->stream) {
 #if !defined (_MSC_VER)
-    fflush (cfile->stream);
+    if ( cfile->last_op == WRITE_OP ) fflush (cfile->stream);
 #endif	
     result = (long) ftell(cfile->stream);
   } else
