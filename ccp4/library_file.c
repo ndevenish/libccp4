@@ -975,6 +975,7 @@ CCP4File *ccp4_file_open (const char *filename, const int flag)
       ccp4_signal(CCP4_ERRLEVEL(3) | CCP4_ERRNO(CIO_CantOpenFile),
                   "ccp4_file_open2", NULL);
       cfile->iostat = CIO_CantOpenFile;
+      free(cfile);
       return NULL; } 
 #if defined (__alpha) && defined (vms)
 (void) fflush (cfile->stream);
