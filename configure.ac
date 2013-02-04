@@ -25,7 +25,7 @@ if test "x$enable_fortran" != "xno"; then
   AC_PROG_F77
   # AC_PROG_F77 doesn't fail if compiler is not found, test it explicitely
   AC_LANG_PUSH(Fortran 77)
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])], [],
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([], [      write(*,*) 'hello' ])], [],
                  [AC_MSG_ERROR([Fortran compiler not found.])])
   AC_LANG_POP(Fortran 77)
   AC_PATH_PROG(M4,m4)

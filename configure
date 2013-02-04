@@ -18919,7 +18919,7 @@ ac_compiler_gnu=$ac_cv_f77_compiler_gnu
 
   cat > conftest.$ac_ext <<_ACEOF
       program main
-
+      write(*,*) 'hello'
       end
 _ACEOF
 if ac_fn_f77_try_link "$LINENO"; then :
