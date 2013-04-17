@@ -1,11 +1,12 @@
 # - Find CCP4 libraries
 # Find one or more of CCP4 libraries: ccp4c, ccp4f, mmdb, ccif,
-# clipper-core, clipper-ccp4, clipper-contrib, clipper-minimol, clipper-mmdb.
+# clipper-core, clipper-ccp4, clipper-contrib, clipper-minimol, clipper-mmdb,
+# or cctbx.
 #
 # Once done this will define
 #  CCP4_INCLUDE_DIRS - all include directories
 #  <name>_LIBRARY - library, name is one of CCP4C, CCP4F, MMDB, CCIF, SSM,
-#                            CCP4SRS,
+#                            CCP4SRS, CCTBX,
 #                            CLIPPER-CORE, CLIPPER-CCP4, CLIPPER-CONTRIB,
 #                            CLIPPER-MINIMOL, CLIPPER-MMDB, CLIPPER-CIF,
 #                            RFFTW2, FFTW2
@@ -82,6 +83,8 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
         set(_header "clipper/clipper-mmdb.h")
     elseif (${_upper} STREQUAL "CLIPPER-CIF")
         set(_header "clipper/clipper-cif.h")
+    elseif (${_upper} STREQUAL "CCTBX")
+        set(_header "cctbx/crystal/symmetry.h")
     else()
         message(FATAL_ERROR "'${_component}' is not a valid CCP4 library.")
     endif()
@@ -214,7 +217,8 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
 endforeach()
 
 
-set(CCP4_LIBRARIES ${CLIPPER-CCP4_LIBRARY}
+set(CCP4_LIBRARIES ${CCTBX_LIBRARY}
+                   ${CLIPPER-CCP4_LIBRARY}
                    ${CLIPPER-CONTRIB_LIBRARY}
                    ${CLIPPER-MINIMOL_LIBRARY}
                    ${CLIPPER-MMDB_LIBRARY}
@@ -242,5 +246,6 @@ mark_as_advanced(CCP4C_INCLUDE_DIR MMDB_INCLUDE_DIR CCIF_INCLUDE_DIR
                  SSM_INCLUDE_DIR CCP4SRS_INCLUDE_DIR
                  CLIPPER-CORE_INCLUDE_DIR CLIPPER-CCP4_INCLUDE_DIR
                  CLIPPER-CONTRIB_INCLUDE_DIR CLIPPER-MINIMOL_INCLUDE_DIR
-                 CLIPPER-MMDB_INCLUDE_DIR FFTW2_INCLUDE_DIRS)
+                 CLIPPER-MMDB_INCLUDE_DIR FFTW2_INCLUDE_DIRS
+                 CCTBX_INCLUDE_DIR)
 
