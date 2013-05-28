@@ -1,6 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 
 lib_LTLIBRARIES = ccp4/libccp4c.la
+
 if FORTRAN_LIB
 lib_LTLIBRARIES += fortran/libccp4f.la
 endif
@@ -11,6 +12,7 @@ endif
 
 ccp4datadir = $(datadir)/ccp4
 ccp4includedir = $(includedir)/ccp4
+pkgconfigdir = $(libdir)/pkgconfig
 
 ccp4_libccp4c_la_SOURCES = \
 ccp4/ccp4_array.c ccp4/cmap_data.c ccp4/cmtzlib.c ccp4/ccp4_general.c \
@@ -65,8 +67,10 @@ fortran_libccp4f_la_LDFLAGS = -no-undefined
 
 dist_ccp4data_DATA = ccp4-config.cmake data/atomsf_neutron.lib \
 		     data/atomsf.lib data/syminfo.lib data/symop.lib
+pkgconfig_DATA = libccp4c.pc
 if FORTRAN_LIB
   dist_ccp4data_DATA += data/font84.ascii
+  pkgconfig_DATA += libccp4f.pc
 endif
 
 

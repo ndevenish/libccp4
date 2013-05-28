@@ -4,9 +4,8 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: libccp4c
-Description: core ccp4 C libraries
+Description: CCP4 core C libraries
 Version: @VERSION@
 Requires:
-Conflicts:
 Libs: -L${libdir} -lccp4c
 Cflags: -I${includedir}

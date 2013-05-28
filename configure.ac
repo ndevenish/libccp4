@@ -6,6 +6,7 @@ AC_CONFIG_MACRO_DIR(m4)
 AC_CONFIG_SRCDIR(ccp4/cmtzlib.c)
 AC_CONFIG_HEADERS(config.h)
 AM_INIT_AUTOMAKE([1.11 foreign subdir-objects silent-rules -Wall])
+AM_PROG_AR
 LT_INIT([disable-shared win32-dll])
 
 AC_PROG_CC
@@ -116,5 +117,5 @@ AC_DEFINE_UNQUOTED([PACKAGE_ROOT],["$PACKAGE_ROOT"],[package install directory])
 
 AC_SUBST(M4_ARG)
 
-AC_OUTPUT(Makefile)
+AC_OUTPUT(Makefile libccp4c.pc libccp4f.pc)
 

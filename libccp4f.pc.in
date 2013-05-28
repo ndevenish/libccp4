@@ -4,9 +4,8 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: libccp4f
-Description: core ccp4 FORTRAN API libraries
+Description: CCP4 core FORTRAN libraries
 Version: @VERSION@
-Requires:
-Conflicts:
+Requires.private: ccp4c mmdb
 Libs: -L${libdir} -lccp4f
 Cflags: -I${includedir}
