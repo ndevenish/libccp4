@@ -93,6 +93,7 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
         set(_incl_var "${_upper}_INCLUDE_DIR")
         find_path(${_incl_var} ${_header}
                   HINTS ${CMAKE_INSTALL_PREFIX}/include
+                  HINTS ${CMAKE_INSTALL_PREFIX}/include/cctbx
                   PATHS ${_cincl})
         message(STATUS "Looking for ${_header} - ${${_incl_var}}")
         find_package_handle_standard_args(CCP4 DEFAULT_MSG
