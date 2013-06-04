@@ -10,7 +10,7 @@ if GNU_FORTRAN
 AM_FFLAGS = -fno-second-underscore
 endif
 
-ccp4datadir = $(datadir)/ccp4
+ccp4datadir = $(datadir)
 ccp4includedir = $(includedir)/ccp4
 pkgconfigdir = $(libdir)/pkgconfig
 
