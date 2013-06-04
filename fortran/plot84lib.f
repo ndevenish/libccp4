@@ -8684,7 +8684,7 @@ C
           READ (IUNITF) IFSTRT,LENGF,IFX0,IFY0,IFWID,IFHT,NFONTS
       else
           call getenv('CCP4', str)
-          str(lenstr(str)+1:) = '/share/ccp4/font84.ascii'
+          str(lenstr(str)+1:) = '/lib/data/font84.ascii'
           call CCPDPN (ITEROP,str,'READONLY','F',0,IFAIL)
           IF (IFAIL.NE.0) GO TO 10
           READ(IUNITF,2000) IFSTRT,LENGF,IFX0,IFY0,IFWID,IFHT,NFONTS
