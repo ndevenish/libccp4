@@ -10,7 +10,7 @@ if GNU_FORTRAN
 AM_FFLAGS = -fno-second-underscore
 endif
 
-ccp4datadir = $(datadir)
+ccp4datadir = $(datarootdir)/ccp4
 ccp4includedir = $(includedir)/ccp4
 pkgconfigdir = $(libdir)/pkgconfig
 
@@ -65,11 +65,12 @@ fortran_libccp4f_la_LDFLAGS = -no-undefined
 # They are included in CCP4 and may be needed for running programs
 # compiled with libccp4 (see http://www.ccp4.ac.uk/dist/html/ccp4.html)
 
-dist_ccp4data_DATA = ccp4-config.cmake data/atomsf_neutron.lib \
+dist_ccp4data_DATA = ccp4-config.cmake
+dist_data_DATA = data/atomsf_neutron.lib \
 		     data/atomsf.lib data/syminfo.lib data/symop.lib
 pkgconfig_DATA = libccp4c.pc
 if FORTRAN_LIB
-  dist_ccp4data_DATA += data/font84.ascii
+  dist_data_DATA += data/font84.ascii
   pkgconfig_DATA += libccp4f.pc
 endif
 
