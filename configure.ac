@@ -23,7 +23,8 @@ AC_ARG_ENABLE(fortran, AS_HELP_STRING([--disable-fortran],
 AM_CONDITIONAL([FORTRAN_LIB], [ test "x$enable_fortran" != xno ])
 
 if test "x$enable_fortran" != "xno"; then
-  AC_PROG_F77
+  # sorting_main.f (mix of F77 and F90) cannot be compiled with g77 
+  AC_PROG_F77([_AC_F90_FC _AC_F95_FC _AC_F77_FC])
   # AC_PROG_F77 doesn't fail if compiler is not found, test it explicitely
   AC_LANG_PUSH(Fortran 77)
   AC_LINK_IFELSE([AC_LANG_PROGRAM([], [      write(*,*) 'hello' ])], [],
