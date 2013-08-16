@@ -253,7 +253,9 @@
 #  define NATIVEFT DFNTF_LEIEEE
 #endif
 
-#if defined (powerpc) || defined (__ppc__) || defined __PPC
+#if defined (powerpc) || defined (__powerpc__) || defined (__ppc__) || \
+      defined __PPC || defined (__s390__) || defined (__s390x__) || \
+      defined (__hppa__)
 #  define NATIVEIT DFNTI_MBO
 #  define NATIVEFT DFNTF_BEIEEE
 #endif
@@ -271,9 +273,19 @@
 #  define NATIVEIT DFNTI_IBO
 #endif
 
-#if defined(MIPSEB) || defined(__hpux) || defined(_AIX) || defined(m68k) || defined(mc68000) || defined(sparc) || defined (__sparc__) || defined(__s390__)
+#if defined(MIPSEB) || defined(__hpux) || defined(_AIX) || defined(m68k) || defined(mc68000) || defined(sparc) || defined (__sparc__)
 #  define NATIVEIT DFNTI_MBO
 #  define NATIVEFT DFNTF_BEIEEE
+#endif
+
+#if defined(__ARM__) || defined(__arm__)
+# if defined(__ARMEB__)
+#  define NATIVEIT DFNTI_MBO
+#  define NATIVEFT DFNTF_BEIEEE
+# elif defined(__ARMEL__)
+#  define NATIVEIT DFNTI_IBO
+#  define NATIVEFT DFNTF_LEIEEE
+# endif
 #endif
 
 #ifndef NATIVEFT
