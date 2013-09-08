@@ -288,6 +288,24 @@
 # endif
 #endif
 
+/* From time to time new architectures are added here, often because Linux
+ * packagers want to build it on all platforms supported by their distro. 
+ * Here we try to catch machines not listed explicitely above, under
+ * assumption that endianness is the same for floating point numbers
+ * as for integers. Which is safe assumption on modern standard computers
+ * (not embedded systems), according to
+ * http://en.wikipedia.org/wiki/Endianness#Floating-point_and_endianness
+ */
+#if !defined(NATIVEIT) && !defined(NATIVEFT) && defined(__BYTE_ORDER)
+# if __BYTE_ORDER == __LITTLE_ENDIAN
+#  define NATIVEIT DFNTI_IBO
+#  define NATIVEFT DFNTF_LEIEEE
+# elif __BYTE_ORDER == __BIG_ENDIAN
+#  define NATIVEIT DFNTI_MBO
+#  define NATIVEFT DFNTF_BEIEEE
+# endif
+#endif
+
 #ifndef NATIVEFT
 #  error "Can't determine machine number format"
 #endif
