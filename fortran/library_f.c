@@ -700,32 +700,9 @@ int ierrno () {
 
 #endif             /*  HPUX and AIX support */    
 
-#if ( defined (__APPLE__) && !defined (__GNUC__) )
-/* apple xlf support */
-void gerror_ (str, Lstr)
-char *str;
-int  Lstr;
-{
-  int i;
-
-  if (errno == 0) {             /* Avoid `Error 0' or some such message */    
-    for (i=1; Lstr; i++)
-      str[i] = ' ';
-  } else {
-    (void) strncpy (str, strerror (errno), Lstr);
-    for (i = strlen (str); i < Lstr; i++) str[i] = ' ';  /* pad with spaces */
-  }
-} /* End of gerror (str, Lstr) */
-
-int isatty_(int *iunit)
-{
-  return isatty(*iunit);
-}
-
-#endif /* end of apple xlf support */
-
-#if ( defined (__linux__) && defined (_CALL_SYSV) )
-/* linuxppc xlf support */
+#if !( defined(G95) || defined(GFORTRAN) || defined(F2C) ) && \
+    ( ( defined(__linux__) && defined(_CALL_SYSV) ) || defined(__APPLE__) )
+/* linuxppc xlf and apple xlf support */
 void gerror_ (str, Lstr)
 char *str;
 int  Lstr;
@@ -745,9 +722,7 @@ int isatty_(int *iunit)
 {
   return isatty(*iunit);
 }
-
-#endif /* end of linuxppc xlf support */
-
+#endif /* end of linuxppc/apple xlf support */
 
 #if defined (sun)
 int isatty_(int *iunit)
