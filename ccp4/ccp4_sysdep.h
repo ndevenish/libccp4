@@ -27,30 +27,19 @@
 #ifndef __CCP4_BITS
 #define __CCP4_BITS
 
-#if defined (_AIX) || defined(___AIX)
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_HPUX 1
-#endif
-
-#if defined (__hpux) 
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_HPUX 1
-#endif
-
 #ifdef __sgi   /* in ANSI mode */
 #  ifndef sgi
 #    define sgi
 #  endif
 #endif
 
-#if defined (sgi)
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_SUN 1
+#ifndef VMS
+#  if defined (vms) || defined (__vms) || defined (__VMS)
+#    define VMS
+#  endif
 #endif
 
 #if defined (sun) || defined (__sun)
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_SUN 1
 #  if !defined(__STDC__) || defined(__GNUC__)
 #    if !defined(G77)
       extern char *sys_errlist [];
@@ -59,72 +48,17 @@
 #  endif
 #endif
 
-#if defined(__OSF1__) || defined(__osf__)
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_SUN 1
-#endif
-
-#ifndef VMS
-#  if defined (vms) || defined (__vms) || defined (__VMS)
-#    define VMS
-#  endif
-#endif
-#if defined (VMS)
-#  define KNOWN_MACHINE
+#if defined (_AIX) || defined(___AIX) || defined (__hpux)
+#  define CALL_LIKE_HPUX 1
+#elif defined (VMS)
 #  define CALL_LIKE_VMS 1
-#endif
-
-#ifdef __MINGW32__
-#  define CALL_LIKE_SUN 1
-#  define KNOWN_MACHINE
-#elif defined(_MSC_VER) || defined (WIN32)
-# if defined (_MSC_VER) && (_MSC_VER >= 800)
+#elif defined (_MSC_VER) && (_MSC_VER >= 800)
 #  define CALL_LIKE_MVS 2
-# else
+#elif defined(_MSC_VER) || (defined (WIN32) && !defined(__MINGW32__))
 #  define CALL_LIKE_MVS 1
-# endif
-#  define KNOWN_MACHINE
-#endif
-
-#if defined (linux) || defined __linux__ || defined (__CYGWIN__)
-#  undef CALL_LIKE_SUN
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_SUN 1
-#endif
-
-#if defined __linux__ && ( defined __PPC || defined __PPC__ )
-#  undef CALL_LIKE_SUN
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_SUN 1
-#endif
-
-#if defined (__FreeBSD__)
-#  undef CALL_LIKE_SUN
-#  define KNOWN_MACHINE
-#  define CALL_LIKE_SUN 1
-#endif
-
-#if defined(F2C) || defined(G77)
-#  undef CALL_LIKE_SUN
-#  define CALL_LIKE_SUN 1
-#  define KNOWN_MACHINE
-#endif
-
-#if defined(__APPLE__)
-#  undef CALL_LIKE_SUN
-#  define CALL_LIKE_SUN 1
-#  define KNOWN_MACHINE
-#endif
-
-#if defined (_CALL_SYSV) && ! defined (__APPLE__)
-#  undef CALL_LIKE_SUN
-#  define CALL_LIKE_SUN 1
-#  define KNOWN_MACHINE
-#endif
-
-#if ! defined (KNOWN_MACHINE)
-#  error System type is not known -- see the Installation Guide
 #else
+#  define CALL_LIKE_SUN 1
+#endif
 
 #ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
@@ -317,7 +251,5 @@
 #define DFNT_CHAR       4       /**< char */
 #define DFNT_FLOAT      5       /**< float */
 #define DFNT_DOUBLE     6       /**< double */
-
-#endif
 
 #endif /* __CCP4_BITS */

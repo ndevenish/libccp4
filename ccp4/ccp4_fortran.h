@@ -370,10 +370,8 @@
 
 /* Define Fortran logical */
 typedef unsigned int ftn_logical;
-#if defined (KNOWN_MACHINE)
-#  define FORTRAN_LOGICAL_TRUE  1
-#  define FORTRAN_LOGICAL_FALSE 0
-#endif
+#define FORTRAN_LOGICAL_TRUE  1
+#define FORTRAN_LOGICAL_FALSE 0
 #if defined (__OSF1__) || defined (__osf__)
 #  undef FORTRAN_LOGICAL_TRUE
 #  define FORTRAN_LOGICAL_TRUE  -1
