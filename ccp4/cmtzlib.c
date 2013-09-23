@@ -2239,7 +2239,7 @@ int MtzAssignColumn(MTZ *mtz, MTZCOL *col, const char crystal_name[],
     if ( oldset->col[i] == col ) {
       for (j = i; j < oldset->ncol - 1; ++j) 
 	oldset->col[j] = oldset->col[j+1];
-      oldset->col[oldset->ncol--] = NULL;
+      oldset->col[--oldset->ncol] = NULL;
       break;
     }
   }
