@@ -8149,7 +8149,7 @@ C
         ELSE
           LISFIL = GSFIL(1:NLENG)//'.LIS'
         END IF
-        CALL GSTRIL(GSFIL,LISFIL)
+        CALL GSTRIL(GSFIL,LISFIL,0)
         GO TO 10
 C
 C---- Keys 101-110
