@@ -72,6 +72,21 @@ int parse_mapheader(CMMFile *mfile)
   memcpy(&fmean,&buffer[84],sizeof(float));
   mfile->stats.mean = (double) fmean;
   memcpy(&mfile->spacegroup,&buffer[88],sizeof(int));
+
+  /* Additions for EM support.
+     Define contents as image, image stack, volume or volume stack.
+     In latter case, allows for 400+ispg convention. */
+  mfile->EM_spacegroup = mfile->spacegroup;
+  strncpy(mfile->EM_contents,"VOLU",4);
+  if (mfile->spacegroup > 400 && mfile->spacegroup < 631) {
+    mfile->spacegroup = mfile->spacegroup - 400;
+    strncpy(mfile->EM_contents,"VLST",4);
+  } 
+  if (mfile->spacegroup == 0) {
+    if (mfile->map_dim[2] == 1) strncpy(mfile->EM_contents,"IMAG",4);
+    if (mfile->map_dim[2] > 1) strncpy(mfile->EM_contents,"IMST",4);
+  }
+
   memcpy(&mfile->symop.size,&buffer[92],sizeof(int));
   memcpy(&mfile->user_access,&buffer[180],sizeof(mfile->user_access));
   /* memcpy(&mfile->data.header_size,&buffer[204],sizeof(int)); */
@@ -120,7 +135,14 @@ int write_mapheader(CMMFile *mfile)
   memcpy(&buffer[80],&mfile->stats.max,sizeof(float));
   fmean = (float) mfile->stats.mean;
   memcpy(&buffer[84],&fmean,sizeof(float));
-  memcpy(&buffer[88],&mfile->spacegroup,sizeof(int));
+
+  /* additions for EM support */
+  if (!strncmp(mfile->EM_contents,"VLST",4)) {
+    memcpy(&buffer[88],&mfile->EM_spacegroup,sizeof(int));
+  } else {
+    memcpy(&buffer[88],&mfile->spacegroup,sizeof(int));
+  }
+
   memcpy(&buffer[92],&mfile->symop.size,sizeof(int));
   memcpy(&buffer[180],&mfile->user_access,sizeof(mfile->user_access));
   /* memcpy(&buffer[204],&mfile->data.header_size,sizeof(int)); */
