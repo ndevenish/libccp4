@@ -1427,8 +1427,8 @@ void ccp4_banner(void) {
   printf(" ###############################################################\n");
   printf(" User: %s  Run date: %s Run time: %s \n\n\n",
 	 ccp4_utils_username(),ccp4_utils_date(date),ccp4_utils_time(time)); 
-  printf(" Please reference: Collaborative Computational Project, Number 4. 1994.\n");
-  printf(" \"The CCP4 Suite: Programs for Protein Crystallography\". Acta Cryst. D50, 760-763.\n");
+  printf(" Please reference: Collaborative Computational Project, Number 4. 2011.\n");
+  printf(" \"Overview of the CCP4 suite and current developments\". Acta Cryst. D67, 235-242.\n");
   printf(" as well as any specific reference in the program write-up.\n\n");
 
   if (diag) printf("Leaving ccp4_banner \n");
