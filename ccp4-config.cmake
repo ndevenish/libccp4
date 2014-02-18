@@ -5,8 +5,8 @@
 #
 # Once done this will define
 #  CCP4_INCLUDE_DIRS - all include directories
-#  <name>_LIBRARY - library, name is one of CCP4C, CCP4F, MMDB, CCIF, SSM,
-#                            CCP4SRS, CCTBX,
+#  <name>_LIBRARY - library, name is one of CCP4C, CCP4F, MMDB, MMDB2, CCIF,
+#                            SSM, CCP4SRS, CCTBX,
 #                            CLIPPER-CORE, CLIPPER-CCP4, CLIPPER-CONTRIB,
 #                            CLIPPER-MINIMOL, CLIPPER-MMDB, CLIPPER-CIF,
 #                            RFFTW2, FFTW2
@@ -59,6 +59,8 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
 
     if (${_upper} STREQUAL "MMDB")
         set(_header "mmdb/mmdb_defs.h")
+    elseif (${_upper} STREQUAL "MMDB2")
+        set(_header "mmdb2/mmdb_defs.h")
     elseif (${_upper} STREQUAL "CCP4C")
         set(_header "ccp4/ccp4_general.h")
     elseif (${_upper} STREQUAL "CCP4F")
@@ -140,12 +142,12 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
             if (NOT ZLIB_LIBRARY)
              message(FATAL_ERROR "Linking with ccp4srs fails. zlib not found.")
             endif()
-            if (NOT MMDB_LIBRARY)
-                find_library(MMDB_LIBRARY NAMES mmdb
+            if (NOT MMDB2_LIBRARY)
+                find_library(MMDB2_LIBRARY NAMES mmdb2
                          HINTS ${LIB_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}/lib
                          PATHS ${_clib})
             endif()
-            set(_ADD_LIBS ${MMDB_LIBRARY} ${ZLIB_LIBRARY})
+            set(_ADD_LIBS ${MMDB2_LIBRARY} ${ZLIB_LIBRARY})
             set(CMAKE_REQUIRED_LIBRARIES ${CCP4SRS_LIBRARY} ${_ADD_LIBS})
             set(_VAR _LINKING_WITH_CCP4SRS_MMDB_AND_ZLIB)
             check_cxx_source_compiles("${_SRS_SRC}" ${_VAR})
@@ -229,6 +231,7 @@ set(CCP4_LIBRARIES ${CCTBX_LIBRARY}
                    ${CCIF_LIBRARIES}
                    ${CCP4F_LIBRARY}
                    ${CCP4C_LIBRARY}
+                   ${MMDB2_LIBRARY}
                    ${MMDB_LIBRARY})
 
 if(CCP4_INCLUDE_DIRS)
@@ -243,8 +246,8 @@ if(CCP4_LIBRARIES)
     list(REVERSE CCP4_LIBRARIES)
 endif()
 
-mark_as_advanced(CCP4C_INCLUDE_DIR MMDB_INCLUDE_DIR CCIF_INCLUDE_DIR
-                 SSM_INCLUDE_DIR CCP4SRS_INCLUDE_DIR
+mark_as_advanced(CCP4C_INCLUDE_DIR MMDB_INCLUDE_DIR MMDB2_INCLUDE_DIR
+                 CCIF_INCLUDE_DIR SSM_INCLUDE_DIR CCP4SRS_INCLUDE_DIR
                  CLIPPER-CORE_INCLUDE_DIR CLIPPER-CCP4_INCLUDE_DIR
                  CLIPPER-CONTRIB_INCLUDE_DIR CLIPPER-MINIMOL_INCLUDE_DIR
                  CLIPPER-MMDB_INCLUDE_DIR FFTW2_INCLUDE_DIRS
