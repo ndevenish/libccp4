@@ -129,7 +129,7 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
         set(_SAVE ${CMAKE_REQUIRED_INCLUDES})
         set(CMAKE_REQUIRED_INCLUDES "${_SAVE};${CCP4SRS_INCLUDE_DIR}")
         set(_SRS_SRC "#include <ccp4srs/memio_.h>\n"
-                      "int main() { CMemIO m; m.read(\"f\", 1);}")
+                      "int main() { ccp4srs::MemIO m; m.read(\"f\");}")
         set(CMAKE_REQUIRED_LIBRARIES ${CCP4SRS_LIBRARY})
         set(_VAR _LINKING_WITH_CCP4SRS)
         check_cxx_source_compiles("${_SRS_SRC}" ${_VAR})
