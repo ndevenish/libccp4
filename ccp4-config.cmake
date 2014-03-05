@@ -17,6 +17,10 @@
 #  CCP4_LIBRARIES - all requested libraries with necessary dependencies
 #  <name>_FOUND - TRUE if library and header files are found.
 #
+#  CCP4_PY2_DIR - when building the CCP4 suite, CCP4_PY2_DIR is set to
+#                 preferred installation directory for Python2 modules.
+#                 (defaults to ${LIB_INSTALL_DIR}/py2)
+#
 # You need to name libraries that you will use as components:
 # FIND_PACKAGE(CCP4 COMPONENTS mmdb ccp4c)
 # or
@@ -246,10 +250,16 @@ if(CCP4_LIBRARIES)
     list(REVERSE CCP4_LIBRARIES)
 endif()
 
+if(DEFINED LIB_INSTALL_DIR)
+    set(CCP4_PY2_DIR ${LIB_INSTALL_DIR}/py2)
+elseif(DEFINED CMAKE_INSTALL_PREFIX)
+    set(CCP4_PY2_DIR ${CMAKE_INSTALL_PREFIX}/lib/py2)
+endif()
+
 mark_as_advanced(CCP4C_INCLUDE_DIR MMDB_INCLUDE_DIR MMDB2_INCLUDE_DIR
                  CCIF_INCLUDE_DIR SSM_INCLUDE_DIR CCP4SRS_INCLUDE_DIR
                  CLIPPER-CORE_INCLUDE_DIR CLIPPER-CCP4_INCLUDE_DIR
                  CLIPPER-CONTRIB_INCLUDE_DIR CLIPPER-MINIMOL_INCLUDE_DIR
                  CLIPPER-MMDB_INCLUDE_DIR FFTW2_INCLUDE_DIRS
-                 CCTBX_INCLUDE_DIR)
+                 CCTBX_INCLUDE_DIR CCP4_PY2_DIR)
 
