@@ -74,6 +74,8 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
         set(_header "ccif/ccif_defines.h")
     elseif (${_upper} STREQUAL "SSM")
         set(_header "ssm/ssm_vxedge.h")
+    elseif (${_upper} STREQUAL "SSM-DEV")
+        set(_header "ssm-dev/ssm_vxedge.h")
     elseif (${_upper} STREQUAL "CCP4SRS")
         set(_header "ccp4srs/ccp4srs_manager.h")
     elseif (${_upper} STREQUAL "CLIPPER-CORE")
@@ -232,6 +234,7 @@ set(CCP4_LIBRARIES ${CCTBX_LIBRARY}
                    ${CLIPPER-CORE_LIBRARIES}
                    ${CCP4SRS_LIBRARIES}
                    ${SSM_LIBRARY}
+                   ${SSM-DEV_LIBRARY}
                    ${CCIF_LIBRARIES}
                    ${CCP4F_LIBRARY}
                    ${CCP4C_LIBRARY}
@@ -257,7 +260,7 @@ elseif(DEFINED CMAKE_INSTALL_PREFIX)
 endif()
 
 mark_as_advanced(CCP4C_INCLUDE_DIR MMDB_INCLUDE_DIR MMDB2_INCLUDE_DIR
-                 CCIF_INCLUDE_DIR SSM_INCLUDE_DIR CCP4SRS_INCLUDE_DIR
+                 CCIF_INCLUDE_DIR SSM_INCLUDE_DIR SSM-DEV_INCLUDE_DIR CCP4SRS_INCLUDE_DIR
                  CLIPPER-CORE_INCLUDE_DIR CLIPPER-CCP4_INCLUDE_DIR
                  CLIPPER-CONTRIB_INCLUDE_DIR CLIPPER-MINIMOL_INCLUDE_DIR
                  CLIPPER-MMDB_INCLUDE_DIR FFTW2_INCLUDE_DIRS
