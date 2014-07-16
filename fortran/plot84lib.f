@@ -8677,18 +8677,19 @@ C     .. Data statements ..
 C
       IFAIL = 0
       ITEROP = -IUNITF
-      call getenv('PUBLIC_FONT84', str)
-      if (str.ne.' ') then
-          CALL CCPDPN (ITEROP,'PUBLIC_FONT84','READONLY','U',80,IFAIL)
-          IF (IFAIL.NE.0) GO TO 10
-          READ (IUNITF) IFSTRT,LENGF,IFX0,IFY0,IFWID,IFHT,NFONTS
-      else
+C     [Changed in CCP4 6.5: ignore $PUBLIC_FONT84]
+C     call getenv('PUBLIC_FONT84', str)
+C     if (str.ne.' ') then
+C         CALL CCPDPN (ITEROP,'PUBLIC_FONT84','READONLY','U',80,IFAIL)
+C         IF (IFAIL.NE.0) GO TO 10
+C         READ (IUNITF) IFSTRT,LENGF,IFX0,IFY0,IFWID,IFHT,NFONTS
+C     else
           call getenv('CCP4', str)
           str(lenstr(str)+1:) = '/lib/data/font84.ascii'
           call CCPDPN (ITEROP,str,'READONLY','F',0,IFAIL)
           IF (IFAIL.NE.0) GO TO 10
           READ(IUNITF,2000) IFSTRT,LENGF,IFX0,IFY0,IFWID,IFHT,NFONTS
-      endif
+C     endif
       CLOSE (UNIT=IUNITF)
       RETURN
    10 WRITE (LUNOUT,FMT=6000)
