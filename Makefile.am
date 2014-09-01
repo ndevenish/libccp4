@@ -51,7 +51,7 @@ fortran/dna_header.fh
 nodist_fortran_libccp4f_la_SOURCES = fortran/unix.f
 
 fortran_libccp4f_la_CPPFLAGS = -I$(srcdir)/ccp4
-fortran_libccp4f_la_LIBADD = ccp4/libccp4c.la -lmmdb
+fortran_libccp4f_la_LIBADD = ccp4/libccp4c.la -lmmdb2
 
 BUILT_SOURCES = fortran/unix.f
 CLEANFILES = fortran/unix.f

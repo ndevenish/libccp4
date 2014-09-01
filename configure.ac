@@ -101,8 +101,8 @@ if test "x$enable_fortran" != "xno"; then
 
   AC_SEARCH_LIBS(cos, m, , AC_MSG_ERROR([math library not found.]))
   AC_LANG_PUSH([C++])
-  AC_CHECK_LIB(mmdb, MMDB_CCIF_Init, :,
-               AC_MSG_WARN([mmdb library not found.]))
+  AC_CHECK_LIB(mmdb2, MMDB_CCIF_Init, :,
+               AC_MSG_WARN([mmdb2 library not found.]))
   AC_LANG_POP([C++])
 
 fi #dnl fortran API elements
