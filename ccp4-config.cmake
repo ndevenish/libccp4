@@ -6,10 +6,11 @@
 # Once done this will define
 #  CCP4_INCLUDE_DIRS - all include directories
 #  <name>_LIBRARY - library, name is one of CCP4C, CCP4F, MMDB, MMDB2, CCIF,
-#                            SSM, CCP4SRS, CCTBX,
+#                            SSM, CCP4SRS,
 #                            CLIPPER-CORE, CLIPPER-CCP4, CLIPPER-CONTRIB,
 #                            CLIPPER-MINIMOL, CLIPPER-MMDB, CLIPPER-CIF,
-#                            RFFTW2, FFTW2
+#                            RFFTW2, FFTW2,
+#                            HKLFILE, CCTBX
 #  CCIF_LIBRARIES - CCIF_LIBRARY with (if needed) regex library
 #  CCP4SRS_LIBRARIES - CCP4SRS_LIBRARY with (if needed) mmdb and zlib libraries
 #  CLIPPER-CORE_LIBRARIES - CLIPPER-CORE_LIBRARY with (if needed)
@@ -89,6 +90,8 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
         set(_header "clipper/clipper-mmdb.h")
     elseif (${_upper} STREQUAL "CLIPPER-CIF")
         set(_header "clipper/clipper-cif.h")
+    elseif (${_upper} STREQUAL "HKLFILE")
+        set(_header "hklfile/columngroups.hh")
     elseif (${_upper} STREQUAL "CCTBX")
         set(_header "cctbx/crystal/symmetry.h")
     else()
@@ -225,6 +228,7 @@ endforeach()
 
 
 set(CCP4_LIBRARIES ${CCTBX_LIBRARY}
+                   ${HKLFILE_LIBRARY}
                    ${CLIPPER-CCP4_LIBRARY}
                    ${CLIPPER-CIF_LIBRARY}
                    ${CLIPPER-CONTRIB_LIBRARY}
@@ -264,5 +268,5 @@ mark_as_advanced(CCP4C_INCLUDE_DIR MMDB_INCLUDE_DIR MMDB2_INCLUDE_DIR
                  CLIPPER-CIF_INCLUDE_DIR
                  CLIPPER-CONTRIB_INCLUDE_DIR CLIPPER-MINIMOL_INCLUDE_DIR
                  CLIPPER-MMDB_INCLUDE_DIR FFTW2_INCLUDE_DIRS
-                 CCTBX_INCLUDE_DIR CCP4_PY2_DIR)
+                 CCTBX_INCLUDE_DIR HKLFILE_INCLUDE_DIR CCP4_PY2_DIR)
 
