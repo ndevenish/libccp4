@@ -86,8 +86,6 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   char *symopfile, *ccp4dir, filerec[80];
   ccp4_symop *op2,*op3,opinv;
 
-  static int reported_syminfo = 0;       /* report location of SYMINFO first time only */
-
   /* spacegroup variables */
   int sg_num, sg_ccp4_num, sg_nsymp, sg_num_cent;
   float cent_ops[4][4];
@@ -140,7 +138,8 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
 
   /* Open the symop file: */
   if (!(symopfile = getenv("SYMINFO"))) {
-    printf("Environment variable SYMINFO not set ... guessing location of symmetry file. \n");
+    if (debug)
+      printf("Environment variable SYMINFO not set ... guessing location of symmetry file. \n");
     if (!(ccp4dir = getenv("CLIBD"))) {
       printf("Environment variable CLIBD not set ... big trouble! \n");
       return NULL;
@@ -151,10 +150,9 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
     symopfile[strlen(ccp4dir)+21] = '\0';
     ccp4printf(1," SYMINFO file set to %s \n",symopfile);
   } else {
-    if (!reported_syminfo) {
+    if (debug) {
       ccp4printf(1,"\n Spacegroup information obtained from library file: \n");
       ccp4printf(1," Logical Name: SYMINFO   Filename: %s\n\n",symopfile);
-      reported_syminfo = 1;
     }
   }
 
