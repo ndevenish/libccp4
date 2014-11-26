@@ -1381,7 +1381,7 @@ void ccp4_banner(void) {
   } else {
     /* If no program version available then use the major library
        version number */
-    sprintf(prog_vers_str,"version %-10s",CCP4_VERSION_NO);
+    sprintf(prog_vers_str,"version %-10s",ccp4_vers_no());
   }
   /* Trim back the spaces in this string */
   i = strlen(prog_vers_str);
@@ -1398,7 +1398,7 @@ void ccp4_banner(void) {
      Originally it was printed using the line:
 
      printf(" ### CCP4 %3s: %-17s  %-18s: %-8s##\n",
-     CCP4_VERSION_NO,ccp4ProgramName(NULL),prog_vers_str,ccp4RCSDate(NULL));
+     ccp4_vers_no(),ccp4ProgramName(NULL),prog_vers_str,ccp4RCSDate(NULL));
 
      If the CCP4 version number exceeded three characters this would lead
      to the tail of the line being misaligned.
@@ -1406,7 +1406,7 @@ void ccp4_banner(void) {
      This version tries to account for components of the line being
      longer than expected (nb it is still possible to run out of space).
   */
-  sprintf(infoline," ### CCP4 %3s: %-17s",CCP4_VERSION_NO,ccp4ProgramName(NULL));
+  sprintf(infoline," ### CCP4 %3s: %-17s",ccp4_vers_no(),ccp4ProgramName(NULL));
   /* Trim back spaces in this string */
   i = strlen(infoline);
   while ( i != 0 && infoline[--i] == ' ') {

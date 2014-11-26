@@ -39,8 +39,8 @@ namespace CCP4 {
 extern "C" {
 #endif
 
-#define CCP4_VERSION_NO "6.4"
-#define CCP4_PATCH_LEVEL "6.4.5"
+#define CCP4_VERSION_NO "6.5"
+#define CCP4_PATCH_LEVEL "6.5.0"
 
 /* Maximum lengths of strings holding program names and versions */
 #define MAXLEN_PROGNAME    80
@@ -68,6 +68,11 @@ typedef int (*CCP4INTFUNCPTR)(int, const char *);
  * @return Program version string.
  */
 char *ccp4_prog_vers(const char *progvers);
+
+/** Query ccp4 version.
+ * @return CCP4 version string.
+ */
+char *ccp4_vers_no(void);
 
 /** Set or return program name.
  * @param progname Program name, or NULL to query existing value.

@@ -32,6 +32,8 @@
 #include "ccp4_general.h"
 /* rcsid[] = "$Id$" */
 
+static char ccp4version[MAXLEN_PROGVERSION];
+
 char *ccp4_prog_vers(const char *progvers) 
 {
   static char programversion[MAXLEN_PROGVERSION]="";
@@ -43,6 +45,43 @@ char *ccp4_prog_vers(const char *progvers)
   return programversion;
 }
 
+char *ccp4_vers_no(void)
+{
+  static int init=0;
+
+  char *filepath=NULL, *filename=NULL, tmp_str[MAXLEN_PROGVERSION];
+  char *vfile="/lib/ccp4/MAJOR_MINOR";
+  FILE *cfile;
+  int i;
+
+  if (!init) {
+  bzero(ccp4version,MAXLEN_PROGVERSION);
+  strcpy(ccp4version,CCP4_VERSION_NO);
+
+  filepath = (char *) getenv("CCP4");
+  if (filepath) {
+      filename = (char *) ccp4_utils_malloc(sizeof(char)*(strlen(filepath)+strlen(vfile)));
+      bzero(filename,strlen(filepath)+strlen(vfile));
+      strcpy(filename,filepath);
+      strcat(filename,vfile);
+      if (ccpexists(filename)) {
+         cfile=fopen(filename,"r");
+         if (cfile) {
+           fgets(tmp_str,MAXLEN_PROGVERSION,cfile);
+           strncpy(ccp4version,tmp_str,strlen(tmp_str));
+           i = strlen(ccp4version)-1;
+           while (isspace(ccp4version[i]) ) {
+             ccp4version[i--]='\0';
+           }
+         }
+      }
+      /* Make sure that we clean up */
+      if (filename) free(filename);
+    }
+    init=1;
+  }
+  return ccp4version;
+}
 /*------------------------------------------------------------------*/
 
 /* ccp4ProgramName
@@ -82,8 +121,8 @@ char *ccp4ProgramName(const char *progname)
  */
 void ccp4_prog_info(void)
 {
-    printf("CCP4 software suite: library version %s\n",CCP4_VERSION_NO);
-    printf("CCP4 software suite: patch level     %s\n",CCP4_PATCH_LEVEL);
+    printf("CCP4 software suite: library version %s\n",ccp4_vers_no());
+    printf("CCP4 software suite: patch level     %s\n",ccp4_vers_no());
     printf("Program:             %s",ccp4ProgramName(NULL));
     if (ccp4_prog_vers(NULL) && strlen(ccp4_prog_vers(NULL))) 
       printf("; version %s",ccp4_prog_vers(NULL));
