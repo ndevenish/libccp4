@@ -60,8 +60,8 @@ char *ccp4_vers_no(void)
 
   filepath = (char *) getenv("CCP4");
   if (filepath) {
-      filename = (char *) ccp4_utils_malloc(sizeof(char)*(strlen(filepath)+strlen(vfile)));
-      bzero(filename,strlen(filepath)+strlen(vfile));
+      filename = (char *) ccp4_utils_malloc(sizeof(char)*(strlen(filepath)+strlen(vfile))+1);
+      bzero(filename,strlen(filepath)+strlen(vfile)+1);
       strcpy(filename,filepath);
       strcat(filename,vfile);
       if (ccpexists(filename)) {
