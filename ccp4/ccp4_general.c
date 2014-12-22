@@ -1418,7 +1418,7 @@ void ccp4_banner(void) {
      program version number plus what's already been printed*/
   npad = 51 - strlen(infoline) - strlen(prog_vers_str);
   i = strlen(infoline);
-  while (npad) {
+  while (npad > 0) {
     infoline[i++] = ' ';
     infoline[i] = '\0';
     --npad;
