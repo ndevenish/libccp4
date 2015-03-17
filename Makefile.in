@@ -242,8 +242,8 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-am__dist_data_DATA_DIST = data/atomsf_neutron.lib data/atomsf.lib \
-	data/syminfo.lib data/symop.lib data/font84.ascii
+am__dist_data_DATA_DIST = data/atomsf_neutron.lib data/atomsf_electron.lib \
+	data/atomsf.lib data/syminfo.lib data/symop.lib data/font84.ascii
 DATA = $(dist_ccp4data_DATA) $(dist_data_DATA) $(pkgconfig_DATA)
 HEADERS = $(ccp4include_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \
@@ -463,8 +463,8 @@ fortran_libccp4f_la_LDFLAGS = -no-undefined
 # They are included in CCP4 and may be needed for running programs
 # compiled with libccp4 (see http://www.ccp4.ac.uk/dist/html/ccp4.html)
 dist_ccp4data_DATA = ccp4-config.cmake
-dist_data_DATA = data/atomsf_neutron.lib data/atomsf.lib \
-	data/syminfo.lib data/symop.lib $(am__append_2)
+dist_data_DATA = data/atomsf_neutron.lib data/atomsf_electron.lib \
+	data/atomsf.lib data/syminfo.lib data/symop.lib $(am__append_2)
 pkgconfig_DATA = libccp4c.pc $(am__append_3)
 
 # FIXME: all files but the first are unused now, should they be distributed?

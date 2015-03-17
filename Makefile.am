@@ -66,7 +66,7 @@ fortran_libccp4f_la_LDFLAGS = -no-undefined
 # compiled with libccp4 (see http://www.ccp4.ac.uk/dist/html/ccp4.html)
 
 dist_ccp4data_DATA = ccp4-config.cmake
-dist_data_DATA = data/atomsf_neutron.lib \
+dist_data_DATA = data/atomsf_neutron.lib data/atomsf_electron.lib \
 		     data/atomsf.lib data/syminfo.lib data/symop.lib
 pkgconfig_DATA = libccp4c.pc
 if FORTRAN_LIB
