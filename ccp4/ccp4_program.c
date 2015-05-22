@@ -49,26 +49,23 @@ char *ccp4_vers_no(void)
 {
   static int init=0;
 
-  char *filepath=NULL, *filename=NULL, tmp_str[MAXLEN_PROGVERSION];
+  char *filepath=NULL, *filename=NULL;
   char *vfile="/lib/ccp4/MAJOR_MINOR";
   FILE *cfile;
   int i;
 
   if (!init) {
-  bzero(ccp4version,MAXLEN_PROGVERSION);
   strcpy(ccp4version,CCP4_VERSION_NO);
 
   filepath = (char *) getenv("CCP4");
   if (filepath) {
       filename = (char *) ccp4_utils_malloc(sizeof(char)*(strlen(filepath)+strlen(vfile))+1);
-      bzero(filename,strlen(filepath)+strlen(vfile)+1);
       strcpy(filename,filepath);
       strcat(filename,vfile);
       if (ccpexists(filename)) {
          cfile=fopen(filename,"r");
          if (cfile) {
-           fgets(tmp_str,MAXLEN_PROGVERSION,cfile);
-           strncpy(ccp4version,tmp_str,strlen(tmp_str));
+           fgets(ccp4version,MAXLEN_PROGVERSION,cfile);
            i = strlen(ccp4version)-1;
            while (isspace(ccp4version[i]) ) {
              ccp4version[i--]='\0';

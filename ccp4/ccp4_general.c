@@ -1370,8 +1370,6 @@ void ccp4_banner(void) {
   char date[11],time[9],prog_vers_str[19],infoline[100];
   char prog_vers_full[MAXLEN_PROGVERSION];
 
-  bzero(infoline,100);
-
   if (diag) printf("Entering ccp4_banner \n");
 
   /* Program version number */
