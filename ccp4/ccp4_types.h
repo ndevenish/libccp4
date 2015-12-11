@@ -44,10 +44,6 @@ typedef   char     *        pstr;
 #define TRUE 1
 #endif
 
-typedef struct { double r;             /* real component and */
-                 double i;             /* imaginary component of */
-               } COMPLEX;              /* a complex number */
-
 typedef struct { double r;             /* radial and */
                  double phi;           /* angular component of */
                } POLAR;                /* a complex number */
