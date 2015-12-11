@@ -1,5 +1,5 @@
 
-AC_INIT(libccp4, 6.5.0) # keep version in sync with ccp4/ccp4_program.h
+AC_INIT(libccp4, 7.0.0) # keep version in sync with ccp4/ccp4_program.h
 
 AC_CONFIG_AUX_DIR(build-aux)
 AC_CONFIG_MACRO_DIR(m4)

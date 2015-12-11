@@ -39,8 +39,8 @@ namespace CCP4 {
 extern "C" {
 #endif
 
-#define CCP4_VERSION_NO "6.5"
-#define CCP4_PATCH_LEVEL "6.5.0"
+#define CCP4_VERSION_NO "7.0"
+#define CCP4_PATCH_LEVEL "7.0.0"
 
 /* Maximum lengths of strings holding program names and versions */
 #define MAXLEN_PROGNAME    80
