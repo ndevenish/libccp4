@@ -996,7 +996,7 @@ CCP4File *ccp4_file_open (const char *filename, const int flag)
 #if defined _MSC_VER
   if ( !(st.st_mode & S_IFREG) ) {
 #else
-  if ( !S_ISREG(st.st_mode) ) {
+  if ( !cfile->scratch && !S_ISREG(st.st_mode) ) {
 #endif
     cfile->length = INT_MAX;
     cfile->direct = 0;
