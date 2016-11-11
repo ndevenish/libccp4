@@ -604,6 +604,8 @@ C Arguments: INTEGER FLUN, ANS
 C
 C Usage:     CALL UISATT (FLUN,ANS)
 C
+ifelse(_ifc,8,
+[      USE IFPORT])
 C     .. Scalar Arguments ..
       INTEGER ANSWER,FLUN
 C     ..
@@ -647,9 +649,7 @@ _gfort,1,
       ANSWER = 0
       IF (ISATTY(FLUN)) ANSWER = 1],
 _ifc,8,
-[      USE IFPORT
-      LOGICAL ISATTY
-      ANSWER = 0
+[      ANSWER = 0
       IF (ISATTY(FLUN)) ANSWER = 1],
 dnl (else)
 [      LOGICAL ISATTY
