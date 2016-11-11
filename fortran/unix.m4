@@ -646,6 +646,11 @@ _gfort,1,
 [      LOGICAL ISATTY
       ANSWER = 0
       IF (ISATTY(FLUN)) ANSWER = 1],
+_ifc,8,
+[      USE IFPORT
+      LOGICAL ISATTY
+      ANSWER = 0
+      IF (ISATTY(FLUN)) ANSWER = 1],
 dnl (else)
 [      LOGICAL ISATTY
       EXTERNAL ISATTY
