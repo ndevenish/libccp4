@@ -54,7 +54,7 @@
 #  define CALL_LIKE_VMS 1
 #elif defined (_MSC_VER) && (_MSC_VER >= 800)
 #  define CALL_LIKE_MVS 2
-#elif defined(_MSC_VER) || (defined (WIN32) && !defined(__MINGW32__))
+#elif defined (_MSC_VER) || (defined (WIN32) && !defined(__MINGW32__))
 #  define CALL_LIKE_MVS 1
 #else
 #  define CALL_LIKE_SUN 1
@@ -119,7 +119,7 @@
 #endif
 
 /* defined in library_utils.c */
-#if defined(_MSC_VER)
+#if defined (_MSC_VER) &&  _MSC_VER < 1800
   double rint(double x);
 #endif
 
