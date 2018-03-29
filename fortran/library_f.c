@@ -700,7 +700,7 @@ int ierrno () {
 
 #endif             /*  HPUX and AIX support */    
 
-#if !( defined(G95) || defined(GFORTRAN) || defined(F2C) ) && \
+#if !( defined(G95) || defined(GFORTRAN) || defined(F2C) || defined(__INTEL_COMPILER) ) && \
     ( ( defined(__linux__) && defined(_CALL_SYSV) ) || defined(__APPLE__) )
 /* linuxppc xlf and apple xlf support */
 void gerror_ (str, Lstr)
