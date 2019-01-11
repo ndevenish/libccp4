@@ -4787,6 +4787,16 @@
  -X,-Y,-Z
  -X,1/2-Y,1/2+Z
  X,1/2+Y,1/2-Z
+2014 4 4 P121/n1    PG2/m MONOCLINIC 'P 1 21/n 1'
+ X,Y,Z
+ -X+1/2,Y+1/2,-Z+1/2
+ -X,-Y,-Z
+ X+1/2,-Y+1/2,Z+1/2
+3014 4 4 P121/a1    PG2/m MONOCLINIC 'P 1 21/a 1'
+ X,Y,Z
+ -X+1/2,Y+1/2,-Z
+ -X,-Y,-Z
+ X+1/2,-Y+1/2,Z
 1015 8 4 B112/b     PG2/mC MONOCLINIC 'B 1 1 2/b'
  X,Y,Z
  -X,1/2-Y,Z
@@ -4908,8 +4918,3 @@
  -Z,-X,1/2+Y
  Z,1/2-X,1/2-Y
  1/2-Z,X,1/2-Y
-2014 4 4 P21/n PG2/m MONOCLINIC 'P 1 21/n 1'
- X,Y,Z
- -X,-Y,-Z
- 1/2-X,1/2+Y,1/2-Z
- X+1/2,1/2-Y,1/2+Z

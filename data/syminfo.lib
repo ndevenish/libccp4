@@ -52,7 +52,7 @@ basisop x,y,z
 symbol ccp4 2
 symbol Hall '-P 1'
 symbol xHM  'P -1'
-symbol old  'P 1-'
+symbol old  'P -1'
 symbol laue '-P 1' '-1'
 symbol patt '-P 1' '-1'
 symbol pgrp '-P 1' '-1'
@@ -1747,7 +1747,7 @@ basisop x-z,y,z
 symbol ccp4 2014
 symbol Hall '-P 2ybc (x-z,y,z)'
 symbol xHM  'P 1 21/n 1'
-symbol old  ''
+symbol old  'P 1 21/n 1'
 symbol laue '-P 2y' '2/m'
 symbol patt '-P 2y' '2/m'
 symbol pgrp '-P 2y' '2/m'
@@ -1766,10 +1766,10 @@ end_spacegroup
 begin_spacegroup
 number  14
 basisop z,y,-x
-symbol ccp4 0
+symbol ccp4 3014
 symbol Hall '-P 2ybc (z,y,-x)'
 symbol xHM  'P 1 21/a 1'
-symbol old  ''
+symbol old  'P 1 21/a 1'
 symbol laue '-P 2y' '2/m'
 symbol patt '-P 2y' '2/m'
 symbol pgrp '-P 2y' '2/m'
