@@ -3598,7 +3598,7 @@
  -Z,Y,-X
  Z,-Y,-X
  Z,Y,X
-222 48 48 Pn-3n PGm3barm CUBIC 'P 4/n -3 2/n' P n -3 n'
+222 48 48 Pn-3n PGm3barm CUBIC 'P 4/n -3 2/n' 'P n -3 n'
  X,Y,Z
  -X,-Y,Z
  -X,Y,-Z
