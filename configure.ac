@@ -105,6 +105,8 @@ if test "x$enable_fortran" != "xno"; then
                AC_MSG_WARN([mmdb2 library not found.]))
   AC_LANG_POP([C++])
 
+  AX_CHECK_COMPILE_FLAG([-fallow-argument-mismatch],[FFLAGS="$AM_FFLAGS -fallow-argument-mismatch"],, [-Werror])
+
 fi #dnl fortran API elements
 
 AM_CONDITIONAL([GNU_FORTRAN], [test "x$G77" = "xyes"])
