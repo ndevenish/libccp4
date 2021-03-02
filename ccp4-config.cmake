@@ -116,7 +116,7 @@ foreach(_component ${CCP4_FIND_COMPONENTS})
     # check if libccif needs -lregex
     if (${_upper} STREQUAL "CCIF")
         set(_CCIF_SRC "int main() {zzs_undump(0,0,0);}")
-        foreach (_REGEX_LIB "" regex)
+        foreach (_REGEX_LIB "" regex pcreposix)
             message (STATUS "Trying _REGEX_LIB=${_REGEX_LIB}")
             set(CMAKE_REQUIRED_LIBRARIES ${CCIF_LIBRARY} ${_REGEX_LIB} m)
             set(_VAR _LINKING_WITH_CCIF_${_REGEX_LIB})
