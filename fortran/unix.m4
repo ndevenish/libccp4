@@ -964,3 +964,32 @@ ifelse(_gfort,1,
 ],dnl (else)
 [      continue])
       end
+
+ifelse(_windows,1,[
+ifelse(_ifc,8,[
+C     =======================
+      SUBROUTINE UTIME(CTIME)
+C     =======================
+C
+C UTIME - Get current time hh:mm:ss
+C
+C Input:     none
+C
+C Output:    TIME - as ASCII string
+C
+C Arguments: CHARACTER*(*) CTIME
+C
+C Usage:     CALL UTIME(CTIME)
+C
+C     .. Scalar Arguments ..
+      CHARACTER CTIME* (*)
+C     ..
+C     .. Local Arrays ..
+      INTEGER IARRAY(3)
+C     ..
+      CALL ITIME(IARRAY)
+      WRITE (CTIME,FMT=6000) IARRAY(1),IARRAY(2),IARRAY(3)
+ 6000 FORMAT (I2,2 (':',I2.2))
+      END 
+])
+])
