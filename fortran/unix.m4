@@ -993,3 +993,39 @@ C     ..
       END 
 ])
 ])
+
+ifelse(_windows,1,[
+ifelse(_ifc,8,[
+C     ======================
+      SUBROUTINE UCPUTM(SEC)
+C     ======================
+C
+C     Get CPU time in seconds
+C
+C     Parameter:
+C     REAL SEC (i/o): If sec<=0.0, initialize timer and return current
+C                     elapsed cpu time since start of execution, otherwise
+C                     return elapsed cpu since timer was initialized.
+C                     Time is in seconds.
+C
+C     .. Scalar Arguments ..
+      REAL SEC
+C     ..
+C     .. Local Scalars ..
+      REAL TLAST
+C     ..
+C     .. Local Arrays ..
+      REAL TARRAY(2)
+C     ..
+C     .. Save statement ..
+      SAVE TLAST
+C     ..
+      IF (SEC.LE.0.0) THEN
+        TLAST = ETIME (TARRAY)
+        SEC = TLAST
+      ELSE
+        SEC = ETIME (TARRAY) - TLAST
+      ENDIF
+      END
+])
+])
