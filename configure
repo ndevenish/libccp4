@@ -9665,7 +9665,7 @@ fi
 	  else
 	    sed -e 's/\\\\\\\(.*\\\\\\\)/-link\\\ -EXPORT:\\\\\\\1/' < $export_symbols > $output_objdir/$soname.exp;
 	  fi~
-	  $CC -o $tool_output_objdir$soname $libobjs $compiler_flags $deplibs "@$tool_output_objdir$soname.exp" -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~
+	  $CC -o $tool_output_objdir$soname $libobjs $compiler_flags $deplibs "@$tool_output_objdir$soname.exp" //link //DLL //IMPLIB:"$tool_output_objdir$libname.lib"~
 	  linknames='
 	# The linker will not automatically build a static lib if we build a DLL.
 	# _LT_TAGVAR(old_archive_from_new_cmds, )='true'
@@ -10639,11 +10639,11 @@ cygwin* | mingw* | pw32* | cegcc*)
     dynamic_linker='Win32 ld.exe'
     ;;
 
-  *,cl*)
+  *,cl* | *,ifort*)
     # Native MSVC
     libname_spec='$name'
     soname_spec='${libname}`echo ${release} | $SED -e 's/[.]/-/g'`${versuffix}${shared_ext}'
-    library_names_spec='${libname}.dll.lib'
+    library_names_spec='${libname}.lib'
 
     case $build_os in
     mingw*)
@@ -13677,7 +13677,7 @@ fi
 	    else
 	      $SED -e 's/\\\\\\\(.*\\\\\\\)/-link\\\ -EXPORT:\\\\\\\1/' < $export_symbols > $output_objdir/$soname.exp;
 	    fi~
-	    $CC -o $tool_output_objdir$soname $libobjs $compiler_flags $deplibs "@$tool_output_objdir$soname.exp" -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~
+	    $CC -o $tool_output_objdir$soname $libobjs $compiler_flags $deplibs "@$tool_output_objdir$soname.exp" //link //DLL //IMPLIB:"$tool_output_objdir$libname.lib"~
 	    linknames='
 	  # The linker will not automatically build a static lib if we build a DLL.
 	  # _LT_TAGVAR(old_archive_from_new_cmds, CXX)='true'
@@ -15423,6 +15423,7 @@ hardcode_into_libs=no
 # when you set need_version to no, make sure it does not cause -set_version
 # flags to be left without arguments
 need_version=unknown
+$as_echo_n "host os $host_os $cc_basename " >&6; 
 
 case $host_os in
 aix3*)
@@ -15556,11 +15557,11 @@ cygwin* | mingw* | pw32* | cegcc*)
     dynamic_linker='Win32 ld.exe'
     ;;
 
-  *,cl*)
+  *,cl* | *,ifort*)
     # Native MSVC
     libname_spec='$name'
     soname_spec='${libname}`echo ${release} | $SED -e 's/[.]/-/g'`${versuffix}${shared_ext}'
-    library_names_spec='${libname}.dll.lib'
+    library_names_spec='${libname}.lib'
 
     case $build_os in
     mingw*)
@@ -17751,7 +17752,7 @@ fi
       # hardcode_libdir_flag_spec is actually meaningless, as there is
       # no search path for DLLs.
       case $cc_basename in
-      cl*)
+      cl* | ifort*)
 	# Native MSVC
 	hardcode_libdir_flag_spec_F77=' '
 	allow_undefined_flag_F77=unsupported
@@ -17768,7 +17769,7 @@ fi
 	  else
 	    sed -e 's/\\\\\\\(.*\\\\\\\)/-link\\\ -EXPORT:\\\\\\\1/' < $export_symbols > $output_objdir/$soname.exp;
 	  fi~
-	  $CC -o $tool_output_objdir$soname $libobjs $compiler_flags $deplibs "@$tool_output_objdir$soname.exp" -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~
+	  $CC -o $tool_output_objdir$soname $libobjs $compiler_flags $deplibs "@$tool_output_objdir$soname.exp" //link //DLL //IMPLIB:"$tool_output_objdir$libname.lib"~
 	  linknames='
 	# The linker will not automatically build a static lib if we build a DLL.
 	# _LT_TAGVAR(old_archive_from_new_cmds, F77)='true'
@@ -18540,11 +18541,11 @@ cygwin* | mingw* | pw32* | cegcc*)
     dynamic_linker='Win32 ld.exe'
     ;;
 
-  *,cl*)
+  *,cl* | *,ifort*)
     # Native MSVC
     libname_spec='$name'
     soname_spec='${libname}`echo ${release} | $SED -e 's/[.]/-/g'`${versuffix}${shared_ext}'
-    library_names_spec='${libname}.dll.lib'
+    library_names_spec='${libname}.lib'
 
     case $build_os in
     mingw*)
@@ -18578,7 +18579,7 @@ cygwin* | mingw* | pw32* | cegcc*)
       else
         sys_lib_search_path_spec=`$ECHO "$sys_lib_search_path_spec" | $SED -e "s/$PATH_SEPARATOR/ /g"`
       fi
-      # FIXME: find the short name or the path components, as spaces are
+      # FIXME2: find the short name or the path components, as spaces are
       # common. (e.g. "Program Files" -> "PROGRA~1")
       ;;
     esac

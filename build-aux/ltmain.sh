@@ -5534,6 +5534,62 @@ func_mode_link ()
 	continue
 	;;
 
+      -LIBPATH:*)
+	func_stripname "-LIBPATH:" '' "$arg"
+	if test -z "$func_stripname_result"; then
+	  if test "$#" -gt 0; then
+	    func_fatal_error "require no space between \`-LIBPATH:' and \`$1'"
+	  else
+	    func_fatal_error "need path for \`-LIBPATH:' option"
+	  fi
+	fi
+	func_resolve_sysroot "$func_stripname_result"
+	dir=$func_resolve_sysroot_result
+	# We need an absolute path.
+	case $dir in
+	[\\/]* | [A-Za-z]:[\\/]*) ;;
+	*)
+	  absdir=`cd "$dir" && pwd`
+	  test -z "$absdir" && \
+	    func_fatal_error "cannot determine absolute directory name of \`$dir'"
+	  dir="$absdir"
+	  ;;
+	esac
+	case "$deplibs " in
+	*" -L$dir "* | *" $arg "* | *" /LIBPATH:$dir "*)
+	  # Will only happen for absolute or sysroot arguments
+	  ;;
+	*)
+	  # Preserve sysroot, but never include relative directories
+	  #case $dir in
+	  #  [\\/]* | [A-Za-z]:[\\/]* | =*) func_append deplibs " $arg" ;;
+	  #  *) func_append deplibs " /LIBPATH:$dir" ;;
+	  #esac
+	  func_append lib_search_path " $dir"
+	  ;;
+	esac
+	case $host in
+	*-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-os2* | *-cegcc*)
+	  testbindir=`$ECHO "$dir" | $SED 's*/lib$*/bin*'`
+	  case :$dllsearchpath: in
+	  *":$dir:"*) ;;
+	  ::) dllsearchpath=$dir;;
+	  *) func_append dllsearchpath ":$dir";;
+	  esac
+	  case :$dllsearchpath: in
+	  *":$testbindir:"*) ;;
+	  ::) dllsearchpath=$testbindir;;
+	  *) func_append dllsearchpath ":$testbindir";;
+	  esac
+	  ;;
+	esac
+	func_append finalize_command " $arg"
+	case "$new_inherited_linker_flags " in
+	    *" $arg "*) ;;
+	    * ) func_append new_inherited_linker_flags " $arg" ;;
+	esac
+	continue
+	;;
       # The native IRIX linker understands -LANG:*, -LIST:* and -LNO:*
       # so, if we see these flags be careful not to treat them like -L
       -L[A-Z][A-Z]*:*)
@@ -5596,6 +5652,62 @@ func_mode_link ()
 	  ;;
 	esac
 	continue
+	;;
+      /LIBPATH:*)
+	func_stripname "/LIBPATH:" '' "$arg"
+	if test -z "$func_stripname_result"; then
+	  if test "$#" -gt 0; then
+	    func_fatal_error "require no space between \`/LIBPATH:' and \`$1'"
+	  else
+	    func_fatal_error "need path for \`/LIBPATH:' option"
+	  fi
+	fi
+	func_resolve_sysroot "$func_stripname_result"
+	dir=$func_resolve_sysroot_result
+	# We need an absolute path.
+	case $dir in
+	[\\/]* | [A-Za-z]:[\\/]*) ;;
+	*)
+	  absdir=`cd "$dir" && pwd`
+	  test -z "$absdir" && \
+	    func_fatal_error "cannot determine absolute directory name of \`$dir'"
+	  dir="$absdir"
+	  ;;
+	esac
+	case "$deplibs " in
+	*" -L$dir "* | *" $arg "* | *" /LIBPATH:$dir"*)
+	  # Will only happen for absolute or sysroot arguments
+	  ;;
+	*)
+	  # Preserve sysroot, but never include relative directories
+	  #case $dir in
+	  #  [\\/]* | [A-Za-z]:[\\/]* | =*) func_append deplibs " $arg" ;;
+	  #  *) func_append deplibs " /LIBPATH:$dir" ;;
+	  #esac
+	  func_append lib_search_path " $dir"
+	  ;;
+	esac
+	case $host in
+	*-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-os2* | *-cegcc*)
+	  testbindir=`$ECHO "$dir" | $SED 's*/lib$*/bin*'`
+	  case :$dllsearchpath: in
+	  *":$dir:"*) ;;
+	  ::) dllsearchpath=$dir;;
+	  *) func_append dllsearchpath ":$dir";;
+	  esac
+	  case :$dllsearchpath: in
+	  *":$testbindir:"*) ;;
+	  ::) dllsearchpath=$testbindir;;
+	  *) func_append dllsearchpath ":$testbindir";;
+	  esac
+	  ;;
+	esac
+	continue
+	func_append finalize_command " $arg"
+	case "$new_inherited_linker_flags " in
+	    *" $arg "*) ;;
+	    * ) func_append new_inherited_linker_flags " $arg" ;;
+	esac
 	;;
 
       -l*)
@@ -6176,6 +6288,30 @@ func_mode_link ()
 	  fi
 	  continue
 	  ;;
+        *32.lib|*32.dll)
+	  if test "$linkmode,$pass" = "prog,link"; then
+	    compile_deplibs="$deplib $compile_deplibs"
+	    finalize_deplibs="$deplib $finalize_deplibs"
+	  else
+	    func_append compiler_flags " $deplib"
+	    if test "$linkmode" = lib ; then
+		case "$new_inherited_linker_flags " in
+		    *" $deplib "*) ;;
+		    * ) func_append new_inherited_linker_flags " $deplib" ;;
+		esac
+	    fi
+	  fi
+	  continue
+	  ;;
+	-link | /link)
+	    if test "$linkmode,$pass" = "prog,link"; then
+	      compile_deplibs="$compile_deplibs $deplib"
+	      finalize_deplibs="$finalize_deplibs $deplib"
+	    else
+	      deplibs="$deplibs $deplib"
+	      test "$linkmode" = lib && newdependency_libs="$newdependency_libs $deplib"
+	    fi
+	  ;;
 	-l*)
 	  if test "$linkmode" != lib && test "$linkmode" != prog; then
 	    func_warning "\`-l' is ignored for archives/objects"
@@ -6261,6 +6397,70 @@ func_mode_link ()
 	  fi
 	  continue
 	  ;;
+	/LIBPATH:*)
+	  case $linkmode in
+	  lib)
+	    #deplibs="$deplibs -link x1 $deplib"
+	    test "$pass" = conv && continue
+	    newdependency_libs="$deplib $newdependency_libs"
+	    func_stripname '/LIBPATH:' '' "$deplib"
+	    func_resolve_sysroot "$func_stripname_result"
+	    func_append newlib_search_path " $func_resolve_sysroot_result"
+	    ;;
+	  prog)
+	    if test "$pass" = conv; then
+	      deplibs="$deplibs -link y $deplib"
+	      continue
+	    fi
+	    if test "$pass" = scan; then
+	      deplibs="$deplibs $deplib"
+	    else
+	      compile_deplibs="$compile_deplibs $deplib"
+	      finalize_deplibs="$finalize_deplibs $deplib"
+	    fi
+	    func_stripname '/LIBPATH:' '' "$deplib"
+	    func_resolve_sysroot "$func_stripname_result"
+	    func_append newlib_search_path " $func_resolve_sysroot_result"
+	    ;;
+	  *)
+	    func_warning "\`/LIBPATH' is ignored for archives/objects"
+	    ;;
+	  esac # linkmode
+	  continue
+	  ;; # LIBPATH
+
+	-LIBPATH:*)
+	  case $linkmode in
+	  lib)
+	    func_stripname '-LIBPATH:' '' "$deplib"
+	    #deplibs="$deplibs -link x /LIBPATH:$func_stripname_result"
+	    test "$pass" = conv && continue
+	    newdependency_libs="$newdependency_libs /LIBPATH:$func_stripname_result"
+	    func_resolve_sysroot "$func_stripname_result"
+	    func_append newlib_search_path " $func_resolve_sysroot_result"
+	    ;;
+	  prog)
+	    func_stripname '-LIBPATH:' '' "$deplib"
+	    if test "$pass" = conv; then
+	      deplibs="$deplibs /LIBPATH:$func_stripname_result"
+	      continue
+	    fi
+	    if test "$pass" = scan; then
+	      deplibs="$deplibs /LIBPATH:$func_stripname_result"
+	    else
+	      compile_deplibs="$compile_deplibs /LIBPATH:$func_stripname_result"
+	      finalize_deplibs="$finalize_deplibs /LIBPATH:$func_stripname_result"
+	    fi
+	    func_resolve_sysroot "$func_stripname_result"
+	    func_append newlib_search_path " $func_resolve_sysroot_result"
+	    ;;
+	  *)
+	    func_warning "\`-LIBPATH' is ignored for archives/objects"
+	    ;;
+	  esac # linkmode
+	  continue
+	  ;; # LIBPATH
+
 	-L*)
 	  case $linkmode in
 	  lib)
@@ -6331,6 +6531,25 @@ func_mode_link ()
 		    | $EGREP "$match_pattern_regex" > /dev/null; then
 		    valid_a_lib=yes
 		  fi
+		;;
+	        file_magic*)
+		  set dummy $deplibs_check_method; shift
+		  test "$want_nocaseglob" = yes && nocaseglob=`shopt -p nocaseglob`
+	          for i in $lib_search_path $sys_lib_search_path $shlib_search_path; do
+		    if test "$want_nocaseglob" = yes; then
+		      shopt -s nocaseglob
+		      potlibs=`ls $i/$deplib 2>/dev/null`
+		      $nocaseglob
+		    else
+		      potential_libs=`ls $i/$deplib 2>/dev/null`
+                    fi
+		    if eval $file_magic_cmd \"\$potlib\" 2>/dev/null |
+			 $SED -e 10q |
+			 $EGREP "$file_magic_regex" > /dev/null; then
+		         valid_a_lib=yes
+			break 1
+		      fi
+		  done
 		;;
 		pass_all)
 		  valid_a_lib=yes
@@ -7781,6 +8000,77 @@ EOF
 	    -l*)
 	      func_stripname -l '' "$a_deplib"
 	      name=$func_stripname_result
+	      if test "X$allow_libtool_libs_with_static_runtimes" = "Xyes" ; then
+		case " $predeps $postdeps " in
+		*" $a_deplib "*)
+		  func_append newdeplibs " $a_deplib"
+		  a_deplib=""
+		  ;;
+		esac
+	      fi
+	      if test -n "$a_deplib" ; then
+		libname=`eval "\\$ECHO \"$libname_spec\""`
+		if test -n "$file_magic_glob"; then
+		  libnameglob=`func_echo_all "$libname" | $SED -e $file_magic_glob`
+		else
+		  libnameglob=$libname
+		fi
+		test "$want_nocaseglob" = yes && nocaseglob=`shopt -p nocaseglob`
+		for i in $lib_search_path $sys_lib_search_path $shlib_search_path; do
+		  if test "$want_nocaseglob" = yes; then
+		    shopt -s nocaseglob
+		    potential_libs=`ls $i/$libnameglob[.-]* 2>/dev/null`
+		    $nocaseglob
+		  else
+		    potential_libs=`ls $i/$libnameglob[.-]* 2>/dev/null`
+		  fi
+		  for potent_lib in $potential_libs; do
+		      # Follow soft links.
+		      if ls -lLd "$potent_lib" 2>/dev/null |
+			 $GREP " -> " >/dev/null; then
+			continue
+		      fi
+		      # The statement above tries to avoid entering an
+		      # endless loop below, in case of cyclic links.
+		      # We might still enter an endless loop, since a link
+		      # loop can be closed while we follow links,
+		      # but so what?
+		      potlib="$potent_lib"
+		      while test -h "$potlib" 2>/dev/null; do
+			potliblink=`ls -ld $potlib | ${SED} 's/.* -> //'`
+			case $potliblink in
+			[\\/]* | [A-Za-z]:[\\/]*) potlib="$potliblink";;
+			*) potlib=`$ECHO "$potlib" | $SED 's,[^/]*$,,'`"$potliblink";;
+			esac
+		      done
+		      if eval $file_magic_cmd \"\$potlib\" 2>/dev/null |
+			 $SED -e 10q |
+			 $EGREP "$file_magic_regex" > /dev/null; then
+			func_append newdeplibs " $a_deplib"
+			a_deplib=""
+			break 2
+		      fi
+		  done
+		done
+	      fi
+	      if test -n "$a_deplib" ; then
+		droppeddeps=yes
+		echo
+		$ECHO "*** Warning: linker path does not have real file for library $a_deplib."
+		echo "*** I have the capability to make that library automatically link in when"
+		echo "*** you link to this library.  But I can only do this if you have a"
+		echo "*** shared version of the library, which you do not appear to have"
+		echo "*** because I did check the linker path looking for a file starting"
+		if test -z "$potlib" ; then
+		  $ECHO "*** with $libname but no candidates were found. (...for file magic test)"
+		else
+		  $ECHO "*** with $libname and none of the candidates passed a file format test"
+		  $ECHO "*** using a file magic. Last file checked: $potlib"
+		fi
+	      fi
+	      ;;
+	    *.lib)
+	      name=$a_deplib
 	      if test "X$allow_libtool_libs_with_static_runtimes" = "Xyes" ; then
 		case " $predeps $postdeps " in
 		*" $a_deplib "*)
@@ -9653,3 +9943,23 @@ build_old_libs=`case $build_libtool_libs in yes) echo no;; *) echo yes;; esac`
 # End:
 # vi:sw=2
 
+	        file_magic*)
+		  echo "$deplibs_check_method"
+		  set dummy $deplibs_check_method; shift
+		  test "$want_nocaseglob" = yes && nocaseglob=`shopt -p nocaseglob`
+	          for i in $lib_search_path $sys_lib_search_path $shlib_search_path; do
+		    if test "$want_nocaseglob" = yes; then
+		      shopt -s nocaseglob
+		      potlibs=`ls $i/$deplib 2>/dev/null`
+		      $nocaseglob
+		    else
+		      potential_libs=`ls $i/$deplib 2>/dev/null`
+                    fi
+		    if eval $file_magic_cmd \"\$potlib\" 2>/dev/null |
+			 $SED -e 10q |
+			 $EGREP "$file_magic_regex" > /dev/null; then
+		         valid_a_lib=yes
+			break 1
+		      fi
+		  done
+		;;
