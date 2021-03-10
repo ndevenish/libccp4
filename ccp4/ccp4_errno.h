@@ -92,7 +92,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern DL_IMPORT(int) ccp4_errno;
+extern CCP4_DL_IMPORT(int) ccp4_errno;
 #ifdef __cplusplus
 }
 #endif

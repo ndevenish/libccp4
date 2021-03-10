@@ -121,18 +121,18 @@
 /* Using MSVC need __declspec */
 #if defined(__WIN32__) || defined(_WIN32)
 #  if defined(_MSC_VER) && defined(DLL_EXPORT)
-#    define DL_IMPORT(type) __declspec(dllexport) type
-#    define DL_EXPORT __declspec(dllexport)
+#    define CCP4_DL_IMPORT(type) __declspec(dllexport) type
+#    define CCP4_DL_EXPORT __declspec(dllexport)
 #  elif defined(_MSC_VER)
-#    define DL_IMPORT(type) __declspec(dllimport) type
-#    define DL_EXPORT
+#    define CCP4_DL_IMPORT(type) __declspec(dllimport) type
+#    define CCP4_DL_EXPORT
 #  else
-#    define DL_IMPORT(type) type
-#    define DL_EXPORT
+#    define CCP4_DL_IMPORT(type) type
+#    define CCP4_DL_EXPORT
 #  endif
 #else
-#  define DL_IMPORT(type) type
-#  define DL_EXPORT
+#  define CCP4_DL_IMPORT(type) type
+#  define CCP4_DL_EXPORT
 #endif
 
 /* defined in library_utils.c */
