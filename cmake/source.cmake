@@ -1,0 +1,82 @@
+set(ccp4c_SOURCES 
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_array.c
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_data.c
+ ${CMAKE_SOURCE_DIR}/ccp4/cmtzlib.c 
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_general.c
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_header.c 
+ ${CMAKE_SOURCE_DIR}/ccp4/csymlib.c 
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_parser.c 
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_labels.c
+ ${CMAKE_SOURCE_DIR}/ccp4/cvecmat.c
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_program.c
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_open.c
+ ${CMAKE_SOURCE_DIR}/ccp4/library_err.c
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_unitcell.c 
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_skew.c 
+ ${CMAKE_SOURCE_DIR}/ccp4/library_file.c
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_accessor.c
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_stats.c
+ ${CMAKE_SOURCE_DIR}/ccp4/library_utils.c
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_close.c
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_symop.c
+ ${CMAKE_SOURCE_DIR}/ccp4/pack_c.c
+)
+
+set(ccp4c_HEADERS
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_file_err.h
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_program.h
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_unitcell.h
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_errno.h
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_stats.h
+ ${CMAKE_SOURCE_DIR}/ccp4/csymlib.h
+ ${CMAKE_SOURCE_DIR}/ccp4/library_file.h
+ ${CMAKE_SOURCE_DIR}/ccp4/w32mvs.h
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_fortran.h
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_spg.h
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_utils.h
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_header.h
+ ${CMAKE_SOURCE_DIR}/ccp4/cmaplib.h
+ ${CMAKE_SOURCE_DIR}/ccp4/cvecmat.h
+ ${CMAKE_SOURCE_DIR}/ccp4/mtzdata.h
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_array.h
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_general.h   
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_vars.h
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_labels.h
+ ${CMAKE_SOURCE_DIR}/ccp4/cmaplib_f.h
+ ${CMAKE_SOURCE_DIR}/ccp4/overview.h
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_errno.h
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_parser.h
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_types.h
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_data.h
+ ${CMAKE_SOURCE_DIR}/ccp4/cmap_skew.h
+ ${CMAKE_SOURCE_DIR}/ccp4/cmtzlib.h
+ ${CMAKE_SOURCE_DIR}/ccp4/pack_c.h
+ ${CMAKE_SOURCE_DIR}/ccp4/ccp4_sysdep.h
+)
+
+set(ccp4f_SOURCES
+ ${CMAKE_SOURCE_DIR}/fortran/ccp4_diskio_f.c
+ ${CMAKE_SOURCE_DIR}/fortran/ccp4_parser_f.c
+ ${CMAKE_SOURCE_DIR}/fortran/cmaplib_f.c
+ ${CMAKE_SOURCE_DIR}/fortran/csymlib_f.c
+ ${CMAKE_SOURCE_DIR}/fortran/ccp4_general_f.c
+ ${CMAKE_SOURCE_DIR}/fortran/ccp4_unitcell_f.c
+ ${CMAKE_SOURCE_DIR}/fortran/cmtzlib_f.c
+ ${CMAKE_SOURCE_DIR}/fortran/library_f.c
+ ${CMAKE_SOURCE_DIR}/fortran/ccplib.f
+ ${CMAKE_SOURCE_DIR}/fortran/fftlib.f
+ ${CMAKE_SOURCE_DIR}/fortran/modlib.f
+ ${CMAKE_SOURCE_DIR}/fortran/parser.f
+ ${CMAKE_SOURCE_DIR}/fortran/rwbrook.f
+ ${CMAKE_SOURCE_DIR}/fortran/libhtml.f
+ ${CMAKE_SOURCE_DIR}/fortran/keyparse.f
+ ${CMAKE_SOURCE_DIR}/fortran/dna_output.f
+ ${CMAKE_SOURCE_DIR}/fortran/pack_f.f
+ ${CMAKE_SOURCE_DIR}/fortran/pxxml.f
+ ${CMAKE_SOURCE_DIR}/fortran/lgglib.f
+ ${CMAKE_SOURCE_DIR}/fortran/plot84lib.f
+ ${CMAKE_SOURCE_DIR}/fortran/plotsubs.f
+ ${CMAKE_SOURCE_DIR}/fortran/sorting_main.f
+ ${CMAKE_SOURCE_DIR}/fortran/dna_header.fh
+)
+

@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libccp4c
+Description: ccp4 f library
+Version: @VERSION@
+Requires: @CCP4F_REQUIRES@
+Libs: -L${libdir} -l$<TARGET_FILE_BASE_NAME:ccp4f>
+Libs.private: -lmmdb2
+Cflags: -I${includedir}
