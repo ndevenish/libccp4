@@ -54,16 +54,16 @@ endif(NOT MMDB2)
 message(STATUS "Check for mmdb2 library: found ${MMDB2}")
 
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-  set(M4_ARGS "-D_ifc=8")
+  set(M4_ARGS -D_ifc=8)
   add_compile_options(-DIFC)
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   # Gfortran
-  set(M4_ARGS "-D_gfort=1")
+  set(M4_ARGS -D_gfort=1)
   add_compile_options(-DGFORTRAN)
 endif(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
 
 if(WIN32)
-  set(M4_ARGS "${M4_ARGS} -Dwindows=1")
+  set(M4_ARGS ${M4_ARGS} -Dwindows=1)
 endif(WIN32)
 
 add_custom_command(
@@ -84,9 +84,6 @@ target_include_directories(ccp4f PRIVATE .
 )
 
 set_target_properties(ccp4f PROPERTIES SOVERSION ${VERSION})
-if(MSVC)
-    set_target_properties(ccp4f PROPERTIES DEFINE_SYMBOL "DLL_EXPORT")
-endif()
 
 install(TARGETS ccp4f
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

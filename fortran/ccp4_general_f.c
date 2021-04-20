@@ -71,6 +71,11 @@ extern int _gfortran_iargc(void);
 extern void _gfortran_getarg(int *i,char *arg,int arg_len);
 #endif
 
+#if defined (_MSC_VER) && defined (IFC)
+extern int for_iargc(void);
+extern void for_getarg(int *i,char *arg,int arg_len);
+#endif
+
 FORTRAN_SUBR ( CCPFYP, ccpfyp,
                (),
                (),
@@ -100,8 +105,12 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
    which do not follow the postpended underscore convention
    */
   /* IARGC doesn't include argv[0] */
-#ifdef GFORTRAN
+#if defined(GFORTRAN) || ( defined (_MSC_VER) && defined (IFC) )
+#if defined (GFORTRAN)
   argc = _gfortran_iargc() +1;
+#else
+  argc = for_iargc() +1;
+#endif
 #else
   argc = FORTRAN_CALL (IARGC, iargc, (), (), ()) + 1;
 #endif
@@ -110,8 +119,12 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
     printf("Allocating memory for %d command line arguments \n",argc);
   memset(arg, ' ', arg_len); /* necessary for ccp4_FtoCString */
   for (i = 0; i < argc; ++i) {
+#if defined(GFORTRAN) || ( defined (_MSC_VER) && defined (IFC) )
 #ifdef GFORTRAN
     _gfortran_getarg_i4(&i,arg,arg_len);
+#else
+    for_getarg(&i,arg,arg_len);
+#endif
 #else
     FORTRAN_CALL (GETARG, getarg, (&i,arg,arg_len), (&i,arg), (&i,arg,arg_len));
 #endif
