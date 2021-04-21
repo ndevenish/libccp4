@@ -112,4 +112,10 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ccp4f.pc DESTINATION ${CMAKE_INSTALL_L
 endif(FORTRAN_LIB)
 endif(BUILD_SHARED_LIBS)
 
+install(FILES data/atomsf_neutron.lib data/atomsf_electron.lib 
+              data/atomsf.lib data/syminfo.lib data/symop.lib
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/data )
 install(FILES ${CMAKE_SOURCE_DIR}/ccp4-config.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ccp4 )
+if(FORTRAN_LIB)
+  install(FILES data/font84.ascii DESTINATION ${CMAKE_INSTALL_LIBDIR}/data )
+endif(FORTRAN_LIB)
