@@ -64,11 +64,21 @@ void ccp4f_mem_tidy(void) {
  void __stdcall CCP4H_SUMMARY_END();
  void __stdcall CCP4H_PRE_BEG();
 #endif
+#else
+  FORTRAN_SUBR(OUTBUF,outbuf,(),(),());
+  FORTRAN_SUBR(CCP4H_INIT, ccp4h_init, (), (), ());
+  FORTRAN_SUBR(CCP4H_SUMMARY_BEG, ccp4h_summary_beg, (), (), ());
+  FORTRAN_SUBR(CCP4H_SUMMARY_END, ccp4h_summary_end, (), (), ());
+  FORTRAN_SUBR (CCP4H_PRE_BEG, ccp4h_pre_beg, (), (), ());
+#ifdef GFORTRAN
+  FORTRAN_SUBR(CCP4_FFLUSH_STDOUT, ccp4_fflush_stdout, (), (), ());
+#endif
 #endif
 
 #ifdef GFORTRAN
 extern int _gfortran_iargc(void);
 extern void _gfortran_getarg(int *i,char *arg,int arg_len);
+extern void _gfortran_getarg_i4(int *i,char *arg,int arg_len);
 #endif
 
 #if defined (_MSC_VER) && defined (IFC)

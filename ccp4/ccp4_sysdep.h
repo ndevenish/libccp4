@@ -229,11 +229,11 @@
 #  define NATIVEFT DFNTF_BEIEEE
 #endif
 
-#if defined(__ARM__) || defined(__arm__)
-# if defined(__ARMEB__)
+#if defined(__ARM__) || defined(__arm__) || defined(__aarch64__)
+# if defined(__ARMEB__) || defined (__AARCH64EB__)
 #  define NATIVEIT DFNTI_MBO
 #  define NATIVEFT DFNTF_BEIEEE
-# elif defined(__ARMEL__)
+# elif defined(__ARMEL__) || defined (__AARCH64EL__)
 #  define NATIVEIT DFNTI_IBO
 #  define NATIVEFT DFNTF_LEIEEE
 # endif
