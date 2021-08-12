@@ -66,6 +66,11 @@ if(WIN32)
   set(M4_ARGS ${M4_ARGS} -Dwindows=1)
 endif(WIN32)
 
+if(${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU" AND ${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER 9.9)
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -w -fallow-argument-mismatch")
+  message(STATUS "Adjusting CMAKE_Fortran_FLAGS for gfortran-10 compatibility: '${CMAKE_Fortran_FLAGS}'")
+endif()
+
 add_custom_command(
     OUTPUT  unix.f
     COMMAND m4 ${M4_ARGS} ${CMAKE_SOURCE_DIR}/fortran/unix.m4 > ${CMAKE_CURRENT_BINARY_DIR}/unix.f
