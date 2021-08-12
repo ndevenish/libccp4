@@ -54,7 +54,7 @@
 #  define CALL_LIKE_VMS 1
 #elif defined (_MSC_VER) && (_MSC_VER >= 800)
 #  define CALL_LIKE_MVS 2
-#elif defined (_MSC_VER) || (defined (WIN32) && !defined(__MINGW32__))
+#elif defined (_MSC_VER) || (defined (_WIN32) && !defined(__MINGW32__))
 #  define CALL_LIKE_MVS 1
 #else
 #  define CALL_LIKE_SUN 1
@@ -116,6 +116,23 @@
 #  if defined (HAVE_G2C_H)
 #    include "g2c.h"
 #  endif
+#endif
+
+/* Using MSVC need __declspec */
+#if defined(__WIN32__) || defined(_WIN32)
+#  if defined(_MSC_VER) && defined(DLL_EXPORT)
+#    define CCP4_DL_IMPORT(type) __declspec(dllexport) type
+#    define CCP4_DL_EXPORT __declspec(dllexport)
+#  elif defined(_MSC_VER)
+#    define CCP4_DL_IMPORT(type) __declspec(dllimport) type
+#    define CCP4_DL_EXPORT
+#  else
+#    define CCP4_DL_IMPORT(type) type
+#    define CCP4_DL_EXPORT
+#  endif
+#else
+#  define CCP4_DL_IMPORT(type) type
+#  define CCP4_DL_EXPORT
 #endif
 
 /* defined in library_utils.c */
@@ -182,7 +199,7 @@
 #  define NATIVEIT DFNTI_IBO
 #endif
 
-#if defined(MIPSEL) || defined(i386) || defined(i860) || defined(__ia64__) || defined(__amd64__) || defined(__x86_64__) || defined(WIN32)
+#if defined(MIPSEL) || defined(i386) || defined(i860) || defined(__ia64__) || defined(__amd64__) || defined(__x86_64__) || defined(_M_AMD64)
 #  define NATIVEIT DFNTI_IBO
 #  define NATIVEFT DFNTF_LEIEEE
 #endif

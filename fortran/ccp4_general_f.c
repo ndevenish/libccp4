@@ -71,6 +71,11 @@ extern int _gfortran_iargc(void);
 extern void _gfortran_getarg(int *i,char *arg,int arg_len);
 #endif
 
+#if defined (_MSC_VER) && defined (IFC)
+extern int for_iargc(void);
+extern void for_getarg(int *i,char *arg, int *status, int arg_len);
+#endif
+
 FORTRAN_SUBR ( CCPFYP, ccpfyp,
                (),
                (),
@@ -100,8 +105,10 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
    which do not follow the postpended underscore convention
    */
   /* IARGC doesn't include argv[0] */
-#ifdef GFORTRAN
+#if defined (GFORTRAN)
   argc = _gfortran_iargc() +1;
+#elif defined (_MSC_VER) && defined (IFC) 
+  argc = for_iargc() +1;
 #else
   argc = FORTRAN_CALL (IARGC, iargc, (), (), ()) + 1;
 #endif
@@ -112,6 +119,8 @@ FORTRAN_SUBR ( CCPFYP, ccpfyp,
   for (i = 0; i < argc; ++i) {
 #ifdef GFORTRAN
     _gfortran_getarg_i4(&i,arg,arg_len);
+#elif defined (_MSC_VER) && defined (IFC) 
+    for_getarg(&i,arg,&ierr,arg_len);
 #else
     FORTRAN_CALL (GETARG, getarg, (&i,arg,arg_len), (&i,arg), (&i,arg,arg_len));
 #endif
@@ -258,7 +267,6 @@ FORTRAN_FUN ( int, LENSTR, lenstr,
  * @param iday Day (1-31).
  * @param iyear Year (4 digit).
  */
-#if ! defined (_MSC_VER) 
 FORTRAN_SUBR ( UIDATE, uidate,
                (int *imonth, int *iday, int *iyear),
                (int *imonth, int *iday, int *iyear),
@@ -271,7 +279,6 @@ FORTRAN_SUBR ( UIDATE, uidate,
   *iday = iarray[0];
   *iyear = iarray[2];
 }
-#endif
 
 /** Fortran wrapper to string data function.
  * @param caldat Date string in format dd/mm/yy.
@@ -310,7 +317,7 @@ FORTRAN_SUBR ( CCPTIM, ccptim,
   }
 
 }
-#if ! defined (_MSC_VER)
+
 FORTRAN_SUBR ( UTIME, utime,
                (fpstr ctime, int ctime_len),
                (fpstr ctime),
@@ -336,7 +343,6 @@ FORTRAN_SUBR ( UCPUTM, ucputm,
   }
 
 }
-#endif
 
 FORTRAN_SUBR ( CCP4_VERSION, ccp4_version,
                (const fpstr version, int version_len),
