@@ -82,12 +82,12 @@ build_triplet = @build@
 host_triplet = @host@
 @FORTRAN_LIB_TRUE@am__append_1 = fortran/libccp4f.la
 @FORTRAN_LIB_TRUE@am__append_2 = data/font84.ascii
-@FORTRAN_LIB_TRUE@am__append_3 = libccp4f.pc
+@FORTRAN_LIB_TRUE@am__append_3 = ccp4f.pc
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/config.h.in $(srcdir)/libccp4c.pc.in \
-	$(srcdir)/libccp4f.pc.in $(top_srcdir)/build-aux/depcomp \
+	$(srcdir)/config.h.in $(srcdir)/ccp4c.pc.in \
+	$(srcdir)/ccp4f.pc.in $(top_srcdir)/build-aux/depcomp \
 	$(dist_ccp4data_DATA) $(am__dist_data_DATA_DIST) \
 	$(ccp4include_HEADERS) COPYING COPYING.LESSER INSTALL \
 	build-aux/ar-lib build-aux/config.guess build-aux/config.sub \
@@ -109,7 +109,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = libccp4c.pc libccp4f.pc
+CONFIG_CLEAN_FILES = ccp4c.pc ccp4f.pc
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -465,7 +465,7 @@ fortran_libccp4f_la_LDFLAGS = -no-undefined
 dist_ccp4data_DATA = ccp4-config.cmake
 dist_data_DATA = data/atomsf_neutron.lib data/atomsf_electron.lib \
 	data/atomsf.lib data/syminfo.lib data/symop.lib $(am__append_2)
-pkgconfig_DATA = libccp4c.pc $(am__append_3)
+pkgconfig_DATA = ccp4c.pc $(am__append_3)
 
 # FIXME: all files but the first are unused now, should they be distributed?
 EXTRA_DIST = fortran/unix.m4 \
@@ -527,9 +527,9 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
-libccp4c.pc: $(top_builddir)/config.status $(srcdir)/libccp4c.pc.in
+ccp4c.pc: $(top_builddir)/config.status $(srcdir)/ccp4c.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-libccp4f.pc: $(top_builddir)/config.status $(srcdir)/libccp4f.pc.in
+ccp4f.pc: $(top_builddir)/config.status $(srcdir)/ccp4f.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
