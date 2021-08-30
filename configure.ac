@@ -122,5 +122,5 @@ AC_DEFINE_UNQUOTED([PACKAGE_ROOT],["$PACKAGE_ROOT"],[package install directory])
 
 AC_SUBST(M4_ARG)
 
-AC_OUTPUT(Makefile libccp4c.pc libccp4f.pc)
+AC_OUTPUT(Makefile ccp4c.pc ccp4f.pc)
 

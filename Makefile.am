@@ -68,10 +68,10 @@ fortran_libccp4f_la_LDFLAGS = -no-undefined
 dist_ccp4data_DATA = ccp4-config.cmake
 dist_data_DATA = data/atomsf_neutron.lib data/atomsf_electron.lib \
 		     data/atomsf.lib data/syminfo.lib data/symop.lib
-pkgconfig_DATA = libccp4c.pc
+pkgconfig_DATA = ccp4c.pc
 if FORTRAN_LIB
   dist_data_DATA += data/font84.ascii
-  pkgconfig_DATA += libccp4f.pc
+  pkgconfig_DATA += ccp4f.pc
 endif
 
 
