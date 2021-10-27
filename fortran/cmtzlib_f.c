@@ -162,9 +162,9 @@ FORTRAN_SUBR ( MTZINI, mtzini,
  * @param ifail (O) Returns 0 if successful, non-zero otherwise.
  */
 FORTRAN_SUBR ( LROPEN, lropen,
-               (int *mindx, fpstr filename, int *iprint, int *ifail, int filename_len),
+               (int *mindx, fpstr filename, int *iprint, int *ifail, fpstr_size_t filename_len),
                (int *mindx, fpstr filename, int *iprint, int *ifail),
-               (int *mindx, fpstr filename, int filename_len, int *iprint, int *ifail))
+               (int *mindx, fpstr filename, fpstr_size_t filename_len, int *iprint, int *ifail))
 
 { 
   int i;
@@ -244,9 +244,9 @@ FORTRAN_SUBR ( LROPEN, lropen,
  * @param len (O) Length of returned title.
  */
 FORTRAN_SUBR ( LRTITL, lrtitl,
-	       (int *mindx, fpstr ftitle, int *len, int ftitle_len),
+	       (int *mindx, fpstr ftitle, int *len, fpstr_size_t ftitle_len),
 	       (int *mindx, fpstr ftitle, int *len),
-	       (int *mindx, fpstr ftitle, int ftitle_len, int *len))
+	       (int *mindx, fpstr ftitle, fpstr_size_t ftitle_len, int *len))
 {
   char temp_title[71];
 
@@ -266,9 +266,9 @@ FORTRAN_SUBR ( LRTITL, lrtitl,
  *   history lines returned.
  */
 FORTRAN_SUBR ( LRHIST, lrhist,
-	       (int *mindx, fpstr hstrng, int *nlines, int hstrng_len),
+	       (int *mindx, fpstr hstrng, int *nlines, fpstr_size_t hstrng_len),
 	       (int *mindx, fpstr hstrng, int *nlines),
-	       (int *mindx, fpstr hstrng, int hstrng_len, int *nlines))
+	       (int *mindx, fpstr hstrng, fpstr_size_t hstrng_len, int *nlines))
 
 {
 
@@ -292,9 +292,9 @@ FORTRAN_SUBR ( LRHIST, lrhist,
  * @param ranges Array of column ranges.
  */
 FORTRAN_SUBR ( LRINFO, lrinfo,
-	       (int *mindx, fpstr versnx, int *ncolx, int *nreflx, float *ranges, int versnx_len),
+	       (int *mindx, fpstr versnx, int *ncolx, int *nreflx, float *ranges, fpstr_size_t versnx_len),
 	       (int *mindx, fpstr versnx, int *ncolx, int *nreflx, float *ranges),
-	       (int *mindx, fpstr versnx, int versnx_len, int *ncolx, int *nreflx, float *ranges))
+	       (int *mindx, fpstr versnx, fpstr_size_t versnx_len, int *ncolx, int *nreflx, float *ranges))
 
 {
   int i,j,k,iarray;
@@ -400,9 +400,9 @@ FORTRAN_SUBR ( LRBATS, lrbats,
 
 /* Fortran wrapper for MtzListColumn */
 FORTRAN_SUBR ( LRCLAB, lrclab,
-	       (int *mindx, fpstr clabs, fpstr ctyps, int *ncol, int clabs_len, int ctyps_len),
+	       (int *mindx, fpstr clabs, fpstr ctyps, int *ncol, fpstr_size_t clabs_len, fpstr_size_t ctyps_len),
 	       (int *mindx, fpstr clabs, fpstr ctyps, int *ncol),
-	       (int *mindx, fpstr clabs, int clabs_len, fpstr ctyps, int ctyps_len, int *ncol))
+	       (int *mindx, fpstr clabs, fpstr_size_t clabs_len, fpstr ctyps, fpstr_size_t ctyps_len, int *ncol))
 
 {
  int i,j,k;
@@ -504,12 +504,13 @@ FORTRAN_SUBR ( LRRSOL, lrrsol,
 FORTRAN_SUBR ( LRSYMI_C, lrsymi_c,
 	       (int *mindx, int *nsympx, fpstr ltypex, int *nspgrx, fpstr spgrnx,
                   fpstr pgnamx, fpstr spgconf, 
-                  int ltypex_len, int spgrnx_len, int pgnamx_len, int spgconf_len),
+                  fpstr_size_t ltypex_len, fpstr_size_t spgrnx_len, 
+                  fpstr_size_t pgnamx_len, fpstr_size_t spgconf_len),
 	       (int *mindx, int *nsympx, fpstr ltypex, int *nspgrx, fpstr spgrnx,
                   fpstr pgnamx, fpstr spgconf),
-	       (int *mindx, int *nsympx, fpstr ltypex, int ltypex_len, int *nspgrx, 
-                  fpstr spgrnx, int spgrnx_len, fpstr pgnamx, int pgnamx_len, 
-                  fpstr spgconf, int spgconf_len))
+	       (int *mindx, int *nsympx, fpstr ltypex, fpstr_size_t ltypex_len, int *nspgrx, 
+                  fpstr spgrnx, fpstr_size_t spgrnx_len, fpstr pgnamx, fpstr_size_t pgnamx_len, 
+                  fpstr spgconf, fpstr_size_t spgconf_len))
 
 { 
   char ltypex_temp[2],spgrnx_temp[MAXSPGNAMELENGTH+1], pgnamx_temp[11], spgconf_temp[2];
@@ -530,11 +531,12 @@ FORTRAN_SUBR ( LRSYMI_C, lrsymi_c,
 /* Fortran wrapper for ccp4_lrsymi */
 FORTRAN_SUBR ( LRSYMI, lrsymi,
 	       (int *mindx, int *nsympx, fpstr ltypex, int *nspgrx, fpstr spgrnx,
-                  fpstr pgnamx, int ltypex_len, int spgrnx_len, int pgnamx_len),
+                fpstr pgnamx, fpstr_size_t ltypex_len, fpstr_size_t spgrnx_len, 
+                fpstr_size_t pgnamx_len),
 	       (int *mindx, int *nsympx, fpstr ltypex, int *nspgrx, fpstr spgrnx,
-                  fpstr pgnamx),
-	       (int *mindx, int *nsympx, fpstr ltypex, int ltypex_len, int *nspgrx, 
-                  fpstr spgrnx, int spgrnx_len, fpstr pgnamx, int pgnamx_len))
+                fpstr pgnamx),
+	       (int *mindx, int *nsympx, fpstr ltypex, fpstr_size_t ltypex_len, int *nspgrx, 
+                fpstr spgrnx, fpstr_size_t spgrnx_len, fpstr pgnamx, fpstr_size_t pgnamx_len))
 
 { 
  char ltypex_temp[2],spgrnx_temp[MAXSPGNAMELENGTH+1], pgnamx_temp[11];
@@ -598,13 +600,13 @@ FORTRAN_SUBR ( LRSYMM, lrsymm,
 FORTRAN_SUBR ( LKYIN, lkyin,
 	       (const int *mindx, const fpstr lsprgi, const int *nlprgi, 
                    const int *ntok, const fpstr labin_line, const int ibeg[], 
-                   const int iend[], int lsprgi_len, int labin_line_len),
+                   const int iend[], fpstr_size_t lsprgi_len, fpstr_size_t labin_line_len),
 	       (const int *mindx, const fpstr lsprgi, const int *nlprgi, 
                    const int *ntok, const fpstr labin_line, const int ibeg[], 
                    const int iend[]),
-	       (const int *mindx, const fpstr lsprgi, int lsprgi_len, 
+	       (const int *mindx, const fpstr lsprgi, fpstr_size_t lsprgi_len, 
                    const int *nlprgi, const int *ntok, const fpstr labin_line, 
-                   int labin_line_len, const int ibeg[], const int iend[] ))
+                   fpstr_size_t labin_line_len, const int ibeg[], const int iend[] ))
 
 { int i,j;
   char *label;
@@ -642,13 +644,13 @@ FORTRAN_SUBR ( LKYIN, lkyin,
 FORTRAN_SUBR ( LKYOUT, lkyout,
 	       (const int *mindx, const fpstr lsprgo, const int *nlprgo, 
                    const int *ntok, const fpstr labin_line, const int ibeg[], 
-                   const int iend[], int lsprgo_len, int labin_line_len),
+                   const int iend[], fpstr_size_t lsprgo_len, fpstr_size_t labin_line_len),
 	       (const int *mindx, const fpstr lsprgo, const int *nlprgo, 
                    const int *ntok, const fpstr labin_line, const int ibeg[], 
                    const int iend[]),
-	       (const int *mindx, const fpstr lsprgo, int lsprgo_len, 
+	       (const int *mindx, const fpstr lsprgo, fpstr_size_t lsprgo_len, 
                    const int *nlprgo, const int *ntok, const fpstr labin_line, 
-                   int labin_line_len, const int ibeg[], const int iend[] ))
+                   fpstr_size_t labin_line_len, const int ibeg[], const int iend[] ))
 
 { int i,j;
   char *label;
@@ -698,15 +700,15 @@ FORTRAN_SUBR ( LKYSET, lkyset,
                    fpstr lsusrj, int kpoint[],
                    const int *itok, const int *ntok, const fpstr labin_line, 
                    const int ibeg[], const int iend[], 
-                   int lsprgi_len, int lsusrj_len, int labin_line_len),
+                   fpstr_size_t lsprgi_len, fpstr_size_t lsusrj_len, fpstr_size_t labin_line_len),
 	       (const fpstr lsprgi, const int *nlprgi, 
                    fpstr lsusrj, int kpoint[],
                    const int *itok, const int *ntok, const fpstr labin_line, 
                    const int ibeg[], const int iend[]),
-	       (const fpstr lsprgi, int lsprgi_len, const int *nlprgi, 
-                   fpstr lsusrj, int lsusrj_len, int kpoint[],
+	       (const fpstr lsprgi, fpstr_size_t lsprgi_len, const int *nlprgi, 
+                   fpstr lsusrj, fpstr_size_t lsusrj_len, int kpoint[],
                    const int *itok, const int *ntok, const fpstr labin_line, 
-                   int labin_line_len, const int ibeg[], const int iend[] ))
+                   fpstr_size_t labin_line_len, const int ibeg[], const int iend[] ))
 
 { int i,j,k;
   char *label;
@@ -770,10 +772,10 @@ FORTRAN_SUBR ( LKYSET, lkyset,
  */
 FORTRAN_SUBR ( LRASSN, lrassn,
 	       (const int *mindx, fpstr lsprgi, int *nlprgi, int lookup[], fpstr ctprgi, 
-                      int lsprgi_len, int ctprgi_len),
+                      fpstr_size_t lsprgi_len, fpstr_size_t ctprgi_len),
 	       (const int *mindx, fpstr lsprgi, int *nlprgi, int lookup[], fpstr ctprgi),
-	       (const int *mindx, fpstr lsprgi, int lsprgi_len, int *nlprgi, 
-                      int lookup[], fpstr ctprgi, int ctprgi_len))
+	       (const int *mindx, fpstr lsprgi, fpstr_size_t lsprgi_len, int *nlprgi, 
+                      int lookup[], fpstr ctprgi, fpstr_size_t ctprgi_len))
 
 { int i,j,k,l,err;
   char *label;
@@ -888,15 +890,15 @@ FORTRAN_SUBR ( LRIDX, lridx,
 	       (const int *mindx, fpstr project_name, 
                   fpstr crystal_name, fpstr dataset_name,
 		  int *isets, float *datcell, float *datwave,
-                  int *ndatasets, int project_name_len, 
-                  int crystal_name_len, int dataset_name_len),
+                  int *ndatasets, fpstr_size_t project_name_len, 
+                  fpstr_size_t crystal_name_len, fpstr_size_t dataset_name_len),
 	       (const int *mindx, fpstr project_name, 
                   fpstr crystal_name, fpstr dataset_name,
 		  int *isets, float *datcell, float *datwave,
                   int *ndatasets),
-	       (const int *mindx, fpstr project_name, int project_name_len, 
-	          fpstr crystal_name, int crystal_name_len,
-		  fpstr dataset_name, int dataset_name_len,
+	       (const int *mindx, fpstr project_name, fpstr_size_t project_name_len, 
+	          fpstr crystal_name, fpstr_size_t crystal_name_len,
+		  fpstr dataset_name, fpstr_size_t dataset_name_len,
 		  int *isets, float *datcell, float *datwave,
                   int *ndatasets))
 {
@@ -1016,12 +1018,12 @@ FORTRAN_SUBR ( LRCELX, lrcelx,
 FORTRAN_SUBR ( LRIDC, lridc,
 	       (const int *mindx, fpstr project_name, fpstr dataset_name,
 		  int *isets, float *datcell, float *datwave,
-                  int *ndatasets, int project_name_len, int dataset_name_len),
+                  int *ndatasets, fpstr_size_t project_name_len, fpstr_size_t dataset_name_len),
 	       (const int *mindx, fpstr project_name, fpstr dataset_name,
 		  int *isets, float *datcell, float *datwave,
                   int *ndatasets),
-	       (const int *mindx, fpstr project_name, int project_name_len,
-		  fpstr dataset_name, int dataset_name_len,
+	       (const int *mindx, fpstr project_name, fpstr_size_t project_name_len,
+		  fpstr dataset_name, fpstr_size_t dataset_name_len,
 		  int *isets, float *datcell, float *datwave,
                   int *ndatasets))
 {
@@ -1078,11 +1080,11 @@ FORTRAN_SUBR ( LRIDC, lridc,
 FORTRAN_SUBR ( LRID, lrid,
 	       (const int *mindx, fpstr project_name, fpstr dataset_name,
 		  int *isets, int *ndatasets, 
-                  int project_name_len, int dataset_name_len),
+                  fpstr_size_t project_name_len, fpstr_size_t dataset_name_len),
 	       (const int *mindx, fpstr project_name, fpstr dataset_name,
 		  int *isets, int *ndatasets),
-	       (const int *mindx, fpstr project_name, int project_name_len,
-		  fpstr dataset_name, int dataset_name_len,
+	       (const int *mindx, fpstr project_name, fpstr_size_t project_name_len,
+		  fpstr dataset_name, fpstr_size_t dataset_name_len,
 		  int *isets, int *ndatasets))
 {
   int j,k,x,d,iset;
@@ -1294,11 +1296,11 @@ FORTRAN_SUBR ( LHPRT_ADV, lhprt_adv,
  */
 FORTRAN_SUBR ( LRBAT, lrbat,
 	       (const int *mindx, int *batno, float rbatch[], fpstr cbatch, 
-                        const int *iprint, int cbatch_len),
+                        const int *iprint, fpstr_size_t cbatch_len),
 	       (const int *mindx, int *batno, float rbatch[], fpstr cbatch, 
                         const int *iprint),
 	       (const int *mindx, int *batno, float rbatch[], fpstr cbatch, 
-                        int cbatch_len, const int *iprint))
+                        fpstr_size_t cbatch_len, const int *iprint))
 
 {
   MTZBAT *batch;
@@ -1331,10 +1333,10 @@ FORTRAN_SUBR ( LRBAT, lrbat,
    connected to existing data structure */
 FORTRAN_SUBR ( LBPRT, lbprt,
 	       (const int *ibatch, const int *iprint, float rbatch[], fpstr cbatch, 
-                        int cbatch_len),
+                        fpstr_size_t cbatch_len),
                (const int *ibatch, const int *iprint, float rbatch[], fpstr cbatch),
                (const int *ibatch, const int *iprint, float rbatch[], fpstr cbatch, 
-                        int cbatch_len))
+                        fpstr_size_t cbatch_len))
 {
   char btitle[71];
 
@@ -1411,11 +1413,11 @@ FORTRAN_SUBR ( LRBRES, lrbres,
 /* Fortran wrapper for ccp4_lrbat */
 FORTRAN_SUBR ( LRBTIT, lrbtit,
 	       (const int *mindx, const int *batno, fpstr tbatch, 
-                        const int *iprint, int tbatch_len),
+                        const int *iprint, fpstr_size_t tbatch_len),
 	       (const int *mindx, const int *batno, fpstr tbatch, 
                         const int *iprint),
 	       (const int *mindx, const int *batno, fpstr tbatch, 
-                        int tbatch_len, const int *iprint))
+                        fpstr_size_t tbatch_len, const int *iprint))
 
 { int istat=-1;
   MTZBAT *batch;
@@ -1629,9 +1631,9 @@ FORTRAN_SUBR ( LRCLOS, lrclos,
  * @param ifail (O) Returns 0 if successful, non-zero otherwise.
  */
 FORTRAN_SUBR ( LWOPEN_NOEXIT, lwopen_noexit,
-	       (const int *mindx, fpstr filename, int *ifail, int filename_len),
+	       (const int *mindx, fpstr filename, int *ifail, fpstr_size_t filename_len),
 	       (const int *mindx, fpstr filename, int *ifail),
-	       (const int *mindx, fpstr filename, int filename_len, int *ifail))
+	       (const int *mindx, fpstr filename, fpstr_size_t filename_len, int *ifail))
 
 { 
   char *temp_name, *fullfilename, err_str[300];
@@ -1719,9 +1721,9 @@ FORTRAN_SUBR ( LWOPEN_NOEXIT, lwopen_noexit,
  * @param filename Output file name.
  */
 FORTRAN_SUBR ( LWOPEN, lwopen,
-	       (const int *mindx, fpstr filename, int filename_len),
+	       (const int *mindx, fpstr filename, fpstr_size_t filename_len),
 	       (const int *mindx, fpstr filename),
-	       (const int *mindx, fpstr filename, int filename_len))
+	       (const int *mindx, fpstr filename, fpstr_size_t filename_len))
 
 { 
   int ifail;
@@ -1742,9 +1744,9 @@ FORTRAN_SUBR ( LWOPEN, lwopen,
  *             =1 append new one to old, with one space
  */
 FORTRAN_SUBR ( LWTITL, lwtitl,
-	       (const int *mindx, const fpstr ftitle, const int *flag, int ftitle_len),
+	       (const int *mindx, const fpstr ftitle, const int *flag, fpstr_size_t ftitle_len),
 	       (const int *mindx, const fpstr ftitle, const int *flag),
-	       (const int *mindx, const fpstr ftitle, int ftitle_len, const int *flag))
+	       (const int *mindx, const fpstr ftitle, fpstr_size_t ftitle_len, const int *flag))
 
 {
  char *temp_title;
@@ -1797,9 +1799,9 @@ FORTRAN_SUBR ( LWSORT, lwsort,
 
 /* Fortran wrapper for MtzAddHistory */
 FORTRAN_SUBR ( LWHIST, lwhist,
-	       (int *mindx, fpstr hstrng, int *nlines, int hstrng_len),
+	       (int *mindx, fpstr hstrng, int *nlines, fpstr_size_t hstrng_len),
 	       (int *mindx, fpstr hstrng, int *nlines),
-	       (int *mindx, fpstr hstrng, int hstrng_len, int *nlines))
+	       (int *mindx, fpstr hstrng, fpstr_size_t hstrng_len, int *nlines))
 
 {
   CMTZLIB_DEBUG(puts("CMTZLIB_F: LWHIST");)
@@ -1813,9 +1815,9 @@ FORTRAN_SUBR ( LWHIST, lwhist,
 /* Fortran wrapper for MtzAddHistory */
 /* Also includes progname and date */
 FORTRAN_SUBR ( LWHSTL, lwhstl,
-	       (int *mindx, const fpstr hstrng, int hstrng_len),
+	       (int *mindx, const fpstr hstrng, fpstr_size_t hstrng_len),
 	       (int *mindx, const fpstr hstrng),
-	       (int *mindx, const fpstr hstrng, int hstrng_len))
+	       (int *mindx, const fpstr hstrng, fpstr_size_t hstrng_len))
 
 {
  char hline[MTZRECORDLENGTH],date[11],time[9],*temp_hstrng;
@@ -1874,10 +1876,10 @@ FORTRAN_SUBR ( LWHSTL, lwhstl,
  */
 FORTRAN_SUBR ( LWID, lwid,
 	       (const int *mindx, const fpstr project_name, const fpstr dataset_name, 
-                  int project_name_len, int dataset_name_len),
+                  fpstr_size_t project_name_len, fpstr_size_t dataset_name_len),
 	       (const int *mindx, const fpstr project_name, const fpstr dataset_name),
-	       (const int *mindx, const fpstr project_name, int project_name_len,
-                  const fpstr dataset_name, int dataset_name_len))
+	       (const int *mindx, const fpstr project_name, fpstr_size_t project_name_len,
+                  const fpstr dataset_name, fpstr_size_t dataset_name_len))
 
 { char *temp_xname, *temp_pname, *temp_dname;
   float datcell[6]={0.0},datwave=0.0;
@@ -1921,11 +1923,11 @@ FORTRAN_SUBR ( LWID, lwid,
 FORTRAN_SUBR ( LWIDC, lwidc,
 	       (const int *mindx, const fpstr project_name, const fpstr dataset_name,
 		  float datcell[6], float *datwave,
-                  int project_name_len, int dataset_name_len),
+                  fpstr_size_t project_name_len, fpstr_size_t dataset_name_len),
 	       (const int *mindx, const fpstr project_name, const fpstr dataset_name,
 		  float datcell[6], float *datwave),
-	       (const int *mindx, const fpstr project_name, int project_name_len,
-		  const fpstr dataset_name, int dataset_name_len,
+	       (const int *mindx, const fpstr project_name, fpstr_size_t project_name_len,
+		  const fpstr dataset_name, fpstr_size_t dataset_name_len,
 		  float datcell[6], float *datwave))
 
 { char *temp_xname, *temp_pname, *temp_dname;
@@ -1957,12 +1959,12 @@ FORTRAN_SUBR ( LWIDC, lwidc,
 FORTRAN_SUBR ( LWIDX, lwidx,
 	       (const int *mindx, const fpstr project_name, const fpstr crystal_name,
 		  const fpstr dataset_name, float datcell[6], float *datwave,
-                  int project_name_len, int crystal_name_len, int dataset_name_len),
+                  fpstr_size_t project_name_len, fpstr_size_t crystal_name_len, fpstr_size_t dataset_name_len),
 	       (const int *mindx, const fpstr project_name, const fpstr crystal_name,
 		  const fpstr dataset_name, float datcell[6], float *datwave),
-	       (const int *mindx, const fpstr project_name, int project_name_len,
-		  const fpstr crystal_name, int crystal_name_len,
-		  const fpstr dataset_name, int dataset_name_len,
+	       (const int *mindx, const fpstr project_name, fpstr_size_t project_name_len,
+		  const fpstr crystal_name, fpstr_size_t crystal_name_len,
+		  const fpstr dataset_name, fpstr_size_t dataset_name_len,
 		  float datcell[6], float *datwave))
 
 { char *temp_xname, *temp_pname, *temp_dname;
@@ -2031,10 +2033,10 @@ FORTRAN_SUBR ( LWCELL, lwcell,
  */
 FORTRAN_SUBR ( LWIDAS, lwidas,
 	       (const int *mindx, int *nlprgo, fpstr pname, fpstr dname, int *iappnd,
-                      int pname_len, int dname_len),
+                      fpstr_size_t pname_len, fpstr_size_t dname_len),
 	       (const int *mindx, int *nlprgo, fpstr pname, fpstr dname, int *iappnd),
-	       (const int *mindx, int *nlprgo, fpstr pname, int pname_len, 
-                      fpstr dname, int dname_len, int *iappnd))
+	       (const int *mindx, int *nlprgo, fpstr pname, fpstr_size_t pname_len, 
+                      fpstr dname, fpstr_size_t dname_len, int *iappnd))
 {int i,j,k,istart;
   char *project_name;
   char *crystal_name;
@@ -2129,10 +2131,10 @@ FORTRAN_SUBR ( LWIDAS, lwidas,
  */
 FORTRAN_SUBR ( LWIDASX, lwidasx,
 	       (const int *mindx, int *nlprgo, fpstr xname, fpstr dname, int *iappnd,
-                      int xname_len, int dname_len),
+                      fpstr_size_t xname_len, fpstr_size_t dname_len),
 	       (const int *mindx, int *nlprgo, fpstr xname, fpstr dname, int *iappnd),
-	       (const int *mindx, int *nlprgo, fpstr xname, int xname_len, 
-                      fpstr dname, int dname_len, int *iappnd))
+	       (const int *mindx, int *nlprgo, fpstr xname, fpstr_size_t xname_len, 
+                      fpstr dname, fpstr_size_t dname_len, int *iappnd))
 {int i,j,istart;
   char *crystal_name;
   char *dataset_name;
@@ -2205,10 +2207,10 @@ FORTRAN_SUBR ( LWIDASX, lwidasx,
  */
 FORTRAN_SUBR ( LWIDALL, lwidall,
 	       (const int *mindx, fpstr xname, fpstr dname,
-                      int xname_len, int dname_len),
+                      fpstr_size_t xname_len, fpstr_size_t dname_len),
 	       (const int *mindx, fpstr xname, fpstr dname),
-	       (const int *mindx, fpstr xname, int xname_len, 
-                      fpstr dname, int dname_len))
+	       (const int *mindx, fpstr xname, fpstr_size_t xname_len, 
+                      fpstr dname, fpstr_size_t dname_len))
 { int i,j,k,l=0;
   MTZCOL **colarray;
   char *crystal_name;
@@ -2266,12 +2268,12 @@ FORTRAN_SUBR ( LWIDALL, lwidall,
 FORTRAN_SUBR ( LWSYMM, lwsymm,
 	       (int *mindx, int *nsymx, int *nsympx, float rsymx[MAXSYM][4][4],
                   fpstr ltypex, int *nspgrx, fpstr spgrnx, fpstr pgnamx, 
-                  int ltypex_len, int spgrnx_len, int pgnamx_len),
+                  fpstr_size_t ltypex_len, fpstr_size_t spgrnx_len, fpstr_size_t pgnamx_len),
 	       (int *mindx, int *nsymx, int *nsympx, float rsymx[MAXSYM][4][4],
                   fpstr ltypex, int *nspgrx, fpstr spgrnx, fpstr pgnamx),
 	       (int *mindx, int *nsymx, int *nsympx, float rsymx[MAXSYM][4][4],
-                  fpstr ltypex, int ltypex_len, int *nspgrx, fpstr spgrnx, 
-		int spgrnx_len, fpstr pgnamx, int pgnamx_len))
+                  fpstr ltypex, fpstr_size_t ltypex_len, int *nspgrx, fpstr spgrnx, 
+		fpstr_size_t spgrnx_len, fpstr pgnamx, fpstr_size_t pgnamx_len))
 {
  char *temp_ltypex, *temp_spgrnx, *temp_pgnamx;
  int i,ii,j,k,nsym;
@@ -2325,9 +2327,9 @@ FORTRAN_SUBR ( LWSYMM, lwsymm,
  * @param spgconf (I) one-character spacegroup confidence flag
  */
 FORTRAN_SUBR ( LWSYMCONF, lwsymconf,
-	       (int *mindx, fpstr spgconf, int spgconf_len),
+	       (int *mindx, fpstr spgconf, fpstr_size_t spgconf_len),
 	       (int *mindx, fpstr spgconf),
-	       (int *mindx, fpstr spgconf, int spgconf_len))
+	       (int *mindx, fpstr spgconf, fpsrt_size_t spgconf_len))
 {
  char *temp_spgconf;
 
@@ -2355,10 +2357,10 @@ FORTRAN_SUBR ( LWSYMCONF, lwsymconf,
  */
 FORTRAN_SUBR ( LWASSN, lwassn,
 	       (const int *mindx, fpstr lsprgo, const int *nlprgo, fpstr ctprgo, int *iappnd,
-                      int lsprgo_len, int ctprgo_len),
+                      fpstr_size_t lsprgo_len, fpstr_size_t ctprgo_len),
 	       (const int *mindx, fpstr lsprgo, const int *nlprgo, fpstr ctprgo, int *iappnd),
-	       (const int *mindx, fpstr lsprgo, int lsprgo_len, const int *nlprgo, 
-                      fpstr ctprgo, int ctprgo_len, int *iappnd))
+	       (const int *mindx, fpstr lsprgo, fpstr_size_t lsprgo_len, const int *nlprgo, 
+                      fpstr ctprgo, fpstr_size_t ctprgo_len, int *iappnd))
 {   int i,j,istart;
     char *label;
     char *type;
@@ -2459,10 +2461,10 @@ FORTRAN_SUBR ( LWASSN, lwassn,
 /* As lwassn except doesn't check user_label_out */
 FORTRAN_SUBR ( LWCLAB, lwclab,
 	       (const int *mindx, fpstr lsprgo, const int *nlprgo, fpstr ctprgo, int *iappnd,
-                      int lsprgo_len, int ctprgo_len),
+                      fpstr_size_t lsprgo_len, fpstr_size_t ctprgo_len),
 	       (const int *mindx, fpstr lsprgo, const int *nlprgo, fpstr ctprgo, int *iappnd),
-	       (const int *mindx, fpstr lsprgo, int lsprgo_len, const int *nlprgo, 
-                      fpstr ctprgo, int ctprgo_len, int *iappnd))
+	       (const int *mindx, fpstr lsprgo, fpstr_size_t lsprgo_len, const int *nlprgo, 
+                      fpstr ctprgo, fpstr_size_t ctprgo_len, int *iappnd))
 {int i,j,istart;
   char *label;
   char *type;
@@ -2541,10 +2543,10 @@ FORTRAN_SUBR ( LWCLAB, lwclab,
  */
 FORTRAN_SUBR ( LWBAT, lwbat,
 	       (const int *mindx, int *batno, float rbatch[], fpstr cbatch, 
-                        int cbatch_len),
+                        fpstr_size_t cbatch_len),
 	       (const int *mindx, int *batno, float rbatch[], fpstr cbatch),
 	       (const int *mindx, int *batno, float rbatch[], fpstr cbatch, 
-                        int cbatch_len))
+                        fpstr_size_t cbatch_len))
 
 {
   MTZBAT *batch;
@@ -2583,9 +2585,9 @@ FORTRAN_SUBR ( LWBAT, lwbat,
  * @param tbatch Batch title.
  */
 FORTRAN_SUBR ( LWBTIT, lwbtit,
-	       (const int *mindx, int *batno, fpstr tbatch, int tbatch_len),
+	       (const int *mindx, int *batno, fpstr tbatch, fpstr_size_t tbatch_len),
 	       (const int *mindx, int *batno, fpstr tbatch),
-	       (const int *mindx, int *batno, fpstr tbatch, int tbatch_len))
+	       (const int *mindx, int *batno, fpstr tbatch, fpstr_size_t tbatch_len))
 
 {
   char cbatch[95]=" ";
@@ -2688,12 +2690,12 @@ FORTRAN_SUBR ( LWBSCL, lwbscl,
 FORTRAN_SUBR ( LWBSETID, lwbsetid,
 	       (const int *mindx, const int *batno, const fpstr project_name, 
                   const fpstr dataset_name, 
-                  int project_name_len, int dataset_name_len),
+                  fpstr_size_t project_name_len, fpstr_size_t dataset_name_len),
 	       (const int *mindx, const int *batno, const fpstr project_name, 
                   const fpstr dataset_name),
 	       (const int *mindx, const int *batno, const fpstr project_name, 
-                  int project_name_len,
-                  const fpstr dataset_name, int dataset_name_len))
+                  fpstr_size_t project_name_len,
+                  const fpstr dataset_name, fpstr_size_t dataset_name_len))
 
 { char *temp_xname, *temp_pname, *temp_dname;
   int i,istat=-1;
@@ -2746,12 +2748,12 @@ FORTRAN_SUBR ( LWBSETID, lwbsetid,
 FORTRAN_SUBR ( LWBSETIDX, lwbsetidx,
 	       (const int *mindx, const int *batno, const fpstr crystal_name, 
                   const fpstr dataset_name, 
-                  int crystal_name_len, int dataset_name_len),
+                  fpstr_size_t crystal_name_len, fpstr_size_t dataset_name_len),
 	       (const int *mindx, const int *batno, const fpstr crystal_name, 
                   const fpstr dataset_name),
 	       (const int *mindx, const int *batno, const fpstr crystal_name, 
-                  int crystal_name_len,
-                  const fpstr dataset_name, int dataset_name_len))
+                  fpstr_size_t crystal_name_len,
+                  const fpstr dataset_name, fpstr_size_t dataset_name_len))
 
 { char *temp_xname, *temp_dname;
   int i,istat=-1;

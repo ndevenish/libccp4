@@ -165,9 +165,9 @@ void ccp4_CtoFString(fpstr str1, int str1_len, const char *cstring)
 /* <ustenv code>=                                                           */
 #if ! defined (VMS)
 FORTRAN_SUBR ( USTENV, ustenv,
-         (fpstr str, int *result, int str_len),
+         (fpstr str, int *result, fpstr_size_t str_len),
          (fpstr str, int *result),
-         (fpstr str, int str_len, int *result))
+         (fpstr str, fpstr_size_t str_len, int *result))
 {
   char *temp_name;
 
@@ -214,9 +214,9 @@ FORTRAN_SUBR ( OUTBUF, outbuf, (), (), ())
 /*                                                                          */
 /* <miscellaneous routines>=                                                */
 FORTRAN_SUBR ( CUNLINK, cunlink,
-      (fpstr filename, int filename_len),
+      (fpstr filename, fpstr_size_t filename_len),
       (fpstr filename),
-      (fpstr filename, int filename_len))
+      (fpstr filename, fpstr_size_t filename_len))
 {
 #ifdef VMS
   return;                       /* can't do it */
@@ -498,9 +498,9 @@ FORTRAN_SUBR ( HGETLIMITS, hgetlimits,
 /* Wrap-around for mkdir function. Returns 0 if successful, 1 if directory  */
 /* already exists, and -1 if other error.                                   */
 FORTRAN_SUBR ( CMKDIR, cmkdir,
-    (const fpstr path, const fpstr cmode, int *result, int path_len, int cmode_len),
+    (const fpstr path, const fpstr cmode, int *result, fpstr_size_t path_len, fpstr_size_t cmode_len),
     (const fpstr path, const fpstr cmode, int *result),
-    (const fpstr path, int path_len, const fpstr cmode, int cmode_len, int *result))
+    (const fpstr path, fpstr_size_t path_len, const fpstr cmode, fpstr_size_t cmode_len, int *result))
 { 
   char *temp_path, *temp_cmode;
 
@@ -515,9 +515,9 @@ FORTRAN_SUBR ( CMKDIR, cmkdir,
 /* Wrap-around for mkdir function. Returns 0 if successful, 1 if directory     */
 /* already exists, and -1 if other error.                                      */
 FORTRAN_SUBR ( CCHMOD, cchmod,
-    (const fpstr path, const fpstr cmode, int *result, int path_len, int cmode_len),
+    (const fpstr path, const fpstr cmode, int *result, fpstr_size_t path_len, fpstr_size_t cmode_len),
     (const fpstr path, const fpstr cmode, int *result),
-    (const fpstr path, int path_len, const fpstr cmode, int cmode_len, int *result))
+    (const fpstr path, fpstr_size_t path_len, const fpstr cmode, fpstr_size_t cmode_len, int *result))
 { 
   char *temp_path, *temp_cmode;
 

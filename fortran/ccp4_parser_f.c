@@ -313,12 +313,15 @@ int fparse_delimiters(CCP4PARSERARRAY *parser, char *new_delimiters,
 FORTRAN_SUBR(PARSER,parser,
              (fpstr key, fpstr line, int *ibeg, int *iend, int *ityp, float *fvalue,
               fpstr cvalue, int *idec, int *ntok, ftn_logical *lend, 
-              const ftn_logical *print, int key_len, int line_len, int cvalue_len),
+              const ftn_logical *print, fpstr_size_t key_len, 
+	      fpstr_size_t line_len, fpstr_size_t cvalue_len),
              (fpstr key, fpstr line, int *ibeg, int *iend, int *ityp, float *fvalue,
               fpstr cvalue, int *idec, int *ntok, ftn_logical *lend, 
               const ftn_logical *print),
-             (fpstr key, int key_len, fpstr line, int line_len, int *ibeg, int *iend,
-              int *ityp, float *fvalue, fpstr cvalue, int cvalue_len, int *idec,
+             (fpstr key, fpstr_size_t key_len, 
+	      fpstr line, fpstr_size_t line_len, int *ibeg, int *iend,
+              int *ityp, float *fvalue, 
+	      fpstr cvalue, fpstr_size_t cvalue_len, int *idec,
               int *ntok, ftn_logical *lend, const ftn_logical *print))
 {
   static FILE *fparse_fp = NULL;
@@ -531,9 +534,9 @@ FORTRAN_SUBR(PARSE,parse,
    SUBROUTINE PARSDL(NEWDLM,NNEWDL,NSPECD)
 */
 FORTRAN_SUBR(PARSDL,parsdl,
-	     (fpstr newdlm, int *nnewdl, int *nspecd, int newdlm_len),
+	     (fpstr newdlm, int *nnewdl, int *nspecd, fpstr_size_t newdlm_len),
 	     (fpstr newdlm, int *nnewdl, int *nspecd),
-	     (fpstr newdlm, int newdlm_len, int *nnewdl, int *nspecd))
+	     (fpstr newdlm, fpstr_size_t newdlm_len, int *nnewdl, int *nspecd))
 {
   int nnulldl;
   char *delim=NULL, *nulldelim=NULL;

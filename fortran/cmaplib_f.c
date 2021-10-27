@@ -425,12 +425,12 @@ static int NumberToSymop(char **symchs_begin, int spacegroup)
 FORTRAN_SUBR ( MWRHDL, mwrhdl,
     (int *iunit, const fpstr mapnam, const fpstr title, int *nsecs, int iuvw[3], 
      int mxyz[3], int *nw1, int *nu1, int *nu2, int *nv1, int *nv2, 
-     float cell[6], int *lspgrp, int *lmode, int mapnam_len, int title_len),
+     float cell[6], int *lspgrp, int *lmode, fpstr_size_t mapnam_len, fpstr_size_t title_len),
     (int *iunit, const fpstr mapnam, const fpstr title, int *nsecs, int iuvw[3],
      int mxyz[3], int *nw1, int *nu1, int *nu2, int *nv1, int *nv2, 
      float cell[6], int *lspgrp, int *lmode),
-    (int *iunit, const fpstr mapnam, int mapnam_len, const fpstr title, 
-     int title_len, int *nsecs, int iuvw[3], int mxyz[3], int *nw1, int *nu1, 
+    (int *iunit, const fpstr mapnam, fpstr_size_t mapnam_len, const fpstr title, 
+     fpstr_size_t title_len, int *nsecs, int iuvw[3], int mxyz[3], int *nw1, int *nu1, 
      int *nu2, int *nv1, int *nv2, float cell[6], int *lspgrp, int *lmode))
 {
   char *temp_title, *temp_map, *file;
@@ -470,12 +470,12 @@ FORTRAN_SUBR ( CCP4_MAP_WRITE_OPEN_HEADER_BY_NAME,
 	       ccp4_map_write_open_header_by_name,
     (int *iunit, const fpstr mapnam, const fpstr title, int *nsecs, int iuvw[3], 
      int mxyz[3], int *nw1, int *nu1, int *nu2, int *nv1, int *nv2, 
-     float cell[6], int *lspgrp, int *lmode, int mapnam_len, int title_len),
+     float cell[6], int *lspgrp, int *lmode, fpstr_size_t mapnam_len, fpstr_size_t title_len),
     (int *iunit, const fpstr mapnam, const fpstr title, int *nsecs, int iuvw[3], 
      int mxyz[3], int *nw1, int *nu1, int *nu2, int *nv1, int *nv2, 
      float cell[6], int *lspgrp, int *lmode),
-    (int *iunit, const fpstr mapnam, int mapnam_len, const fpstr title, 
-     int title_len, int *nsecs, int iuvw[3], int mxyz[3], int *nw1, int *nu1, 
+    (int *iunit, const fpstr mapnam, fpstr_size_t mapnam_len, const fpstr title, 
+     fpstr_size_t title_len, int *nsecs, int iuvw[3], int mxyz[3], int *nw1, int *nu1, 
      int *nu2, int *nv1, int *nv2, float cell[6], int *lspgrp, int *lmode))
 {
   char *temp_title, *temp_map, *file;
@@ -539,12 +539,12 @@ FORTRAN_SUBR ( CCP4_MAP_WRITE_OPEN_HEADER_BY_NAME,
 FORTRAN_SUBR ( MWRHDR, mwrhdr,
     (int *iunit, const fpstr title, int *nsecs, int iuvw[3], 
      int mxyz[3], int *nw1, int *nu1, int *nu2, int *nv1, int *nv2, 
-     float cell[6], int *lspgrp, int *lmode, int title_len),
+     float cell[6], int *lspgrp, int *lmode, fpstr_size_t title_len),
     (int *iunit, const fpstr title, int *nsecs, int iuvw[3], 
      int mxyz[3], int *nw1, int *nu1, int *nu2, int *nv1, int *nv2, 
      float cell[6], int *lspgrp, int *lmode),
     (int *iunit, const fpstr title, 
-     int title_len, int *nsecs, int iuvw[3], int mxyz[3], int *nw1, int *nu1, 
+     fpstr_size_t title_len, int *nsecs, int iuvw[3], int mxyz[3], int *nw1, int *nu1, 
      int *nu2, int *nv1, int *nv2, float cell[6], int *lspgrp, int *lmode))
 {
   char *temp_title, *file;
@@ -582,12 +582,12 @@ FORTRAN_SUBR ( CCP4_MAP_WRITE_OPEN_HEADER_BY_ID,
 	       ccp4_map_write_open_header_by_id,
     (int *iunit, const fpstr title, int *nsecs, int iuvw[3], 
      int mxyz[3], int *nw1, int *nu1, int *nu2, int *nv1, int *nv2, 
-     float cell[6], int *lspgrp, int *lmode, int title_len),
+     float cell[6], int *lspgrp, int *lmode, fpstr_size_t title_len),
     (int *iunit, const fpstr title, int *nsecs, int iuvw[3], 
      int mxyz[3], int *nw1, int *nu1, int *nu2, int *nv1, int *nv2, 
      float cell[6], int *lspgrp, int *lmode),
     (int *iunit, const fpstr title, 
-     int title_len, int *nsecs, int iuvw[3], int mxyz[3], int *nw1, int *nu1, 
+     fpstr_size_t title_len, int *nsecs, int iuvw[3], int mxyz[3], int *nw1, int *nu1, 
      int *nu2, int *nv1, int *nv2, float cell[6], int *lspgrp, int *lmode))
      /*  see MWRHDR */
 {
@@ -656,15 +656,15 @@ FORTRAN_SUBR( MRDHDS, mrdhds,
 	       int *nsec, int iuvw[3], int mxyz[3], int *nw1, int *nu1, 
 	       int *nu2, int *nv1, int *nv2, float cell[6], int *lspgrp, 
 	       int *lmode, float *rhmin, float *rhmax, float *rhmean, 
-	       float *rhrms, int *ifail, int *iprint, int mapnam_len, 
-	       int title_len),
+	       float *rhrms, int *ifail, int *iprint, fpstr_size_t mapnam_len, 
+	       fpstr_size_t title_len),
               (int *iunit, const fpstr mapnam, fpstr title, int *nsec, 
 	       int iuvw[3], int mxyz[3], int *nw1, int *nu1, int *nu2, 
 	       int *nv1, int *nv2, float cell[6], int *lspgrp, int *lmode, 
 	       float *rhmin, float *rhmax, float *rhmean, float * rhrms, 
 	       int *ifail, int *iprint),
-              (int *iunit, const fpstr mapnam, int mapnam_len,  
-	       fpstr title, int title_len, int *nsec, int iuvw[3], 
+              (int *iunit, const fpstr mapnam, fpstr_size_t mapnam_len,  
+	       fpstr title, fpstr_size_t title_len, int *nsec, int iuvw[3], 
 	       int mxyz[3], int *nw1, int *nu1, int *nu2, int *nv1, int *nv2, 
 	       float cell[6], int *lspgrp, int *lmode, float *rhmin, 
 	       float *rhmax, float *rhmean, float * rhrms, int *ifail, 
@@ -723,15 +723,15 @@ FORTRAN_SUBR( CCP4_MAP_READ_OPEN_HEADER_CHECK,
 	       int *nsec, int iuvw[3], int mxyz[3], int *nw1, int *nu1, 
 	       int *nu2, int *nv1, int *nv2, float cell[6], int *lspgrp, 
 	       int *lmode, float *rhmin, float *rhmax, float *rhmean, 
-	       float *rhrms, int *ifail, int *iprint, int mapnam_len, 
-	       int title_len),
+	       float *rhrms, int *ifail, int *iprint, fpstr_size_t mapnam_len, 
+	       fpstr_size_t title_len),
               (int *iunit, const fpstr mapnam, fpstr title, int *nsec, 
 	       int iuvw[3], int mxyz[3], int *nw1, int *nu1, int *nu2, 
 	       int *nv1, int *nv2, float cell[6], int *lspgrp, int *lmode, 
 	       float *rhmin, float *rhmax, float *rhmean, float * rhrms, 
 	       int *ifail, int *iprint),
-              (int *iunit, const fpstr mapnam, int mapnam_len,  
-	       fpstr title, int title_len, int *nsec, int iuvw[3], 
+              (int *iunit, const fpstr mapnam, fpstr_size_t mapnam_len,  
+	       fpstr title, fpstr_size_t title_len, int *nsec, int iuvw[3], 
 	       int mxyz[3], int *nw1, int *nu1, int *nu2, int *nv1, int *nv2, 
 	       float cell[6], int *lspgrp, int *lmode, float *rhmin, 
 	       float *rhmax, float *rhmean, float * rhrms, int *ifail, 
@@ -814,13 +814,13 @@ FORTRAN_SUBR( MRDHDR, mrdhdr,
 	       int *nsec, int iuvw[3], int mxyz[3], int *nw1, int *nu1, 
 	       int *nu2, int *nv1, int *nv2, float cell[6], int *lspgrp, 
 	       int *lmode, float *rhmin, float *rhmax, float *rhmean, 
-	       float *rhrms, int mapnam_len, int title_len),
+	       float *rhrms, fpstr_size_t mapnam_len, fpstr_size_t title_len),
               (int *iunit, const fpstr mapnam, fpstr title, int *nsec, 
 	       int iuvw[3], int mxyz[3], int *nw1, int *nu1, int *nu2, 
 	       int *nv1, int *nv2, float cell[6], int *lspgrp, int *lmode, 
 	       float *rhmin, float *rhmax, float *rhmean, float * rhrms),
-              (int *iunit, const fpstr mapnam, int mapnam_len,  
-	       fpstr title, int title_len, int *nsec, int iuvw[3], 
+              (int *iunit, const fpstr mapnam, fpstr_size_t mapnam_len,  
+	       fpstr title, fpstr_size_t title_len, int *nsec, int iuvw[3], 
 	       int mxyz[3], int *nw1, int *nu1, int *nu2, int *nv1, int *nv2, 
 	       float cell[6], int *lspgrp, int *lmode, float *rhmin, 
 	       float *rhmax, float *rhmean, float * rhrms))
@@ -870,13 +870,13 @@ FORTRAN_SUBR( CCP4_MAP_READ_OPEN_HEADER,
 	       int *nsec, int iuvw[3], int mxyz[3], int *nw1, int *nu1, 
 	       int *nu2, int *nv1, int *nv2, float cell[6], int *lspgrp, 
 	       int *lmode, float *rhmin, float *rhmax, float *rhmean, 
-	       float *rhrms, int mapnam_len, int title_len),
+	       float *rhrms, fpstr_size_t mapnam_len, fpstr_size_t title_len),
               (int *iunit, const fpstr mapnam, fpstr title, int *nsec, 
 	       int iuvw[3], int mxyz[3], int *nw1, int *nu1, int *nu2, 
 	       int *nv1, int *nv2, float cell[6], int *lspgrp, int *lmode, 
 	       float *rhmin, float *rhmax, float *rhmean, float * rhrms),
-              (int *iunit, const fpstr mapnam, int mapnam_len,  
-	       fpstr title, int title_len, int *nsec, int iuvw[3], 
+              (int *iunit, const fpstr mapnam, fpstr_size_t mapnam_len,  
+	       fpstr title, fpstr_size_t title_len, int *nsec, int iuvw[3], 
 	       int mxyz[3], int *nw1, int *nu1, int *nu2, int *nv1, int *nv2, 
 	       float cell[6], int *lspgrp, int *lmode, float *rhmin, 
 	       float *rhmax, float *rhmean, float * rhrms))
@@ -1840,9 +1840,9 @@ FORTRAN_SUBR( CCP4_MAP_COPY_SYMMETRY,
  * Maximum of 10 labels, is exceeded overwrites final label.
  */
 FORTRAN_SUBR( MTTREP, mttrep,
-	      (const fpstr label, int *posn, int label_len),
+	      (const fpstr label, int *posn, fpstr_size_t label_len),
 	      (const fpstr label, int *posn),
-	      (const fpstr label, int label_len, int *posn))
+	      (const fpstr label, fpstr_size_t label_len, int *posn))
 {
   char *temp_label;
 
@@ -1858,9 +1858,9 @@ FORTRAN_SUBR( MTTREP, mttrep,
 
 FORTRAN_SUBR( CCP4_MAP_WRITE_REPLACE_TITLE, 
 	      ccp4_map_write_replace_title,
-	      (const fpstr label, int *posn, int label_len),
+	      (const fpstr label, int *posn, fpstr_size_t label_len),
 	      (const fpstr label, int *posn),
-	      (const fpstr label, int label_len, int *posn))
+	      (const fpstr label, fpstr_size_t label_len, int *posn))
      /* see MTTREP */
 {
   char *temp_label;
@@ -1883,9 +1883,9 @@ FORTRAN_SUBR( CCP4_MAP_WRITE_REPLACE_TITLE,
  * of the current output mapfile, adding @label to the end.
  */
 FORTRAN_SUBR( MTTCPY, mttcpy,
-	      (const fpstr label, int label_len),
+	      (const fpstr label, fpstr_size_t label_len),
 	      (const fpstr label),
-	      (const fpstr label, int label_len))
+	      (const fpstr label, fpstr_size_t label_len))
 {
   char *temp_label;
   int nlabel=0,i;
@@ -1910,9 +1910,9 @@ FORTRAN_SUBR( MTTCPY, mttcpy,
 
 FORTRAN_SUBR( CCP4_MAP_COPY_TITLE, 
 	      ccp4_map_copy_title,
-	      (const fpstr label, int label_len),
+	      (const fpstr label, fpstr_size_t label_len),
 	      (const fpstr label),
-	      (const fpstr label, int label_len))
+	      (const fpstr label, fpstr_size_t label_len))
      /* see MTTCPY */
 {
   char *temp_label;
@@ -1996,9 +1996,9 @@ FORTRAN_FUN(int, MSKGET, mskget,
  */
 FORTRAN_SUBR( CCP4_MAP_WRITE_SECTION_HEADER,
               ccp4_map_write_section_header,
-              (int *iunit, float *section, const fpstr local_hdr, int local_hdr_len),
+              (int *iunit, float *section, const fpstr local_hdr, fpstr_size_t local_hdr_len),
               (int *iunit, float *section, const fpstr local_hdr),
-              (int *iunit, float *section, const fpstr local_hdr, int local_hdr_len))
+              (int *iunit, float *section, const fpstr local_hdr, fpstr_size_t local_hdr_len))
 {
   int ii;
   char *tmp_label;
@@ -2037,11 +2037,11 @@ FORTRAN_SUBR( CCP4_MAP_WRITE_SECTION_HEADER,
 FORTRAN_SUBR( CCP4_MAP_READ_SECTION_HEADER, 
               ccp4_map_read_section_header,
 	      (int *iunit, float *section, const fpstr local_hdr, 
-               int *ier, int local_hdr_len),
+               int *ier, fpstr_size_t local_hdr_len),
 	      (int *iunit, float *section, const fpstr local_hdr, 
                int *ier),
 	      (int *iunit, float *section, const fpstr local_hdr, 
-               int local_hdr_len, int *ier))
+               fpstr_size_t local_hdr_len, int *ier))
 {
   int ii;
 
@@ -2103,9 +2103,9 @@ FORTRAN_SUBR( CCP4_MAP_GET_LOCAL_HEADER,
  * description: Returns the logical name for the last written to file
  */
 FORTRAN_SUBR( MWFNAM, mwfnam, 
-	      (fpstr logname, int logname_len), 
+	      (fpstr logname, fpstr_size_t logname_len), 
 	      (fpstr logname), 
-	      (fpstr logname, int logname_len))
+	      (fpstr logname, fpstr_size_t logname_len))
 {
   strncpy(FTN_STR(logname), ioArray[last_Write]->logname, 
 	  MIN(strlen(ioArray[last_Write]->logname),
@@ -2114,9 +2114,9 @@ FORTRAN_SUBR( MWFNAM, mwfnam,
 
 FORTRAN_SUBR( CCP4_MAP_GET_LAST_WRITE_FILENAME, 
 	      ccp4_map_get_last_write_filename, 
-	      (fpstr logname, int logname_len), 
+	      (fpstr logname, fpstr_size_t logname_len), 
 	      (fpstr logname), 
-	      (fpstr logname, int logname_len))
+	      (fpstr logname, fpstr_size_t logname_len))
      /*see MWFNAM */
 {
   strncpy(FTN_STR(logname), ioArray[last_Write]->logname, 
@@ -2131,9 +2131,9 @@ FORTRAN_SUBR( CCP4_MAP_GET_LAST_WRITE_FILENAME,
  * description: Returns the logical name for the last read from file
  */
 FORTRAN_SUBR( MRFNAM, mrfnam, 
-	      (fpstr logname, int logname_len), 
+	      (fpstr logname, fpstr_size_t logname_len), 
 	      (fpstr logname), 
-	      (fpstr logname, int logname_len))
+	      (fpstr logname, fpstr_size_t logname_len))
 {
   strncpy(FTN_STR(logname), ioArray[last_Read]->logname, 
 	  MIN(strlen(ioArray[last_Read]->logname),
@@ -2142,9 +2142,9 @@ FORTRAN_SUBR( MRFNAM, mrfnam,
 
 FORTRAN_SUBR( CCP4_MAP_GET_LAST_READ_FILENAME,
 	      ccp4_map_get_last_read_filename,
-	      (fpstr logname, int logname_len), 
+	      (fpstr logname, fpstr_size_t logname_len), 
 	      (fpstr logname), 
-	      (fpstr logname, int logname_len))
+	      (fpstr logname, fpstr_size_t logname_len))
      /* see MRFNAM */
 {
   strncpy(FTN_STR(logname), ioArray[last_Read]->logname, 

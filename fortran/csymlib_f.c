@@ -119,10 +119,10 @@ FORTRAN_SUBR ( INVSYM, invsym,
 
 FORTRAN_SUBR ( SYMFR3, symfr3,
                (const fpstr icol, const int *i1, int *nsym, float rot[MAXSYM][4][4],
-                     int *eflag, int icol_len),
+                     int *eflag, fpstr_size_t icol_len),
                (const fpstr icol, const int *i1, int *nsym, float rot[MAXSYM][4][4],
                      int *eflag),
-               (const fpstr icol, int icol_len, const int *i1, int *nsym, 
+               (const fpstr icol, fpstr_size_t icol_len, const int *i1, int *nsym, 
                      float rot[MAXSYM][4][4], int *eflag))
 /* symfr3   ---- Read and interpret symmetry operations
 
@@ -164,9 +164,9 @@ FORTRAN_SUBR ( SYMFR3, symfr3,
 }
 
 FORTRAN_SUBR( SYMFR2, symfr2,
-	      (fpstr symchs, int *icol, int *nsym, float rot[MAXSYM][4][4], int symchs_len),
+	      (fpstr symchs, int *icol, int *nsym, float rot[MAXSYM][4][4], fpstr_size_t symchs_len),
 	      (fpstr symchs, int *icol, int *nsym, float rot[MAXSYM][4][4]),
-	      (fpstr symchs, int symchs_len, int *icol, int *nsym, float rot[MAXSYM][4][4]))
+	      (fpstr symchs, fpstr_size_t symchs_len, int *icol, int *nsym, float rot[MAXSYM][4][4]))
 /* symfr2   ---- Read and interpret symmetry operations
 
    SYMFR2 recognises the following types of input:
@@ -229,11 +229,11 @@ FORTRAN_SUBR( SYMFR2, symfr2,
  */
 FORTRAN_SUBR ( SYMTR3, symtr3,
                (const int *nsm, const float rsm[MAXSYM][4][4], 
-                     fpstr symchs, const int *iprint, int symchs_len),
+                     fpstr symchs, const int *iprint, fpstr_size_t symchs_len),
                (const int *nsm, const float rsm[MAXSYM][4][4], 
                      fpstr symchs, const int *iprint),
                (const int *nsm, const float rsm[MAXSYM][4][4], 
-                     fpstr symchs, int symchs_len, const int *iprint))
+                     fpstr symchs, fpstr_size_t symchs_len, const int *iprint))
 
 { char temp_symch[80];
  int i,j,k;
@@ -265,11 +265,11 @@ FORTRAN_SUBR ( SYMTR3, symtr3,
  */
 FORTRAN_SUBR ( SYMTR4, symtr4,
                (const int *nsm, const float rsm[MAXSYM][4][4], 
-                     fpstr symchs, int symchs_len),
+                     fpstr symchs, fpstr_size_t symchs_len),
                (const int *nsm, const float rsm[MAXSYM][4][4], 
                      fpstr symchs),
                (const int *nsm, const float rsm[MAXSYM][4][4], 
-                     fpstr symchs, int symchs_len))
+                     fpstr symchs, fpstr_size_t symchs_len))
 
 { char temp_symch[80];
  int i,j,k;
@@ -319,10 +319,10 @@ FORTRAN_SUBR ( PGMDF, pgmdf,
 
 FORTRAN_SUBR ( PGDEFN, pgdefn,
                (fpstr nampg, int *nsymp, const int *nsym, float rsmt[192][4][4],
-                const ftn_logical *lprint, int nampg_len),
+                const ftn_logical *lprint, fpstr_size_t nampg_len),
                (fpstr nampg, int *nsymp, const int *nsym, float rsmt[192][4][4],
                 const ftn_logical *lprint),
-               (fpstr nampg, int nampg_len, int *nsymp, const int *nsym, 
+               (fpstr nampg, fpstr_size_t nampg_len, int *nsymp, const int *nsym, 
                 float rsmt[192][4][4], const ftn_logical *lprint))
 {
   int i,j,k,l,nsym1;
@@ -390,10 +390,10 @@ FORTRAN_SUBR ( PGDEFN, pgdefn,
  */
 FORTRAN_SUBR ( PGNLAU, pgnlau,
                (const fpstr nampg, int *nlaue, fpstr launam,
-                int nampg_len, int launam_len),
+                fpstr_size_t nampg_len, fpstr_size_t launam_len),
                (const fpstr nampg, int *nlaue, fpstr launam),
-               (const fpstr nampg, int nampg_len, int *nlaue, 
-                fpstr launam, int launam_len))
+               (const fpstr nampg, fpstr_size_t nampg_len, int *nlaue, 
+                fpstr launam, fpstr_size_t launam_len))
 {
   char *temp_pgname;   
 
@@ -422,9 +422,9 @@ FORTRAN_SUBR ( PGNLAU, pgnlau,
  * @param launam Laue name
  */
 FORTRAN_SUBR ( CCP4SPG_F_GET_LAUE, ccp4spg_f_get_laue,
-               (const int *sindx, int *nlaue, fpstr launam, int launam_len),
+               (const int *sindx, int *nlaue, fpstr launam, fpstr_size_t launam_len),
                (const int *sindx, int *nlaue, fpstr launam),
-               (const int *sindx, int *nlaue, fpstr launam, int launam_len))
+               (const int *sindx, int *nlaue, fpstr launam, fpstr_size_t launam_len))
 {
   CSYMLIB_DEBUG(puts("CSYMLIB_F: CCP4SPG_F_GET_LAUE");)
 
@@ -525,10 +525,10 @@ FORTRAN_SUBR ( HKLRANGE, hklrange,
  */
 FORTRAN_SUBR ( PATSGP, patsgp,
                (const fpstr spgnam, const fpstr pgname, fpstr patnam, int *lpatsg, 
-                int spgnam_len, int pgname_len, int patnam_len),
+                fpstr_size_t spgnam_len, fpstr_size_t pgname_len, fpstr_size_t patnam_len),
                (const fpstr spgnam, const fpstr pgname, fpstr patnam, int *lpatsg),
-               (const fpstr spgnam, int spgnam_len, const fpstr pgname, 
-                int pgname_len, fpstr patnam, int patnam_len, int *lpatsg))
+               (const fpstr spgnam, fpstr_size_t spgnam_len, const fpstr pgname, 
+                fpstr_size_t pgname_len, fpstr patnam, fpstr_size_t patnam_len, int *lpatsg))
 {
   CCP4SPG *tmp_spacegroup;
   char *temp_spgnam, *temp_pgname;   
@@ -574,12 +574,12 @@ FORTRAN_SUBR ( PATSGP, patsgp,
 FORTRAN_SUBR ( ASUSET, asuset,
 	       (fpstr spgnam, int *numsgp, fpstr pgname,
                 int *msym, float rrsym[192][4][4], int *msymp,
-                int *mlaue, ftn_logical *lprint, int spgnam_len, int pgname_len),
+                int *mlaue, ftn_logical *lprint, fpstr_size_t spgnam_len, fpstr_size_t pgname_len),
 	       (fpstr spgnam, int *numsgp, fpstr pgname,
                 int *msym, float rrsym[192][4][4], int *msymp,
                 int *mlaue, ftn_logical *lprint),
-	       (fpstr spgnam, int spgnam_len, int *numsgp, 
-                fpstr pgname,int pgname_len,
+	       (fpstr spgnam, fpstr_size_t spgnam_len, int *numsgp, 
+                fpstr pgname, fpstr_size_t pgname_len,
                 int *msym, float rrsym[192][4][4], int *msymp,
                 int *mlaue, ftn_logical *lprint))
 {
@@ -748,9 +748,9 @@ FORTRAN_SUBR ( ASUPHP, asuphp,
  * @param namspg spacegroup name.
  */
 FORTRAN_SUBR ( CCP4SPG_F_LOAD_BY_NAME, ccp4spg_f_load_by_name,
-	       (const int *sindx, fpstr namspg, int namspg_len),
+	       (const int *sindx, fpstr namspg, fpstr_size_t namspg_len),
 	       (const int *sindx, fpstr namspg),
-	       (const int *sindx, fpstr namspg, int namspg_len))
+	       (const int *sindx, fpstr namspg, fpstr_size_t namspg_len))
 { 
   char *temp_name;
 
@@ -973,10 +973,10 @@ FORTRAN_FUN (int, CCP4SPG_F_INASU, ccp4spg_f_inasu,
 
 FORTRAN_SUBR ( PRTRSM, prtrsm,
 	       (const fpstr pgname, const int *nsymp, 
-                const float rsymiv[192][4][4], int pgname_len),
+                const float rsymiv[192][4][4], fpstr_size_t pgname_len),
 	       (const fpstr pgname, const int *nsymp, 
                 const float rsymiv[192][4][4]),
-	       (const fpstr pgname, int pgname_len, const int *nsymp, 
+	       (const fpstr pgname, fpstr_size_t pgname_len, const int *nsymp, 
                 const float rsymiv[192][4][4]))
 {
 
@@ -1044,13 +1044,13 @@ void ccp4spg_register_by_symops(int nops, float rsm[][4][4]) {
 FORTRAN_SUBR ( MSYMLB3, msymlb3,
 	       (const int *ist, int *lspgrp, fpstr namspg_cif,
 		fpstr namspg_cifs, fpstr nampg, int *nsymp, int *nsym, 
-                float rlsymmmatrx[192][4][4], int namspg_cif_len,
-                int namspg_cifs_len, int nampg_len),
+                float rlsymmmatrx[192][4][4], fpstr_size_t namspg_cif_len,
+                fpstr_size_t namspg_cifs_len, fpstr_size_t nampg_len),
 	       (const int *ist, int *lspgrp, fpstr namspg_cif,
 		fpstr namspg_cifs, fpstr nampg, int *nsymp, int *nsym, 
                 float rlsymmmatrx[192][4][4]),
-	       (const int *ist, int *lspgrp, fpstr namspg_cif, int namspg_cif_len,
-		fpstr namspg_cifs, int namspg_cifs_len, fpstr nampg, int nampg_len, 
+	       (const int *ist, int *lspgrp, fpstr namspg_cif, fpstr_size_t namspg_cif_len,
+		fpstr namspg_cifs, fpstr_size_t namspg_cifs_len, fpstr nampg, fpstr_size_t nampg_len, 
                 int *nsymp, int *nsym, float rlsymmmatrx[192][4][4]))
 {
   int i,j,k;
@@ -1131,13 +1131,13 @@ FORTRAN_SUBR ( MSYMLB3, msymlb3,
 FORTRAN_SUBR ( MSYMLB, msymlb,
 	       (const int *ist, int *lspgrp, fpstr namspg_cif,
 		fpstr nampg, int *nsymp, int *nsym, 
-                float rlsymmmatrx[192][4][4], int namspg_cif_len,
-                int nampg_len),
+                float rlsymmmatrx[192][4][4], fpstr_size_t namspg_cif_len,
+                fpstr_size_t nampg_len),
 	       (const int *ist, int *lspgrp, fpstr namspg_cif,
 		fpstr nampg, int *nsymp, int *nsym, 
                 float rlsymmmatrx[192][4][4]),
-	       (const int *ist, int *lspgrp, fpstr namspg_cif, int namspg_cif_len,
-		fpstr nampg, int nampg_len, 
+	       (const int *ist, int *lspgrp, fpstr namspg_cif, fpstr_size_t namspg_cif_len,
+		fpstr nampg, fpstr_size_t nampg_len, 
                 int *nsymp, int *nsym, float rlsymmmatrx[192][4][4]))
 {
   char namspg_cifs;
@@ -1158,13 +1158,13 @@ FORTRAN_SUBR ( MSYMLB, msymlb,
 FORTRAN_SUBR ( MSYMLB2, msymlb2,
 	       (const int *ist, int *lspgrp, fpstr namspg_cif,
 		fpstr nampg, int *nsymp, int *nsym, 
-                float rlsymmmatrx[192][4][4], int namspg_cif_len,
-                int nampg_len),
+                float rlsymmmatrx[192][4][4], fpstr_size_t namspg_cif_len,
+                fpstr_size_t nampg_len),
 	       (const int *ist, int *lspgrp, fpstr namspg_cif,
 		fpstr nampg, int *nsymp, int *nsym, 
                 float rlsymmmatrx[192][4][4]),
-	       (const int *ist, int *lspgrp, fpstr namspg_cif, int namspg_cif_len,
-		fpstr nampg, int nampg_len, 
+	       (const int *ist, int *lspgrp, fpstr namspg_cif, fpstr_size_t namspg_cif_len,
+		fpstr nampg, fpstr_size_t nampg_len, 
                 int *nsymp, int *nsym, float rlsymmmatrx[192][4][4]))
 {
   char namspg_cifs;
@@ -1572,11 +1572,11 @@ FORTRAN_SUBR ( FNDSMP, fndsmp,
 FORTRAN_SUBR ( CALC_ORIG_PS, calc_orig_ps,
 	       (fpstr namspg_cif, int *nsym, float rsym[192][4][4], int *norig,
 		float orig[96][3], ftn_logical *lpaxisx, ftn_logical *lpaxisy,
-		ftn_logical *lpaxisz, int namspg_cif_len),
+		ftn_logical *lpaxisz, fpstr_size_t namspg_cif_len),
 	       (fpstr namspg_cif, int *nsym, float rsym[192][4][4], int *norig,
 		float orig[96][3], ftn_logical *lpaxisx, ftn_logical *lpaxisy,
-		ftn_logical *lpaxisz, int namspg_cif_len),
-	       (fpstr namspg_cif, int namspg_cif_len, int *nsym, float rsym[192][4][4], 
+		ftn_logical *lpaxisz),
+	       (fpstr namspg_cif, fpstr_size_t namspg_cif_len, int *nsym, float rsym[192][4][4], 
                 int *norig, float orig[96][3], ftn_logical *lpaxisx, 
                 ftn_logical *lpaxisy, ftn_logical *lpaxisz))
 {

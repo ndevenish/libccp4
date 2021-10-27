@@ -101,9 +101,9 @@ static int file_attribute[] = { /* DISKIO file modes */
 };
 
 FORTRAN_SUBR ( QOPEN, qopen,
-    (int *iunit, fpstr lognam, fpstr atbuta, int lognam_len, int atbuta_len),
+    (int *iunit, fpstr lognam, fpstr atbuta, fpstr_size_t lognam_len, fpstr_size_t atbuta_len),
     (int *iunit, fpstr lognam, fpstr atbuta),
-    (int *iunit, fpstr lognam, int lognam_len, fpstr atbuta, int atbuta_len))
+    (int *iunit, fpstr lognam, fpstr_size_t lognam_len, fpstr atbuta, fpstr_size_t atbuta_len))
 {
   char *atbut2, *temp_lognam, *fname;
   int istat;
@@ -166,9 +166,9 @@ FORTRAN_SUBR ( QOPEN, qopen,
 }
 
 FORTRAN_SUBR ( QQOPEN, qqopen,
-    (int *iunit, fpstr lognam, const int *istat, int lognam_len),
+    (int *iunit, fpstr lognam, const int *istat, fpstr_size_t lognam_len),
     (int *iunit, fpstr lognam, const int *istat),
-    (int *iunit, fpstr lognam, int lognam_len, const int *istat))
+    (int *iunit, fpstr lognam, fpstr_size_t lognam_len, const int *istat))
 {
   char *fname, *temp_lognam;
   int jstat;
@@ -214,9 +214,9 @@ FORTRAN_SUBR ( QQOPEN, qqopen,
  * @param istat file mode 
  */
 FORTRAN_SUBR ( COPEN, copen,
-    (int *iunit, fpstr filename, int *istat, int filename_len),
+    (int *iunit, fpstr filename, int *istat, fpstr_size_t filename_len),
     (int *iunit, fpstr filename, int *istat),
-    (int *iunit, fpstr filename, int filename_len, int *istat))
+    (int *iunit, fpstr filename, fpstr_size_t filename_len, int *istat))
 {
   char *tempfile;
 
@@ -519,9 +519,9 @@ FORTRAN_SUBR ( QREADQ, qreadq,
  *
  */
 FORTRAN_SUBR ( QREADC, qreadc,
-    (int *iunit, fpstr buffer, int *result, int buffer_len),
+    (int *iunit, fpstr buffer, int *result, fpstr_size_t buffer_len),
     (int *iunit, fpstr buffer, int *result),
-    (int *iunit, fpstr buffer, int buffer_len, int *result))
+    (int *iunit, fpstr buffer, fpstr_size_t buffer_len, int *result))
 {
   int n;
 
@@ -616,9 +616,9 @@ FORTRAN_SUBR ( QWRITQ, qwritq,
 /*                                                                          */
 /* <diskio routines>=                                                       */
 FORTRAN_SUBR ( QWRITC, qwritc,
-    (int *iunit, fpstr buffer, int buffer_len),
+    (int *iunit, fpstr buffer, fpstr_size_t buffer_len),
     (int *iunit, fpstr buffer),
-    (int *iunit, fpstr buffer, int buffer_len))
+    (int *iunit, fpstr buffer, fpstr_size_t buffer_len))
 {
   int n;
 
@@ -696,10 +696,10 @@ FORTRAN_SUBR ( QSKIP, qskip,
  */
 FORTRAN_SUBR ( QQINQ, qqinq,
     (int *istrm, fpstr logname, fpstr filename, int *length, 
-     int logname_len, int filename_len),
+     fpstr_size_t logname_len, fpstr_size_t filename_len),
     (int *istrm, fpstr logname, fpstr filename, int *length),
-    (int *istrm, fpstr logname, int logname_len, fpstr filename, 
-     int filename_len, int *length))
+    (int *istrm, fpstr logname, fpstr_size_t logname_len, fpstr filename, 
+     fpstr_size_t filename_len, int *length))
 {
   char *log_name = NULL, *file_name;
 

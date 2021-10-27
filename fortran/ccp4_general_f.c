@@ -179,9 +179,9 @@ FORTRAN_SUBR ( CCP4H_INIT_CLIB, ccp4h_init_clib,
 }
 
 FORTRAN_SUBR ( CCPUPC, ccpupc,
-               (fpstr string, int string_len),
+               (fpstr string, fpstr_size_t string_len),
                (fpstr string),
-               (fpstr string, int string_len))
+               (fpstr string, fpstr_size_t string_len))
 {
   char *string2, *string3;
 
@@ -198,9 +198,9 @@ FORTRAN_SUBR ( CCPUPC, ccpupc,
 }
 
 FORTRAN_SUBR ( CCPLWC, ccplwc,
-               (fpstr string, int string_len),
+               (fpstr string, fpstr_size_t string_len),
                (fpstr string),
-               (fpstr string, int string_len))
+               (fpstr string, fpstr_size_t string_len))
 {
   char *string2, *string3;
 
@@ -220,9 +220,9 @@ FORTRAN_SUBR ( CCPLWC, ccplwc,
                           as some complers didn't like it insde. */
 
 FORTRAN_SUBR ( CCPERR, ccperr,
-               (const int *istat, const fpstr errstr, int errstr_len),
+               (const int *istat, const fpstr errstr, fpstr_size_t errstr_len),
                (const int *istat, const fpstr errstr),
-               (const int *istat, const fpstr errstr, int errstr_len))
+               (const int *istat, const fpstr errstr, fpstr_size_t errstr_len))
 { 
   int length;
   char tmp_errstr[TMP_LENGTH];
@@ -250,9 +250,9 @@ FORTRAN_SUBR ( CCPERR, ccperr,
 }
 
 FORTRAN_SUBR ( QPRINT, qprint,
-               (const int *iflag, const fpstr msg, int msg_len),
+               (const int *iflag, const fpstr msg, fpstr_size_t msg_len),
                (const int *iflag, const fpstr msg),
-               (const int *iflag, const fpstr msg, int msg_len))
+               (const int *iflag, const fpstr msg, fpstr_size_t msg_len))
 { 
   char *tmp_msg;
 
@@ -264,9 +264,9 @@ FORTRAN_SUBR ( QPRINT, qprint,
 
 /* switched back to ccplib.f 
 FORTRAN_FUN ( int, LENSTR, lenstr,
-               (fpstr string, int string_len),
+               (fpstr string, fpstr_size_t string_len),
                (fpstr string),
-               (fpstr string, int string_len))
+               (fpstr string, fpstr_size_t string_len))
 {
   return ( (int) ccp4_utils_flength (FTN_STR(string), FTN_LEN(string)) );
 }
@@ -294,9 +294,9 @@ FORTRAN_SUBR ( UIDATE, uidate,
  * @param caldat Date string in format dd/mm/yy.
  */
 FORTRAN_SUBR ( CCPDAT, ccpdat,
-               (fpstr caldat, int caldat_len),
+               (fpstr caldat, fpstr_size_t caldat_len),
                (fpstr caldat),
-               (fpstr caldat, int caldat_len))
+               (fpstr caldat, fpstr_size_t caldat_len))
 { 
   char date[11];
 
@@ -329,9 +329,9 @@ FORTRAN_SUBR ( CCPTIM, ccptim,
 }
 
 FORTRAN_SUBR ( UTIME, utime,
-               (fpstr ctime, int ctime_len),
+               (fpstr ctime, fpstr_size_t ctime_len),
                (fpstr ctime),
-               (fpstr ctime, int ctime_len))
+               (fpstr ctime, fpstr_size_t ctime_len))
 { 
   char time[9];
 
@@ -355,17 +355,17 @@ FORTRAN_SUBR ( UCPUTM, ucputm,
 }
 
 FORTRAN_SUBR ( CCP4_VERSION, ccp4_version,
-               (const fpstr version, int version_len),
+               (const fpstr version, fpstr_size_t version_len),
                (const fpstr version),
-               (const fpstr version, int version_len))
+               (const fpstr version, fpstr_size_t version_len))
 { 
   ccp4_CtoFString(FTN_STR(version), FTN_LEN(version), CCP4_VERSION_NO); 
 }
 
 FORTRAN_SUBR ( CCP4_PROG_VERSION, ccp4_prog_version,
-               (const fpstr version, int *iflag, int version_len),
+               (const fpstr version, int *iflag, fpstr_size_t version_len),
                (const fpstr version, int *iflag),
-               (const fpstr version, int version_len, int *iflag))
+               (const fpstr version, fpstr_size_t version_len, int *iflag))
 { 
   char *tmp_vers;
 
@@ -380,10 +380,10 @@ FORTRAN_SUBR ( CCP4_PROG_VERSION, ccp4_prog_version,
 
 FORTRAN_SUBR ( CCPVRS, ccpvrs,
                (const int *ilp, const fpstr prog, const fpstr vdate,
-                                int prog_len, int vdate_len),
+                                fpstr_size_t prog_len, fpstr_size_t vdate_len),
                (const int *ilp, const fpstr prog, const fpstr vdate),
-               (const int *ilp, const fpstr prog, int prog_len,
-		                const fpstr vdate, int vdate_len))
+               (const int *ilp, const fpstr prog, fpstr_size_t prog_len,
+		                const fpstr vdate, fpstr_size_t vdate_len))
 
 { 
   char *tmp_prog;
@@ -402,10 +402,10 @@ FORTRAN_SUBR ( CCPVRS, ccpvrs,
 
 FORTRAN_SUBR ( CCPRCS, ccprcs,
                (const int *ilp, const fpstr prog, const fpstr rcsdat,
-                                int prog_len, int rcsdat_len),
+                                fpstr_size_t prog_len, fpstr_size_t rcsdat_len),
                (const int *ilp, const fpstr prog, const fpstr rcsdat),
-               (const int *ilp, const fpstr prog, int prog_len,
-		                const fpstr rcsdat, int rcsdat_len))
+               (const int *ilp, const fpstr prog, fpstr_size_t prog_len,
+		                const fpstr rcsdat, fpstr_size_t rcsdat_len))
 
 { 
   char *tmp_prog,*tmp_rcsdat;
@@ -426,18 +426,18 @@ FORTRAN_SUBR ( CCPRCS, ccprcs,
 }
 
 FORTRAN_SUBR ( CCPPNM, ccppnm,
-               (const fpstr pnm, int pnm_len),
-               (const fpstr pnm, int pnm_len),
-               (const fpstr pnm, int pnm_len))
+               (const fpstr pnm, fpstr_size_t pnm_len),
+               (const fpstr pnm),
+               (const fpstr pnm, fpstr_size_t pnm_len))
 
 { 
   ccp4_CtoFString(FTN_STR(pnm), FTN_LEN(pnm), ccp4ProgramName(NULL)); 
 }
 
 FORTRAN_FUN ( ftn_logical, CCPEXS, ccpexs,
-               (const fpstr name, int name_len),
+               (const fpstr name, fpstr_size_t name_len),
                (const fpstr name),
-               (const fpstr name, int name_len))
+               (const fpstr name, fpstr_size_t name_len))
 {
   char *string, *string1;
 
@@ -452,9 +452,9 @@ FORTRAN_FUN ( ftn_logical, CCPEXS, ccpexs,
 }
 
 FORTRAN_FUN ( ftn_logical, CCPLIC, ccplic,
-               (const fpstr name, int name_len),
+               (const fpstr name, fpstr_size_t name_len),
                (const fpstr name),
-               (const fpstr name, int name_len))
+               (const fpstr name, fpstr_size_t name_len))
 {
   char *string;
 
