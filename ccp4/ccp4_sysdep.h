@@ -182,6 +182,7 @@
 #define CCP4_BYTE  0
 #define CCP4_INT16 1
 #define CCP4_INT32 6
+#define CCP4_INT64 5
 #define FLOAT32 2
 #define COMP32  3
 #define COMP64  4
