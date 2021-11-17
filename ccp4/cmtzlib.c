@@ -23,6 +23,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#ifdef _MSC_VER
+#include <stdint.h>
+#endif
 #include <math.h>
 #include "cmtzlib.h"
 #include "ccp4_types.h"
