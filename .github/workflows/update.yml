@@ -1,0 +1,33 @@
+name: Update from upstream BZR
+
+on:
+  push:
+    branches: [ auto_update ]
+  schedule:
+    - cron: '0 1 * * MON'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: repo
+      - name: Install Breezy
+        run: |
+          pip install -r ${GITHUB_WORKSPACE:?}/repo/requirements.txt
+
+      - name: Checkout upstream bzr repository
+        run: brz checkout http://fg.oisin.rc-harwell.ac.uk/anonscm/bzr/libccp4/trunk upstream
+      - name: Export upstream to new branch
+        run: |
+          cd upstream
+          brz fast-export -b upstream | git -C ../repo fast-import
+      - name: Merge changes into main branch
+        run: |
+          cd repo
+          git fetch origin main
+          git checkout -b main origin/main
+          git merge upstream
+          git push origin main
