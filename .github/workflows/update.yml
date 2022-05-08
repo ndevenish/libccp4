@@ -19,7 +19,7 @@ jobs:
           pip install -r ${GITHUB_WORKSPACE:?}/repo/requirements.txt
 
       - name: Checkout upstream bzr repository
-        run: brz checkout http://fg.oisin.rc-harwell.ac.uk/anonscm/bzr/libccp4/trunk upstream
+        run: brz checkout $(yq .source.url ${GITHUB_WORKSPACE:?}/repo/config.yaml) upstream
       - name: Export upstream to new branch
         run: |
           cd upstream
